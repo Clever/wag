@@ -1,0 +1,46 @@
+swagger: '2.0'
+info:
+  title: Swagger Test
+  description: Testing Swagger Codegen
+  # TODO: Understand this...
+  version: 0.1.0
+schemes:
+  - http
+produces:
+  # TODO: Think about what parts of this we want to support...
+  - application/json
+consumes:
+  - application/json
+paths:
+  /books/{id}:
+    get:
+      # TODO: Support lists...
+      operationId: getBook
+      description: Returns a book
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/Book"
+        default:
+          description: "Error"
+          schema:
+            $ref: "#/definitions/Error"
+definitions:
+  # TODO: Nested types...
+  Book:
+    type: object
+    # TODO: Add required
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+  Error:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
