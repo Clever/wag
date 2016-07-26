@@ -321,7 +321,7 @@ type handlerOp struct {
 	Op string
 }
 
-var handlerTemplate = `func {{.Op}}Handler(w http.ResponseWriter, r *http.Request) {
+var handlerTemplate = `func {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	input, err := New{{.Op}}Input(r)
 	if err != nil {
 		// TODO: Think about this whether this is usually an internal error or it could
@@ -336,8 +336,6 @@ var handlerTemplate = `func {{.Op}}Handler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	// TODO: Actually handle the context correctly...
-	var ctx context.Context
 	resp, err := controller.{{.Op}}(ctx, input)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
