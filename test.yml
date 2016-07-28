@@ -15,7 +15,7 @@ paths:
   /books/{id}:
     get:
       # TODO: Support lists...
-      operationId: getBook
+      operationId: getBookByID
       description: Returns a book
       responses:
         200:

@@ -5,15 +5,15 @@ import (
 	"golang.org/x/net/context"
 )
 
-type GetBookInput struct {
+type GetBookByIDInput struct {
 }
-func NewGetBookInput(r *http.Request) (*GetBookInput, error) {
-	return &GetBookInput{}, nil
+func NewGetBookByIDInput(r *http.Request) (*GetBookByIDInput, error) {
+	return &GetBookByIDInput{}, nil
 }
-func (i GetBookInput) Validate() error{
+func (i GetBookByIDInput) Validate() error{
 	return nil
 }
 
 type Controller interface {
-	GetBook(ctx context.Context, input *GetBookInput) (GetBookOutput, error)
+	GetBookByID(ctx context.Context, input *GetBookByIDInput) (GetBookByIDOutput, error)
 }
