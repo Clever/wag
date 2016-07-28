@@ -8,8 +8,8 @@ import (
 
 var controller Controller
 
-func GetBookHandler(w http.ResponseWriter, r *http.Request) {
-	input, err := NewGetBookInput(r)
+func GetBookByIDHandler(w http.ResponseWriter, r *http.Request) {
+	input, err := NewGetBookByIDInput(r)
 	if err != nil {
 		// TODO: Think about this whether this is usually an internal error or it could
 		// be from a bad request format...
@@ -25,7 +25,7 @@ func GetBookHandler(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: Actually handle the context correctly...
 	var ctx context.Context
-	resp, err := controller.GetBook(ctx, input)
+	resp, err := controller.GetBookByID(ctx, input)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

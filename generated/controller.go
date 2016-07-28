@@ -5,7 +5,7 @@ import "errors"
 
 type ControllerImpl struct{
 }
-func (c ControllerImpl) GetBook(ctx context.Context, input *GetBookInput) (GetBookOutput, error) {
+func (c ControllerImpl) GetBookByID(ctx context.Context, input *GetBookByIDInput) (GetBookByIDOutput, error) {
 	// TODO: Implement me!
 	return nil, errors.New("Not implemented")
 }

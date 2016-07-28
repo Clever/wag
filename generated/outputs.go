@@ -1,18 +1,18 @@
 package main
 
-type GetBookOutput interface {
-	GetBookStatus() int
+type GetBookByIDOutput interface {
+	GetBookByIDStatus() int
 }
 
-type GetBook200Output Book
+type GetBookByID200Output Book
 
-func (o GetBook200Output) GetBookStatus() int {
+func (o GetBookByID200Output) GetBookByIDStatus() int {
 	return 200
 }
 
-type GetBookDefaultOutput Error
+type GetBookByIDDefaultOutput Error
 
-func (o GetBookDefaultOutput) GetBookStatus() int {
+func (o GetBookByIDDefaultOutput) GetBookByIDStatus() int {
 	return 200
 }
 
