@@ -6,6 +6,7 @@ PKGS := $(shell go list ./... | grep -v /vendor | grep -v /generated)
 $(eval $(call golang-version-check,1.6))
 
 test:
+	rm generated/controller.go
 	go run main.go
 	cp hardcoded/main.go generated/
 	cp hardcoded/middleware.go generated/
