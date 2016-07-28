@@ -147,17 +147,38 @@ func buildRouter(paths map[string]map[string]SwaggerOperation) error {
 
 	// TODO: Add something to all these about being auto-generated
 
-	g.Printf("package main\n\n")
-	g.Printf("import \"github.com/gorilla/mux\"\n\n")
-	g.Printf("func withRoutes(r *mux.Router) *mux.Router {\n")
+	g.Printf(
+		`package main
+
+import (
+	"net/http"
+
+	"github.com/gorilla/mux"
+
+	gContext "github.com/gorilla/context"
+	"golang.org/x/net/context"	
+)
+
+type contextKey struct{}
+
+func withRoutes(r *mux.Router) *mux.Router {`)
 
 	for path, pathObj := range paths {
 		for method, op := range pathObj {
 			// TODO: Validate the method
 			// TODO: Note the coupling for the handler name here and in the handler function. Does that mean these should be
 			// together? Probably...
-			g.Printf("\tr.Methods(\"%s\").Path(\"%s\").HandlerFunc(%sHandler)\n",
-				strings.ToUpper(method), path, capitalize(op.OperationID))
+
+			g.Printf("\n")
+			tmpl, err := template.New("routerFunction").Parse(routerFunctionTemplate)
+			if err != nil {
+				return err
+			}
+			err = tmpl.Execute(&g.buf, routerTemplate{Method: method, Path: path,
+				HandlerName: capitalize(op.OperationID)})
+			if err != nil {
+				return err
+			}
 		}
 	}
 	// TODO: It's a bit weird that this returns a pointer that it modifies...
@@ -167,6 +188,18 @@ func buildRouter(paths map[string]map[string]SwaggerOperation) error {
 	fmt.Printf(g.buf.String())
 	return ioutil.WriteFile("generated/router.go", g.buf.Bytes(), 0644)
 }
+
+type routerTemplate struct {
+	Method      string
+	Path        string
+	HandlerName string
+}
+
+var routerFunctionTemplate = `	r.Methods("{{.Method}}").Path("{{.Path}}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := gContext.Get(r, contextKey{}).(context.Context)
+		{{.HandlerName}}Handler(ctx, w, r)
+	})
+`
 
 func buildContextsAndControllers(paths map[string]map[string]SwaggerOperation) error {
 
