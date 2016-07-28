@@ -57,18 +57,18 @@ func (c ContextHandlerFunc) ServeHTTPContext(ctx context.Context, w http.Respons
 
 // modifyContextExample is sample middleware that modifies the context. We can remove it when
 // we have real middleware that uses the context.
-func modifyContextExample(c ContextHandler) ContextHandlerFunc {
-	return func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func modifyContextExample(c ContextHandler) ContextHandler {
+	return ContextHandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 		ctx = context.WithValue(ctx, "addedKey", "addedValue")
 		c.ServeHTTPContext(ctx, w, r)
-	}
+	})
 }
 
 // addContextToGorilla adds the context.Context object to the Gorilla context since there doesn't
 // seem to be a easier way to get Gorilla routing and contexts in the handlers
-func addContextToGorilla(h http.Handler) ContextHandlerFunc {
-	return func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func addContextToGorilla(h http.Handler) ContextHandler {
+	return ContextHandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 		gContext.Set(r, contextKey{}, ctx)
 		h.ServeHTTP(w, r)
-	}
+	})
 }
