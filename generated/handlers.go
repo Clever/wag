@@ -1,14 +1,16 @@
 package main
 
 import (
-	"net/http"
-	"golang.org/x/net/context"
 	"encoding/json"
+	"net/http"
+
+	"golang.org/x/net/context"
 )
 
 var controller Controller
 
-func GetBookByIDHandler(w http.ResponseWriter, r *http.Request) {
+func GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+
 	input, err := NewGetBookByIDInput(r)
 	if err != nil {
 		// TODO: Think about this whether this is usually an internal error or it could
@@ -23,8 +25,6 @@ func GetBookByIDHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Actually handle the context correctly...
-	var ctx context.Context
 	resp, err := controller.GetBookByID(ctx, input)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
