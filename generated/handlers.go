@@ -1,16 +1,14 @@
 package main
 
 import (
-	"encoding/json"
 	"net/http"
-
 	"golang.org/x/net/context"
+	"encoding/json"
 )
 
 var controller Controller
 
 func GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-
 	input, err := NewGetBookByIDInput(r)
 	if err != nil {
 		// TODO: Think about this whether this is usually an internal error or it could
