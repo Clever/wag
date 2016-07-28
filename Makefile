@@ -8,8 +8,7 @@ $(eval $(call golang-version-check,1.6))
 test:
 	rm generated/controller.go
 	go run main.go
-	cp hardcoded/main.go generated/
-	cp hardcoded/middleware.go generated/
+	cp hardcoded/* generated/
 	cd generated && go build main.go middleware.go router.go handlers.go contexts.go controller.go outputs.go types.go
 
 vendor: golang-godep-vendor-deps

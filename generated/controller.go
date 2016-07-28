@@ -1,11 +1,19 @@
 package main
 
-import "golang.org/x/net/context"
+import (
+	"fmt"
+
+	"golang.org/x/net/context"
+)
 import "errors"
 
-type ControllerImpl struct{
+type ControllerImpl struct {
 }
+
 func (c ControllerImpl) GetBookByID(ctx context.Context, input *GetBookByIDInput) (GetBookByIDOutput, error) {
+
+	fmt.Printf("Context value: %s\n", ctx.Value("addedKey"))
+
 	// TODO: Implement me!
 	return nil, errors.New("Not implemented")
 }
