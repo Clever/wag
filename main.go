@@ -49,24 +49,57 @@ func (d SwaggerDefinition) Printf(g *Generator, name string) {
 }
 
 type SwaggerOperation struct {
+	// TODO: Implement
+	Tags []string `yaml:"tags"`
+
 	OperationID string                     `yaml:"operationId"`
 	Description string                     `yaml:"description"`
 	Responses   map[string]SwaggerResponse `yaml:"responses"`
-	Parameters  []SwaggerParameter         `yaml:"parameters"`
-	// TODO: Will need to add parameters...
+	// TODO: Parameters can also be a reference type. We should disallow that given that
+	// we don't support parameters to be defined anywhere else.
+	Parameters []SwaggerParameter `yaml:"parameters"`
+
+	// Not supported
+	Consumes []string               `yaml:"consumers"`
+	Produces []string               `yaml:"produces"`
+	Schemes  []string               `yaml:"schemes"`
+	Security map[string]interface{} `yaml:"security"`
+}
+
+// Validate checks if the swagger operation has any fields we don't support
+func (s SwaggerOperation) Validate() error {
+	if len(s.Consumes) != 0 {
+		fmt.Errorf("Consumes not supported in swagger operations")
+	}
+	if len(s.Produces) != 0 {
+		fmt.Errorf("Produces not supported in swagger operations")
+	}
+	if len(s.Schemes) != 0 {
+		fmt.Errorf("Schemes not supported in swagger operations")
+	}
+	if len(s.Security) != 0 {
+		fmt.Errorf("Security not supported in swagger operations")
+	}
 }
 
 type SwaggerParameter struct {
-	Name   string            `yaml:"name"`
-	In     string            `yaml:"in"`
-	Type   string            `yaml:"type"`
+	Name string `yaml:"name"`
+	In   string `yaml:"in"`
+	// TODO: Support more types
+	Type string `yaml:"type"`
+	// The schema here has to be {$ref: "..."}. We don't support defining your own
+	// schema here.
 	Schema map[string]string `yaml:"schema"`
 }
 
 type SwaggerResponse struct {
 	Description string `yaml:"description"`
-	// TODO: Add more types to schema???
+	// Schema only supports schemas of the form {$ref: "..."}
+	// TODO: Support {type: 'array', items: {$ref: "..."}}
 	Schema map[string]string `yaml:"schema"`
+
+	// TODO: Implement at least some part of the Header Object spec
+	Header map[string]interface{} `yaml:"headers"`
 }
 
 type Swagger struct {
@@ -133,7 +166,26 @@ func (s Swagger) Validate() error {
 		return fmt.Errorf("Security field not supported")
 	}
 
+	// Validate paths
+	for fieldName, _ := range s.Paths {
+		// Note that $ref and parameters are not valid as of now
+		if !sliceContains([]string{"get", "put", "post", "delete", "options", "head", "patch"}, fieldName) {
+			fmt.Errorf("Invalid path field name: %s", fieldName)
+		}
+	}
+
+	// TODO: Verify operationID is unique
+
 	return nil
+}
+
+func sliceContains(slice []string, key string) bool {
+	for _, val := range slice {
+		if slice == key {
+			return true
+		}
+	}
+	return false
 }
 
 // TODO: Should this be a function on the swagger object directly?
@@ -234,7 +286,6 @@ func withRoutes(r *mux.Router) *mux.Router {`)
 
 	for path, pathObj := range paths {
 		for method, op := range pathObj {
-			// TODO: Validate the method
 			// TODO: Note the coupling for the handler name here and in the handler function. Does that mean these should be
 			// together? Probably...
 
@@ -347,6 +398,10 @@ func printInputStruct(g *Generator, op SwaggerOperation) error {
 	fmt.Printf("Parameters %+v\n", op.Parameters)
 
 	for _, param := range op.Parameters {
+		if param.In == "formData" {
+			return fmt.Errorf("Input parameters with 'In' formData are not supported")
+		}
+
 		var typeName string
 		if param.Type == "string" && param.In != "body" {
 			typeName = "string"
