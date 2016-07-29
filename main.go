@@ -80,6 +80,8 @@ func (s SwaggerOperation) Validate() error {
 	if len(s.Security) != 0 {
 		fmt.Errorf("Security not supported in swagger operations")
 	}
+
+	return nil
 }
 
 type SwaggerParameter struct {
@@ -181,7 +183,7 @@ func (s Swagger) Validate() error {
 
 func sliceContains(slice []string, key string) bool {
 	for _, val := range slice {
-		if slice == key {
+		if val == key {
 			return true
 		}
 	}
