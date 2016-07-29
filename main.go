@@ -224,6 +224,8 @@ func buildContextsAndControllers(paths map[string]map[string]SwaggerOperation) e
 	g.Printf("import (\n")
 	g.Printf("\t\"net/http\"\n")
 	g.Printf("\t\"golang.org/x/net/context\"\n")
+	g.Printf("\t\"github.com/gorilla/mux\"\n")
+	g.Printf("\t\"encoding/json\"\n")
 	g.Printf(")\n\n")
 
 	for _, path := range paths {
@@ -255,13 +257,41 @@ func buildContextsAndControllers(paths map[string]map[string]SwaggerOperation) e
 
 			// TODO: Split this out into separate functions?
 			// The New Function
-			g.Printf("func New%sInput(r *http.Request) (*%sInput, error) {\n", capitalize(op.OperationID), capitalize(op.OperationID))
+			g.Printf("func New%sInput(r *http.Request) (*%sInput, error) {\n",
+				capitalize(op.OperationID), capitalize(op.OperationID))
 
-			// for _, param := range op.Parameters {
-			// 	g.Printf("\t")
-			// }
+			g.Printf("\tvar input %sInput\n\n", capitalize(op.OperationID))
 
-			g.Printf("\treturn &%sInput{}, nil\n", capitalize(op.OperationID))
+			for _, param := range op.Parameters {
+				// TODO: Handle non-string types. This probably means extracting the
+				// code that pulls the variable out
+
+				// TODO: Switch statement
+				if param.In == "query" {
+					g.Printf("\tinput.%s = r.URL.Query().Get(\"%s\")\n",
+						capitalize(param.Name), param.Name)
+				} else if param.In == "path" {
+					g.Printf("\tinput.%s = mux.Vars(r)[\"%s\"]\n",
+						capitalize(param.Name), param.Name)
+				} else if param.In == "header" {
+					g.Printf("\tinput.%s = r.Header.Get(\"%s\")\n",
+						capitalize(param.Name), param.Name)
+				} else if param.In == "body" {
+					// var postBody PostRequest
+					// if err := json.NewDecoder(r.Body).Decode(&postBody); err != nil {
+					// 	return nil, httpwrapper.HTTPErrorf(http.StatusBadRequest, err.Error())
+					//}
+					g.Printf("\tif err := json.NewDecoder(r.Body).Decode(&input.%s); err != nil{\n",
+						capitalize(param.Name))
+					g.Printf("\t\treturn nil, err\n") // TODO: This should probably return a 400 or something
+					g.Printf("\t}\n")
+				} else {
+					fmt.Errorf("Unsupported param type %s", param)
+				}
+			}
+			g.Printf("\n")
+
+			g.Printf("\treturn &input, nil\n")
 			g.Printf("}\n")
 
 			g.Printf("func (i %sInput) Validate() error{\n", capitalize(op.OperationID))

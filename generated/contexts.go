@@ -3,6 +3,8 @@ package main
 import (
 	"net/http"
 	"golang.org/x/net/context"
+	"github.com/gorilla/mux"
+	"encoding/json"
 )
 
 type GetBookByIDInput struct {
@@ -12,7 +14,16 @@ type GetBookByIDInput struct {
 	TestBook Book
 }
 func NewGetBookByIDInput(r *http.Request) (*GetBookByIDInput, error) {
-	return &GetBookByIDInput{}, nil
+	var input GetBookByIDInput
+
+	input.Author = r.URL.Query().Get("author")
+	input.BookID = mux.Vars(r)["bookID"]
+	input.Authorization = r.Header.Get("authorization")
+	if err := json.NewDecoder(r.Body).Decode(&input.TestBook); err != nil{
+		return nil, err
+	}
+
+	return &input, nil
 }
 func (i GetBookByIDInput) Validate() error{
 	if err := i.TestBook.Validate(); err != nil {
