@@ -7,7 +7,7 @@ $(eval $(call golang-version-check,1.6))
 
 test:
 	rm generated/controller.go || true
-	go run main.go
+	go run main.go genclients.go
 	cp hardcoded/* generated/
 	cd generated && go build main.go middleware.go router.go handlers.go contexts.go controller.go outputs.go
 
