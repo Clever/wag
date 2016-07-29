@@ -7,7 +7,7 @@ go run main.go
 cp hardcoded/main.go generated/
 cp hardcoded/middleware.go generated/
 cd generated
-go run main.go middleware.go router.go handlers.go contexts.go controller.go outputs.go types.go
+go run main.go middleware.go router.go handlers.go contexts.go controller.go outputs.go
 ```
 
 ## After Generating

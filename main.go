@@ -15,39 +15,6 @@ import (
 	"text/template"
 )
 
-type SwaggerDefinition struct {
-	Type string `yaml:"type"`
-	// TODO: Properties should probably be more tightly typed
-	Properties map[string]map[string]string `yaml:"properties"`
-}
-
-// TODO: I don't like that we have to pass a Generator in here...
-// TODO: Should this even be object oriented?
-func (d SwaggerDefinition) Printf(g *Generator, name string) {
-	// TODO: Handle different types...
-
-	g.Printf("type %s struct {\n", name)
-	for key, value := range d.Properties {
-		// TODO: Error handling? Or verify that earlier??? Also have switch?
-		propType := value["type"]
-		structType := ""
-		if propType == "string" {
-			structType = "string"
-
-		} else if propType == "integer" {
-			// TODO: Distinguish between int32 and other possibilities...
-			structType = "int"
-		} else {
-			panic(fmt.Sprintf("Type %s not supported", propType))
-		}
-		// TODO: Upper case
-		g.Printf("\t%s %s `json:\"%s\"`\n", capitalize(key), structType, key)
-	}
-	g.Printf("}\n\n")
-
-	g.Printf("func (v %s) Validate() error { return nil }\n", name)
-}
-
 type SwaggerOperation struct {
 	// TODO: Implement
 	Tags []string `yaml:"tags"`
@@ -110,8 +77,10 @@ type Swagger struct {
 	Tags     map[string]interface{} `yaml:"tags"`
 
 	// Partially implemented
-	Paths       map[string]map[string]SwaggerOperation `yaml:"paths"`
-	Definitions map[string]SwaggerDefinition           `yaml:"definitions"`
+	Paths map[string]map[string]SwaggerOperation `yaml:"paths"`
+
+	// We rely on the go-swagger code to generate all the definitions
+	Definitions map[string]interface{} `yaml:"definitions"`
 
 	// Fields we support, but only with a certain set of values
 	Swagger  string   `yaml:"swagger"`
@@ -223,9 +192,6 @@ func main() {
 
 	fmt.Printf("Swagger: %+v\n", swagger)
 
-	if err := buildTypes(swagger.Definitions); err != nil {
-		panic(err)
-	}
 	if err := buildRouter(swagger.Paths); err != nil {
 		panic(err)
 	}
@@ -248,21 +214,6 @@ type Generator struct {
 
 func (g *Generator) Printf(format string, args ...interface{}) {
 	fmt.Fprintf(&g.buf, format, args...)
-}
-
-// TODO: Add a nice comment!
-// TODO: Make this write out to a file...
-func buildTypes(definitions map[string]SwaggerDefinition) error {
-
-	// TODO: Verify that the types are correct. In particular make sure they have the right references...
-
-	var g Generator
-	g.Printf("package main\n\n")
-	for name, definition := range definitions {
-		definition.Printf(&g, name)
-	}
-
-	return ioutil.WriteFile("generated/types.go", g.buf.Bytes(), 0644)
 }
 
 func buildRouter(paths map[string]map[string]SwaggerOperation) error {
@@ -340,8 +291,16 @@ func buildContextsAndControllers(paths map[string]map[string]SwaggerOperation) e
 	g.Printf("\t\"net/http\"\n")
 	g.Printf("\t\"golang.org/x/net/context\"\n")
 	g.Printf("\t\"github.com/gorilla/mux\"\n")
+
 	g.Printf("\t\"encoding/json\"\n")
+	g.Printf("\t\"github.com/Clever/inter-service-api-testing/codegen-poc/generated/models\"\n")
 	g.Printf(")\n\n")
+
+	// These two imports are only used if we have body parameters, so if we don't have these the
+	// compiler will complain about unused imports
+	g.Printf("var _ = json.Marshal\n")
+	// TODO: Not as easy to do this for models since we have to find some type. Will be easier if
+	// we move it into the same package
 
 	for _, path := range paths {
 		for _, op := range path {
@@ -429,7 +388,7 @@ func printInputValidation(g *Generator, op SwaggerOperation) error {
 	// TODO: Right now we only support validation on complex types (schemas)
 	for _, param := range op.Parameters {
 		if param.In == "body" {
-			g.Printf("\tif err := i.%s.Validate(); err != nil {\n", capitalize(param.Name))
+			g.Printf("\tif err := i.%s.Validate(nil); err != nil {\n", capitalize(param.Name))
 			g.Printf("\t\treturn err\n")
 			g.Printf("\t}\n\n")
 		}
@@ -463,14 +422,12 @@ func printNewInput(g *Generator, op SwaggerOperation) error {
 			g.Printf("\tinput.%s = r.Header.Get(\"%s\")\n",
 				capitalize(param.Name), param.Name)
 		} else if param.In == "body" {
-			// var postBody PostRequest
-			// if err := json.NewDecoder(r.Body).Decode(&postBody); err != nil {
-			// 	return nil, httpwrapper.HTTPErrorf(http.StatusBadRequest, err.Error())
-			//}
-			g.Printf("\tif err := json.NewDecoder(r.Body).Decode(&input.%s); err != nil{\n",
-				capitalize(param.Name))
-			g.Printf("\t\treturn nil, err\n") // TODO: This should probably return a 400 or something
-			g.Printf("\t}\n")
+			// g.Printf("\tif err := json.NewDecoder(r.Body).Decode(&input.%s); err != nil{\n",
+			// 	capitalize(param.Name))
+			// g.Printf("\t\treturn nil, err\n") // TODO: This should probably return a 400 or something
+			// g.Printf("\t}\n")
+			// TODO: Make it like the above, and only do this is required = false
+			g.Printf("json.NewDecoder(r.Body).Decode(&input.%s)\n", capitalize(param.Name))
 		} else {
 			fmt.Errorf("Unsupported param type %s", param)
 		}
@@ -487,6 +444,8 @@ func buildOutputs(paths map[string]map[string]SwaggerOperation) error {
 	var g Generator
 
 	g.Printf("package main\n\n")
+	// TODO: We're going to have to be smarter about these imports
+	g.Printf("\timport \"github.com/Clever/inter-service-api-testing/codegen-poc/generated/models\"\n\n")
 
 	for _, path := range paths {
 		for _, op := range path {
@@ -521,7 +480,7 @@ func typeFromSchema(schema map[string]string) (string, error) {
 		if !strings.HasPrefix(ref, "#/definitions/") {
 			return "", fmt.Errorf("schema.$ref has undefined reference type. Must be #/definitions")
 		}
-		return ref[len("#/definitions/"):], nil
+		return "models." + ref[len("#/definitions/"):], nil
 	} else {
 		// TODO: Support more?
 		return "", fmt.Errorf("Other ref types not supported")
