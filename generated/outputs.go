@@ -13,15 +13,6 @@ type GetBookByIDError interface {
 	GetBookByIDStatusCode() int
 }
 
-type GetBookByIDDefaultOutput struct{}
-
-func (o GetBookByIDDefaultOutput) Error() string {
-	return "Status Code: " + "500"
-}
-
-func (o GetBookByIDDefaultOutput) GetBookByIDStatusCode() int {
-	return 500}
-
 type GetBookByID200Output struct {
 	Data models.Book
 }
@@ -42,4 +33,13 @@ func (o GetBookByID404Output) Error() string {
 
 func (o GetBookByID404Output) GetBookByIDStatusCode() int {
 	return 404}
+
+type GetBookByIDDefaultOutput struct{}
+
+func (o GetBookByIDDefaultOutput) Error() string {
+	return "Status Code: " + "500"
+}
+
+func (o GetBookByIDDefaultOutput) GetBookByIDStatusCode() int {
+	return 500}
 
