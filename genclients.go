@@ -91,7 +91,7 @@ func generateClients(s Swagger) error {
 				// Maybe that should just be the default of the case statement??? A general purpose error?
 				g.Printf("\tcase %s:\n", key)
 				if code < 400 {
-					g.Printf("\t\tTODO: Actually read the body and set the data on the Output object correctly\n")
+					g.Printf("\t\t// TODO: Actually read the body and set the data on the Output object correctly\n")
 					g.Printf("\t\treturn %s%sOutput{}, nil\n", capitalize(op.OperationID), key)
 				} else {
 					g.Printf("\t\treturn nil, %s%sOutput{}\n", capitalize(op.OperationID), key)

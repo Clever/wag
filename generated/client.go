@@ -29,7 +29,7 @@ func GetBookByID(ctx context.Context, i *GetBookByIDInput) (GetBookByIDOutput, e
 
 	switch resp.StatusCode {
 	case 200:
-		TODO: Actually read the body and set the data on the Output object correctly
+		// TODO: Actually read the body and set the data on the Output object correctly
 		return GetBookByID200Output{}, nil
 	case 404:
 		return nil, GetBookByID404Output{}
