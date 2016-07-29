@@ -1,18 +1,20 @@
 package main
 
+	import "github.com/Clever/inter-service-api-testing/codegen-poc/generated/models"
+
 type GetBookByIDOutput interface {
 	GetBookByIDStatus() int
 }
 
-type GetBookByID200Output Book
+type GetBookByIDDefaultOutput models.Error
 
-func (o GetBookByID200Output) GetBookByIDStatus() int {
+func (o GetBookByIDDefaultOutput) GetBookByIDStatus() int {
 	return 200
 }
 
-type GetBookByIDDefaultOutput Error
+type GetBookByID200Output models.Book
 
-func (o GetBookByIDDefaultOutput) GetBookByIDStatus() int {
+func (o GetBookByID200Output) GetBookByIDStatus() int {
 	return 200
 }
 
