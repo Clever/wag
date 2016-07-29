@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
 	"strings"
 
 	"github.com/go-openapi/loads"
@@ -51,7 +50,15 @@ type SwaggerOperation struct {
 	OperationID string                     `yaml:"operationId"`
 	Description string                     `yaml:"description"`
 	Responses   map[string]SwaggerResponse `yaml:"responses"`
+	Parameters  []SwaggerParameter         `yaml:"parameters"`
 	// TODO: Will need to add parameters...
+}
+
+type SwaggerParameter struct {
+	Name   string            `yaml:"name"`
+	In     string            `yaml:"in"`
+	Type   string            `yaml:"type"`
+	Schema map[string]string `yaml:"schema"`
 }
 
 type SwaggerResponse struct {
@@ -137,8 +144,6 @@ func buildTypes(definitions map[string]SwaggerDefinition) error {
 		definition.Printf(&g, name)
 	}
 
-	fmt.Printf(g.buf.String())
-
 	return ioutil.WriteFile("generated/types.go", g.buf.Bytes(), 0644)
 }
 
@@ -185,7 +190,6 @@ func withRoutes(r *mux.Router) *mux.Router {`)
 	g.Printf("\treturn r\n")
 	g.Printf("}\n")
 
-	fmt.Printf(g.buf.String())
 	return ioutil.WriteFile("generated/router.go", g.buf.Bytes(), 0644)
 }
 
@@ -205,9 +209,10 @@ func buildContextsAndControllers(paths map[string]map[string]SwaggerOperation) e
 
 	// Only create the controller the first time. After that leave it as is
 	// TODO: This isn't convenient when developing, so maybe have a flag...?
-	if _, err := os.Stat("generated/controller.go"); err == nil {
-		return nil
-	}
+	// TODO: We still want to build the contexts.go file, so need to figure that out...
+	// if _, err := os.Stat("generated/controller.go"); err == nil {
+	//	return nil
+	//}
 
 	// This includes the interfaces...
 	var g Generator
@@ -224,11 +229,31 @@ func buildContextsAndControllers(paths map[string]map[string]SwaggerOperation) e
 			// TODO: Should this be more functional??
 
 			g.Printf("type %sInput struct {\n", capitalize(op.OperationID))
+
+			// TODO: Explicitly disallow formData param type
+
+			fmt.Printf("Parameters %+v\n", op.Parameters)
+
+			for _, param := range op.Parameters {
+				var typeName string
+				if param.Type == "string" && param.In != "body" {
+					typeName = "string"
+				} else if param.In == "body" {
+					var err error
+					typeName, err = typeFromSchema(param.Schema)
+					if err != nil {
+						return err
+					}
+				} else {
+					return fmt.Errorf("Unsupported param types, at least not yet")
+				}
+				g.Printf("\t %s %s\n", capitalize(param.Name), typeName)
+			}
 			// TODO: Add in input params...
 			g.Printf("}\n")
 
 			g.Printf("func New%sInput(r *http.Request) (*%sInput, error) {\n", capitalize(op.OperationID), capitalize(op.OperationID))
-			// TODO: This should take in the http.Request object probably so that it can get the request parameters from that
+
 			g.Printf("\treturn &%sInput{}, nil\n", capitalize(op.OperationID))
 			g.Printf("}\n")
 
@@ -266,7 +291,6 @@ func buildContextsAndControllers(paths map[string]map[string]SwaggerOperation) e
 	}
 	g.Printf("}\n")
 
-	fmt.Printf(g.buf.String())
 	if err := ioutil.WriteFile("generated/contexts.go", g.buf.Bytes(), 0644); err != nil {
 		return err
 	}
@@ -287,24 +311,11 @@ func buildOutputs(paths map[string]map[string]SwaggerOperation) error {
 			for key, response := range op.Responses {
 				outputName := fmt.Sprintf("%s%sOutput", capitalize(op.OperationID), capitalize(key))
 
-				if _, ok := response.Schema["$ref"]; ok && len(response.Schema) == 1 {
-					ref, _ := response.Schema["$ref"]
-
-					// If the type is simple, then just type alias it
-
-					// TODO: Handle references outside of '#/definitions'
-					if !strings.HasPrefix(ref, "#/definitions/") {
-						return fmt.Errorf("%s.schema.$ref has unupposed reference type. Must be #/definitions", key)
-					}
-
-					g.Printf("type %s %s\n\n", outputName, ref[len("#/definitions/"):])
-
-				} else {
-					g.Printf("type %s struct {\n", outputName)
-					// TODO: Put in schema information here...
-					g.Printf("}\n\n")
+				typeName, err := typeFromSchema(response.Schema)
+				if err != nil {
+					return err
 				}
-
+				g.Printf("type %s %s\n\n", outputName, typeName)
 				g.Printf("func (o %s) %sStatus() int {\n", outputName, capitalize(op.OperationID))
 				// TODO: Use the right status code...
 				g.Printf("\treturn 200\n")
@@ -314,6 +325,21 @@ func buildOutputs(paths map[string]map[string]SwaggerOperation) error {
 	}
 
 	return ioutil.WriteFile("generated/outputs.go", g.buf.Bytes(), 0644)
+}
+
+func typeFromSchema(schema map[string]string) (string, error) {
+	if _, ok := schema["$ref"]; ok && len(schema) == 1 {
+		ref, _ := schema["$ref"]
+
+		// TODO: Handle references outside of '#/definitions'
+		if !strings.HasPrefix(ref, "#/definitions/") {
+			return "", fmt.Errorf("schema.$ref has undefined reference type. Must be #/definitions")
+		}
+		return ref[len("#/definitions/"):], nil
+	} else {
+		// TODO: Support more?
+		return "", fmt.Errorf("Other ref types not supported")
+	}
 }
 
 func buildHandlers(paths map[string]map[string]SwaggerOperation) error {
@@ -344,8 +370,6 @@ func buildHandlers(paths map[string]map[string]SwaggerOperation) error {
 			}
 		}
 	}
-
-	fmt.Printf(g.buf.String())
 
 	return ioutil.WriteFile("generated/handlers.go", g.buf.Bytes(), 0644)
 }

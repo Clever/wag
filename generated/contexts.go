@@ -6,6 +6,10 @@ import (
 )
 
 type GetBookByIDInput struct {
+	 Author string
+	 BookID string
+	 Authorization string
+	 TestBook Book
 }
 func NewGetBookByIDInput(r *http.Request) (*GetBookByIDInput, error) {
 	return &GetBookByIDInput{}, nil
