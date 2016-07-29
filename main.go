@@ -446,33 +446,43 @@ func buildOutputs(paths map[string]map[string]SwaggerOperation) error {
 
 	g.Printf("package main\n\n")
 	// TODO: We're going to have to be smarter about these imports
-	g.Printf("\timport \"github.com/Clever/inter-service-api-testing/codegen-poc/generated/models\"\n\n")
+	g.Printf("import \"github.com/Clever/inter-service-api-testing/codegen-poc/generated/models\"\n\n")
 
 	for _, path := range paths {
 		for _, op := range path {
 
+			// We classify response keys into three types:
+			// 1. 200-399 - these are "success" responses and implement the Output interface
+			// 	defined above
+			// 2. 400-599 - these are "failure" responses and implement the error interface
+			// 3. Default - this is defined as a 500 (TODO: decide if we want to keep this...)
+
+			// Define the success interface
 			g.Printf("type %sOutput interface {\n", capitalize(op.OperationID))
 			g.Printf("\t%sStatus() int\n", capitalize(op.OperationID))
 			g.Printf("\t// Data is the underlying model object. We know it is json serializable\n")
 			g.Printf("\t%sData() interface{}\n", capitalize(op.OperationID))
 			g.Printf("}\n\n")
 
+			// Define the error interface
+			g.Printf("type %sError interface {\n", capitalize(op.OperationID))
+			g.Printf("\terror // Extend the error interface\n")
+			g.Printf("\t%sStatusCode() int\n", capitalize(op.OperationID))
+			g.Printf("}\n\n")
+
 			for key, response := range op.Responses {
-				// We classify response keys into three types:
-				// 1. 200-399 - these are "success" responses and implement the Output interface
-				// 	defined above
-				// 2. 400-599 - these are "failure" responses and implement the error interface
-				// 3. Default - this is defined as a 500 (TODO: decide if we want to keep this...)
 
 				var statusCode int
 				if key == "default" {
 					statusCode = 500
 				} else {
-					statusCode, err := strconv.ParseInt(key, 10, 32)
-					if err != nil || statusCode < 200 || statusCode > 599 {
+					statusCode64, err := strconv.ParseInt(key, 10, 32)
+					if err != nil || statusCode64 < 200 || statusCode64 > 599 {
 						// TODO: Write a test for this...
-						return fmt.Errorf("Response map key must be an integer between 200 and 599 or the string 'default'")
+						return fmt.Errorf("Response map key must be an integer between 200 and 599 or "+
+							"the string 'default'. Was %s", key)
 					}
+					statusCode = int(statusCode64)
 				}
 
 				outputName := fmt.Sprintf("%s%sOutput", capitalize(op.OperationID), capitalize(key))
@@ -504,6 +514,9 @@ func buildOutputs(paths map[string]map[string]SwaggerOperation) error {
 					// TODO: Would it make sense to give this a constructor so we can have a more detailed
 					// error message?
 					g.Printf("\treturn \"Status Code: \" + \"%d\"\n", statusCode)
+					g.Printf("}\n\n")
+					g.Printf("func (o %s) %sStatusCode() int {\n", outputName, capitalize(op.OperationID))
+					g.Printf("\treturn %d", statusCode)
 					g.Printf("}\n\n")
 				}
 
@@ -580,8 +593,14 @@ var handlerTemplate = `func {{.Op}}Handler(ctx context.Context, w http.ResponseW
 
 	resp, err := controller.{{.Op}}(ctx, input)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		if respErr, ok := err.({{.Op}}Error); ok {
+			http.Error(w, respErr.Error(), respErr.{{.Op}}StatusCode())
+			return
+		} else {
+			// This is the default case
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	respBytes, err := json.Marshal(resp.{{.Op}}Data())
@@ -589,6 +608,7 @@ var handlerTemplate = `func {{.Op}}Handler(ctx context.Context, w http.ResponseW
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(respBytes)
 }
