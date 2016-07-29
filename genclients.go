@@ -40,7 +40,7 @@ func generateClients(s Swagger) error {
 			// TODO: Make the base URL configurable...
 			g.Printf("\tpath := \"http://localhost:8080\" + \"%s\"\n", url)
 			g.Printf("\turlVals := url.Values{}\n")
-			g.Printf("\tvar body []byte\n")
+			g.Printf("\tvar body []byte\n\n")
 
 			for _, param := range op.Parameters {
 				if param.In == "path" {
@@ -48,13 +48,17 @@ func generateClients(s Swagger) error {
 					g.Printf("\tpath = strings.Replace(path, \"%s\", i.%s, -1)\n", "{"+param.Name+"}", capitalize(param.Name))
 				} else if param.In == "query" {
 					g.Printf("\turlVals.Add(\"%s\", i.%s)\n", param.Name, capitalize(param.Name))
-				} else if param.In == "body" {
-					// TODO: Handle errors here. Also, is this syntax quite right???
-					g.Printf("\tbody, _ = json.Marshal(i.%s)\n", capitalize(param.Name))
 				}
 			}
 
-			g.Printf("\tpath = path + \"?\" + urlVals.Encode()\n")
+			g.Printf("\tpath = path + \"?\" + urlVals.Encode()\n\n")
+
+			for _, param := range op.Parameters {
+				if param.In == "body" {
+					// TODO: Handle errors here. Also, is this syntax quite right???
+					g.Printf("\tbody, _ = json.Marshal(i.%s)\n\n", capitalize(param.Name))
+				}
+			}
 
 			g.Printf("\tclient := &http.Client{}\n")
 			// TODO: Handle the error
@@ -87,8 +91,7 @@ func generateClients(s Swagger) error {
 				// Maybe that should just be the default of the case statement??? A general purpose error?
 				g.Printf("\tcase %s:\n", key)
 				if code < 400 {
-					// TODO: Read the schema out here (should be in the response) and set on the output's
-					// data field
+					g.Printf("\t\tTODO: Actually read the body and set the data on the Output object correctly\n")
 					g.Printf("\t\treturn %s%sOutput{}, nil\n", capitalize(op.OperationID), key)
 				} else {
 					g.Printf("\t\treturn nil, %s%sOutput{}\n", capitalize(op.OperationID), key)
