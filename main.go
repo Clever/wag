@@ -512,6 +512,8 @@ func buildOutputs(paths map[string]map[string]SwaggerOperation) error {
 
 				} else {
 
+					// TODO: Should these by named operationID + "Error" (instead of + "Output")
+					// Would need to change the client too
 					g.Printf("type %s struct{}\n\n", outputName)
 					g.Printf("func (o %s) Error() string {\n", outputName)
 					// TODO: Would it make sense to give this a constructor so we can have a more detailed
