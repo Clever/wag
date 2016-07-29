@@ -44,6 +44,8 @@ func (d SwaggerDefinition) Printf(g *Generator, name string) {
 		g.Printf("\t%s %s `json:\"%s\"`\n", capitalize(key), structType, key)
 	}
 	g.Printf("}\n\n")
+
+	g.Printf("func (v %s) Validate() error { return nil }\n", name)
 }
 
 type SwaggerOperation struct {
@@ -247,17 +249,32 @@ func buildContextsAndControllers(paths map[string]map[string]SwaggerOperation) e
 				} else {
 					return fmt.Errorf("Unsupported param types, at least not yet")
 				}
-				g.Printf("\t %s %s\n", capitalize(param.Name), typeName)
+				g.Printf("\t%s %s\n", capitalize(param.Name), typeName)
 			}
-			// TODO: Add in input params...
 			g.Printf("}\n")
 
+			// TODO: Split this out into separate functions?
+			// The New Function
 			g.Printf("func New%sInput(r *http.Request) (*%sInput, error) {\n", capitalize(op.OperationID), capitalize(op.OperationID))
+
+			// for _, param := range op.Parameters {
+			// 	g.Printf("\t")
+			// }
 
 			g.Printf("\treturn &%sInput{}, nil\n", capitalize(op.OperationID))
 			g.Printf("}\n")
 
 			g.Printf("func (i %sInput) Validate() error{\n", capitalize(op.OperationID))
+
+			// TODO: Right now we only support validation on complex types (schemas)
+			for _, param := range op.Parameters {
+				if param.In == "body" {
+					g.Printf("\tif err := i.%s.Validate(); err != nil {\n", capitalize(param.Name))
+					g.Printf("\t\treturn err\n")
+					g.Printf("\t}\n\n")
+				}
+
+			}
 			// TODO: Add in any validation...
 			g.Printf("\treturn nil\n")
 			g.Printf("}\n")
