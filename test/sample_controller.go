@@ -8,7 +8,7 @@ import "fmt"
 type ControllerImpl struct{
 }
 
-// This is used for easily testing...
+// This is used for easily testing this curl request `curl -H "authorization:test" localhost:8080/books/1234?author=kyle`
 func (c ControllerImpl) GetBookByID(ctx context.Context, input *GetBookByIDInput) (GetBookByIDOutput, error) {
 
         fmt.Printf("Context: %s\n", ctx.Value("addedValue"))

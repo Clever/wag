@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/go-openapi/loads"
@@ -298,7 +299,7 @@ func buildContextsAndControllers(paths map[string]map[string]SwaggerOperation) e
 
 	// These two imports are only used if we have body parameters, so if we don't have these the
 	// compiler will complain about unused imports
-	g.Printf("var _ = json.Marshal\n")
+	g.Printf("var _ = json.Marshal\n\n")
 	// TODO: Not as easy to do this for models since we have to find some type. Will be easier if
 	// we move it into the same package
 
@@ -319,7 +320,7 @@ func buildContextsAndControllers(paths map[string]map[string]SwaggerOperation) e
 	}
 
 	// TODO: How should I name these things??? Should they be on a per-tag basis???
-	g.Printf("\ntype Controller interface {\n")
+	g.Printf("type Controller interface {\n")
 
 	var controllerGenerator Generator
 	controllerGenerator.Printf("package main\n\n")
@@ -377,7 +378,7 @@ func printInputStruct(g *Generator, op SwaggerOperation) error {
 		}
 		g.Printf("\t%s %s\n", capitalize(param.Name), typeName)
 	}
-	g.Printf("}\n")
+	g.Printf("}\n\n")
 
 	return nil
 }
@@ -396,7 +397,7 @@ func printInputValidation(g *Generator, op SwaggerOperation) error {
 	}
 	// TODO: Add in any validation...
 	g.Printf("\treturn nil\n")
-	g.Printf("}\n")
+	g.Printf("}\n\n")
 
 	return nil
 }
@@ -427,7 +428,7 @@ func printNewInput(g *Generator, op SwaggerOperation) error {
 			// g.Printf("\t\treturn nil, err\n") // TODO: This should probably return a 400 or something
 			// g.Printf("\t}\n")
 			// TODO: Make it like the above, and only do this is required = false
-			g.Printf("json.NewDecoder(r.Body).Decode(&input.%s)\n", capitalize(param.Name))
+			g.Printf("\tjson.NewDecoder(r.Body).Decode(&input.%s)\n", capitalize(param.Name))
 		} else {
 			fmt.Errorf("Unsupported param type %s", param)
 		}
@@ -435,7 +436,7 @@ func printNewInput(g *Generator, op SwaggerOperation) error {
 	g.Printf("\n")
 
 	g.Printf("\treturn &input, nil\n")
-	g.Printf("}\n")
+	g.Printf("}\n\n")
 
 	return nil
 }
@@ -449,22 +450,63 @@ func buildOutputs(paths map[string]map[string]SwaggerOperation) error {
 
 	for _, path := range paths {
 		for _, op := range path {
+
 			g.Printf("type %sOutput interface {\n", capitalize(op.OperationID))
 			g.Printf("\t%sStatus() int\n", capitalize(op.OperationID))
+			g.Printf("\t// Data is the underlying model object. We know it is json serializable\n")
+			g.Printf("\t%sData() interface{}\n", capitalize(op.OperationID))
 			g.Printf("}\n\n")
 
 			for key, response := range op.Responses {
-				outputName := fmt.Sprintf("%s%sOutput", capitalize(op.OperationID), capitalize(key))
+				// We classify response keys into three types:
+				// 1. 200-399 - these are "success" responses and implement the Output interface
+				// 	defined above
+				// 2. 400-599 - these are "failure" responses and implement the error interface
+				// 3. Default - this is defined as a 500 (TODO: decide if we want to keep this...)
 
-				typeName, err := typeFromSchema(response.Schema)
-				if err != nil {
-					return err
+				var statusCode int
+				if key == "default" {
+					statusCode = 500
+				} else {
+					statusCode, err := strconv.ParseInt(key, 10, 32)
+					if err != nil || statusCode < 200 || statusCode > 599 {
+						// TODO: Write a test for this...
+						return fmt.Errorf("Response map key must be an integer between 200 and 599 or the string 'default'")
+					}
 				}
-				g.Printf("type %s %s\n\n", outputName, typeName)
-				g.Printf("func (o %s) %sStatus() int {\n", outputName, capitalize(op.OperationID))
-				// TODO: Use the right status code...
-				g.Printf("\treturn 200\n")
-				g.Printf("}\n\n")
+
+				outputName := fmt.Sprintf("%s%sOutput", capitalize(op.OperationID), capitalize(key))
+				if statusCode < 400 {
+
+					// TODO: Be a bit smarter with this...
+					typeName, err := typeFromSchema(response.Schema)
+					if err != nil {
+						return err
+					}
+					g.Printf("type %s struct {\n", outputName) //, typeName)
+					g.Printf("\tData %s\n", typeName)
+					g.Printf("}\n\n")
+
+					g.Printf("func (o %s) %sData() interface{} {\n", outputName, capitalize(op.OperationID))
+					g.Printf("\treturn o.Data\n")
+					g.Printf("}\n\n")
+
+					// TODO: Do we really want to have that as part of the interface?
+					g.Printf("func (o %s) %sStatus() int {\n", outputName, capitalize(op.OperationID))
+					// TODO: Use the right status code...
+					g.Printf("\treturn %d\n", statusCode)
+					g.Printf("}\n\n")
+
+				} else {
+
+					g.Printf("type %s struct{}\n\n", outputName)
+					g.Printf("func (o %s) Error() string {\n", outputName)
+					// TODO: Would it make sense to give this a constructor so we can have a more detailed
+					// error message?
+					g.Printf("\treturn \"Status Code: \" + \"%d\"\n", statusCode)
+					g.Printf("}\n\n")
+				}
+
 			}
 		}
 	}
@@ -488,11 +530,9 @@ func typeFromSchema(schema map[string]string) (string, error) {
 }
 
 func buildHandlers(paths map[string]map[string]SwaggerOperation) error {
-
 	var g Generator
 
 	g.Printf("package main\n\n")
-
 	g.Printf("import (\n")
 	g.Printf("\t\"net/http\"\n")
 	g.Printf("\t\"golang.org/x/net/context\"\n")
@@ -544,7 +584,7 @@ var handlerTemplate = `func {{.Op}}Handler(ctx context.Context, w http.ResponseW
 		return
 	}
 
-	respBytes, err := json.Marshal(resp)
+	respBytes, err := json.Marshal(resp.{{.Op}}Data())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
