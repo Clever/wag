@@ -7,7 +7,6 @@ info:
 schemes:
   - http
 produces:
-  # TODO: Think about what parts of this we want to support...
   - application/json
 consumes:
   - application/json
