@@ -230,84 +230,17 @@ func buildContextsAndControllers(paths map[string]map[string]SwaggerOperation) e
 
 	for _, path := range paths {
 		for _, op := range path {
-			// TODO: Should this be more functional??
-
-			g.Printf("type %sInput struct {\n", capitalize(op.OperationID))
-
-			// TODO: Explicitly disallow formData param type
-
-			fmt.Printf("Parameters %+v\n", op.Parameters)
-
-			for _, param := range op.Parameters {
-				var typeName string
-				if param.Type == "string" && param.In != "body" {
-					typeName = "string"
-				} else if param.In == "body" {
-					var err error
-					typeName, err = typeFromSchema(param.Schema)
-					if err != nil {
-						return err
-					}
-				} else {
-					return fmt.Errorf("Unsupported param types, at least not yet")
-				}
-				g.Printf("\t%s %s\n", capitalize(param.Name), typeName)
+			if err := printInputStruct(&g, op); err != nil {
+				return err
 			}
-			g.Printf("}\n")
 
-			// TODO: Split this out into separate functions?
-			// The New Function
-			g.Printf("func New%sInput(r *http.Request) (*%sInput, error) {\n",
-				capitalize(op.OperationID), capitalize(op.OperationID))
-
-			g.Printf("\tvar input %sInput\n\n", capitalize(op.OperationID))
-
-			for _, param := range op.Parameters {
-				// TODO: Handle non-string types. This probably means extracting the
-				// code that pulls the variable out
-
-				// TODO: Switch statement
-				if param.In == "query" {
-					g.Printf("\tinput.%s = r.URL.Query().Get(\"%s\")\n",
-						capitalize(param.Name), param.Name)
-				} else if param.In == "path" {
-					g.Printf("\tinput.%s = mux.Vars(r)[\"%s\"]\n",
-						capitalize(param.Name), param.Name)
-				} else if param.In == "header" {
-					g.Printf("\tinput.%s = r.Header.Get(\"%s\")\n",
-						capitalize(param.Name), param.Name)
-				} else if param.In == "body" {
-					// var postBody PostRequest
-					// if err := json.NewDecoder(r.Body).Decode(&postBody); err != nil {
-					// 	return nil, httpwrapper.HTTPErrorf(http.StatusBadRequest, err.Error())
-					//}
-					g.Printf("\tif err := json.NewDecoder(r.Body).Decode(&input.%s); err != nil{\n",
-						capitalize(param.Name))
-					g.Printf("\t\treturn nil, err\n") // TODO: This should probably return a 400 or something
-					g.Printf("\t}\n")
-				} else {
-					fmt.Errorf("Unsupported param type %s", param)
-				}
+			if err := printNewInput(&g, op); err != nil {
+				return err
 			}
-			g.Printf("\n")
 
-			g.Printf("\treturn &input, nil\n")
-			g.Printf("}\n")
-
-			g.Printf("func (i %sInput) Validate() error{\n", capitalize(op.OperationID))
-
-			// TODO: Right now we only support validation on complex types (schemas)
-			for _, param := range op.Parameters {
-				if param.In == "body" {
-					g.Printf("\tif err := i.%s.Validate(); err != nil {\n", capitalize(param.Name))
-					g.Printf("\t\treturn err\n")
-					g.Printf("\t}\n\n")
-				}
-
+			if err := printInputValidation(&g, op); err != nil {
+				return err
 			}
-			// TODO: Add in any validation...
-			g.Printf("\treturn nil\n")
-			g.Printf("}\n")
 		}
 	}
 
@@ -342,6 +275,93 @@ func buildContextsAndControllers(paths map[string]map[string]SwaggerOperation) e
 		return err
 	}
 	return ioutil.WriteFile("generated/controller.go", controllerGenerator.buf.Bytes(), 0644)
+}
+
+func printInputStruct(g *Generator, op SwaggerOperation) error {
+	g.Printf("type %sInput struct {\n", capitalize(op.OperationID))
+
+	// TODO: Explicitly disallow formData param type
+
+	fmt.Printf("Parameters %+v\n", op.Parameters)
+
+	for _, param := range op.Parameters {
+		var typeName string
+		if param.Type == "string" && param.In != "body" {
+			typeName = "string"
+		} else if param.In == "body" {
+			var err error
+			typeName, err = typeFromSchema(param.Schema)
+			if err != nil {
+				return err
+			}
+		} else {
+			return fmt.Errorf("Unsupported param types, at least not yet")
+		}
+		g.Printf("\t%s %s\n", capitalize(param.Name), typeName)
+	}
+	g.Printf("}\n")
+
+	return nil
+}
+
+func printInputValidation(g *Generator, op SwaggerOperation) error {
+	g.Printf("func (i %sInput) Validate() error{\n", capitalize(op.OperationID))
+
+	// TODO: Right now we only support validation on complex types (schemas)
+	for _, param := range op.Parameters {
+		if param.In == "body" {
+			g.Printf("\tif err := i.%s.Validate(); err != nil {\n", capitalize(param.Name))
+			g.Printf("\t\treturn err\n")
+			g.Printf("\t}\n\n")
+		}
+
+	}
+	// TODO: Add in any validation...
+	g.Printf("\treturn nil\n")
+	g.Printf("}\n")
+
+	return nil
+}
+
+func printNewInput(g *Generator, op SwaggerOperation) error {
+	g.Printf("func New%sInput(r *http.Request) (*%sInput, error) {\n",
+		capitalize(op.OperationID), capitalize(op.OperationID))
+
+	g.Printf("\tvar input %sInput\n\n", capitalize(op.OperationID))
+
+	for _, param := range op.Parameters {
+		// TODO: Handle non-string types. This probably means extracting the
+		// code that pulls the variable out
+
+		// TODO: Switch statement
+		if param.In == "query" {
+			g.Printf("\tinput.%s = r.URL.Query().Get(\"%s\")\n",
+				capitalize(param.Name), param.Name)
+		} else if param.In == "path" {
+			g.Printf("\tinput.%s = mux.Vars(r)[\"%s\"]\n",
+				capitalize(param.Name), param.Name)
+		} else if param.In == "header" {
+			g.Printf("\tinput.%s = r.Header.Get(\"%s\")\n",
+				capitalize(param.Name), param.Name)
+		} else if param.In == "body" {
+			// var postBody PostRequest
+			// if err := json.NewDecoder(r.Body).Decode(&postBody); err != nil {
+			// 	return nil, httpwrapper.HTTPErrorf(http.StatusBadRequest, err.Error())
+			//}
+			g.Printf("\tif err := json.NewDecoder(r.Body).Decode(&input.%s); err != nil{\n",
+				capitalize(param.Name))
+			g.Printf("\t\treturn nil, err\n") // TODO: This should probably return a 400 or something
+			g.Printf("\t}\n")
+		} else {
+			fmt.Errorf("Unsupported param type %s", param)
+		}
+	}
+	g.Printf("\n")
+
+	g.Printf("\treturn &input, nil\n")
+	g.Printf("}\n")
+
+	return nil
 }
 
 func buildOutputs(paths map[string]map[string]SwaggerOperation) error {
