@@ -25,8 +25,14 @@ func GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, r *http.Requ
 
 	resp, err := controller.GetBookByID(ctx, input)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		if respErr, ok := err.(GetBookByIDError); ok {
+			http.Error(w, respErr.Error(), respErr.GetBookByIDStatusCode())
+			return
+		} else {
+			// This is the default case
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	respBytes, err := json.Marshal(resp.GetBookByIDData())
@@ -34,6 +40,7 @@ func GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, r *http.Requ
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(respBytes)
 }
