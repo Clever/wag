@@ -12,11 +12,25 @@ produces:
 consumes:
   - application/json
 paths:
-  /books/{id}:
+  /books/{bookID}:
     get:
       # TODO: Support lists...
       operationId: getBookByID
       description: Returns a book
+      parameters:
+        - name: author
+          in: query
+          type: string
+        - name: bookID
+          in: path
+          type: string
+        - name: authorization
+          in: header
+          type: string
+        - name: testBook
+          in: body
+          schema:
+            $ref: "#/definitions/Book"
       responses:
         200:
           description: "Success"

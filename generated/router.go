@@ -12,7 +12,7 @@ import (
 type contextKey struct{}
 
 func withRoutes(r *mux.Router) *mux.Router {
-	r.Methods("get").Path("/books/{id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	r.Methods("get").Path("/books/{bookID}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := gContext.Get(r, contextKey{}).(context.Context)
 		GetBookByIDHandler(ctx, w, r)
 	})
