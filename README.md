@@ -36,14 +36,8 @@ Schema
   - parameters
   - tags
 $ref in multiple places
-All HTTP operations (this may already just work)
 Operation
   - tags
-Most Parameter Types
-  - Path
-  - Query
-  - Header
-  - Body
 Required Fields
 Response
   - Headers
@@ -52,7 +46,7 @@ Response
 All Mime Types
 Patterned Fields (these are vendor specific extensions anyway)
 Multi-File Swagger Definitions
-Everything in JSON-Schema
+Everything in JSON-Schema (getting a lot of this from the auto-generated go-swagger code)
 Schema
   - host
   - basePath
