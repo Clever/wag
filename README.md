@@ -3,7 +3,7 @@ Swagger test
 
 # Running
 ```
-go run main.go
+go run main.go genclients.go
 cp hardcoded/main.go generated/
 cp hardcoded/middleware.go generated/
 cd generated
