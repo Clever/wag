@@ -15,10 +15,13 @@ func GetBookByID(ctx context.Context, i *GetBookByIDInput) (GetBookByIDOutput, e
 	path := "http://localhost:8080" + "/books/{bookID}"
 	urlVals := url.Values{}
 	var body []byte
+
 	urlVals.Add("author", i.Author)
 	path = strings.Replace(path, "{bookID}", i.BookID, -1)
-	body, _ = json.Marshal(i.TestBook)
 	path = path + "?" + urlVals.Encode()
+
+	body, _ = json.Marshal(i.TestBook)
+
 	client := &http.Client{}
 	req, _ := http.NewRequest("get", path, bytes.NewBuffer(body))
 	req.Header.Set("authorization", i.Authorization)
@@ -26,6 +29,7 @@ func GetBookByID(ctx context.Context, i *GetBookByIDInput) (GetBookByIDOutput, e
 
 	switch resp.StatusCode {
 	case 200:
+		TODO: Actually read the body and set the data on the Output object correctly
 		return GetBookByID200Output{}, nil
 	case 404:
 		return nil, GetBookByID404Output{}
