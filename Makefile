@@ -9,7 +9,7 @@ test:
 	rm generated/controller.go || true
 	go run main.go genclients.go
 	cp hardcoded/* generated/
-	cd generated && go build main.go middleware.go router.go handlers.go contexts.go controller.go outputs.go
+	cd generated && go build main.go middleware.go router.go handlers.go contexts.go controller.go outputs.go client.go
 
 vendor: golang-godep-vendor-deps
 	$(call golang-godep-vendor,$(PKGS))
