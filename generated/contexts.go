@@ -9,22 +9,25 @@ import (
 )
 
 var _ = json.Marshal
+
 type GetBookByIDInput struct {
 	Author string
 	BookID string
 	Authorization string
 	TestBook models.Book
 }
+
 func NewGetBookByIDInput(r *http.Request) (*GetBookByIDInput, error) {
 	var input GetBookByIDInput
 
 	input.Author = r.URL.Query().Get("author")
 	input.BookID = mux.Vars(r)["bookID"]
 	input.Authorization = r.Header.Get("authorization")
-json.NewDecoder(r.Body).Decode(&input.TestBook)
+	json.NewDecoder(r.Body).Decode(&input.TestBook)
 
 	return &input, nil
 }
+
 func (i GetBookByIDInput) Validate() error{
 	if err := i.TestBook.Validate(nil); err != nil {
 		return err

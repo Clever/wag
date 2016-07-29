@@ -29,7 +29,7 @@ func GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	respBytes, err := json.Marshal(resp)
+	respBytes, err := json.Marshal(resp.GetBookByIDData())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

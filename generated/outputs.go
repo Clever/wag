@@ -4,17 +4,25 @@ package main
 
 type GetBookByIDOutput interface {
 	GetBookByIDStatus() int
+	// Data is the underlying model object. We know it is json serializable
+	GetBookByIDData() interface{}
 }
 
-type GetBookByIDDefaultOutput models.Error
-
-func (o GetBookByIDDefaultOutput) GetBookByIDStatus() int {
-	return 200
+type GetBookByID200Output struct {
+	Data models.Book
 }
 
-type GetBookByID200Output models.Book
+func (o GetBookByID200Output) GetBookByIDData() interface{} {
+	return o.Data
+}
 
 func (o GetBookByID200Output) GetBookByIDStatus() int {
-	return 200
+	return 0
+}
+
+type GetBookByIDDefaultOutput struct{}
+
+func (o GetBookByIDDefaultOutput) Error() string {
+	return "Status Code: " + "500"
 }
 
