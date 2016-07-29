@@ -207,6 +207,10 @@ func main() {
 		panic(err)
 	}
 
+	if err := generateClients(swagger); err != nil {
+		panic(err)
+	}
+
 }
 
 type Generator struct {
@@ -283,7 +287,6 @@ func buildContextsAndControllers(paths map[string]map[string]SwaggerOperation) e
 	//	return nil
 	//}
 
-	// This includes the interfaces...
 	var g Generator
 
 	g.Printf("package main\n\n")
