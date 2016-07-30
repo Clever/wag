@@ -20,8 +20,9 @@ func generateClients(s Swagger) error {
 	g.Printf("import \"strings\"\n")
 	g.Printf("import \"errors\"\n")
 	g.Printf("import \"golang.org/x/net/context\"\n")
-	g.Printf("import \"bytes\"\n\n")
-
+	g.Printf("import \"bytes\"\n")
+	g.Printf("import \"fmt\"\n")
+	g.Printf("import opentracing \"github.com/opentracing/opentracing-go\"\n\n")
 	// Whether we use these depends on the parameters, so we do this to prevent unused import
 	// error if we don't have the right params
 	g.Printf("var _ = json.Marshal\n")
@@ -69,6 +70,25 @@ func generateClients(s Swagger) error {
 					g.Printf("\treq.Header.Set(\"%s\", i.%s)\n", param.Name, capitalize(param.Name))
 				}
 			}
+
+			// Inject tracing headers
+			g.Printf(`
+	// Inject tracing headers
+	opName := "%s"
+	var sp opentracing.Span
+	// TODO: add tags relating to input data?
+	if parentSpan := opentracing.SpanFromContext(ctx); parentSpan != nil {
+		sp = opentracing.StartSpan(opName, opentracing.ChildOf(parentSpan.Context()))
+	} else {
+		sp = opentracing.StartSpan(opName)
+	}
+	if err := sp.Tracer().Inject(sp.Context(),
+		opentracing.HTTPHeaders,
+		opentracing.HTTPHeadersCarrier(req.Header)); err != nil {
+		return nil, fmt.Errorf("couldn't inject tracing headers (%%v)", err)
+	}
+
+`, capitalize(op.OperationID))
 
 			// TODO: Handle the error
 			g.Printf("\tresp, _ := client.Do(req)\n\n")
