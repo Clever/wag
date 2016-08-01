@@ -10,6 +10,8 @@ import "strings"
 import "golang.org/x/net/context"
 import "bytes"
 import "errors"
+import opentracing "github.com/opentracing/opentracing-go"
+import "github.com/Clever/inter-service-api-testing/codegen-poc/generated/models"
 
 var _ = json.Marshal
 var _ = strings.Replace
@@ -31,6 +33,7 @@ func (g GetBookByID404Output) Error() string {
 type GetBookByIDDefaultOutput struct{}
 
 type GetBookByID200Output struct {
+	Data models.Book
 }
 
 type GetBookByIDOutput interface {}
@@ -39,18 +42,42 @@ func GetBookByID(ctx context.Context, i *GetBookByIDInput) (GetBookByIDOutput, e
 	path := "http://localhost:8080" + "/books/{bookID}"
 	urlVals := url.Values{}
 	var body []byte
+
 	urlVals.Add("author", i.Author)
 	path = strings.Replace(path, "{bookID}", i.BookID, -1)
-	body, _ = json.Marshal(i.TestBook)
 	path = path + "?" + urlVals.Encode()
+
+	body, _ = json.Marshal(i.TestBook)
+
 	client := &http.Client{}
-	req, _ := http.NewRequest("get", path, bytes.NewBuffer(body))
+	req, _ := http.NewRequest("GET", path, bytes.NewBuffer(body))
 	req.Header.Set("authorization", i.Authorization)
+
+	// Inject tracing headers
+	opName := "GetBookByID"
+	var sp opentracing.Span
+	// TODO: add tags relating to input data?
+	if parentSpan := opentracing.SpanFromContext(ctx); parentSpan != nil {
+		sp = opentracing.StartSpan(opName, opentracing.ChildOf(parentSpan.Context()))
+	} else {
+		sp = opentracing.StartSpan(opName)
+	}
+	if err := sp.Tracer().Inject(sp.Context(),
+		opentracing.HTTPHeaders,
+		opentracing.HTTPHeadersCarrier(req.Header)); err != nil {
+		return nil, fmt.Errorf("couldn't inject tracing headers (%v)", err)
+	}
+
 	resp, _ := client.Do(req)
 
 	switch resp.StatusCode {
 	case 200:
-		return GetBookByID200Output{}, nil
+
+		var output GetBookByID200Output
+		if err := json.NewDecoder(resp.Body).Decode(&output.Data); err != nil {
+			return nil, err
+		}
+		return output, nil
 	case 404:
 		return nil, GetBookByID404Output{}
 	default:
@@ -61,7 +88,7 @@ func GetBookByID(ctx context.Context, i *GetBookByIDInput) (GetBookByIDOutput, e
 
 func main() {
 
-        output, err := GetBookByID(nil, &GetBookByIDInput{Author: "Kyle", BookID: "1234"})
+        output, err := GetBookByID(context.Background(), &GetBookByIDInput{Author: "Kyle", BookID: "1234"})
         fmt.Printf("Output: %+v\n", output)
         fmt.Printf("Error: %+v\n", err)
 }

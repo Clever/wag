@@ -25,7 +25,7 @@ func GetBookByID(ctx context.Context, i *GetBookByIDInput) (GetBookByIDOutput, e
 	body, _ = json.Marshal(i.TestBook)
 
 	client := &http.Client{}
-	req, _ := http.NewRequest("get", path, bytes.NewBuffer(body))
+	req, _ := http.NewRequest("GET", path, bytes.NewBuffer(body))
 	req.Header.Set("authorization", i.Authorization)
 
 	// Inject tracing headers
@@ -47,8 +47,12 @@ func GetBookByID(ctx context.Context, i *GetBookByIDInput) (GetBookByIDOutput, e
 
 	switch resp.StatusCode {
 	case 200:
-		// TODO: Actually read the body and set the data on the Output object correctly
-		return GetBookByID200Output{}, nil
+
+		var output GetBookByID200Output
+		if err := json.NewDecoder(resp.Body).Decode(&output.Data); err != nil {
+			return nil, err
+		}
+		return output, nil
 	case 404:
 		return nil, GetBookByID404Output{}
 	default:

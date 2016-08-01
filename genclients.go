@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strconv"
+	"strings"
 )
 
 // This is extremely rough code for generating clients...
@@ -63,7 +64,7 @@ func generateClients(s Swagger) error {
 
 			g.Printf("\tclient := &http.Client{}\n")
 			// TODO: Handle the error
-			g.Printf("\treq, _ := http.NewRequest(\"%s\", path, bytes.NewBuffer(body))\n", method)
+			g.Printf("\treq, _ := http.NewRequest(\"%s\", path, bytes.NewBuffer(body))\n", strings.ToUpper(method))
 
 			for _, param := range op.Parameters {
 				if param.In == "header" {
@@ -108,11 +109,18 @@ func generateClients(s Swagger) error {
 					fmt.Errorf("Response key not valid %s", key)
 				}
 
-				// Maybe that should just be the default of the case statement??? A general purpose error?
 				g.Printf("\tcase %s:\n", key)
 				if code < 400 {
-					g.Printf("\t\t// TODO: Actually read the body and set the data on the Output object correctly\n")
-					g.Printf("\t\treturn %s%sOutput{}, nil\n", capitalize(op.OperationID), key)
+					// TODO: Factor out this common code...
+					outputName := fmt.Sprintf("%s%sOutput", capitalize(op.OperationID), capitalize(key))
+					g.Printf(`
+		var output %s
+		if err := json.NewDecoder(resp.Body).Decode(&output.Data); err != nil {
+			return nil, err
+		}
+		return output, nil
+`, outputName)
+
 				} else {
 					g.Printf("\t\treturn nil, %s%sOutput{}\n", capitalize(op.OperationID), key)
 				}
