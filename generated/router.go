@@ -1,4 +1,4 @@
-package main
+package generated
 
 import (
 	"net/http"
@@ -11,7 +11,8 @@ import (
 
 type contextKey struct{}
 
-func withRoutes(r *mux.Router) *mux.Router {
+func SetupServer(r *mux.Router, c Controller) http.Handler {
+	controller = c // TODO: get rid of global variable?
 	r.Methods("get").Path("/books/{bookID}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := gContext.Get(r, contextKey{}).(context.Context)
 		GetBookByIDHandler(ctx, w, r)
@@ -26,5 +27,5 @@ func withRoutes(r *mux.Router) *mux.Router {
 		ctx := gContext.Get(r, contextKey{}).(context.Context)
 		GetBooksHandler(ctx, w, r)
 	})
-	return r
+	return withMiddleware(r)
 }

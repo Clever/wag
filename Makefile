@@ -9,7 +9,7 @@ test:
 	rm generated/controller.go || true
 	go run main.go genclients.go -file swagger.yml -package $(PKG)/generated
 	cp hardcoded/* generated/
-	cd generated && go build main.go middleware.go router.go handlers.go contexts.go controller.go outputs.go client.go
+	cd impl && go build
 
 vendor: golang-godep-vendor-deps
 	$(call golang-godep-vendor,$(PKGS))

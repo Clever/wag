@@ -1,4 +1,4 @@
-package main
+package generated
 
 import (
 	"net/http"
@@ -8,6 +8,42 @@ import (
 
 var controller Controller
 
+func GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	input, err := NewGetBooksInput(r)
+	if err != nil {
+		// TODO: Think about this whether this is usually an internal error or it could
+		// be from a bad request format...
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = input.Validate()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	resp, err := controller.GetBooks(ctx, input)
+	if err != nil {
+		if respErr, ok := err.(GetBooksError); ok {
+			http.Error(w, respErr.Error(), respErr.GetBooksStatusCode())
+			return
+		} else {
+			// This is the default case
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	respBytes, err := json.Marshal(resp.GetBooksData())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(respBytes)
+}
 func GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	input, err := NewGetBookByIDInput(r)
 	if err != nil {
@@ -72,42 +108,6 @@ func CreateBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Reque
 	}
 
 	respBytes, err := json.Marshal(resp.CreateBookData())
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(respBytes)
-}
-func GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	input, err := NewGetBooksInput(r)
-	if err != nil {
-		// TODO: Think about this whether this is usually an internal error or it could
-		// be from a bad request format...
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	err = input.Validate()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	resp, err := controller.GetBooks(ctx, input)
-	if err != nil {
-		if respErr, ok := err.(GetBooksError); ok {
-			http.Error(w, respErr.Error(), respErr.GetBooksStatusCode())
-			return
-		} else {
-			// This is the default case
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
-
-	respBytes, err := json.Marshal(resp.GetBooksData())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
