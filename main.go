@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -167,10 +168,13 @@ func capitalize(input string) string {
 
 func main() {
 
+	swaggerFile := flag.String("file", "swagger.yml", "the spec file to use")
+	flag.Parse()
+
 	// generate models with go-swagger
 	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
 	if err := generator.GenerateServer("", []string{}, []string{}, generator.GenOpts{
-		Spec:           "test.yml",
+		Spec:           *swaggerFile,
 		ModelPackage:   "models",
 		Target:         "./generated/",
 		IncludeModel:   true,
@@ -181,7 +185,7 @@ func main() {
 	}
 
 	// TODO: Make this configurable
-	bytes, err := ioutil.ReadFile("test.yml")
+	bytes, err := ioutil.ReadFile(*swaggerFile)
 	if err != nil {
 		panic(err)
 	}
