@@ -60,14 +60,14 @@ type SwaggerParameter struct {
 	Type string `yaml:"type"`
 	// The schema here has to be {$ref: "..."}. We don't support defining your own
 	// schema here.
-	Schema map[string]string `yaml:"schema"`
+	Schema map[string]interface{} `yaml:"schema"`
 }
 
 type SwaggerResponse struct {
 	Description string `yaml:"description"`
 	// Schema only supports schemas of the form {$ref: "..."}
 	// TODO: Support {type: 'array', items: {$ref: "..."}}
-	Schema map[string]string `yaml:"schema"`
+	Schema map[string]interface{} `yaml:"schema"`
 
 	// TODO: Implement at least some part of the Header Object spec
 	Header map[string]interface{} `yaml:"headers"`
@@ -536,22 +536,44 @@ func buildOutputs(paths map[string]map[string]SwaggerOperation) error {
 	return ioutil.WriteFile("generated/outputs.go", g.buf.Bytes(), 0644)
 }
 
-func typeFromSchema(schema map[string]string) (string, error) {
-	if _, ok := schema["$ref"]; ok && len(schema) == 1 {
-		ref, _ := schema["$ref"]
-
-		// TODO: Handle references outside of '#/definitions'
+func typeFromSchema(schema map[string]interface{}) (string, error) {
+	// We support three types of schemas
+	// 1. An empty schema
+	// 2. A schema with one element, the $ref key
+	// 3. A schema with two elements. One a type with value 'array' and another items field
+	// referencing the $ref
+	// TODO: The error messages here aren't great...
+	if len(schema) == 0 {
+		// represent this as a string, which is empty by default
+		return "string", nil
+	} else if len(schema) == 1 {
+		ref, ok := schema["$ref"].(string)
+		if !ok {
+			return "", fmt.Errorf("Single element schema must have '$ref' string field")
+		}
 		if !strings.HasPrefix(ref, "#/definitions/") {
 			return "", fmt.Errorf("schema.$ref has undefined reference type. Must be #/definitions")
 		}
 		return "models." + ref[len("#/definitions/"):], nil
-	} else if len(schema) == 0 {
-		// this indicates an empty response body
-		// represent this as a string, which is empty by default
-		return "string", nil
+	} else if len(schema) == 2 {
+		schemaType, ok := schema["type"].(string)
+		if !ok || schemaType != "array" {
+			return "", fmt.Errorf("Two element schemas must have a 'type' field with the value 'array'")
+		}
+		items, ok := schema["items"].(map[interface{}]interface{})
+		if !ok {
+			return "", fmt.Errorf("Two element schemas must have an 'items' field that's a string map")
+		}
+		ref, ok := items["$ref"].(string)
+		if !ok {
+			return "", fmt.Errorf("Two element schemas must have an '$ref' field in the 'items' descriptions")
+		}
+		if !strings.HasPrefix(ref, "#/definitions/") {
+			return "", fmt.Errorf("schema.$ref has undefined reference type. Must be #/definitions")
+		}
+		return "[]models." + ref[len("#/definitions/"):], nil
 	} else {
-		// TODO: Support more?
-		return "", fmt.Errorf("Other ref types not supported")
+		return "", fmt.Errorf("Parameter schemas can have at most three elements")
 	}
 }
 

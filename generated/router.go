@@ -16,5 +16,15 @@ func withRoutes(r *mux.Router) *mux.Router {
 		ctx := gContext.Get(r, contextKey{}).(context.Context)
 		GetBookByIDHandler(ctx, w, r)
 	})
+
+	r.Methods("post").Path("/books/{bookID}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := gContext.Get(r, contextKey{}).(context.Context)
+		CreateBookHandler(ctx, w, r)
+	})
+
+	r.Methods("get").Path("/books").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := gContext.Get(r, contextKey{}).(context.Context)
+		GetBooksHandler(ctx, w, r)
+	})
 	return r
 }
