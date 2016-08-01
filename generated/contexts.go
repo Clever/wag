@@ -1,4 +1,4 @@
-package main
+package generated
 
 import (
 	"net/http"
@@ -9,22 +9,6 @@ import (
 )
 
 var _ = json.Marshal
-
-type GetBooksInput struct {
-	Author string
-}
-
-func NewGetBooksInput(r *http.Request) (*GetBooksInput, error) {
-	var input GetBooksInput
-
-	input.Author = r.URL.Query().Get("author")
-
-	return &input, nil
-}
-
-func (i GetBooksInput) Validate() error{
-	return nil
-}
 
 type GetBookByIDInput struct {
 	BookID string
@@ -64,8 +48,24 @@ func (i CreateBookInput) Validate() error{
 	return nil
 }
 
+type GetBooksInput struct {
+	Author string
+}
+
+func NewGetBooksInput(r *http.Request) (*GetBooksInput, error) {
+	var input GetBooksInput
+
+	input.Author = r.URL.Query().Get("author")
+
+	return &input, nil
+}
+
+func (i GetBooksInput) Validate() error{
+	return nil
+}
+
 type Controller interface {
-	GetBooks(ctx context.Context, input *GetBooksInput) (GetBooksOutput, error)
 	GetBookByID(ctx context.Context, input *GetBookByIDInput) (GetBookByIDOutput, error)
 	CreateBook(ctx context.Context, input *CreateBookInput) (CreateBookOutput, error)
+	GetBooks(ctx context.Context, input *GetBooksInput) (GetBooksOutput, error)
 }

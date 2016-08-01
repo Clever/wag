@@ -1,4 +1,4 @@
-package main
+package generated
 
 import "github.com/Clever/inter-service-api-testing/codegen-poc/generated/models"
 
@@ -12,6 +12,15 @@ type GetBookByIDError interface {
 	error // Extend the error interface
 	GetBookByIDStatusCode() int
 }
+
+type GetBookByIDDefaultOutput struct{}
+
+func (o GetBookByIDDefaultOutput) Error() string {
+	return "Status Code: " + "500"
+}
+
+func (o GetBookByIDDefaultOutput) GetBookByIDStatusCode() int {
+	return 500}
 
 type GetBookByID200Output struct {
 	Data models.Book
@@ -33,15 +42,6 @@ func (o GetBookByID404Output) Error() string {
 
 func (o GetBookByID404Output) GetBookByIDStatusCode() int {
 	return 404}
-
-type GetBookByIDDefaultOutput struct{}
-
-func (o GetBookByIDDefaultOutput) Error() string {
-	return "Status Code: " + "500"
-}
-
-func (o GetBookByIDDefaultOutput) GetBookByIDStatusCode() int {
-	return 500}
 
 type CreateBookOutput interface {
 	CreateBookStatus() int
@@ -86,15 +86,6 @@ type GetBooksError interface {
 	GetBooksStatusCode() int
 }
 
-type GetBooksDefaultOutput struct{}
-
-func (o GetBooksDefaultOutput) Error() string {
-	return "Status Code: " + "500"
-}
-
-func (o GetBooksDefaultOutput) GetBooksStatusCode() int {
-	return 500}
-
 type GetBooks200Output struct {
 	Data []models.Book
 }
@@ -106,4 +97,13 @@ func (o GetBooks200Output) GetBooksData() interface{} {
 func (o GetBooks200Output) GetBooksStatus() int {
 	return 200
 }
+
+type GetBooksDefaultOutput struct{}
+
+func (o GetBooksDefaultOutput) Error() string {
+	return "Status Code: " + "500"
+}
+
+func (o GetBooksDefaultOutput) GetBooksStatusCode() int {
+	return 500}
 

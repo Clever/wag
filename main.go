@@ -235,7 +235,7 @@ func buildRouter(paths map[string]map[string]SwaggerOperation) error {
 	// TODO: Add something to all these about being auto-generated
 
 	g.Printf(
-		`package main
+		`package generated
 
 import (
 	"net/http"
@@ -248,7 +248,8 @@ import (
 
 type contextKey struct{}
 
-func withRoutes(r *mux.Router) *mux.Router {`)
+func SetupServer(r *mux.Router, c Controller) http.Handler {
+	controller = c // TODO: get rid of global variable?`)
 
 	for path, pathObj := range paths {
 		for method, op := range pathObj {
@@ -268,7 +269,7 @@ func withRoutes(r *mux.Router) *mux.Router {`)
 		}
 	}
 	// TODO: It's a bit weird that this returns a pointer that it modifies...
-	g.Printf("\treturn r\n")
+	g.Printf("\treturn withMiddleware(r)\n")
 	g.Printf("}\n")
 
 	return ioutil.WriteFile("generated/router.go", g.buf.Bytes(), 0644)
@@ -297,7 +298,7 @@ func buildContextsAndControllers(packageName string, paths map[string]map[string
 
 	var g Generator
 
-	g.Printf("package main\n\n")
+	g.Printf("package generated\n\n")
 
 	g.Printf("import (\n")
 	g.Printf("\t\"net/http\"\n")
@@ -334,7 +335,7 @@ func buildContextsAndControllers(packageName string, paths map[string]map[string
 	g.Printf("type Controller interface {\n")
 
 	var controllerGenerator Generator
-	controllerGenerator.Printf("package main\n\n")
+	controllerGenerator.Printf("package generated\n\n")
 	controllerGenerator.Printf("import \"golang.org/x/net/context\"\n")
 	controllerGenerator.Printf("import \"errors\"\n\n")
 	// TODO: Better name for this... very java-y. Also shouldn't necessarily be controller
@@ -455,7 +456,7 @@ func printNewInput(g *Generator, op SwaggerOperation) error {
 func buildOutputs(paths map[string]map[string]SwaggerOperation) error {
 	var g Generator
 
-	g.Printf("package main\n\n")
+	g.Printf("package generated\n\n")
 	// TODO: We're going to have to be smarter about these imports
 	g.Printf("import \"github.com/Clever/inter-service-api-testing/codegen-poc/generated/models\"\n\n")
 
@@ -584,7 +585,7 @@ func typeFromSchema(schema map[string]interface{}) (string, error) {
 func buildHandlers(paths map[string]map[string]SwaggerOperation) error {
 	var g Generator
 
-	g.Printf("package main\n\n")
+	g.Printf("package generated\n\n")
 	g.Printf("import (\n")
 	g.Printf("\t\"net/http\"\n")
 	g.Printf("\t\"golang.org/x/net/context\"\n")

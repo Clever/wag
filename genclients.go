@@ -14,7 +14,7 @@ func generateClients(s Swagger) error {
 
 	// TODO: Add a general client type... something like type %sClient struct { basePath string }
 
-	g.Printf("package main\n\n")
+	g.Printf("package generated\n\n")
 	g.Printf("import \"net/http\"\n")
 	g.Printf("import \"net/url\"\n")
 	g.Printf("import \"encoding/json\"\n")
