@@ -19,7 +19,7 @@ paths:
         # Required parameter...
         - name: bookID
           in: path
-          type: string
+          type: integer
         - name: authorization
           in: header
           type: string
@@ -61,6 +61,14 @@ paths:
         - name: author
           in: query
           type: string
+        - name: available
+          in: query
+          type: boolean
+        - name: maxPages
+          in: query
+          # Probably makes more sense for this to be an integer, but I couldn't figure out
+          # a good example for books that really would need a float
+          type: number
       responses:
         200:
           description: "Success"

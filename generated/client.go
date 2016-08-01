@@ -105,6 +105,8 @@ func GetBooks(ctx context.Context, i *GetBooksInput) (GetBooksOutput, error) {
 	var body []byte
 
 	urlVals.Add("author", i.Author)
+	urlVals.Add("available", i.Available)
+	urlVals.Add("maxPages", i.MaxPages)
 	path = path + "?" + urlVals.Encode()
 
 	client := &http.Client{}

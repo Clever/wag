@@ -377,16 +377,27 @@ func printInputStruct(g *Generator, op SwaggerOperation) error {
 		}
 
 		var typeName string
-		if param.Type == "string" && param.In != "body" {
-			typeName = "string"
-		} else if param.In == "body" {
+		if param.In != "body" {
+			switch param.Type {
+			case "string":
+				typeName = "string"
+			case "integer":
+				typeName = "int64"
+			case "boolean":
+				typeName = "bool"
+			case "number":
+				typeName = "float64"
+			default:
+				// Note. We don't support 'array' or 'file' types even though they're in the
+				// Swagger spec.
+				return fmt.Errorf("Unsupported param type")
+			}
+		} else {
 			var err error
 			typeName, err = typeFromSchema(param.Schema)
 			if err != nil {
 				return err
 			}
-		} else {
-			return fmt.Errorf("Unsupported param types, at least not yet")
 		}
 		g.Printf("\t%s %s\n", capitalize(param.Name), typeName)
 	}

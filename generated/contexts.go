@@ -10,24 +10,6 @@ import (
 
 var _ = json.Marshal
 
-type GetBookByIDInput struct {
-	BookID string
-	Authorization string
-}
-
-func NewGetBookByIDInput(r *http.Request) (*GetBookByIDInput, error) {
-	var input GetBookByIDInput
-
-	input.BookID = mux.Vars(r)["bookID"]
-	input.Authorization = r.Header.Get("authorization")
-
-	return &input, nil
-}
-
-func (i GetBookByIDInput) Validate() error{
-	return nil
-}
-
 type CreateBookInput struct {
 	NewBook models.Book
 }
@@ -48,14 +30,36 @@ func (i CreateBookInput) Validate() error{
 	return nil
 }
 
+type GetBookByIDInput struct {
+	BookID int64
+	Authorization string
+}
+
+func NewGetBookByIDInput(r *http.Request) (*GetBookByIDInput, error) {
+	var input GetBookByIDInput
+
+	input.BookID = mux.Vars(r)["bookID"]
+	input.Authorization = r.Header.Get("authorization")
+
+	return &input, nil
+}
+
+func (i GetBookByIDInput) Validate() error{
+	return nil
+}
+
 type GetBooksInput struct {
 	Author string
+	Available bool
+	MaxPages float64
 }
 
 func NewGetBooksInput(r *http.Request) (*GetBooksInput, error) {
 	var input GetBooksInput
 
 	input.Author = r.URL.Query().Get("author")
+	input.Available = r.URL.Query().Get("available")
+	input.MaxPages = r.URL.Query().Get("maxPages")
 
 	return &input, nil
 }
