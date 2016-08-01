@@ -169,7 +169,11 @@ func capitalize(input string) string {
 func main() {
 
 	swaggerFile := flag.String("file", "swagger.yml", "the spec file to use")
+	packageName := flag.String("package", "", "package of the generated code")
 	flag.Parse()
+	if *packageName == "" {
+		log.Fatal("package is required")
+	}
 
 	// generate models with go-swagger
 	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
@@ -201,7 +205,7 @@ func main() {
 		panic(err)
 	}
 	// TODO: Is this really the way I want to do this???
-	if err := buildContextsAndControllers(swagger.Paths); err != nil {
+	if err := buildContextsAndControllers(*packageName, swagger.Paths); err != nil {
 		panic(err)
 	}
 	if err := buildHandlers(swagger.Paths); err != nil {
@@ -282,7 +286,7 @@ var routerFunctionTemplate = `	r.Methods("{{.Method}}").Path("{{.Path}}").Handle
 	})
 `
 
-func buildContextsAndControllers(paths map[string]map[string]SwaggerOperation) error {
+func buildContextsAndControllers(packageName string, paths map[string]map[string]SwaggerOperation) error {
 
 	// Only create the controller the first time. After that leave it as is
 	// TODO: This isn't convenient when developing, so maybe have a flag...?
@@ -301,7 +305,7 @@ func buildContextsAndControllers(paths map[string]map[string]SwaggerOperation) e
 	g.Printf("\t\"github.com/gorilla/mux\"\n")
 
 	g.Printf("\t\"encoding/json\"\n")
-	g.Printf("\t\"github.com/Clever/inter-service-api-testing/codegen-poc/generated/models\"\n")
+	g.Printf("\t\"%s/models\"\n", packageName)
 	g.Printf(")\n\n")
 
 	// These two imports are only used if we have body parameters, so if we don't have these the

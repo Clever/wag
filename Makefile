@@ -1,13 +1,13 @@
 include golang.mk
 .DEFAULT_GOAL := test # override default goal set in library makefile
 .PHONY: test
-PKG := github.com/Clever/inter-service-api-testing/codgen-poc
+PKG := github.com/Clever/inter-service-api-testing/codegen-poc
 PKGS := $(shell go list ./... | grep -v /vendor | grep -v /generated)
 $(eval $(call golang-version-check,1.6))
 
 test:
 	rm generated/controller.go || true
-	go run main.go genclients.go
+	go run main.go genclients.go -file swagger.yml -package $(PKG)/generated
 	cp hardcoded/* generated/
 	cd generated && go build main.go middleware.go router.go handlers.go contexts.go controller.go outputs.go client.go
 
