@@ -43,3 +43,67 @@ func (o GetBookByIDDefaultOutput) Error() string {
 func (o GetBookByIDDefaultOutput) GetBookByIDStatusCode() int {
 	return 500}
 
+type CreateBookOutput interface {
+	CreateBookStatus() int
+	// Data is the underlying model object. We know it is json serializable
+	CreateBookData() interface{}
+}
+
+type CreateBookError interface {
+	error // Extend the error interface
+	CreateBookStatusCode() int
+}
+
+type CreateBook200Output struct {
+	Data models.Book
+}
+
+func (o CreateBook200Output) CreateBookData() interface{} {
+	return o.Data
+}
+
+func (o CreateBook200Output) CreateBookStatus() int {
+	return 200
+}
+
+type CreateBookDefaultOutput struct{}
+
+func (o CreateBookDefaultOutput) Error() string {
+	return "Status Code: " + "500"
+}
+
+func (o CreateBookDefaultOutput) CreateBookStatusCode() int {
+	return 500}
+
+type GetBooksOutput interface {
+	GetBooksStatus() int
+	// Data is the underlying model object. We know it is json serializable
+	GetBooksData() interface{}
+}
+
+type GetBooksError interface {
+	error // Extend the error interface
+	GetBooksStatusCode() int
+}
+
+type GetBooks200Output struct {
+	Data []models.Book
+}
+
+func (o GetBooks200Output) GetBooksData() interface{} {
+	return o.Data
+}
+
+func (o GetBooks200Output) GetBooksStatus() int {
+	return 200
+}
+
+type GetBooksDefaultOutput struct{}
+
+func (o GetBooksDefaultOutput) Error() string {
+	return "Status Code: " + "500"
+}
+
+func (o GetBooksDefaultOutput) GetBooksStatusCode() int {
+	return 500}
+

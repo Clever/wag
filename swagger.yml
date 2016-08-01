@@ -13,23 +13,16 @@ consumes:
 paths:
   /books/{bookID}:
     get:
-      # TODO: Support lists...
       operationId: getBookByID
       description: Returns a book
       parameters:
-        - name: author
-          in: query
-          type: string
+        # Required parameter...
         - name: bookID
           in: path
           type: string
         - name: authorization
           in: header
           type: string
-        - name: testBook
-          in: body
-          schema:
-            $ref: "#/definitions/Book"
       responses:
         200:
           description: "Success"
@@ -43,11 +36,45 @@ paths:
           description: "Error"
           schema:
             $ref: "#/definitions/Error"
+    post:
+      operationId: createBook
+      description: Creates a book
+      parameters:
+        - name: newBook
+          in: body
+          schema:
+            $ref: "#/definitions/Book"
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/Book"
+        default:
+          description: "Error"
+          schema:
+            $ref: "#/definitions/Error"
+  /books:
+    get:
+      operationId: getBooks
+      description: Returns a list of books
+      parameters:
+        - name: author
+          in: query
+          type: string
+      responses:
+        200:
+          description: "Success"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Book"
+        default:
+          description: "Error"
+          schema:
+            $ref: "#/definitions/Error"
 definitions:
-  # TODO: Nested types...
   Book:
     type: object
-    # TODO: Add required
     properties:
       id:
         type: string
