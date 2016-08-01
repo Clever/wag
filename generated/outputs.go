@@ -86,6 +86,15 @@ type GetBooksError interface {
 	GetBooksStatusCode() int
 }
 
+type GetBooksDefaultOutput struct{}
+
+func (o GetBooksDefaultOutput) Error() string {
+	return "Status Code: " + "500"
+}
+
+func (o GetBooksDefaultOutput) GetBooksStatusCode() int {
+	return 500}
+
 type GetBooks200Output struct {
 	Data []models.Book
 }
@@ -97,13 +106,4 @@ func (o GetBooks200Output) GetBooksData() interface{} {
 func (o GetBooks200Output) GetBooksStatus() int {
 	return 200
 }
-
-type GetBooksDefaultOutput struct{}
-
-func (o GetBooksDefaultOutput) Error() string {
-	return "Status Code: " + "500"
-}
-
-func (o GetBooksDefaultOutput) GetBooksStatusCode() int {
-	return 500}
 
