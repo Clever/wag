@@ -545,6 +545,10 @@ func typeFromSchema(schema map[string]string) (string, error) {
 			return "", fmt.Errorf("schema.$ref has undefined reference type. Must be #/definitions")
 		}
 		return "models." + ref[len("#/definitions/"):], nil
+	} else if len(schema) == 0 {
+		// this indicates an empty response body
+		// represent this as a string, which is empty by default
+		return "string", nil
 	} else {
 		// TODO: Support more?
 		return "", fmt.Errorf("Other ref types not supported")
