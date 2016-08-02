@@ -41,6 +41,30 @@ func (o GetBookByID200Output) GetBookByIDStatus() int {
 	return 200
 }
 
+type GetBookByID204Output string
+
+func (o GetBookByID204Output) GetBookByIDData() interface{} {
+	return o
+}
+
+func (o GetBookByID204Output) GetBookByIDStatus() int {
+	return 204
+}
+
+type GetBookByID401Output string
+
+func (o GetBookByID401Output) GetBookByIDData() interface{} {
+	return o
+}
+
+func (o GetBookByID401Output) Error() string {
+	return "Status Code: " + "401"
+}
+
+func (o GetBookByID401Output) GetBookByIDStatusCode() int {
+	return 401
+}
+
 type GetBookByID404Output models.Error
 
 func (o GetBookByID404Output) GetBookByIDData() interface{} {

@@ -13,6 +13,8 @@ import opentracing "github.com/opentracing/opentracing-go"
 var _ = json.Marshal
 var _ = strings.Replace
 
+var _ = strconv.FormatInt
+
 func GetBookByID(ctx context.Context, i *GetBookByIDInput) (GetBookByIDOutput, error) {
 	path := "http://localhost:8080" + "/v1/books/{bookID}"
 	urlVals := url.Values{}
@@ -50,6 +52,12 @@ func GetBookByID(ctx context.Context, i *GetBookByIDInput) (GetBookByIDOutput, e
 			return nil, DefaultInternalError{Msg: err.Error()}
 		}
 		return output, nil
+	case 204:
+		var output GetBookByID204Output
+		return output, nil
+	case 401:
+		var output GetBookByID401Output
+		return nil, output
 	case 404:
 		return nil, GetBookByID404Output{}
 	case 400:
