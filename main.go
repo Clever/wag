@@ -228,14 +228,14 @@ func main() {
 	if err := buildContextsAndControllers(*packageName, swagger.Paths); err != nil {
 		panic(err)
 	}
-	if err := buildHandlers(swagger.Paths); err != nil {
+	if err := buildHandlers(*packageName, swagger.Paths); err != nil {
 		panic(err)
 	}
 	if err := buildOutputs(*packageName, swagger.Paths); err != nil {
 		panic(err)
 	}
 
-	if err := generateClients(swagger); err != nil {
+	if err := generateClients(*packageName, swagger); err != nil {
 		panic(err)
 	}
 
@@ -318,15 +318,14 @@ func buildContextsAndControllers(packageName string, paths map[string]map[string
 
 	var g Generator
 
-	g.Printf("package generated\n\n")
+	g.Printf("package models\n\n")
 
 	g.Printf("import (\n")
 	g.Printf("\t\"net/http\"\n")
-	g.Printf("\t\"golang.org/x/net/context\"\n")
+
 	g.Printf("\t\"github.com/gorilla/mux\"\n")
 
 	g.Printf("\t\"encoding/json\"\n")
-	g.Printf("\t\"%s/models\"\n", packageName)
 	g.Printf("\t\"strconv\"\n")
 	g.Printf(")\n\n")
 
@@ -353,13 +352,18 @@ func buildContextsAndControllers(packageName string, paths map[string]map[string
 		}
 	}
 
-	// TODO: How should I name these things??? Should they be on a per-tag basis???
-	g.Printf("type Controller interface {\n")
+	var interfaceGenerator Generator
+	interfaceGenerator.Printf("package generated\n\n")
+	interfaceGenerator.Printf("import \"golang.org/x/net/context\"\n")
+	interfaceGenerator.Printf("import \"%s/models\"\n\n", packageName)
+
+	interfaceGenerator.Printf("type Controller interface {\n")
 
 	var controllerGenerator Generator
 	controllerGenerator.Printf("package generated\n\n")
 	controllerGenerator.Printf("import \"golang.org/x/net/context\"\n")
 	controllerGenerator.Printf("import \"errors\"\n\n")
+	controllerGenerator.Printf("import \"%s/models\"\n\n", packageName)
 	// TODO: Better name for this... very java-y. Also shouldn't necessarily be controller
 	// TODO: Should we plug this in more nicely??
 	controllerGenerator.Printf("type ControllerImpl struct{\n")
@@ -367,20 +371,22 @@ func buildContextsAndControllers(packageName string, paths map[string]map[string
 
 	for _, path := range paths {
 		for _, op := range path {
-			definition := fmt.Sprintf("%s(ctx context.Context, input *%sInput) (%sOutput, error)",
+			definition := fmt.Sprintf("%s(ctx context.Context, input *models.%sInput) (models.%sOutput, error)",
 				capitalize(op.OperationID), capitalize(op.OperationID), capitalize(op.OperationID))
-			g.Printf("\t%s\n", definition)
+			interfaceGenerator.Printf("\t%s\n", definition)
 
-			// TODO: We could add a nice comment here...
 			controllerGenerator.Printf("func (c ControllerImpl) %s {\n", definition)
 			controllerGenerator.Printf("\t// TODO: Implement me!\n")
 			controllerGenerator.Printf("\treturn nil, errors.New(\"Not implemented\")\n")
 			controllerGenerator.Printf("}\n")
 		}
 	}
-	g.Printf("}\n")
+	interfaceGenerator.Printf("}\n")
 
-	if err := ioutil.WriteFile("generated/contexts.go", g.buf.Bytes(), 0644); err != nil {
+	if err := ioutil.WriteFile("generated/models/inputs.go", g.buf.Bytes(), 0644); err != nil {
+		return err
+	}
+	if err := ioutil.WriteFile("generated/interface.go", interfaceGenerator.buf.Bytes(), 0644); err != nil {
 		return err
 	}
 	return ioutil.WriteFile("generated/controller.go", controllerGenerator.buf.Bytes(), 0644)
@@ -530,9 +536,7 @@ func (d DefaultBadRequest) Error() string {
 func buildOutputs(packageName string, paths map[string]map[string]SwaggerOperation) error {
 	var g Generator
 
-	g.Printf("package generated\n\n")
-	// TODO: We're going to have to be smarter about these imports
-	g.Printf("import \"%s/models\"\n\n", packageName)
+	g.Printf("package models\n\n")
 
 	g.Printf(defaultOutputTypes())
 
@@ -614,7 +618,7 @@ func buildOutputs(packageName string, paths map[string]map[string]SwaggerOperati
 			}
 		}
 	}
-	return ioutil.WriteFile("generated/outputs.go", g.buf.Bytes(), 0644)
+	return ioutil.WriteFile("generated/models/outputs.go", g.buf.Bytes(), 0644)
 }
 
 func typeFromSchema(schema map[string]interface{}) (string, error) {
@@ -635,7 +639,7 @@ func typeFromSchema(schema map[string]interface{}) (string, error) {
 		if !strings.HasPrefix(ref, "#/definitions/") {
 			return "", fmt.Errorf("schema.$ref has undefined reference type. Must be #/definitions")
 		}
-		return "models." + ref[len("#/definitions/"):], nil
+		return ref[len("#/definitions/"):], nil
 	} else if len(schema) == 2 {
 		schemaType, ok := schema["type"].(string)
 		if !ok || schemaType != "array" {
@@ -652,18 +656,19 @@ func typeFromSchema(schema map[string]interface{}) (string, error) {
 		if !strings.HasPrefix(ref, "#/definitions/") {
 			return "", fmt.Errorf("schema.$ref has undefined reference type. Must be #/definitions")
 		}
-		return "[]models." + ref[len("#/definitions/"):], nil
+		return "[]" + ref[len("#/definitions/"):], nil
 	} else {
 		return "", fmt.Errorf("Parameter schemas can have at most three elements")
 	}
 }
 
-func buildHandlers(paths map[string]map[string]SwaggerOperation) error {
+func buildHandlers(packageName string, paths map[string]map[string]SwaggerOperation) error {
 	var g Generator
 
 	g.Printf("package generated\n\n")
 	g.Printf("import (\n")
 	g.Printf("\t\"net/http\"\n")
+	g.Printf("\t\"%s/models\"\n", packageName)
 	g.Printf("\t\"golang.org/x/net/context\"\n")
 	g.Printf("\t\"encoding/json\"\n")
 	g.Printf(")\n\n")
@@ -706,33 +711,32 @@ func jsonMarshalNoError(i interface{}) string {
 `
 
 var handlerTemplate = `func {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	input, err := New{{.Op}}Input(r)
+	input, err := models.New{{.Op}}Input(r)
 	if err != nil {
-		http.Error(w, jsonMarshalNoError(DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	err = input.Validate()
 	if err != nil {
-		http.Error(w, jsonMarshalNoError(DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	resp, err := controller.{{.Op}}(ctx, input)
 	if err != nil {
-		if respErr, ok := err.({{.Op}}Error); ok {
+		if respErr, ok := err.(models.{{.Op}}Error); ok {
 			http.Error(w, respErr.Error(), respErr.{{.Op}}StatusCode())
 			return
 		} else {
-			// This is the default case
-			http.Error(w, jsonMarshalNoError(DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 			return
 		}
 	}
 
 	respBytes, err := json.Marshal(resp.{{.Op}}Data())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
 	}
 
