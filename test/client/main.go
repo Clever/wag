@@ -12,16 +12,15 @@ import "bytes"
 import "errors"
 import opentracing "github.com/opentracing/opentracing-go"
 import "github.com/Clever/inter-service-api-testing/codegen-poc/generated/models"
+import "strconv"
 
 var _ = json.Marshal
 var _ = strings.Replace
 var _ = fmt.Printf
 
 type GetBookByIDInput struct {
-	Author string
-	BookID string
+	BookID int64
 	Authorization string
-	TestBook map[string]string
 }
 
 type GetBookByID404Output struct{}
@@ -43,11 +42,8 @@ func GetBookByID(ctx context.Context, i *GetBookByIDInput) (GetBookByIDOutput, e
 	urlVals := url.Values{}
 	var body []byte
 
-	urlVals.Add("author", i.Author)
-	path = strings.Replace(path, "{bookID}", i.BookID, -1)
+	path = strings.Replace(path, "{bookID}", strconv.FormatInt(i.BookID, 10), -1)
 	path = path + "?" + urlVals.Encode()
-
-	body, _ = json.Marshal(i.TestBook)
 
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", path, bytes.NewBuffer(body))
@@ -71,6 +67,8 @@ func GetBookByID(ctx context.Context, i *GetBookByIDInput) (GetBookByIDOutput, e
 	resp, _ := client.Do(req)
 
 	switch resp.StatusCode {
+	case 404:
+		return nil, GetBookByID404Output{}
 	case 200:
 
 		var output GetBookByID200Output
@@ -78,8 +76,6 @@ func GetBookByID(ctx context.Context, i *GetBookByIDInput) (GetBookByIDOutput, e
 			return nil, err
 		}
 		return output, nil
-	case 404:
-		return nil, GetBookByID404Output{}
 	default:
 		return nil, errors.New("Unknown response")
 	}
@@ -88,7 +84,7 @@ func GetBookByID(ctx context.Context, i *GetBookByIDInput) (GetBookByIDOutput, e
 
 func main() {
 
-        output, err := GetBookByID(context.Background(), &GetBookByIDInput{Author: "Kyle", BookID: "1234"})
+        output, err := GetBookByID(context.Background(), &GetBookByIDInput{BookID: 1234})
         fmt.Printf("Output: %+v\n", output)
         fmt.Printf("Error: %+v\n", err)
 }

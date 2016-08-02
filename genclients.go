@@ -23,6 +23,7 @@ func generateClients(s Swagger) error {
 	g.Printf("import \"golang.org/x/net/context\"\n")
 	g.Printf("import \"bytes\"\n")
 	g.Printf("import \"fmt\"\n")
+	g.Printf("import \"strconv\"\n")
 	g.Printf("import opentracing \"github.com/opentracing/opentracing-go\"\n\n")
 	// Whether we use these depends on the parameters, so we do this to prevent unused import
 	// error if we don't have the right params
@@ -47,9 +48,11 @@ func generateClients(s Swagger) error {
 			for _, param := range op.Parameters {
 				if param.In == "path" {
 					// TODO: Should this be done with regex at some point?
-					g.Printf("\tpath = strings.Replace(path, \"%s\", i.%s, -1)\n", "{"+param.Name+"}", capitalize(param.Name))
+					g.Printf("\tpath = strings.Replace(path, \"%s\", %s, -1)\n",
+						"{"+param.Name+"}", convertParamToString(param))
 				} else if param.In == "query" {
-					g.Printf("\turlVals.Add(\"%s\", i.%s)\n", param.Name, capitalize(param.Name))
+					g.Printf("\turlVals.Add(\"%s\", %s)\n",
+						param.Name, convertParamToString(param))
 				}
 			}
 
@@ -68,7 +71,8 @@ func generateClients(s Swagger) error {
 
 			for _, param := range op.Parameters {
 				if param.In == "header" {
-					g.Printf("\treq.Header.Set(\"%s\", i.%s)\n", param.Name, capitalize(param.Name))
+					g.Printf("\treq.Header.Set(\"%s\", %s)\n",
+						param.Name, convertParamToString(param))
 				}
 			}
 
@@ -133,4 +137,20 @@ func generateClients(s Swagger) error {
 	}
 
 	return ioutil.WriteFile("generated/client.go", g.buf.Bytes(), 0644)
+}
+
+func convertParamToString(p SwaggerParameter) string {
+	switch p.Type {
+	case "string":
+		return fmt.Sprintf("i.%s", capitalize(p.Name))
+	case "integer":
+		return fmt.Sprintf("strconv.FormatInt(i.%s, 10)", capitalize(p.Name))
+	case "number":
+		return fmt.Sprintf("strconv.FormatFloat(i.%s, 'E', -1, 64)", capitalize(p.Name))
+	case "boolean":
+		return fmt.Sprintf("strconv.FormatBool(i.%s)", capitalize(p.Name))
+	default:
+		// Theoretically should have validated before getting here
+		panic(fmt.Errorf("Unsupported parameter type %s", p.Type))
+	}
 }
