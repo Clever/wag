@@ -9,74 +9,37 @@ import (
 var controller Controller
 
 
-func jsonMarshalString(s string) string {
-	defaultMsg := DefaultMessage{Msg: s}
-	bytes, err := json.Marshal(defaultMsg)
+func jsonMarshalNoError(i interface{}) string {
+	bytes, err := json.Marshal(i)
 	if err != nil {
 		// This should never happen
-		return "{\"msg\" : \"\"}"
+		return ""
 	}
 	return string(bytes)
-}
-func CreateBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	input, err := NewCreateBookInput(r)
-	if err != nil {
-		// TODO: Think about this whether this is usually an internal error or it could
-		// be from a bad request format...
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	err = input.Validate()
-	if err != nil {
-		http.Error(w, jsonMarshalString(err.Error()), http.StatusBadRequest)
-		return
-	}
-
-	resp, err := controller.CreateBook(ctx, input)
-	if err != nil {
-		if respErr, ok := err.(CreateBookError); ok {
-			http.Error(w, jsonMarshalString(respErr.Error()), respErr.CreateBookStatusCode())
-			return
-		} else {
-			// This is the default case
-			http.Error(w, jsonMarshalString(err.Error()), http.StatusInternalServerError)
-			return
-		}
-	}
-
-	respBytes, err := json.Marshal(resp.CreateBookData())
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(respBytes)
 }
 func GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	input, err := NewGetBookByIDInput(r)
 	if err != nil {
 		// TODO: Think about this whether this is usually an internal error or it could
 		// be from a bad request format...
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, jsonMarshalNoError(DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	err = input.Validate()
 	if err != nil {
-		http.Error(w, jsonMarshalString(err.Error()), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	resp, err := controller.GetBookByID(ctx, input)
 	if err != nil {
 		if respErr, ok := err.(GetBookByIDError); ok {
-			http.Error(w, jsonMarshalString(respErr.Error()), respErr.GetBookByIDStatusCode())
+			http.Error(w, respErr.Error(), respErr.GetBookByIDStatusCode())
 			return
 		} else {
 			// This is the default case
-			http.Error(w, jsonMarshalString(err.Error()), http.StatusInternalServerError)
+			http.Error(w, jsonMarshalNoError(DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 			return
 		}
 	}
@@ -90,29 +53,65 @@ func GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(respBytes)
 }
-func GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	input, err := NewGetBooksInput(r)
+func CreateBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	input, err := NewCreateBookInput(r)
 	if err != nil {
 		// TODO: Think about this whether this is usually an internal error or it could
 		// be from a bad request format...
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, jsonMarshalNoError(DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	err = input.Validate()
 	if err != nil {
-		http.Error(w, jsonMarshalString(err.Error()), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		return
+	}
+
+	resp, err := controller.CreateBook(ctx, input)
+	if err != nil {
+		if respErr, ok := err.(CreateBookError); ok {
+			http.Error(w, respErr.Error(), respErr.CreateBookStatusCode())
+			return
+		} else {
+			// This is the default case
+			http.Error(w, jsonMarshalNoError(DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	respBytes, err := json.Marshal(resp.CreateBookData())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(respBytes)
+}
+func GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	input, err := NewGetBooksInput(r)
+	if err != nil {
+		// TODO: Think about this whether this is usually an internal error or it could
+		// be from a bad request format...
+		http.Error(w, jsonMarshalNoError(DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		return
+	}
+
+	err = input.Validate()
+	if err != nil {
+		http.Error(w, jsonMarshalNoError(DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	resp, err := controller.GetBooks(ctx, input)
 	if err != nil {
 		if respErr, ok := err.(GetBooksError); ok {
-			http.Error(w, jsonMarshalString(respErr.Error()), respErr.GetBooksStatusCode())
+			http.Error(w, respErr.Error(), respErr.GetBooksStatusCode())
 			return
 		} else {
 			// This is the default case
-			http.Error(w, jsonMarshalString(err.Error()), http.StatusInternalServerError)
+			http.Error(w, jsonMarshalNoError(DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 			return
 		}
 	}

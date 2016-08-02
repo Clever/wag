@@ -4,7 +4,6 @@ import "net/http"
 import "net/url"
 import "encoding/json"
 import "strings"
-import "errors"
 import "golang.org/x/net/context"
 import "bytes"
 import "fmt"
@@ -50,11 +49,25 @@ func GetBookByID(ctx context.Context, i *GetBookByIDInput) (GetBookByIDOutput, e
 
 		var output GetBookByID200Output
 		if err := json.NewDecoder(resp.Body).Decode(&output.Data); err != nil {
-			return nil, err
+			return nil, DefaultInternalError{Msg: err.Error()}
 		}
 		return output, nil
+	case 400:
+
+		var output DefaultBadRequest
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, DefaultInternalError{Msg: err.Error()}
+		}
+		return nil, output
+	case 500:
+
+		var output DefaultInternalError
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, DefaultInternalError{Msg: err.Error()}
+		}
+		return nil, output
 	default:
-		return nil, errors.New("Unknown response")
+		return nil, DefaultInternalError{Msg: "Unknown response"}
 	}
 }
 
@@ -92,11 +105,25 @@ func CreateBook(ctx context.Context, i *CreateBookInput) (CreateBookOutput, erro
 
 		var output CreateBook200Output
 		if err := json.NewDecoder(resp.Body).Decode(&output.Data); err != nil {
-			return nil, err
+			return nil, DefaultInternalError{Msg: err.Error()}
 		}
 		return output, nil
+	case 400:
+
+		var output DefaultBadRequest
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, DefaultInternalError{Msg: err.Error()}
+		}
+		return nil, output
+	case 500:
+
+		var output DefaultInternalError
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, DefaultInternalError{Msg: err.Error()}
+		}
+		return nil, output
 	default:
-		return nil, errors.New("Unknown response")
+		return nil, DefaultInternalError{Msg: "Unknown response"}
 	}
 }
 
@@ -135,11 +162,25 @@ func GetBooks(ctx context.Context, i *GetBooksInput) (GetBooksOutput, error) {
 
 		var output GetBooks200Output
 		if err := json.NewDecoder(resp.Body).Decode(&output.Data); err != nil {
-			return nil, err
+			return nil, DefaultInternalError{Msg: err.Error()}
 		}
 		return output, nil
+	case 400:
+
+		var output DefaultBadRequest
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, DefaultInternalError{Msg: err.Error()}
+		}
+		return nil, output
+	case 500:
+
+		var output DefaultInternalError
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, DefaultInternalError{Msg: err.Error()}
+		}
+		return nil, output
 	default:
-		return nil, errors.New("Unknown response")
+		return nil, DefaultInternalError{Msg: "Unknown response"}
 	}
 }
 

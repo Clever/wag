@@ -3,24 +3,23 @@ package generated
 import "github.com/Clever/inter-service-api-testing/codegen-poc/generated/models"
 
 
-// DefaultMessage is the default response type. It's a single string field. We have it
-// a struct so we can turn it into {"msg" : msg} and return valid json
-type DefaultMessage struct {
-	Msg string `json:"msg"` 
-}
-
 // DefaultInternalError represents a generic 500 response.
-type DefaultInternalError string
+type DefaultInternalError struct {
+	Msg string `json:"msg"`
+}
 
 func (d DefaultInternalError) Error() string {
-	return string(d)
+	return d.Msg
 }
 
-type DefaultBadRequest string
+type DefaultBadRequest struct {
+	Msg string `json:"msg"`
+}
 
 func (d DefaultBadRequest) Error() string {
-	return string(d)
+	return d.Msg
 }
+
 type GetBookByIDOutput interface {
 	GetBookByIDStatus() int
 	// Data is the underlying model object. We know it is json serializable
@@ -42,18 +41,6 @@ func (o GetBookByID404Output) Error() string {
 
 func (o GetBookByID404Output) GetBookByIDStatusCode() int {
 	return 404
-}
-
-type GetBookByIDDefaultOutput struct {
-	Data models.Error
-}
-
-func (o GetBookByIDDefaultOutput) Error() string {
-	return "Status Code: " + "500"
-}
-
-func (o GetBookByIDDefaultOutput) GetBookByIDStatusCode() int {
-	return 500
 }
 
 type GetBookByID200Output struct {
@@ -91,18 +78,6 @@ func (o CreateBook200Output) CreateBookStatus() int {
 	return 200
 }
 
-type CreateBookDefaultOutput struct {
-	Data models.Error
-}
-
-func (o CreateBookDefaultOutput) Error() string {
-	return "Status Code: " + "500"
-}
-
-func (o CreateBookDefaultOutput) CreateBookStatusCode() int {
-	return 500
-}
-
 type GetBooksOutput interface {
 	GetBooksStatus() int
 	// Data is the underlying model object. We know it is json serializable
@@ -112,18 +87,6 @@ type GetBooksOutput interface {
 type GetBooksError interface {
 	error // Extend the error interface
 	GetBooksStatusCode() int
-}
-
-type GetBooksDefaultOutput struct {
-	Data models.Error
-}
-
-func (o GetBooksDefaultOutput) Error() string {
-	return "Status Code: " + "500"
-}
-
-func (o GetBooksDefaultOutput) GetBooksStatusCode() int {
-	return 500
 }
 
 type GetBooks200Output struct {

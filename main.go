@@ -486,6 +486,7 @@ func printNewInput(g *Generator, op SwaggerOperation) error {
 				default:
 					return fmt.Errorf("Param type %s not supported", param.Type)
 				}
+				// TODO: These error message aren't great. We should probalby clean up...
 				g.Printf("\tif err != nil {\n")
 				g.Printf("\t\treturn nil, err\n")
 				g.Printf("\t}\n")
@@ -505,25 +506,24 @@ func printNewInput(g *Generator, op SwaggerOperation) error {
 
 func defaultOutputTypes() string {
 	return fmt.Sprintf(`
-// DefaultMessage is the default response type. It's a single string field. We have it
-// a struct so we can turn it into {"msg" : msg} and return valid json
-type DefaultMessage struct {
-	Msg string %s 
-}
-
 // DefaultInternalError represents a generic 500 response.
-type DefaultInternalError string
+type DefaultInternalError struct {
+	Msg string %s
+}
 
 func (d DefaultInternalError) Error() string {
-	return string(d)
+	return d.Msg
 }
 
-type DefaultBadRequest string
+type DefaultBadRequest struct {
+	Msg string %s
+}
 
 func (d DefaultBadRequest) Error() string {
-	return string(d)
+	return d.Msg
 }
-`, "`json:\"msg\"`")
+
+`, "`json:\"msg\"`", "`json:\"msg\"`")
 }
 
 func buildOutputs(packageName string, paths map[string]map[string]SwaggerOperation) error {
@@ -562,6 +562,7 @@ func buildOutputs(packageName string, paths map[string]map[string]SwaggerOperati
 				if key == "default" {
 					// This is handled by the default responses
 					continue
+				}
 
 				statusCode, err := strconv.ParseInt(key, 10, 32)
 				if err != nil || statusCode < 200 || statusCode > 599 {
@@ -610,11 +611,9 @@ func buildOutputs(packageName string, paths map[string]map[string]SwaggerOperati
 					g.Printf("\treturn %d\n", statusCode)
 					g.Printf("}\n\n")
 				}
-
 			}
 		}
 	}
-
 	return ioutil.WriteFile("generated/outputs.go", g.buf.Bytes(), 0644)
 }
 
@@ -627,7 +626,7 @@ func typeFromSchema(schema map[string]interface{}) (string, error) {
 	// TODO: The error messages here aren't great...
 	if len(schema) == 0 {
 		// represent this as a string, which is empty by default
-		return "DefaultMessage", nil
+		return "string", nil
 	} else if len(schema) == 1 {
 		ref, ok := schema["$ref"].(string)
 		if !ok {
@@ -696,12 +695,11 @@ type handlerOp struct {
 }
 
 var jsonMarshalString = `
-func jsonMarshalString(s string) string {
-	defaultMsg := DefaultMessage{Msg: s}
-	bytes, err := json.Marshal(defaultMsg)
+func jsonMarshalNoError(i interface{}) string {
+	bytes, err := json.Marshal(i)
 	if err != nil {
 		// This should never happen
-		return "{\"msg\" : \"\"}"
+		return ""
 	}
 	return string(bytes)
 }
@@ -712,24 +710,24 @@ var handlerTemplate = `func {{.Op}}Handler(ctx context.Context, w http.ResponseW
 	if err != nil {
 		// TODO: Think about this whether this is usually an internal error or it could
 		// be from a bad request format...
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, jsonMarshalNoError(DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	err = input.Validate()
 	if err != nil {
-		http.Error(w, jsonMarshalString(err.Error()), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	resp, err := controller.{{.Op}}(ctx, input)
 	if err != nil {
 		if respErr, ok := err.({{.Op}}Error); ok {
-			http.Error(w, jsonMarshalString(respErr.Error()), respErr.{{.Op}}StatusCode())
+			http.Error(w, respErr.Error(), respErr.{{.Op}}StatusCode())
 			return
 		} else {
 			// This is the default case
-			http.Error(w, jsonMarshalString(err.Error()), http.StatusInternalServerError)
+			http.Error(w, jsonMarshalNoError(DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 			return
 		}
 	}
