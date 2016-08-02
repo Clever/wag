@@ -8,6 +8,7 @@ import "errors"
 import "golang.org/x/net/context"
 import "bytes"
 import "fmt"
+import "strconv"
 import opentracing "github.com/opentracing/opentracing-go"
 
 var _ = json.Marshal
@@ -18,7 +19,7 @@ func GetBookByID(ctx context.Context, i *GetBookByIDInput) (GetBookByIDOutput, e
 	urlVals := url.Values{}
 	var body []byte
 
-	path = strings.Replace(path, "{bookID}", i.BookID, -1)
+	path = strings.Replace(path, "{bookID}", strconv.FormatInt(i.BookID, 10), -1)
 	path = path + "?" + urlVals.Encode()
 
 	client := &http.Client{}
@@ -43,8 +44,6 @@ func GetBookByID(ctx context.Context, i *GetBookByIDInput) (GetBookByIDOutput, e
 	resp, _ := client.Do(req)
 
 	switch resp.StatusCode {
-	case 404:
-		return nil, GetBookByID404Output{}
 	case 200:
 
 		var output GetBookByID200Output
@@ -52,6 +51,8 @@ func GetBookByID(ctx context.Context, i *GetBookByIDInput) (GetBookByIDOutput, e
 			return nil, err
 		}
 		return output, nil
+	case 404:
+		return nil, GetBookByID404Output{}
 	default:
 		return nil, errors.New("Unknown response")
 	}
@@ -105,8 +106,8 @@ func GetBooks(ctx context.Context, i *GetBooksInput) (GetBooksOutput, error) {
 	var body []byte
 
 	urlVals.Add("author", i.Author)
-	urlVals.Add("available", i.Available)
-	urlVals.Add("maxPages", i.MaxPages)
+	urlVals.Add("available", strconv.FormatBool(i.Available))
+	urlVals.Add("maxPages", strconv.FormatFloat(i.MaxPages, 'E', -1, 64))
 	path = path + "?" + urlVals.Encode()
 
 	client := &http.Client{}

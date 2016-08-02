@@ -307,6 +307,7 @@ func buildContextsAndControllers(packageName string, paths map[string]map[string
 
 	g.Printf("\t\"encoding/json\"\n")
 	g.Printf("\t\"%s/models\"\n", packageName)
+	g.Printf("\t\"strconv\"\n")
 	g.Printf(")\n\n")
 
 	// These two imports are only used if we have body parameters, so if we don't have these the
@@ -416,9 +417,7 @@ func printInputValidation(g *Generator, op SwaggerOperation) error {
 			g.Printf("\t\treturn err\n")
 			g.Printf("\t}\n\n")
 		}
-
 	}
-	// TODO: Add in any validation...
 	g.Printf("\treturn nil\n")
 	g.Printf("}\n\n")
 
@@ -431,29 +430,49 @@ func printNewInput(g *Generator, op SwaggerOperation) error {
 
 	g.Printf("\tvar input %sInput\n\n", capitalize(op.OperationID))
 
-	for _, param := range op.Parameters {
-		// TODO: Handle non-string types. This probably means extracting the
-		// code that pulls the variable out
+	printedError := false
 
-		// TODO: Switch statement
-		if param.In == "query" {
-			g.Printf("\tinput.%s = r.URL.Query().Get(\"%s\")\n",
-				capitalize(param.Name), param.Name)
-		} else if param.In == "path" {
-			g.Printf("\tinput.%s = mux.Vars(r)[\"%s\"]\n",
-				capitalize(param.Name), param.Name)
-		} else if param.In == "header" {
-			g.Printf("\tinput.%s = r.Header.Get(\"%s\")\n",
-				capitalize(param.Name), param.Name)
-		} else if param.In == "body" {
-			// g.Printf("\tif err := json.NewDecoder(r.Body).Decode(&input.%s); err != nil{\n",
-			// 	capitalize(param.Name))
-			// g.Printf("\t\treturn nil, err\n") // TODO: This should probably return a 400 or something
-			// g.Printf("\t}\n")
-			// TODO: Make it like the above, and only do this is required = false
-			g.Printf("\tjson.NewDecoder(r.Body).Decode(&input.%s)\n", capitalize(param.Name))
-		} else {
-			fmt.Errorf("Unsupported param type %s", param)
+	for _, param := range op.Parameters {
+
+		if param.In != "body" {
+			extractCode := ""
+			switch param.In {
+			case "query":
+				extractCode = fmt.Sprintf("r.URL.Query().Get(\"%s\")", param.Name)
+			case "path":
+				extractCode = fmt.Sprintf("mux.Vars(r)[\"%s\"]", param.Name)
+			case "header":
+				extractCode = fmt.Sprintf("r.Header.Get(\"%s\")", param.Name)
+			}
+
+			g.Printf("\t%sStr := %s\n", param.Name, extractCode)
+
+			if param.Type != "string" {
+				if !printedError {
+					g.Printf("\tvar err error\n")
+					printedError = true
+				}
+
+				switch param.Type {
+				case "integer":
+					g.Printf("\tinput.%s, err = strconv.ParseInt(%sStr, 10, 64)\n",
+						capitalize(param.Name), param.Name)
+				case "number":
+					g.Printf("\tinput.%s, err = strconv.ParseFloat(%sStr, 64)\n",
+						capitalize(param.Name), param.Name)
+				case "boolean":
+					g.Printf("\tinput.%s, err = strconv.ParseBool(%sStr)\n",
+						capitalize(param.Name), param.Name)
+				default:
+					return fmt.Errorf("Param type %s not supported", param.Type)
+				}
+				g.Printf("\tif err != nil {\n")
+				g.Printf("\t\treturn nil, err\n")
+				g.Printf("\t}\n")
+
+			} else {
+				g.Printf("\tinput.%s = %sStr\n", capitalize(param.Name), param.Name)
+			}
 		}
 	}
 	g.Printf("\n")
