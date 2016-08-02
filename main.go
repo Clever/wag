@@ -708,8 +708,6 @@ func jsonMarshalNoError(i interface{}) string {
 var handlerTemplate = `func {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	input, err := New{{.Op}}Input(r)
 	if err != nil {
-		// TODO: Think about this whether this is usually an internal error or it could
-		// be from a bad request format...
 		http.Error(w, jsonMarshalNoError(DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
