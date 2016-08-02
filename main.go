@@ -231,7 +231,7 @@ func main() {
 	if err := buildHandlers(swagger.Paths); err != nil {
 		panic(err)
 	}
-	if err := buildOutputs(swagger.Paths); err != nil {
+	if err := buildOutputs(*packageName, swagger.Paths); err != nil {
 		panic(err)
 	}
 
@@ -503,12 +503,12 @@ func printNewInput(g *Generator, op SwaggerOperation) error {
 	return nil
 }
 
-func buildOutputs(paths map[string]map[string]SwaggerOperation) error {
+func buildOutputs(packageName string, paths map[string]map[string]SwaggerOperation) error {
 	var g Generator
 
 	g.Printf("package generated\n\n")
 	// TODO: We're going to have to be smarter about these imports
-	g.Printf("import \"github.com/Clever/inter-service-api-testing/codegen-poc/generated/models\"\n\n")
+	g.Printf("import \"%s/models\"\n\n", packageName)
 
 	for _, path := range paths {
 		for _, op := range path {

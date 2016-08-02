@@ -44,6 +44,8 @@ func GetBookByID(ctx context.Context, i *GetBookByIDInput) (GetBookByIDOutput, e
 	resp, _ := client.Do(req)
 
 	switch resp.StatusCode {
+	case 404:
+		return nil, GetBookByID404Output{}
 	case 200:
 
 		var output GetBookByID200Output
@@ -51,8 +53,6 @@ func GetBookByID(ctx context.Context, i *GetBookByIDInput) (GetBookByIDOutput, e
 			return nil, err
 		}
 		return output, nil
-	case 404:
-		return nil, GetBookByID404Output{}
 	default:
 		return nil, errors.New("Unknown response")
 	}

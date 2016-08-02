@@ -7,8 +7,7 @@ type ControllerImpl struct{
 }
 func (c ControllerImpl) GetBookByID(ctx context.Context, input *GetBookByIDInput) (GetBookByIDOutput, error) {
 	// TODO: Implement me!
-	// return nil, errors.New("Not implemented")
-        return GetBookByID200Output{}, nil
+	return nil, errors.New("Not implemented")
 }
 func (c ControllerImpl) CreateBook(ctx context.Context, input *CreateBookInput) (CreateBookOutput, error) {
 	// TODO: Implement me!
