@@ -11,6 +11,8 @@ import (
 
 var _ = json.Marshal
 
+var _ = strconv.FormatInt
+
 type GetBookByIDInput struct {
 	BookID int64
 	Authorization string

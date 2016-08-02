@@ -100,7 +100,7 @@ func generateClients(s Swagger) error {
 
 			// Switch on status code to build the response...
 			g.Printf("\tswitch resp.StatusCode {\n")
-			for key, _ := range op.Responses {
+			for key, resp := range op.Responses {
 
 				if key == "default" {
 					// TODO: Fix this... should probably factor along with server codegen
@@ -114,12 +114,22 @@ func generateClients(s Swagger) error {
 				}
 
 				g.Printf("\tcase %s:\n", key)
-				if code < 400 {
-					// TODO: Factor out this common code...
-					outputName := fmt.Sprintf("%s%sOutput", capitalize(op.OperationID), capitalize(key))
-					g.Printf(successResponse(outputName))
+
+				if resp.Schema == nil {
+					g.Printf("\t\tvar output %s%sOutput\n", capitalize(op.OperationID), key)
+					if code < 400 {
+						g.Printf("\t\treturn output, nil\n")
+					} else {
+						g.Printf("\t\treturn nil, output\n")
+					}
 				} else {
-					g.Printf("\t\treturn nil, %s%sOutput{}\n", capitalize(op.OperationID), key)
+					if code < 400 {
+						// TODO: Factor out this common code...
+						outputName := fmt.Sprintf("%s%sOutput", capitalize(op.OperationID), capitalize(key))
+						g.Printf(successResponse(outputName))
+					} else {
+						g.Printf("\t\treturn nil, %s%sOutput{}\n", capitalize(op.OperationID), key)
+					}
 				}
 			}
 
