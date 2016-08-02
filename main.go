@@ -559,17 +559,22 @@ func buildOutputs(packageName string, paths map[string]map[string]SwaggerOperati
 
 			for key, response := range op.Responses {
 
-				var statusCode int
 				if key == "default" {
-					statusCode = 500
-				} else {
-					statusCode64, err := strconv.ParseInt(key, 10, 32)
-					if err != nil || statusCode64 < 200 || statusCode64 > 599 {
-						// TODO: Write a test for this...
-						return fmt.Errorf("Response map key must be an integer between 200 and 599 or "+
-							"the string 'default'. Was %s", key)
-					}
-					statusCode = int(statusCode64)
+					// This is handled by the default responses
+					continue
+
+				statusCode, err := strconv.ParseInt(key, 10, 32)
+				if err != nil || statusCode < 200 || statusCode > 599 {
+					// TODO: Write a test for this...
+					return fmt.Errorf("Response map key must be an integer between 200 and 599 or "+
+						"the string 'default'. Was %s", key)
+				}
+				if statusCode == 400 {
+					return fmt.Errorf("Use the pre-defined default 400 response 'DefaultBadRequest' " +
+						"instead of defining your own")
+				} else if statusCode == 500 {
+					return fmt.Errorf("Use the pre-defined default 500 response `DefaultInternalError` " +
+						"instead of defining your own")
 				}
 
 				outputName := fmt.Sprintf("%s%sOutput", capitalize(op.OperationID), capitalize(key))
