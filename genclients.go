@@ -19,7 +19,6 @@ func generateClients(s Swagger) error {
 	g.Printf("import \"net/url\"\n")
 	g.Printf("import \"encoding/json\"\n")
 	g.Printf("import \"strings\"\n")
-	g.Printf("import \"errors\"\n")
 	g.Printf("import \"golang.org/x/net/context\"\n")
 	g.Printf("import \"bytes\"\n")
 	g.Printf("import \"fmt\"\n")
@@ -117,26 +116,52 @@ func generateClients(s Swagger) error {
 				if code < 400 {
 					// TODO: Factor out this common code...
 					outputName := fmt.Sprintf("%s%sOutput", capitalize(op.OperationID), capitalize(key))
-					g.Printf(`
-		var output %s
-		if err := json.NewDecoder(resp.Body).Decode(&output.Data); err != nil {
-			return nil, err
-		}
-		return output, nil
-`, outputName)
-
+					g.Printf(successResponse(outputName))
 				} else {
 					g.Printf("\t\treturn nil, %s%sOutput{}\n", capitalize(op.OperationID), key)
 				}
 			}
+
+			// Add in the default 400, 500 responses
+			g.Printf("\tcase 400:\n")
+			g.Printf(badRequestCode)
+			g.Printf("\tcase 500:\n")
+			g.Printf(internalErrorCode)
+
 			g.Printf("\tdefault:\n")
-			g.Printf("\t\treturn nil, errors.New(\"Unknown response\")\n")
+			g.Printf("\t\treturn nil, DefaultInternalError{Msg: \"Unknown response\"}\n")
 			g.Printf("\t}\n")
 			g.Printf("}\n\n")
 		}
 	}
 
 	return ioutil.WriteFile("generated/client.go", g.buf.Bytes(), 0644)
+}
+
+var badRequestCode = `
+		var output DefaultBadRequest
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, DefaultInternalError{Msg: err.Error()}
+		}
+		return nil, output
+`
+
+var internalErrorCode = `
+		var output DefaultInternalError
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, DefaultInternalError{Msg: err.Error()}
+		}
+		return nil, output
+`
+
+func successResponse(outputName string) string {
+	return fmt.Sprintf(`
+		var output %s
+		if err := json.NewDecoder(resp.Body).Decode(&output.Data); err != nil {
+			return nil, DefaultInternalError{Msg: err.Error()}
+		}
+		return output, nil
+`, outputName)
 }
 
 func convertParamToString(p SwaggerParameter) string {
