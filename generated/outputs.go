@@ -2,41 +2,25 @@ package generated
 
 import "github.com/Clever/inter-service-api-testing/codegen-poc/generated/models"
 
-type GetBooksOutput interface {
-	GetBooksStatus() int
-	// Data is the underlying model object. We know it is json serializable
-	GetBooksData() interface{}
+
+// DefaultMessage is the default response type. It's a single string field. We have it
+// a struct so we can turn it into {"msg" : msg} and return valid json
+type DefaultMessage struct {
+	Msg string `json:"msg"` 
 }
 
-type GetBooksError interface {
-	error // Extend the error interface
-	GetBooksStatusCode() int
+// DefaultInternalError represents a generic 500 response.
+type DefaultInternalError string
+
+func (d DefaultInternalError) Error() string {
+	return string(d)
 }
 
-type GetBooks200Output struct {
-	Data []models.Book
-}
+type DefaultBadRequest string
 
-func (o GetBooks200Output) GetBooksData() interface{} {
-	return o.Data
+func (d DefaultBadRequest) Error() string {
+	return string(d)
 }
-
-func (o GetBooks200Output) GetBooksStatus() int {
-	return 200
-}
-
-type GetBooksDefaultOutput struct {
-	Data models.Error
-}
-
-func (o GetBooksDefaultOutput) Error() string {
-	return "Status Code: " + "500"
-}
-
-func (o GetBooksDefaultOutput) GetBooksStatusCode() int {
-	return 500
-}
-
 type GetBookByIDOutput interface {
 	GetBookByIDStatus() int
 	// Data is the underlying model object. We know it is json serializable
@@ -46,18 +30,6 @@ type GetBookByIDOutput interface {
 type GetBookByIDError interface {
 	error // Extend the error interface
 	GetBookByIDStatusCode() int
-}
-
-type GetBookByID200Output struct {
-	Data models.Book
-}
-
-func (o GetBookByID200Output) GetBookByIDData() interface{} {
-	return o.Data
-}
-
-func (o GetBookByID200Output) GetBookByIDStatus() int {
-	return 200
 }
 
 type GetBookByID404Output struct {
@@ -82,6 +54,18 @@ func (o GetBookByIDDefaultOutput) Error() string {
 
 func (o GetBookByIDDefaultOutput) GetBookByIDStatusCode() int {
 	return 500
+}
+
+type GetBookByID200Output struct {
+	Data models.Book
+}
+
+func (o GetBookByID200Output) GetBookByIDData() interface{} {
+	return o.Data
+}
+
+func (o GetBookByID200Output) GetBookByIDStatus() int {
+	return 200
 }
 
 type CreateBookOutput interface {
@@ -117,5 +101,40 @@ func (o CreateBookDefaultOutput) Error() string {
 
 func (o CreateBookDefaultOutput) CreateBookStatusCode() int {
 	return 500
+}
+
+type GetBooksOutput interface {
+	GetBooksStatus() int
+	// Data is the underlying model object. We know it is json serializable
+	GetBooksData() interface{}
+}
+
+type GetBooksError interface {
+	error // Extend the error interface
+	GetBooksStatusCode() int
+}
+
+type GetBooksDefaultOutput struct {
+	Data models.Error
+}
+
+func (o GetBooksDefaultOutput) Error() string {
+	return "Status Code: " + "500"
+}
+
+func (o GetBooksDefaultOutput) GetBooksStatusCode() int {
+	return 500
+}
+
+type GetBooks200Output struct {
+	Data []models.Book
+}
+
+func (o GetBooks200Output) GetBooksData() interface{} {
+	return o.Data
+}
+
+func (o GetBooks200Output) GetBooksStatus() int {
+	return 200
 }
 

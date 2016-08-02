@@ -503,12 +503,37 @@ func printNewInput(g *Generator, op SwaggerOperation) error {
 	return nil
 }
 
+func defaultOutputTypes() string {
+	return fmt.Sprintf(`
+// DefaultMessage is the default response type. It's a single string field. We have it
+// a struct so we can turn it into {"msg" : msg} and return valid json
+type DefaultMessage struct {
+	Msg string %s 
+}
+
+// DefaultInternalError represents a generic 500 response.
+type DefaultInternalError string
+
+func (d DefaultInternalError) Error() string {
+	return string(d)
+}
+
+type DefaultBadRequest string
+
+func (d DefaultBadRequest) Error() string {
+	return string(d)
+}
+`, "`json:\"msg\"`")
+}
+
 func buildOutputs(packageName string, paths map[string]map[string]SwaggerOperation) error {
 	var g Generator
 
 	g.Printf("package generated\n\n")
 	// TODO: We're going to have to be smarter about these imports
 	g.Printf("import \"%s/models\"\n\n", packageName)
+
+	g.Printf(defaultOutputTypes())
 
 	for _, path := range paths {
 		for _, op := range path {
@@ -597,7 +622,7 @@ func typeFromSchema(schema map[string]interface{}) (string, error) {
 	// TODO: The error messages here aren't great...
 	if len(schema) == 0 {
 		// represent this as a string, which is empty by default
-		return "string", nil
+		return "DefaultMessage", nil
 	} else if len(schema) == 1 {
 		ref, ok := schema["$ref"].(string)
 		if !ok {
@@ -642,6 +667,8 @@ func buildHandlers(paths map[string]map[string]SwaggerOperation) error {
 	// TODO: Make this not be a global variable
 	g.Printf("var controller Controller\n\n")
 
+	g.Printf(jsonMarshalString)
+
 	for _, path := range paths {
 		for _, op := range path {
 
@@ -663,6 +690,18 @@ type handlerOp struct {
 	Op string
 }
 
+var jsonMarshalString = `
+func jsonMarshalString(s string) string {
+	defaultMsg := DefaultMessage{Msg: s}
+	bytes, err := json.Marshal(defaultMsg)
+	if err != nil {
+		// This should never happen
+		return "{\"msg\" : \"\"}"
+	}
+	return string(bytes)
+}
+`
+
 var handlerTemplate = `func {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	input, err := New{{.Op}}Input(r)
 	if err != nil {
@@ -674,18 +713,18 @@ var handlerTemplate = `func {{.Op}}Handler(ctx context.Context, w http.ResponseW
 
 	err = input.Validate()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, jsonMarshalString(err.Error()), http.StatusBadRequest)
 		return
 	}
 
 	resp, err := controller.{{.Op}}(ctx, input)
 	if err != nil {
 		if respErr, ok := err.({{.Op}}Error); ok {
-			http.Error(w, respErr.Error(), respErr.{{.Op}}StatusCode())
+			http.Error(w, jsonMarshalString(respErr.Error()), respErr.{{.Op}}StatusCode())
 			return
 		} else {
 			// This is the default case
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, jsonMarshalString(err.Error()), http.StatusInternalServerError)
 			return
 		}
 	}
