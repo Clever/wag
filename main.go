@@ -18,9 +18,6 @@ import (
 )
 
 type SwaggerOperation struct {
-	// TODO: Implement
-	Tags []string `yaml:"tags"`
-
 	OperationID string                     `yaml:"operationId"`
 	Description string                     `yaml:"description"`
 	Responses   map[string]SwaggerResponse `yaml:"responses"`
@@ -33,6 +30,7 @@ type SwaggerOperation struct {
 	Produces []string               `yaml:"produces"`
 	Schemes  []string               `yaml:"schemes"`
 	Security map[string]interface{} `yaml:"security"`
+	Tags     []string               `yaml:"tags"`
 }
 
 // Validate checks if the swagger operation has any fields we don't support
@@ -56,7 +54,6 @@ func (s SwaggerOperation) Validate() error {
 type SwaggerParameter struct {
 	Name string `yaml:"name"`
 	In   string `yaml:"in"`
-	// TODO: Support more types
 	Type string `yaml:"type"`
 	// The schema here has to be {$ref: "..."}. We don't support defining your own
 	// schema here.
@@ -64,19 +61,16 @@ type SwaggerParameter struct {
 }
 
 type SwaggerResponse struct {
-	Description string `yaml:"description"`
-	// Schema only supports schemas of the form {$ref: "..."}
-	// TODO: Support {type: 'array', items: {$ref: "..."}}
-	Schema map[string]interface{} `yaml:"schema"`
+	Description string                 `yaml:"description"`
+	Schema      map[string]interface{} `yaml:"schema"`
 
-	// TODO: Implement at least some part of the Header Object spec
+	// Fields we don't support
 	Header map[string]interface{} `yaml:"headers"`
 }
 
 type Swagger struct {
-	// TODO: Field to implement or error on if invalid
-	BasePath string                 `yaml:"basePath"`
-	Tags     map[string]interface{} `yaml:"tags"`
+	// TODO: Fields to implement or error on if invalid
+	BasePath string `yaml:"basePath"`
 
 	// Partially implemented
 	Paths map[string]map[string]SwaggerOperation `yaml:"paths"`
@@ -96,6 +90,7 @@ type Swagger struct {
 	Responses           map[string]interface{} `yaml:"responses"`
 	SecurityDefinitions map[string]interface{} `yaml:"securityDefinitions"`
 	Security            map[string]interface{} `yaml:"security"`
+	Tags                []string               `yaml:"tags"`
 }
 
 // Validates returns an error if the swagger file is invalid or uses fields
@@ -528,16 +523,16 @@ func buildOutputs(paths map[string]map[string]SwaggerOperation) error {
 				}
 
 				outputName := fmt.Sprintf("%s%sOutput", capitalize(op.OperationID), capitalize(key))
-				if statusCode < 400 {
+				typeName, err := typeFromSchema(response.Schema)
+				if err != nil {
+					return err
+				}
 
-					// TODO: Be a bit smarter with this...
-					typeName, err := typeFromSchema(response.Schema)
-					if err != nil {
-						return err
-					}
-					g.Printf("type %s struct {\n", outputName) //, typeName)
-					g.Printf("\tData %s\n", typeName)
-					g.Printf("}\n\n")
+				g.Printf("type %s struct {\n", outputName) //, typeName)
+				g.Printf("\tData %s\n", typeName)
+				g.Printf("}\n\n")
+
+				if statusCode < 400 {
 
 					g.Printf("func (o %s) %sData() interface{} {\n", outputName, capitalize(op.OperationID))
 					g.Printf("\treturn o.Data\n")
@@ -551,16 +546,13 @@ func buildOutputs(paths map[string]map[string]SwaggerOperation) error {
 
 				} else {
 
-					// TODO: Should these by named operationID + "Error" (instead of + "Output")
-					// Would need to change the client too
-					g.Printf("type %s struct{}\n\n", outputName)
 					g.Printf("func (o %s) Error() string {\n", outputName)
 					// TODO: Would it make sense to give this a constructor so we can have a more detailed
 					// error message?
 					g.Printf("\treturn \"Status Code: \" + \"%d\"\n", statusCode)
 					g.Printf("}\n\n")
 					g.Printf("func (o %s) %sStatusCode() int {\n", outputName, capitalize(op.OperationID))
-					g.Printf("\treturn %d", statusCode)
+					g.Printf("\treturn %d\n", statusCode)
 					g.Printf("}\n\n")
 				}
 
