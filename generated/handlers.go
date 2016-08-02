@@ -20,8 +20,6 @@ func jsonMarshalNoError(i interface{}) string {
 func GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	input, err := NewGetBookByIDInput(r)
 	if err != nil {
-		// TODO: Think about this whether this is usually an internal error or it could
-		// be from a bad request format...
 		http.Error(w, jsonMarshalNoError(DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
@@ -56,8 +54,6 @@ func GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, r *http.Requ
 func CreateBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	input, err := NewCreateBookInput(r)
 	if err != nil {
-		// TODO: Think about this whether this is usually an internal error or it could
-		// be from a bad request format...
 		http.Error(w, jsonMarshalNoError(DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
@@ -92,8 +88,6 @@ func CreateBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Reque
 func GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	input, err := NewGetBooksInput(r)
 	if err != nil {
-		// TODO: Think about this whether this is usually an internal error or it could
-		// be from a bad request format...
 		http.Error(w, jsonMarshalNoError(DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
