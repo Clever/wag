@@ -7,8 +7,8 @@ $(eval $(call golang-version-check,1.6))
 
 test:
 	rm generated/controller.go || true
-	go run main.go genclients.go -file swagger.yml -package $(PKG)/generated
 	cp hardcoded/* generated/
+	go run main.go genclients.go -file swagger.yml -package $(PKG)/generated
 	cd impl && go build
 
 vendor: golang-godep-vendor-deps

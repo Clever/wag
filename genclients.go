@@ -41,7 +41,7 @@ func generateClients(s Swagger) error {
 
 			// Build the URL
 			// TODO: Make the base URL configurable...
-			g.Printf("\tpath := \"http://localhost:8080\" + \"%s\"\n", url)
+			g.Printf("\tpath := \"http://localhost:8080\" + \"%s\"\n", s.BasePath+url)
 			g.Printf("\turlVals := url.Values{}\n")
 			g.Printf("\tvar body []byte\n\n")
 
