@@ -31,16 +31,10 @@ After autogenerating the code you should modify two files:
 Currently, this repo doesn't implement the entire Swagger Spec. This is a non-exhaustive list of the parts of the Swagger specification that haven't been implemented yet.
 
 ### Planning to Implement
-All Swagger Data Types (long, float, double, etc...)
-Schema
-  - parameters
-  - tags
-$ref in multiple places
-Operation
-  - tags
 Required Fields
-Response
-  - Headers
+Schema
+  - basePath
+
 
 ### Not Planning to Implement (at least for now)
 All Mime Types
@@ -49,7 +43,7 @@ Multi-File Swagger Definitions
 Everything in JSON-Schema (getting a lot of this from the auto-generated go-swagger code)
 Schema
   - host
-  - basePath
+  - tags
   - scheme (just http / https)
   - consumes
   - produces
@@ -60,7 +54,7 @@ Consumes
   - consumes
   - schemes
   - security
-Form parameter type (though if it's easy maybe we should just add...)
+Form parameter type
 Parameter
   - items
   - collectionFormat
@@ -69,4 +63,6 @@ Schema object (for now going to try to get this from somewhere else...)
 Discriminators
 XML Modeling
 Security Objects
+Response
+  - Headers
 
