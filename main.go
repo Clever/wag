@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -33,6 +34,9 @@ type SwaggerOperation struct {
 	Tags     []string               `yaml:"tags"`
 }
 
+// A regex requiring the field to be start with a letter and be alphanumeric
+var alphaNumRegex = regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9]*$")
+
 // Validate checks if the swagger operation has any fields we don't support
 func (s SwaggerOperation) Validate() error {
 	if len(s.Consumes) != 0 {
@@ -46,6 +50,20 @@ func (s SwaggerOperation) Validate() error {
 	}
 	if len(s.Security) != 0 {
 		fmt.Errorf("Security not supported in swagger operations")
+	}
+
+	fmt.Printf("IN HERE: %s\n", s.OperationID)
+
+	// TODO: A test for this?
+	/*
+		for path, pathObj := range paths {
+		for method, op := range pathObj {
+	*/
+	if !alphaNumRegex.MatchString(s.OperationID) {
+		// We need this because we build function / struct names with the operationID.
+		// We could strip out the special characters, but it seems clearly to just enforce
+		// this.
+		return fmt.Errorf("OperationIDs must be alphanumeric and start with a letter")
 	}
 
 	return nil
@@ -81,7 +99,7 @@ type Swagger struct {
 	// Fields we support, but only with a certain set of values
 	Swagger  string   `yaml:"swagger"`
 	Schemes  []string `yaml:"schemes"`
-	Consumes []string `yaml:"consumers"`
+	Consumes []string `yaml:"consumes"`
 	Produces []string `yaml:"produces"`
 
 	// Fields we don't support
@@ -103,7 +121,7 @@ func (s Swagger) Validate() error {
 	}
 
 	if len(s.Schemes) != 1 || s.Schemes[0] != "http" {
-		return fmt.Errorf("Schemes only supports 'http'")
+		return fmt.Errorf("Schemes only supports 'http', not %s")
 	}
 
 	if len(s.Consumes) != 1 || s.Consumes[0] != "application/json" {
@@ -135,14 +153,18 @@ func (s Swagger) Validate() error {
 	}
 
 	// Validate paths
-	for fieldName, _ := range s.Paths {
+	for fieldName, path := range s.Paths {
 		// Note that $ref and parameters are not valid as of now
 		if !sliceContains([]string{"get", "put", "post", "delete", "options", "head", "patch"}, fieldName) {
 			fmt.Errorf("Invalid path field name: %s", fieldName)
 		}
-	}
 
-	// TODO: Verify operationID is unique
+		for _, op := range path {
+			if err := op.Validate(); err != nil {
+				return err
+			}
+		}
+	}
 
 	return nil
 }
@@ -191,6 +213,10 @@ func main() {
 
 	var swagger Swagger
 	if err := yaml.Unmarshal(bytes, &swagger); err != nil {
+		panic(err)
+	}
+
+	if err := swagger.Validate(); err != nil {
 		panic(err)
 	}
 
