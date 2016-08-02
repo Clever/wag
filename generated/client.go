@@ -43,15 +43,15 @@ func GetBookByID(ctx context.Context, i *GetBookByIDInput) (GetBookByIDOutput, e
 	resp, _ := client.Do(req)
 
 	switch resp.StatusCode {
-	case 404:
-		return nil, GetBookByID404Output{}
 	case 200:
 
 		var output GetBookByID200Output
-		if err := json.NewDecoder(resp.Body).Decode(&output.Data); err != nil {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, DefaultInternalError{Msg: err.Error()}
 		}
 		return output, nil
+	case 404:
+		return nil, GetBookByID404Output{}
 	case 400:
 
 		var output DefaultBadRequest
@@ -104,7 +104,7 @@ func CreateBook(ctx context.Context, i *CreateBookInput) (CreateBookOutput, erro
 	case 200:
 
 		var output CreateBook200Output
-		if err := json.NewDecoder(resp.Body).Decode(&output.Data); err != nil {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, DefaultInternalError{Msg: err.Error()}
 		}
 		return output, nil
@@ -161,7 +161,7 @@ func GetBooks(ctx context.Context, i *GetBooksInput) (GetBooksOutput, error) {
 	case 200:
 
 		var output GetBooks200Output
-		if err := json.NewDecoder(resp.Body).Decode(&output.Data); err != nil {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, DefaultInternalError{Msg: err.Error()}
 		}
 		return output, nil

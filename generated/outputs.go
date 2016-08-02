@@ -31,8 +31,20 @@ type GetBookByIDError interface {
 	GetBookByIDStatusCode() int
 }
 
-type GetBookByID404Output struct {
-	Data models.Error
+type GetBookByID200Output models.Book
+
+func (o GetBookByID200Output) GetBookByIDData() interface{} {
+	return o
+}
+
+func (o GetBookByID200Output) GetBookByIDStatus() int {
+	return 200
+}
+
+type GetBookByID404Output models.Error
+
+func (o GetBookByID404Output) GetBookByIDData() interface{} {
+	return o
 }
 
 func (o GetBookByID404Output) Error() string {
@@ -41,18 +53,6 @@ func (o GetBookByID404Output) Error() string {
 
 func (o GetBookByID404Output) GetBookByIDStatusCode() int {
 	return 404
-}
-
-type GetBookByID200Output struct {
-	Data models.Book
-}
-
-func (o GetBookByID200Output) GetBookByIDData() interface{} {
-	return o.Data
-}
-
-func (o GetBookByID200Output) GetBookByIDStatus() int {
-	return 200
 }
 
 type CreateBookOutput interface {
@@ -66,12 +66,10 @@ type CreateBookError interface {
 	CreateBookStatusCode() int
 }
 
-type CreateBook200Output struct {
-	Data models.Book
-}
+type CreateBook200Output models.Book
 
 func (o CreateBook200Output) CreateBookData() interface{} {
-	return o.Data
+	return o
 }
 
 func (o CreateBook200Output) CreateBookStatus() int {
@@ -89,12 +87,10 @@ type GetBooksError interface {
 	GetBooksStatusCode() int
 }
 
-type GetBooks200Output struct {
-	Data []models.Book
-}
+type GetBooks200Output []models.Book
 
 func (o GetBooks200Output) GetBooksData() interface{} {
-	return o.Data
+	return o
 }
 
 func (o GetBooks200Output) GetBooksStatus() int {

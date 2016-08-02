@@ -584,15 +584,13 @@ func buildOutputs(packageName string, paths map[string]map[string]SwaggerOperati
 					return err
 				}
 
-				g.Printf("type %s struct {\n", outputName) //, typeName)
-				g.Printf("\tData %s\n", typeName)
+				g.Printf("type %s %s\n\n", outputName, typeName)
+
+				g.Printf("func (o %s) %sData() interface{} {\n", outputName, capitalize(op.OperationID))
+				g.Printf("\treturn o\n")
 				g.Printf("}\n\n")
 
 				if statusCode < 400 {
-
-					g.Printf("func (o %s) %sData() interface{} {\n", outputName, capitalize(op.OperationID))
-					g.Printf("\treturn o.Data\n")
-					g.Printf("}\n\n")
 
 					// TODO: Do we really want to have that as part of the interface?
 					g.Printf("func (o %s) %sStatus() int {\n", outputName, capitalize(op.OperationID))
@@ -607,6 +605,7 @@ func buildOutputs(packageName string, paths map[string]map[string]SwaggerOperati
 					// error message?
 					g.Printf("\treturn \"Status Code: \" + \"%d\"\n", statusCode)
 					g.Printf("}\n\n")
+
 					g.Printf("func (o %s) %sStatusCode() int {\n", outputName, capitalize(op.OperationID))
 					g.Printf("\treturn %d\n", statusCode)
 					g.Printf("}\n\n")

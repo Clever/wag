@@ -157,7 +157,7 @@ var internalErrorCode = `
 func successResponse(outputName string) string {
 	return fmt.Sprintf(`
 		var output %s
-		if err := json.NewDecoder(resp.Body).Decode(&output.Data); err != nil {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, DefaultInternalError{Msg: err.Error()}
 		}
 		return output, nil
