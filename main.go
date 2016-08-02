@@ -333,6 +333,7 @@ func buildContextsAndControllers(packageName string, paths map[string]map[string
 	// These two imports are only used if we have body parameters, so if we don't have these the
 	// compiler will complain about unused imports
 	g.Printf("var _ = json.Marshal\n\n")
+	g.Printf("var _ = strconv.FormatInt\n\n")
 	// TODO: Not as easy to do this for models since we have to find some type. Will be easier if
 	// we move it into the same package
 

@@ -28,6 +28,7 @@ func generateClients(s Swagger) error {
 	// error if we don't have the right params
 	g.Printf("var _ = json.Marshal\n")
 	g.Printf("var _ = strings.Replace\n\n")
+	g.Printf("var _ = strconv.FormatInt\n\n")
 
 	for url, path := range s.Paths {
 		for method, op := range path {
