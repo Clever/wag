@@ -15,7 +15,7 @@ var _ = json.Marshal
 var _ = strings.Replace
 
 func GetBookByID(ctx context.Context, i *GetBookByIDInput) (GetBookByIDOutput, error) {
-	path := "http://localhost:8080" + "/books/{bookID}"
+	path := "http://localhost:8080" + "/v1/books/{bookID}"
 	urlVals := url.Values{}
 	var body []byte
 
@@ -59,7 +59,7 @@ func GetBookByID(ctx context.Context, i *GetBookByIDInput) (GetBookByIDOutput, e
 }
 
 func CreateBook(ctx context.Context, i *CreateBookInput) (CreateBookOutput, error) {
-	path := "http://localhost:8080" + "/books/{bookID}"
+	path := "http://localhost:8080" + "/v1/books/{bookID}"
 	urlVals := url.Values{}
 	var body []byte
 
@@ -101,7 +101,7 @@ func CreateBook(ctx context.Context, i *CreateBookInput) (CreateBookOutput, erro
 }
 
 func GetBooks(ctx context.Context, i *GetBooksInput) (GetBooksOutput, error) {
-	path := "http://localhost:8080" + "/books"
+	path := "http://localhost:8080" + "/v1/books"
 	urlVals := url.Values{}
 	var body []byte
 

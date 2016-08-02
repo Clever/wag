@@ -87,7 +87,6 @@ type SwaggerResponse struct {
 }
 
 type Swagger struct {
-	// TODO: Fields to implement or error on if invalid
 	BasePath string `yaml:"basePath"`
 
 	// Partially implemented
@@ -222,7 +221,7 @@ func main() {
 
 	fmt.Printf("Swagger: %+v\n", swagger)
 
-	if err := buildRouter(swagger.Paths); err != nil {
+	if err := buildRouter(swagger.BasePath, swagger.Paths); err != nil {
 		panic(err)
 	}
 	// TODO: Is this really the way I want to do this???
@@ -250,7 +249,7 @@ func (g *Generator) Printf(format string, args ...interface{}) {
 	fmt.Fprintf(&g.buf, format, args...)
 }
 
-func buildRouter(paths map[string]map[string]SwaggerOperation) error {
+func buildRouter(basePath string, paths map[string]map[string]SwaggerOperation) error {
 	var g Generator
 
 	// TODO: Add something to all these about being auto-generated
@@ -282,7 +281,7 @@ func SetupServer(r *mux.Router, c Controller) http.Handler {
 			if err != nil {
 				return err
 			}
-			err = tmpl.Execute(&g.buf, routerTemplate{Method: method, Path: path,
+			err = tmpl.Execute(&g.buf, routerTemplate{Method: method, Path: basePath + path,
 				HandlerName: capitalize(op.OperationID)})
 			if err != nil {
 				return err

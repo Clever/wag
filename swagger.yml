@@ -4,6 +4,7 @@ info:
   description: Testing Swagger Codegen
   # TODO: Understand this...
   version: 0.1.0
+basePath: /v1
 schemes:
   - http
 produces:
