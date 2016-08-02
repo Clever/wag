@@ -2,6 +2,7 @@ package generated
 
 import (
 	"net/http"
+	"github.com/Clever/inter-service-api-testing/codegen-poc/generated/models"
 	"golang.org/x/net/context"
 	"encoding/json"
 )
@@ -18,33 +19,32 @@ func jsonMarshalNoError(i interface{}) string {
 	return string(bytes)
 }
 func GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	input, err := NewGetBookByIDInput(r)
+	input, err := models.NewGetBookByIDInput(r)
 	if err != nil {
-		http.Error(w, jsonMarshalNoError(DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	err = input.Validate()
 	if err != nil {
-		http.Error(w, jsonMarshalNoError(DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	resp, err := controller.GetBookByID(ctx, input)
 	if err != nil {
-		if respErr, ok := err.(GetBookByIDError); ok {
+		if respErr, ok := err.(models.GetBookByIDError); ok {
 			http.Error(w, respErr.Error(), respErr.GetBookByIDStatusCode())
 			return
 		} else {
-			// This is the default case
-			http.Error(w, jsonMarshalNoError(DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 			return
 		}
 	}
 
 	respBytes, err := json.Marshal(resp.GetBookByIDData())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
 	}
 
@@ -52,33 +52,32 @@ func GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	w.Write(respBytes)
 }
 func CreateBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	input, err := NewCreateBookInput(r)
+	input, err := models.NewCreateBookInput(r)
 	if err != nil {
-		http.Error(w, jsonMarshalNoError(DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	err = input.Validate()
 	if err != nil {
-		http.Error(w, jsonMarshalNoError(DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	resp, err := controller.CreateBook(ctx, input)
 	if err != nil {
-		if respErr, ok := err.(CreateBookError); ok {
+		if respErr, ok := err.(models.CreateBookError); ok {
 			http.Error(w, respErr.Error(), respErr.CreateBookStatusCode())
 			return
 		} else {
-			// This is the default case
-			http.Error(w, jsonMarshalNoError(DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 			return
 		}
 	}
 
 	respBytes, err := json.Marshal(resp.CreateBookData())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
 	}
 
@@ -86,33 +85,32 @@ func CreateBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Reque
 	w.Write(respBytes)
 }
 func GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	input, err := NewGetBooksInput(r)
+	input, err := models.NewGetBooksInput(r)
 	if err != nil {
-		http.Error(w, jsonMarshalNoError(DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	err = input.Validate()
 	if err != nil {
-		http.Error(w, jsonMarshalNoError(DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	resp, err := controller.GetBooks(ctx, input)
 	if err != nil {
-		if respErr, ok := err.(GetBooksError); ok {
+		if respErr, ok := err.(models.GetBooksError); ok {
 			http.Error(w, respErr.Error(), respErr.GetBooksStatusCode())
 			return
 		} else {
-			// This is the default case
-			http.Error(w, jsonMarshalNoError(DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 			return
 		}
 	}
 
 	respBytes, err := json.Marshal(resp.GetBooksData())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
 	}
 

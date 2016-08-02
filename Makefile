@@ -6,7 +6,7 @@ PKGS := $(shell go list ./... | grep -v /vendor | grep -v /generated)
 $(eval $(call golang-version-check,1.6))
 
 test:
-	rm generated/controller.go || true
+	rm -rf generated/*
 	cp hardcoded/* generated/
 	go run main.go genclients.go -file swagger.yml -package $(PKG)/generated
 	cd impl && go build

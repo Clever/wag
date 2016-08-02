@@ -8,7 +8,7 @@ import (
 )
 
 // This is extremely rough code for generating clients...
-func generateClients(s Swagger) error {
+func generateClients(packageName string, s Swagger) error {
 
 	var g Generator
 
@@ -23,6 +23,7 @@ func generateClients(s Swagger) error {
 	g.Printf("import \"bytes\"\n")
 	g.Printf("import \"fmt\"\n")
 	g.Printf("import \"strconv\"\n")
+	g.Printf("import \"%s/models\"\n\n", packageName)
 	g.Printf("import opentracing \"github.com/opentracing/opentracing-go\"\n\n")
 	// Whether we use these depends on the parameters, so we do this to prevent unused import
 	// error if we don't have the right params
@@ -34,7 +35,7 @@ func generateClients(s Swagger) error {
 		for method, op := range path {
 
 			// TODO: Do I really want pointers here and / or in the server?
-			g.Printf("func %s(ctx context.Context, i *%sInput) (%sOutput, error) {\n",
+			g.Printf("func %s(ctx context.Context, i *models.%sInput) (models.%sOutput, error) {\n",
 				capitalize(op.OperationID), capitalize(op.OperationID), capitalize(op.OperationID))
 
 			// TODO: How should I handle required fields... just check for nil pointers???
@@ -116,7 +117,7 @@ func generateClients(s Swagger) error {
 				g.Printf("\tcase %s:\n", key)
 
 				if resp.Schema == nil {
-					g.Printf("\t\tvar output %s%sOutput\n", capitalize(op.OperationID), key)
+					g.Printf("\t\tvar output models.%s%sOutput\n", capitalize(op.OperationID), key)
 					if code < 400 {
 						g.Printf("\t\treturn output, nil\n")
 					} else {
@@ -125,11 +126,12 @@ func generateClients(s Swagger) error {
 				} else {
 					if code < 400 {
 						// TODO: Factor out this common code...
-						outputName := fmt.Sprintf("%s%sOutput", capitalize(op.OperationID), capitalize(key))
+						outputName := fmt.Sprintf("models.%s%sOutput", capitalize(op.OperationID), capitalize(key))
 						g.Printf(successResponse(outputName))
 					} else {
-						g.Printf("\t\treturn nil, %s%sOutput{}\n", capitalize(op.OperationID), key)
+						g.Printf("\t\treturn nil, models.%s%sOutput{}\n", capitalize(op.OperationID), key)
 					}
+
 				}
 			}
 
@@ -140,7 +142,7 @@ func generateClients(s Swagger) error {
 			g.Printf(internalErrorCode)
 
 			g.Printf("\tdefault:\n")
-			g.Printf("\t\treturn nil, DefaultInternalError{Msg: \"Unknown response\"}\n")
+			g.Printf("\t\treturn nil, models.DefaultInternalError{Msg: \"Unknown response\"}\n")
 			g.Printf("\t}\n")
 			g.Printf("}\n\n")
 		}
@@ -150,17 +152,17 @@ func generateClients(s Swagger) error {
 }
 
 var badRequestCode = `
-		var output DefaultBadRequest
+		var output models.DefaultBadRequest
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, DefaultInternalError{Msg: err.Error()}
+			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
 		return nil, output
 `
 
 var internalErrorCode = `
-		var output DefaultInternalError
+		var output models.DefaultInternalError
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, DefaultInternalError{Msg: err.Error()}
+			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
 		return nil, output
 `
@@ -169,7 +171,7 @@ func successResponse(outputName string) string {
 	return fmt.Sprintf(`
 		var output %s
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, DefaultInternalError{Msg: err.Error()}
+			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
 		return output, nil
 `, outputName)

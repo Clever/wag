@@ -1,6 +1,4 @@
-package generated
-
-import "github.com/Clever/inter-service-api-testing/codegen-poc/generated/models"
+package models
 
 
 // DefaultInternalError represents a generic 500 response.
@@ -31,7 +29,7 @@ type GetBookByIDError interface {
 	GetBookByIDStatusCode() int
 }
 
-type GetBookByID200Output models.Book
+type GetBookByID200Output Book
 
 func (o GetBookByID200Output) GetBookByIDData() interface{} {
 	return o
@@ -65,7 +63,7 @@ func (o GetBookByID401Output) GetBookByIDStatusCode() int {
 	return 401
 }
 
-type GetBookByID404Output models.Error
+type GetBookByID404Output Error
 
 func (o GetBookByID404Output) GetBookByIDData() interface{} {
 	return o
@@ -90,7 +88,7 @@ type CreateBookError interface {
 	CreateBookStatusCode() int
 }
 
-type CreateBook200Output models.Book
+type CreateBook200Output Book
 
 func (o CreateBook200Output) CreateBookData() interface{} {
 	return o
@@ -111,7 +109,7 @@ type GetBooksError interface {
 	GetBooksStatusCode() int
 }
 
-type GetBooks200Output []models.Book
+type GetBooks200Output []Book
 
 func (o GetBooks200Output) GetBooksData() interface{} {
 	return o

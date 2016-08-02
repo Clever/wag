@@ -13,9 +13,9 @@ type contextKey struct{}
 
 func SetupServer(r *mux.Router, c Controller) http.Handler {
 	controller = c // TODO: get rid of global variable?
-	r.Methods("get").Path("/v1/books").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	r.Methods("post").Path("/v1/books/{bookID}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := gContext.Get(r, contextKey{}).(context.Context)
-		GetBooksHandler(ctx, w, r)
+		CreateBookHandler(ctx, w, r)
 	})
 
 	r.Methods("get").Path("/v1/books/{bookID}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -23,9 +23,9 @@ func SetupServer(r *mux.Router, c Controller) http.Handler {
 		GetBookByIDHandler(ctx, w, r)
 	})
 
-	r.Methods("post").Path("/v1/books/{bookID}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	r.Methods("get").Path("/v1/books").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := gContext.Get(r, contextKey{}).(context.Context)
-		CreateBookHandler(ctx, w, r)
+		GetBooksHandler(ctx, w, r)
 	})
 	return withMiddleware(r)
 }
