@@ -228,19 +228,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// TODO: Make this configurable
-	bytes, err := ioutil.ReadFile(*swaggerFile)
+	doc, err := loads.Spec(*swaggerFile)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Error loading swagger file: %s", err)
 	}
-
-	var swagger spec.Swagger
-	if err := swagger.UnmarshalJSON(bytes); err != nil {
-		panic(err)
-	}
+	swagger := *doc.Spec()
 
 	if err := Validate(swagger); err != nil {
-		panic(err)
+		log.Fatalf("Swagger file not valid: %s", err)
 	}
 
 	for _, dir := range []string{"server", "client", "models"} {
@@ -252,24 +247,21 @@ func main() {
 		}
 	}
 
-	fmt.Printf("Swagger: %+v\n", swagger)
-
-	if err := buildRouter(swagger.BasePath, swagger.Paths); err != nil {
+	if err := generateRouter(swagger.BasePath, swagger.Paths); err != nil {
 		panic(err)
 	}
 	// TODO: Is this really the way I want to do this???
-	if err := buildContextsAndControllers(*packageName, swagger.Paths); err != nil {
-		panic(err)
+	if err := generateContextsAndControllers(*packageName, swagger.Paths); err != nil {
+		log.Fatalf("Failed creating context and controllers: %s", err)
 	}
-	if err := buildHandlers(*packageName, swagger.Paths); err != nil {
-		panic(err)
+	if err := generateHandlers(*packageName, swagger.Paths); err != nil {
+		log.Fatalf("Failed building handlers: %s", err)
 	}
-	if err := buildOutputs(*packageName, swagger.Paths); err != nil {
-		panic(err)
+	if err := generateOutputs(*packageName, swagger.Paths); err != nil {
+		log.Fatalf("Failed building outputs %s", err)
 	}
-
 	if err := generateClients(*packageName, swagger); err != nil {
-		panic(err)
+		log.Fatalf("Failed generating clients %s", err)
 	}
 
 }
@@ -282,7 +274,7 @@ func (g *Generator) Printf(format string, args ...interface{}) {
 	fmt.Fprintf(&g.buf, format, args...)
 }
 
-func buildRouter(basePath string, paths *spec.Paths) error {
+func generateRouter(basePath string, paths *spec.Paths) error {
 	var g Generator
 
 	// TODO: Add something to all these about being auto-generated
@@ -340,7 +332,7 @@ var routerFunctionTemplate = `	r.Methods("{{.Method}}").Path("{{.Path}}").Handle
 	})
 `
 
-func buildContextsAndControllers(packageName string, paths *spec.Paths) error {
+func generateContextsAndControllers(packageName string, paths *spec.Paths) error {
 
 	// Only create the controller the first time. After that leave it as is
 	// TODO: This isn't convenient when developing, so maybe have a flag...?
@@ -368,6 +360,7 @@ func buildContextsAndControllers(packageName string, paths *spec.Paths) error {
 
 	for _, path := range paths.Paths {
 		for _, op := range pathItemOperations(path) {
+
 			if err := printInputStruct(&g, op); err != nil {
 				return err
 			}
@@ -434,10 +427,6 @@ func importStatements(imports []string) string {
 
 func printInputStruct(g *Generator, op *spec.Operation) error {
 	g.Printf("type %sInput struct {\n", capitalize(op.ID))
-
-	// TODO: Explicitly disallow formData param type
-
-	fmt.Printf("Parameters %+v\n", op.Parameters)
 
 	for _, param := range op.Parameters {
 		if param.In == "formData" {
@@ -573,7 +562,7 @@ func (d DefaultBadRequest) Error() string {
 `, "`json:\"msg\"`", "`json:\"msg\"`")
 }
 
-func buildOutputs(packageName string, paths *spec.Paths) error {
+func generateOutputs(packageName string, paths *spec.Paths) error {
 	var g Generator
 
 	g.Printf("package models\n\n")
@@ -665,8 +654,8 @@ func typeFromSchema(schema *spec.Schema) (string, error) {
 	if schema == nil {
 		// represent this as a string, which is empty by default
 		return "string", nil
-	} else if schema.Ref.RemoteURI() != "" {
-		ref := schema.Ref.RemoteURI()
+	} else if schema.Ref.String() != "" {
+		ref := schema.Ref.String()
 		if !strings.HasPrefix(ref, "#/definitions/") {
 			return "", fmt.Errorf("schema.$ref has undefined reference type. Must be #/definitions")
 		}
@@ -680,7 +669,7 @@ func typeFromSchema(schema *spec.Schema) (string, error) {
 		if items == nil || items.Schema == nil {
 			return "", fmt.Errorf("Two element schemas must have an '$ref' field in the 'items' descriptions")
 		}
-		ref := schema.Ref.RemoteURI()
+		ref := items.Schema.Ref.String()
 		if !strings.HasPrefix(ref, "#/definitions/") {
 			return "", fmt.Errorf("schema.$ref has undefined reference type. Must be #/definitions")
 		}
@@ -688,7 +677,7 @@ func typeFromSchema(schema *spec.Schema) (string, error) {
 	}
 }
 
-func buildHandlers(packageName string, paths *spec.Paths) error {
+func generateHandlers(packageName string, paths *spec.Paths) error {
 	var g Generator
 
 	g.Printf("package server\n\n")
