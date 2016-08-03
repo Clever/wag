@@ -1,4 +1,4 @@
-package generated
+package server
 
 import (
 	"net/http"

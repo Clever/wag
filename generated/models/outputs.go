@@ -29,6 +29,20 @@ type GetBookByIDError interface {
 	GetBookByIDStatusCode() int
 }
 
+type GetBookByID404Output Error
+
+func (o GetBookByID404Output) GetBookByIDData() interface{} {
+	return o
+}
+
+func (o GetBookByID404Output) Error() string {
+	return "Status Code: " + "404"
+}
+
+func (o GetBookByID404Output) GetBookByIDStatusCode() int {
+	return 404
+}
+
 type GetBookByID200Output Book
 
 func (o GetBookByID200Output) GetBookByIDData() interface{} {
@@ -61,20 +75,6 @@ func (o GetBookByID401Output) Error() string {
 
 func (o GetBookByID401Output) GetBookByIDStatusCode() int {
 	return 401
-}
-
-type GetBookByID404Output Error
-
-func (o GetBookByID404Output) GetBookByIDData() interface{} {
-	return o
-}
-
-func (o GetBookByID404Output) Error() string {
-	return "Status Code: " + "404"
-}
-
-func (o GetBookByID404Output) GetBookByIDStatusCode() int {
-	return 404
 }
 
 type CreateBookOutput interface {

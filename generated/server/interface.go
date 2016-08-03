@@ -1,4 +1,4 @@
-package generated
+package server
 
 import "golang.org/x/net/context"
 import "github.com/Clever/inter-service-api-testing/codegen-poc/generated/models"
