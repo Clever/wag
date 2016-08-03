@@ -3,12 +3,13 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"strconv"
 	"strings"
+
+	"github.com/go-openapi/spec"
 )
 
 // This is extremely rough code for generating clients...
-func generateClients(packageName string, s Swagger) error {
+func generateClients(packageName string, s spec.Swagger) error {
 
 	var g Generator
 
@@ -31,18 +32,18 @@ func generateClients(packageName string, s Swagger) error {
 	g.Printf("var _ = strings.Replace\n\n")
 	g.Printf("var _ = strconv.FormatInt\n\n")
 
-	for url, path := range s.Paths {
-		for method, op := range path {
+	for path, pathItem := range s.Paths.Paths {
+		for method, op := range pathItemOperations(pathItem) {
 
 			// TODO: Do I really want pointers here and / or in the server?
 			g.Printf("func %s(ctx context.Context, i *models.%sInput) (models.%sOutput, error) {\n",
-				capitalize(op.OperationID), capitalize(op.OperationID), capitalize(op.OperationID))
+				capitalize(op.ID), capitalize(op.ID), capitalize(op.ID))
 
 			// TODO: How should I handle required fields... just check for nil pointers???
 
 			// Build the URL
 			// TODO: Make the base URL configurable...
-			g.Printf("\tpath := \"http://localhost:8080\" + \"%s\"\n", s.BasePath+url)
+			g.Printf("\tpath := \"http://localhost:8080\" + \"%s\"\n", s.BasePath+path)
 			g.Printf("\turlVals := url.Values{}\n")
 			g.Printf("\tvar body []byte\n\n")
 
@@ -94,42 +95,31 @@ func generateClients(packageName string, s Swagger) error {
 		return nil, fmt.Errorf("couldn't inject tracing headers (%%v)", err)
 	}
 
-`, capitalize(op.OperationID))
+`, capitalize(op.ID))
 
 			// TODO: Handle the error
 			g.Printf("\tresp, _ := client.Do(req)\n\n")
 
 			// Switch on status code to build the response...
 			g.Printf("\tswitch resp.StatusCode {\n")
-			for key, resp := range op.Responses {
+			for statusCode, response := range op.Responses.StatusCodeResponses {
 
-				if key == "default" {
-					// TODO: Fix this... should probably factor along with server codegen
-					// Or just let this slip to the default in the case statement
-					continue
-				}
+				g.Printf("\tcase %d:\n", statusCode)
 
-				code, err := strconv.ParseInt(key, 10, 32)
-				if err != nil {
-					fmt.Errorf("Response key not valid %s", key)
-				}
-
-				g.Printf("\tcase %s:\n", key)
-
-				if resp.Schema == nil {
-					g.Printf("\t\tvar output models.%s%sOutput\n", capitalize(op.OperationID), key)
-					if code < 400 {
+				if response.Schema == nil {
+					g.Printf("\t\tvar output models.%s%dOutput\n", capitalize(op.ID), statusCode)
+					if statusCode < 400 {
 						g.Printf("\t\treturn output, nil\n")
 					} else {
 						g.Printf("\t\treturn nil, output\n")
 					}
 				} else {
-					if code < 400 {
+					if statusCode < 400 {
 						// TODO: Factor out this common code...
-						outputName := fmt.Sprintf("models.%s%sOutput", capitalize(op.OperationID), capitalize(key))
+						outputName := fmt.Sprintf("models.%s%dOutput", capitalize(op.ID), statusCode)
 						g.Printf(successResponse(outputName))
 					} else {
-						g.Printf("\t\treturn nil, models.%s%sOutput{}\n", capitalize(op.OperationID), key)
+						g.Printf("\t\treturn nil, models.%s%dOutput{}\n", capitalize(op.ID), statusCode)
 					}
 
 				}
@@ -177,7 +167,7 @@ func successResponse(outputName string) string {
 `, outputName)
 }
 
-func convertParamToString(p SwaggerParameter) string {
+func convertParamToString(p spec.Parameter) string {
 	switch p.Type {
 	case "string":
 		return fmt.Sprintf("i.%s", capitalize(p.Name))

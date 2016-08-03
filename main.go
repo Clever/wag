@@ -8,19 +8,18 @@ import (
 	"log"
 	"os"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/loads/fmts"
+	"github.com/go-openapi/spec"
 	"github.com/go-swagger/go-swagger/generator"
-	"gopkg.in/yaml.v2"
 
 	"text/template"
 )
 
 type SwaggerOperation struct {
-	OperationID string                     `yaml:"operationId"`
+	ID          string                     `yaml:"operationId"`
 	Description string                     `yaml:"description"`
 	Responses   map[string]SwaggerResponse `yaml:"responses"`
 	// TODO: Parameters can also be a reference type. We should disallow that given that
@@ -39,7 +38,7 @@ type SwaggerOperation struct {
 var alphaNumRegex = regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9]*$")
 
 // Validate checks if the swagger operation has any fields we don't support
-func (s SwaggerOperation) Validate() error {
+func ValidateOp(s *spec.Operation) error {
 	if len(s.Consumes) != 0 {
 		fmt.Errorf("Consumes not supported in swagger operations")
 	}
@@ -58,7 +57,7 @@ func (s SwaggerOperation) Validate() error {
 		for path, pathObj := range paths {
 		for method, op := range pathObj {
 	*/
-	if !alphaNumRegex.MatchString(s.OperationID) {
+	if !alphaNumRegex.MatchString(s.ID) {
 		// We need this because we build function / struct names with the operationID.
 		// We could strip out the special characters, but it seems clearly to just enforce
 		// this.
@@ -113,7 +112,7 @@ type Swagger struct {
 // we don't support. Note that this isn't a comprehensive check for all things
 // we don't support, so this may not return an error, but the Swagger file might
 // have values we don't support
-func (s Swagger) Validate() error {
+func Validate(s spec.Swagger) error {
 	if s.Swagger != "2.0" {
 		return fmt.Errorf("Unsupported Swagger version %s", s.Swagger)
 	}
@@ -151,20 +150,46 @@ func (s Swagger) Validate() error {
 	}
 
 	// Validate paths
-	for fieldName, path := range s.Paths {
+	for fieldName, pathItem := range s.Paths.Paths {
 		// Note that $ref and parameters are not valid as of now
 		if !sliceContains([]string{"get", "put", "post", "delete", "options", "head", "patch"}, fieldName) {
 			fmt.Errorf("Invalid path field name: %s", fieldName)
 		}
 
-		for _, op := range path {
-			if err := op.Validate(); err != nil {
+		for _, op := range pathItemOperations(pathItem) {
+			if err := ValidateOp(op); err != nil {
 				return err
 			}
 		}
 	}
 
 	return nil
+}
+
+func pathItemOperations(item spec.PathItem) map[string]*spec.Operation {
+	ops := make(map[string]*spec.Operation)
+	if item.Get != nil {
+		ops["GET"] = item.Get
+	}
+	if item.Put != nil {
+		ops["PUT"] = item.Put
+	}
+	if item.Post != nil {
+		ops["POST"] = item.Post
+	}
+	if item.Delete != nil {
+		ops["DELETE"] = item.Delete
+	}
+	if item.Options != nil {
+		ops["OPTIONS"] = item.Options
+	}
+	if item.Head != nil {
+		ops["HEAD"] = item.Head
+	}
+	if item.Patch != nil {
+		ops["PATCH"] = item.Patch
+	}
+	return ops
 }
 
 func sliceContains(slice []string, key string) bool {
@@ -209,12 +234,12 @@ func main() {
 		panic(err)
 	}
 
-	var swagger Swagger
-	if err := yaml.Unmarshal(bytes, &swagger); err != nil {
+	var swagger spec.Swagger
+	if err := swagger.UnmarshalJSON(bytes); err != nil {
 		panic(err)
 	}
 
-	if err := swagger.Validate(); err != nil {
+	if err := Validate(swagger); err != nil {
 		panic(err)
 	}
 
@@ -257,7 +282,7 @@ func (g *Generator) Printf(format string, args ...interface{}) {
 	fmt.Fprintf(&g.buf, format, args...)
 }
 
-func buildRouter(basePath string, paths map[string]map[string]SwaggerOperation) error {
+func buildRouter(basePath string, paths *spec.Paths) error {
 	var g Generator
 
 	// TODO: Add something to all these about being auto-generated
@@ -279,8 +304,8 @@ type contextKey struct{}
 func SetupServer(r *mux.Router, c Controller) http.Handler {
 	controller = c // TODO: get rid of global variable?`)
 
-	for path, pathObj := range paths {
-		for method, op := range pathObj {
+	for path, pathItem := range paths.Paths {
+		for method, op := range pathItemOperations(pathItem) {
 			// TODO: Note the coupling for the handler name here and in the handler function. Does that mean these should be
 			// together? Probably...
 
@@ -290,7 +315,7 @@ func SetupServer(r *mux.Router, c Controller) http.Handler {
 				return err
 			}
 			err = tmpl.Execute(&g.buf, routerTemplate{Method: method, Path: basePath + path,
-				HandlerName: capitalize(op.OperationID)})
+				HandlerName: capitalize(op.ID)})
 			if err != nil {
 				return err
 			}
@@ -315,7 +340,7 @@ var routerFunctionTemplate = `	r.Methods("{{.Method}}").Path("{{.Path}}").Handle
 	})
 `
 
-func buildContextsAndControllers(packageName string, paths map[string]map[string]SwaggerOperation) error {
+func buildContextsAndControllers(packageName string, paths *spec.Paths) error {
 
 	// Only create the controller the first time. After that leave it as is
 	// TODO: This isn't convenient when developing, so maybe have a flag...?
@@ -341,12 +366,11 @@ func buildContextsAndControllers(packageName string, paths map[string]map[string
 	// TODO: Not as easy to do this for models since we have to find some type. Will be easier if
 	// we move it into the same package
 
-	for _, path := range paths {
-		for _, op := range path {
+	for _, path := range paths.Paths {
+		for _, op := range pathItemOperations(path) {
 			if err := printInputStruct(&g, op); err != nil {
 				return err
 			}
-
 			if err := printInputValidation(&g, op); err != nil {
 				return err
 			}
@@ -368,10 +392,10 @@ func buildContextsAndControllers(packageName string, paths map[string]map[string
 	controllerGenerator.Printf("type ControllerImpl struct{\n")
 	controllerGenerator.Printf("}\n")
 
-	for _, path := range paths {
-		for _, op := range path {
+	for _, path := range paths.Paths {
+		for _, op := range pathItemOperations(path) {
 			definition := fmt.Sprintf("%s(ctx context.Context, input *models.%sInput) (models.%sOutput, error)",
-				capitalize(op.OperationID), capitalize(op.OperationID), capitalize(op.OperationID))
+				capitalize(op.ID), capitalize(op.ID), capitalize(op.ID))
 			interfaceGenerator.Printf("\t%s\n", definition)
 
 			if err := printNewInput(&controllerGenerator, op); err != nil {
@@ -408,8 +432,8 @@ func importStatements(imports []string) string {
 	return output
 }
 
-func printInputStruct(g *Generator, op SwaggerOperation) error {
-	g.Printf("type %sInput struct {\n", capitalize(op.OperationID))
+func printInputStruct(g *Generator, op *spec.Operation) error {
+	g.Printf("type %sInput struct {\n", capitalize(op.ID))
 
 	// TODO: Explicitly disallow formData param type
 
@@ -450,8 +474,8 @@ func printInputStruct(g *Generator, op SwaggerOperation) error {
 	return nil
 }
 
-func printInputValidation(g *Generator, op SwaggerOperation) error {
-	g.Printf("func (i %sInput) Validate() error{\n", capitalize(op.OperationID))
+func printInputValidation(g *Generator, op *spec.Operation) error {
+	g.Printf("func (i %sInput) Validate() error{\n", capitalize(op.ID))
 
 	// TODO: Right now we only support validation on complex types (schemas)
 	for _, param := range op.Parameters {
@@ -467,11 +491,11 @@ func printInputValidation(g *Generator, op SwaggerOperation) error {
 	return nil
 }
 
-func printNewInput(g *Generator, op SwaggerOperation) error {
+func printNewInput(g *Generator, op *spec.Operation) error {
 	g.Printf("func New%sInput(r *http.Request) (*models.%sInput, error) {\n",
-		capitalize(op.OperationID), capitalize(op.OperationID))
+		capitalize(op.ID), capitalize(op.ID))
 
-	g.Printf("\tvar input models.%sInput\n\n", capitalize(op.OperationID))
+	g.Printf("\tvar input models.%sInput\n\n", capitalize(op.ID))
 
 	printedError := false
 
@@ -549,15 +573,15 @@ func (d DefaultBadRequest) Error() string {
 `, "`json:\"msg\"`", "`json:\"msg\"`")
 }
 
-func buildOutputs(packageName string, paths map[string]map[string]SwaggerOperation) error {
+func buildOutputs(packageName string, paths *spec.Paths) error {
 	var g Generator
 
 	g.Printf("package models\n\n")
 
 	g.Printf(defaultOutputTypes())
 
-	for _, path := range paths {
-		for _, op := range path {
+	for _, path := range paths.Paths {
+		for _, op := range pathItemOperations(path) {
 
 			// We classify response keys into three types:
 			// 1. 200-399 - these are "success" responses and implement the Output interface
@@ -566,30 +590,24 @@ func buildOutputs(packageName string, paths map[string]map[string]SwaggerOperati
 			// 3. Default - this is defined as a 500 (TODO: decide if we want to keep this...)
 
 			// Define the success interface
-			g.Printf("type %sOutput interface {\n", capitalize(op.OperationID))
-			g.Printf("\t%sStatus() int\n", capitalize(op.OperationID))
+			g.Printf("type %sOutput interface {\n", capitalize(op.ID))
+			g.Printf("\t%sStatus() int\n", capitalize(op.ID))
 			g.Printf("\t// Data is the underlying model object. We know it is json serializable\n")
-			g.Printf("\t%sData() interface{}\n", capitalize(op.OperationID))
+			g.Printf("\t%sData() interface{}\n", capitalize(op.ID))
 			g.Printf("}\n\n")
 
 			// Define the error interface
-			g.Printf("type %sError interface {\n", capitalize(op.OperationID))
+			g.Printf("type %sError interface {\n", capitalize(op.ID))
 			g.Printf("\terror // Extend the error interface\n")
-			g.Printf("\t%sStatusCode() int\n", capitalize(op.OperationID))
+			g.Printf("\t%sStatusCode() int\n", capitalize(op.ID))
 			g.Printf("}\n\n")
 
-			for key, response := range op.Responses {
+			for statusCode, response := range op.Responses.StatusCodeResponses {
 
-				if key == "default" {
-					// This is handled by the default responses
-					continue
-				}
-
-				statusCode, err := strconv.ParseInt(key, 10, 32)
-				if err != nil || statusCode < 200 || statusCode > 599 {
+				if statusCode < 200 || statusCode > 599 {
 					// TODO: Write a test for this...
 					return fmt.Errorf("Response map key must be an integer between 200 and 599 or "+
-						"the string 'default'. Was %s", key)
+						"the string 'default'. Was %d", statusCode)
 				}
 				if statusCode == 400 {
 					return fmt.Errorf("Use the pre-defined default 400 response 'DefaultBadRequest' " +
@@ -599,7 +617,7 @@ func buildOutputs(packageName string, paths map[string]map[string]SwaggerOperati
 						"instead of defining your own")
 				}
 
-				outputName := fmt.Sprintf("%s%sOutput", capitalize(op.OperationID), capitalize(key))
+				outputName := fmt.Sprintf("%s%dOutput", capitalize(op.ID), statusCode)
 				typeName, err := typeFromSchema(response.Schema)
 				if err != nil {
 					return err
@@ -607,14 +625,14 @@ func buildOutputs(packageName string, paths map[string]map[string]SwaggerOperati
 
 				g.Printf("type %s %s\n\n", outputName, typeName)
 
-				g.Printf("func (o %s) %sData() interface{} {\n", outputName, capitalize(op.OperationID))
+				g.Printf("func (o %s) %sData() interface{} {\n", outputName, capitalize(op.ID))
 				g.Printf("\treturn o\n")
 				g.Printf("}\n\n")
 
 				if statusCode < 400 {
 
 					// TODO: Do we really want to have that as part of the interface?
-					g.Printf("func (o %s) %sStatus() int {\n", outputName, capitalize(op.OperationID))
+					g.Printf("func (o %s) %sStatus() int {\n", outputName, capitalize(op.ID))
 					// TODO: Use the right status code...
 					g.Printf("\treturn %d\n", statusCode)
 					g.Printf("}\n\n")
@@ -627,7 +645,7 @@ func buildOutputs(packageName string, paths map[string]map[string]SwaggerOperati
 					g.Printf("\treturn \"Status Code: \" + \"%d\"\n", statusCode)
 					g.Printf("}\n\n")
 
-					g.Printf("func (o %s) %sStatusCode() int {\n", outputName, capitalize(op.OperationID))
+					g.Printf("func (o %s) %sStatusCode() int {\n", outputName, capitalize(op.ID))
 					g.Printf("\treturn %d\n", statusCode)
 					g.Printf("}\n\n")
 				}
@@ -637,48 +655,40 @@ func buildOutputs(packageName string, paths map[string]map[string]SwaggerOperati
 	return ioutil.WriteFile("generated/models/outputs.go", g.buf.Bytes(), 0644)
 }
 
-func typeFromSchema(schema map[string]interface{}) (string, error) {
+func typeFromSchema(schema *spec.Schema) (string, error) {
 	// We support three types of schemas
 	// 1. An empty schema
 	// 2. A schema with one element, the $ref key
 	// 3. A schema with two elements. One a type with value 'array' and another items field
 	// referencing the $ref
 	// TODO: The error messages here aren't great...
-	if len(schema) == 0 {
+	if schema == nil {
 		// represent this as a string, which is empty by default
 		return "string", nil
-	} else if len(schema) == 1 {
-		ref, ok := schema["$ref"].(string)
-		if !ok {
-			return "", fmt.Errorf("Single element schema must have '$ref' string field")
-		}
+	} else if schema.Ref.RemoteURI() != "" {
+		ref := schema.Ref.RemoteURI()
 		if !strings.HasPrefix(ref, "#/definitions/") {
 			return "", fmt.Errorf("schema.$ref has undefined reference type. Must be #/definitions")
 		}
 		return ref[len("#/definitions/"):], nil
-	} else if len(schema) == 2 {
-		schemaType, ok := schema["type"].(string)
-		if !ok || schemaType != "array" {
+	} else {
+		schemaType := schema.Type
+		if len(schemaType) != 1 || schemaType[0] != "array" {
 			return "", fmt.Errorf("Two element schemas must have a 'type' field with the value 'array'")
 		}
-		items, ok := schema["items"].(map[interface{}]interface{})
-		if !ok {
-			return "", fmt.Errorf("Two element schemas must have an 'items' field that's a string map")
-		}
-		ref, ok := items["$ref"].(string)
-		if !ok {
+		items := schema.Items
+		if items == nil || items.Schema == nil {
 			return "", fmt.Errorf("Two element schemas must have an '$ref' field in the 'items' descriptions")
 		}
+		ref := schema.Ref.RemoteURI()
 		if !strings.HasPrefix(ref, "#/definitions/") {
 			return "", fmt.Errorf("schema.$ref has undefined reference type. Must be #/definitions")
 		}
 		return "[]" + ref[len("#/definitions/"):], nil
-	} else {
-		return "", fmt.Errorf("Parameter schemas can have at most three elements")
 	}
 }
 
-func buildHandlers(packageName string, paths map[string]map[string]SwaggerOperation) error {
+func buildHandlers(packageName string, paths *spec.Paths) error {
 	var g Generator
 
 	g.Printf("package server\n\n")
@@ -694,14 +704,14 @@ func buildHandlers(packageName string, paths map[string]map[string]SwaggerOperat
 
 	g.Printf(jsonMarshalString)
 
-	for _, path := range paths {
-		for _, op := range path {
+	for _, path := range paths.Paths {
+		for _, op := range pathItemOperations(path) {
 
 			tmpl, err := template.New("test").Parse(handlerTemplate)
 			if err != nil {
 				return err
 			}
-			err = tmpl.Execute(&g.buf, handlerOp{Op: capitalize(op.OperationID)})
+			err = tmpl.Execute(&g.buf, handlerOp{Op: capitalize(op.ID)})
 			if err != nil {
 				return err
 			}
