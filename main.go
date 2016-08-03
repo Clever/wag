@@ -329,9 +329,6 @@ func buildContextsAndControllers(packageName string, paths map[string]map[string
 	g.Printf("package models\n\n")
 
 	g.Printf("import (\n")
-	g.Printf("\t\"net/http\"\n")
-
-	g.Printf("\t\"github.com/gorilla/mux\"\n")
 
 	g.Printf("\t\"encoding/json\"\n")
 	g.Printf("\t\"strconv\"\n")
@@ -350,10 +347,6 @@ func buildContextsAndControllers(packageName string, paths map[string]map[string
 				return err
 			}
 
-			if err := printNewInput(&g, op); err != nil {
-				return err
-			}
-
 			if err := printInputValidation(&g, op); err != nil {
 				return err
 			}
@@ -362,16 +355,14 @@ func buildContextsAndControllers(packageName string, paths map[string]map[string
 
 	var interfaceGenerator Generator
 	interfaceGenerator.Printf("package server\n\n")
-	interfaceGenerator.Printf("import \"golang.org/x/net/context\"\n")
-	interfaceGenerator.Printf("import \"%s/models\"\n\n", packageName)
-
+	interfaceGenerator.Printf(importStatements([]string{"golang.org/x/net/context", packageName + "/models"}))
 	interfaceGenerator.Printf("type Controller interface {\n")
 
 	var controllerGenerator Generator
 	controllerGenerator.Printf("package server\n\n")
-	controllerGenerator.Printf("import \"golang.org/x/net/context\"\n")
-	controllerGenerator.Printf("import \"errors\"\n\n")
-	controllerGenerator.Printf("import \"%s/models\"\n\n", packageName)
+	controllerGenerator.Printf(importStatements([]string{"golang.org/x/net/context",
+		"net/http", "strconv", "github.com/gorilla/mux", "errors", packageName + "/models"}))
+
 	// TODO: Better name for this... very java-y. Also shouldn't necessarily be controller
 	// TODO: Should we plug this in more nicely??
 	controllerGenerator.Printf("type ControllerImpl struct{\n")
@@ -382,6 +373,10 @@ func buildContextsAndControllers(packageName string, paths map[string]map[string
 			definition := fmt.Sprintf("%s(ctx context.Context, input *models.%sInput) (models.%sOutput, error)",
 				capitalize(op.OperationID), capitalize(op.OperationID), capitalize(op.OperationID))
 			interfaceGenerator.Printf("\t%s\n", definition)
+
+			if err := printNewInput(&controllerGenerator, op); err != nil {
+				return err
+			}
 
 			controllerGenerator.Printf("func (c ControllerImpl) %s {\n", definition)
 			controllerGenerator.Printf("\t// TODO: Implement me!\n")
@@ -398,6 +393,19 @@ func buildContextsAndControllers(packageName string, paths map[string]map[string
 		return err
 	}
 	return ioutil.WriteFile("generated/server/controller.go", controllerGenerator.buf.Bytes(), 0644)
+}
+
+// importStatements takes a list of import strings and converts them to a formatted imports
+func importStatements(imports []string) string {
+	if len(imports) == 0 {
+		return ""
+	}
+	output := "import (\n"
+	for _, importStr := range imports {
+		output += fmt.Sprintf("\t\"%s\"\n", importStr)
+	}
+	output += ")\n\n"
+	return output
 }
 
 func printInputStruct(g *Generator, op SwaggerOperation) error {
@@ -460,10 +468,10 @@ func printInputValidation(g *Generator, op SwaggerOperation) error {
 }
 
 func printNewInput(g *Generator, op SwaggerOperation) error {
-	g.Printf("func New%sInput(r *http.Request) (*%sInput, error) {\n",
+	g.Printf("func New%sInput(r *http.Request) (*models.%sInput, error) {\n",
 		capitalize(op.OperationID), capitalize(op.OperationID))
 
-	g.Printf("\tvar input %sInput\n\n", capitalize(op.OperationID))
+	g.Printf("\tvar input models.%sInput\n\n", capitalize(op.OperationID))
 
 	printedError := false
 
@@ -719,7 +727,7 @@ func jsonMarshalNoError(i interface{}) string {
 `
 
 var handlerTemplate = `func {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	input, err := models.New{{.Op}}Input(r)
+	input, err := New{{.Op}}Input(r)
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
