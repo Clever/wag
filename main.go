@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -51,8 +52,6 @@ func (s SwaggerOperation) Validate() error {
 	if len(s.Security) != 0 {
 		fmt.Errorf("Security not supported in swagger operations")
 	}
-
-	fmt.Printf("IN HERE: %s\n", s.OperationID)
 
 	// TODO: A test for this?
 	/*
@@ -219,6 +218,15 @@ func main() {
 		panic(err)
 	}
 
+	for _, dir := range []string{"server", "client", "models"} {
+		dirName := os.Getenv("GOPATH") + "/src/" + *packageName + "/" + dir
+		if err := os.Mkdir(dirName, 0700); err != nil {
+			if !os.IsExist(err.(*os.PathError)) {
+				log.Fatalf("Could not create directory: %s, error: %s", dirName, err)
+			}
+		}
+	}
+
 	fmt.Printf("Swagger: %+v\n", swagger)
 
 	if err := buildRouter(swagger.BasePath, swagger.Paths); err != nil {
@@ -255,7 +263,7 @@ func buildRouter(basePath string, paths map[string]map[string]SwaggerOperation) 
 	// TODO: Add something to all these about being auto-generated
 
 	g.Printf(
-		`package generated
+		`package server
 
 import (
 	"net/http"
@@ -292,7 +300,7 @@ func SetupServer(r *mux.Router, c Controller) http.Handler {
 	g.Printf("\treturn withMiddleware(r)\n")
 	g.Printf("}\n")
 
-	return ioutil.WriteFile("generated/router.go", g.buf.Bytes(), 0644)
+	return ioutil.WriteFile("generated/server/router.go", g.buf.Bytes(), 0644)
 }
 
 type routerTemplate struct {
@@ -353,14 +361,14 @@ func buildContextsAndControllers(packageName string, paths map[string]map[string
 	}
 
 	var interfaceGenerator Generator
-	interfaceGenerator.Printf("package generated\n\n")
+	interfaceGenerator.Printf("package server\n\n")
 	interfaceGenerator.Printf("import \"golang.org/x/net/context\"\n")
 	interfaceGenerator.Printf("import \"%s/models\"\n\n", packageName)
 
 	interfaceGenerator.Printf("type Controller interface {\n")
 
 	var controllerGenerator Generator
-	controllerGenerator.Printf("package generated\n\n")
+	controllerGenerator.Printf("package server\n\n")
 	controllerGenerator.Printf("import \"golang.org/x/net/context\"\n")
 	controllerGenerator.Printf("import \"errors\"\n\n")
 	controllerGenerator.Printf("import \"%s/models\"\n\n", packageName)
@@ -386,10 +394,10 @@ func buildContextsAndControllers(packageName string, paths map[string]map[string
 	if err := ioutil.WriteFile("generated/models/inputs.go", g.buf.Bytes(), 0644); err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile("generated/interface.go", interfaceGenerator.buf.Bytes(), 0644); err != nil {
+	if err := ioutil.WriteFile("generated/server/interface.go", interfaceGenerator.buf.Bytes(), 0644); err != nil {
 		return err
 	}
-	return ioutil.WriteFile("generated/controller.go", controllerGenerator.buf.Bytes(), 0644)
+	return ioutil.WriteFile("generated/server/controller.go", controllerGenerator.buf.Bytes(), 0644)
 }
 
 func printInputStruct(g *Generator, op SwaggerOperation) error {
@@ -665,7 +673,7 @@ func typeFromSchema(schema map[string]interface{}) (string, error) {
 func buildHandlers(packageName string, paths map[string]map[string]SwaggerOperation) error {
 	var g Generator
 
-	g.Printf("package generated\n\n")
+	g.Printf("package server\n\n")
 	g.Printf("import (\n")
 	g.Printf("\t\"net/http\"\n")
 	g.Printf("\t\"%s/models\"\n", packageName)
@@ -692,7 +700,7 @@ func buildHandlers(packageName string, paths map[string]map[string]SwaggerOperat
 		}
 	}
 
-	return ioutil.WriteFile("generated/handlers.go", g.buf.Bytes(), 0644)
+	return ioutil.WriteFile("generated/server/handlers.go", g.buf.Bytes(), 0644)
 }
 
 type handlerOp struct {

@@ -11,33 +11,22 @@ var _ = json.Marshal
 
 var _ = strconv.FormatInt
 
-type GetBooksInput struct {
-	Author string
-	Available bool
-	MaxPages float64
+type CreateBookInput struct {
+	NewBook Book
 }
 
-func NewGetBooksInput(r *http.Request) (*GetBooksInput, error) {
-	var input GetBooksInput
+func NewCreateBookInput(r *http.Request) (*CreateBookInput, error) {
+	var input CreateBookInput
 
-	authorStr := r.URL.Query().Get("author")
-	input.Author = authorStr
-	availableStr := r.URL.Query().Get("available")
-	var err error
-	input.Available, err = strconv.ParseBool(availableStr)
-	if err != nil {
-		return nil, err
-	}
-	maxPagesStr := r.URL.Query().Get("maxPages")
-	input.MaxPages, err = strconv.ParseFloat(maxPagesStr, 64)
-	if err != nil {
-		return nil, err
-	}
 
 	return &input, nil
 }
 
-func (i GetBooksInput) Validate() error{
+func (i CreateBookInput) Validate() error{
+	if err := i.NewBook.Validate(nil); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -65,22 +54,33 @@ func (i GetBookByIDInput) Validate() error{
 	return nil
 }
 
-type CreateBookInput struct {
-	NewBook Book
+type GetBooksInput struct {
+	Author string
+	Available bool
+	MaxPages float64
 }
 
-func NewCreateBookInput(r *http.Request) (*CreateBookInput, error) {
-	var input CreateBookInput
+func NewGetBooksInput(r *http.Request) (*GetBooksInput, error) {
+	var input GetBooksInput
 
+	authorStr := r.URL.Query().Get("author")
+	input.Author = authorStr
+	availableStr := r.URL.Query().Get("available")
+	var err error
+	input.Available, err = strconv.ParseBool(availableStr)
+	if err != nil {
+		return nil, err
+	}
+	maxPagesStr := r.URL.Query().Get("maxPages")
+	input.MaxPages, err = strconv.ParseFloat(maxPagesStr, 64)
+	if err != nil {
+		return nil, err
+	}
 
 	return &input, nil
 }
 
-func (i CreateBookInput) Validate() error{
-	if err := i.NewBook.Validate(nil); err != nil {
-		return err
-	}
-
+func (i GetBooksInput) Validate() error{
 	return nil
 }
 

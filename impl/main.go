@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Clever/inter-service-api-testing/codegen-poc/generated"
+	"github.com/Clever/inter-service-api-testing/codegen-poc/generated/server"
 	"github.com/gorilla/mux"
 )
 
@@ -13,9 +13,9 @@ import (
 
 func main() {
 
-	controller := generated.ControllerImpl{}
+	controller := server.ControllerImpl{}
 
-	router := generated.SetupServer(mux.NewRouter(), controller)
+	router := server.SetupServer(mux.NewRouter(), controller)
 	server := &http.Server{
 		// TODO: This should be configurable???
 		Addr:    fmt.Sprintf(":8080"),

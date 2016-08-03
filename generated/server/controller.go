@@ -1,4 +1,4 @@
-package generated
+package server
 
 import "golang.org/x/net/context"
 import "errors"
