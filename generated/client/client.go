@@ -1,4 +1,4 @@
-package generated
+package client
 
 import "net/http"
 import "net/url"
@@ -17,21 +17,20 @@ var _ = strings.Replace
 
 var _ = strconv.FormatInt
 
-func GetBooks(ctx context.Context, i *models.GetBooksInput) (models.GetBooksOutput, error) {
-	path := "http://localhost:8080" + "/v1/books"
+func GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
+	path := "http://localhost:8080" + "/v1/books/{bookID}"
 	urlVals := url.Values{}
 	var body []byte
 
-	urlVals.Add("author", i.Author)
-	urlVals.Add("available", strconv.FormatBool(i.Available))
-	urlVals.Add("maxPages", strconv.FormatFloat(i.MaxPages, 'E', -1, 64))
+	path = strings.Replace(path, "{bookID}", strconv.FormatInt(i.BookID, 10), -1)
 	path = path + "?" + urlVals.Encode()
 
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", path, bytes.NewBuffer(body))
+	req.Header.Set("authorization", i.Authorization)
 
 	// Inject tracing headers
-	opName := "GetBooks"
+	opName := "GetBookByID"
 	var sp opentracing.Span
 	// TODO: add tags relating to input data?
 	if parentSpan := opentracing.SpanFromContext(ctx); parentSpan != nil {
@@ -50,11 +49,19 @@ func GetBooks(ctx context.Context, i *models.GetBooksInput) (models.GetBooksOutp
 	switch resp.StatusCode {
 	case 200:
 
-		var output models.GetBooks200Output
+		var output models.GetBookByID200Output
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
 		return output, nil
+	case 204:
+		var output models.GetBookByID204Output
+		return output, nil
+	case 401:
+		var output models.GetBookByID401Output
+		return nil, output
+	case 404:
+		return nil, models.GetBookByID404Output{}
 	case 400:
 
 		var output models.DefaultBadRequest
@@ -130,20 +137,21 @@ func CreateBook(ctx context.Context, i *models.CreateBookInput) (models.CreateBo
 	}
 }
 
-func GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
-	path := "http://localhost:8080" + "/v1/books/{bookID}"
+func GetBooks(ctx context.Context, i *models.GetBooksInput) (models.GetBooksOutput, error) {
+	path := "http://localhost:8080" + "/v1/books"
 	urlVals := url.Values{}
 	var body []byte
 
-	path = strings.Replace(path, "{bookID}", strconv.FormatInt(i.BookID, 10), -1)
+	urlVals.Add("author", i.Author)
+	urlVals.Add("available", strconv.FormatBool(i.Available))
+	urlVals.Add("maxPages", strconv.FormatFloat(i.MaxPages, 'E', -1, 64))
 	path = path + "?" + urlVals.Encode()
 
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", path, bytes.NewBuffer(body))
-	req.Header.Set("authorization", i.Authorization)
 
 	// Inject tracing headers
-	opName := "GetBookByID"
+	opName := "GetBooks"
 	var sp opentracing.Span
 	// TODO: add tags relating to input data?
 	if parentSpan := opentracing.SpanFromContext(ctx); parentSpan != nil {
@@ -160,20 +168,12 @@ func GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (models.GetBoo
 	resp, _ := client.Do(req)
 
 	switch resp.StatusCode {
-	case 401:
-		var output models.GetBookByID401Output
-		return nil, output
-	case 404:
-		return nil, models.GetBookByID404Output{}
 	case 200:
 
-		var output models.GetBookByID200Output
+		var output models.GetBooks200Output
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
-		return output, nil
-	case 204:
-		var output models.GetBookByID204Output
 		return output, nil
 	case 400:
 
