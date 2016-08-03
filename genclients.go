@@ -14,7 +14,7 @@ func generateClients(packageName string, s Swagger) error {
 
 	// TODO: Add a general client type... something like type %sClient struct { basePath string }
 
-	g.Printf("package generated\n\n")
+	g.Printf("package client\n\n")
 	g.Printf("import \"net/http\"\n")
 	g.Printf("import \"net/url\"\n")
 	g.Printf("import \"encoding/json\"\n")
@@ -148,7 +148,7 @@ func generateClients(packageName string, s Swagger) error {
 		}
 	}
 
-	return ioutil.WriteFile("generated/client.go", g.buf.Bytes(), 0644)
+	return ioutil.WriteFile("generated/client/client.go", g.buf.Bytes(), 0644)
 }
 
 var badRequestCode = `
