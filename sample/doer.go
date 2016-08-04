@@ -49,8 +49,19 @@ func (d tracingDoer) Do(
 
 // retryHandler retries 50X http requests
 type retryDoer struct {
-	d doer
+	d              doer
+	defaultRetries int
 }
+
+// WithRetry returns a new context that overrides the number of retries to do for a particular
+// request.
+func WithRetry(ctx context.Context, retries int) context.Context {
+	return context.WithValue(ctx, retryContext{}, retries)
+}
+
+// retryContext is the key the retry configuration. For demonstration purposes it's just a count
+// of the number of retries right now.
+type retryContext struct{}
 
 func (d retryDoer) Do(ctx context.Context, c *http.Client, r *http.Request) (*http.Response, error) {
 
@@ -59,11 +70,23 @@ func (d retryDoer) Do(ctx context.Context, c *http.Client, r *http.Request) (*ht
 		return resp, err
 	}
 
-	// If request is retryable then retry it. For this proof of concept let's just retry GETs
-	if r.Method != "GET" || resp.StatusCode < 500 {
+	// If the request can't be retried then just return immediately. For this proof of concept only
+	// GETs can be retried
+	if r.Method != "GET" {
 		return resp, err
 	}
 
-	// Otherwise retry the request. For now just do it once without waiting...
-	return d.d.Do(ctx, c, r)
+	var retries int
+	retries, ok := ctx.Value(retryContext{}).(int)
+	if !ok {
+		retries = d.defaultRetries
+	}
+
+	for i := 0; i < retries; i++ {
+		if resp.StatusCode < 500 {
+			break
+		}
+		resp, err = d.d.Do(ctx, c, r)
+	}
+	return resp, err
 }

@@ -18,15 +18,22 @@ type Client struct {
 	BasePath    string
 	requestDoer doer
 	transport   *http.Transport
+	// Keep the retry doer around so that we can set the number of retries
+	retryDoer retryDoer
 }
 
 // NewClient creates a new client. The base path and http transport are configurable
 func NewClient(basePath string) Client {
-	var requestDoer doer
-	requestDoer = baseDoer{}
-	requestDoer = tracingDoer{d: requestDoer}
+	base := baseDoer{}
+	tracing := tracingDoer{d: base}
+	retry := retryDoer{d: tracing, defaultRetries: 1}
 
-	return Client{requestDoer: requestDoer, transport: nil, BasePath: basePath}
+	return Client{requestDoer: retry, retryDoer: retry, transport: nil, BasePath: basePath}
+}
+
+func (c Client) WithRetries(retries int) Client {
+	c.retryDoer.defaultRetries = retries
+	return c
 }
 
 func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) (models.GetBooksOutput, error) {
