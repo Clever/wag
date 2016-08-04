@@ -6,62 +6,34 @@ import "encoding/json"
 import "strings"
 import "golang.org/x/net/context"
 import "bytes"
-import "fmt"
 import "strconv"
 import "github.com/Clever/inter-service-api-testing/codegen-poc/generated/models"
-
-import opentracing "github.com/opentracing/opentracing-go"
 
 var _ = json.Marshal
 var _ = strings.Replace
 
 var _ = strconv.FormatInt
 
-type RequestHandler interface {
-	// If the response returns an error, everything above it should stay the same...
-	HandleRequest(ctx context.Context, c *http.Client, r *http.Request) (*http.Response, error)
-}
-
 var clientHandler RequestHandler
 
-// At some point client will be a struct we can modify...
-func initClient() {
-	clientHandler = baseRequestHandler{}
-	clientHandler = tracingHandler{handler: clientHandler}
+type Client struct {
+	BasePath  string
+	Handler   RequestHandler
+	Transport *http.Transport
 }
 
-type opNameCtx struct{}
+// NewClient creates a new client. The base path and http transport are configurable
+func NewClient(basePath string) Client {
+	var handler RequestHandler
+	handler = baseRequestHandler{}
+	handler = tracingHandler{handler: clientHandler}
 
-// TODO: Add something like what http has for this for handlers
-type baseRequestHandler struct{}
-
-func (b baseRequestHandler) HandleRequest(ctx context.Context, c *http.Client, r *http.Request) (*http.Response, error) {
-	return c.Do(r)
+	// We could add a default timeout in the http transport here...
+	return Client{Handler: handler, Transport: nil, BasePath: basePath}
 }
 
-type tracingHandler struct {
-	handler RequestHandler
-}
-
-func (t tracingHandler) HandleRequest(ctx context.Context, c *http.Client, r *http.Request) (*http.Response, error) {
-	opName := ctx.Value(opNameCtx{}).(string)
-	var sp opentracing.Span
-	// TODO: add tags relating to input data?
-	if parentSpan := opentracing.SpanFromContext(ctx); parentSpan != nil {
-		sp = opentracing.StartSpan(opName, opentracing.ChildOf(parentSpan.Context()))
-	} else {
-		sp = opentracing.StartSpan(opName)
-	}
-	if err := sp.Tracer().Inject(sp.Context(),
-		opentracing.HTTPHeaders,
-		opentracing.HTTPHeadersCarrier(r.Header)); err != nil {
-		return nil, fmt.Errorf("couldn't inject tracing headers (%v)", err)
-	}
-	return t.handler.HandleRequest(ctx, c, r)
-}
-
-func GetBooks(ctx context.Context, i *models.GetBooksInput) (models.GetBooksOutput, error) {
-	path := "http://localhost:8080" + "/v1/books"
+func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) (models.GetBooksOutput, error) {
+	path := c.BasePath + "/v1/books"
 	urlVals := url.Values{}
 	var body []byte
 
@@ -70,12 +42,12 @@ func GetBooks(ctx context.Context, i *models.GetBooksInput) (models.GetBooksOutp
 	urlVals.Add("maxPages", strconv.FormatFloat(i.MaxPages, 'E', -1, 64))
 	path = path + "?" + urlVals.Encode()
 
-	client := &http.Client{}
+	client := &http.Client{Transport: c.Transport}
 	req, _ := http.NewRequest("GET", path, bytes.NewBuffer(body))
 
 	// Inject tracing headers
 	ctx = context.WithValue(ctx, opNameCtx{}, "GetBooks")
-	resp, err := clientHandler.HandleRequest(ctx, client, req)
+	resp, err := c.Handler.HandleRequest(ctx, client, req)
 	if err != nil {
 		return nil, models.DefaultInternalError{Msg: err.Error()}
 	}
