@@ -14,21 +14,19 @@ var _ = strings.Replace
 
 var _ = strconv.FormatInt
 
-var clientHandler RequestHandler
-
 type Client struct {
-	BasePath  string
-	handler   RequestHandler
-	transport *http.Transport
+	BasePath    string
+	requestDoer doer
+	transport   *http.Transport
 }
 
 // NewClient creates a new client. The base path and http transport are configurable
 func NewClient(basePath string) Client {
-	var handler RequestHandler
-	handler = baseRequestHandler{}
-	handler = tracingHandler{handler: clientHandler}
+	var requestDoer doer
+	requestDoer = baseDoer{}
+	requestDoer = tracingDoer{d: requestDoer}
 
-	return Client{handler: handler, transport: nil, BasePath: basePath}
+	return Client{requestDoer: requestDoer, transport: nil, BasePath: basePath}
 }
 
 func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) (models.GetBooksOutput, error) {
@@ -46,7 +44,7 @@ func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) (models.G
 
 	// Inject tracing headers
 	ctx = context.WithValue(ctx, opNameCtx{}, "GetBooks")
-	resp, err := c.handler.HandleRequest(ctx, client, req)
+	resp, err := c.requestDoer.Do(ctx, client, req)
 	if err != nil {
 		return nil, models.DefaultInternalError{Msg: err.Error()}
 	}

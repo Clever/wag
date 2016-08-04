@@ -8,30 +8,27 @@ import "golang.org/x/net/context"
 
 import opentracing "github.com/opentracing/opentracing-go"
 
-type RequestHandler interface {
-	// If the response returns an error, everything above it should stay the same...
-	HandleRequest(ctx context.Context, c *http.Client, r *http.Request) (*http.Response, error)
+// doer is an interface for "doing" http requests possibly with wrapping
+type doer interface {
+	Do(ctx context.Context, c *http.Client, r *http.Request) (*http.Response, error)
 }
-
-// TODO: Add a timeout handler, probably based on https://godoc.org/golang.org/x/net/context/ctxhttp#Do
 
 type opNameCtx struct{}
 
 // baseRequestHandler performs the base http request
-type baseRequestHandler struct{}
+type baseDoer struct{}
 
-func (h baseRequestHandler) HandleRequest(
-	ctx context.Context, c *http.Client, r *http.Request) (*http.Response, error) {
-
+func (d baseDoer) Do(ctx context.Context, c *http.Client, r *http.Request) (*http.Response, error) {
+	// TODO: Add a timeout handler, probably based on https://godoc.org/golang.org/x/net/context/ctxhttp#Do
 	return c.Do(r)
 }
 
-// tracingHandler adds tracing to http requests
-type tracingHandler struct {
-	handler RequestHandler
+// tracingDoer adds tracing to http requests
+type tracingDoer struct {
+	d doer
 }
 
-func (h tracingHandler) HandleRequest(
+func (d tracingDoer) Do(
 	ctx context.Context, c *http.Client, r *http.Request) (*http.Response, error) {
 
 	opName := ctx.Value(opNameCtx{}).(string)
@@ -47,18 +44,17 @@ func (h tracingHandler) HandleRequest(
 		opentracing.HTTPHeadersCarrier(r.Header)); err != nil {
 		return nil, fmt.Errorf("couldn't inject tracing headers (%v)", err)
 	}
-	return h.handler.HandleRequest(ctx, c, r)
+	return d.d.Do(ctx, c, r)
 }
 
 // retryHandler retries 50X http requests
-type retryHandler struct {
-	handler RequestHandler
+type retryDoer struct {
+	d doer
 }
 
-func (h retryHandler) HandleRequest(
-	ctx context.Context, c *http.Client, r *http.Request) (*http.Response, error) {
+func (d retryDoer) Do(ctx context.Context, c *http.Client, r *http.Request) (*http.Response, error) {
 
-	resp, err := h.handler.HandleRequest(ctx, c, r)
+	resp, err := d.d.Do(ctx, c, r)
 	if err != nil {
 		return resp, err
 	}
@@ -69,5 +65,5 @@ func (h retryHandler) HandleRequest(
 	}
 
 	// Otherwise retry the request. For now just do it once without waiting...
-	return h.handler.HandleRequest(ctx, c, r)
+	return d.d.Do(ctx, c, r)
 }
