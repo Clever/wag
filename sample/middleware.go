@@ -13,6 +13,8 @@ type RequestHandler interface {
 	HandleRequest(ctx context.Context, c *http.Client, r *http.Request) (*http.Response, error)
 }
 
+// TODO: Add a timeout handler, probably based on https://godoc.org/golang.org/x/net/context/ctxhttp#Do
+
 type opNameCtx struct{}
 
 // baseRequestHandler performs the base http request
