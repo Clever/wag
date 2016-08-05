@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"go/format"
 	"io/ioutil"
 	"log"
 	"os"
@@ -274,6 +275,14 @@ func (g *Generator) Printf(format string, args ...interface{}) {
 	fmt.Fprintf(&g.buf, format, args...)
 }
 
+func (g *Generator) WriteFile(path string) error {
+	fileBytes, err := format.Source(g.buf.Bytes())
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(path, fileBytes, 0644)
+}
+
 func generateRouter(basePath string, paths *spec.Paths) error {
 	var g Generator
 
@@ -317,7 +326,7 @@ func SetupServer(r *mux.Router, c Controller) http.Handler {
 	g.Printf("\treturn withMiddleware(r)\n")
 	g.Printf("}\n")
 
-	return ioutil.WriteFile("generated/server/router.go", g.buf.Bytes(), 0644)
+	return g.WriteFile("generated/server/router.go")
 }
 
 type routerTemplate struct {
@@ -403,13 +412,13 @@ func generateContextsAndControllers(packageName string, paths *spec.Paths) error
 	}
 	interfaceGenerator.Printf("}\n")
 
-	if err := ioutil.WriteFile("generated/models/inputs.go", g.buf.Bytes(), 0644); err != nil {
+	if err := g.WriteFile("generated/models/inputs.go"); err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile("generated/server/interface.go", interfaceGenerator.buf.Bytes(), 0644); err != nil {
+	if err := interfaceGenerator.WriteFile("generated/server/interface.go"); err != nil {
 		return err
 	}
-	return ioutil.WriteFile("generated/server/controller.go", controllerGenerator.buf.Bytes(), 0644)
+	return controllerGenerator.WriteFile("generated/server/controller.go")
 }
 
 // importStatements takes a list of import strings and converts them to a formatted imports
@@ -641,7 +650,7 @@ func generateOutputs(packageName string, paths *spec.Paths) error {
 			}
 		}
 	}
-	return ioutil.WriteFile("generated/models/outputs.go", g.buf.Bytes(), 0644)
+	return g.WriteFile("generated/models/outputs.go")
 }
 
 func typeFromSchema(schema *spec.Schema) (string, error) {
@@ -707,7 +716,7 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 		}
 	}
 
-	return ioutil.WriteFile("generated/server/handlers.go", g.buf.Bytes(), 0644)
+	return g.WriteFile("generated/server/handlers.go")
 }
 
 type handlerOp struct {

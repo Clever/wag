@@ -1,16 +1,17 @@
 package server
 
 import (
+	"errors"
+	"github.com/Clever/inter-service-api-testing/codegen-poc/generated/models"
+	"github.com/gorilla/mux"
 	"golang.org/x/net/context"
 	"net/http"
 	"strconv"
-	"github.com/gorilla/mux"
-	"errors"
-	"github.com/Clever/inter-service-api-testing/codegen-poc/generated/models"
 )
 
-type ControllerImpl struct{
+type ControllerImpl struct {
 }
+
 func NewGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 	var input models.GetBooksInput
 
@@ -56,7 +57,6 @@ func (c ControllerImpl) GetBookByID(ctx context.Context, input *models.GetBookBy
 }
 func NewCreateBookInput(r *http.Request) (*models.CreateBookInput, error) {
 	var input models.CreateBookInput
-
 
 	return &input, nil
 }

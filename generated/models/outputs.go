@@ -1,6 +1,5 @@
 package models
 
-
 // DefaultInternalError represents a generic 500 response.
 type DefaultInternalError struct {
 	Msg string `json:"msg"`
@@ -118,4 +117,3 @@ func (o CreateBook200Output) CreateBookData() interface{} {
 func (o CreateBook200Output) CreateBookStatus() int {
 	return 200
 }
-

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"strings"
 
 	"github.com/go-openapi/spec"
@@ -138,7 +137,7 @@ func generateClients(packageName string, s spec.Swagger) error {
 		}
 	}
 
-	return ioutil.WriteFile("generated/client/client.go", g.buf.Bytes(), 0644)
+	return g.WriteFile("generated/client/client.go")
 }
 
 var badRequestCode = `
