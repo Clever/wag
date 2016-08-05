@@ -18,14 +18,14 @@ func SetupServer(r *mux.Router, c Controller) http.Handler {
 		GetBooksHandler(ctx, w, r)
 	})
 
-	r.Methods("GET").Path("/v1/books/{bookID}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := gContext.Get(r, contextKey{}).(context.Context)
-		GetBookByIDHandler(ctx, w, r)
-	})
-
 	r.Methods("POST").Path("/v1/books/{bookID}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := gContext.Get(r, contextKey{}).(context.Context)
 		CreateBookHandler(ctx, w, r)
+	})
+
+	r.Methods("GET").Path("/v1/books/{bookID}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := gContext.Get(r, contextKey{}).(context.Context)
+		GetBookByIDHandler(ctx, w, r)
 	})
 	return withMiddleware(r)
 }
