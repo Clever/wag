@@ -1,8 +1,8 @@
 package server
 
 import (
-	"golang.org/x/net/context"
 	"github.com/Clever/inter-service-api-testing/codegen-poc/generated/models"
+	"golang.org/x/net/context"
 )
 
 type Controller interface {
