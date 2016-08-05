@@ -19,6 +19,15 @@ func (i GetBooksInput) Validate() error {
 	return nil
 }
 
+type GetBookByIDInput struct {
+	BookID        int64
+	Authorization string
+}
+
+func (i GetBookByIDInput) Validate() error {
+	return nil
+}
+
 type CreateBookInput struct {
 	NewBook Book
 }
@@ -28,14 +37,5 @@ func (i CreateBookInput) Validate() error {
 		return err
 	}
 
-	return nil
-}
-
-type GetBookByIDInput struct {
-	BookID        int64
-	Authorization string
-}
-
-func (i GetBookByIDInput) Validate() error {
 	return nil
 }
