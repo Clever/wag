@@ -278,6 +278,9 @@ func (g *Generator) Printf(format string, args ...interface{}) {
 func (g *Generator) WriteFile(path string) error {
 	fileBytes, err := format.Source(g.buf.Bytes())
 	if err != nil {
+		// This will error if the code isn't valid so let's print it to make it
+		// easier to debug
+		fmt.Printf("BAD CODE\n%s\n", string(g.buf.Bytes()))
 		return err
 	}
 	return ioutil.WriteFile(path, fileBytes, 0644)
@@ -387,7 +390,7 @@ func generateContextsAndControllers(packageName string, paths *spec.Paths) error
 	var controllerGenerator Generator
 	controllerGenerator.Printf("package server\n\n")
 	controllerGenerator.Printf(importStatements([]string{"golang.org/x/net/context",
-		"net/http", "strconv", "github.com/gorilla/mux", "errors", packageName + "/models"}))
+		"errors", packageName + "/models"}))
 
 	// TODO: Better name for this... very java-y. Also shouldn't necessarily be controller
 	// TODO: Should we plug this in more nicely??
@@ -399,10 +402,6 @@ func generateContextsAndControllers(packageName string, paths *spec.Paths) error
 			definition := fmt.Sprintf("%s(ctx context.Context, input *models.%sInput) (models.%sOutput, error)",
 				capitalize(op.ID), capitalize(op.ID), capitalize(op.ID))
 			interfaceGenerator.Printf("\t%s\n", definition)
-
-			if err := printNewInput(&controllerGenerator, op); err != nil {
-				return err
-			}
 
 			controllerGenerator.Printf("func (c ControllerImpl) %s {\n", definition)
 			controllerGenerator.Printf("\t// TODO: Implement me!\n")
@@ -690,12 +689,8 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 	var g Generator
 
 	g.Printf("package server\n\n")
-	g.Printf("import (\n")
-	g.Printf("\t\"net/http\"\n")
-	g.Printf("\t\"%s/models\"\n", packageName)
-	g.Printf("\t\"golang.org/x/net/context\"\n")
-	g.Printf("\t\"encoding/json\"\n")
-	g.Printf(")\n\n")
+	g.Printf(importStatements([]string{"golang.org/x/net/context", "github.com/gorilla/mux",
+		"net/http", "strconv", "encoding/json", "strconv", packageName + "/models"}))
 
 	// TODO: Make this not be a global variable
 	g.Printf("var controller Controller\n\n")
@@ -711,6 +706,10 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 			}
 			err = tmpl.Execute(&g.buf, handlerOp{Op: capitalize(op.ID)})
 			if err != nil {
+				return err
+			}
+
+			if err := printNewInput(&g, op); err != nil {
 				return err
 			}
 		}

@@ -9,12 +9,13 @@ var _ = json.Marshal
 
 var _ = strconv.FormatInt
 
-type GetBookByIDInput struct {
-	BookID        int64
-	Authorization string
+type GetBooksInput struct {
+	Author    string
+	Available bool
+	MaxPages  float64
 }
 
-func (i GetBookByIDInput) Validate() error {
+func (i GetBooksInput) Validate() error {
 	return nil
 }
 
@@ -30,12 +31,11 @@ func (i CreateBookInput) Validate() error {
 	return nil
 }
 
-type GetBooksInput struct {
-	Author    string
-	Available bool
-	MaxPages  float64
+type GetBookByIDInput struct {
+	BookID        int64
+	Authorization string
 }
 
-func (i GetBooksInput) Validate() error {
+func (i GetBookByIDInput) Validate() error {
 	return nil
 }
