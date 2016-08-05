@@ -31,8 +31,11 @@ func generateClients(packageName string, s spec.Swagger) error {
 	g.Printf("var _ = strings.Replace\n\n")
 	g.Printf("var _ = strconv.FormatInt\n\n")
 
-	for path, pathItem := range s.Paths.Paths {
-		for method, op := range pathItemOperations(pathItem) {
+	for _, path := range sortedPathItemKeys(s.Paths.Paths) {
+		pathItem := s.Paths.Paths[path]
+		pathItemOps := pathItemOperations(pathItem)
+		for _, method := range sortedOperationsKeys(pathItemOps) {
+			op := pathItemOps[method]
 
 			// TODO: Do I really want pointers here and / or in the server?
 			g.Printf("func %s(ctx context.Context, i *models.%sInput) (models.%sOutput, error) {\n",
@@ -101,7 +104,9 @@ func generateClients(packageName string, s spec.Swagger) error {
 
 			// Switch on status code to build the response...
 			g.Printf("\tswitch resp.StatusCode {\n")
-			for statusCode, response := range op.Responses.StatusCodeResponses {
+
+			for _, statusCode := range sortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
+				response := op.Responses.StatusCodeResponses[statusCode]
 
 				g.Printf("\tcase %d:\n", statusCode)
 

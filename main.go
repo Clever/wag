@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/go-openapi/loads"
@@ -286,6 +287,33 @@ func (g *Generator) WriteFile(path string) error {
 	return ioutil.WriteFile(path, fileBytes, 0644)
 }
 
+func sortedPathItemKeys(m map[string]spec.PathItem) []string {
+	sortedKeys := []string{}
+	for k := range m {
+		sortedKeys = append(sortedKeys, k)
+	}
+	sort.Strings(sortedKeys)
+	return sortedKeys
+}
+
+func sortedOperationsKeys(m map[string]*spec.Operation) []string {
+	sortedKeys := []string{}
+	for k := range m {
+		sortedKeys = append(sortedKeys, k)
+	}
+	sort.Strings(sortedKeys)
+	return sortedKeys
+}
+
+func sortedStatusCodeKeys(m map[int]spec.Response) []int {
+	sortedKeys := []int{}
+	for k := range m {
+		sortedKeys = append(sortedKeys, k)
+	}
+	sort.Ints(sortedKeys)
+	return sortedKeys
+}
+
 func generateRouter(basePath string, paths *spec.Paths) error {
 	var g Generator
 
@@ -308,8 +336,11 @@ type contextKey struct{}
 func SetupServer(r *mux.Router, c Controller) http.Handler {
 	controller = c // TODO: get rid of global variable?`)
 
-	for path, pathItem := range paths.Paths {
-		for method, op := range pathItemOperations(pathItem) {
+	for _, path := range sortedPathItemKeys(paths.Paths) {
+		pathItem := paths.Paths[path]
+		pathItemOps := pathItemOperations(pathItem)
+		for _, method := range sortedOperationsKeys(pathItemOps) {
+			op := pathItemOps[method]
 			// TODO: Note the coupling for the handler name here and in the handler function. Does that mean these should be
 			// together? Probably...
 
@@ -370,9 +401,11 @@ func generateContextsAndControllers(packageName string, paths *spec.Paths) error
 	// TODO: Not as easy to do this for models since we have to find some type. Will be easier if
 	// we move it into the same package
 
-	for _, path := range paths.Paths {
-		for _, op := range pathItemOperations(path) {
-
+	for _, pathKey := range sortedPathItemKeys(paths.Paths) {
+		path := paths.Paths[pathKey]
+		pathItemOps := pathItemOperations(path)
+		for _, opKey := range sortedOperationsKeys(pathItemOps) {
+			op := pathItemOps[opKey]
 			if err := printInputStruct(&g, op); err != nil {
 				return err
 			}
@@ -397,8 +430,11 @@ func generateContextsAndControllers(packageName string, paths *spec.Paths) error
 	controllerGenerator.Printf("type ControllerImpl struct{\n")
 	controllerGenerator.Printf("}\n")
 
-	for _, path := range paths.Paths {
-		for _, op := range pathItemOperations(path) {
+	for _, pathKey := range sortedPathItemKeys(paths.Paths) {
+		path := paths.Paths[pathKey]
+		pathItemOps := pathItemOperations(path)
+		for _, opKey := range sortedOperationsKeys(pathItemOps) {
+			op := pathItemOps[opKey]
 			definition := fmt.Sprintf("%s(ctx context.Context, input *models.%sInput) (models.%sOutput, error)",
 				capitalize(op.ID), capitalize(op.ID), capitalize(op.ID))
 			interfaceGenerator.Printf("\t%s\n", definition)
@@ -577,9 +613,11 @@ func generateOutputs(packageName string, paths *spec.Paths) error {
 
 	g.Printf(defaultOutputTypes())
 
-	for _, path := range paths.Paths {
-		for _, op := range pathItemOperations(path) {
-
+	for _, pathKey := range sortedPathItemKeys(paths.Paths) {
+		path := paths.Paths[pathKey]
+		pathItemOps := pathItemOperations(path)
+		for _, opKey := range sortedOperationsKeys(pathItemOps) {
+			op := pathItemOps[opKey]
 			// We classify response keys into three types:
 			// 1. 200-399 - these are "success" responses and implement the Output interface
 			// 	defined above
@@ -599,7 +637,8 @@ func generateOutputs(packageName string, paths *spec.Paths) error {
 			g.Printf("\t%sStatusCode() int\n", capitalize(op.ID))
 			g.Printf("}\n\n")
 
-			for statusCode, response := range op.Responses.StatusCodeResponses {
+			for _, statusCode := range sortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
+				response := op.Responses.StatusCodeResponses[statusCode]
 
 				if statusCode < 200 || statusCode > 599 {
 					// TODO: Write a test for this...
@@ -697,9 +736,11 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 
 	g.Printf(jsonMarshalString)
 
-	for _, path := range paths.Paths {
-		for _, op := range pathItemOperations(path) {
-
+	for _, pathKey := range sortedPathItemKeys(paths.Paths) {
+		path := paths.Paths[pathKey]
+		pathItemOps := pathItemOperations(path)
+		for _, opKey := range sortedOperationsKeys(pathItemOps) {
+			op := pathItemOps[opKey]
 			tmpl, err := template.New("test").Parse(handlerTemplate)
 			if err != nil {
 				return err

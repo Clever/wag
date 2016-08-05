@@ -104,11 +104,6 @@ func GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (models.GetBoo
 	resp, _ := client.Do(req)
 
 	switch resp.StatusCode {
-	case 401:
-		var output models.GetBookByID401Output
-		return nil, output
-	case 404:
-		return nil, models.GetBookByID404Output{}
 	case 200:
 
 		var output models.GetBookByID200Output
@@ -119,6 +114,11 @@ func GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (models.GetBoo
 	case 204:
 		var output models.GetBookByID204Output
 		return output, nil
+	case 401:
+		var output models.GetBookByID401Output
+		return nil, output
+	case 404:
+		return nil, models.GetBookByID404Output{}
 	case 400:
 
 		var output models.DefaultBadRequest
