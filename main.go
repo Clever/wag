@@ -599,6 +599,15 @@ func printNewInput(g *Generator, op *spec.Operation) error {
 			} else {
 				g.Printf("\tinput.%s = %sStr\n", capitalize(param.Name), param.Name)
 			}
+		} else {
+			if param.Schema == nil {
+				return fmt.Errorf("Body parameters must have a schema defined")
+			}
+			g.Printf("\tif err := json.NewDecoder(r.Body).Decode(&input.%s); err != nil {\n",
+				capitalize(param.Name))
+			// TODO: Make this an error of the right type
+			g.Printf("\t\treturn nil, err\n")
+			g.Printf("\t}\n")
 		}
 	}
 	g.Printf("\n")

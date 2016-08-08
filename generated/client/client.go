@@ -3,13 +3,12 @@ package client
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/Clever/inter-service-api-testing/codegen-poc/generated/models"
+	"golang.org/x/net/context"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
-
-	"github.com/Clever/inter-service-api-testing/codegen-poc/generated/models"
-	"golang.org/x/net/context"
 )
 
 var _ = json.Marshal
