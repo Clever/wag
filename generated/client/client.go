@@ -3,12 +3,13 @@ package client
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/Clever/inter-service-api-testing/codegen-poc/generated/models"
-	"golang.org/x/net/context"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/Clever/inter-service-api-testing/codegen-poc/generated/models"
+	"golang.org/x/net/context"
 )
 
 var _ = json.Marshal
@@ -24,8 +25,8 @@ type Client struct {
 	retryDoer retryDoer
 }
 
-// NewClient creates a new client. The base path and http transport are configurable
-func NewClient(basePath string) Client {
+// New creates a new client. The base path and http transport are configurable
+func New(basePath string) Client {
 	base := baseDoer{}
 	tracing := tracingDoer{d: base}
 	retry := retryDoer{d: tracing, defaultRetries: 1}
