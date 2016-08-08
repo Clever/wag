@@ -31,7 +31,7 @@ func New(basePath string) Client {
 	tracing := tracingDoer{d: base}
 	retry := retryDoer{d: tracing, defaultRetries: 1}
 
-	return Client{requestDoer: retry, retryDoer: retry, transport: nil, BasePath: basePath}
+	return Client{requestDoer: retry, retryDoer: retry, transport: &http.Transport{}, BasePath: basePath}
 }
 
 func (c Client) WithRetries(retries int) Client {

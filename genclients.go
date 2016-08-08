@@ -29,13 +29,13 @@ type Client struct {
 	retryDoer retryDoer
 }
 
-// NewClient creates a new client. The base path and http transport are configurable
-func NewClient(basePath string) Client {
+// New creates a new client. The base path and http transport are configurable
+func New(basePath string) Client {
 	base := baseDoer{}
 	tracing := tracingDoer{d: base}
 	retry := retryDoer{d: tracing, defaultRetries: 1}
 
-	return Client{requestDoer: retry, retryDoer: retry, transport: nil, BasePath: basePath}
+	return Client{requestDoer: retry, retryDoer: retry, transport: &http.Transport{}, BasePath: basePath}
 }
 
 func (c Client) WithRetries(retries int) Client {
