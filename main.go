@@ -21,27 +21,11 @@ import (
 	"text/template"
 )
 
-type SwaggerOperation struct {
-	ID          string                     `yaml:"operationId"`
-	Description string                     `yaml:"description"`
-	Responses   map[string]SwaggerResponse `yaml:"responses"`
-	// TODO: Parameters can also be a reference type. We should disallow that given that
-	// we don't support parameters to be defined anywhere else.
-	Parameters []SwaggerParameter `yaml:"parameters"`
-
-	// Not supported
-	Consumes []string               `yaml:"consumers"`
-	Produces []string               `yaml:"produces"`
-	Schemes  []string               `yaml:"schemes"`
-	Security map[string]interface{} `yaml:"security"`
-	Tags     []string               `yaml:"tags"`
-}
-
 // A regex requiring the field to be start with a letter and be alphanumeric
 var alphaNumRegex = regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9]*$")
 
 // Validate checks if the swagger operation has any fields we don't support
-func ValidateOp(s *spec.Operation) error {
+func validateOp(s *spec.Operation) error {
 	if len(s.Consumes) != 0 {
 		fmt.Errorf("Consumes not supported in swagger operations")
 	}
@@ -70,52 +54,11 @@ func ValidateOp(s *spec.Operation) error {
 	return nil
 }
 
-type SwaggerParameter struct {
-	Name string `yaml:"name"`
-	In   string `yaml:"in"`
-	Type string `yaml:"type"`
-	// The schema here has to be {$ref: "..."}. We don't support defining your own
-	// schema here.
-	Schema map[string]interface{} `yaml:"schema"`
-}
-
-type SwaggerResponse struct {
-	Description string                 `yaml:"description"`
-	Schema      map[string]interface{} `yaml:"schema"`
-
-	// Fields we don't support
-	Header map[string]interface{} `yaml:"headers"`
-}
-
-type Swagger struct {
-	BasePath string `yaml:"basePath"`
-
-	// Partially implemented
-	Paths map[string]map[string]SwaggerOperation `yaml:"paths"`
-
-	// We rely on the go-swagger code to generate all the definitions
-	Definitions map[string]interface{} `yaml:"definitions"`
-
-	// Fields we support, but only with a certain set of values
-	Swagger  string   `yaml:"swagger"`
-	Schemes  []string `yaml:"schemes"`
-	Consumes []string `yaml:"consumes"`
-	Produces []string `yaml:"produces"`
-
-	// Fields we don't support
-	Host                string                 `yaml:"host"`
-	Parameters          map[string]interface{} `yaml:"parameters"`
-	Responses           map[string]interface{} `yaml:"responses"`
-	SecurityDefinitions map[string]interface{} `yaml:"securityDefinitions"`
-	Security            map[string]interface{} `yaml:"security"`
-	Tags                []string               `yaml:"tags"`
-}
-
-// Validates returns an error if the swagger file is invalid or uses fields
+// validates returns an error if the swagger file is invalid or uses fields
 // we don't support. Note that this isn't a comprehensive check for all things
 // we don't support, so this may not return an error, but the Swagger file might
 // have values we don't support
-func Validate(s spec.Swagger) error {
+func validate(s spec.Swagger) error {
 	if s.Swagger != "2.0" {
 		return fmt.Errorf("Unsupported Swagger version %s", s.Swagger)
 	}
@@ -160,7 +103,7 @@ func Validate(s spec.Swagger) error {
 		}
 
 		for _, op := range pathItemOperations(pathItem) {
-			if err := ValidateOp(op); err != nil {
+			if err := validateOp(op); err != nil {
 				return err
 			}
 		}
@@ -237,7 +180,7 @@ func main() {
 	}
 	swagger := *doc.Spec()
 
-	if err := Validate(swagger); err != nil {
+	if err := validate(swagger); err != nil {
 		log.Fatalf("Swagger file not valid: %s", err)
 	}
 
