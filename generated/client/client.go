@@ -1,24 +1,45 @@
 package client
 
-import "net/http"
-import "net/url"
-import "encoding/json"
-import "strings"
-import "golang.org/x/net/context"
-import "bytes"
-import "fmt"
-import "strconv"
-import "github.com/Clever/inter-service-api-testing/codegen-poc/generated/models"
-
-import opentracing "github.com/opentracing/opentracing-go"
+import (
+	"bytes"
+	"encoding/json"
+	"github.com/Clever/inter-service-api-testing/codegen-poc/generated/models"
+	"golang.org/x/net/context"
+	"net/http"
+	"net/url"
+	"strconv"
+	"strings"
+)
 
 var _ = json.Marshal
 var _ = strings.Replace
 
 var _ = strconv.FormatInt
 
-func GetBooks(ctx context.Context, i *models.GetBooksInput) (models.GetBooksOutput, error) {
-	path := "http://localhost:8080" + "/v1/books"
+type Client struct {
+	BasePath    string
+	requestDoer doer
+	transport   *http.Transport
+	// Keep the retry doer around so that we can set the number of retries
+	retryDoer retryDoer
+}
+
+// NewClient creates a new client. The base path and http transport are configurable
+func NewClient(basePath string) Client {
+	base := baseDoer{}
+	tracing := tracingDoer{d: base}
+	retry := retryDoer{d: tracing, defaultRetries: 1}
+
+	return Client{requestDoer: retry, retryDoer: retry, transport: nil, BasePath: basePath}
+}
+
+func (c Client) WithRetries(retries int) Client {
+	c.retryDoer.defaultRetries = retries
+	return c
+}
+
+func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) (models.GetBooksOutput, error) {
+	path := c.BasePath + "/v1/books"
 	urlVals := url.Values{}
 	var body []byte
 
@@ -27,26 +48,15 @@ func GetBooks(ctx context.Context, i *models.GetBooksInput) (models.GetBooksOutp
 	urlVals.Add("maxPages", strconv.FormatFloat(i.MaxPages, 'E', -1, 64))
 	path = path + "?" + urlVals.Encode()
 
-	client := &http.Client{}
+	client := &http.Client{Transport: c.transport}
 	req, _ := http.NewRequest("GET", path, bytes.NewBuffer(body))
 
-	// Inject tracing headers
-	opName := "GetBooks"
-	var sp opentracing.Span
-	// TODO: add tags relating to input data?
-	if parentSpan := opentracing.SpanFromContext(ctx); parentSpan != nil {
-		sp = opentracing.StartSpan(opName, opentracing.ChildOf(parentSpan.Context()))
-	} else {
-		sp = opentracing.StartSpan(opName)
+	// Add the opname for doers like tracing
+	ctx = context.WithValue(ctx, opNameCtx{}, "getBooks")
+	resp, err := c.requestDoer.Do(ctx, client, req)
+	if err != nil {
+		return nil, models.DefaultInternalError{Msg: err.Error()}
 	}
-	if err := sp.Tracer().Inject(sp.Context(),
-		opentracing.HTTPHeaders,
-		opentracing.HTTPHeadersCarrier(req.Header)); err != nil {
-		return nil, fmt.Errorf("couldn't inject tracing headers (%v)", err)
-	}
-
-	resp, _ := client.Do(req)
-
 	switch resp.StatusCode {
 	case 200:
 
@@ -74,35 +84,24 @@ func GetBooks(ctx context.Context, i *models.GetBooksInput) (models.GetBooksOutp
 	}
 }
 
-func GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
-	path := "http://localhost:8080" + "/v1/books/{bookID}"
+func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
+	path := c.BasePath + "/v1/books/{bookID}"
 	urlVals := url.Values{}
 	var body []byte
 
 	path = strings.Replace(path, "{bookID}", strconv.FormatInt(i.BookID, 10), -1)
 	path = path + "?" + urlVals.Encode()
 
-	client := &http.Client{}
+	client := &http.Client{Transport: c.transport}
 	req, _ := http.NewRequest("GET", path, bytes.NewBuffer(body))
 	req.Header.Set("authorization", i.Authorization)
 
-	// Inject tracing headers
-	opName := "GetBookByID"
-	var sp opentracing.Span
-	// TODO: add tags relating to input data?
-	if parentSpan := opentracing.SpanFromContext(ctx); parentSpan != nil {
-		sp = opentracing.StartSpan(opName, opentracing.ChildOf(parentSpan.Context()))
-	} else {
-		sp = opentracing.StartSpan(opName)
+	// Add the opname for doers like tracing
+	ctx = context.WithValue(ctx, opNameCtx{}, "getBookByID")
+	resp, err := c.requestDoer.Do(ctx, client, req)
+	if err != nil {
+		return nil, models.DefaultInternalError{Msg: err.Error()}
 	}
-	if err := sp.Tracer().Inject(sp.Context(),
-		opentracing.HTTPHeaders,
-		opentracing.HTTPHeadersCarrier(req.Header)); err != nil {
-		return nil, fmt.Errorf("couldn't inject tracing headers (%v)", err)
-	}
-
-	resp, _ := client.Do(req)
-
 	switch resp.StatusCode {
 	case 200:
 
@@ -138,8 +137,8 @@ func GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (models.GetBoo
 	}
 }
 
-func CreateBook(ctx context.Context, i *models.CreateBookInput) (models.CreateBookOutput, error) {
-	path := "http://localhost:8080" + "/v1/books/{bookID}"
+func (c Client) CreateBook(ctx context.Context, i *models.CreateBookInput) (models.CreateBookOutput, error) {
+	path := c.BasePath + "/v1/books/{bookID}"
 	urlVals := url.Values{}
 	var body []byte
 
@@ -147,26 +146,15 @@ func CreateBook(ctx context.Context, i *models.CreateBookInput) (models.CreateBo
 
 	body, _ = json.Marshal(i.NewBook)
 
-	client := &http.Client{}
+	client := &http.Client{Transport: c.transport}
 	req, _ := http.NewRequest("POST", path, bytes.NewBuffer(body))
 
-	// Inject tracing headers
-	opName := "CreateBook"
-	var sp opentracing.Span
-	// TODO: add tags relating to input data?
-	if parentSpan := opentracing.SpanFromContext(ctx); parentSpan != nil {
-		sp = opentracing.StartSpan(opName, opentracing.ChildOf(parentSpan.Context()))
-	} else {
-		sp = opentracing.StartSpan(opName)
+	// Add the opname for doers like tracing
+	ctx = context.WithValue(ctx, opNameCtx{}, "createBook")
+	resp, err := c.requestDoer.Do(ctx, client, req)
+	if err != nil {
+		return nil, models.DefaultInternalError{Msg: err.Error()}
 	}
-	if err := sp.Tracer().Inject(sp.Context(),
-		opentracing.HTTPHeaders,
-		opentracing.HTTPHeadersCarrier(req.Header)); err != nil {
-		return nil, fmt.Errorf("couldn't inject tracing headers (%v)", err)
-	}
-
-	resp, _ := client.Do(req)
-
 	switch resp.StatusCode {
 	case 200:
 

@@ -12,24 +12,38 @@ func generateClients(packageName string, s spec.Swagger) error {
 
 	var g Generator
 
-	// TODO: Add a general client type... something like type %sClient struct { basePath string }
-
 	g.Printf("package client\n\n")
-	g.Printf("import \"net/http\"\n")
-	g.Printf("import \"net/url\"\n")
-	g.Printf("import \"encoding/json\"\n")
-	g.Printf("import \"strings\"\n")
-	g.Printf("import \"golang.org/x/net/context\"\n")
-	g.Printf("import \"bytes\"\n")
-	g.Printf("import \"fmt\"\n")
-	g.Printf("import \"strconv\"\n")
-	g.Printf("import \"%s/models\"\n\n", packageName)
-	g.Printf("import opentracing \"github.com/opentracing/opentracing-go\"\n\n")
-	// Whether we use these depends on the parameters, so we do this to prevent unused import
-	// error if we don't have the right params
-	g.Printf("var _ = json.Marshal\n")
-	g.Printf("var _ = strings.Replace\n\n")
-	g.Printf("var _ = strconv.FormatInt\n\n")
+	g.Printf(importStatements([]string{"golang.org/x/net/context", "strings", "bytes",
+		"net/http", "net/url", "strconv", "encoding/json", "strconv", packageName + "/models"}))
+
+	g.Printf(`var _ = json.Marshal
+var _ = strings.Replace
+
+var _ = strconv.FormatInt
+
+type Client struct {
+	BasePath    string
+	requestDoer doer
+	transport   *http.Transport
+	// Keep the retry doer around so that we can set the number of retries
+	retryDoer retryDoer
+}
+
+// NewClient creates a new client. The base path and http transport are configurable
+func NewClient(basePath string) Client {
+	base := baseDoer{}
+	tracing := tracingDoer{d: base}
+	retry := retryDoer{d: tracing, defaultRetries: 1}
+
+	return Client{requestDoer: retry, retryDoer: retry, transport: nil, BasePath: basePath}
+}
+
+func (c Client) WithRetries(retries int) Client {
+	c.retryDoer.defaultRetries = retries
+	return c
+}
+
+`)
 
 	for _, path := range sortedPathItemKeys(s.Paths.Paths) {
 		pathItem := s.Paths.Paths[path]
@@ -38,14 +52,14 @@ func generateClients(packageName string, s spec.Swagger) error {
 			op := pathItemOps[method]
 
 			// TODO: Do I really want pointers here and / or in the server?
-			g.Printf("func %s(ctx context.Context, i *models.%sInput) (models.%sOutput, error) {\n",
+			g.Printf("func (c Client) %s(ctx context.Context, i *models.%sInput) (models.%sOutput, error) {\n",
 				capitalize(op.ID), capitalize(op.ID), capitalize(op.ID))
 
 			// TODO: How should I handle required fields... just check for nil pointers???
 
 			// Build the URL
 			// TODO: Make the base URL configurable...
-			g.Printf("\tpath := \"http://localhost:8080\" + \"%s\"\n", s.BasePath+path)
+			g.Printf("\tpath := c.BasePath + \"%s\"\n", s.BasePath+path)
 			g.Printf("\turlVals := url.Values{}\n")
 			g.Printf("\tvar body []byte\n\n")
 
@@ -69,7 +83,7 @@ func generateClients(packageName string, s spec.Swagger) error {
 				}
 			}
 
-			g.Printf("\tclient := &http.Client{}\n")
+			g.Printf("\tclient := &http.Client{Transport: c.transport}\n")
 			// TODO: Handle the error
 			g.Printf("\treq, _ := http.NewRequest(\"%s\", path, bytes.NewBuffer(body))\n", strings.ToUpper(method))
 
@@ -80,27 +94,14 @@ func generateClients(packageName string, s spec.Swagger) error {
 				}
 			}
 
-			// Inject tracing headers
 			g.Printf(`
-	// Inject tracing headers
-	opName := "%s"
-	var sp opentracing.Span
-	// TODO: add tags relating to input data?
-	if parentSpan := opentracing.SpanFromContext(ctx); parentSpan != nil {
-		sp = opentracing.StartSpan(opName, opentracing.ChildOf(parentSpan.Context()))
-	} else {
-		sp = opentracing.StartSpan(opName)
+	// Add the opname for doers like tracing
+	ctx = context.WithValue(ctx, opNameCtx{}, "%s")
+	resp, err := c.requestDoer.Do(ctx, client, req)
+	if err != nil {
+		return nil, models.DefaultInternalError{Msg: err.Error()}
 	}
-	if err := sp.Tracer().Inject(sp.Context(),
-		opentracing.HTTPHeaders,
-		opentracing.HTTPHeadersCarrier(req.Header)); err != nil {
-		return nil, fmt.Errorf("couldn't inject tracing headers (%%v)", err)
-	}
-
-`, capitalize(op.ID))
-
-			// TODO: Handle the error
-			g.Printf("\tresp, _ := client.Do(req)\n\n")
+`, op.ID)
 
 			// Switch on status code to build the response...
 			g.Printf("\tswitch resp.StatusCode {\n")
