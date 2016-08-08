@@ -156,5 +156,9 @@ func CreateBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Reque
 func NewCreateBookInput(r *http.Request) (*models.CreateBookInput, error) {
 	var input models.CreateBookInput
 
+	if err := json.NewDecoder(r.Body).Decode(&input.NewBook); err != nil {
+		return nil, err
+	}
+
 	return &input, nil
 }

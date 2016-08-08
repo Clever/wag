@@ -17,7 +17,7 @@ type Book struct {
 
 	/* id
 	 */
-	ID string `json:"id,omitempty"`
+	ID int64 `json:"id,omitempty"`
 
 	/* name
 	 */
