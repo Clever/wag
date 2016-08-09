@@ -1,7 +1,7 @@
 include golang.mk
 .DEFAULT_GOAL := test # override default goal set in library makefile
 .PHONY: test
-PKG := github.com/Clever/inter-service-api-testing/codegen-poc
+PKG := github.com/Clever/wag
 PKGS := $(shell go list ./... | grep -v /vendor | grep -v /generated)
 $(eval $(call golang-version-check,1.6))
 

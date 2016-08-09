@@ -6,8 +6,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Clever/inter-service-api-testing/codegen-poc/generated/client"
-	"github.com/Clever/inter-service-api-testing/codegen-poc/generated/models"
+	"github.com/Clever/wag/generated/client"
+	"github.com/Clever/wag/generated/models"
 
 	"golang.org/x/net/context"
 )

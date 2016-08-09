@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Clever/inter-service-api-testing/codegen-poc/generated/server"
+	"github.com/Clever/wag/generated/server"
 	"github.com/gorilla/mux"
 )
 

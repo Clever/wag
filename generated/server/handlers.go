@@ -2,12 +2,14 @@ package server
 
 import (
 	"encoding/json"
-	"github.com/Clever/inter-service-api-testing/codegen-poc/generated/models"
+	"github.com/Clever/wag/generated/models"
 	"github.com/gorilla/mux"
 	"golang.org/x/net/context"
 	"net/http"
 	"strconv"
 )
+
+var _ = strconv.ParseInt
 
 var controller Controller
 
