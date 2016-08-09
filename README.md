@@ -14,28 +14,33 @@ make test
 
 ## After Generating
 
-### Main
-Two files in the generated directory are hard-coded and independent of your .yml file
-- hardcoded/main.go
-- hardcoded/middleware.go
+TODO: Update this
 
-The rest are built based on your swagger yml file definition.
 
-### Files to Change
-After autogenerating the code you should modify two files:
-# TODO Don't copy over the controller file if it already exists
-- In controller.go implement the logic of your handlers.
-- In middleware.go add any middleware specific to your service
+
+## Future Features
+
+These are the features we're planning on building in the near future:
+- Stricter input validation
+  - Support for the required field in the Swagger spec
+  - At least some of the validation defined in http://swagger.io/specification/#parameterIn. In particular we want to be able to support checking whether an input parameter is a valid object ID.
+- More robust server defaults
+  - SIGTERM handling
+- Better logging, monitoring, and metrics
+  - Logger from the Context
+  - Expose pprof port by default
+  - Automatically log process metrics (https://github.com/Clever/go-process-metrics)
+- More server middleware
+  - Panic recovery / handling
+- More client "doers"
+  - Smarter retry logic
+  - Timeouts
 
 
 ## Swagger Spec
 
 Currently, this repo doesn't implement the entire Swagger Spec. This is a non-exhaustive list of the parts of the Swagger specification that haven't been implemented yet.
 
-### Planning to Implement
-Required Fields
-
-### Not Planning to Implement (at least for now)
 All Mime Types
 
 Patterned Fields (these are vendor specific extensions anyway)
@@ -73,4 +78,3 @@ Security Objects
 
 Response:
   - Headers
-
