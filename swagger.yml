@@ -1,0 +1,103 @@
+swagger: '2.0'
+info:
+  title: Swagger Test
+  description: Testing Swagger Codegen
+  # TODO: Understand this...
+  version: 0.1.0
+basePath: /v1
+schemes:
+  - http
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+  /books/{bookID}:
+    get:
+      operationId: getBookByID
+      description: Returns a book
+      parameters:
+        # Required parameter...
+        - name: bookID
+          in: path
+          type: integer
+        - name: authorization
+          in: header
+          type: string
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/Book"
+        204:
+          description: "No content"
+        401:
+          description: "Unauthorized"
+        404:
+          description: "Not found"
+          schema:
+            $ref: "#/definitions/Error"
+        default:
+          description: "Error"
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      operationId: createBook
+      description: Creates a book
+      parameters:
+        - name: newBook
+          in: body
+          schema:
+            $ref: "#/definitions/Book"
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/Book"
+        default:
+          description: "Error"
+          schema:
+            $ref: "#/definitions/Error"
+  /books:
+    get:
+      operationId: getBooks
+      description: Returns a list of books
+      parameters:
+        - name: author
+          in: query
+          type: string
+        - name: available
+          in: query
+          type: boolean
+        - name: maxPages
+          in: query
+          # Probably makes more sense for this to be an integer, but I couldn't figure out
+          # a good example for books that really would need a float
+          type: number
+      responses:
+        200:
+          description: "Success"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Book"
+        default:
+          description: "Error"
+          schema:
+            $ref: "#/definitions/Error"
+definitions:
+  Book:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+  Error:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
