@@ -1,0 +1,128 @@
+{
+	"ImportPath": "github.com/Clever/wag",
+	"GoVersion": "go1.6",
+	"GodepVersion": "v71",
+	"Packages": [
+		"github.com/Clever/wag",
+		"github.com/Clever/wag/hardcoded"
+	],
+	"Deps": [
+		{
+			"ImportPath": "bitbucket.org/pkg/inflect",
+			"Comment": "go.r60-12",
+			"Rev": "'8961c3750a47b8c0b3e118d52513b97adf85a7e8'"
+		},
+		{
+			"ImportPath": "github.com/PuerkitoBio/purell",
+			"Comment": "v0.1.0-25-g1d5d1cf",
+			"Rev": "1d5d1cfad45d42ec5f81fa8ef23de09cebc6dcc3"
+		},
+		{
+			"ImportPath": "github.com/PuerkitoBio/urlesc",
+			"Rev": "5fa9ff0392746aeae1c4b37fcc42c65afa7a9587"
+		},
+		{
+			"ImportPath": "github.com/asaskevich/govalidator",
+			"Comment": "v4-6-gdf81827",
+			"Rev": "df81827fdd59d8b4fb93d8910b286ab7a3919520"
+		},
+		{
+			"ImportPath": "github.com/go-openapi/analysis",
+			"Rev": "abc9a6171f5bf03ada39aead1aa7fd7bbd44d50f"
+		},
+		{
+			"ImportPath": "github.com/go-openapi/errors",
+			"Rev": "d24ebc2075bad502fac3a8ae27aa6dd58e1952dc"
+		},
+		{
+			"ImportPath": "github.com/go-openapi/jsonpointer",
+			"Rev": "46af16f9f7b149af66e5d1bd010e3574dc06de98"
+		},
+		{
+			"ImportPath": "github.com/go-openapi/jsonreference",
+			"Rev": "13c6e3589ad90f49bd3e3bbe2c2cb3d7a4142272"
+		},
+		{
+			"ImportPath": "github.com/go-openapi/loads",
+			"Rev": "18441dfa706d924a39a030ee2c3b1d8d81917b38"
+		},
+		{
+			"ImportPath": "github.com/go-openapi/loads/fmts",
+			"Rev": "18441dfa706d924a39a030ee2c3b1d8d81917b38"
+		},
+		{
+			"ImportPath": "github.com/go-openapi/runtime",
+			"Rev": "11e322eeecc1032d5a0a96c566ed53f2b5c26e22"
+		},
+		{
+			"ImportPath": "github.com/go-openapi/spec",
+			"Rev": "e9fab754f5629065e6b7a6100301226545d4477e"
+		},
+		{
+			"ImportPath": "github.com/go-openapi/strfmt",
+			"Rev": "dfda818c47a4ae5a1dde75ac776f34b2c95de993"
+		},
+		{
+			"ImportPath": "github.com/go-openapi/swag",
+			"Rev": "1d0bd113de87027671077d3c71eb3ac5d7dbba72"
+		},
+		{
+			"ImportPath": "github.com/go-swagger/go-swagger/generator",
+			"Comment": "0.5.9-30-g75d539e",
+			"Rev": "75d539e0ea2e09636e4ba8dbb1afe62fe19e64d7"
+		},
+		{
+			"ImportPath": "github.com/gorilla/context",
+			"Comment": "v1.1-4-gaed02d1",
+			"Rev": "aed02d124ae4a0e94fea4541c8effd05bf0c8296"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Comment": "v1.1-15-gd391bea",
+			"Rev": "d391bea3118c9fc17a88d62c9189bb791255e0ef"
+		},
+		{
+			"ImportPath": "github.com/mailru/easyjson/buffer",
+			"Rev": "5bea336fb0e59202a544e3586d66539197aed9d2"
+		},
+		{
+			"ImportPath": "github.com/mailru/easyjson/jlexer",
+			"Rev": "5bea336fb0e59202a544e3586d66539197aed9d2"
+		},
+		{
+			"ImportPath": "github.com/mailru/easyjson/jwriter",
+			"Rev": "5bea336fb0e59202a544e3586d66539197aed9d2"
+		},
+		{
+			"ImportPath": "github.com/vburenin/nsync",
+			"Rev": "5523ea7bcd87020a5572fbba691dc10f3f114e53"
+		},
+		{
+			"ImportPath": "golang.org/x/tools/go/ast/astutil",
+			"Rev": "ed69e84b1518b5857a9f4e01d1f9cefdcc45246e"
+		},
+		{
+			"ImportPath": "golang.org/x/tools/imports",
+			"Rev": "ed69e84b1518b5857a9f4e01d1f9cefdcc45246e"
+		},
+		{
+			"ImportPath": "gopkg.in/Clever/kayvee-go.v3",
+			"Comment": "v3.2.1",
+			"Rev": "056c92dcc68b40c5d6045f755197b3776f914154"
+		},
+		{
+			"ImportPath": "gopkg.in/Clever/kayvee-go.v3/logger",
+			"Comment": "v3.2.1",
+			"Rev": "056c92dcc68b40c5d6045f755197b3776f914154"
+		},
+		{
+			"ImportPath": "gopkg.in/Clever/kayvee-go.v3/middleware",
+			"Comment": "v3.2.1",
+			"Rev": "056c92dcc68b40c5d6045f755197b3776f914154"
+		},
+		{
+			"ImportPath": "gopkg.in/yaml.v2",
+			"Rev": "a83829b6f1293c91addabc89d0571c246397bbf4"
+		}
+	]
+}
