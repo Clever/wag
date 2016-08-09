@@ -708,6 +708,8 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 	g.Printf(importStatements([]string{"golang.org/x/net/context", "github.com/gorilla/mux",
 		"net/http", "strconv", "encoding/json", "strconv", packageName + "/models"}))
 
+	g.Printf("var _ = strconv.ParseInt\n\n")
+
 	// TODO: Make this not be a global variable
 	g.Printf("var controller Controller\n\n")
 
