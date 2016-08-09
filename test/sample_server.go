@@ -3,8 +3,8 @@ package test
 import (
 	"net/http/httptest"
 
-	"github.com/Clever/inter-service-api-testing/codegen-poc/generated/models"
-	"github.com/Clever/inter-service-api-testing/codegen-poc/generated/server"
+	"github.com/Clever/wag/generated/models"
+	"github.com/Clever/wag/generated/server"
 	"github.com/gorilla/mux"
 	"golang.org/x/net/context"
 )
