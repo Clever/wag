@@ -187,3 +187,25 @@ func convertParamToString(p spec.Parameter) string {
 		panic(fmt.Errorf("Unsupported parameter type %s", p.Type))
 	}
 }
+
+func defaultOutputTypes() string {
+	return fmt.Sprintf(`
+// DefaultInternalError represents a generic 500 response.
+type DefaultInternalError struct {
+	Msg string %s
+}
+
+func (d DefaultInternalError) Error() string {
+	return d.Msg
+}
+
+type DefaultBadRequest struct {
+	Msg string %s
+}
+
+func (d DefaultBadRequest) Error() string {
+	return d.Msg
+}
+
+`, "`json:\"msg\"`", "`json:\"msg\"`")
+}
