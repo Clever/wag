@@ -4,10 +4,12 @@ sWAGger - Web API Generator
 # Running
 ```
 go run main.go genclients.go
-cp hardcoded/main.go generated/
-cp hardcoded/middleware.go generated/
-cd generated
-go run main.go middleware.go router.go handlers.go contexts.go controller.go outputs.go
+cd impl/ && ./impl
+```
+
+## Tests
+```
+make test
 ```
 
 ## After Generating
