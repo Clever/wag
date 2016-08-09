@@ -1,10 +1,10 @@
 {
-	"ImportPath": "github.com/Clever/inter-service-api-testing/codgen-poc",
+	"ImportPath": "github.com/Clever/wag",
 	"GoVersion": "go1.6",
 	"GodepVersion": "v71",
 	"Packages": [
-		"github.com/Clever/inter-service-api-testing/codgen-poc",
-		"github.com/Clever/inter-service-api-testing/codgen-poc/hardcoded"
+		"github.com/Clever/wag",
+		"github.com/Clever/wag/hardcoded"
 	],
 	"Deps": [
 		{

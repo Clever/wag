@@ -3,7 +3,7 @@ package client
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/Clever/inter-service-api-testing/codegen-poc/generated/models"
+	"github.com/Clever/wag/generated/models"
 	"golang.org/x/net/context"
 	"net/http"
 	"net/url"
