@@ -5,8 +5,8 @@ import (
 	"strconv"
 )
 
+// These imports may not be used depending on the input parameters
 var _ = json.Marshal
-
 var _ = strconv.FormatInt
 
 type GetBooksInput struct {
