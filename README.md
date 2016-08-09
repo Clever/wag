@@ -31,8 +31,8 @@ These are the features we're planning on building in the near future:
   - Expose pprof port by default
   - Automatically log process metrics (https://github.com/Clever/go-process-metrics)
 - More server middleware
-  - Panic recovery / handling
-- More client "doers"
+  - Panic recovery / handling (don't crash the server every time you get a panic)
+- More client resiliency best practices
   - Smarter retry logic
   - Timeouts
 
