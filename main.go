@@ -15,6 +15,10 @@ import (
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/spec"
+
+	"github.com/Clever/wag/client"
+	"github.com/Clever/wag/models"
+	"github.com/Clever/wag/server"
 )
 
 func pathItemOperations(item spec.PathItem) map[string]*spec.Operation {
@@ -85,15 +89,15 @@ func main() {
 		}
 	}
 
-	if err := generateModels(*packageName, *swaggerFile, swagger); err != nil {
+	if err := models.Generate(*packageName, *swaggerFile, swagger); err != nil {
 		log.Fatalf("Error generating models: %s", err)
 	}
 
-	if err := generateServer(*packageName, swagger); err != nil {
+	if err := server.Generate(*packageName, swagger); err != nil {
 		log.Fatalf("Failed to generate server: %s", err)
 	}
 
-	if err := generateClients(*packageName, swagger); err != nil {
+	if err := client.Generate(*packageName, swagger); err != nil {
 		log.Fatalf("Failed generating clients %s", err)
 	}
 

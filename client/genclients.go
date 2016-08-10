@@ -1,19 +1,21 @@
-package main
+package client
 
 import (
 	"fmt"
 	"strings"
 
 	"github.com/go-openapi/spec"
+
+	"github.com/Clever/wag/swagger"
 )
 
-// This is extremely rough code for generating clients...
-func generateClients(packageName string, s spec.Swagger) error {
+// Generate generates a client
+func Generate(packageName string, s spec.Swagger) error {
 
-	var g Generator
+	var g swagger.Generator
 
 	g.Printf("package client\n\n")
-	g.Printf(importStatements([]string{"golang.org/x/net/context", "strings", "bytes",
+	g.Printf(swagger.ImportStatements([]string{"golang.org/x/net/context", "strings", "bytes",
 		"net/http", "net/url", "strconv", "encoding/json", "strconv", packageName + "/models"}))
 
 	g.Printf(`var _ = json.Marshal
@@ -45,15 +47,16 @@ func (c Client) WithRetries(retries int) Client {
 
 `)
 
-	for _, path := range sortedPathItemKeys(s.Paths.Paths) {
+	for _, path := range swagger.SortedPathItemKeys(s.Paths.Paths) {
 		pathItem := s.Paths.Paths[path]
-		pathItemOps := pathItemOperations(pathItem)
-		for _, method := range sortedOperationsKeys(pathItemOps) {
+		pathItemOps := swagger.PathItemOperations(pathItem)
+		for _, method := range swagger.SortedOperationsKeys(pathItemOps) {
 			op := pathItemOps[method]
+			capOpID := swagger.Capitalize(op.ID)
 
 			// TODO: Do I really want pointers here and / or in the server?
 			g.Printf("func (c Client) %s(ctx context.Context, i *models.%sInput) (models.%sOutput, error) {\n",
-				capitalize(op.ID), capitalize(op.ID), capitalize(op.ID))
+				capOpID, capOpID, capOpID)
 
 			// TODO: How should I handle required fields... just check for nil pointers???
 
@@ -79,7 +82,7 @@ func (c Client) WithRetries(retries int) Client {
 			for _, param := range op.Parameters {
 				if param.In == "body" {
 					// TODO: Handle errors here. Also, is this syntax quite right???
-					g.Printf("\tbody, _ = json.Marshal(i.%s)\n\n", capitalize(param.Name))
+					g.Printf("\tbody, _ = json.Marshal(i.%s)\n\n", swagger.Capitalize(param.Name))
 				}
 			}
 
@@ -106,13 +109,13 @@ func (c Client) WithRetries(retries int) Client {
 			// Switch on status code to build the response...
 			g.Printf("\tswitch resp.StatusCode {\n")
 
-			for _, statusCode := range sortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
+			for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
 				response := op.Responses.StatusCodeResponses[statusCode]
 
 				g.Printf("\tcase %d:\n", statusCode)
 
 				if response.Schema == nil {
-					g.Printf("\t\tvar output models.%s%dOutput\n", capitalize(op.ID), statusCode)
+					g.Printf("\t\tvar output models.%s%dOutput\n", capOpID, statusCode)
 					if statusCode < 400 {
 						g.Printf("\t\treturn output, nil\n")
 					} else {
@@ -121,10 +124,10 @@ func (c Client) WithRetries(retries int) Client {
 				} else {
 					if statusCode < 400 {
 						// TODO: Factor out this common code...
-						outputName := fmt.Sprintf("models.%s%dOutput", capitalize(op.ID), statusCode)
+						outputName := fmt.Sprintf("models.%s%dOutput", capOpID, statusCode)
 						g.Printf(successResponse(outputName))
 					} else {
-						g.Printf("\t\treturn nil, models.%s%dOutput{}\n", capitalize(op.ID), statusCode)
+						g.Printf("\t\treturn nil, models.%s%dOutput{}\n", capOpID, statusCode)
 					}
 
 				}
@@ -173,39 +176,18 @@ func successResponse(outputName string) string {
 }
 
 func convertParamToString(p spec.Parameter) string {
+	capParamName := swagger.Capitalize(p.Name)
 	switch p.Type {
 	case "string":
-		return fmt.Sprintf("i.%s", capitalize(p.Name))
+		return fmt.Sprintf("i.%s", capParamName)
 	case "integer":
-		return fmt.Sprintf("strconv.FormatInt(i.%s, 10)", capitalize(p.Name))
+		return fmt.Sprintf("strconv.FormatInt(i.%s, 10)", capParamName)
 	case "number":
-		return fmt.Sprintf("strconv.FormatFloat(i.%s, 'E', -1, 64)", capitalize(p.Name))
+		return fmt.Sprintf("strconv.FormatFloat(i.%s, 'E', -1, 64)", capParamName)
 	case "boolean":
-		return fmt.Sprintf("strconv.FormatBool(i.%s)", capitalize(p.Name))
+		return fmt.Sprintf("strconv.FormatBool(i.%s)", capParamName)
 	default:
 		// Theoretically should have validated before getting here
 		panic(fmt.Errorf("Unsupported parameter type %s", p.Type))
 	}
-}
-
-func defaultOutputTypes() string {
-	return fmt.Sprintf(`
-// DefaultInternalError represents a generic 500 response.
-type DefaultInternalError struct {
-	Msg string %s
-}
-
-func (d DefaultInternalError) Error() string {
-	return d.Msg
-}
-
-type DefaultBadRequest struct {
-	Msg string %s
-}
-
-func (d DefaultBadRequest) Error() string {
-	return d.Msg
-}
-
-`, "`json:\"msg\"`", "`json:\"msg\"`")
 }
