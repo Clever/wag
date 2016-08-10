@@ -1,14 +1,18 @@
-package main
+package models
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/go-openapi/spec"
+
+	"github.com/Clever/wag/swagger"
 
 	"github.com/go-swagger/go-swagger/generator"
 )
 
-func generateModels(packageName, swaggerFile string, swagger spec.Swagger) error {
+// Generate writes the files to the client directories
+func Generate(packageName, swaggerFile string, swagger spec.Swagger) error {
 
 	// generate models with go-swagger
 	if err := generator.GenerateServer("", []string{}, []string{}, generator.GenOpts{
@@ -30,7 +34,7 @@ func generateModels(packageName, swaggerFile string, swagger spec.Swagger) error
 
 func generateInputs(paths *spec.Paths) error {
 
-	var g Generator
+	var g swagger.Generator
 
 	g.Printf(`
 package models
@@ -45,10 +49,10 @@ var _ = json.Marshal
 var _ = strconv.FormatInt
 `)
 
-	for _, pathKey := range sortedPathItemKeys(paths.Paths) {
+	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
 		path := paths.Paths[pathKey]
-		pathItemOps := pathItemOperations(path)
-		for _, opKey := range sortedOperationsKeys(pathItemOps) {
+		pathItemOps := swagger.PathItemOperations(path)
+		for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
 			op := pathItemOps[opKey]
 			if err := printInputStruct(&g, op); err != nil {
 				return err
@@ -62,8 +66,8 @@ var _ = strconv.FormatInt
 	return g.WriteFile("generated/models/inputs.go")
 }
 
-func printInputStruct(g *Generator, op *spec.Operation) error {
-	g.Printf("type %sInput struct {\n", capitalize(op.ID))
+func printInputStruct(g *swagger.Generator, op *spec.Operation) error {
+	g.Printf("type %sInput struct {\n", swagger.Capitalize(op.ID))
 
 	for _, param := range op.Parameters {
 		if param.In == "formData" {
@@ -93,20 +97,20 @@ func printInputStruct(g *Generator, op *spec.Operation) error {
 				return err
 			}
 		}
-		g.Printf("\t%s %s\n", capitalize(param.Name), typeName)
+		g.Printf("\t%s %s\n", swagger.Capitalize(param.Name), typeName)
 	}
 	g.Printf("}\n\n")
 
 	return nil
 }
 
-func printInputValidation(g *Generator, op *spec.Operation) error {
-	g.Printf("func (i %sInput) Validate() error{\n", capitalize(op.ID))
+func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
+	g.Printf("func (i %sInput) Validate() error{\n", swagger.Capitalize(op.ID))
 
 	// TODO: Right now we only support validation on complex types (schemas)
 	for _, param := range op.Parameters {
 		if param.In == "body" {
-			g.Printf("\tif err := i.%s.Validate(nil); err != nil {\n", capitalize(param.Name))
+			g.Printf("\tif err := i.%s.Validate(nil); err != nil {\n", swagger.Capitalize(param.Name))
 			g.Printf("\t\treturn err\n")
 			g.Printf("\t}\n\n")
 		}
@@ -118,17 +122,18 @@ func printInputValidation(g *Generator, op *spec.Operation) error {
 }
 
 func generateOutputs(packageName string, paths *spec.Paths) error {
-	var g Generator
+	var g swagger.Generator
 
 	g.Printf("package models\n\n")
 
 	g.Printf(defaultOutputTypes())
 
-	for _, pathKey := range sortedPathItemKeys(paths.Paths) {
+	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
 		path := paths.Paths[pathKey]
-		pathItemOps := pathItemOperations(path)
-		for _, opKey := range sortedOperationsKeys(pathItemOps) {
+		pathItemOps := swagger.PathItemOperations(path)
+		for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
 			op := pathItemOps[opKey]
+			capOpID := swagger.Capitalize(op.ID)
 			// We classify response keys into three types:
 			// 1. 200-399 - these are "success" responses and implement the Output interface
 			// 	defined above
@@ -136,19 +141,19 @@ func generateOutputs(packageName string, paths *spec.Paths) error {
 			// 3. Default - this is defined as a 500 (TODO: decide if we want to keep this...)
 
 			// Define the success interface
-			g.Printf("type %sOutput interface {\n", capitalize(op.ID))
-			g.Printf("\t%sStatus() int\n", capitalize(op.ID))
+			g.Printf("type %sOutput interface {\n", capOpID)
+			g.Printf("\t%sStatus() int\n", capOpID)
 			g.Printf("\t// Data is the underlying model object. We know it is json serializable\n")
-			g.Printf("\t%sData() interface{}\n", capitalize(op.ID))
+			g.Printf("\t%sData() interface{}\n", capOpID)
 			g.Printf("}\n\n")
 
 			// Define the error interface
-			g.Printf("type %sError interface {\n", capitalize(op.ID))
+			g.Printf("type %sError interface {\n", capOpID)
 			g.Printf("\terror // Extend the error interface\n")
-			g.Printf("\t%sStatusCode() int\n", capitalize(op.ID))
+			g.Printf("\t%sStatusCode() int\n", capOpID)
 			g.Printf("}\n\n")
 
-			for _, statusCode := range sortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
+			for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
 				response := op.Responses.StatusCodeResponses[statusCode]
 
 				if statusCode < 200 || statusCode > 599 {
@@ -164,7 +169,7 @@ func generateOutputs(packageName string, paths *spec.Paths) error {
 						"instead of defining your own")
 				}
 
-				outputName := fmt.Sprintf("%s%dOutput", capitalize(op.ID), statusCode)
+				outputName := fmt.Sprintf("%s%dOutput", capOpID, statusCode)
 				typeName, err := typeFromSchema(response.Schema)
 				if err != nil {
 					return err
@@ -172,14 +177,14 @@ func generateOutputs(packageName string, paths *spec.Paths) error {
 
 				g.Printf("type %s %s\n\n", outputName, typeName)
 
-				g.Printf("func (o %s) %sData() interface{} {\n", outputName, capitalize(op.ID))
+				g.Printf("func (o %s) %sData() interface{} {\n", outputName, capOpID)
 				g.Printf("\treturn o\n")
 				g.Printf("}\n\n")
 
 				if statusCode < 400 {
 
 					// TODO: Do we really want to have that as part of the interface?
-					g.Printf("func (o %s) %sStatus() int {\n", outputName, capitalize(op.ID))
+					g.Printf("func (o %s) %sStatus() int {\n", outputName, capOpID)
 					// TODO: Use the right status code...
 					g.Printf("\treturn %d\n", statusCode)
 					g.Printf("}\n\n")
@@ -192,7 +197,7 @@ func generateOutputs(packageName string, paths *spec.Paths) error {
 					g.Printf("\treturn \"Status Code: \" + \"%d\"\n", statusCode)
 					g.Printf("}\n\n")
 
-					g.Printf("func (o %s) %sStatusCode() int {\n", outputName, capitalize(op.ID))
+					g.Printf("func (o %s) %sStatusCode() int {\n", outputName, capOpID)
 					g.Printf("\treturn %d\n", statusCode)
 					g.Printf("}\n\n")
 				}
@@ -200,4 +205,60 @@ func generateOutputs(packageName string, paths *spec.Paths) error {
 		}
 	}
 	return g.WriteFile("generated/models/outputs.go")
+}
+
+// defaultOutputTypes returns the string defining the default output type
+func defaultOutputTypes() string {
+	return fmt.Sprintf(`
+// DefaultInternalError represents a generic 500 response.
+type DefaultInternalError struct {
+	Msg string %s
+}
+
+func (d DefaultInternalError) Error() string {
+	return d.Msg
+}
+
+type DefaultBadRequest struct {
+	Msg string %s
+}
+
+func (d DefaultBadRequest) Error() string {
+	return d.Msg
+}
+
+`, "`json:\"msg\"`", "`json:\"msg\"`")
+}
+
+func typeFromSchema(schema *spec.Schema) (string, error) {
+	// We support three types of schemas
+	// 1. An empty schema
+	// 2. A schema with one element, the $ref key
+	// 3. A schema with two elements. One a type with value 'array' and another items field
+	// referencing the $ref
+	// TODO: The error messages here aren't great...
+	if schema == nil {
+		// represent this as a string, which is empty by default
+		return "string", nil
+	} else if schema.Ref.String() != "" {
+		ref := schema.Ref.String()
+		if !strings.HasPrefix(ref, "#/definitions/") {
+			return "", fmt.Errorf("schema.$ref has undefined reference type. Must be #/definitions")
+		}
+		return ref[len("#/definitions/"):], nil
+	} else {
+		schemaType := schema.Type
+		if len(schemaType) != 1 || schemaType[0] != "array" {
+			return "", fmt.Errorf("Two element schemas must have a 'type' field with the value 'array'")
+		}
+		items := schema.Items
+		if items == nil || items.Schema == nil {
+			return "", fmt.Errorf("Two element schemas must have an '$ref' field in the 'items' descriptions")
+		}
+		ref := items.Schema.Ref.String()
+		if !strings.HasPrefix(ref, "#/definitions/") {
+			return "", fmt.Errorf("schema.$ref has undefined reference type. Must be #/definitions")
+		}
+		return "[]" + ref[len("#/definitions/"):], nil
+	}
 }
