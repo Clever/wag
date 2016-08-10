@@ -1,10 +1,13 @@
 {
 	"ImportPath": "github.com/Clever/wag",
-	"GoVersion": "go1.6",
-	"GodepVersion": "v71",
+	"GoVersion": "go1.6.2",
 	"Packages": [
 		"github.com/Clever/wag",
-		"github.com/Clever/wag/hardcoded"
+		"github.com/Clever/wag/generated/client",
+		"github.com/Clever/wag/generated/models",
+		"github.com/Clever/wag/generated/server",
+		"github.com/Clever/wag/impl",
+		"github.com/Clever/wag/test"
 	],
 	"Deps": [
 		{
@@ -44,10 +47,6 @@
 		},
 		{
 			"ImportPath": "github.com/go-openapi/loads",
-			"Rev": "18441dfa706d924a39a030ee2c3b1d8d81917b38"
-		},
-		{
-			"ImportPath": "github.com/go-openapi/loads/fmts",
 			"Rev": "18441dfa706d924a39a030ee2c3b1d8d81917b38"
 		},
 		{
@@ -94,8 +93,25 @@
 			"Rev": "5bea336fb0e59202a544e3586d66539197aed9d2"
 		},
 		{
+			"ImportPath": "github.com/opentracing/opentracing-go",
+			"Comment": "v0.2-220-g67bc0a3",
+			"Rev": "67bc0a342a73f8ce1e4514fe1ae68609554dc05e"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/assert",
+			"Rev": "e22aedd37671fb115be6c0c25129c405cb575cfd"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/require",
+			"Rev": "e22aedd37671fb115be6c0c25129c405cb575cfd"
+		},
+		{
 			"ImportPath": "github.com/vburenin/nsync",
 			"Rev": "5523ea7bcd87020a5572fbba691dc10f3f114e53"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "075e191f18186a8ff2becaf64478e30f4545cdad"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/ast/astutil",
@@ -107,16 +123,6 @@
 		},
 		{
 			"ImportPath": "gopkg.in/Clever/kayvee-go.v3",
-			"Comment": "v3.2.1",
-			"Rev": "056c92dcc68b40c5d6045f755197b3776f914154"
-		},
-		{
-			"ImportPath": "gopkg.in/Clever/kayvee-go.v3/logger",
-			"Comment": "v3.2.1",
-			"Rev": "056c92dcc68b40c5d6045f755197b3776f914154"
-		},
-		{
-			"ImportPath": "gopkg.in/Clever/kayvee-go.v3/middleware",
 			"Comment": "v3.2.1",
 			"Rev": "056c92dcc68b40c5d6045f755197b3776f914154"
 		},
