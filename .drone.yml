@@ -1,0 +1,15 @@
+env:
+- REPORT_CARD_GITHUB_STATUS_TOKEN=$$report_card_github_status_token
+- REPORT_CARD_GITHUB_REPO_TOKEN=$$report_card_github_repo_token
+image: clever/drone-go:1.6
+notify:
+  email:
+    recipients:
+    - drone@clever.com
+  slack:
+    on_failure: true
+    on_started: false
+    on_success: false
+    webhook_url: $$slack_webhook
+script:
+- make test
