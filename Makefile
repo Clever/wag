@@ -9,8 +9,7 @@ test:
 	rm -rf generated/*
 	go run main.go genclients.go -file swagger.yml -package $(PKG)/generated
 	cd impl && go build
-	# Temporarily run the client here since it isn't used in impl
-	cd generated/client && go build
+	cd test && go test
 
 vendor: golang-godep-vendor-deps
 	$(call golang-godep-vendor,$(PKGS))
