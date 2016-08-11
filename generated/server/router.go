@@ -17,12 +17,12 @@ type contextKey struct{}
 
 type Server struct {
 	Handler http.Handler
-	Port    int
+	port    int
 }
 
 func (s Server) Serve() error {
 	// Give the sever 30 seconds to shut down
-	graceful.Run(":"+string(s.Port), 30*time.Second, s.Handler)
+	graceful.Run(":"+string(s.port), 30*time.Second, s.Handler)
 
 	// This should never return
 	return errors.New("This should never happen")
@@ -47,5 +47,5 @@ func New(c Controller, port int) Server {
 		CreateBookHandler(ctx, w, r)
 	})
 	handler := withMiddleware(r)
-	return Server{Handler: handler, Port: port}
+	return Server{Handler: handler, port: port}
 }

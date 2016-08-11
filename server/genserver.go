@@ -52,12 +52,12 @@ type contextKey struct{}
 
 type Server struct {
 	Handler http.Handler
-	Port int
+	port int
 }
 
 func (s Server) Serve() error {
 	// Give the sever 30 seconds to shut down
-	graceful.Run(":" + string(s.Port),30*time.Second,s.Handler)
+	graceful.Run(":" + string(s.port),30*time.Second,s.Handler)
 
 	// This should never return
 	return errors.New("This should never happen")
@@ -92,7 +92,7 @@ func New(c Controller, port int) Server {
 	}
 	// TODO: It's a bit weird that this returns a pointer that it modifies...
 	g.Printf("\thandler := withMiddleware(r)\n")
-	g.Printf("\treturn Server{Handler: handler, Port : port}\n")
+	g.Printf("\treturn Server{Handler: handler, port : port}\n")
 	g.Printf("}\n")
 
 	return g.WriteFile("generated/server/router.go")
