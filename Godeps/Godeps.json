@@ -3,10 +3,14 @@
 	"GoVersion": "go1.6.2",
 	"Packages": [
 		"github.com/Clever/wag",
+		"github.com/Clever/wag/client",
 		"github.com/Clever/wag/generated/client",
 		"github.com/Clever/wag/generated/models",
 		"github.com/Clever/wag/generated/server",
 		"github.com/Clever/wag/impl",
+		"github.com/Clever/wag/models",
+		"github.com/Clever/wag/server",
+		"github.com/Clever/wag/swagger",
 		"github.com/Clever/wag/test"
 	],
 	"Deps": [
@@ -125,6 +129,11 @@
 			"ImportPath": "gopkg.in/Clever/kayvee-go.v3",
 			"Comment": "v3.2.1",
 			"Rev": "056c92dcc68b40c5d6045f755197b3776f914154"
+		},
+		{
+			"ImportPath": "gopkg.in/tylerb/graceful.v1",
+			"Comment": "v1.2.11",
+			"Rev": "c838c13b2beeea4f4f54496da96a3a6ae567c37a"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",

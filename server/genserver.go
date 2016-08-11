@@ -36,18 +36,37 @@ func generateRouter(basePath string, paths *spec.Paths) error {
 		`package server
 
 import (
+	"errors"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 
 	gContext "github.com/gorilla/context"
 	"golang.org/x/net/context"
+
+	"gopkg.in/tylerb/graceful.v1"
 )
 
 type contextKey struct{}
 
-func SetupServer(r *mux.Router, c Controller) http.Handler {
-	controller = c // TODO: get rid of global variable?`)
+type Server struct {
+	Handler http.Handler
+	port int
+}
+
+func (s Server) Serve() error {
+	// Give the sever 30 seconds to shut down
+	graceful.Run(":" + string(s.port),30*time.Second,s.Handler)
+
+	// This should never return
+	return errors.New("This should never happen")
+}
+
+func New(c Controller, port int) Server {
+	controller = c // TODO: get rid of global variable?
+	r := mux.NewRouter()
+`)
 
 	for _, path := range swagger.SortedPathItemKeys(paths.Paths) {
 		pathItem := paths.Paths[path]
@@ -72,7 +91,8 @@ func SetupServer(r *mux.Router, c Controller) http.Handler {
 		}
 	}
 	// TODO: It's a bit weird that this returns a pointer that it modifies...
-	g.Printf("\treturn withMiddleware(r)\n")
+	g.Printf("\thandler := withMiddleware(r)\n")
+	g.Printf("\treturn Server{Handler: handler, port : port}\n")
 	g.Printf("}\n")
 
 	return g.WriteFile("generated/server/router.go")
