@@ -5,7 +5,6 @@ import (
 
 	"github.com/Clever/wag/generated/models"
 	"github.com/Clever/wag/generated/server"
-	"github.com/gorilla/mux"
 	"golang.org/x/net/context"
 )
 
@@ -35,7 +34,7 @@ func (c *ControllerImpl) CreateBook(ctx context.Context, input *models.CreateBoo
 func setupServer() *httptest.Server {
 	controller := ControllerImpl{books: make(map[int64]models.Book)}
 
-	router := server.SetupServer(mux.NewRouter(), &controller)
+	s := server.New(&controller)
 
-	return httptest.NewServer(router)
+	return httptest.NewServer(s.Handler)
 }
