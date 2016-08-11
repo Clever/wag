@@ -1,22 +1,61 @@
 # wag
 sWAGger - Web API Generator
 
-# Running
+## Usage
+### Generating Code
+Create a swagger.yml file with your [service definition](http://editor.swagger.io/#/). Note that WAG does not support the complete swagger spec ([see below](https://github.com/Clever/wag#swagger-spec)). Then generate your code:
 ```
-go run main.go genclients.go
-cd impl/ && ./impl
+make swagger
 ```
+
+This generates three directories. You should not have to modify any of the generated code:
+- generated/models: contains all the definitions in your Swagger file as well as API input / output definitions
+- generated/server: contains the router, middleware, and handler logic
+- generated/clients: contains the Go client library
+
+### Using the Go Server
+To use the generated code you need to do two things:
+- Implement the controller interface defined in `generated/server/interface.go`
+- Use that in your main to get your own handler. For example, something like
+```
+router := server.SetupServer(mux.NewRouter(), controller)
+server := &http.Server{
+  Addr:    fmt.Sprintf(":8080"),
+  Handler: router,
+}
+log.Fatal(server.ListenAndServe())
+```
+
+See https://github.com/Clever/wag/blob/master/impl/main.go for a working example.
+
+### Using the Go Client
+Initialize the client with `New`
+```
+c := client.New("localhost:8000")
+```
+
+Make an API call
+```
+output, err := c.GetBookByID(ctx, GetBookByIDInput{ID: 1234})
+if err != nil {
+  // Do something with the error
+}
+book, ok := output.(models.GetBookByID200Output)
+if !ok {
+  // The only success value this returns is a 200, so anything else would be an expected error 
+}
+```
+
+If you're using the client from another WAG-ified service you should pass in the `ctx` object you get in your server handler. Otherwise you can use `context.Background()`
+
+### Using the Node Client
+TODO
+
 
 ## Tests
 ```
 make test
 ```
-
-## After Generating
-
-TODO: Update this
-
-
 
 ## Future Features
 
@@ -39,7 +78,7 @@ These are the features we're planning on building in the near future:
 
 ## Swagger Spec
 
-Currently, this repo doesn't implement the entire Swagger Spec. This is a non-exhaustive list of the parts of the Swagger specification that haven't been implemented yet.
+Currently, WAG doesn't implement the entire Swagger Spec. This is a non-exhaustive list of the parts of the Swagger specification that haven't been implemented yet.
 
 All Mime Types
 
