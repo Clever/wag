@@ -76,12 +76,16 @@ func tracingMiddleware(c ContextHandler) ContextHandler {
 		var sp opentracing.Span
 		if sc, err := opentracing.GlobalTracer().
 			Extract(opentracing.HTTPHeaders,
-			opentracing.HTTPHeadersCarrier(r.Header)); err != nil {
+				opentracing.HTTPHeadersCarrier(r.Header)); err != nil {
 			sp = opentracing.StartSpan(opName)
 		} else {
 			sp = opentracing.StartSpan(opName, opentracing.ChildOf(sc))
 		}
 		defer sp.Finish()
+		sp.LogEvent("request_received")
+		defer func() {
+			sp.LogEvent("request_finished")
+		}()
 		c.ServeHTTPContext(opentracing.ContextWithSpan(ctx, sp), w, r)
 	})
 }
