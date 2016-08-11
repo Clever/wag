@@ -11,5 +11,18 @@ notify:
     on_started: false
     on_success: false
     webhook_url: $$slack_webhook
+publish:
+  docker:
+    docker_host: $$docker_server
+    email: $$docker_email
+    image_name: clever/wag
+    password: $$docker_password
+    registry_login: true
+    tags:
+    - $(git rev-parse --short HEAD)
+    username: $$docker_username
+    when:
+      branch: master
 script:
 - make test
+- make build
