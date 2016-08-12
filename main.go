@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"go/format"
-	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -101,30 +100,13 @@ func main() {
 		log.Fatalf("Failed generating clients %s", err)
 	}
 
-	if err := copyFile("hardcoded/middleware.go", "generated/server/middleware.go"); err != nil {
-		log.Fatalf("Failed to copy hardcoded/middleware.go: %s", err)
+	if err := ioutil.WriteFile("generated/server/middleware.go", MustAsset("hardcoded/_middleware.go"), 0644); err != nil {
+		log.Fatalf("Failed to copy middleware.go: %s", err)
 	}
 
-	if err := copyFile("hardcoded/doer.go", "generated/client/doer.go"); err != nil {
-		log.Fatalf("Failed to copy hardcoded/doer.go: %s", err)
+	if err := ioutil.WriteFile("generated/client/doer.go", MustAsset("hardcoded/_doer.go"), 0644); err != nil {
+		log.Fatalf("Failed to copy doer.go: %s", err)
 	}
-}
-
-func copyFile(source, dest string) error {
-	in, err := os.Open(source)
-	if err != nil {
-		return err
-	}
-	defer in.Close()
-
-	out, err := os.Create(dest)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	_, err = io.Copy(out, in)
-	return err
 }
 
 type Generator struct {
