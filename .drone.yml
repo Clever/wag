@@ -18,8 +18,10 @@ publish:
     image_name: clever/wag
     password: $$docker_password
     registry_login: true
+    force_tags: true
     tags:
     - $(git rev-parse --short HEAD)
+    - latest
     username: $$docker_username
     when:
       branch: master
