@@ -28,7 +28,7 @@ make generate
 This generates four directories. You should not have to modify any of the generated code:
 - generated/models: contains all the definitions in your Swagger file as well as API input / output definitions
 - generated/server: contains the router, middleware, and handler logic
-- generated/clients: contains the Go client library
+- generated/client: contains the Go client library
 - gen-js: contains the javascript client library
 
 ### Using the Go Server
@@ -36,7 +36,7 @@ To use the generated code you need to do two things:
 - Implement the controller interface defined in `generated/server/interface.go`
 - Pass the controller into the Server constructure. For example:
 ```
-  s := server.New(controller, 8080)
+  s := server.New(myController, myPort)
   log.Fatal(s.Serve())
 ```
 
@@ -45,7 +45,7 @@ See https://github.com/Clever/wag/blob/master/impl/main.go for a working example
 ### Using the Go Client
 Initialize the client with `New`
 ```
-c := client.New("localhost:8000")
+c := client.New("https://url_of_your_service:port")
 ```
 
 Make an API call
@@ -56,7 +56,7 @@ if err != nil {
 }
 book, ok := output.(models.GetBookByID200Output)
 if !ok {
-  // The only success value this returns is a 200, so anything else would be an expected error
+  // The only success value this returns is a 200, so anything else would be unexpected
 }
 ```
 
