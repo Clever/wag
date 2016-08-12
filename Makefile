@@ -5,16 +5,23 @@ PKG := github.com/Clever/wag
 PKGS := $(shell go list ./... | grep -v /vendor)
 $(eval $(call golang-version-check,1.6))
 
-build:
+build: hardcoded.go
 	# disable CGO and link completely statically (this is to enable us to run in containers that don't use glibc)
 	CGO_ENABLED=0 go build -installsuffix cgo -o bin/wag
 
 test: build
-	rm -rf generated/*
+	rm -rf generated
 	./bin/wag -file swagger.yml -package $(PKG)/generated
 	cd impl && go build
 	# Temporarily run the client here since it isn't used in impl
 	cd generated/client && go build
+
+
+$(GOPATH)/bin/go-bindata:
+	go get -u github.com/jteeuwen/go-bindata/...
+
+hardcoded.go: $(GOPATH)/bin/go-bindata hardcoded/*
+	$(GOPATH)/bin/go-bindata -o hardcoded.go hardcoded/
 
 vendor: golang-godep-vendor-deps
 	$(call golang-godep-vendor,$(PKGS))

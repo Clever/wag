@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go/format"
 	"io/ioutil"
+	"os"
 	"sort"
 	"strings"
 
@@ -12,14 +13,22 @@ import (
 )
 
 type Generator struct {
-	buf bytes.Buffer
+	PackageName string
+	buf         bytes.Buffer
 }
 
 func (g *Generator) Printf(format string, args ...interface{}) {
 	fmt.Fprintf(&g.buf, format, args...)
 }
 
+func (g *Generator) Write(p []byte) (n int, err error) {
+	return g.buf.Write(p)
+}
+
 func (g *Generator) WriteFile(path string) error {
+	if len(path) == 0 || path[0] == '/' {
+		return fmt.Errorf("path must be relative")
+	}
 	fileBytes, err := format.Source(g.buf.Bytes())
 	if err != nil {
 		// This will error if the code isn't valid so let's print it to make it
@@ -27,7 +36,7 @@ func (g *Generator) WriteFile(path string) error {
 		fmt.Printf("BAD CODE\n%s\n", string(g.buf.Bytes()))
 		return err
 	}
-	return ioutil.WriteFile(path, fileBytes, 0644)
+	return ioutil.WriteFile(os.Getenv("GOPATH")+"/src/"+g.PackageName+"/"+path, fileBytes, 0644)
 }
 
 // importStatements takes a list of import strings and converts them to a formatted imports

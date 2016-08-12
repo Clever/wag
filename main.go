@@ -1,12 +1,8 @@
 package main
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
-	"go/format"
-	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"sort"
@@ -19,6 +15,7 @@ import (
 	"github.com/Clever/wag/client"
 	"github.com/Clever/wag/models"
 	"github.com/Clever/wag/server"
+	"github.com/Clever/wag/swagger"
 )
 
 func pathItemOperations(item spec.PathItem) map[string]*spec.Operation {
@@ -74,76 +71,44 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error loading swagger file: %s", err)
 	}
-	swagger := *doc.Spec()
+	swaggerSpec := *doc.Spec()
 
-	if err := validate(swagger); err != nil {
+	if err := validate(swaggerSpec); err != nil {
 		log.Fatalf("Swagger file not valid: %s", err)
 	}
 
 	for _, dir := range []string{"server", "client", "models"} {
 		dirName := os.Getenv("GOPATH") + "/src/" + *packageName + "/" + dir
-		if err := os.Mkdir(dirName, 0700); err != nil {
+		if err := os.MkdirAll(dirName, 0700); err != nil {
 			if !os.IsExist(err.(*os.PathError)) {
 				log.Fatalf("Could not create directory: %s, error: %s", dirName, err)
 			}
 		}
 	}
 
-	if err := models.Generate(*packageName, *swaggerFile, swagger); err != nil {
+	if err := models.Generate(*packageName, *swaggerFile, swaggerSpec); err != nil {
 		log.Fatalf("Error generating models: %s", err)
 	}
 
-	if err := server.Generate(*packageName, swagger); err != nil {
+	if err := server.Generate(*packageName, swaggerSpec); err != nil {
 		log.Fatalf("Failed to generate server: %s", err)
 	}
 
-	if err := client.Generate(*packageName, swagger); err != nil {
+	if err := client.Generate(*packageName, swaggerSpec); err != nil {
 		log.Fatalf("Failed generating clients %s", err)
 	}
 
-	if err := copyFile("hardcoded/middleware.go", "generated/server/middleware.go"); err != nil {
-		log.Fatalf("Failed to copy hardcoded/middleware.go: %s", err)
+	middlewareGenerator := swagger.Generator{PackageName: *packageName}
+	middlewareGenerator.Write(MustAsset("hardcoded/_middleware.go"))
+	if err := middlewareGenerator.WriteFile("server/middleware.go"); err != nil {
+		log.Fatalf("Failed to copy middleware.go: %s", err)
 	}
 
-	if err := copyFile("hardcoded/doer.go", "generated/client/doer.go"); err != nil {
-		log.Fatalf("Failed to copy hardcoded/doer.go: %s", err)
+	doerGenerator := swagger.Generator{PackageName: *packageName}
+	doerGenerator.Write(MustAsset("hardcoded/_doer.go"))
+	if err := doerGenerator.WriteFile("client/doer.go"); err != nil {
+		log.Fatalf("Failed to copy doer.go: %s", err)
 	}
-}
-
-func copyFile(source, dest string) error {
-	in, err := os.Open(source)
-	if err != nil {
-		return err
-	}
-	defer in.Close()
-
-	out, err := os.Create(dest)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	_, err = io.Copy(out, in)
-	return err
-}
-
-type Generator struct {
-	buf bytes.Buffer
-}
-
-func (g *Generator) Printf(format string, args ...interface{}) {
-	fmt.Fprintf(&g.buf, format, args...)
-}
-
-func (g *Generator) WriteFile(path string) error {
-	fileBytes, err := format.Source(g.buf.Bytes())
-	if err != nil {
-		// This will error if the code isn't valid so let's print it to make it
-		// easier to debug
-		fmt.Printf("BAD CODE\n%s\n", string(g.buf.Bytes()))
-		return err
-	}
-	return ioutil.WriteFile(path, fileBytes, 0644)
 }
 
 func sortedPathItemKeys(m map[string]spec.PathItem) []string {

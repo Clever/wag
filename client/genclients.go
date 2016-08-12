@@ -12,7 +12,7 @@ import (
 // Generate generates a client
 func Generate(packageName string, s spec.Swagger) error {
 
-	var g swagger.Generator
+	g := swagger.Generator{PackageName: packageName}
 
 	g.Printf("package client\n\n")
 	g.Printf(swagger.ImportStatements([]string{"golang.org/x/net/context", "strings", "bytes",
@@ -146,7 +146,7 @@ func (c Client) WithRetries(retries int) Client {
 		}
 	}
 
-	return g.WriteFile("generated/client/client.go")
+	return g.WriteFile("client/client.go")
 }
 
 var badRequestCode = `
