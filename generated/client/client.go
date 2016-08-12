@@ -43,9 +43,9 @@ func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) (models.G
 	urlVals := url.Values{}
 	var body []byte
 
-	urlVals.Add("author", i.Author)
-	urlVals.Add("available", strconv.FormatBool(i.Available))
-	urlVals.Add("maxPages", strconv.FormatFloat(i.MaxPages, 'E', -1, 64))
+	urlVals.Add("author", *i.Author)
+	urlVals.Add("available", strconv.FormatBool(*i.Available))
+	urlVals.Add("maxPages", strconv.FormatFloat(*i.MaxPages, 'E', -1, 64))
 	path = path + "?" + urlVals.Encode()
 
 	client := &http.Client{Transport: c.transport}
@@ -94,7 +94,7 @@ func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (mo
 
 	client := &http.Client{Transport: c.transport}
 	req, _ := http.NewRequest("GET", path, bytes.NewBuffer(body))
-	req.Header.Set("authorization", i.Authorization)
+	req.Header.Set("authorization", *i.Authorization)
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "getBookByID")

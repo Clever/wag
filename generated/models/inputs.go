@@ -10,9 +10,9 @@ var _ = json.Marshal
 var _ = strconv.FormatInt
 
 type GetBooksInput struct {
-	Author    string
-	Available bool
-	MaxPages  float64
+	Author    *string
+	Available *bool
+	MaxPages  *float64
 }
 
 func (i GetBooksInput) Validate() error {
@@ -21,7 +21,7 @@ func (i GetBooksInput) Validate() error {
 
 type GetBookByIDInput struct {
 	BookID        int64
-	Authorization string
+	Authorization *string
 }
 
 func (i GetBookByIDInput) Validate() error {
@@ -29,7 +29,7 @@ func (i GetBookByIDInput) Validate() error {
 }
 
 type CreateBookInput struct {
-	NewBook Book
+	NewBook *Book
 }
 
 func (i CreateBookInput) Validate() error {

@@ -176,16 +176,19 @@ func successResponse(outputName string) string {
 }
 
 func convertParamToString(p spec.Parameter) string {
-	capParamName := swagger.Capitalize(p.Name)
+	valToSet := fmt.Sprintf("i.%s", swagger.Capitalize(p.Name))
+	if !p.Required {
+		valToSet = "*" + valToSet
+	}
 	switch p.Type {
 	case "string":
-		return fmt.Sprintf("i.%s", capParamName)
+		return fmt.Sprintf("%s", valToSet)
 	case "integer":
-		return fmt.Sprintf("strconv.FormatInt(i.%s, 10)", capParamName)
+		return fmt.Sprintf("strconv.FormatInt(%s, 10)", valToSet)
 	case "number":
-		return fmt.Sprintf("strconv.FormatFloat(i.%s, 'E', -1, 64)", capParamName)
+		return fmt.Sprintf("strconv.FormatFloat(%s, 'E', -1, 64)", valToSet)
 	case "boolean":
-		return fmt.Sprintf("strconv.FormatBool(i.%s)", capParamName)
+		return fmt.Sprintf("strconv.FormatBool(%s)", valToSet)
 	default:
 		// Theoretically should have validated before getting here
 		panic(fmt.Errorf("Unsupported parameter type %s", p.Type))

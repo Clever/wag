@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/Clever/wag/generated/models"
 	"github.com/gorilla/mux"
 	"golang.org/x/net/context"
@@ -58,18 +59,21 @@ func NewGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 	var input models.GetBooksInput
 
 	authorStr := r.URL.Query().Get("author")
-	input.Author = authorStr
+	authorTmp := authorStr
+	input.Author = &authorTmp
+
 	availableStr := r.URL.Query().Get("available")
 	var err error
-	input.Available, err = strconv.ParseBool(availableStr)
-	if err != nil {
-		return nil, err
-	}
+	availableTmp, err := strconv.ParseBool(availableStr)
+	// Ignore the error if the parameter isn't required
+	_ = err
+	input.Available = &availableTmp
+
 	maxPagesStr := r.URL.Query().Get("maxPages")
-	input.MaxPages, err = strconv.ParseFloat(maxPagesStr, 64)
-	if err != nil {
-		return nil, err
-	}
+	maxPagesTmp, err := strconv.ParseFloat(maxPagesStr, 64)
+	// Ignore the error if the parameter isn't required
+	_ = err
+	input.MaxPages = &maxPagesTmp
 
 	return &input, nil
 }
@@ -111,13 +115,19 @@ func NewGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 	var input models.GetBookByIDInput
 
 	bookIDStr := mux.Vars(r)["bookID"]
+	if len(bookIDStr) == 0 {
+		return nil, errors.New("Parameter must be specified")
+	}
 	var err error
-	input.BookID, err = strconv.ParseInt(bookIDStr, 10, 64)
+	bookIDTmp, err := strconv.ParseInt(bookIDStr, 10, 64)
 	if err != nil {
 		return nil, err
 	}
+	input.BookID = bookIDTmp
+
 	authorizationStr := r.Header.Get("authorization")
-	input.Authorization = authorizationStr
+	authorizationTmp := authorizationStr
+	input.Authorization = &authorizationTmp
 
 	return &input, nil
 }
@@ -158,9 +168,9 @@ func CreateBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Reque
 func NewCreateBookInput(r *http.Request) (*models.CreateBookInput, error) {
 	var input models.CreateBookInput
 
-	if err := json.NewDecoder(r.Body).Decode(&input.NewBook); err != nil {
-		return nil, err
-	}
+	err := json.NewDecoder(r.Body).Decode(&input.NewBook)
+	// Ignore the error if the parameter isn't required
+	_ = err
 
 	return &input, nil
 }

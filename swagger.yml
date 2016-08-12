@@ -21,6 +21,7 @@ paths:
         - name: bookID
           in: path
           type: integer
+          required: true
         - name: authorization
           in: header
           type: string

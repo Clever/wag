@@ -97,7 +97,12 @@ func printInputStruct(g *swagger.Generator, op *spec.Operation) error {
 				return err
 			}
 		}
-		g.Printf("\t%s %s\n", swagger.Capitalize(param.Name), typeName)
+		pointerStr := ""
+		if !param.Required {
+			pointerStr = "*"
+		}
+
+		g.Printf("\t%s %s%s\n", swagger.Capitalize(param.Name), pointerStr, typeName)
 	}
 	g.Printf("}\n\n")
 

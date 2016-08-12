@@ -153,6 +153,13 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 
 			g.Printf("\t%sStr := %s\n", param.Name, extractCode)
 
+			if param.Required {
+				g.Printf("\tif len(%sStr) == 0{\n", param.Name)
+				g.Printf("\t\treturn nil, errors.New(\"Parameter must be specified\")\n")
+				g.Printf("\t}\n")
+			}
+
+			// TODO: Refactor this a bit...
 			if param.Type != "string" {
 				if !printedError {
 					g.Printf("\tvar err error\n")
@@ -161,34 +168,52 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 
 				switch param.Type {
 				case "integer":
-					g.Printf("\tinput.%s, err = strconv.ParseInt(%sStr, 10, 64)\n",
-						capParamName, param.Name)
+					g.Printf("\t%sTmp, err := strconv.ParseInt(%sStr, 10, 64)\n",
+						param.Name, param.Name)
 				case "number":
-					g.Printf("\tinput.%s, err = strconv.ParseFloat(%sStr, 64)\n",
-						capParamName, param.Name)
+					g.Printf("\t%sTmp, err := strconv.ParseFloat(%sStr, 64)\n",
+						param.Name, param.Name)
 				case "boolean":
-					g.Printf("\tinput.%s, err = strconv.ParseBool(%sStr)\n",
-						capParamName, param.Name)
+					g.Printf("\t%sTmp, err := strconv.ParseBool(%sStr)\n",
+						param.Name, param.Name)
 				default:
 					return fmt.Errorf("Param type %s not supported", param.Type)
 				}
 				// TODO: These error message aren't great. We should probalby clean up...
-				g.Printf("\tif err != nil {\n")
-				g.Printf("\t\treturn nil, err\n")
-				g.Printf("\t}\n")
+				if param.Required {
+					g.Printf("\tif err != nil {\n")
+					g.Printf("\t\treturn nil, err\n")
+					g.Printf("\t}\n")
+				} else {
+					g.Printf("\t// Ignore the error if the parameter isn't required\n")
+					g.Printf("\t_ = err\n")
+				}
 
 			} else {
-				g.Printf("\tinput.%s = %sStr\n", capParamName, param.Name)
+				g.Printf("\t%sTmp := %sStr\n", param.Name, param.Name)
 			}
+
+			if param.Required {
+				g.Printf("\tinput.%s = %sTmp\n\n", capParamName, param.Name)
+			} else {
+				g.Printf("\tinput.%s = &%sTmp\n\n", capParamName, param.Name)
+			}
+
 		} else {
 			if param.Schema == nil {
 				return fmt.Errorf("Body parameters must have a schema defined")
 			}
-			g.Printf("\tif err := json.NewDecoder(r.Body).Decode(&input.%s); err != nil {\n",
+			g.Printf("\terr := json.NewDecoder(r.Body).Decode(&input.%s)\n",
 				capParamName)
-			// TODO: Make this an error of the right type
-			g.Printf("\t\treturn nil, err\n")
-			g.Printf("\t}\n")
+			if param.Required {
+				g.Printf("\tif err != nil {\n")
+				// TODO: Make this an error of the right type
+				g.Printf("\t\treturn nil, err\n")
+				g.Printf("\t}\n")
+			} else {
+				g.Printf("\t// Ignore the error if the parameter isn't required\n")
+				g.Printf("\t_ = err\n")
+			}
 		}
 	}
 	g.Printf("\n")
@@ -204,7 +229,7 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 
 	g.Printf("package server\n\n")
 	g.Printf(swagger.ImportStatements([]string{"golang.org/x/net/context", "github.com/gorilla/mux",
-		"net/http", "strconv", "encoding/json", "strconv", packageName + "/models"}))
+		"net/http", "strconv", "encoding/json", "strconv", packageName + "/models", "errors"}))
 
 	g.Printf("var _ = strconv.ParseInt\n\n")
 
