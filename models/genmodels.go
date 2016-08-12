@@ -29,12 +29,12 @@ func Generate(packageName, swaggerFile string, swagger spec.Swagger) error {
 	if err := generateOutputs(packageName, swagger.Paths); err != nil {
 		return err
 	}
-	return generateInputs(swagger.Paths)
+	return generateInputs(packageName, swagger.Paths)
 }
 
-func generateInputs(paths *spec.Paths) error {
+func generateInputs(packageName string, paths *spec.Paths) error {
 
-	var g swagger.Generator
+	g := swagger.Generator{PackageName: packageName}
 
 	g.Printf(`
 package models
@@ -63,7 +63,7 @@ var _ = strconv.FormatInt
 		}
 	}
 
-	return g.WriteFile("generated/models/inputs.go")
+	return g.WriteFile("models/inputs.go")
 }
 
 func printInputStruct(g *swagger.Generator, op *spec.Operation) error {
@@ -122,7 +122,7 @@ func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
 }
 
 func generateOutputs(packageName string, paths *spec.Paths) error {
-	var g swagger.Generator
+	g := swagger.Generator{PackageName: packageName}
 
 	g.Printf("package models\n\n")
 
@@ -204,7 +204,7 @@ func generateOutputs(packageName string, paths *spec.Paths) error {
 			}
 		}
 	}
-	return g.WriteFile("generated/models/outputs.go")
+	return g.WriteFile("models/outputs.go")
 }
 
 // defaultOutputTypes returns the string defining the default output type

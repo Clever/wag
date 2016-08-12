@@ -10,7 +10,7 @@ build: hardcoded.go
 	CGO_ENABLED=0 go build -installsuffix cgo -o bin/wag
 
 test: build
-	rm -rf generated/*
+	rm -rf generated
 	./bin/wag -file swagger.yml -package $(PKG)/generated
 	cd impl && go build
 	# Temporarily run the client here since it isn't used in impl

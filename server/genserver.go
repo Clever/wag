@@ -13,7 +13,7 @@ import (
 
 func Generate(packageName string, swagger spec.Swagger) error {
 
-	if err := generateRouter(swagger.BasePath, swagger.Paths); err != nil {
+	if err := generateRouter(packageName, swagger.BasePath, swagger.Paths); err != nil {
 		return err
 	}
 
@@ -27,8 +27,8 @@ func Generate(packageName string, swagger spec.Swagger) error {
 	return nil
 }
 
-func generateRouter(basePath string, paths *spec.Paths) error {
-	var g swagger.Generator
+func generateRouter(packageName string, basePath string, paths *spec.Paths) error {
+	g := swagger.Generator{PackageName: packageName}
 
 	// TODO: Add something to all these about being auto-generated
 
@@ -95,7 +95,7 @@ func New(c Controller, port int) Server {
 	g.Printf("\treturn Server{Handler: handler, port : port}\n")
 	g.Printf("}\n")
 
-	return g.WriteFile("generated/server/router.go")
+	return g.WriteFile("server/router.go")
 }
 
 type routerTemplate struct {
@@ -119,12 +119,12 @@ func generateContextsAndControllers(packageName string, paths *spec.Paths) error
 	//	return nil
 	//}
 
-	var interfaceGenerator swagger.Generator
+	interfaceGenerator := swagger.Generator{PackageName: packageName}
 	interfaceGenerator.Printf("package server\n\n")
 	interfaceGenerator.Printf(swagger.ImportStatements([]string{"golang.org/x/net/context", packageName + "/models"}))
 	interfaceGenerator.Printf("type Controller interface {\n")
 
-	var controllerGenerator swagger.Generator
+	controllerGenerator := swagger.Generator{PackageName: packageName}
 	controllerGenerator.Printf("package server\n\n")
 	controllerGenerator.Printf(swagger.ImportStatements([]string{"golang.org/x/net/context",
 		"errors", packageName + "/models"}))
@@ -152,10 +152,10 @@ func generateContextsAndControllers(packageName string, paths *spec.Paths) error
 	}
 	interfaceGenerator.Printf("}\n")
 
-	if err := interfaceGenerator.WriteFile("generated/server/interface.go"); err != nil {
+	if err := interfaceGenerator.WriteFile("server/interface.go"); err != nil {
 		return err
 	}
-	return controllerGenerator.WriteFile("generated/server/controller.go")
+	return controllerGenerator.WriteFile("server/controller.go")
 }
 
 func printNewInput(g *swagger.Generator, op *spec.Operation) error {
@@ -230,7 +230,7 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 }
 
 func generateHandlers(packageName string, paths *spec.Paths) error {
-	var g swagger.Generator
+	g := swagger.Generator{PackageName: packageName}
 
 	g.Printf("package server\n\n")
 	g.Printf(swagger.ImportStatements([]string{"golang.org/x/net/context", "github.com/gorilla/mux",
@@ -265,7 +265,7 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 		}
 	}
 
-	return g.WriteFile("generated/server/handlers.go")
+	return g.WriteFile("server/handlers.go")
 }
 
 type handlerOp struct {
