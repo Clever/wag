@@ -13,8 +13,7 @@ test: build
 	rm -rf generated
 	./bin/wag -file swagger.yml -package $(PKG)/generated
 	cd impl && go build
-	# Temporarily run the client here since it isn't used in impl
-	cd generated/client && go build
+	cd test && go test
 
 
 $(GOPATH)/bin/go-bindata:
