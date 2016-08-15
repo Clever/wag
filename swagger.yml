@@ -22,9 +22,16 @@ paths:
           in: path
           type: integer
           required: true
+          maximum: 10000000
+          minimum: 2
+          # This is a silly requirement, but let's add it to show how it would work
+          multipleOf: 2
         - name: authorization
           in: header
           type: string
+          minLength: 1
+          maxLength: 24
+          pattern: "[0-9a-f]+"
       responses:
         200:
           description: "Success"
@@ -75,6 +82,9 @@ paths:
           # Probably makes more sense for this to be an integer, but I couldn't figure out
           # a good example for books that really would need a float
           type: number
+          maximum: 1
+          minimum: -5
+          multipleOf: 0.5
       responses:
         200:
           description: "Success"

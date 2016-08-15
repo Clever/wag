@@ -42,11 +42,13 @@ package models
 import(
 		"encoding/json"
 		"strconv"
+		"github.com/go-openapi/validate"
 )
 
 // These imports may not be used depending on the input parameters
 var _ = json.Marshal
 var _ = strconv.FormatInt
+var _ = validate.Maximum
 `)
 
 	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
@@ -109,21 +111,79 @@ func printInputStruct(g *swagger.Generator, op *spec.Operation) error {
 	return nil
 }
 
+// oneTabErrorCheck returns an if err := ifCondition; err != nil { return err } function
+func oneTabErrorCheck(ifCondition string) string {
+	return fmt.Sprintf(`
+	if err := %s; err != nil {
+		return err
+	}
+`, ifCondition)
+}
+
 func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
 	g.Printf("func (i %sInput) Validate() error{\n", swagger.Capitalize(op.ID))
 
-	// TODO: Right now we only support validation on complex types (schemas)
 	for _, param := range op.Parameters {
 		if param.In == "body" {
 			g.Printf("\tif err := i.%s.Validate(nil); err != nil {\n", swagger.Capitalize(param.Name))
 			g.Printf("\t\treturn err\n")
 			g.Printf("\t}\n\n")
 		}
+
+		if param.Type == "string" {
+			if param.MaxLength != nil {
+				g.Printf(oneTabErrorCheck(fmt.Sprintf("validate.MaxLength(\"%s\", \"%s\", %s, %d)",
+					param.Name, param.In, accessString(param), *param.MaxLength)))
+			}
+			if param.MinLength != nil {
+				g.Printf(oneTabErrorCheck(fmt.Sprintf("validate.MinLength(\"%s\", \"%s\", %s, %d)",
+					param.Name, param.In, accessString(param), *param.MaxLength)))
+			}
+			if param.Pattern != "" {
+				g.Printf(oneTabErrorCheck(fmt.Sprintf("validate.Pattern(\"%s\", \"%s\", %s, \"%s\")",
+					param.Name, param.In, accessString(param), param.Pattern)))
+			}
+		} else if param.Type == "integer" {
+			if param.Maximum != nil {
+				g.Printf(oneTabErrorCheck(fmt.Sprintf("validate.MaximumInt(\"%s\", \"%s\", %s, %d, %t)",
+					param.Name, param.In, accessString(param), int64(*param.Maximum), param.ExclusiveMaximum)))
+			}
+			if param.Minimum != nil {
+				g.Printf(oneTabErrorCheck(fmt.Sprintf("validate.MinimumInt(\"%s\", \"%s\", %s, %d, %t)",
+					param.Name, param.In, accessString(param), int64(*param.Minimum), param.ExclusiveMinimum)))
+			}
+			if param.MultipleOf != nil {
+				g.Printf(oneTabErrorCheck(fmt.Sprintf("validate.MultipleOf(\"%s\", \"%s\", float64(%s), %f)",
+					param.Name, param.In, accessString(param), *param.MultipleOf)))
+			}
+		} else if param.Type == "number" {
+			if param.Maximum != nil {
+				g.Printf(oneTabErrorCheck(fmt.Sprintf("validate.Maximum(\"%s\", \"%s\",  %s, %f, %t)",
+					param.Name, param.In, accessString(param), *param.Maximum, param.ExclusiveMaximum)))
+			}
+			if param.Minimum != nil {
+				g.Printf(oneTabErrorCheck(fmt.Sprintf("validate.Minimum(\"%s\", \"%s\", %s, %f, %t)",
+					param.Name, param.In, accessString(param), *param.Minimum, param.ExclusiveMinimum)))
+			}
+			if param.MultipleOf != nil {
+				g.Printf(oneTabErrorCheck(fmt.Sprintf("validate.MultipleOf(\"%s\", \"%s\", %s, %f)",
+					param.Name, param.In, accessString(param), *param.MultipleOf)))
+			}
+		}
 	}
 	g.Printf("\treturn nil\n")
 	g.Printf("}\n\n")
 
 	return nil
+}
+
+// TODO: Add a nice comment!!!
+func accessString(param spec.Parameter) string {
+	pointer := ""
+	if !param.Required {
+		pointer = "*"
+	}
+	return fmt.Sprintf("%si.%s", pointer, swagger.Capitalize(param.Name))
 }
 
 func generateOutputs(packageName string, paths *spec.Paths) error {
