@@ -1,7 +1,6 @@
 package server
 
 import (
-	"errors"
 	"net/http"
 	"time"
 
@@ -17,18 +16,15 @@ type contextKey struct{}
 
 type Server struct {
 	Handler http.Handler
-	port    int
+	addr    string
 }
 
 func (s Server) Serve() error {
 	// Give the sever 30 seconds to shut down
-	graceful.Run(":"+string(s.port), 30*time.Second, s.Handler)
-
-	// This should never return
-	return errors.New("This should never happen")
+	return graceful.RunWithErr(s.addr, 30*time.Second, s.Handler)
 }
 
-func New(c Controller, port int) Server {
+func New(c Controller, addr string) Server {
 	controller = c // TODO: get rid of global variable?
 	r := mux.NewRouter()
 
@@ -47,5 +43,5 @@ func New(c Controller, port int) Server {
 		CreateBookHandler(ctx, w, r)
 	})
 	handler := withMiddleware(r)
-	return Server{Handler: handler, port: port}
+	return Server{Handler: handler, addr: addr}
 }

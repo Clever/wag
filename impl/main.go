@@ -11,6 +11,6 @@ import (
 func main() {
 
 	controller := server.ControllerImpl{}
-	s := server.New(controller, 8080)
+	s := server.New(controller, ":8080")
 	log.Fatal(s.Serve())
 }
