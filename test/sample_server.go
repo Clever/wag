@@ -34,7 +34,7 @@ func (c *ControllerImpl) CreateBook(ctx context.Context, input *models.CreateBoo
 func setupServer() *httptest.Server {
 	controller := ControllerImpl{books: make(map[int64]models.Book)}
 
-	s := server.New(&controller)
+	s := server.New(&controller, ":8080")
 
 	return httptest.NewServer(s.Handler)
 }
