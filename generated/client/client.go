@@ -45,6 +45,7 @@ func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) (models.G
 
 	urlVals.Add("author", *i.Author)
 	urlVals.Add("available", strconv.FormatBool(*i.Available))
+	urlVals.Add("state", *i.State)
 	urlVals.Add("maxPages", strconv.FormatFloat(*i.MaxPages, 'E', -1, 64))
 	path = path + "?" + urlVals.Encode()
 

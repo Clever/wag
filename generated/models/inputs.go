@@ -14,10 +14,15 @@ var _ = validate.Maximum
 type GetBooksInput struct {
 	Author    *string
 	Available *bool
+	State     *string
 	MaxPages  *float64
 }
 
 func (i GetBooksInput) Validate() error {
+
+	if err := validate.Enum("state", "query", *i.State, []interface{}{"finished", "inprogress"}); err != nil {
+		return err
+	}
 
 	if err := validate.Maximum("maxPages", "query", *i.MaxPages, 1.000000, false); err != nil {
 		return err

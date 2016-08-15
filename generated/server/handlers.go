@@ -69,6 +69,10 @@ func NewGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 	_ = err
 	input.Available = &availableTmp
 
+	stateStr := r.URL.Query().Get("state")
+	stateTmp := stateStr
+	input.State = &stateTmp
+
 	maxPagesStr := r.URL.Query().Get("maxPages")
 	maxPagesTmp, err := strconv.ParseFloat(maxPagesStr, 64)
 	// Ignore the error if the parameter isn't required

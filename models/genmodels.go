@@ -143,6 +143,14 @@ func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
 				g.Printf(oneTabErrorCheck(fmt.Sprintf("validate.Pattern(\"%s\", \"%s\", %s, \"%s\")",
 					param.Name, param.In, accessString(param), param.Pattern)))
 			}
+			if len(param.Enum) != 0 {
+				strEnum := []string{}
+				for _, enum := range param.Enum {
+					strEnum = append(strEnum, enum.(string))
+				}
+				g.Printf(oneTabErrorCheck(fmt.Sprintf("validate.Enum(\"%s\", \"%s\", %s, %s)",
+					param.Name, param.In, accessString(param), fmt.Sprintf("[]interface{}{\"%s\"}", strings.Join(strEnum, "\",\"")))))
+			}
 		} else if param.Type == "integer" {
 			if param.Maximum != nil {
 				g.Printf(oneTabErrorCheck(fmt.Sprintf("validate.MaximumInt(\"%s\", \"%s\", %s, %d, %t)",

@@ -77,6 +77,12 @@ paths:
         - name: available
           in: query
           type: boolean
+        - name: state
+          in: query
+          type: string
+          enum:
+            - finished
+            - inprogress
         - name: maxPages
           in: query
           # Probably makes more sense for this to be an integer, but I couldn't figure out
