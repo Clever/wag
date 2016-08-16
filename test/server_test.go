@@ -8,6 +8,10 @@ import (
 
 	"github.com/Clever/wag/generated/client"
 	"github.com/Clever/wag/generated/models"
+	"github.com/Clever/wag/generated/server"
+
+	"net/http"
+	"net/http/httptest"
 
 	"golang.org/x/net/context"
 )
@@ -67,4 +71,38 @@ func TestClientSideError(t *testing.T) {
 	assert.Error(t, err)
 	_, ok := err.(models.DefaultInternalError)
 	assert.True(t, ok)
+}
+
+type MiddlewareContextTest struct {
+	foundKey string
+}
+
+func (m *MiddlewareContextTest) GetBooks(ctx context.Context, input *models.GetBooksInput) (models.GetBooksOutput, error) {
+	m.foundKey = ctx.Value(testContextKey{}).(string)
+	return &models.GetBooks200Output{}, nil
+}
+func (m *MiddlewareContextTest) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
+	return nil, nil
+}
+func (m *MiddlewareContextTest) CreateBook(ctx context.Context, input *models.CreateBookInput) (models.CreateBookOutput, error) {
+	return nil, nil
+}
+
+type testContextKey struct{}
+
+func testContextMiddleware(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		newCtx := context.WithValue(r.Context(), testContextKey{}, "contextValue")
+		h.ServeHTTP(w, r.WithContext(newCtx))
+	})
+}
+
+func TestSettingContextInMiddleware(t *testing.T) {
+	controller := MiddlewareContextTest{}
+	s := server.New(&controller, ":8080")
+	testServer := httptest.NewServer(testContextMiddleware(s.Handler))
+	c := client.New(testServer.URL)
+	_, err := c.GetBooks(context.Background(), &models.GetBooksInput{})
+	assert.NoError(t, err)
+	assert.Equal(t, "contextValue", controller.foundKey)
 }
