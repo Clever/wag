@@ -134,8 +134,8 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 		capOpID, capOpID)
 
 	g.Printf("\tvar input models.%sInput\n\n", capOpID)
-
-	printedError := false
+	g.Printf("\tvar err error\n")
+	g.Printf("\t_ = err\n\n")
 
 	for _, param := range op.Parameters {
 
@@ -150,7 +150,6 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 			case "header":
 				extractCode = fmt.Sprintf("r.Header.Get(\"%s\")", param.Name)
 			}
-
 			g.Printf("\t%sStr := %s\n", param.Name, extractCode)
 
 			if param.Required {
@@ -159,38 +158,20 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 				g.Printf("\t}\n")
 			}
 
-			// TODO: Refactor this a bit...
-			if param.Type != "string" {
-				if !printedError {
-					g.Printf("\tvar err error\n")
-					printedError = true
-				}
-
-				switch param.Type {
-				case "integer":
-					g.Printf("\t%sTmp, err := strconv.ParseInt(%sStr, 10, 64)\n",
-						param.Name, param.Name)
-				case "number":
-					g.Printf("\t%sTmp, err := strconv.ParseFloat(%sStr, 64)\n",
-						param.Name, param.Name)
-				case "boolean":
-					g.Printf("\t%sTmp, err := strconv.ParseBool(%sStr)\n",
-						param.Name, param.Name)
-				default:
-					return fmt.Errorf("Param type %s not supported", param.Type)
-				}
-				// TODO: These error message aren't great. We should probalby clean up...
-				if param.Required {
-					g.Printf("\tif err != nil {\n")
-					g.Printf("\t\treturn nil, err\n")
-					g.Printf("\t}\n")
-				} else {
-					g.Printf("\t// Ignore the error if the parameter isn't required\n")
-					g.Printf("\t_ = err\n")
-				}
-
-			} else {
+			switch param.Type {
+			case "integer":
+				g.Printf("\t%sTmp, err := strconv.ParseInt(%sStr, 10, 64)\n",
+					param.Name, param.Name)
+			case "number":
+				g.Printf("\t%sTmp, err := strconv.ParseFloat(%sStr, 64)\n",
+					param.Name, param.Name)
+			case "boolean":
+				g.Printf("\t%sTmp, err := strconv.ParseBool(%sStr)\n",
+					param.Name, param.Name)
+			case "string":
 				g.Printf("\t%sTmp := %sStr\n", param.Name, param.Name)
+			default:
+				return fmt.Errorf("Param type %s not supported", param.Type)
 			}
 
 			if param.Required {
@@ -203,17 +184,15 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 			if param.Schema == nil {
 				return fmt.Errorf("Body parameters must have a schema defined")
 			}
-			g.Printf("\terr := json.NewDecoder(r.Body).Decode(&input.%s)\n",
+			g.Printf("\terr = json.NewDecoder(r.Body).Decode(input.%s)\n",
 				capParamName)
-			if param.Required {
-				g.Printf("\tif err != nil {\n")
-				// TODO: Make this an error of the right type
-				g.Printf("\t\treturn nil, err\n")
-				g.Printf("\t}\n")
-			} else {
-				g.Printf("\t// Ignore the error if the parameter isn't required\n")
-				g.Printf("\t_ = err\n")
-			}
+
+		}
+		if param.Required {
+			g.Printf("\tif err != nil {\n")
+			// TODO: Make this an error of the right type
+			g.Printf("\t\treturn nil, err\n")
+			g.Printf("\t}\n")
 		}
 	}
 	g.Printf("\n")

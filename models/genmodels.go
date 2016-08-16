@@ -99,25 +99,21 @@ func printInputStruct(g *swagger.Generator, op *spec.Operation) error {
 				return err
 			}
 		}
-		pointerStr := ""
-		if !param.Required {
-			pointerStr = "*"
-		}
 
-		g.Printf("\t%s %s%s\n", swagger.Capitalize(param.Name), pointerStr, typeName)
+		g.Printf("\t%s %s%s\n", swagger.Capitalize(param.Name), pointerString(param), typeName)
 	}
 	g.Printf("}\n\n")
 
 	return nil
 }
 
-// oneTabErrorCheck returns an if err := ifCondition; err != nil { return err } function
-func oneTabErrorCheck(ifCondition string) string {
-	return fmt.Sprintf(`
-	if err := %s; err != nil {
-		return err
+// pointerString returns either the empty string or '*'. It returns '*' if the parameter should be a
+// pointer
+func pointerString(param spec.Parameter) string {
+	if !param.Required || param.In == "body" {
+		return "*"
 	}
-`, ifCondition)
+	return ""
 }
 
 func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
@@ -132,15 +128,15 @@ func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
 
 		if param.Type == "string" {
 			if param.MaxLength != nil {
-				g.Printf(oneTabErrorCheck(fmt.Sprintf("validate.MaxLength(\"%s\", \"%s\", %s, %d)",
+				g.Printf(errCheck(fmt.Sprintf("validate.MaxLength(\"%s\", \"%s\", %s, %d)",
 					param.Name, param.In, accessString(param), *param.MaxLength)))
 			}
 			if param.MinLength != nil {
-				g.Printf(oneTabErrorCheck(fmt.Sprintf("validate.MinLength(\"%s\", \"%s\", %s, %d)",
+				g.Printf(errCheck(fmt.Sprintf("validate.MinLength(\"%s\", \"%s\", %s, %d)",
 					param.Name, param.In, accessString(param), *param.MaxLength)))
 			}
 			if param.Pattern != "" {
-				g.Printf(oneTabErrorCheck(fmt.Sprintf("validate.Pattern(\"%s\", \"%s\", %s, \"%s\")",
+				g.Printf(errCheck(fmt.Sprintf("validate.Pattern(\"%s\", \"%s\", %s, \"%s\")",
 					param.Name, param.In, accessString(param), param.Pattern)))
 			}
 			if len(param.Enum) != 0 {
@@ -148,33 +144,33 @@ func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
 				for _, enum := range param.Enum {
 					strEnum = append(strEnum, enum.(string))
 				}
-				g.Printf(oneTabErrorCheck(fmt.Sprintf("validate.Enum(\"%s\", \"%s\", %s, %s)",
+				g.Printf(errCheck(fmt.Sprintf("validate.Enum(\"%s\", \"%s\", %s, %s)",
 					param.Name, param.In, accessString(param), fmt.Sprintf("[]interface{}{\"%s\"}", strings.Join(strEnum, "\",\"")))))
 			}
 		} else if param.Type == "integer" {
 			if param.Maximum != nil {
-				g.Printf(oneTabErrorCheck(fmt.Sprintf("validate.MaximumInt(\"%s\", \"%s\", %s, %d, %t)",
+				g.Printf(errCheck(fmt.Sprintf("validate.MaximumInt(\"%s\", \"%s\", %s, %d, %t)",
 					param.Name, param.In, accessString(param), int64(*param.Maximum), param.ExclusiveMaximum)))
 			}
 			if param.Minimum != nil {
-				g.Printf(oneTabErrorCheck(fmt.Sprintf("validate.MinimumInt(\"%s\", \"%s\", %s, %d, %t)",
+				g.Printf(errCheck(fmt.Sprintf("validate.MinimumInt(\"%s\", \"%s\", %s, %d, %t)",
 					param.Name, param.In, accessString(param), int64(*param.Minimum), param.ExclusiveMinimum)))
 			}
 			if param.MultipleOf != nil {
-				g.Printf(oneTabErrorCheck(fmt.Sprintf("validate.MultipleOf(\"%s\", \"%s\", float64(%s), %f)",
+				g.Printf(errCheck(fmt.Sprintf("validate.MultipleOf(\"%s\", \"%s\", float64(%s), %f)",
 					param.Name, param.In, accessString(param), *param.MultipleOf)))
 			}
 		} else if param.Type == "number" {
 			if param.Maximum != nil {
-				g.Printf(oneTabErrorCheck(fmt.Sprintf("validate.Maximum(\"%s\", \"%s\",  %s, %f, %t)",
+				g.Printf(errCheck(fmt.Sprintf("validate.Maximum(\"%s\", \"%s\",  %s, %f, %t)",
 					param.Name, param.In, accessString(param), *param.Maximum, param.ExclusiveMaximum)))
 			}
 			if param.Minimum != nil {
-				g.Printf(oneTabErrorCheck(fmt.Sprintf("validate.Minimum(\"%s\", \"%s\", %s, %f, %t)",
+				g.Printf(errCheck(fmt.Sprintf("validate.Minimum(\"%s\", \"%s\", %s, %f, %t)",
 					param.Name, param.In, accessString(param), *param.Minimum, param.ExclusiveMinimum)))
 			}
 			if param.MultipleOf != nil {
-				g.Printf(oneTabErrorCheck(fmt.Sprintf("validate.MultipleOf(\"%s\", \"%s\", %s, %f)",
+				g.Printf(errCheck(fmt.Sprintf("validate.MultipleOf(\"%s\", \"%s\", %s, %f)",
 					param.Name, param.In, accessString(param), *param.MultipleOf)))
 			}
 		}
@@ -185,13 +181,20 @@ func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
 	return nil
 }
 
-// TODO: Add a nice comment!!!
+// accessString returns a string with the access of a variable in the struct named 'i'. For example:
+// *i.Length
 func accessString(param spec.Parameter) string {
-	pointer := ""
-	if !param.Required {
-		pointer = "*"
-	}
+	pointer := pointerString(param)
 	return fmt.Sprintf("%si.%s", pointer, swagger.Capitalize(param.Name))
+}
+
+// errCheck returns an if err := ifCondition; err != nil { return err } function
+func errCheck(ifCondition string) string {
+	return fmt.Sprintf(`
+	if err := %s; err != nil {
+		return err
+	}
+`, ifCondition)
 }
 
 func generateOutputs(packageName string, paths *spec.Paths) error {

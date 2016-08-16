@@ -58,15 +58,15 @@ func GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *http.Request
 func NewGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 	var input models.GetBooksInput
 
+	var err error
+	_ = err
+
 	authorStr := r.URL.Query().Get("author")
 	authorTmp := authorStr
 	input.Author = &authorTmp
 
 	availableStr := r.URL.Query().Get("available")
-	var err error
 	availableTmp, err := strconv.ParseBool(availableStr)
-	// Ignore the error if the parameter isn't required
-	_ = err
 	input.Available = &availableTmp
 
 	stateStr := r.URL.Query().Get("state")
@@ -75,8 +75,6 @@ func NewGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 
 	maxPagesStr := r.URL.Query().Get("maxPages")
 	maxPagesTmp, err := strconv.ParseFloat(maxPagesStr, 64)
-	// Ignore the error if the parameter isn't required
-	_ = err
 	input.MaxPages = &maxPagesTmp
 
 	return &input, nil
@@ -118,17 +116,19 @@ func GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, r *http.Requ
 func NewGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 	var input models.GetBookByIDInput
 
+	var err error
+	_ = err
+
 	bookIDStr := mux.Vars(r)["bookID"]
 	if len(bookIDStr) == 0 {
 		return nil, errors.New("Parameter must be specified")
 	}
-	var err error
 	bookIDTmp, err := strconv.ParseInt(bookIDStr, 10, 64)
+	input.BookID = bookIDTmp
+
 	if err != nil {
 		return nil, err
 	}
-	input.BookID = bookIDTmp
-
 	authorizationStr := r.Header.Get("authorization")
 	authorizationTmp := authorizationStr
 	input.Authorization = &authorizationTmp
@@ -172,9 +172,10 @@ func CreateBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Reque
 func NewCreateBookInput(r *http.Request) (*models.CreateBookInput, error) {
 	var input models.CreateBookInput
 
-	err := json.NewDecoder(r.Body).Decode(&input.NewBook)
-	// Ignore the error if the parameter isn't required
+	var err error
 	_ = err
+
+	err = json.NewDecoder(r.Body).Decode(input.NewBook)
 
 	return &input, nil
 }
