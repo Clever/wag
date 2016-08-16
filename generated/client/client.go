@@ -21,7 +21,7 @@ type Client struct {
 	requestDoer doer
 	transport   *http.Transport
 	// Keep the retry doer around so that we can set the number of retries
-	retryDoer retryDoer
+	retryDoer *retryDoer
 }
 
 // New creates a new client. The base path and http transport are configurable
@@ -30,7 +30,7 @@ func New(basePath string) Client {
 	tracing := tracingDoer{d: base}
 	retry := retryDoer{d: tracing, defaultRetries: 1}
 
-	return Client{requestDoer: retry, retryDoer: retry, transport: &http.Transport{}, BasePath: basePath}
+	return Client{requestDoer: &retry, retryDoer: &retry, transport: &http.Transport{}, BasePath: basePath}
 }
 
 func (c Client) WithRetries(retries int) Client {
@@ -53,7 +53,7 @@ func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) (models.G
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "getBooks")
-	resp, err := c.requestDoer.Do(ctx, client, req)
+	resp, err := c.requestDoer.Do(client, req.WithContext(ctx))
 	if err != nil {
 		return nil, models.DefaultInternalError{Msg: err.Error()}
 	}
@@ -98,7 +98,7 @@ func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (mo
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "getBookByID")
-	resp, err := c.requestDoer.Do(ctx, client, req)
+	resp, err := c.requestDoer.Do(client, req.WithContext(ctx))
 	if err != nil {
 		return nil, models.DefaultInternalError{Msg: err.Error()}
 	}
@@ -151,7 +151,7 @@ func (c Client) CreateBook(ctx context.Context, i *models.CreateBookInput) (mode
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "createBook")
-	resp, err := c.requestDoer.Do(ctx, client, req)
+	resp, err := c.requestDoer.Do(client, req.WithContext(ctx))
 	if err != nil {
 		return nil, models.DefaultInternalError{Msg: err.Error()}
 	}

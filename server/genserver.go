@@ -41,9 +41,6 @@ import (
 
 	"github.com/gorilla/mux"
 
-	gContext "github.com/gorilla/context"
-	"golang.org/x/net/context"
-
 	"gopkg.in/tylerb/graceful.v1"
 )
 
@@ -101,8 +98,7 @@ type routerTemplate struct {
 }
 
 var routerFunctionTemplate = `	r.Methods("{{.Method}}").Path("{{.Path}}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := gContext.Get(r, contextKey{}).(context.Context)
-		{{.HandlerName}}Handler(ctx, w, r)
+		{{.HandlerName}}Handler(r.Context(), w, r)
 	})
 `
 

@@ -28,7 +28,7 @@ type Client struct {
 	requestDoer doer
 	transport   *http.Transport
 	// Keep the retry doer around so that we can set the number of retries
-	retryDoer retryDoer
+	retryDoer *retryDoer
 }
 
 // New creates a new client. The base path and http transport are configurable
@@ -37,7 +37,7 @@ func New(basePath string) Client {
 	tracing := tracingDoer{d: base}
 	retry := retryDoer{d: tracing, defaultRetries: 1}
 
-	return Client{requestDoer: retry, retryDoer: retry, transport: &http.Transport{}, BasePath: basePath}
+	return Client{requestDoer: &retry, retryDoer: &retry, transport: &http.Transport{}, BasePath: basePath}
 }
 
 func (c Client) WithRetries(retries int) Client {
@@ -100,7 +100,7 @@ func (c Client) WithRetries(retries int) Client {
 			g.Printf(`
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "%s")
-	resp, err := c.requestDoer.Do(ctx, client, req)
+	resp, err := c.requestDoer.Do(client, req.WithContext(ctx))
 	if err != nil {
 		return nil, models.DefaultInternalError{Msg: err.Error()}
 	}
