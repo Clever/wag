@@ -18,6 +18,33 @@ var _ = swag.ConvertInt32
 
 var controller Controller
 
+var formats = strfmt.Default
+var _ = formats
+
+func ConvertByte(input string) ([]byte, error) {
+	temp, err := formats.Parse("byte", input)
+	if err != nil {
+		return nil, err
+	}
+	return temp.([]byte), nil
+}
+
+func ConvertDateTime(input string) (strfmt.DateTime, error) {
+	temp, err := formats.Parse("date-time", input)
+	if err != nil {
+		return strfmt.DateTime{}, err
+	}
+	return temp.(strfmt.DateTime), nil
+}
+
+func ConvertDate(input string) (strfmt.Date, error) {
+	temp, err := formats.Parse("date", input)
+	if err != nil {
+		return strfmt.Date{}, err
+	}
+	return temp.(strfmt.Date), nil
+}
+
 func jsonMarshalNoError(i interface{}) string {
 	bytes, err := json.Marshal(i)
 	if err != nil {
@@ -65,11 +92,8 @@ func NewGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 	var err error
 	_ = err
 
-	formats := strfmt.Default
-	_ = formats
-
 	authorStr := r.URL.Query().Get("author")
-	authorTmp := authorStr
+	authorTmp, err := authorStr, nil
 	input.Author = &authorTmp
 
 	if err != nil && len(authorStr) != 0 {
@@ -83,23 +107,21 @@ func NewGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 		return nil, err
 	}
 	stateStr := r.URL.Query().Get("state")
-	stateTmp := stateStr
+	stateTmp, err := stateStr, nil
 	input.State = &stateTmp
 
 	if err != nil && len(stateStr) != 0 {
 		return nil, err
 	}
 	publishedStr := r.URL.Query().Get("published")
-	publishedTmpInterface, err := formats.Parse("date", publishedStr)
-	publishedTmp := publishedTmpInterface.(strfmt.Date)
+	publishedTmp, err := ConvertDate(publishedStr)
 	input.Published = &publishedTmp
 
 	if err != nil && len(publishedStr) != 0 {
 		return nil, err
 	}
 	completedStr := r.URL.Query().Get("completed")
-	completedTmpInterface, err := formats.Parse("date-time", completedStr)
-	completedTmp := completedTmpInterface.(strfmt.DateTime)
+	completedTmp, err := ConvertDateTime(completedStr)
 	input.Completed = &completedTmp
 
 	if err != nil && len(completedStr) != 0 {
@@ -169,9 +191,6 @@ func NewGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 	var err error
 	_ = err
 
-	formats := strfmt.Default
-	_ = formats
-
 	bookIDStr := mux.Vars(r)["bookID"]
 	if len(bookIDStr) == 0 {
 		return nil, errors.New("Parameter must be specified")
@@ -183,15 +202,14 @@ func NewGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 		return nil, err
 	}
 	authorizationStr := r.Header.Get("authorization")
-	authorizationTmp := authorizationStr
+	authorizationTmp, err := authorizationStr, nil
 	input.Authorization = &authorizationTmp
 
 	if err != nil && len(authorizationStr) != 0 {
 		return nil, err
 	}
 	randomBytesStr := r.URL.Query().Get("randomBytes")
-	randomBytesTmpInterface, err := formats.Parse("byte", randomBytesStr)
-	randomBytesTmp := randomBytesTmpInterface.([]byte)
+	randomBytesTmp, err := ConvertByte(randomBytesStr)
 	input.RandomBytes = &randomBytesTmp
 
 	if err != nil && len(randomBytesStr) != 0 {
@@ -239,9 +257,6 @@ func NewCreateBookInput(r *http.Request) (*models.CreateBookInput, error) {
 
 	var err error
 	_ = err
-
-	formats := strfmt.Default
-	_ = formats
 
 	err = json.NewDecoder(r.Body).Decode(input.NewBook)
 	if err != nil {

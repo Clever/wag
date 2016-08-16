@@ -70,10 +70,10 @@ func (c Client) WithRetries(retries int) Client {
 				if param.In == "path" {
 					// TODO: Should this be done with regex at some point?
 					g.Printf("\tpath = strings.Replace(path, \"%s\", %s, -1)\n",
-						"{"+param.Name+"}", convertParamToString(param))
+						"{"+param.Name+"}", swagger.ParamToStringCode(param))
 				} else if param.In == "query" {
 					g.Printf("\turlVals.Add(\"%s\", %s)\n",
-						param.Name, convertParamToString(param))
+						param.Name, swagger.ParamToStringCode(param))
 				}
 			}
 
@@ -93,7 +93,7 @@ func (c Client) WithRetries(retries int) Client {
 			for _, param := range op.Parameters {
 				if param.In == "header" {
 					g.Printf("\treq.Header.Set(\"%s\", %s)\n",
-						param.Name, convertParamToString(param))
+						param.Name, swagger.ParamToStringCode(param))
 				}
 			}
 
@@ -172,41 +172,4 @@ func successResponse(outputName string) string {
 		}
 		return output, nil
 `, outputName)
-}
-
-func convertParamToString(p spec.Parameter) string {
-	valToSet := fmt.Sprintf("i.%s", swagger.Capitalize(p.Name))
-	if !p.Required {
-		valToSet = "*" + valToSet
-	}
-	switch p.Type {
-	case "string":
-		switch p.Format {
-		case "byte":
-			return fmt.Sprintf("string(%s)", valToSet)
-		case "date":
-			return fmt.Sprintf("(%s).String()", valToSet)
-		case "date-time":
-			return fmt.Sprintf("(%s).String()", valToSet)
-		case "":
-			return fmt.Sprintf("%s", valToSet)
-		default:
-			panic(fmt.Errorf("Unsupported string format %s", p.Format))
-		}
-	case "integer":
-		if p.Format == "int32" {
-			return fmt.Sprintf("strconv.FormatInt(int64(%s), 10)", valToSet)
-		}
-		return fmt.Sprintf("strconv.FormatInt(%s, 10)", valToSet)
-	case "number":
-		if p.Format == "float" {
-			return fmt.Sprintf("strconv.FormatFloat(float64(%s), 'E', -1, 32)", valToSet)
-		}
-		return fmt.Sprintf("strconv.FormatFloat(%s, 'E', -1, 64)", valToSet)
-	case "boolean":
-		return fmt.Sprintf("strconv.FormatBool(%s)", valToSet)
-	default:
-		// Theoretically should have validated before getting here
-		panic(fmt.Errorf("Unsupported parameter type %s", p.Type))
-	}
 }

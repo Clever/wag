@@ -136,8 +136,6 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 	g.Printf("\tvar input models.%sInput\n\n", capOpID)
 	g.Printf("\tvar err error\n")
 	g.Printf("\t_ = err\n\n")
-	g.Printf("\tformats := strfmt.Default\n")
-	g.Printf("\t_ = formats\n\n")
 
 	for _, param := range op.Parameters {
 
@@ -160,42 +158,11 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 				g.Printf("\t}\n")
 			}
 
-			switch param.Type {
-			case "integer":
-				if param.Format == "int32" {
-					g.Printf("\t%sTmp, err := swag.ConvertInt32(%sStr)\n", param.Name, param.Name)
-				} else {
-					g.Printf("\t%sTmp, err := swag.ConvertInt64(%sStr)\n", param.Name, param.Name)
-				}
-			case "number":
-				if param.Format == "float" {
-					g.Printf("\t%sTmp, err := swag.ConvertFloat32(%sStr)\n", param.Name, param.Name)
-				} else {
-					g.Printf("\t%sTmp, err := swag.ConvertFloat64(%sStr)\n", param.Name, param.Name)
-				}
-
-			case "boolean":
-				g.Printf("\t%sTmp, err := strconv.ParseBool(%sStr)\n",
-					param.Name, param.Name)
-			case "string":
-				switch param.Format {
-				case "byte":
-					g.Printf("\t%sTmpInterface, err := formats.Parse(\"byte\", %sStr)\n", param.Name, param.Name)
-					g.Printf("\t%sTmp := %sTmpInterface.([]byte)\n", param.Name, param.Name)
-				case "":
-					g.Printf("\t%sTmp := %sStr\n", param.Name, param.Name)
-				case "date":
-					g.Printf("\t%sTmpInterface, err := formats.Parse(\"date\", %sStr)\n", param.Name, param.Name)
-					g.Printf("\t%sTmp := %sTmpInterface.(strfmt.Date)\n", param.Name, param.Name)
-				case "date-time":
-					g.Printf("\t%sTmpInterface, err := formats.Parse(\"date-time\", %sStr)\n", param.Name, param.Name)
-					g.Printf("\t%sTmp := %sTmpInterface.(strfmt.DateTime)\n", param.Name, param.Name)
-				default:
-					return fmt.Errorf("Param format %s not supported", param.Format)
-				}
-			default:
-				return fmt.Errorf("Param type %s not supported", param.Type)
+			typeCode, err := swagger.StringToTypeCode(fmt.Sprintf("%sStr", param.Name), param)
+			if err != nil {
+				return err
 			}
+			g.Printf("\t%sTmp, err := %s\n", param.Name, typeCode)
 
 			if param.Required {
 				g.Printf("\tinput.%s = %sTmp\n\n", capParamName, param.Name)
@@ -243,7 +210,7 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 
 	// TODO: Make this not be a global variable
 	g.Printf("var controller Controller\n\n")
-
+	g.Printf(swagger.BaseStringToTypeCode())
 	g.Printf(jsonMarshalString)
 
 	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {

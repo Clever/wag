@@ -30,6 +30,14 @@ func (i GetBooksInput) Validate() error {
 		return err
 	}
 
+	if err := validate.FormatOf("published", "query", "date", (*i.Published).String(), strfmt.Default); err != nil {
+		return err
+	}
+
+	if err := validate.FormatOf("completed", "query", "date-time", (*i.Completed).String(), strfmt.Default); err != nil {
+		return err
+	}
+
 	if err := validate.Maximum("maxPages", "query", float64(*i.MaxPages), 1.000000, false); err != nil {
 		return err
 	}
@@ -73,6 +81,10 @@ func (i GetBookByIDInput) Validate() error {
 	}
 
 	if err := validate.Pattern("authorization", "header", string(*i.Authorization), "[0-9a-f]+"); err != nil {
+		return err
+	}
+
+	if err := validate.FormatOf("randomBytes", "query", "byte", string(*i.RandomBytes), strfmt.Default); err != nil {
 		return err
 	}
 	return nil
