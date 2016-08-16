@@ -53,7 +53,7 @@ func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) (models.G
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "getBooks")
-	resp, err := c.requestDoer.Do(ctx, client, req)
+	resp, err := c.requestDoer.Do(client, req.WithContext(ctx))
 	if err != nil {
 		return nil, models.DefaultInternalError{Msg: err.Error()}
 	}
@@ -98,7 +98,7 @@ func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (mo
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "getBookByID")
-	resp, err := c.requestDoer.Do(ctx, client, req)
+	resp, err := c.requestDoer.Do(client, req.WithContext(ctx))
 	if err != nil {
 		return nil, models.DefaultInternalError{Msg: err.Error()}
 	}
@@ -151,7 +151,7 @@ func (c Client) CreateBook(ctx context.Context, i *models.CreateBookInput) (mode
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "createBook")
-	resp, err := c.requestDoer.Do(ctx, client, req)
+	resp, err := c.requestDoer.Do(client, req.WithContext(ctx))
 	if err != nil {
 		return nil, models.DefaultInternalError{Msg: err.Error()}
 	}

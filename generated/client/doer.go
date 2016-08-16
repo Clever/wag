@@ -3,6 +3,8 @@ package client
 import (
 	"fmt"
 	"net/http"
+
+	"golang.org/x/net/context/ctxhttp"
 )
 import "golang.org/x/net/context"
 
@@ -10,7 +12,7 @@ import opentracing "github.com/opentracing/opentracing-go"
 
 // doer is an interface for "doing" http requests possibly with wrapping
 type doer interface {
-	Do(ctx context.Context, c *http.Client, r *http.Request) (*http.Response, error)
+	Do(c *http.Client, r *http.Request) (*http.Response, error)
 }
 
 type opNameCtx struct{}
@@ -18,9 +20,8 @@ type opNameCtx struct{}
 // baseRequestHandler performs the base http request
 type baseDoer struct{}
 
-func (d baseDoer) Do(ctx context.Context, c *http.Client, r *http.Request) (*http.Response, error) {
-	// TODO: Add a timeout handler, probably based on https://godoc.org/golang.org/x/net/context/ctxhttp#Do
-	return c.Do(r)
+func (d baseDoer) Do(c *http.Client, r *http.Request) (*http.Response, error) {
+	return ctxhttp.Do(r.Context(), c, r)
 }
 
 // tracingDoer adds tracing to http requests
@@ -28,9 +29,9 @@ type tracingDoer struct {
 	d doer
 }
 
-func (d tracingDoer) Do(
-	ctx context.Context, c *http.Client, r *http.Request) (*http.Response, error) {
+func (d tracingDoer) Do(c *http.Client, r *http.Request) (*http.Response, error) {
 
+	ctx := r.Context()
 	opName := ctx.Value(opNameCtx{}).(string)
 	var sp opentracing.Span
 	// TODO: add tags relating to input data?
@@ -44,7 +45,7 @@ func (d tracingDoer) Do(
 		opentracing.HTTPHeadersCarrier(r.Header)); err != nil {
 		return nil, fmt.Errorf("couldn't inject tracing headers (%v)", err)
 	}
-	return d.d.Do(ctx, c, r)
+	return d.d.Do(c, r)
 }
 
 // retryHandler retries 50X http requests
@@ -63,9 +64,9 @@ func WithRetry(ctx context.Context, retries int) context.Context {
 // of the number of retries right now.
 type retryContext struct{}
 
-func (d retryDoer) Do(ctx context.Context, c *http.Client, r *http.Request) (*http.Response, error) {
+func (d retryDoer) Do(c *http.Client, r *http.Request) (*http.Response, error) {
 
-	resp, err := d.d.Do(ctx, c, r)
+	resp, err := d.d.Do(c, r)
 	if err != nil {
 		return resp, err
 	}
@@ -77,7 +78,7 @@ func (d retryDoer) Do(ctx context.Context, c *http.Client, r *http.Request) (*ht
 	}
 
 	var retries int
-	retries, ok := ctx.Value(retryContext{}).(int)
+	retries, ok := r.Context().Value(retryContext{}).(int)
 	if !ok {
 		retries = d.defaultRetries
 	}
@@ -86,7 +87,7 @@ func (d retryDoer) Do(ctx context.Context, c *http.Client, r *http.Request) (*ht
 		if resp.StatusCode < 500 {
 			break
 		}
-		resp, err = d.d.Do(ctx, c, r)
+		resp, err = d.d.Do(c, r)
 	}
 	return resp, err
 }

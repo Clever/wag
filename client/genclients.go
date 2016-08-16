@@ -100,7 +100,7 @@ func (c Client) WithRetries(retries int) Client {
 			g.Printf(`
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "%s")
-	resp, err := c.requestDoer.Do(ctx, client, req)
+	resp, err := c.requestDoer.Do(client, req.WithContext(ctx))
 	if err != nil {
 		return nil, models.DefaultInternalError{Msg: err.Error()}
 	}
