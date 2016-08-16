@@ -21,12 +21,12 @@ var controller Controller
 var formats = strfmt.Default
 var _ = formats
 
-func ConvertByte(input string) ([]byte, error) {
+func ConvertBase64(input string) (strfmt.Base64, error) {
 	temp, err := formats.Parse("byte", input)
 	if err != nil {
-		return nil, err
+		return strfmt.Base64{}, err
 	}
-	return temp.([]byte), nil
+	return *temp.(*strfmt.Base64), nil
 }
 
 func ConvertDateTime(input string) (strfmt.DateTime, error) {
@@ -34,7 +34,7 @@ func ConvertDateTime(input string) (strfmt.DateTime, error) {
 	if err != nil {
 		return strfmt.DateTime{}, err
 	}
-	return temp.(strfmt.DateTime), nil
+	return *temp.(*strfmt.DateTime), nil
 }
 
 func ConvertDate(input string) (strfmt.Date, error) {
@@ -42,7 +42,7 @@ func ConvertDate(input string) (strfmt.Date, error) {
 	if err != nil {
 		return strfmt.Date{}, err
 	}
-	return temp.(strfmt.Date), nil
+	return *temp.(*strfmt.Date), nil
 }
 
 func jsonMarshalNoError(i interface{}) string {
@@ -93,58 +93,82 @@ func NewGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 	_ = err
 
 	authorStr := r.URL.Query().Get("author")
-	authorTmp, err := authorStr, nil
-	input.Author = &authorTmp
+	if len(authorStr) != 0 {
+		var authorTmp string
+		authorTmp, err = authorStr, error(nil)
+		input.Author = &authorTmp
 
+	}
 	if err != nil && len(authorStr) != 0 {
 		return nil, err
 	}
 	availableStr := r.URL.Query().Get("available")
-	availableTmp, err := strconv.ParseBool(availableStr)
-	input.Available = &availableTmp
+	if len(availableStr) != 0 {
+		var availableTmp bool
+		availableTmp, err = strconv.ParseBool(availableStr)
+		input.Available = &availableTmp
 
+	}
 	if err != nil && len(availableStr) != 0 {
 		return nil, err
 	}
 	stateStr := r.URL.Query().Get("state")
-	stateTmp, err := stateStr, nil
-	input.State = &stateTmp
+	if len(stateStr) != 0 {
+		var stateTmp string
+		stateTmp, err = stateStr, error(nil)
+		input.State = &stateTmp
 
+	}
 	if err != nil && len(stateStr) != 0 {
 		return nil, err
 	}
 	publishedStr := r.URL.Query().Get("published")
-	publishedTmp, err := ConvertDate(publishedStr)
-	input.Published = &publishedTmp
+	if len(publishedStr) != 0 {
+		var publishedTmp strfmt.Date
+		publishedTmp, err = ConvertDate(publishedStr)
+		input.Published = &publishedTmp
 
+	}
 	if err != nil && len(publishedStr) != 0 {
 		return nil, err
 	}
 	completedStr := r.URL.Query().Get("completed")
-	completedTmp, err := ConvertDateTime(completedStr)
-	input.Completed = &completedTmp
+	if len(completedStr) != 0 {
+		var completedTmp strfmt.DateTime
+		completedTmp, err = ConvertDateTime(completedStr)
+		input.Completed = &completedTmp
 
+	}
 	if err != nil && len(completedStr) != 0 {
 		return nil, err
 	}
 	maxPagesStr := r.URL.Query().Get("maxPages")
-	maxPagesTmp, err := swag.ConvertFloat64(maxPagesStr)
-	input.MaxPages = &maxPagesTmp
+	if len(maxPagesStr) != 0 {
+		var maxPagesTmp float64
+		maxPagesTmp, err = swag.ConvertFloat64(maxPagesStr)
+		input.MaxPages = &maxPagesTmp
 
+	}
 	if err != nil && len(maxPagesStr) != 0 {
 		return nil, err
 	}
 	minPagesStr := r.URL.Query().Get("minPages")
-	minPagesTmp, err := swag.ConvertInt32(minPagesStr)
-	input.MinPages = &minPagesTmp
+	if len(minPagesStr) != 0 {
+		var minPagesTmp int32
+		minPagesTmp, err = swag.ConvertInt32(minPagesStr)
+		input.MinPages = &minPagesTmp
 
+	}
 	if err != nil && len(minPagesStr) != 0 {
 		return nil, err
 	}
 	pagesToTimeStr := r.URL.Query().Get("pagesToTime")
-	pagesToTimeTmp, err := swag.ConvertFloat32(pagesToTimeStr)
-	input.PagesToTime = &pagesToTimeTmp
+	if len(pagesToTimeStr) != 0 {
+		var pagesToTimeTmp float32
+		pagesToTimeTmp, err = swag.ConvertFloat32(pagesToTimeStr)
+		input.PagesToTime = &pagesToTimeTmp
 
+	}
 	if err != nil && len(pagesToTimeStr) != 0 {
 		return nil, err
 	}
@@ -195,23 +219,32 @@ func NewGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 	if len(bookIDStr) == 0 {
 		return nil, errors.New("Parameter must be specified")
 	}
-	bookIDTmp, err := swag.ConvertInt64(bookIDStr)
-	input.BookID = bookIDTmp
+	if len(bookIDStr) != 0 {
+		var bookIDTmp int64
+		bookIDTmp, err = swag.ConvertInt64(bookIDStr)
+		input.BookID = bookIDTmp
 
+	}
 	if err != nil {
 		return nil, err
 	}
 	authorizationStr := r.Header.Get("authorization")
-	authorizationTmp, err := authorizationStr, nil
-	input.Authorization = &authorizationTmp
+	if len(authorizationStr) != 0 {
+		var authorizationTmp string
+		authorizationTmp, err = authorizationStr, error(nil)
+		input.Authorization = &authorizationTmp
 
+	}
 	if err != nil && len(authorizationStr) != 0 {
 		return nil, err
 	}
 	randomBytesStr := r.URL.Query().Get("randomBytes")
-	randomBytesTmp, err := ConvertByte(randomBytesStr)
-	input.RandomBytes = &randomBytesTmp
+	if len(randomBytesStr) != 0 {
+		var randomBytesTmp strfmt.Base64
+		randomBytesTmp, err = ConvertBase64(randomBytesStr)
+		input.RandomBytes = &randomBytesTmp
 
+	}
 	if err != nil && len(randomBytesStr) != 0 {
 		return nil, err
 	}
@@ -258,6 +291,7 @@ func NewCreateBookInput(r *http.Request) (*models.CreateBookInput, error) {
 	var err error
 	_ = err
 
+	input.NewBook = &models.Book{}
 	err = json.NewDecoder(r.Body).Decode(input.NewBook)
 	if err != nil {
 		return nil, err

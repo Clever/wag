@@ -85,8 +85,11 @@ func printInputStruct(g *swagger.Generator, op *spec.Operation) error {
 			if err != nil {
 				return err
 			}
+			if !param.Required {
+				typeName = "*" + typeName
+			}
 		} else {
-			typeName, err = typeFromSchema(param.Schema)
+			typeName, err = TypeFromSchema(param.Schema)
 			if err != nil {
 				return err
 			}
@@ -116,7 +119,13 @@ func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
 			return err
 		}
 		for _, validation := range validations {
-			g.Printf(errCheck(validation))
+			if param.Required {
+				g.Printf(errCheck(validation))
+			} else {
+				g.Printf("\tif i.%s != nil {\n", swagger.Capitalize(param.Name))
+				g.Printf(errCheck(validation))
+				g.Printf("\t}\n")
+			}
 		}
 	}
 	g.Printf("\treturn nil\n")
@@ -183,7 +192,7 @@ func generateOutputs(packageName string, paths *spec.Paths) error {
 				}
 
 				outputName := fmt.Sprintf("%s%dOutput", capOpID, statusCode)
-				typeName, err := typeFromSchema(response.Schema)
+				typeName, err := TypeFromSchema(response.Schema)
 				if err != nil {
 					return err
 				}
@@ -243,7 +252,7 @@ func (d DefaultBadRequest) Error() string {
 `, "`json:\"msg\"`", "`json:\"msg\"`")
 }
 
-func typeFromSchema(schema *spec.Schema) (string, error) {
+func TypeFromSchema(schema *spec.Schema) (string, error) {
 	// We support three types of schemas
 	// 1. An empty schema
 	// 2. A schema with one element, the $ref key

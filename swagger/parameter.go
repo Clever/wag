@@ -65,7 +65,7 @@ func ParamToType(param spec.Parameter) (string, error) {
 	case "string":
 		switch param.Format {
 		case "byte":
-			typeName = "[]byte"
+			typeName = "strfmt.Base64"
 		case "date":
 			typeName = "strfmt.Date"
 		case "date-time":
@@ -94,10 +94,6 @@ func ParamToType(param spec.Parameter) (string, error) {
 		// Swagger spec.
 		return "", fmt.Errorf("Unsupported param type")
 	}
-
-	if !param.Required {
-		return "*" + typeName, nil
-	}
 	return typeName, nil
 }
 
@@ -108,12 +104,12 @@ func BaseStringToTypeCode() string {
 var formats = strfmt.Default
 var _ = formats
 
-func ConvertByte(input string) ([]byte, error) {
+func ConvertBase64(input string) (strfmt.Base64, error) {
 	temp, err := formats.Parse("byte", input)
 	if err != nil {
-		return nil, err
+		return strfmt.Base64{}, err
 	}
-	return temp.([]byte), nil
+	return *temp.(*strfmt.Base64), nil
 }
 
 func ConvertDateTime(input string) (strfmt.DateTime, error) {
@@ -121,7 +117,7 @@ func ConvertDateTime(input string) (strfmt.DateTime, error) {
 	if err != nil {
 		return strfmt.DateTime{}, err
 	}
-	return temp.(strfmt.DateTime), nil
+	return *temp.(*strfmt.DateTime), nil
 }
 
 func ConvertDate(input string) (strfmt.Date, error) {
@@ -129,7 +125,7 @@ func ConvertDate(input string) (strfmt.Date, error) {
 	if err != nil {
 		return strfmt.Date{}, err
 	}
-	return temp.(strfmt.Date), nil
+	return *temp.(*strfmt.Date), nil
 }
 `
 }
@@ -152,15 +148,14 @@ func StringToTypeCode(strField string, param spec.Parameter) (string, error) {
 		} else {
 			return fmt.Sprintf("swag.ConvertFloat64(%s)", strField), nil
 		}
-
 	case "boolean":
 		return fmt.Sprintf("strconv.ParseBool(%s)", strField), nil
 	case "string":
 		switch param.Format {
 		case "byte":
-			return fmt.Sprintf("ConvertByte(%s)", strField), nil
+			return fmt.Sprintf("ConvertBase64(%s)", strField), nil
 		case "":
-			return fmt.Sprintf("%s, nil", strField), nil
+			return fmt.Sprintf("%s, error(nil)", strField), nil
 		case "date":
 			return fmt.Sprintf("ConvertDate(%s)", strField), nil
 		case "date-time":

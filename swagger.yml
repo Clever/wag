@@ -83,6 +83,7 @@ paths:
         - name: state
           in: query
           type: string
+          required: false
           enum:
             - finished
             - inprogress

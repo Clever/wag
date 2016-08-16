@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-openapi/spec"
 
+	"github.com/Clever/wag/models"
 	"github.com/Clever/wag/swagger"
 
 	"text/template"
@@ -158,22 +159,37 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 				g.Printf("\t}\n")
 			}
 
+			g.Printf("\tif len(%sStr) != 0 {\n", param.Name)
+
+			typeName, err := swagger.ParamToType(param)
+			if err != nil {
+				return err
+			}
 			typeCode, err := swagger.StringToTypeCode(fmt.Sprintf("%sStr", param.Name), param)
 			if err != nil {
 				return err
 			}
-			g.Printf("\t%sTmp, err := %s\n", param.Name, typeCode)
+			g.Printf("\t\tvar %sTmp %s\n", param.Name, typeName)
+			g.Printf("\t\t%sTmp, err = %s\n", param.Name, typeCode)
 
 			if param.Required {
-				g.Printf("\tinput.%s = %sTmp\n\n", capParamName, param.Name)
+				g.Printf("\t\tinput.%s = %sTmp\n\n", capParamName, param.Name)
 			} else {
-				g.Printf("\tinput.%s = &%sTmp\n\n", capParamName, param.Name)
+				g.Printf("\t\tinput.%s = &%sTmp\n\n", capParamName, param.Name)
 			}
+
+			g.Printf("\t}\n")
 
 		} else {
 			if param.Schema == nil {
 				return fmt.Errorf("Body parameters must have a schema defined")
 			}
+			typeName, err := models.TypeFromSchema(param.Schema)
+			if err != nil {
+				return err
+			}
+			// Initial the pointer in the object
+			g.Printf("\tinput.%s = &models.%s{}\n", capParamName, typeName)
 			g.Printf("\terr = json.NewDecoder(r.Body).Decode(input.%s)\n",
 				capParamName)
 
