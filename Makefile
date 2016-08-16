@@ -3,7 +3,7 @@ include golang.mk
 .PHONY: test build
 PKG := github.com/Clever/wag
 PKGS := $(shell go list ./... | grep -v /vendor)
-$(eval $(call golang-version-check,1.6))
+$(eval $(call golang-version-check,1.7))
 
 build: hardcoded.go
 	# disable CGO and link completely statically (this is to enable us to run in containers that don't use glibc)
