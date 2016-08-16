@@ -107,28 +107,10 @@ var routerFunctionTemplate = `	r.Methods("{{.Method}}").Path("{{.Path}}").Handle
 `
 
 func generateContextsAndControllers(packageName string, paths *spec.Paths) error {
-
-	// Only create the controller the first time. After that leave it as is
-	// TODO: This isn't convenient when developing, so maybe have a flag...?
-	// TODO: We still want to build the contexts.go file, so need to figure that out...
-	// if _, err := os.Stat("generated/controller.go"); err == nil {
-	//	return nil
-	//}
-
-	interfaceGenerator := swagger.Generator{PackageName: packageName}
-	interfaceGenerator.Printf("package server\n\n")
-	interfaceGenerator.Printf(swagger.ImportStatements([]string{"golang.org/x/net/context", packageName + "/models"}))
-	interfaceGenerator.Printf("type Controller interface {\n")
-
-	controllerGenerator := swagger.Generator{PackageName: packageName}
-	controllerGenerator.Printf("package server\n\n")
-	controllerGenerator.Printf(swagger.ImportStatements([]string{"golang.org/x/net/context",
-		"errors", packageName + "/models"}))
-
-	// TODO: Better name for this... very java-y. Also shouldn't necessarily be controller
-	// TODO: Should we plug this in more nicely??
-	controllerGenerator.Printf("type ControllerImpl struct{\n")
-	controllerGenerator.Printf("}\n")
+	g := swagger.Generator{PackageName: packageName}
+	g.Printf("package server\n\n")
+	g.Printf(swagger.ImportStatements([]string{"golang.org/x/net/context", packageName + "/models"}))
+	g.Printf("type Controller interface {\n")
 
 	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
 		path := paths.Paths[pathKey]
@@ -138,20 +120,12 @@ func generateContextsAndControllers(packageName string, paths *spec.Paths) error
 			capOpID := swagger.Capitalize(op.ID)
 			definition := fmt.Sprintf("%s(ctx context.Context, input *models.%sInput) (models.%sOutput, error)",
 				capOpID, capOpID, capOpID)
-			interfaceGenerator.Printf("\t%s\n", definition)
-
-			controllerGenerator.Printf("func (c ControllerImpl) %s {\n", definition)
-			controllerGenerator.Printf("\t// TODO: Implement me!\n")
-			controllerGenerator.Printf("\treturn nil, errors.New(\"Not implemented\")\n")
-			controllerGenerator.Printf("}\n")
+			g.Printf("\t%s\n", definition)
 		}
 	}
-	interfaceGenerator.Printf("}\n")
+	g.Printf("}\n")
 
-	if err := interfaceGenerator.WriteFile("server/interface.go"); err != nil {
-		return err
-	}
-	return controllerGenerator.WriteFile("server/controller.go")
+	return g.WriteFile("server/interface.go")
 }
 
 func printNewInput(g *swagger.Generator, op *spec.Operation) error {

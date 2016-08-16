@@ -12,7 +12,6 @@ build: hardcoded.go
 test: build
 	rm -rf generated
 	./bin/wag -file swagger.yml -package $(PKG)/generated
-	cd impl && go build
 	cd test && go test
 
 
