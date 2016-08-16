@@ -129,7 +129,6 @@ func (c Client) WithRetries(retries int) Client {
 					} else {
 						g.Printf("\t\treturn nil, models.%s%dOutput{}\n", capOpID, statusCode)
 					}
-
 				}
 			}
 
@@ -182,10 +181,27 @@ func convertParamToString(p spec.Parameter) string {
 	}
 	switch p.Type {
 	case "string":
-		return fmt.Sprintf("%s", valToSet)
+		switch p.Format {
+		case "byte":
+			return fmt.Sprintf("string(%s)", valToSet)
+		case "date":
+			return fmt.Sprintf("(%s).String()", valToSet)
+		case "date-time":
+			return fmt.Sprintf("(%s).String()", valToSet)
+		case "":
+			return fmt.Sprintf("%s", valToSet)
+		default:
+			panic(fmt.Errorf("Unsupported string format %s", p.Format))
+		}
 	case "integer":
+		if p.Format == "int32" {
+			return fmt.Sprintf("strconv.FormatInt(int64(%s), 10)", valToSet)
+		}
 		return fmt.Sprintf("strconv.FormatInt(%s, 10)", valToSet)
 	case "number":
+		if p.Format == "float" {
+			return fmt.Sprintf("strconv.FormatFloat(float64(%s), 'E', -1, 32)", valToSet)
+		}
 		return fmt.Sprintf("strconv.FormatFloat(%s, 'E', -1, 64)", valToSet)
 	case "boolean":
 		return fmt.Sprintf("strconv.FormatBool(%s)", valToSet)

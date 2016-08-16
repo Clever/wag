@@ -43,12 +43,14 @@ import(
 		"encoding/json"
 		"strconv"
 		"github.com/go-openapi/validate"
+		"github.com/go-openapi/strfmt"
 )
 
 // These imports may not be used depending on the input parameters
 var _ = json.Marshal
 var _ = strconv.FormatInt
 var _ = validate.Maximum
+var _ = strfmt.NewFormats
 `)
 
 	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
@@ -80,13 +82,32 @@ func printInputStruct(g *swagger.Generator, op *spec.Operation) error {
 		if param.In != "body" {
 			switch param.Type {
 			case "string":
-				typeName = "string"
+				switch param.Format {
+				case "byte":
+					typeName = "[]byte"
+				case "date":
+					typeName = "strfmt.Date"
+				case "date-time":
+					typeName = "strfmt.DateTime"
+				case "":
+					typeName = "string"
+				default:
+					panic(fmt.Errorf("Unsupported string format \"%s\"", param.Format))
+				}
 			case "integer":
-				typeName = "int64"
+				if param.Format == "int32" {
+					typeName = "int32"
+				} else {
+					typeName = "int64"
+				}
 			case "boolean":
 				typeName = "bool"
 			case "number":
-				typeName = "float64"
+				if param.Format == "float" {
+					typeName = "float32"
+				} else {
+					typeName = "float64"
+				}
 			default:
 				// Note. We don't support 'array' or 'file' types even though they're in the
 				// Swagger spec.
@@ -119,6 +140,7 @@ func pointerString(param spec.Parameter) string {
 func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
 	g.Printf("func (i %sInput) Validate() error{\n", swagger.Capitalize(op.ID))
 
+	// TODO: Update this...
 	for _, param := range op.Parameters {
 		if param.In == "body" {
 			g.Printf("\tif err := i.%s.Validate(nil); err != nil {\n", swagger.Capitalize(param.Name))
@@ -128,15 +150,15 @@ func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
 
 		if param.Type == "string" {
 			if param.MaxLength != nil {
-				g.Printf(errCheck(fmt.Sprintf("validate.MaxLength(\"%s\", \"%s\", %s, %d)",
+				g.Printf(errCheck(fmt.Sprintf("validate.MaxLength(\"%s\", \"%s\", string(%s), %d)",
 					param.Name, param.In, accessString(param), *param.MaxLength)))
 			}
 			if param.MinLength != nil {
-				g.Printf(errCheck(fmt.Sprintf("validate.MinLength(\"%s\", \"%s\", %s, %d)",
+				g.Printf(errCheck(fmt.Sprintf("validate.MinLength(\"%s\", \"%s\", string(%s), %d)",
 					param.Name, param.In, accessString(param), *param.MaxLength)))
 			}
 			if param.Pattern != "" {
-				g.Printf(errCheck(fmt.Sprintf("validate.Pattern(\"%s\", \"%s\", %s, \"%s\")",
+				g.Printf(errCheck(fmt.Sprintf("validate.Pattern(\"%s\", \"%s\", string(%s), \"%s\")",
 					param.Name, param.In, accessString(param), param.Pattern)))
 			}
 			if len(param.Enum) != 0 {
@@ -149,11 +171,11 @@ func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
 			}
 		} else if param.Type == "integer" {
 			if param.Maximum != nil {
-				g.Printf(errCheck(fmt.Sprintf("validate.MaximumInt(\"%s\", \"%s\", %s, %d, %t)",
+				g.Printf(errCheck(fmt.Sprintf("validate.MaximumInt(\"%s\", \"%s\", %s, int64(%d), %t)",
 					param.Name, param.In, accessString(param), int64(*param.Maximum), param.ExclusiveMaximum)))
 			}
 			if param.Minimum != nil {
-				g.Printf(errCheck(fmt.Sprintf("validate.MinimumInt(\"%s\", \"%s\", %s, %d, %t)",
+				g.Printf(errCheck(fmt.Sprintf("validate.MinimumInt(\"%s\", \"%s\", %s, int64(%d), %t)",
 					param.Name, param.In, accessString(param), int64(*param.Minimum), param.ExclusiveMinimum)))
 			}
 			if param.MultipleOf != nil {
@@ -162,15 +184,15 @@ func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
 			}
 		} else if param.Type == "number" {
 			if param.Maximum != nil {
-				g.Printf(errCheck(fmt.Sprintf("validate.Maximum(\"%s\", \"%s\",  %s, %f, %t)",
+				g.Printf(errCheck(fmt.Sprintf("validate.Maximum(\"%s\", \"%s\",  float64(%s), %f, %t)",
 					param.Name, param.In, accessString(param), *param.Maximum, param.ExclusiveMaximum)))
 			}
 			if param.Minimum != nil {
-				g.Printf(errCheck(fmt.Sprintf("validate.Minimum(\"%s\", \"%s\", %s, %f, %t)",
+				g.Printf(errCheck(fmt.Sprintf("validate.Minimum(\"%s\", \"%s\", float64(%s), %f, %t)",
 					param.Name, param.In, accessString(param), *param.Minimum, param.ExclusiveMinimum)))
 			}
 			if param.MultipleOf != nil {
-				g.Printf(errCheck(fmt.Sprintf("validate.MultipleOf(\"%s\", \"%s\", %s, %f)",
+				g.Printf(errCheck(fmt.Sprintf("validate.MultipleOf(\"%s\", \"%s\", float64(%s), %f)",
 					param.Name, param.In, accessString(param), *param.MultipleOf)))
 			}
 		}

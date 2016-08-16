@@ -136,6 +136,8 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 	g.Printf("\tvar input models.%sInput\n\n", capOpID)
 	g.Printf("\tvar err error\n")
 	g.Printf("\t_ = err\n\n")
+	g.Printf("\tformats := strfmt.Default\n")
+	g.Printf("\t_ = formats\n\n")
 
 	for _, param := range op.Parameters {
 
@@ -160,16 +162,37 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 
 			switch param.Type {
 			case "integer":
-				g.Printf("\t%sTmp, err := strconv.ParseInt(%sStr, 10, 64)\n",
-					param.Name, param.Name)
+				if param.Format == "int32" {
+					g.Printf("\t%sTmp, err := swag.ConvertInt32(%sStr)\n", param.Name, param.Name)
+				} else {
+					g.Printf("\t%sTmp, err := swag.ConvertInt64(%sStr)\n", param.Name, param.Name)
+				}
 			case "number":
-				g.Printf("\t%sTmp, err := strconv.ParseFloat(%sStr, 64)\n",
-					param.Name, param.Name)
+				if param.Format == "float" {
+					g.Printf("\t%sTmp, err := swag.ConvertFloat32(%sStr)\n", param.Name, param.Name)
+				} else {
+					g.Printf("\t%sTmp, err := swag.ConvertFloat64(%sStr)\n", param.Name, param.Name)
+				}
+
 			case "boolean":
 				g.Printf("\t%sTmp, err := strconv.ParseBool(%sStr)\n",
 					param.Name, param.Name)
 			case "string":
-				g.Printf("\t%sTmp := %sStr\n", param.Name, param.Name)
+				switch param.Format {
+				case "byte":
+					g.Printf("\t%sTmpInterface, err := formats.Parse(\"byte\", %sStr)\n", param.Name, param.Name)
+					g.Printf("\t%sTmp := %sTmpInterface.([]byte)\n", param.Name, param.Name)
+				case "":
+					g.Printf("\t%sTmp := %sStr\n", param.Name, param.Name)
+				case "date":
+					g.Printf("\t%sTmpInterface, err := formats.Parse(\"date\", %sStr)\n", param.Name, param.Name)
+					g.Printf("\t%sTmp := %sTmpInterface.(strfmt.Date)\n", param.Name, param.Name)
+				case "date-time":
+					g.Printf("\t%sTmpInterface, err := formats.Parse(\"date-time\", %sStr)\n", param.Name, param.Name)
+					g.Printf("\t%sTmp := %sTmpInterface.(strfmt.DateTime)\n", param.Name, param.Name)
+				default:
+					return fmt.Errorf("Param format %s not supported", param.Format)
+				}
 			default:
 				return fmt.Errorf("Param type %s not supported", param.Type)
 			}
@@ -188,12 +211,15 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 				capParamName)
 
 		}
-		if param.Required {
+		// TODO: Figure out how to handle schemas here...
+		if param.Required || param.Schema != nil {
 			g.Printf("\tif err != nil {\n")
-			// TODO: Make this an error of the right type
-			g.Printf("\t\treturn nil, err\n")
-			g.Printf("\t}\n")
+		} else {
+			g.Printf("\tif err != nil && len(%sStr) != 0 {\n", param.Name)
 		}
+		// TODO: Make this an error of the right type
+		g.Printf("\t\treturn nil, err\n")
+		g.Printf("\t}\n")
 	}
 	g.Printf("\n")
 
@@ -208,9 +234,12 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 
 	g.Printf("package server\n\n")
 	g.Printf(swagger.ImportStatements([]string{"golang.org/x/net/context", "github.com/gorilla/mux",
-		"net/http", "strconv", "encoding/json", "strconv", packageName + "/models", "errors"}))
+		"net/http", "strconv", "encoding/json", "strconv", packageName + "/models", "errors",
+		"github.com/go-openapi/strfmt", "github.com/go-openapi/swag"}))
 
-	g.Printf("var _ = strconv.ParseInt\n\n")
+	g.Printf("var _ = strconv.ParseInt\n")
+	g.Printf("var _ = strfmt.Default\n")
+	g.Printf("var _ = swag.ConvertInt32\n\n")
 
 	// TODO: Make this not be a global variable
 	g.Printf("var controller Controller\n\n")

@@ -17,7 +17,6 @@ paths:
       operationId: getBookByID
       description: Returns a book
       parameters:
-        # Required parameter...
         - name: bookID
           in: path
           type: integer
@@ -32,6 +31,10 @@ paths:
           minLength: 1
           maxLength: 24
           pattern: "[0-9a-f]+"
+        - name: randomBytes
+          in: query
+          type: string
+          format: byte
       responses:
         200:
           description: "Success"
@@ -83,6 +86,14 @@ paths:
           enum:
             - finished
             - inprogress
+        - name: published
+          in: query
+          type: string
+          format: date
+        - name: completed
+          in: query
+          type: string
+          format: date-time
         - name: maxPages
           in: query
           # Probably makes more sense for this to be an integer, but I couldn't figure out
@@ -91,6 +102,14 @@ paths:
           maximum: 1
           minimum: -5
           multipleOf: 0.5
+        - name: minPages
+          in: query
+          type: integer
+          format: int32
+        - name: pagesToTime
+          in: query
+          type: number
+          format: float
       responses:
         200:
           description: "Success"

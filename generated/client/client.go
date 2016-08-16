@@ -46,7 +46,11 @@ func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) (models.G
 	urlVals.Add("author", *i.Author)
 	urlVals.Add("available", strconv.FormatBool(*i.Available))
 	urlVals.Add("state", *i.State)
+	urlVals.Add("published", (*i.Published).String())
+	urlVals.Add("completed", (*i.Completed).String())
 	urlVals.Add("maxPages", strconv.FormatFloat(*i.MaxPages, 'E', -1, 64))
+	urlVals.Add("minPages", strconv.FormatInt(int64(*i.MinPages), 10))
+	urlVals.Add("pagesToTime", strconv.FormatFloat(float64(*i.PagesToTime), 'E', -1, 32))
 	path = path + "?" + urlVals.Encode()
 
 	client := &http.Client{Transport: c.transport}
@@ -91,6 +95,7 @@ func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (mo
 	var body []byte
 
 	path = strings.Replace(path, "{bookID}", strconv.FormatInt(i.BookID, 10), -1)
+	urlVals.Add("randomBytes", string(*i.RandomBytes))
 	path = path + "?" + urlVals.Encode()
 
 	client := &http.Client{Transport: c.transport}
