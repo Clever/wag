@@ -42,11 +42,15 @@ package models
 import(
 		"encoding/json"
 		"strconv"
+		"github.com/go-openapi/validate"
+		"github.com/go-openapi/strfmt"
 )
 
 // These imports may not be used depending on the input parameters
 var _ = json.Marshal
 var _ = strconv.FormatInt
+var _ = validate.Maximum
+var _ = strfmt.NewFormats
 `)
 
 	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
@@ -75,28 +79,24 @@ func printInputStruct(g *swagger.Generator, op *spec.Operation) error {
 		}
 
 		var typeName string
+		var err error
 		if param.In != "body" {
-			switch param.Type {
-			case "string":
-				typeName = "string"
-			case "integer":
-				typeName = "int64"
-			case "boolean":
-				typeName = "bool"
-			case "number":
-				typeName = "float64"
-			default:
-				// Note. We don't support 'array' or 'file' types even though they're in the
-				// Swagger spec.
-				return fmt.Errorf("Unsupported param type")
-			}
-		} else {
-			var err error
-			typeName, err = typeFromSchema(param.Schema)
+			typeName, err = swagger.ParamToType(param)
 			if err != nil {
 				return err
 			}
+			if !param.Required {
+				typeName = "*" + typeName
+			}
+		} else {
+			typeName, err = TypeFromSchema(param.Schema)
+			if err != nil {
+				return err
+			}
+			// All schema types are pointers
+			typeName = "*" + typeName
 		}
+
 		g.Printf("\t%s %s\n", swagger.Capitalize(param.Name), typeName)
 	}
 	g.Printf("}\n\n")
@@ -107,18 +107,40 @@ func printInputStruct(g *swagger.Generator, op *spec.Operation) error {
 func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
 	g.Printf("func (i %sInput) Validate() error{\n", swagger.Capitalize(op.ID))
 
-	// TODO: Right now we only support validation on complex types (schemas)
 	for _, param := range op.Parameters {
 		if param.In == "body" {
 			g.Printf("\tif err := i.%s.Validate(nil); err != nil {\n", swagger.Capitalize(param.Name))
 			g.Printf("\t\treturn err\n")
 			g.Printf("\t}\n\n")
 		}
+
+		validations, err := swagger.ParamToValidationCode(param)
+		if err != nil {
+			return err
+		}
+		for _, validation := range validations {
+			if param.Required {
+				g.Printf(errCheck(validation))
+			} else {
+				g.Printf("\tif i.%s != nil {\n", swagger.Capitalize(param.Name))
+				g.Printf(errCheck(validation))
+				g.Printf("\t}\n")
+			}
+		}
 	}
 	g.Printf("\treturn nil\n")
 	g.Printf("}\n\n")
 
 	return nil
+}
+
+// errCheck returns an if err := ifCondition; err != nil { return err } function
+func errCheck(ifCondition string) string {
+	return fmt.Sprintf(
+		`	if err := %s; err != nil {
+		return err
+	}
+`, ifCondition)
 }
 
 func generateOutputs(packageName string, paths *spec.Paths) error {
@@ -170,7 +192,7 @@ func generateOutputs(packageName string, paths *spec.Paths) error {
 				}
 
 				outputName := fmt.Sprintf("%s%dOutput", capOpID, statusCode)
-				typeName, err := typeFromSchema(response.Schema)
+				typeName, err := TypeFromSchema(response.Schema)
 				if err != nil {
 					return err
 				}
@@ -230,7 +252,7 @@ func (d DefaultBadRequest) Error() string {
 `, "`json:\"msg\"`", "`json:\"msg\"`")
 }
 
-func typeFromSchema(schema *spec.Schema) (string, error) {
+func TypeFromSchema(schema *spec.Schema) (string, error) {
 	// We support three types of schemas
 	// 1. An empty schema
 	// 2. A schema with one element, the $ref key

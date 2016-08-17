@@ -70,10 +70,17 @@ func (c Client) WithRetries(retries int) Client {
 				if param.In == "path" {
 					// TODO: Should this be done with regex at some point?
 					g.Printf("\tpath = strings.Replace(path, \"%s\", %s, -1)\n",
-						"{"+param.Name+"}", convertParamToString(param))
+						"{"+param.Name+"}", swagger.ParamToStringCode(param))
+
 				} else if param.In == "query" {
-					g.Printf("\turlVals.Add(\"%s\", %s)\n",
-						param.Name, convertParamToString(param))
+					queryAddCode := fmt.Sprintf("\turlVals.Add(\"%s\", %s)\n", param.Name, swagger.ParamToStringCode(param))
+					if param.Required {
+						g.Printf(queryAddCode)
+					} else {
+						g.Printf("\tif i.%s != nil {\n", swagger.Capitalize(param.Name))
+						g.Printf(queryAddCode)
+						g.Printf("\t}\n")
+					}
 				}
 			}
 
@@ -82,7 +89,14 @@ func (c Client) WithRetries(retries int) Client {
 			for _, param := range op.Parameters {
 				if param.In == "body" {
 					// TODO: Handle errors here. Also, is this syntax quite right???
-					g.Printf("\tbody, _ = json.Marshal(i.%s)\n\n", swagger.Capitalize(param.Name))
+					bodyMarshalCode := fmt.Sprintf("\tbody, _ = json.Marshal(i.%s)\n\n", swagger.Capitalize(param.Name))
+					if param.Required {
+						g.Printf(bodyMarshalCode)
+					} else {
+						g.Printf("\tif i.%s != nil {\n", swagger.Capitalize(param.Name))
+						g.Printf(bodyMarshalCode)
+						g.Printf("\t}\n")
+					}
 				}
 			}
 
@@ -92,8 +106,14 @@ func (c Client) WithRetries(retries int) Client {
 
 			for _, param := range op.Parameters {
 				if param.In == "header" {
-					g.Printf("\treq.Header.Set(\"%s\", %s)\n",
-						param.Name, convertParamToString(param))
+					headerAddCode := fmt.Sprintf("\treq.Header.Set(\"%s\", %s)\n", param.Name, swagger.ParamToStringCode(param))
+					if param.Required {
+						g.Printf(headerAddCode)
+					} else {
+						g.Printf("\tif i.%s != nil {\n", swagger.Capitalize(param.Name))
+						g.Printf(headerAddCode)
+						g.Printf("\t}\n")
+					}
 				}
 			}
 
@@ -129,7 +149,6 @@ func (c Client) WithRetries(retries int) Client {
 					} else {
 						g.Printf("\t\treturn nil, models.%s%dOutput{}\n", capOpID, statusCode)
 					}
-
 				}
 			}
 
@@ -173,21 +192,4 @@ func successResponse(outputName string) string {
 		}
 		return output, nil
 `, outputName)
-}
-
-func convertParamToString(p spec.Parameter) string {
-	capParamName := swagger.Capitalize(p.Name)
-	switch p.Type {
-	case "string":
-		return fmt.Sprintf("i.%s", capParamName)
-	case "integer":
-		return fmt.Sprintf("strconv.FormatInt(i.%s, 10)", capParamName)
-	case "number":
-		return fmt.Sprintf("strconv.FormatFloat(i.%s, 'E', -1, 64)", capParamName)
-	case "boolean":
-		return fmt.Sprintf("strconv.FormatBool(i.%s)", capParamName)
-	default:
-		// Theoretically should have validated before getting here
-		panic(fmt.Errorf("Unsupported parameter type %s", p.Type))
-	}
 }

@@ -21,11 +21,11 @@ func TestBasicEndToEnd(t *testing.T) {
 
 	c := client.New(s.URL)
 
-	bookID := int64(123)
+	bookID := int64(124)
 	bookName := "Test"
 
 	createOutput, err := c.CreateBook(
-		context.Background(), &models.CreateBookInput{NewBook: models.Book{ID: bookID, Name: bookName}})
+		context.Background(), &models.CreateBookInput{NewBook: &models.Book{ID: bookID, Name: bookName}})
 	assert.NoError(t, err)
 	createdBook, ok := createOutput.(models.CreateBook200Output)
 	require.True(t, ok)
@@ -40,7 +40,7 @@ func TestBasicEndToEnd(t *testing.T) {
 	assert.Equal(t, bookID, getBooks[0].ID)
 	assert.Equal(t, bookName, getBooks[0].Name)
 
-	singleBookOutput, err := c.GetBookByID(context.Background(), &models.GetBookByIDInput{BookID: 123})
+	singleBookOutput, err := c.GetBookByID(context.Background(), &models.GetBookByIDInput{BookID: bookID})
 	assert.NoError(t, err)
 	singleBook, ok := singleBookOutput.(models.GetBookByID200Output)
 	require.True(t, ok)
@@ -54,14 +54,21 @@ func TestUserDefinedErrorResponse(t *testing.T) {
 
 	c := client.New(s.URL)
 
-	_, err := c.GetBookByID(context.Background(), &models.GetBookByIDInput{BookID: 123})
+	_, err := c.GetBookByID(context.Background(), &models.GetBookByIDInput{BookID: 124})
 	assert.Error(t, err)
 	_, ok := err.(models.GetBookByID404Output)
 	assert.True(t, ok)
 }
 
 func TestValidationErrorResponse(t *testing.T) {
-	// TODO: We don't have any test cases for this yet...
+	s := setupServer()
+	c := client.New(s.URL)
+
+	// Book ID should be a multiple of two
+	_, err := c.GetBookByID(context.Background(), &models.GetBookByIDInput{BookID: 123})
+	assert.Error(t, err)
+	_, ok := err.(models.DefaultBadRequest)
+	assert.True(t, ok)
 }
 
 func TestClientSideError(t *testing.T) {

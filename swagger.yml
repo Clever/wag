@@ -17,13 +17,24 @@ paths:
       operationId: getBookByID
       description: Returns a book
       parameters:
-        # Required parameter...
         - name: bookID
           in: path
           type: integer
+          required: true
+          maximum: 10000000
+          minimum: 2
+          # This is a silly requirement, but let's add it to show how it would work
+          multipleOf: 2
         - name: authorization
           in: header
           type: string
+          minLength: 1
+          maxLength: 24
+          pattern: "[0-9a-f]+"
+        - name: randomBytes
+          in: query
+          type: string
+          format: byte
       responses:
         200:
           description: "Success"
@@ -69,11 +80,37 @@ paths:
         - name: available
           in: query
           type: boolean
+        - name: state
+          in: query
+          type: string
+          required: false
+          enum:
+            - finished
+            - inprogress
+        - name: published
+          in: query
+          type: string
+          format: date
+        - name: completed
+          in: query
+          type: string
+          format: date-time
         - name: maxPages
           in: query
           # Probably makes more sense for this to be an integer, but I couldn't figure out
           # a good example for books that really would need a float
           type: number
+          maximum: 1
+          minimum: -5
+          multipleOf: 0.5
+        - name: minPages
+          in: query
+          type: integer
+          format: int32
+        - name: pagesToTime
+          in: query
+          type: number
+          format: float
       responses:
         200:
           description: "Success"

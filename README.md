@@ -140,11 +140,6 @@ make test
 ## Future Features
 
 These are the features we're planning on building in the near future:
-- Stricter input validation
-  - Support for the required field in the Swagger spec
-  - At least some of the validation defined in http://swagger.io/specification/#parameterIn. In particular we want to be able to support checking whether an input parameter is a valid object ID.
-- More robust server defaults
-  - SIGTERM handling
 - Better logging, monitoring, and metrics
   - Logger from the Context
   - Expose pprof port by default

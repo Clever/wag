@@ -43,9 +43,30 @@ func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) (models.G
 	urlVals := url.Values{}
 	var body []byte
 
-	urlVals.Add("author", i.Author)
-	urlVals.Add("available", strconv.FormatBool(i.Available))
-	urlVals.Add("maxPages", strconv.FormatFloat(i.MaxPages, 'E', -1, 64))
+	if i.Author != nil {
+		urlVals.Add("author", *i.Author)
+	}
+	if i.Available != nil {
+		urlVals.Add("available", strconv.FormatBool(*i.Available))
+	}
+	if i.State != nil {
+		urlVals.Add("state", *i.State)
+	}
+	if i.Published != nil {
+		urlVals.Add("published", (*i.Published).String())
+	}
+	if i.Completed != nil {
+		urlVals.Add("completed", (*i.Completed).String())
+	}
+	if i.MaxPages != nil {
+		urlVals.Add("maxPages", strconv.FormatFloat(*i.MaxPages, 'E', -1, 64))
+	}
+	if i.MinPages != nil {
+		urlVals.Add("minPages", strconv.FormatInt(int64(*i.MinPages), 10))
+	}
+	if i.PagesToTime != nil {
+		urlVals.Add("pagesToTime", strconv.FormatFloat(float64(*i.PagesToTime), 'E', -1, 32))
+	}
 	path = path + "?" + urlVals.Encode()
 
 	client := &http.Client{Transport: c.transport}
@@ -90,11 +111,16 @@ func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (mo
 	var body []byte
 
 	path = strings.Replace(path, "{bookID}", strconv.FormatInt(i.BookID, 10), -1)
+	if i.RandomBytes != nil {
+		urlVals.Add("randomBytes", string(*i.RandomBytes))
+	}
 	path = path + "?" + urlVals.Encode()
 
 	client := &http.Client{Transport: c.transport}
 	req, _ := http.NewRequest("GET", path, bytes.NewBuffer(body))
-	req.Header.Set("authorization", i.Authorization)
+	if i.Authorization != nil {
+		req.Header.Set("authorization", *i.Authorization)
+	}
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "getBookByID")
@@ -144,8 +170,10 @@ func (c Client) CreateBook(ctx context.Context, i *models.CreateBookInput) (mode
 
 	path = path + "?" + urlVals.Encode()
 
-	body, _ = json.Marshal(i.NewBook)
+	if i.NewBook != nil {
+		body, _ = json.Marshal(i.NewBook)
 
+	}
 	client := &http.Client{Transport: c.transport}
 	req, _ := http.NewRequest("POST", path, bytes.NewBuffer(body))
 

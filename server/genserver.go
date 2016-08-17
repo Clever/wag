@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-openapi/spec"
 
+	"github.com/Clever/wag/models"
 	"github.com/Clever/wag/swagger"
 
 	"text/template"
@@ -130,8 +131,8 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 		capOpID, capOpID)
 
 	g.Printf("\tvar input models.%sInput\n\n", capOpID)
-
-	printedError := false
+	g.Printf("\tvar err error\n")
+	g.Printf("\t_ = err\n\n")
 
 	for _, param := range op.Parameters {
 
@@ -146,45 +147,63 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 			case "header":
 				extractCode = fmt.Sprintf("r.Header.Get(\"%s\")", param.Name)
 			}
-
 			g.Printf("\t%sStr := %s\n", param.Name, extractCode)
 
-			if param.Type != "string" {
-				if !printedError {
-					g.Printf("\tvar err error\n")
-					printedError = true
-				}
-
-				switch param.Type {
-				case "integer":
-					g.Printf("\tinput.%s, err = strconv.ParseInt(%sStr, 10, 64)\n",
-						capParamName, param.Name)
-				case "number":
-					g.Printf("\tinput.%s, err = strconv.ParseFloat(%sStr, 64)\n",
-						capParamName, param.Name)
-				case "boolean":
-					g.Printf("\tinput.%s, err = strconv.ParseBool(%sStr)\n",
-						capParamName, param.Name)
-				default:
-					return fmt.Errorf("Param type %s not supported", param.Type)
-				}
-				// TODO: These error message aren't great. We should probalby clean up...
-				g.Printf("\tif err != nil {\n")
-				g.Printf("\t\treturn nil, err\n")
+			if param.Required {
+				g.Printf("\tif len(%sStr) == 0{\n", param.Name)
+				g.Printf("\t\treturn nil, errors.New(\"Parameter must be specified\")\n")
 				g.Printf("\t}\n")
-
-			} else {
-				g.Printf("\tinput.%s = %sStr\n", capParamName, param.Name)
 			}
+
+			g.Printf("\tif len(%sStr) != 0 {\n", param.Name)
+
+			typeName, err := swagger.ParamToType(param)
+			if err != nil {
+				return err
+			}
+			typeCode, err := swagger.StringToTypeCode(fmt.Sprintf("%sStr", param.Name), param)
+			if err != nil {
+				return err
+			}
+			g.Printf("\t\tvar %sTmp %s\n", param.Name, typeName)
+			g.Printf("\t\t%sTmp, err = %s\n", param.Name, typeCode)
+			g.Printf("\t\tif err != nil {\n")
+			g.Printf("\t\t\treturn nil, err\n")
+			g.Printf("\t\t}\n")
+
+			if param.Required {
+				g.Printf("\t\tinput.%s = %sTmp\n\n", capParamName, param.Name)
+			} else {
+				g.Printf("\t\tinput.%s = &%sTmp\n\n", capParamName, param.Name)
+			}
+
+			g.Printf("\t}\n")
+
 		} else {
 			if param.Schema == nil {
 				return fmt.Errorf("Body parameters must have a schema defined")
 			}
-			g.Printf("\tif err := json.NewDecoder(r.Body).Decode(&input.%s); err != nil {\n",
-				capParamName)
-			// TODO: Make this an error of the right type
-			g.Printf("\t\treturn nil, err\n")
+			typeName, err := models.TypeFromSchema(param.Schema)
+			if err != nil {
+				return err
+			}
+
+			g.Printf("\tdata, err := ioutil.ReadAll(r.Body)\n")
+
+			if param.Required {
+				g.Printf("\tif len(data) == 0 {\n")
+				g.Printf("\t\treturn nil, errors.New(\"Parameter must be specified\")\n")
+				g.Printf("\t}\n")
+			}
+
+			g.Printf("\tif len(data) > 0 {")
+			// Initialize the pointer in the object
+			g.Printf("\t\tinput.%s = &models.%s{}\n", capParamName, typeName)
+			g.Printf("\t\tif err := json.NewDecoder(bytes.NewReader(data)).Decode(input.%s); err != nil {\n", capParamName)
+			g.Printf("\t\t\treturn nil, err\n")
+			g.Printf("\t\t}\n")
 			g.Printf("\t}\n")
+
 		}
 	}
 	g.Printf("\n")
@@ -200,13 +219,17 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 
 	g.Printf("package server\n\n")
 	g.Printf(swagger.ImportStatements([]string{"golang.org/x/net/context", "github.com/gorilla/mux",
-		"net/http", "strconv", "encoding/json", "strconv", packageName + "/models"}))
+		"net/http", "strconv", "encoding/json", "strconv", packageName + "/models", "errors",
+		"github.com/go-openapi/strfmt", "github.com/go-openapi/swag", "io/ioutil", "bytes"}))
 
-	g.Printf("var _ = strconv.ParseInt\n\n")
+	g.Printf("var _ = strconv.ParseInt\n")
+	g.Printf("var _ = strfmt.Default\n")
+	g.Printf("var _ = swag.ConvertInt32\n")
+	g.Printf("var _ = ioutil.ReadAll\n\n")
 
 	// TODO: Make this not be a global variable
 	g.Printf("var controller Controller\n\n")
-
+	g.Printf(swagger.BaseStringToTypeCode())
 	g.Printf(jsonMarshalString)
 
 	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
