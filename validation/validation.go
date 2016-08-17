@@ -1,4 +1,4 @@
-package main
+package validation
 
 import (
 	"fmt"
@@ -25,16 +25,17 @@ func validateOp(s *spec.Operation) error {
 		fmt.Errorf("Security not supported in swagger operations")
 	}
 
-	// TODO: A test for this?
-	/*
-		for path, pathObj := range paths {
-		for method, op := range pathObj {
-	*/
 	if !alphaNumRegex.MatchString(s.ID) {
 		// We need this because we build function / struct names with the operationID.
 		// We could strip out the special characters, but it seems clearly to just enforce
 		// this.
 		return fmt.Errorf("OperationIDs must be alphanumeric and start with a letter")
+	}
+
+	for _, param := range s.Parameters {
+		if param.In == "path" && !param.Required {
+			return fmt.Errorf("Path parameters must be required")
+		}
 	}
 
 	return nil
@@ -44,7 +45,7 @@ func validateOp(s *spec.Operation) error {
 // we don't support. Note that this isn't a comprehensive check for all things
 // we don't support, so this may not return an error, but the Swagger file might
 // have values we don't support
-func validate(s spec.Swagger) error {
+func Validate(s spec.Swagger) error {
 	if s.Swagger != "2.0" {
 		return fmt.Errorf("Unsupported Swagger version %s", s.Swagger)
 	}
@@ -96,4 +97,39 @@ func validate(s spec.Swagger) error {
 	}
 
 	return nil
+}
+
+func sliceContains(slice []string, key string) bool {
+	for _, val := range slice {
+		if val == key {
+			return true
+		}
+	}
+	return false
+}
+
+func pathItemOperations(item spec.PathItem) map[string]*spec.Operation {
+	ops := make(map[string]*spec.Operation)
+	if item.Get != nil {
+		ops["GET"] = item.Get
+	}
+	if item.Put != nil {
+		ops["PUT"] = item.Put
+	}
+	if item.Post != nil {
+		ops["POST"] = item.Post
+	}
+	if item.Delete != nil {
+		ops["DELETE"] = item.Delete
+	}
+	if item.Options != nil {
+		ops["OPTIONS"] = item.Options
+	}
+	if item.Head != nil {
+		ops["HEAD"] = item.Head
+	}
+	if item.Patch != nil {
+		ops["PATCH"] = item.Patch
+	}
+	return ops
 }
