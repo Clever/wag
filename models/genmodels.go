@@ -136,8 +136,8 @@ func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
 
 // errCheck returns an if err := ifCondition; err != nil { return err } function
 func errCheck(ifCondition string) string {
-	return fmt.Sprintf(`
-	if err := %s; err != nil {
+	return fmt.Sprintf(
+		`	if err := %s; err != nil {
 		return err
 	}
 `, ifCondition)
