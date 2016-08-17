@@ -171,6 +171,9 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 			}
 			g.Printf("\t\tvar %sTmp %s\n", param.Name, typeName)
 			g.Printf("\t\t%sTmp, err = %s\n", param.Name, typeCode)
+			g.Printf("\t\tif err != nil {\n")
+			g.Printf("\t\t\treturn nil, err\n")
+			g.Printf("\t\t}\n")
 
 			if param.Required {
 				g.Printf("\t\tinput.%s = %sTmp\n\n", capParamName, param.Name)
@@ -188,21 +191,24 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 			if err != nil {
 				return err
 			}
-			// Initial the pointer in the object
-			g.Printf("\tinput.%s = &models.%s{}\n", capParamName, typeName)
-			g.Printf("\terr = json.NewDecoder(r.Body).Decode(input.%s)\n",
-				capParamName)
+
+			g.Printf("\tdata, err := ioutil.ReadAll(r.Body)\n")
+
+			if param.Required {
+				g.Printf("\tif len(data) == 0 {\n")
+				g.Printf("\t\treturn nil, errors.New(\"Parameter must be specified\")\n")
+				g.Printf("\t}\n")
+			}
+
+			g.Printf("\tif len(data) > 0 {")
+			// Initialize the pointer in the object
+			g.Printf("\t\tinput.%s = &models.%s{}\n", capParamName, typeName)
+			g.Printf("\t\tif err := json.NewDecoder(bytes.NewReader(data)).Decode(input.%s); err != nil {\n", capParamName)
+			g.Printf("\t\t\treturn nil, err\n")
+			g.Printf("\t\t}\n")
+			g.Printf("\t}\n")
 
 		}
-		// TODO: Figure out how to handle schemas here...
-		if param.Required || param.Schema != nil {
-			g.Printf("\tif err != nil {\n")
-		} else {
-			g.Printf("\tif err != nil && len(%sStr) != 0 {\n", param.Name)
-		}
-		// TODO: Make this an error of the right type
-		g.Printf("\t\treturn nil, err\n")
-		g.Printf("\t}\n")
 	}
 	g.Printf("\n")
 
@@ -218,11 +224,12 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 	g.Printf("package server\n\n")
 	g.Printf(swagger.ImportStatements([]string{"golang.org/x/net/context", "github.com/gorilla/mux",
 		"net/http", "strconv", "encoding/json", "strconv", packageName + "/models", "errors",
-		"github.com/go-openapi/strfmt", "github.com/go-openapi/swag"}))
+		"github.com/go-openapi/strfmt", "github.com/go-openapi/swag", "io/ioutil", "bytes"}))
 
 	g.Printf("var _ = strconv.ParseInt\n")
 	g.Printf("var _ = strfmt.Default\n")
-	g.Printf("var _ = swag.ConvertInt32\n\n")
+	g.Printf("var _ = swag.ConvertInt32\n")
+	g.Printf("var _ = ioutil.ReadAll\n\n")
 
 	// TODO: Make this not be a global variable
 	g.Printf("var controller Controller\n\n")

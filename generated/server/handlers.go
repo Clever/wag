@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"github.com/Clever/wag/generated/models"
@@ -8,6 +9,7 @@ import (
 	"github.com/go-openapi/swag"
 	"github.com/gorilla/mux"
 	"golang.org/x/net/context"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 )
@@ -15,6 +17,7 @@ import (
 var _ = strconv.ParseInt
 var _ = strfmt.Default
 var _ = swag.ConvertInt32
+var _ = ioutil.ReadAll
 
 var controller Controller
 
@@ -96,81 +99,81 @@ func NewGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 	if len(authorStr) != 0 {
 		var authorTmp string
 		authorTmp, err = authorStr, error(nil)
+		if err != nil {
+			return nil, err
+		}
 		input.Author = &authorTmp
 
-	}
-	if err != nil && len(authorStr) != 0 {
-		return nil, err
 	}
 	availableStr := r.URL.Query().Get("available")
 	if len(availableStr) != 0 {
 		var availableTmp bool
 		availableTmp, err = strconv.ParseBool(availableStr)
+		if err != nil {
+			return nil, err
+		}
 		input.Available = &availableTmp
 
-	}
-	if err != nil && len(availableStr) != 0 {
-		return nil, err
 	}
 	stateStr := r.URL.Query().Get("state")
 	if len(stateStr) != 0 {
 		var stateTmp string
 		stateTmp, err = stateStr, error(nil)
+		if err != nil {
+			return nil, err
+		}
 		input.State = &stateTmp
 
-	}
-	if err != nil && len(stateStr) != 0 {
-		return nil, err
 	}
 	publishedStr := r.URL.Query().Get("published")
 	if len(publishedStr) != 0 {
 		var publishedTmp strfmt.Date
 		publishedTmp, err = ConvertDate(publishedStr)
+		if err != nil {
+			return nil, err
+		}
 		input.Published = &publishedTmp
 
-	}
-	if err != nil && len(publishedStr) != 0 {
-		return nil, err
 	}
 	completedStr := r.URL.Query().Get("completed")
 	if len(completedStr) != 0 {
 		var completedTmp strfmt.DateTime
 		completedTmp, err = ConvertDateTime(completedStr)
+		if err != nil {
+			return nil, err
+		}
 		input.Completed = &completedTmp
 
-	}
-	if err != nil && len(completedStr) != 0 {
-		return nil, err
 	}
 	maxPagesStr := r.URL.Query().Get("maxPages")
 	if len(maxPagesStr) != 0 {
 		var maxPagesTmp float64
 		maxPagesTmp, err = swag.ConvertFloat64(maxPagesStr)
+		if err != nil {
+			return nil, err
+		}
 		input.MaxPages = &maxPagesTmp
 
-	}
-	if err != nil && len(maxPagesStr) != 0 {
-		return nil, err
 	}
 	minPagesStr := r.URL.Query().Get("minPages")
 	if len(minPagesStr) != 0 {
 		var minPagesTmp int32
 		minPagesTmp, err = swag.ConvertInt32(minPagesStr)
+		if err != nil {
+			return nil, err
+		}
 		input.MinPages = &minPagesTmp
 
-	}
-	if err != nil && len(minPagesStr) != 0 {
-		return nil, err
 	}
 	pagesToTimeStr := r.URL.Query().Get("pagesToTime")
 	if len(pagesToTimeStr) != 0 {
 		var pagesToTimeTmp float32
 		pagesToTimeTmp, err = swag.ConvertFloat32(pagesToTimeStr)
+		if err != nil {
+			return nil, err
+		}
 		input.PagesToTime = &pagesToTimeTmp
 
-	}
-	if err != nil && len(pagesToTimeStr) != 0 {
-		return nil, err
 	}
 
 	return &input, nil
@@ -222,31 +225,31 @@ func NewGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 	if len(bookIDStr) != 0 {
 		var bookIDTmp int64
 		bookIDTmp, err = swag.ConvertInt64(bookIDStr)
+		if err != nil {
+			return nil, err
+		}
 		input.BookID = bookIDTmp
 
-	}
-	if err != nil {
-		return nil, err
 	}
 	authorizationStr := r.Header.Get("authorization")
 	if len(authorizationStr) != 0 {
 		var authorizationTmp string
 		authorizationTmp, err = authorizationStr, error(nil)
+		if err != nil {
+			return nil, err
+		}
 		input.Authorization = &authorizationTmp
 
-	}
-	if err != nil && len(authorizationStr) != 0 {
-		return nil, err
 	}
 	randomBytesStr := r.URL.Query().Get("randomBytes")
 	if len(randomBytesStr) != 0 {
 		var randomBytesTmp strfmt.Base64
 		randomBytesTmp, err = ConvertBase64(randomBytesStr)
+		if err != nil {
+			return nil, err
+		}
 		input.RandomBytes = &randomBytesTmp
 
-	}
-	if err != nil && len(randomBytesStr) != 0 {
-		return nil, err
 	}
 
 	return &input, nil
@@ -291,10 +294,12 @@ func NewCreateBookInput(r *http.Request) (*models.CreateBookInput, error) {
 	var err error
 	_ = err
 
-	input.NewBook = &models.Book{}
-	err = json.NewDecoder(r.Body).Decode(input.NewBook)
-	if err != nil {
-		return nil, err
+	data, err := ioutil.ReadAll(r.Body)
+	if len(data) > 0 {
+		input.NewBook = &models.Book{}
+		if err := json.NewDecoder(bytes.NewReader(data)).Decode(input.NewBook); err != nil {
+			return nil, err
+		}
 	}
 
 	return &input, nil
