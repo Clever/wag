@@ -106,6 +106,10 @@ func NewGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 
 	}
 	availableStr := r.URL.Query().Get("available")
+	if len(availableStr) == 0 {
+		// Use the default value
+		availableStr = "true"
+	}
 	if len(availableStr) != 0 {
 		var availableTmp bool
 		availableTmp, err = strconv.ParseBool(availableStr)
@@ -116,6 +120,10 @@ func NewGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 
 	}
 	stateStr := r.URL.Query().Get("state")
+	if len(stateStr) == 0 {
+		// Use the default value
+		stateStr = "finished"
+	}
 	if len(stateStr) != 0 {
 		var stateTmp string
 		stateTmp, err = stateStr, error(nil)
@@ -146,6 +154,10 @@ func NewGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 
 	}
 	maxPagesStr := r.URL.Query().Get("maxPages")
+	if len(maxPagesStr) == 0 {
+		// Use the default value
+		maxPagesStr = "5.005E+02"
+	}
 	if len(maxPagesStr) != 0 {
 		var maxPagesTmp float64
 		maxPagesTmp, err = swag.ConvertFloat64(maxPagesStr)
@@ -156,6 +168,10 @@ func NewGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 
 	}
 	minPagesStr := r.URL.Query().Get("minPages")
+	if len(minPagesStr) == 0 {
+		// Use the default value
+		minPagesStr = "5"
+	}
 	if len(minPagesStr) != 0 {
 		var minPagesTmp int32
 		minPagesTmp, err = swag.ConvertInt32(minPagesStr)

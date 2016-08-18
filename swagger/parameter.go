@@ -2,6 +2,7 @@ package swagger
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/go-openapi/spec"
@@ -235,4 +236,23 @@ func accessString(param spec.Parameter) string {
 		pointer = "*"
 	}
 	return fmt.Sprintf("%si.%s", pointer, Capitalize(param.Name))
+}
+
+// DefaultAsString returns the default value as a string. We convert it into a string so it's easier to insert
+// into the generated code and it doesn't make this logic really any different.
+func DefaultAsString(param spec.Parameter) string {
+	switch param.Default.(type) {
+	case string:
+		return param.Default.(string)
+	case float64:
+		if param.Type == "integer" {
+			return strconv.FormatInt(int64(param.Default.(float64)), 10)
+		} else {
+			return strconv.FormatFloat(param.Default.(float64), 'E', -1, 64)
+		}
+	case bool:
+		return strconv.FormatBool(param.Default.(bool))
+	default:
+		panic(fmt.Errorf("Unknown param type: %T", param))
+	}
 }

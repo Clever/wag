@@ -80,6 +80,41 @@ func TestClientSideError(t *testing.T) {
 	assert.True(t, ok)
 }
 
+type DefaultTest struct {
+	lastState     string
+	lastAvailable bool
+	lastMaxPages  float64
+	lastMinPages  int32
+}
+
+func (d *DefaultTest) GetBooks(ctx context.Context, input *models.GetBooksInput) (models.GetBooksOutput, error) {
+	d.lastState = *input.State
+	d.lastAvailable = *input.Available
+	d.lastMaxPages = *input.MaxPages
+	d.lastMinPages = *input.MinPages
+	return &models.GetBooks200Output{}, nil
+}
+func (d *DefaultTest) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
+	return nil, nil
+}
+func (d *DefaultTest) CreateBook(ctx context.Context, input *models.CreateBookInput) (models.CreateBookOutput, error) {
+	return nil, nil
+}
+
+func TestDefaultValue(t *testing.T) {
+	d := DefaultTest{}
+	s := server.New(&d, ":8080")
+	testServer := httptest.NewServer(testContextMiddleware(s.Handler))
+	c := client.New(testServer.URL)
+
+	_, err := c.GetBooks(context.Background(), &models.GetBooksInput{})
+	assert.NoError(t, err)
+	assert.Equal(t, "finished", d.lastState)
+	assert.True(t, d.lastAvailable)
+	assert.Equal(t, 500.5, d.lastMaxPages)
+	assert.Equal(t, int32(5), d.lastMinPages)
+}
+
 type MiddlewareContextTest struct {
 	foundKey string
 }

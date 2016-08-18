@@ -17,9 +17,7 @@ func Generate(packageName string, swagger spec.Swagger) error {
 	if err := generateRouter(packageName, swagger.BasePath, swagger.Paths); err != nil {
 		return err
 	}
-
-	// TODO: Is this really the way I want to do this???
-	if err := generateContextsAndControllers(packageName, swagger.Paths); err != nil {
+	if err := generateInterface(packageName, swagger.Paths); err != nil {
 		return err
 	}
 	if err := generateHandlers(packageName, swagger.Paths); err != nil {
@@ -103,7 +101,7 @@ var routerFunctionTemplate = `	r.Methods("{{.Method}}").Path("{{.Path}}").Handle
 	})
 `
 
-func generateContextsAndControllers(packageName string, paths *spec.Paths) error {
+func generateInterface(packageName string, paths *spec.Paths) error {
 	g := swagger.Generator{PackageName: packageName}
 	g.Printf("package server\n\n")
 	g.Printf(swagger.ImportStatements([]string{"golang.org/x/net/context", packageName + "/models"}))
@@ -152,6 +150,11 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 			if param.Required {
 				g.Printf("\tif len(%sStr) == 0{\n", param.Name)
 				g.Printf("\t\treturn nil, errors.New(\"Parameter must be specified\")\n")
+				g.Printf("\t}\n")
+			} else if param.Default != nil {
+				g.Printf("\tif len(%sStr) == 0 {\n", param.Name)
+				g.Printf("\t\t// Use the default value\n")
+				g.Printf("\t\t%sStr = \"%s\"\n", param.Name, swagger.DefaultAsString(param))
 				g.Printf("\t}\n")
 			}
 
