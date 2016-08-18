@@ -70,7 +70,10 @@ func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) (models.G
 	path = path + "?" + urlVals.Encode()
 
 	client := &http.Client{Transport: c.transport}
-	req, _ := http.NewRequest("GET", path, bytes.NewBuffer(body))
+	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
+	}
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "getBooks")
@@ -119,7 +122,10 @@ func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (mo
 	path = path + "?" + urlVals.Encode()
 
 	client := &http.Client{Transport: c.transport}
-	req, _ := http.NewRequest("GET", path, bytes.NewBuffer(body))
+	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
+	}
 	if i.Authorization != nil {
 		req.Header.Set("authorization", *i.Authorization)
 	}
@@ -175,11 +181,19 @@ func (c Client) CreateBook(ctx context.Context, i *models.CreateBookInput) (mode
 	path = path + "?" + urlVals.Encode()
 
 	if i.NewBook != nil {
-		body, _ = json.Marshal(i.NewBook)
 
+		var err error
+		body, err = json.Marshal(i.NewBook)
+		if err != nil {
+			return nil, err
+		}
 	}
+
 	client := &http.Client{Transport: c.transport}
-	req, _ := http.NewRequest("POST", path, bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", path, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
+	}
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "createBook")

@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-openapi/spec"
 
+	"github.com/Clever/wag/models"
 	"github.com/Clever/wag/swagger"
 )
 
@@ -124,8 +125,13 @@ func buildRequestCode(op *spec.Operation, method string) string {
 
 	for _, param := range op.Parameters {
 		if param.In == "body" {
-			// TODO: Handle errors here. Also, is this syntax quite right???
-			bodyMarshalCode := fmt.Sprintf("\tbody, _ = json.Marshal(i.%s)\n\n", swagger.Capitalize(param.Name))
+			bodyMarshalCode := fmt.Sprintf(`
+	var err error
+	body, err = json.Marshal(i.%s)
+	if err != nil {
+		return nil, err
+	}
+`, swagger.Capitalize(param.Name))
 			if param.Required {
 				buf.WriteString(fmt.Sprintf(bodyMarshalCode))
 			} else {
@@ -136,9 +142,13 @@ func buildRequestCode(op *spec.Operation, method string) string {
 		}
 	}
 
-	buf.WriteString(fmt.Sprintf("\tclient := &http.Client{Transport: c.transport}\n"))
-	// TODO: Handle the error
-	buf.WriteString(fmt.Sprintf("\treq, _ := http.NewRequest(\"%s\", path, bytes.NewBuffer(body))\n", strings.ToUpper(method)))
+	buf.WriteString(fmt.Sprintf(`
+	client := &http.Client{Transport: c.transport}
+	req, err := http.NewRequest("%s", path, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
+	}
+`, strings.ToUpper(method)))
 
 	for _, param := range op.Parameters {
 		if param.In == "header" {
@@ -166,11 +176,12 @@ func parseResponseCode(op *spec.Operation, capOpID string) string {
 
 	for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
 		response := op.Responses.StatusCodeResponses[statusCode]
+		outputName := "models." + models.OutputObjectName(op, statusCode)
 
 		buf.WriteString(fmt.Sprintf("\tcase %d:\n", statusCode))
 
 		if response.Schema == nil {
-			buf.WriteString(fmt.Sprintf("\t\tvar output models.%s%dOutput\n", capOpID, statusCode))
+			buf.WriteString(fmt.Sprintf("\t\tvar output %s\n", outputName))
 			if statusCode < 400 {
 				buf.WriteString(fmt.Sprintf("\t\treturn output, nil\n"))
 			} else {
@@ -178,11 +189,9 @@ func parseResponseCode(op *spec.Operation, capOpID string) string {
 			}
 		} else {
 			if statusCode < 400 {
-				// TODO: Factor out this common code...
-				outputName := fmt.Sprintf("models.%s%dOutput", capOpID, statusCode)
 				buf.WriteString(fmt.Sprintf(successResponse(outputName)))
 			} else {
-				buf.WriteString(fmt.Sprintf("\t\treturn nil, models.%s%dOutput{}\n", capOpID, statusCode))
+				buf.WriteString(fmt.Sprintf("\t\treturn nil, %s{}\n", outputName))
 			}
 		}
 	}

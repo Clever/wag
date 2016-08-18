@@ -191,7 +191,7 @@ func generateOutputs(packageName string, paths *spec.Paths) error {
 						"instead of defining your own")
 				}
 
-				outputName := fmt.Sprintf("%s%dOutput", capOpID, statusCode)
+				outputName := OutputObjectName(op, statusCode)
 				typeName, err := TypeFromSchema(response.Schema)
 				if err != nil {
 					return err
@@ -283,4 +283,9 @@ func TypeFromSchema(schema *spec.Schema) (string, error) {
 		}
 		return "[]" + ref[len("#/definitions/"):], nil
 	}
+}
+
+// OutputObjectName returns the name of an output object. For example, GetBookByID200Output
+func OutputObjectName(op *spec.Operation, statusCode int) string {
+	return fmt.Sprintf("%s%dOutput", swagger.Capitalize(op.ID), statusCode)
 }
