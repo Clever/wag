@@ -86,22 +86,24 @@ func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) (models.G
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
 		return output, nil
-	case 400:
 
+	case 400:
 		var output models.DefaultBadRequest
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
 		return nil, output
-	case 500:
 
+	case 500:
 		var output models.DefaultInternalError
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
 		return nil, output
+
 	default:
 		return nil, models.DefaultInternalError{Msg: "Unknown response"}
+
 	}
 }
 
@@ -144,22 +146,24 @@ func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (mo
 		return nil, output
 	case 404:
 		return nil, models.GetBookByID404Output{}
-	case 400:
 
+	case 400:
 		var output models.DefaultBadRequest
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
 		return nil, output
-	case 500:
 
+	case 500:
 		var output models.DefaultInternalError
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
 		return nil, output
+
 	default:
 		return nil, models.DefaultInternalError{Msg: "Unknown response"}
+
 	}
 }
 
@@ -191,21 +195,23 @@ func (c Client) CreateBook(ctx context.Context, i *models.CreateBookInput) (mode
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
 		return output, nil
-	case 400:
 
+	case 400:
 		var output models.DefaultBadRequest
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
 		return nil, output
-	case 500:
 
+	case 500:
 		var output models.DefaultInternalError
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
 		return nil, output
+
 	default:
 		return nil, models.DefaultInternalError{Msg: "Unknown response"}
+
 	}
 }
