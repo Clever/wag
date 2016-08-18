@@ -13,16 +13,16 @@ var alphaNumRegex = regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9]*$")
 // Validate checks if the swagger operation has any fields we don't support
 func validateOp(s *spec.Operation) error {
 	if len(s.Consumes) != 0 {
-		fmt.Errorf("Consumes not supported in swagger operations")
+		return fmt.Errorf("Consumes not supported in swagger operations")
 	}
 	if len(s.Produces) != 0 {
-		fmt.Errorf("Produces not supported in swagger operations")
+		return fmt.Errorf("Produces not supported in swagger operations")
 	}
 	if len(s.Schemes) != 0 {
-		fmt.Errorf("Schemes not supported in swagger operations")
+		return fmt.Errorf("Schemes not supported in swagger operations")
 	}
 	if len(s.Security) != 0 {
-		fmt.Errorf("Security not supported in swagger operations")
+		return fmt.Errorf("Security not supported in swagger operations")
 	}
 
 	if !alphaNumRegex.MatchString(s.ID) {
@@ -51,7 +51,7 @@ func Validate(s spec.Swagger) error {
 	}
 
 	if len(s.Schemes) != 1 || s.Schemes[0] != "http" {
-		return fmt.Errorf("Schemes only supports 'http', not %s")
+		return fmt.Errorf("Schemes only supports 'http'")
 	}
 
 	if len(s.Consumes) != 1 || s.Consumes[0] != "application/json" {
@@ -82,13 +82,14 @@ func Validate(s spec.Swagger) error {
 		return fmt.Errorf("Security field not supported")
 	}
 
-	// Validate paths
-	for fieldName, pathItem := range s.Paths.Paths {
-		// Note that $ref and parameters are not valid as of now
-		if !sliceContains([]string{"get", "put", "post", "delete", "options", "head", "patch"}, fieldName) {
-			fmt.Errorf("Invalid path field name: %s", fieldName)
+	for _, pathItem := range s.Paths.Paths {
+		if pathItem.Ref.String() != "" {
+			return fmt.Errorf("Paths cannot have $ref fields")
 		}
-
+		if len(pathItem.Parameters) != 0 {
+			return fmt.Errorf("Parameters cannot be defined for an entire path. " +
+				"They must be defined on the individual method level.")
+		}
 		for _, op := range pathItemOperations(pathItem) {
 			if err := validateOp(op); err != nil {
 				return err
