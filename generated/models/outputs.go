@@ -76,7 +76,9 @@ func (o GetBookByID401Output) GetBookByIDData() interface{} {
 }
 
 func (o GetBookByID401Output) Error() string {
-	return "Status Code: " + "401"
+	// We implement this to satisfy the error interface. This has a generic error message.
+	// If the user wants a more details error message they should put it in the output type
+	return "Status Code: 401"
 }
 
 func (o GetBookByID401Output) GetBookByIDStatusCode() int {
@@ -90,7 +92,9 @@ func (o GetBookByID404Output) GetBookByIDData() interface{} {
 }
 
 func (o GetBookByID404Output) Error() string {
-	return "Status Code: " + "404"
+	// We implement this to satisfy the error interface. This has a generic error message.
+	// If the user wants a more details error message they should put it in the output type
+	return "Status Code: 404"
 }
 
 func (o GetBookByID404Output) GetBookByIDStatusCode() int {
