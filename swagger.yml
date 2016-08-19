@@ -2,7 +2,6 @@ swagger: '2.0'
 info:
   title: Swagger Test
   description: Testing Swagger Codegen
-  # TODO: Understand this...
   version: 0.1.0
 basePath: /v1
 schemes:
@@ -80,6 +79,7 @@ paths:
         - name: available
           in: query
           type: boolean
+          default: true
         - name: state
           in: query
           type: string
@@ -87,6 +87,7 @@ paths:
           enum:
             - finished
             - inprogress
+          default: finished
         - name: published
           in: query
           type: string
@@ -100,13 +101,15 @@ paths:
           # Probably makes more sense for this to be an integer, but I couldn't figure out
           # a good example for books that really would need a float
           type: number
-          maximum: 1
+          maximum: 1000
           minimum: -5
           multipleOf: 0.5
+          default: 500.5
         - name: minPages
           in: query
           type: integer
           format: int32
+          default: 5
         - name: pagesToTime
           in: query
           type: number

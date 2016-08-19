@@ -41,7 +41,7 @@ func (i GetBooksInput) Validate() error {
 		}
 	}
 	if i.MaxPages != nil {
-		if err := validate.Maximum("maxPages", "query", float64(*i.MaxPages), 1.000000, false); err != nil {
+		if err := validate.Maximum("maxPages", "query", float64(*i.MaxPages), 1000.000000, false); err != nil {
 			return err
 		}
 	}
