@@ -1,6 +1,6 @@
 include golang.mk
 .DEFAULT_GOAL := test # override default goal set in library makefile
-.PHONY: test build hardcoded.go
+.PHONY: test build
 PKG := github.com/Clever/wag
 PKGS := $(shell go list ./... | grep -v /vendor)
 $(eval $(call golang-version-check,1.7))
@@ -24,9 +24,7 @@ $(GOPATH)/bin/go-bindata:
 hardcoded.go: $(GOPATH)/bin/go-bindata hardcoded/*
 	$(GOPATH)/bin/go-bindata -o hardcoded.go hardcoded/
 	# gofmt doesn't like what go-bindata creates
-	gofmt hardcoded.go > temp
-	cp temp hardcoded.go
-	rm temp
+	gofmt -w hardcoded.go
 
 vendor: golang-godep-vendor-deps
 	$(call golang-godep-vendor,$(PKGS))
