@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"golang.org/x/net/context"
 	"golang.org/x/net/context/ctxhttp"
-)
-import "golang.org/x/net/context"
 
-import opentracing "github.com/opentracing/opentracing-go"
+	opentracing "github.com/opentracing/opentracing-go"
+)
 
 // doer is an interface for "doing" http requests possibly with wrapping
 type doer interface {

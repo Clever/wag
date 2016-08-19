@@ -16,42 +16,8 @@ import (
 	"github.com/Clever/wag/models"
 	"github.com/Clever/wag/server"
 	"github.com/Clever/wag/swagger"
+	"github.com/Clever/wag/validation"
 )
-
-func pathItemOperations(item spec.PathItem) map[string]*spec.Operation {
-	ops := make(map[string]*spec.Operation)
-	if item.Get != nil {
-		ops["GET"] = item.Get
-	}
-	if item.Put != nil {
-		ops["PUT"] = item.Put
-	}
-	if item.Post != nil {
-		ops["POST"] = item.Post
-	}
-	if item.Delete != nil {
-		ops["DELETE"] = item.Delete
-	}
-	if item.Options != nil {
-		ops["OPTIONS"] = item.Options
-	}
-	if item.Head != nil {
-		ops["HEAD"] = item.Head
-	}
-	if item.Patch != nil {
-		ops["PATCH"] = item.Patch
-	}
-	return ops
-}
-
-func sliceContains(slice []string, key string) bool {
-	for _, val := range slice {
-		if val == key {
-			return true
-		}
-	}
-	return false
-}
 
 func capitalize(input string) string {
 	return strings.ToUpper(input[0:1]) + input[1:]
@@ -73,7 +39,7 @@ func main() {
 	}
 	swaggerSpec := *doc.Spec()
 
-	if err := validate(swaggerSpec); err != nil {
+	if err := validation.Validate(swaggerSpec); err != nil {
 		log.Fatalf("Swagger file not valid: %s", err)
 	}
 

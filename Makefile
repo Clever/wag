@@ -9,17 +9,22 @@ build: hardcoded.go
 	# disable CGO and link completely statically (this is to enable us to run in containers that don't use glibc)
 	CGO_ENABLED=0 go build -installsuffix cgo -o bin/wag
 
-test: build
+test: build generate $(PKGS)
+
+generate: hardcoded.go
 	rm -rf generated
 	./bin/wag -file swagger.yml -package $(PKG)/generated
-	cd test && go test
 
+$(PKGS): golang-test-all-deps
+	$(call golang-test-all,$@)
 
 $(GOPATH)/bin/go-bindata:
 	go get -u github.com/jteeuwen/go-bindata/...
 
 hardcoded.go: $(GOPATH)/bin/go-bindata hardcoded/*
 	$(GOPATH)/bin/go-bindata -o hardcoded.go hardcoded/
+	# gofmt doesn't like what go-bindata creates
+	gofmt -w hardcoded.go
 
 vendor: golang-godep-vendor-deps
 	$(call golang-godep-vendor,$(PKGS))
