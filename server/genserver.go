@@ -105,6 +105,7 @@ func generateInterface(packageName string, paths *spec.Paths) error {
 	g := swagger.Generator{PackageName: packageName}
 	g.Printf("package server\n\n")
 	g.Printf(swagger.ImportStatements([]string{"golang.org/x/net/context", packageName + "/models"}))
+	g.Printf("//go:generate $GOPATH/bin/mockgen -source=$GOFILE -destination=mock_controller.go -package=server\n\n")
 	g.Printf("type Controller interface {\n")
 
 	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
