@@ -5,15 +5,21 @@ PKG := github.com/Clever/wag
 PKGS := $(shell go list ./... | grep -v /vendor)
 $(eval $(call golang-version-check,1.7))
 
+MOCKGEN := $(GOPATH)/bin/mockgen
+.PHONY: $(MOCKGEN)
+$(MOCKGEN):
+	go get -u github.com/golang/mock/mockgen
+
 build: hardcoded.go
 	# disable CGO and link completely statically (this is to enable us to run in containers that don't use glibc)
 	CGO_ENABLED=0 go build -installsuffix cgo -o bin/wag
 
 test: build generate $(PKGS)
 
-generate: hardcoded.go
+generate: hardcoded.go $(MOCKGEN)
 	rm -rf generated
 	./bin/wag -file swagger.yml -package $(PKG)/generated
+	go generate $(PKG)/generated...
 
 $(PKGS): golang-test-all-deps
 	$(call golang-test-all,$@)
