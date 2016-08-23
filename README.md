@@ -15,6 +15,9 @@ SWAGGER_CLIENT_NPM_PACKAGE_NAME := @clever/<servicename>
 SWAGGER_CLIENT_NPM_PACKAGE_VERSION := 0.1.0
 SWAGGER_CLIENT_NPM_PACKAGE_MODULE_NAME := <servicename>
 
+validate: swagger-validate-deps
+	$(call swagger-validate,$(SWAGGER_CONFIG))
+
 generate: validate swagger-generate-go-deps swagger-generate-javascript-client-deps
 	$(call swagger-generate-go,$(SWAGGER_CONFIG),$(PKG),$(PKG)/generated)
 	$(call swagger-generate-javascript-client,$(SWAGGER_CONFIG),$(SWAGGER_CLIENT_NPM_PACKAGE_NAME),$(SWAGGER_CLIENT_NPM_PACKAGE_VERSION),$(SWAGGER_CLIENT_NPM_PACKAGE_MODULE_NAME))
