@@ -54,11 +54,11 @@ func Validate(s spec.Swagger) error {
 		return fmt.Errorf("Schemes only supports 'http'")
 	}
 
-	if len(s.Consumes) != 1 || s.Consumes[0] != "application/json" {
+	if len(s.Consumes) > 1 || (len(s.Produces) == 0 && s.Consumes[0] != "application/json") {
 		return fmt.Errorf("Consumes only supports 'application/json'")
 	}
 
-	if len(s.Produces) != 1 || s.Produces[0] != "application/json" {
+	if len(s.Produces) > 1 || (len(s.Produces) == 0 && s.Produces[0] != "application/json") {
 		return fmt.Errorf("Produces only supports 'application/json'")
 	}
 
