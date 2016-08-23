@@ -1,6 +1,7 @@
 package models
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 
@@ -153,75 +154,127 @@ func generateOutputs(packageName string, paths *spec.Paths) error {
 		for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
 			op := pathItemOps[opKey]
 			capOpID := swagger.Capitalize(op.ID)
+
 			// We classify response keys into three types:
 			// 1. 200-399 - these are "success" responses and implement the Output interface
 			// 	defined above
 			// 2. 400-599 - these are "failure" responses and implement the error interface
 			// 3. Default - this is defined as a 500
-
-			// Define the success interface
-			g.Printf("type %sOutput interface {\n", capOpID)
-			g.Printf("\t%sStatus() int\n", capOpID)
-			g.Printf("\t// Data is the underlying model object. We know it is json serializable\n")
-			g.Printf("\t%sData() interface{}\n", capOpID)
-			g.Printf("}\n\n")
-
-			// Define the error interface
-			g.Printf("type %sError interface {\n", capOpID)
-			g.Printf("\terror // Extend the error interface\n")
-			g.Printf("\t%sStatusCode() int\n", capOpID)
-			g.Printf("}\n\n")
-
-			for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
-				response := op.Responses.StatusCodeResponses[statusCode]
-
-				if statusCode < 200 || statusCode > 599 {
-					// TODO: Write a test for this...
-					return fmt.Errorf("Response map key must be an integer between 200 and 599 or "+
-						"the string 'default'. Was %d", statusCode)
-				}
-				if statusCode == 400 {
-					return fmt.Errorf("Use the pre-defined default 400 response 'DefaultBadRequest' " +
-						"instead of defining your own")
-				} else if statusCode == 500 {
-					return fmt.Errorf("Use the pre-defined default 500 response `DefaultInternalError` " +
-						"instead of defining your own")
-				}
-
-				outputName := OutputObjectName(op, statusCode)
-				typeName, err := TypeFromSchema(response.Schema)
-				if err != nil {
-					return err
-				}
-
-				g.Printf("type %s %s\n\n", outputName, typeName)
-
-				g.Printf("func (o %s) %sData() interface{} {\n", outputName, capOpID)
-				g.Printf("\treturn o\n")
-				g.Printf("}\n\n")
-
-				if statusCode < 400 {
-
-					g.Printf("func (o %s) %sStatus() int {\n", outputName, capOpID)
-					g.Printf("\treturn %d\n", statusCode)
-					g.Printf("}\n\n")
-
-				} else {
-
-					g.Printf("func (o %s) Error() string {\n", outputName)
-					g.Printf("\t// We implement this to satisfy the error interface. This has a generic error message.\n")
-					g.Printf("\t// If the user wants a more details error message they should put it in the output type\n")
-					g.Printf("\treturn \"Status Code: %d\"\n", statusCode)
-					g.Printf("}\n\n")
-
-					g.Printf("func (o %s) %sStatusCode() int {\n", outputName, capOpID)
-					g.Printf("\treturn %d\n", statusCode)
-					g.Printf("}\n\n")
-				}
+			if err := validateStatusCodes(op.Responses.StatusCodeResponses); err != nil {
+				return err
 			}
+			successTypes, err := generateSuccessTypes(capOpID, op.Responses.StatusCodeResponses)
+			if err != nil {
+				return err
+			}
+			g.Printf(successTypes)
+			errorTypes, err := generateErrorTypes(capOpID, op.Responses.StatusCodeResponses)
+			if err != nil {
+				return err
+			}
+			g.Printf(errorTypes)
 		}
 	}
 	return g.WriteFile("models/outputs.go")
+}
+
+func validateStatusCodes(responses map[int]spec.Response) error {
+	for _, statusCode := range swagger.SortedStatusCodeKeys(responses) {
+		if statusCode < 200 || statusCode > 599 {
+			// TODO: Write a test for this...
+			return fmt.Errorf("Response map key must be an integer between 200 and 599 or "+
+				"the string 'default'. Was %d", statusCode)
+		}
+		if statusCode == 400 {
+			return fmt.Errorf("Use the pre-defined default 400 response 'DefaultBadRequest' " +
+				"instead of defining your own")
+		} else if statusCode == 500 {
+			return fmt.Errorf("Use the pre-defined default 500 response `DefaultInternalError` " +
+				"instead of defining your own")
+		}
+	}
+	return nil
+}
+
+func generateSuccessTypes(capOpID string, responses map[int]spec.Response) (string, error) {
+	var buf bytes.Buffer
+	buf.WriteString(fmt.Sprintf("type %sOutput interface {\n", capOpID))
+	buf.WriteString(fmt.Sprintf("\t%sStatus() int\n", capOpID))
+	buf.WriteString(fmt.Sprintf("\t// Data is the underlying model object. We know it is json serializable\n"))
+	buf.WriteString(fmt.Sprintf("\t%sData() interface{}\n", capOpID))
+	buf.WriteString(fmt.Sprintf("}\n\n"))
+
+	successStatusCodes := make([]int, 0)
+	for _, statusCode := range swagger.SortedStatusCodeKeys(responses) {
+		if statusCode >= 400 {
+			continue
+		}
+		successStatusCodes = append(successStatusCodes, statusCode)
+	}
+
+	// We don't need to generate any success types if there is one or less success responses. In that
+	// case we can just use the raw type
+	if len(successStatusCodes) < 2 {
+		return "", nil
+	}
+
+	for _, statusCode := range successStatusCodes {
+		response := responses[statusCode]
+		outputName := fmt.Sprintf("%s%dOutput", capOpID, statusCode)
+		typeName, err := TypeFromSchema(response.Schema)
+		if err != nil {
+			return "", err
+		}
+		buf.WriteString(fmt.Sprintf("type %s %s\n\n", outputName, typeName))
+		buf.WriteString(fmt.Sprintf("func (o %s) %sData() interface{} {\n", outputName, capOpID))
+		buf.WriteString(fmt.Sprintf("\treturn o\n"))
+		buf.WriteString(fmt.Sprintf("}\n\n"))
+
+		// TODO: Do we really want to have that as part of the interface?
+		buf.WriteString(fmt.Sprintf("func (o %s) %sStatus() int {\n", outputName, capOpID))
+		// TODO: Use the right status code...
+		buf.WriteString(fmt.Sprintf("\treturn %d\n", statusCode))
+		buf.WriteString(fmt.Sprintf("}\n\n"))
+	}
+	return buf.String(), nil
+}
+
+func generateErrorTypes(capOpID string, responses map[int]spec.Response) (string, error) {
+	var buf bytes.Buffer
+	buf.WriteString(fmt.Sprintf("type %sError interface {\n", capOpID))
+	buf.WriteString(fmt.Sprintf("\terror // Extend the error interface\n"))
+	buf.WriteString(fmt.Sprintf("\t%sStatusCode() int\n", capOpID))
+	buf.WriteString(fmt.Sprintf("}\n\n"))
+
+	for _, statusCode := range swagger.SortedStatusCodeKeys(responses) {
+		if statusCode < 400 {
+			continue
+		}
+		response := responses[statusCode]
+
+		outputName := fmt.Sprintf("%s%dOutput", capOpID, statusCode)
+		typeName, err := TypeFromSchema(response.Schema)
+		if err != nil {
+			return "", err
+		}
+
+		buf.WriteString(fmt.Sprintf("type %s %s\n\n", outputName, typeName))
+
+		buf.WriteString(fmt.Sprintf("func (o %s) %sData() interface{} {\n", outputName, capOpID))
+		buf.WriteString(fmt.Sprintf("\treturn o\n"))
+		buf.WriteString(fmt.Sprintf("}\n\n"))
+
+		buf.WriteString(fmt.Sprintf("func (o %s) Error() string {\n", outputName))
+		buf.WriteString(fmt.Sprintf("\t// We implement this to satisfy the error interface. This has a generic error message.\n"))
+		buf.WriteString(fmt.Sprintf("\t// If the user wants a more details error message they should put it in the output type\n"))
+		buf.WriteString(fmt.Sprintf("\treturn \"Status Code: %d\"\n", statusCode))
+		buf.WriteString(fmt.Sprintf("}\n\n"))
+
+		buf.WriteString(fmt.Sprintf("func (o %s) %sStatusCode() int {\n", outputName, capOpID))
+		buf.WriteString(fmt.Sprintf("\treturn %d\n", statusCode))
+		buf.WriteString(fmt.Sprintf("}\n\n"))
+	}
+	return buf.String(), nil
 }
 
 // defaultOutputTypes returns the string defining the default output type
