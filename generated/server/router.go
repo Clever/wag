@@ -1,5 +1,7 @@
 package server
 
+// Code auto-generated. Do not edit.
+
 import (
 	"net/http"
 	"time"
@@ -21,21 +23,25 @@ func (s Server) Serve() error {
 	return graceful.RunWithErr(s.addr, 30*time.Second, s.Handler)
 }
 
+type handler struct {
+	Controller
+}
+
 func New(c Controller, addr string) Server {
-	controller = c // TODO: get rid of global variable?
 	r := mux.NewRouter()
+	h := handler{Controller: c}
 
 	r.Methods("GET").Path("/v1/books").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		GetBooksHandler(r.Context(), w, r)
+		h.GetBooksHandler(r.Context(), w, r)
 	})
 
 	r.Methods("GET").Path("/v1/books/{bookID}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		GetBookByIDHandler(r.Context(), w, r)
+		h.GetBookByIDHandler(r.Context(), w, r)
 	})
 
 	r.Methods("POST").Path("/v1/books/{bookID}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		CreateBookHandler(r.Context(), w, r)
+		h.CreateBookHandler(r.Context(), w, r)
 	})
-	handler := withMiddleware(r)
+	handler := withMiddleware("Swagger Test", r)
 	return Server{Handler: handler, addr: addr}
 }

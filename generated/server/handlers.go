@@ -20,8 +20,6 @@ var _ = swag.ConvertInt32
 var _ = errors.New
 var _ = ioutil.ReadAll
 
-var controller Controller
-
 var formats = strfmt.Default
 var _ = formats
 
@@ -57,7 +55,7 @@ func jsonMarshalNoError(i interface{}) string {
 	}
 	return string(bytes)
 }
-func GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	input, err := NewGetBooksInput(r)
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
@@ -70,7 +68,7 @@ func GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	resp, err := controller.GetBooks(ctx, input)
+	resp, err := h.GetBooks(ctx, input)
 	if err != nil {
 		if respErr, ok := err.(models.GetBooksError); ok {
 			http.Error(w, respErr.Error(), respErr.GetBooksStatusCode())
@@ -196,7 +194,7 @@ func NewGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 	return &input, nil
 }
 
-func GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	input, err := NewGetBookByIDInput(r)
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
@@ -209,7 +207,7 @@ func GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	resp, err := controller.GetBookByID(ctx, input)
+	resp, err := h.GetBookByID(ctx, input)
 	if err != nil {
 		if respErr, ok := err.(models.GetBookByIDError); ok {
 			http.Error(w, respErr.Error(), respErr.GetBookByIDStatusCode())
@@ -272,7 +270,7 @@ func NewGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 	return &input, nil
 }
 
-func CreateBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	input, err := NewCreateBookInput(r)
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
@@ -285,7 +283,7 @@ func CreateBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	resp, err := controller.CreateBook(ctx, input)
+	resp, err := h.CreateBook(ctx, input)
 	if err != nil {
 		if respErr, ok := err.(models.CreateBookError); ok {
 			http.Error(w, respErr.Error(), respErr.CreateBookStatusCode())
