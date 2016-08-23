@@ -93,7 +93,7 @@ func ParamToType(param spec.Parameter) (string, error) {
 	default:
 		// Note. We don't support 'array' or 'file' types even though they're in the
 		// Swagger spec.
-		return "", fmt.Errorf("Unsupported param type")
+		return "", fmt.Errorf("Unsupported param type: \"%s\"", param.Type)
 	}
 	return typeName, nil
 }
