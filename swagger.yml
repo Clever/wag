@@ -73,9 +73,14 @@ paths:
       operationId: getBooks
       description: Returns a list of books
       parameters:
-        - name: author
+        - name: authors
           in: query
-          type: string
+          type: array
+          items:
+            type: string
+          maxItems: 2
+          minItems: 1
+          uniqueItems: true
         - name: available
           in: query
           type: boolean
