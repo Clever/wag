@@ -80,31 +80,33 @@ func TestClientSideError(t *testing.T) {
 	assert.True(t, ok)
 }
 
-type DefaultTest struct {
+type LastCallServer struct {
 	lastState     string
 	lastAvailable bool
 	lastMaxPages  float64
 	lastMinPages  int32
+	lastAuthors   []string
 }
 
-func (d *DefaultTest) GetBooks(ctx context.Context, input *models.GetBooksInput) (models.GetBooksOutput, error) {
+func (d *LastCallServer) GetBooks(ctx context.Context, input *models.GetBooksInput) (models.GetBooksOutput, error) {
 	d.lastState = *input.State
 	d.lastAvailable = *input.Available
 	d.lastMaxPages = *input.MaxPages
 	d.lastMinPages = *input.MinPages
+	d.lastAuthors = input.Authors
 	return &models.GetBooks200Output{}, nil
 }
-func (d *DefaultTest) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
+func (d *LastCallServer) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
 	return nil, nil
 }
-func (d *DefaultTest) CreateBook(ctx context.Context, input *models.CreateBookInput) (models.CreateBookOutput, error) {
+func (d *LastCallServer) CreateBook(ctx context.Context, input *models.CreateBookInput) (models.CreateBookOutput, error) {
 	return nil, nil
 }
 
 func TestDefaultValue(t *testing.T) {
-	d := DefaultTest{}
+	d := LastCallServer{}
 	s := server.New(&d, ":8080")
-	testServer := httptest.NewServer(testContextMiddleware(s.Handler))
+	testServer := httptest.NewServer(s.Handler)
 	c := client.New(testServer.URL)
 
 	_, err := c.GetBooks(context.Background(), &models.GetBooksInput{})
@@ -113,6 +115,20 @@ func TestDefaultValue(t *testing.T) {
 	assert.True(t, d.lastAvailable)
 	assert.Equal(t, 500.5, d.lastMaxPages)
 	assert.Equal(t, int32(5), d.lastMinPages)
+}
+
+func TestPassInArray(t *testing.T) {
+	d := LastCallServer{}
+	s := server.New(&d, ":8080")
+	testServer := httptest.NewServer(s.Handler)
+	c := client.New(testServer.URL)
+
+	_, err := c.GetBooks(context.Background(),
+		&models.GetBooksInput{Authors: []string{"author1", "author2"}})
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(d.lastAuthors))
+	assert.Equal(t, "author1", d.lastAuthors[0])
+	assert.Equal(t, "author2", d.lastAuthors[1])
 }
 
 type MiddlewareContextTest struct {

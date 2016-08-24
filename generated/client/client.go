@@ -38,13 +38,35 @@ func (c Client) WithRetries(retries int) Client {
 	return c
 }
 
+// JoinByFormat joins a string array by a known format:
+//		ssv: space separated value
+//		tsv: tab separated value
+//		pipes: pipe (|) separated value
+//		csv: comma separated value (default)
+func JoinByFormat(data []string, format string) string {
+	if len(data) == 0 {
+		return ""
+	}
+	var sep string
+	switch format {
+	case "ssv":
+		sep = " "
+	case "tsv":
+		sep = "\t"
+	case "pipes":
+		sep = "|"
+	default:
+		sep = ","
+	}
+	return strings.Join(data, sep)
+}
 func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) (models.GetBooksOutput, error) {
 	path := c.BasePath + "/v1/books"
 	urlVals := url.Values{}
 	var body []byte
 
-	if i.Author != nil {
-		urlVals.Add("author", *i.Author)
+	if i.Authors != nil {
+		urlVals.Add("authors", JoinByFormat(i.Authors, ""))
 	}
 	if i.Available != nil {
 		urlVals.Add("available", strconv.FormatBool(*i.Available))

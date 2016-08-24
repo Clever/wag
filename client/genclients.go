@@ -59,6 +59,8 @@ func (c Client) WithRetries(retries int) Client {
 
 `, packageName)
 
+	g.Printf(swagger.BaseParamToStringCode())
+
 	for _, path := range swagger.SortedPathItemKeys(s.Paths.Paths) {
 		pathItem := s.Paths.Paths[path]
 		pathItemOps := swagger.PathItemOperations(pathItem)

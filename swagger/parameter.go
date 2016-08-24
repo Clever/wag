@@ -19,12 +19,40 @@ import (
 // 3. String -> Go type
 // 4. Validation logic
 
+// TODO: Add a nice comment on this...
+func BaseParamToStringCode() string {
+	return `
+// JoinByFormat joins a string array by a known format:
+//		ssv: space separated value
+//		tsv: tab separated value
+//		pipes: pipe (|) separated value
+//		csv: comma separated value (default)
+func JoinByFormat(data []string, format string) string {
+	if len(data) == 0 {
+		return ""
+	}
+	var sep string
+	switch format {
+	case "ssv":
+		sep = " "
+	case "tsv":
+		sep = "\t"
+	case "pipes":
+		sep = "|"
+	default:
+		sep = ","
+	}
+	return strings.Join(data, sep)
+}
+`
+}
+
 // ParamToStringCode returns a function that converts a Parameter into the code to convert
 // it into a string (for serialization). For example, a integer named 'Size' becomes
 // `strconv.FormatInt(i.Size, 10)`
 func ParamToStringCode(param spec.Parameter) string {
 	valToSet := fmt.Sprintf("i.%s", Capitalize(param.Name))
-	if !param.Required {
+	if !param.Required && param.Type != "array" {
 		valToSet = "*" + valToSet
 	}
 	switch param.Type {
@@ -53,14 +81,20 @@ func ParamToStringCode(param spec.Parameter) string {
 		return fmt.Sprintf("strconv.FormatFloat(%s, 'E', -1, 64)", valToSet)
 	case "boolean":
 		return fmt.Sprintf("strconv.FormatBool(%s)", valToSet)
+	case "array":
+		if param.Items.Type != "string" {
+			panic(fmt.Errorf("Array parameters must have string sub-types"))
+		}
+		return fmt.Sprintf("JoinByFormat(%s, \"%s\")", valToSet, param.Format)
 	default:
 		// Theoretically should have validated before getting here
 		panic(fmt.Errorf("Unsupported parameter type %s", param.Type))
 	}
 }
 
-// ParamToType converts a parameter into its Go type
-func ParamToType(param spec.Parameter) (string, error) {
+// ParamToType converts a parameter into its Go type. If withPointer is true
+// it will make the variable a pointer if it's not required and not an array type
+func ParamToType(param spec.Parameter, withPointer bool) (string, error) {
 	var typeName string
 	switch param.Type {
 	case "string":
@@ -90,10 +124,18 @@ func ParamToType(param spec.Parameter) (string, error) {
 		} else {
 			typeName = "float64"
 		}
+	case "array":
+		if param.Items.Type != "string" {
+			return "", fmt.Errorf("Array parameters must have string sub-types")
+		}
+		typeName = "[]string"
 	default:
 		// Note. We don't support 'array' or 'file' types even though they're in the
 		// Swagger spec.
 		return "", fmt.Errorf("Unsupported param type: \"%s\"", param.Type)
+	}
+	if withPointer && !param.Required && param.Type != "array" {
+		typeName = "*" + typeName
 	}
 	return typeName, nil
 }
@@ -164,6 +206,11 @@ func StringToTypeCode(strField string, param spec.Parameter) (string, error) {
 		default:
 			return "", fmt.Errorf("Param format %s not supported", param.Format)
 		}
+	case "array":
+		if param.Items.Type != "string" {
+			return "", fmt.Errorf("Array parameters must have string sub-types")
+		}
+		return fmt.Sprintf("swag.SplitByFormat(%s, \"%s\"), error(nil)", strField, param.Format), nil
 	default:
 		return "", fmt.Errorf("Param type %s not supported", param.Type)
 	}
@@ -224,6 +271,19 @@ func ParamToValidationCode(param spec.Parameter) ([]string, error) {
 			validations = append(validations, fmt.Sprintf("validate.MultipleOf(\"%s\", \"%s\", float64(%s), %f)",
 				param.Name, param.In, accessString(param), *param.MultipleOf))
 		}
+	} else if param.Type == "array" {
+		if param.MaxItems != nil {
+			validations = append(validations, fmt.Sprintf("validate.MaxItems(\"%s\", \"%s\", int64(len(%s)), %d)",
+				param.Name, param.In, accessString(param), *param.MaxItems))
+		}
+		if param.MinItems != nil {
+			validations = append(validations, fmt.Sprintf("validate.MinItems(\"%s\", \"%s\", int64(len(%s)), %d)",
+				param.Name, param.In, accessString(param), *param.MinItems))
+		}
+		if param.UniqueItems {
+			validations = append(validations, fmt.Sprintf("validate.UniqueItems(\"%s\", \"%s\", %s)",
+				param.Name, param.In, accessString(param)))
+		}
 	}
 	return validations, nil
 }
@@ -232,7 +292,7 @@ func ParamToValidationCode(param spec.Parameter) ([]string, error) {
 // *i.Length
 func accessString(param spec.Parameter) string {
 	pointer := ""
-	if !param.Required {
+	if !param.Required && param.Type != "array" {
 		pointer = "*"
 	}
 	return fmt.Sprintf("%si.%s", pointer, Capitalize(param.Name))

@@ -164,7 +164,7 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 
 			g.Printf("\tif len(%sStr) != 0 {\n", param.Name)
 
-			typeName, err := swagger.ParamToType(param)
+			typeName, err := swagger.ParamToType(param, false)
 			if err != nil {
 				return err
 			}
@@ -178,7 +178,8 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 			g.Printf("\t\t\treturn nil, err\n")
 			g.Printf("\t\t}\n")
 
-			if param.Required {
+			// TODO: Factor this out...
+			if param.Required || param.Type == "array" {
 				g.Printf("\t\tinput.%s = %sTmp\n\n", capParamName, param.Name)
 			} else {
 				g.Printf("\t\tinput.%s = &%sTmp\n\n", capParamName, param.Name)

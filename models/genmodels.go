@@ -81,12 +81,9 @@ func printInputStruct(g *swagger.Generator, op *spec.Operation) error {
 		var typeName string
 		var err error
 		if param.In != "body" {
-			typeName, err = swagger.ParamToType(param)
+			typeName, err = swagger.ParamToType(param, true)
 			if err != nil {
 				return err
-			}
-			if !param.Required {
-				typeName = "*" + typeName
 			}
 		} else {
 			typeName, err = TypeFromSchema(param.Schema)

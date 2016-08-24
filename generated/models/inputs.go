@@ -14,7 +14,7 @@ var _ = validate.Maximum
 var _ = strfmt.NewFormats
 
 type GetBooksInput struct {
-	Author      *string
+	Authors     []string
 	Available   *bool
 	State       *string
 	Published   *strfmt.Date
@@ -25,6 +25,21 @@ type GetBooksInput struct {
 }
 
 func (i GetBooksInput) Validate() error {
+	if i.Authors != nil {
+		if err := validate.MaxItems("authors", "query", int64(len(i.Authors)), 2); err != nil {
+			return err
+		}
+	}
+	if i.Authors != nil {
+		if err := validate.MinItems("authors", "query", int64(len(i.Authors)), 1); err != nil {
+			return err
+		}
+	}
+	if i.Authors != nil {
+		if err := validate.UniqueItems("authors", "query", i.Authors); err != nil {
+			return err
+		}
+	}
 	if i.State != nil {
 		if err := validate.Enum("state", "query", *i.State, []interface{}{"finished", "inprogress"}); err != nil {
 			return err
