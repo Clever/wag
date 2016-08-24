@@ -34,9 +34,10 @@ This generates four directories. You should not have to modify any of the genera
 ### Using the Go Server
 To use the generated code you need to do two things:
 - Implement the controller interface defined in `generated/server/interface.go`
-- Pass the controller into the Server constructure. For example:
+- Pass the controller into the Server constructor. For example:
 ```
   s := server.New(myController, myPort)
+  // Serve should not return
   log.Fatal(s.Serve())
 ```
 
