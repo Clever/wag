@@ -160,7 +160,7 @@ func generateOutputs(packageName string, paths *spec.Paths) error {
 			// 1. 200-399 - these are "success" responses and implement the Output interface
 			// 	defined above
 			// 2. 400-599 - these are "failure" responses and implement the error interface
-			// 3. Default - this is defined as a 500 (TODO: decide if we want to keep this...)
+			// 3. Default - this is defined as a 500
 
 			// Define the success interface
 			g.Printf("type %sOutput interface {\n", capOpID)
@@ -191,7 +191,7 @@ func generateOutputs(packageName string, paths *spec.Paths) error {
 						"instead of defining your own")
 				}
 
-				outputName := fmt.Sprintf("%s%dOutput", capOpID, statusCode)
+				outputName := OutputObjectName(op, statusCode)
 				typeName, err := TypeFromSchema(response.Schema)
 				if err != nil {
 					return err
@@ -205,18 +205,16 @@ func generateOutputs(packageName string, paths *spec.Paths) error {
 
 				if statusCode < 400 {
 
-					// TODO: Do we really want to have that as part of the interface?
 					g.Printf("func (o %s) %sStatus() int {\n", outputName, capOpID)
-					// TODO: Use the right status code...
 					g.Printf("\treturn %d\n", statusCode)
 					g.Printf("}\n\n")
 
 				} else {
 
 					g.Printf("func (o %s) Error() string {\n", outputName)
-					// TODO: Would it make sense to give this a constructor so we can have a more detailed
-					// error message?
-					g.Printf("\treturn \"Status Code: \" + \"%d\"\n", statusCode)
+					g.Printf("\t// We implement this to satisfy the error interface. This has a generic error message.\n")
+					g.Printf("\t// If the user wants a more details error message they should put it in the output type\n")
+					g.Printf("\treturn \"Status Code: %d\"\n", statusCode)
 					g.Printf("}\n\n")
 
 					g.Printf("func (o %s) %sStatusCode() int {\n", outputName, capOpID)
@@ -254,18 +252,16 @@ func (d DefaultBadRequest) Error() string {
 
 func TypeFromSchema(schema *spec.Schema) (string, error) {
 	// We support three types of schemas
-	// 1. An empty schema
+	// 1. An empty schema, which we represent by an empty string by default
 	// 2. A schema with one element, the $ref key
 	// 3. A schema with two elements. One a type with value 'array' and another items field
 	// referencing the $ref
-	// TODO: The error messages here aren't great...
 	if schema == nil {
-		// represent this as a string, which is empty by default
 		return "string", nil
 	} else if schema.Ref.String() != "" {
 		ref := schema.Ref.String()
 		if !strings.HasPrefix(ref, "#/definitions/") {
-			return "", fmt.Errorf("schema.$ref has undefined reference type. Must be #/definitions")
+			return "", fmt.Errorf("schema.$ref has undefined reference type. Must start with #/definitions")
 		}
 		return ref[len("#/definitions/"):], nil
 	} else {
@@ -275,12 +271,17 @@ func TypeFromSchema(schema *spec.Schema) (string, error) {
 		}
 		items := schema.Items
 		if items == nil || items.Schema == nil {
-			return "", fmt.Errorf("Two element schemas must have an '$ref' field in the 'items' descriptions")
+			return "", fmt.Errorf("Two element schemas must have a '$ref' field in the 'items' descriptions")
 		}
 		ref := items.Schema.Ref.String()
 		if !strings.HasPrefix(ref, "#/definitions/") {
-			return "", fmt.Errorf("schema.$ref has undefined reference type. Must be #/definitions")
+			return "", fmt.Errorf("schema.$ref has undefined reference type. Must start with #/definitions")
 		}
 		return "[]" + ref[len("#/definitions/"):], nil
 	}
+}
+
+// OutputObjectName returns the name of an output object. For example, GetBookByID200Output
+func OutputObjectName(op *spec.Operation, statusCode int) string {
+	return fmt.Sprintf("%s%dOutput", swagger.Capitalize(op.ID), statusCode)
 }

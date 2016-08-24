@@ -123,7 +123,6 @@ func typeFromSchema(schema *spec.Schema) (string, error) {
 	// 2. A schema with one element, the $ref key
 	// 3. A schema with two elements. One a type with value 'array' and another items field
 	// referencing the $ref
-	// TODO: The error messages here aren't great...
 	if schema == nil {
 		// represent this as a string, which is empty by default
 		return "string", nil

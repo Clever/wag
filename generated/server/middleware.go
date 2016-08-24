@@ -9,9 +9,9 @@ import (
 	opentracing "github.com/opentracing/opentracing-go"
 )
 
-func withMiddleware(router http.Handler) http.Handler {
+func withMiddleware(serviceName string, router http.Handler) http.Handler {
 
-	handler := kvMiddleware.New(router, logger.New("TODO: CHANGE THIS"))
+	handler := kvMiddleware.New(router, logger.New(serviceName))
 	handler = tracingMiddleware(handler)
 	return handler
 }

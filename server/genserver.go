@@ -12,27 +12,27 @@ import (
 	"text/template"
 )
 
-func Generate(packageName string, swagger spec.Swagger) error {
+func Generate(packageName string, s spec.Swagger) error {
 
-	if err := generateRouter(packageName, swagger.BasePath, swagger.Paths); err != nil {
+	if err := generateRouter(packageName, s, s.Paths); err != nil {
 		return err
 	}
-	if err := generateInterface(packageName, swagger.Paths); err != nil {
+	if err := generateInterface(packageName, s.Paths); err != nil {
 		return err
 	}
-	if err := generateHandlers(packageName, swagger.Paths); err != nil {
+	if err := generateHandlers(packageName, s.Paths); err != nil {
 		return err
 	}
 	return nil
 }
 
-func generateRouter(packageName string, basePath string, paths *spec.Paths) error {
+func generateRouter(packageName string, s spec.Swagger, paths *spec.Paths) error {
 	g := swagger.Generator{PackageName: packageName}
-
-	// TODO: Add something to all these about being auto-generated
 
 	g.Printf(
 		`package server
+
+// Code auto-generated. Do not edit.
 
 import (
 	"net/http"
@@ -55,9 +55,13 @@ func (s Server) Serve() error {
 	return graceful.RunWithErr(s.addr,30*time.Second,s.Handler)
 }
 
+type handler struct {
+	Controller
+}
+
 func New(c Controller, addr string) Server {
-	controller = c // TODO: get rid of global variable?
 	r := mux.NewRouter()
+	h := handler{Controller: c}
 `)
 
 	for _, path := range swagger.SortedPathItemKeys(paths.Paths) {
@@ -74,7 +78,7 @@ func New(c Controller, addr string) Server {
 				return err
 			}
 			var tmpBuf bytes.Buffer
-			err = tmpl.Execute(&tmpBuf, routerTemplate{Method: method, Path: basePath + path,
+			err = tmpl.Execute(&tmpBuf, routerTemplate{Method: method, Path: s.BasePath + path,
 				HandlerName: swagger.Capitalize(op.ID)})
 			if err != nil {
 				return err
@@ -82,8 +86,7 @@ func New(c Controller, addr string) Server {
 			g.Printf(tmpBuf.String())
 		}
 	}
-	// TODO: It's a bit weird that this returns a pointer that it modifies...
-	g.Printf("\thandler := withMiddleware(r)\n")
+	g.Printf("\thandler := withMiddleware(\"%s\", r)\n", s.Info.Title)
 	g.Printf("\treturn Server{Handler: handler, addr: addr}\n")
 	g.Printf("}\n")
 
@@ -97,7 +100,7 @@ type routerTemplate struct {
 }
 
 var routerFunctionTemplate = `	r.Methods("{{.Method}}").Path("{{.Path}}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		{{.HandlerName}}Handler(r.Context(), w, r)
+		h.{{.HandlerName}}Handler(r.Context(), w, r)
 	})
 `
 
@@ -233,8 +236,6 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 	g.Printf("var _ = mux.Vars\n")
 	g.Printf("var _ = ioutil.ReadAll\n\n")
 
-	// TODO: Make this not be a global variable
-	g.Printf("var controller Controller\n\n")
 	g.Printf(swagger.BaseStringToTypeCode())
 	g.Printf(jsonMarshalString)
 
@@ -278,7 +279,7 @@ func jsonMarshalNoError(i interface{}) string {
 }
 `
 
-var handlerTemplate = `func {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	input, err := New{{.Op}}Input(r)
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
@@ -291,7 +292,7 @@ var handlerTemplate = `func {{.Op}}Handler(ctx context.Context, w http.ResponseW
 		return
 	}
 
-	resp, err := controller.{{.Op}}(ctx, input)
+	resp, err := h.{{.Op}}(ctx, input)
 	if err != nil {
 		if respErr, ok := err.(models.{{.Op}}Error); ok {
 			http.Error(w, respErr.Error(), respErr.{{.Op}}StatusCode())
