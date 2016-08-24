@@ -142,10 +142,13 @@ func buildRequestCode(op *spec.Operation, method string) string {
 		}
 	}
 
+	// TODO: decide how to represent this error (should it be model.DefaultInternalError?)
+	// and whether the client should retry
 	buf.WriteString(fmt.Sprintf(`
 	client := &http.Client{Transport: c.transport}
 	req, err := http.NewRequest("%s", path, bytes.NewBuffer(body))
 	if err != nil {
+
 		return nil, err
 	}
 `, strings.ToUpper(method)))
