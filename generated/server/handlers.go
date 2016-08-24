@@ -18,6 +18,7 @@ var _ = strconv.ParseInt
 var _ = strfmt.Default
 var _ = swag.ConvertInt32
 var _ = errors.New
+var _ = mux.Vars
 var _ = ioutil.ReadAll
 
 var controller Controller
