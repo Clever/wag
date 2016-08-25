@@ -71,7 +71,8 @@ func singleSuccessOutputType(op *spec.Operation) *spec.Schema {
 	}
 }
 
-// TODO: Add a nice comment!!!
+// NoSuccessType returns true if the operation has no-success response type. This includes
+// either no 200-399 response code or a 200-399 response code without a schema.
 func NoSuccessType(op *spec.Operation) bool {
 	successCodes := make([]int, 0)
 	for statusCode, _ := range op.Responses.StatusCodeResponses {

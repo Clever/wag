@@ -245,7 +245,8 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 				return err
 			}
 			var tmpBuf bytes.Buffer
-			err = tmpl.Execute(&tmpBuf, handlerOp{Op: swagger.Capitalize(op.ID)})
+			err = tmpl.Execute(&tmpBuf, handlerOp{
+				Op: swagger.Capitalize(op.ID), SuccessReturnType: !swagger.NoSuccessType(op)})
 			if err != nil {
 				return err
 			}
@@ -261,7 +262,8 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 }
 
 type handlerOp struct {
-	Op string
+	Op                string
+	SuccessReturnType bool
 }
 
 var jsonMarshalString = `
@@ -288,7 +290,11 @@ var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w ht
 		return
 	}
 
+{{if .SuccessReturnType}}
 	resp, err := h.{{.Op}}(ctx, input)
+{{else}}
+	err = h.{{.Op}}(ctx, input)	
+{{end}}
 	if err != nil {
 		if respErr, ok := err.(models.{{.Op}}Error); ok {
 			http.Error(w, respErr.Error(), respErr.{{.Op}}StatusCode())
@@ -299,6 +305,7 @@ var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w ht
 		}
 	}
 
+{{if .SuccessReturnType}}
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
@@ -307,5 +314,8 @@ var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w ht
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(respBytes)
+{{else}}
+	w.Write([]byte(""))
+{{end}}
 }
 `

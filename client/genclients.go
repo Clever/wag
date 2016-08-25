@@ -87,10 +87,8 @@ func methodCode(op *spec.Operation, basePath, method, methodPath string) string 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "%s")
 	resp, err := c.requestDoer.Do(client, req.WithContext(ctx))
-	if err != nil {
-		return nil, models.DefaultInternalError{Msg: err.Error()}
-	}
-`, op.ID))
+	%s
+`, op.ID, errorMessage("models.DefaultInternalError{Msg: err.Error()}", op)))
 
 	buf.WriteString(parseResponseCode(op, capOpID))
 
@@ -127,10 +125,8 @@ func buildRequestCode(op *spec.Operation, method string) string {
 			bodyMarshalCode := fmt.Sprintf(`
 	var err error
 	body, err = json.Marshal(i.%s)
-	if err != nil {
-		return nil, err
-	}
-`, swagger.Capitalize(param.Name))
+	%s
+`, swagger.Capitalize(param.Name), errorMessage("err", op))
 			if param.Required {
 				buf.WriteString(fmt.Sprintf(bodyMarshalCode))
 			} else {
@@ -146,11 +142,8 @@ func buildRequestCode(op *spec.Operation, method string) string {
 	buf.WriteString(fmt.Sprintf(`
 	client := &http.Client{Transport: c.transport}
 	req, err := http.NewRequest("%s", path, bytes.NewBuffer(body))
-	if err != nil {
-
-		return nil, err
-	}
-`, strings.ToUpper(method)))
+	%s
+`, strings.ToUpper(method), errorMessage("err", op)))
 
 	for _, param := range op.Parameters {
 		if param.In == "header" {
@@ -210,7 +203,8 @@ func parseResponseCode(op *spec.Operation, capOpID string) string {
 		}
 	}
 
-	buf.WriteString(`
+	if !swagger.NoSuccessType(op) {
+		buf.WriteString(`
 	case 400:
 		var output models.DefaultBadRequest
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
@@ -227,12 +221,51 @@ func parseResponseCode(op *spec.Operation, capOpID string) string {
 
 	default:
 		return nil, models.DefaultInternalError{Msg: "Unknown response"}
-
 	}
 }
 
 `)
+	} else {
+		buf.WriteString(`
+	case 400:
+		var output models.DefaultBadRequest
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return models.DefaultInternalError{Msg: err.Error()}
+		}
+		return output
+
+	case 500:
+		var output models.DefaultInternalError
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return models.DefaultInternalError{Msg: err.Error()}
+		}
+		return output
+
+	default:
+		return models.DefaultInternalError{Msg: "Unknown response"}
+	}
+}
+
+`)
+	}
+
 	return buf.String()
+}
+
+func errorMessage(err string, op *spec.Operation) string {
+	if swagger.NoSuccessType(op) {
+		return fmt.Sprintf(`
+	if err != nil {
+		return %s
+	}
+`, err)
+	} else {
+		return fmt.Sprintf(`
+	if err != nil {
+		return nil, %s
+	}
+`, err)
+	}
 }
 
 func successResponse(outputName, pointer string) string {
