@@ -17,7 +17,7 @@ func Interface(op *spec.Operation) string {
 	}
 
 	capOpID := Capitalize(op.ID)
-	singleType := SingleSuccessOutputType(op)
+	singleType := singleSuccessOutputType(op)
 	successType := ""
 	if singleType != nil {
 		successType = "*" + *singleType
@@ -31,7 +31,7 @@ func Interface(op *spec.Operation) string {
 
 // TODO: Add a nice comment!
 func OutputType(op *spec.Operation, statusCode int) string {
-	singleSuccessType := SingleSuccessOutputType(op)
+	singleSuccessType := singleSuccessOutputType(op)
 	if singleSuccessType != nil && statusCode < 400 {
 		return *singleSuccessType
 	}
@@ -39,7 +39,7 @@ func OutputType(op *spec.Operation, statusCode int) string {
 }
 
 // TODO: Nice comment. Returns non-nil if only one success output
-func SingleSuccessOutputType(op *spec.Operation) *string {
+func singleSuccessOutputType(op *spec.Operation) *string {
 	successCodes := make([]int, 0)
 	for statusCode, _ := range op.Responses.StatusCodeResponses {
 		if statusCode < 400 {

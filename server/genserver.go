@@ -245,14 +245,7 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 				return err
 			}
 			var tmpBuf bytes.Buffer
-			marshalFunction := ""
-			if swagger.SingleSuccessOutputType(op) != nil {
-				marshalFunction = "resp"
-			} else {
-				marshalFunction = fmt.Sprintf("resp.%sData()", swagger.Capitalize(op.ID))
-			}
-			err = tmpl.Execute(&tmpBuf,
-				handlerOp{Op: swagger.Capitalize(op.ID), MarshalFunction: marshalFunction})
+			err = tmpl.Execute(&tmpBuf, handlerOp{Op: swagger.Capitalize(op.ID)})
 			if err != nil {
 				return err
 			}
@@ -268,8 +261,7 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 }
 
 type handlerOp struct {
-	Op              string
-	MarshalFunction string
+	Op string
 }
 
 var jsonMarshalString = `
@@ -307,7 +299,7 @@ var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w ht
 		}
 	}
 
-	respBytes, err := json.Marshal({{.MarshalFunction}})
+	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
