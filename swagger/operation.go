@@ -7,7 +7,7 @@ import (
 	"github.com/go-openapi/spec"
 )
 
-// TOOD: Add a nice comment!!!
+// Interface returns the interface for an operation
 func Interface(op *spec.Operation) string {
 	successCodes := make([]int, 0)
 	for statusCode, _ := range op.Responses.StatusCodeResponses {
@@ -29,7 +29,7 @@ func Interface(op *spec.Operation) string {
 		capOpID, capOpID, successType)
 }
 
-// TODO: Add a nice comment!
+// OutputType returns the output type for a given status code of an operation
 func OutputType(op *spec.Operation, statusCode int) string {
 	singleSuccessType := singleSuccessOutputType(op)
 	if singleSuccessType != nil && statusCode < 400 {
@@ -38,7 +38,8 @@ func OutputType(op *spec.Operation, statusCode int) string {
 	return fmt.Sprintf("models.%s%dOutput", Capitalize(op.ID), statusCode)
 }
 
-// TODO: Nice comment. Returns non-nil if only one success output
+// singleSuccessOutputType returns nil if there is more than one success output type for an
+// operation. If there is only one, then it returns its name as a string pointer.
 func singleSuccessOutputType(op *spec.Operation) *string {
 	successCodes := make([]int, 0)
 	for statusCode, _ := range op.Responses.StatusCodeResponses {
@@ -60,6 +61,8 @@ func singleSuccessOutputType(op *spec.Operation) *string {
 	}
 }
 
+// TypeFromSchema returns the type of a Swagger schema as a string. If includeModels is true
+// then it returns models.TYPE
 func TypeFromSchema(schema *spec.Schema, includeModels bool) (string, error) {
 	// We support three types of schemas
 	// 1. An empty schema, which we represent by an empty string by default

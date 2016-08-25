@@ -229,9 +229,7 @@ func generateSuccessTypes(capOpID string, responses map[int]spec.Response) (stri
 		buf.WriteString(fmt.Sprintf("\treturn o\n"))
 		buf.WriteString(fmt.Sprintf("}\n\n"))
 
-		// TODO: Do we really want to have that as part of the interface?
 		buf.WriteString(fmt.Sprintf("func (o %s) %sStatus() int {\n", outputName, capOpID))
-		// TODO: Use the right status code...
 		buf.WriteString(fmt.Sprintf("\treturn %d\n", statusCode))
 		buf.WriteString(fmt.Sprintf("}\n\n"))
 	}
