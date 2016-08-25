@@ -12,12 +12,12 @@ type ControllerImpl struct {
 	books map[int64]*models.Book
 }
 
-func (c *ControllerImpl) GetBooks(ctx context.Context, input *models.GetBooksInput) (*[]models.Book, error) {
+func (c *ControllerImpl) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, error) {
 	bookList := make([]models.Book, 0)
 	for _, book := range c.books {
 		bookList = append(bookList, *book)
 	}
-	return &bookList, nil
+	return bookList, nil
 }
 func (c *ControllerImpl) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
 	book, ok := c.books[input.BookID]

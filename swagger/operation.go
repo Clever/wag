@@ -17,10 +17,18 @@ func Interface(op *spec.Operation) string {
 	}
 
 	capOpID := Capitalize(op.ID)
-	singleType := singleSuccessOutputType(op)
+	singleSchema := singleSuccessOutputType(op)
 	successType := ""
-	if singleType != nil {
-		successType = "*" + *singleType
+	if singleSchema != nil {
+		var err error
+		successType, err = TypeFromSchema(op.Responses.StatusCodeResponses[successCodes[0]].Schema, true)
+		if err != nil {
+			panic(fmt.Errorf("Could not convert operation to type %s", err))
+		}
+		// Make non-arrays pointers
+		if singleSchema.Ref.String() != "" {
+			successType = "*" + successType
+		}
 	} else {
 		successType = fmt.Sprintf("models.%sOutput", capOpID)
 	}
@@ -31,16 +39,20 @@ func Interface(op *spec.Operation) string {
 
 // OutputType returns the output type for a given status code of an operation
 func OutputType(op *spec.Operation, statusCode int) string {
-	singleSuccessType := singleSuccessOutputType(op)
-	if singleSuccessType != nil && statusCode < 400 {
-		return *singleSuccessType
+	singleSuccessSchema := singleSuccessOutputType(op)
+	if singleSuccessSchema != nil && statusCode < 400 {
+		successType, err := TypeFromSchema(singleSuccessSchema, true)
+		if err != nil {
+			panic(fmt.Errorf("Could not convert operation to type %s", err))
+		}
+		return successType
 	}
 	return fmt.Sprintf("models.%s%dOutput", Capitalize(op.ID), statusCode)
 }
 
 // singleSuccessOutputType returns nil if there is more than one success output type for an
 // operation. If there is only one, then it returns its name as a string pointer.
-func singleSuccessOutputType(op *spec.Operation) *string {
+func singleSuccessOutputType(op *spec.Operation) *spec.Schema {
 	successCodes := make([]int, 0)
 	for statusCode, _ := range op.Responses.StatusCodeResponses {
 		if statusCode < 400 {
@@ -48,14 +60,8 @@ func singleSuccessOutputType(op *spec.Operation) *string {
 		}
 	}
 
-	successType := ""
 	if len(successCodes) == 1 {
-		var err error
-		successType, err = TypeFromSchema(op.Responses.StatusCodeResponses[successCodes[0]].Schema, true)
-		if err != nil {
-			panic(fmt.Errorf("Could not convert operation to type %s", err))
-		}
-		return &successType
+		return op.Responses.StatusCodeResponses[successCodes[0]].Schema
 	} else {
 		return nil
 	}

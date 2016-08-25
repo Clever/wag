@@ -30,9 +30,9 @@ func (_m *MockController) EXPECT() *_MockControllerRecorder {
 	return _m.recorder
 }
 
-func (_m *MockController) GetBooks(ctx context.Context, i *models.GetBooksInput) (*[]models.Book, error) {
+func (_m *MockController) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models.Book, error) {
 	ret := _m.ctrl.Call(_m, "GetBooks", ctx, i)
-	ret0, _ := ret[0].(*[]models.Book)
+	ret0, _ := ret[0].([]models.Book)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

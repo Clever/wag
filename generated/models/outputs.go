@@ -24,25 +24,15 @@ type GetBooksError interface {
 
 type GetBookByIDOutput interface {
 	GetBookByIDStatus() int
-	// Data is the underlying model object. We know it is json serializable
-	GetBookByIDData() interface{}
 }
 
 type GetBookByID200Output Book
-
-func (o GetBookByID200Output) GetBookByIDData() interface{} {
-	return o
-}
 
 func (o GetBookByID200Output) GetBookByIDStatus() int {
 	return 200
 }
 
 type GetBookByID204Output string
-
-func (o GetBookByID204Output) GetBookByIDData() interface{} {
-	return o
-}
 
 func (o GetBookByID204Output) GetBookByIDStatus() int {
 	return 204

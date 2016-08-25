@@ -60,7 +60,7 @@ func JoinByFormat(data []string, format string) string {
 	}
 	return strings.Join(data, sep)
 }
-func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) (*[]models.Book, error) {
+func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models.Book, error) {
 	path := c.BasePath + "/v1/books"
 	urlVals := url.Values{}
 	var body []byte
@@ -111,7 +111,7 @@ func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) (*[]model
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
-		return &output, nil
+		return output, nil
 
 	case 400:
 		var output models.DefaultBadRequest
@@ -170,7 +170,7 @@ func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (mo
 		return &output, nil
 	case 204:
 		var output models.GetBookByID204Output
-		return &output, nil
+		return output, nil
 	case 401:
 		var output models.GetBookByID401Output
 		return nil, output

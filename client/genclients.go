@@ -185,13 +185,18 @@ func parseResponseCode(op *spec.Operation, capOpID string) string {
 		if response.Schema == nil {
 			buf.WriteString(fmt.Sprintf("\t\tvar output %s\n", outputName))
 			if statusCode < 400 {
-				buf.WriteString(fmt.Sprintf("\t\treturn &output, nil\n"))
+				buf.WriteString(fmt.Sprintf("\t\treturn output, nil\n"))
 			} else {
 				buf.WriteString(fmt.Sprintf("\t\treturn nil, output\n"))
 			}
 		} else {
 			if statusCode < 400 {
-				buf.WriteString(fmt.Sprintf(successResponse(outputName)))
+				pointer := "&"
+				// No pointer for array types (TODO: consider factoring this out...)
+				if response.Schema.Ref.String() == "" {
+					pointer = ""
+				}
+				buf.WriteString(fmt.Sprintf(successResponse(outputName, pointer)))
 			} else {
 				buf.WriteString(fmt.Sprintf("\t\treturn nil, %s{}\n", outputName))
 			}
@@ -223,12 +228,12 @@ func parseResponseCode(op *spec.Operation, capOpID string) string {
 	return buf.String()
 }
 
-func successResponse(outputName string) string {
+func successResponse(outputName, pointer string) string {
 	return fmt.Sprintf(`
 		var output %s
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
-		return &output, nil
-`, outputName)
+		return %soutput, nil
+`, outputName, pointer)
 }

@@ -199,8 +199,6 @@ func generateSuccessTypes(capOpID string, responses map[int]spec.Response) (stri
 	var buf bytes.Buffer
 	buf.WriteString(fmt.Sprintf("type %sOutput interface {\n", capOpID))
 	buf.WriteString(fmt.Sprintf("\t%sStatus() int\n", capOpID))
-	buf.WriteString(fmt.Sprintf("\t// Data is the underlying model object. We know it is json serializable\n"))
-	buf.WriteString(fmt.Sprintf("\t%sData() interface{}\n", capOpID))
 	buf.WriteString(fmt.Sprintf("}\n\n"))
 
 	successStatusCodes := make([]int, 0)
@@ -225,10 +223,6 @@ func generateSuccessTypes(capOpID string, responses map[int]spec.Response) (stri
 			return "", err
 		}
 		buf.WriteString(fmt.Sprintf("type %s %s\n\n", outputName, typeName))
-		buf.WriteString(fmt.Sprintf("func (o %s) %sData() interface{} {\n", outputName, capOpID))
-		buf.WriteString(fmt.Sprintf("\treturn o\n"))
-		buf.WriteString(fmt.Sprintf("}\n\n"))
-
 		buf.WriteString(fmt.Sprintf("func (o %s) %sStatus() int {\n", outputName, capOpID))
 		buf.WriteString(fmt.Sprintf("\treturn %d\n", statusCode))
 		buf.WriteString(fmt.Sprintf("}\n\n"))

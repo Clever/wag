@@ -20,12 +20,12 @@ type ClientContextTest struct {
 	postCount int
 }
 
-func (c *ClientContextTest) GetBooks(ctx context.Context, input *models.GetBooksInput) (*[]models.Book, error) {
+func (c *ClientContextTest) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, error) {
 	c.getCount++
 	if c.getCount == 1 {
 		return nil, fmt.Errorf("Error count: %d", c.getCount)
 	}
-	return &[]models.Book{}, nil
+	return []models.Book{}, nil
 }
 func (c *ClientContextTest) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
 	return nil, nil

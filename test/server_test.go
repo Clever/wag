@@ -31,9 +31,9 @@ func TestBasicEndToEnd(t *testing.T) {
 	assert.Equal(t, bookName, createdBook.Name)
 
 	booksOutput, err := c.GetBooks(context.Background(), &models.GetBooksInput{})
-	require.Equal(t, 1, len(*booksOutput))
-	assert.Equal(t, bookID, (*booksOutput)[0].ID)
-	assert.Equal(t, bookName, (*booksOutput)[0].Name)
+	require.Equal(t, 1, len(booksOutput))
+	assert.Equal(t, bookID, (booksOutput)[0].ID)
+	assert.Equal(t, bookName, (booksOutput)[0].Name)
 
 	singleBookOutput, err := c.GetBookByID(context.Background(), &models.GetBookByIDInput{BookID: bookID})
 	assert.NoError(t, err)
@@ -83,13 +83,13 @@ type LastCallServer struct {
 	lastAuthors   []string
 }
 
-func (d *LastCallServer) GetBooks(ctx context.Context, input *models.GetBooksInput) (*[]models.Book, error) {
+func (d *LastCallServer) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, error) {
 	d.lastState = *input.State
 	d.lastAvailable = *input.Available
 	d.lastMaxPages = *input.MaxPages
 	d.lastMinPages = *input.MinPages
 	d.lastAuthors = input.Authors
-	return &[]models.Book{}, nil
+	return []models.Book{}, nil
 }
 func (d *LastCallServer) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
 	return nil, nil
@@ -130,9 +130,9 @@ type MiddlewareContextTest struct {
 	foundKey string
 }
 
-func (m *MiddlewareContextTest) GetBooks(ctx context.Context, input *models.GetBooksInput) (*[]models.Book, error) {
+func (m *MiddlewareContextTest) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, error) {
 	m.foundKey = ctx.Value(testContextKey{}).(string)
-	return &[]models.Book{}, nil
+	return []models.Book{}, nil
 }
 func (m *MiddlewareContextTest) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
 	return nil, nil
