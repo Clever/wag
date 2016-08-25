@@ -3,8 +3,8 @@ package server
 import (
 	"net/http"
 
-	"gopkg.in/Clever/kayvee-go.v3/logger"
-	kvMiddleware "gopkg.in/Clever/kayvee-go.v3/middleware"
+	"gopkg.in/Clever/kayvee-go.v4/logger"
+	kvMiddleware "gopkg.in/Clever/kayvee-go.v4/middleware"
 
 	opentracing "github.com/opentracing/opentracing-go"
 )
@@ -26,7 +26,7 @@ func tracingMiddleware(h http.Handler) http.Handler {
 		var sp opentracing.Span
 		if sc, err := opentracing.GlobalTracer().
 			Extract(opentracing.HTTPHeaders,
-			opentracing.HTTPHeadersCarrier(r.Header)); err != nil {
+				opentracing.HTTPHeadersCarrier(r.Header)); err != nil {
 			sp = opentracing.StartSpan(opName)
 		} else {
 			sp = opentracing.StartSpan(opName, opentracing.ChildOf(sc))
