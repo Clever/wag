@@ -4,9 +4,9 @@
 package server
 
 import (
+	context "context"
 	models "github.com/Clever/wag/generated/models"
 	gomock "github.com/golang/mock/gomock"
-	context "golang.org/x/net/context"
 )
 
 // Mock of Controller interface

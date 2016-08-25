@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,8 +13,6 @@ import (
 
 	"net/http"
 	"net/http/httptest"
-
-	"golang.org/x/net/context"
 )
 
 func TestBasicEndToEnd(t *testing.T) {

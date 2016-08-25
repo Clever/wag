@@ -2,9 +2,9 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"github.com/Clever/wag/generated/models"
-	"golang.org/x/net/context"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -94,6 +94,7 @@ func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) (models.G
 	client := &http.Client{Transport: c.transport}
 	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
 	if err != nil {
+
 		return nil, err
 	}
 
@@ -146,6 +147,7 @@ func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (mo
 	client := &http.Client{Transport: c.transport}
 	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
 	if err != nil {
+
 		return nil, err
 	}
 	if i.Authorization != nil {
@@ -214,6 +216,7 @@ func (c Client) CreateBook(ctx context.Context, i *models.CreateBookInput) (mode
 	client := &http.Client{Transport: c.transport}
 	req, err := http.NewRequest("POST", path, bytes.NewBuffer(body))
 	if err != nil {
+
 		return nil, err
 	}
 

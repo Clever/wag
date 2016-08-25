@@ -1,13 +1,12 @@
 package client
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
-	"golang.org/x/net/context"
-	"golang.org/x/net/context/ctxhttp"
-
 	opentracing "github.com/opentracing/opentracing-go"
+	"golang.org/x/net/context/ctxhttp"
 )
 
 // doer is an interface for "doing" http requests possibly with wrapping

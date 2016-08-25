@@ -19,7 +19,7 @@ func Generate(packageName string, s spec.Swagger) error {
 	g.Printf(`package client
 
 import (
-		"golang.org/x/net/context"
+		"context"
 		"strings"
 		"bytes"
 		"net/http"

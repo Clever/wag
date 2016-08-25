@@ -2,13 +2,13 @@ package server
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"github.com/Clever/wag/generated/models"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/gorilla/mux"
-	"golang.org/x/net/context"
 	"io/ioutil"
 	"net/http"
 	"strconv"

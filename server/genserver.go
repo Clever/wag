@@ -107,7 +107,7 @@ var routerFunctionTemplate = `	r.Methods("{{.Method}}").Path("{{.Path}}").Handle
 func generateInterface(packageName string, paths *spec.Paths) error {
 	g := swagger.Generator{PackageName: packageName}
 	g.Printf("package server\n\n")
-	g.Printf(swagger.ImportStatements([]string{"golang.org/x/net/context", packageName + "/models"}))
+	g.Printf(swagger.ImportStatements([]string{"context", packageName + "/models"}))
 	g.Printf("//go:generate $GOPATH/bin/mockgen -source=$GOFILE -destination=mock_controller.go -package=server\n\n")
 	g.Printf("type Controller interface {\n")
 
@@ -226,7 +226,7 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 	g := swagger.Generator{PackageName: packageName}
 
 	g.Printf("package server\n\n")
-	g.Printf(swagger.ImportStatements([]string{"golang.org/x/net/context", "github.com/gorilla/mux",
+	g.Printf(swagger.ImportStatements([]string{"context", "github.com/gorilla/mux",
 		"net/http", "strconv", "encoding/json", "strconv", packageName + "/models", "errors",
 		"github.com/go-openapi/strfmt", "github.com/go-openapi/swag", "io/ioutil", "bytes"}))
 

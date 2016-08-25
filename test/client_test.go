@@ -1,18 +1,15 @@
 package test
 
 import (
+	"context"
 	"fmt"
-
-	"github.com/stretchr/testify/assert"
+	"net/http/httptest"
+	"testing"
 
 	"github.com/Clever/wag/generated/client"
 	"github.com/Clever/wag/generated/models"
 	"github.com/Clever/wag/generated/server"
-
-	"net/http/httptest"
-	"testing"
-
-	"golang.org/x/net/context"
+	"github.com/stretchr/testify/assert"
 )
 
 type ClientContextTest struct {
