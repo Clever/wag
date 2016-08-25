@@ -54,13 +54,9 @@ c := client.New("https://url_of_your_service:port")
 
 Make an API call
 ```
-output, err := c.GetBookByID(ctx, GetBookByIDInput{ID: 1234})
+books, err := c.GetBooks(ctx, GetBookByIDInput{Authors: []string{"Twain"}})
 if err != nil {
   // Do something with the error
-}
-book, ok := output.(models.GetBookByID200Output)
-if !ok {
-  // The only success value this returns is a 200, so anything else would be unexpected
 }
 ```
 
