@@ -6,7 +6,6 @@ import (
 
 	"github.com/go-openapi/spec"
 
-	"github.com/Clever/wag/models"
 	"github.com/Clever/wag/swagger"
 
 	"text/template"
@@ -115,11 +114,7 @@ func generateInterface(packageName string, paths *spec.Paths) error {
 		path := paths.Paths[pathKey]
 		pathItemOps := swagger.PathItemOperations(path)
 		for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
-			op := pathItemOps[opKey]
-			capOpID := swagger.Capitalize(op.ID)
-			definition := fmt.Sprintf("%s(ctx context.Context, input *models.%sInput) (models.%sOutput, error)",
-				capOpID, capOpID, capOpID)
-			g.Printf("\t%s\n", definition)
+			g.Printf("\t%s\n", swagger.Interface(pathItemOps[opKey]))
 		}
 	}
 	g.Printf("}\n")
@@ -191,7 +186,7 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 			if param.Schema == nil {
 				return fmt.Errorf("Body parameters must have a schema defined")
 			}
-			typeName, err := models.TypeFromSchema(param.Schema)
+			typeName, err := swagger.TypeFromSchema(param.Schema, true)
 			if err != nil {
 				return err
 			}
@@ -206,7 +201,7 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 
 			g.Printf("\tif len(data) > 0 {")
 			// Initialize the pointer in the object
-			g.Printf("\t\tinput.%s = &models.%s{}\n", capParamName, typeName)
+			g.Printf("\t\tinput.%s = &%s{}\n", capParamName, typeName)
 			g.Printf("\t\tif err := json.NewDecoder(bytes.NewReader(data)).Decode(input.%s); err != nil {\n", capParamName)
 			g.Printf("\t\t\treturn nil, err\n")
 			g.Printf("\t\t}\n")
@@ -304,7 +299,7 @@ var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w ht
 		}
 	}
 
-	respBytes, err := json.Marshal(resp.{{.Op}}Data())
+	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return

@@ -30,9 +30,9 @@ func (_m *MockController) EXPECT() *_MockControllerRecorder {
 	return _m.recorder
 }
 
-func (_m *MockController) GetBooks(ctx context.Context, input *models.GetBooksInput) (models.GetBooksOutput, error) {
-	ret := _m.ctrl.Call(_m, "GetBooks", ctx, input)
-	ret0, _ := ret[0].(models.GetBooksOutput)
+func (_m *MockController) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models.Book, error) {
+	ret := _m.ctrl.Call(_m, "GetBooks", ctx, i)
+	ret0, _ := ret[0].([]models.Book)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -41,8 +41,8 @@ func (_mr *_MockControllerRecorder) GetBooks(arg0, arg1 interface{}) *gomock.Cal
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetBooks", arg0, arg1)
 }
 
-func (_m *MockController) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
-	ret := _m.ctrl.Call(_m, "GetBookByID", ctx, input)
+func (_m *MockController) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
+	ret := _m.ctrl.Call(_m, "GetBookByID", ctx, i)
 	ret0, _ := ret[0].(models.GetBookByIDOutput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
@@ -52,9 +52,9 @@ func (_mr *_MockControllerRecorder) GetBookByID(arg0, arg1 interface{}) *gomock.
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetBookByID", arg0, arg1)
 }
 
-func (_m *MockController) CreateBook(ctx context.Context, input *models.CreateBookInput) (models.CreateBookOutput, error) {
-	ret := _m.ctrl.Call(_m, "CreateBook", ctx, input)
-	ret0, _ := ret[0].(models.CreateBookOutput)
+func (_m *MockController) CreateBook(ctx context.Context, i *models.CreateBookInput) (*models.Book, error) {
+	ret := _m.ctrl.Call(_m, "CreateBook", ctx, i)
+	ret0, _ := ret[0].(*models.Book)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

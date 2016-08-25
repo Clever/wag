@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-openapi/spec"
 
-	"github.com/Clever/wag/models"
 	"github.com/Clever/wag/swagger"
 )
 
@@ -77,9 +76,7 @@ func methodCode(op *spec.Operation, basePath, method, methodPath string) string 
 	var buf bytes.Buffer
 	capOpID := swagger.Capitalize(op.ID)
 
-	buf.WriteString(fmt.Sprintf("func (c Client) %s(ctx context.Context, i *models.%sInput) (models.%sOutput, error) {\n",
-		capOpID, capOpID, capOpID))
-
+	buf.WriteString(fmt.Sprintf("func (c Client) %s {\n", swagger.Interface(op)))
 	buf.WriteString(fmt.Sprintf("\tpath := c.BasePath + \"%s\"\n", basePath+methodPath))
 	buf.WriteString(fmt.Sprintf("\turlVals := url.Values{}\n"))
 	buf.WriteString(fmt.Sprintf("\tvar body []byte\n\n"))
@@ -181,7 +178,7 @@ func parseResponseCode(op *spec.Operation, capOpID string) string {
 
 	for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
 		response := op.Responses.StatusCodeResponses[statusCode]
-		outputName := "models." + models.OutputObjectName(op, statusCode)
+		outputName := swagger.OutputType(op, statusCode)
 
 		buf.WriteString(fmt.Sprintf("\tcase %d:\n", statusCode))
 
@@ -194,7 +191,12 @@ func parseResponseCode(op *spec.Operation, capOpID string) string {
 			}
 		} else {
 			if statusCode < 400 {
-				buf.WriteString(fmt.Sprintf(successResponse(outputName)))
+				pointer := "&"
+				// No pointer for array types (TODO: consider factoring this out...)
+				if response.Schema.Ref.String() == "" {
+					pointer = ""
+				}
+				buf.WriteString(fmt.Sprintf(successResponse(outputName, pointer)))
 			} else {
 				buf.WriteString(fmt.Sprintf("\t\treturn nil, %s{}\n", outputName))
 			}
@@ -226,12 +228,12 @@ func parseResponseCode(op *spec.Operation, capOpID string) string {
 	return buf.String()
 }
 
-func successResponse(outputName string) string {
+func successResponse(outputName, pointer string) string {
 	return fmt.Sprintf(`
 		var output %s
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
-		return output, nil
-`, outputName)
+		return %soutput, nil
+`, outputName, pointer)
 }

@@ -80,7 +80,7 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 		}
 	}
 
-	respBytes, err := json.Marshal(resp.GetBooksData())
+	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
@@ -219,7 +219,7 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 		}
 	}
 
-	respBytes, err := json.Marshal(resp.GetBookByIDData())
+	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
@@ -295,7 +295,7 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 		}
 	}
 
-	respBytes, err := json.Marshal(resp.CreateBookData())
+	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
