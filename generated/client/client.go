@@ -60,7 +60,7 @@ func JoinByFormat(data []string, format string) string {
 	}
 	return strings.Join(data, sep)
 }
-func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) (models.GetBooksOutput, error) {
+func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) (*[]models.Book, error) {
 	path := c.BasePath + "/v1/books"
 	urlVals := url.Values{}
 	var body []byte
@@ -94,6 +94,7 @@ func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) (models.G
 	client := &http.Client{Transport: c.transport}
 	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
 	if err != nil {
+
 		return nil, err
 	}
 
@@ -106,11 +107,11 @@ func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) (models.G
 	switch resp.StatusCode {
 	case 200:
 
-		var output models.GetBooks200Output
+		var output []models.Book
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
-		return output, nil
+		return &output, nil
 
 	case 400:
 		var output models.DefaultBadRequest
@@ -146,6 +147,7 @@ func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (mo
 	client := &http.Client{Transport: c.transport}
 	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
 	if err != nil {
+
 		return nil, err
 	}
 	if i.Authorization != nil {
@@ -165,10 +167,10 @@ func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (mo
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
-		return output, nil
+		return &output, nil
 	case 204:
 		var output models.GetBookByID204Output
-		return output, nil
+		return &output, nil
 	case 401:
 		var output models.GetBookByID401Output
 		return nil, output
@@ -195,7 +197,7 @@ func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (mo
 	}
 }
 
-func (c Client) CreateBook(ctx context.Context, i *models.CreateBookInput) (models.CreateBookOutput, error) {
+func (c Client) CreateBook(ctx context.Context, i *models.CreateBookInput) (*models.Book, error) {
 	path := c.BasePath + "/v1/books/{bookID}"
 	urlVals := url.Values{}
 	var body []byte
@@ -214,6 +216,7 @@ func (c Client) CreateBook(ctx context.Context, i *models.CreateBookInput) (mode
 	client := &http.Client{Transport: c.transport}
 	req, err := http.NewRequest("POST", path, bytes.NewBuffer(body))
 	if err != nil {
+
 		return nil, err
 	}
 
@@ -226,11 +229,11 @@ func (c Client) CreateBook(ctx context.Context, i *models.CreateBookInput) (mode
 	switch resp.StatusCode {
 	case 200:
 
-		var output models.CreateBook200Output
+		var output models.Book
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
-		return output, nil
+		return &output, nil
 
 	case 400:
 		var output models.DefaultBadRequest

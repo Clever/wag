@@ -3,7 +3,6 @@ package models
 import (
 	"bytes"
 	"fmt"
-	"strings"
 
 	"github.com/go-openapi/spec"
 
@@ -87,7 +86,7 @@ func printInputStruct(g *swagger.Generator, op *spec.Operation) error {
 				return err
 			}
 		} else {
-			typeName, err = TypeFromSchema(param.Schema)
+			typeName, err = swagger.TypeFromSchema(param.Schema, false)
 			if err != nil {
 				return err
 			}
@@ -221,7 +220,7 @@ func generateSuccessTypes(capOpID string, responses map[int]spec.Response) (stri
 	for _, statusCode := range successStatusCodes {
 		response := responses[statusCode]
 		outputName := fmt.Sprintf("%s%dOutput", capOpID, statusCode)
-		typeName, err := TypeFromSchema(response.Schema)
+		typeName, err := swagger.TypeFromSchema(response.Schema, false)
 		if err != nil {
 			return "", err
 		}
@@ -253,7 +252,7 @@ func generateErrorTypes(capOpID string, responses map[int]spec.Response) (string
 		response := responses[statusCode]
 
 		outputName := fmt.Sprintf("%s%dOutput", capOpID, statusCode)
-		typeName, err := TypeFromSchema(response.Schema)
+		typeName, err := swagger.TypeFromSchema(response.Schema, false)
 		if err != nil {
 			return "", err
 		}
@@ -298,40 +297,4 @@ func (d DefaultBadRequest) Error() string {
 }
 
 `, "`json:\"msg\"`", "`json:\"msg\"`")
-}
-
-func TypeFromSchema(schema *spec.Schema) (string, error) {
-	// We support three types of schemas
-	// 1. An empty schema, which we represent by an empty string by default
-	// 2. A schema with one element, the $ref key
-	// 3. A schema with two elements. One a type with value 'array' and another items field
-	// referencing the $ref
-	if schema == nil {
-		return "string", nil
-	} else if schema.Ref.String() != "" {
-		ref := schema.Ref.String()
-		if !strings.HasPrefix(ref, "#/definitions/") {
-			return "", fmt.Errorf("schema.$ref has undefined reference type. Must start with #/definitions")
-		}
-		return ref[len("#/definitions/"):], nil
-	} else {
-		schemaType := schema.Type
-		if len(schemaType) != 1 || schemaType[0] != "array" {
-			return "", fmt.Errorf("Two element schemas must have a 'type' field with the value 'array'")
-		}
-		items := schema.Items
-		if items == nil || items.Schema == nil {
-			return "", fmt.Errorf("Two element schemas must have a '$ref' field in the 'items' descriptions")
-		}
-		ref := items.Schema.Ref.String()
-		if !strings.HasPrefix(ref, "#/definitions/") {
-			return "", fmt.Errorf("schema.$ref has undefined reference type. Must start with #/definitions")
-		}
-		return "[]" + ref[len("#/definitions/"):], nil
-	}
-}
-
-// OutputObjectName returns the name of an output object. For example, GetBookByID200Output
-func OutputObjectName(op *spec.Operation, statusCode int) string {
-	return fmt.Sprintf("%s%dOutput", swagger.Capitalize(op.ID), statusCode)
 }
