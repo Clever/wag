@@ -79,3 +79,8 @@ type CreateBookError interface {
 	error // Extend the error interface
 	CreateBookStatusCode() int
 }
+
+type HealthCheckError interface {
+	error // Extend the error interface
+	HealthCheckStatusCode() int
+}

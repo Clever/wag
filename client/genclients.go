@@ -176,18 +176,25 @@ func parseResponseCode(op *spec.Operation, capOpID string) string {
 
 	buf.WriteString("\tswitch resp.StatusCode {\n")
 
+	noSuccessType := swagger.NoSuccessType(op)
 	for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
 		response := op.Responses.StatusCodeResponses[statusCode]
 		outputName := swagger.OutputType(op, statusCode)
 
 		buf.WriteString(fmt.Sprintf("\tcase %d:\n", statusCode))
 
-		if response.Schema == nil {
+		if noSuccessType && statusCode < 400 {
+			buf.WriteString("\t\treturn nil\n")
+		} else if response.Schema == nil {
 			buf.WriteString(fmt.Sprintf("\t\tvar output %s\n", outputName))
 			if statusCode < 400 {
-				buf.WriteString(fmt.Sprintf("\t\treturn output, nil\n"))
+				buf.WriteString("\t\treturn output, nil\n")
 			} else {
-				buf.WriteString(fmt.Sprintf("\t\treturn nil, output\n"))
+				if noSuccessType {
+					buf.WriteString("\t\treturn output\n")
+				} else {
+					buf.WriteString("\t\treturn nil, output\n")
+				}
 			}
 		} else {
 			if statusCode < 400 {

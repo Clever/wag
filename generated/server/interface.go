@@ -11,4 +11,5 @@ type Controller interface {
 	GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models.Book, error)
 	GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (models.GetBookByIDOutput, error)
 	CreateBook(ctx context.Context, i *models.CreateBookInput) (*models.Book, error)
+	HealthCheck(ctx context.Context, i *models.HealthCheckInput) error
 }

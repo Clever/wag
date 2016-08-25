@@ -62,3 +62,13 @@ func (_m *MockController) CreateBook(ctx context.Context, i *models.CreateBookIn
 func (_mr *_MockControllerRecorder) CreateBook(arg0, arg1 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreateBook", arg0, arg1)
 }
+
+func (_m *MockController) HealthCheck(ctx context.Context, i *models.HealthCheckInput) error {
+	ret := _m.ctrl.Call(_m, "HealthCheck", ctx, i)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+func (_mr *_MockControllerRecorder) HealthCheck(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "HealthCheck", arg0, arg1)
+}

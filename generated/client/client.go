@@ -254,3 +254,47 @@ func (c Client) CreateBook(ctx context.Context, i *models.CreateBookInput) (*mod
 
 	}
 }
+
+func (c Client) HealthCheck(ctx context.Context, i *models.HealthCheckInput) error {
+	path := c.BasePath + "/v1/health/check"
+	urlVals := url.Values{}
+	var body []byte
+
+	path = path + "?" + urlVals.Encode()
+
+	client := &http.Client{Transport: c.transport}
+	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
+	if err != nil {
+
+		return nil, err
+	}
+
+	// Add the opname for doers like tracing
+	ctx = context.WithValue(ctx, opNameCtx{}, "healthCheck")
+	resp, err := c.requestDoer.Do(client, req.WithContext(ctx))
+	if err != nil {
+		return nil, models.DefaultInternalError{Msg: err.Error()}
+	}
+	switch resp.StatusCode {
+	case 200:
+		return nil
+
+	case 400:
+		var output models.DefaultBadRequest
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, models.DefaultInternalError{Msg: err.Error()}
+		}
+		return nil, output
+
+	case 500:
+		var output models.DefaultInternalError
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, models.DefaultInternalError{Msg: err.Error()}
+		}
+		return nil, output
+
+	default:
+		return nil, models.DefaultInternalError{Msg: "Unknown response"}
+
+	}
+}

@@ -11,6 +11,15 @@ produces:
 consumes:
   - application/json
 paths:
+  /health/check:
+    get:
+      operationId: healthCheck
+      description: Checks if the service is healthy
+      tags:
+        - Infra
+      responses:
+        200:
+          description: OK response
   /books/{bookID}:
     get:
       operationId: getBookByID

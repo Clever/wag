@@ -42,6 +42,10 @@ func New(c Controller, addr string) Server {
 	r.Methods("POST").Path("/v1/books/{bookID}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h.CreateBookHandler(r.Context(), w, r)
 	})
+
+	r.Methods("GET").Path("/v1/health/check").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		h.HealthCheckHandler(r.Context(), w, r)
+	})
 	handler := withMiddleware("Swagger Test", r)
 	return Server{Handler: handler, addr: addr}
 }
