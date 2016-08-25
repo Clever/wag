@@ -1,11 +1,11 @@
 package test
 
 import (
+	"context"
 	"net/http/httptest"
 
 	"github.com/Clever/wag/generated/models"
 	"github.com/Clever/wag/generated/server"
-	"golang.org/x/net/context"
 )
 
 type ControllerImpl struct {

@@ -34,6 +34,9 @@ type logHandler struct {
 func (l *logHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	start := time.Now()
 
+	// inject the logger into req.Context
+	req = req.WithContext(logger.NewContext(req.Context(), l.logger))
+
 	lrw := &loggedResponseWriter{
 		status:         200,
 		ResponseWriter: w,

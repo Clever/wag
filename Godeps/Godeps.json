@@ -1,17 +1,15 @@
 {
 	"ImportPath": "github.com/Clever/wag",
-	"GoVersion": "go1.6.2",
+	"GoVersion": "go1.7",
+	"GodepVersion": "v74",
 	"Packages": [
 		"github.com/Clever/wag",
 		"github.com/Clever/wag/client",
-		"github.com/Clever/wag/generated/client",
-		"github.com/Clever/wag/generated/models",
-		"github.com/Clever/wag/generated/server",
-		"github.com/Clever/wag/impl",
 		"github.com/Clever/wag/models",
 		"github.com/Clever/wag/server",
 		"github.com/Clever/wag/swagger",
-		"github.com/Clever/wag/test"
+		"github.com/Clever/wag/test",
+		"github.com/Clever/wag/validation"
 	],
 	"Deps": [
 		{
@@ -54,6 +52,10 @@
 			"Rev": "18441dfa706d924a39a030ee2c3b1d8d81917b38"
 		},
 		{
+			"ImportPath": "github.com/go-openapi/loads/fmts",
+			"Rev": "18441dfa706d924a39a030ee2c3b1d8d81917b38"
+		},
+		{
 			"ImportPath": "github.com/go-openapi/runtime",
 			"Rev": "11e322eeecc1032d5a0a96c566ed53f2b5c26e22"
 		},
@@ -75,13 +77,12 @@
 		},
 		{
 			"ImportPath": "github.com/go-swagger/go-swagger/generator",
-			"Comment": "0.5.9-30-g75d539e",
-			"Rev": "75d539e0ea2e09636e4ba8dbb1afe62fe19e64d7"
+			"Comment": "0.5.9-46-gfa33185",
+			"Rev": "fa33185e4cd5c4c787db1047c7bd1fca7f857bca"
 		},
 		{
-			"ImportPath": "github.com/gorilla/context",
-			"Comment": "v1.1-4-gaed02d1",
-			"Rev": "aed02d124ae4a0e94fea4541c8effd05bf0c8296"
+			"ImportPath": "github.com/golang/mock/gomock",
+			"Rev": "bd3c8e81be01eef76d4b503f5e687d2d1354d2d9"
 		},
 		{
 			"ImportPath": "github.com/gorilla/mux",
@@ -102,16 +103,16 @@
 		},
 		{
 			"ImportPath": "github.com/opentracing/opentracing-go",
-			"Comment": "v0.2-220-g67bc0a3",
-			"Rev": "67bc0a342a73f8ce1e4514fe1ae68609554dc05e"
+			"Comment": "v0.2-221-g8555197",
+			"Rev": "855519783f479520497c6b3445611b05fc42f009"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
-			"Rev": "e22aedd37671fb115be6c0c25129c405cb575cfd"
+			"Rev": "efa3c4c36479edac5af79cbcb4bc8cb525e09b13"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/require",
-			"Rev": "e22aedd37671fb115be6c0c25129c405cb575cfd"
+			"Rev": "efa3c4c36479edac5af79cbcb4bc8cb525e09b13"
 		},
 		{
 			"ImportPath": "github.com/vburenin/nsync",
@@ -119,51 +120,55 @@
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",
-			"Rev": "075e191f18186a8ff2becaf64478e30f4545cdad"
+			"Rev": "3a1f9ef983bc408afd0a9e63fd9c962ae853e543"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context/ctxhttp",
+			"Rev": "3a1f9ef983bc408afd0a9e63fd9c962ae853e543"
 		},
 		{
 			"ImportPath": "golang.org/x/net/idna",
-			"Rev": "075e191f18186a8ff2becaf64478e30f4545cdad"
+			"Rev": "3a1f9ef983bc408afd0a9e63fd9c962ae853e543"
 		},
 		{
 			"ImportPath": "golang.org/x/text/cases",
-			"Rev": "2910a502d2bf9e43193af9d68ca516529614eed3"
+			"Rev": "d69c40b4be55797923cec7457fac7a244d91a9b6"
 		},
 		{
 			"ImportPath": "golang.org/x/text/internal/tag",
-			"Rev": "2910a502d2bf9e43193af9d68ca516529614eed3"
+			"Rev": "d69c40b4be55797923cec7457fac7a244d91a9b6"
 		},
 		{
 			"ImportPath": "golang.org/x/text/language",
-			"Rev": "2910a502d2bf9e43193af9d68ca516529614eed3"
+			"Rev": "d69c40b4be55797923cec7457fac7a244d91a9b6"
 		},
 		{
 			"ImportPath": "golang.org/x/text/runes",
-			"Rev": "2910a502d2bf9e43193af9d68ca516529614eed3"
+			"Rev": "d69c40b4be55797923cec7457fac7a244d91a9b6"
 		},
 		{
 			"ImportPath": "golang.org/x/text/secure/bidirule",
-			"Rev": "2910a502d2bf9e43193af9d68ca516529614eed3"
+			"Rev": "d69c40b4be55797923cec7457fac7a244d91a9b6"
 		},
 		{
 			"ImportPath": "golang.org/x/text/secure/precis",
-			"Rev": "2910a502d2bf9e43193af9d68ca516529614eed3"
+			"Rev": "d69c40b4be55797923cec7457fac7a244d91a9b6"
 		},
 		{
 			"ImportPath": "golang.org/x/text/transform",
-			"Rev": "2910a502d2bf9e43193af9d68ca516529614eed3"
+			"Rev": "d69c40b4be55797923cec7457fac7a244d91a9b6"
 		},
 		{
 			"ImportPath": "golang.org/x/text/unicode/bidi",
-			"Rev": "2910a502d2bf9e43193af9d68ca516529614eed3"
+			"Rev": "d69c40b4be55797923cec7457fac7a244d91a9b6"
 		},
 		{
 			"ImportPath": "golang.org/x/text/unicode/norm",
-			"Rev": "2910a502d2bf9e43193af9d68ca516529614eed3"
+			"Rev": "d69c40b4be55797923cec7457fac7a244d91a9b6"
 		},
 		{
 			"ImportPath": "golang.org/x/text/width",
-			"Rev": "2910a502d2bf9e43193af9d68ca516529614eed3"
+			"Rev": "d69c40b4be55797923cec7457fac7a244d91a9b6"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/ast/astutil",
@@ -175,13 +180,23 @@
 		},
 		{
 			"ImportPath": "gopkg.in/Clever/kayvee-go.v3",
-			"Comment": "v3.2.1",
-			"Rev": "056c92dcc68b40c5d6045f755197b3776f914154"
+			"Comment": "v3.2.1-3-g42c493f",
+			"Rev": "42c493f4a6622c867ff9a8f5c00fd5936b5bc70a"
+		},
+		{
+			"ImportPath": "gopkg.in/Clever/kayvee-go.v3/logger",
+			"Comment": "v3.2.1-3-g42c493f",
+			"Rev": "42c493f4a6622c867ff9a8f5c00fd5936b5bc70a"
+		},
+		{
+			"ImportPath": "gopkg.in/Clever/kayvee-go.v3/middleware",
+			"Comment": "v3.2.1-3-g42c493f",
+			"Rev": "42c493f4a6622c867ff9a8f5c00fd5936b5bc70a"
 		},
 		{
 			"ImportPath": "gopkg.in/tylerb/graceful.v1",
-			"Comment": "v1.2.11",
-			"Rev": "c838c13b2beeea4f4f54496da96a3a6ae567c37a"
+			"Comment": "v1.2.12",
+			"Rev": "842f31108f8d3512ce3176d00bf1a32db1d5e3af"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
