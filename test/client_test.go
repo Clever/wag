@@ -35,6 +35,10 @@ func (c *ClientContextTest) CreateBook(ctx context.Context, input *models.Create
 	return &models.Book{}, nil
 }
 
+func (c *ClientContextTest) HealthCheck(ctx context.Context, input *models.HealthCheckInput) error {
+	return nil
+}
+
 func TestDefaultClientRetries(t *testing.T) {
 	controller := ClientContextTest{}
 	s := server.New(&controller, ":8080")
