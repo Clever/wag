@@ -123,3 +123,10 @@ func (i CreateBookInput) Validate() error {
 
 	return nil
 }
+
+type HealthCheckInput struct {
+}
+
+func (i HealthCheckInput) Validate() error {
+	return nil
+}

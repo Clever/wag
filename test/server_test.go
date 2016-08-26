@@ -96,6 +96,9 @@ func (d *LastCallServer) GetBookByID(ctx context.Context, input *models.GetBookB
 func (d *LastCallServer) CreateBook(ctx context.Context, input *models.CreateBookInput) (*models.Book, error) {
 	return nil, nil
 }
+func (c *LastCallServer) HealthCheck(ctx context.Context, input *models.HealthCheckInput) error {
+	return nil
+}
 
 func TestDefaultValue(t *testing.T) {
 	d := LastCallServer{}
@@ -138,6 +141,9 @@ func (m *MiddlewareContextTest) GetBookByID(ctx context.Context, input *models.G
 }
 func (m *MiddlewareContextTest) CreateBook(ctx context.Context, input *models.CreateBookInput) (*models.Book, error) {
 	return nil, nil
+}
+func (m *MiddlewareContextTest) HealthCheck(ctx context.Context, input *models.HealthCheckInput) error {
+	return nil
 }
 
 type testContextKey struct{}

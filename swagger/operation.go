@@ -17,6 +17,10 @@ func Interface(op *spec.Operation) string {
 	}
 
 	capOpID := Capitalize(op.ID)
+	if NoSuccessType(op) {
+		return fmt.Sprintf("%s(ctx context.Context, i *models.%sInput) error", capOpID, capOpID)
+	}
+
 	singleSchema := singleSuccessOutputType(op)
 	successType := ""
 	if singleSchema != nil {
@@ -65,6 +69,24 @@ func singleSuccessOutputType(op *spec.Operation) *spec.Schema {
 	} else {
 		return nil
 	}
+}
+
+// NoSuccessType returns true if the operation has no-success response type. This includes
+// either no 200-399 response code or a 200-399 response code without a schema.
+func NoSuccessType(op *spec.Operation) bool {
+	successCodes := make([]int, 0)
+	for statusCode, _ := range op.Responses.StatusCodeResponses {
+		if statusCode < 400 {
+			successCodes = append(successCodes, statusCode)
+		}
+	}
+	if len(successCodes) > 1 {
+		return false
+	}
+	if len(successCodes) == 0 {
+		return true
+	}
+	return op.Responses.StatusCodeResponses[successCodes[0]].Schema == nil
 }
 
 // TypeFromSchema returns the type of a Swagger schema as a string. If includeModels is true

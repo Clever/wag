@@ -93,17 +93,19 @@ func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models
 
 	client := &http.Client{Transport: c.transport}
 	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
-	if err != nil {
 
+	if err != nil {
 		return nil, err
 	}
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "getBooks")
 	resp, err := c.requestDoer.Do(client, req.WithContext(ctx))
+
 	if err != nil {
 		return nil, models.DefaultInternalError{Msg: err.Error()}
 	}
+
 	switch resp.StatusCode {
 	case 200:
 
@@ -129,7 +131,6 @@ func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models
 
 	default:
 		return nil, models.DefaultInternalError{Msg: "Unknown response"}
-
 	}
 }
 
@@ -146,10 +147,11 @@ func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (mo
 
 	client := &http.Client{Transport: c.transport}
 	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
-	if err != nil {
 
+	if err != nil {
 		return nil, err
 	}
+
 	if i.Authorization != nil {
 		req.Header.Set("authorization", *i.Authorization)
 	}
@@ -157,9 +159,11 @@ func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (mo
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "getBookByID")
 	resp, err := c.requestDoer.Do(client, req.WithContext(ctx))
+
 	if err != nil {
 		return nil, models.DefaultInternalError{Msg: err.Error()}
 	}
+
 	switch resp.StatusCode {
 	case 200:
 
@@ -193,7 +197,6 @@ func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (mo
 
 	default:
 		return nil, models.DefaultInternalError{Msg: "Unknown response"}
-
 	}
 }
 
@@ -208,24 +211,28 @@ func (c Client) CreateBook(ctx context.Context, i *models.CreateBookInput) (*mod
 
 		var err error
 		body, err = json.Marshal(i.NewBook)
+
 		if err != nil {
 			return nil, err
 		}
+
 	}
 
 	client := &http.Client{Transport: c.transport}
 	req, err := http.NewRequest("POST", path, bytes.NewBuffer(body))
-	if err != nil {
 
+	if err != nil {
 		return nil, err
 	}
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "createBook")
 	resp, err := c.requestDoer.Do(client, req.WithContext(ctx))
+
 	if err != nil {
 		return nil, models.DefaultInternalError{Msg: err.Error()}
 	}
+
 	switch resp.StatusCode {
 	case 200:
 
@@ -251,6 +258,50 @@ func (c Client) CreateBook(ctx context.Context, i *models.CreateBookInput) (*mod
 
 	default:
 		return nil, models.DefaultInternalError{Msg: "Unknown response"}
+	}
+}
 
+func (c Client) HealthCheck(ctx context.Context, i *models.HealthCheckInput) error {
+	path := c.BasePath + "/v1/health/check"
+	urlVals := url.Values{}
+	var body []byte
+
+	path = path + "?" + urlVals.Encode()
+
+	client := &http.Client{Transport: c.transport}
+	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
+
+	if err != nil {
+		return err
+	}
+
+	// Add the opname for doers like tracing
+	ctx = context.WithValue(ctx, opNameCtx{}, "healthCheck")
+	resp, err := c.requestDoer.Do(client, req.WithContext(ctx))
+
+	if err != nil {
+		return models.DefaultInternalError{Msg: err.Error()}
+	}
+
+	switch resp.StatusCode {
+	case 200:
+		return nil
+
+	case 400:
+		var output models.DefaultBadRequest
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return models.DefaultInternalError{Msg: err.Error()}
+		}
+		return output
+
+	case 500:
+		var output models.DefaultInternalError
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return models.DefaultInternalError{Msg: err.Error()}
+		}
+		return output
+
+	default:
+		return models.DefaultInternalError{Msg: "Unknown response"}
 	}
 }

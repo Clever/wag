@@ -30,6 +30,9 @@ func (c *ControllerImpl) CreateBook(ctx context.Context, input *models.CreateBoo
 	c.books[input.NewBook.ID] = input.NewBook
 	return input.NewBook, nil
 }
+func (c *ControllerImpl) HealthCheck(ctx context.Context, input *models.HealthCheckInput) error {
+	return nil
+}
 
 func setupServer() *httptest.Server {
 	controller := ControllerImpl{books: make(map[int64]*models.Book)}

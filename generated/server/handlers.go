@@ -70,6 +70,7 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 	}
 
 	resp, err := h.GetBooks(ctx, input)
+
 	if err != nil {
 		if respErr, ok := err.(models.GetBooksError); ok {
 			http.Error(w, respErr.Error(), respErr.GetBooksStatusCode())
@@ -88,6 +89,7 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(respBytes)
+
 }
 func NewGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 	var input models.GetBooksInput
@@ -209,6 +211,7 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 	}
 
 	resp, err := h.GetBookByID(ctx, input)
+
 	if err != nil {
 		if respErr, ok := err.(models.GetBookByIDError); ok {
 			http.Error(w, respErr.Error(), respErr.GetBookByIDStatusCode())
@@ -227,6 +230,7 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(respBytes)
+
 }
 func NewGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 	var input models.GetBookByIDInput
@@ -285,6 +289,7 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 	}
 
 	resp, err := h.CreateBook(ctx, input)
+
 	if err != nil {
 		if respErr, ok := err.(models.CreateBookError); ok {
 			http.Error(w, respErr.Error(), respErr.CreateBookStatusCode())
@@ -303,6 +308,7 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(respBytes)
+
 }
 func NewCreateBookInput(r *http.Request) (*models.CreateBookInput, error) {
 	var input models.CreateBookInput
@@ -317,6 +323,43 @@ func NewCreateBookInput(r *http.Request) (*models.CreateBookInput, error) {
 			return nil, err
 		}
 	}
+
+	return &input, nil
+}
+
+func (h handler) HealthCheckHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	input, err := NewHealthCheckInput(r)
+	if err != nil {
+		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		return
+	}
+
+	err = input.Validate()
+	if err != nil {
+		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		return
+	}
+
+	err = h.HealthCheck(ctx, input)
+
+	if err != nil {
+		if respErr, ok := err.(models.HealthCheckError); ok {
+			http.Error(w, respErr.Error(), respErr.HealthCheckStatusCode())
+			return
+		} else {
+			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	w.Write([]byte(""))
+
+}
+func NewHealthCheckInput(r *http.Request) (*models.HealthCheckInput, error) {
+	var input models.HealthCheckInput
+
+	var err error
+	_ = err
 
 	return &input, nil
 }
