@@ -44,7 +44,52 @@ To use the generated code you need to do two things:
   log.Fatal(s.Serve())
 ```
 
-See https://github.com/Clever/wag/blob/master/impl/main.go for a working example.
+All interface methods on the controller take in a `context.Context` object.
+This object comes with additional features for you to use in implementing your server logic:
+
+* **Logging**. The [kayvee middleware logger](https://godoc.org/gopkg.in/Clever/kayvee-go.v4/middleware) is automatically added to the context object.
+  It can be pulled out of the context object and used via the kayvee `FromContext` method:
+
+```go
+import "gopkg.in/Clever/kayvee-go.v4/logger"
+...
+logger.FromContext(ctx).Info(...)
+```
+
+  You should use this logger for all logging within your controller implementation.
+
+* **Tracing**: `wag` instruments the context object with tracing-related metadata.
+  This is done via [opentracing](http://opentracing.io/).
+  In order for it to work, you are required to do two things:
+
+  * Configure your `main()` function to report tracing data to [LightStep](http://lightstep.com/).
+     We are testing Lightstep as a way to view tracing-related data:
+```go
+package main
+
+import (
+	lightstep "github.com/lightstep/lightstep-tracer-go"
+	opentracing "github.com/opentracing/opentracing-go"
+)
+
+func main() {
+	tags := make(map[string]interface{})
+	tags[lightstep.ComponentNameKey] = "<name of the repo>"
+	lightstepTracer := lightstep.NewTracer(lightstep.Options{
+	    AccessToken: os.Getenv("LIGHTSTEP_ACCESS_TOKEN"),
+	    Tags:        tags,
+	})
+	defer lightstep.FlushLightStepTracer(lightstepTracer)
+	opentracing.InitGlobalTracer(lightstepTracer)
+	...
+}
+```
+
+  * Pass the context object to any subsequent network requests you make.
+    Many client libraries accept the context object, e.g.:
+    * **net/http**: If you're making HTTP requests, use the [golang.org/x/net/context/ctxhttp](https://godoc.org/golang.org/x/net/context/ctxhttp) package.
+    * **wag**: All `wag`-generated clients take in a context object as the first argument.
+      If your handler consumes a `wag`-generated client, then pass the context object to these client methods.
 
 ### Using the Go Client
 Initialize the client with `New`
