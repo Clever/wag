@@ -3,7 +3,7 @@ Package middleware provides a customizable Kayvee logging middleware for HTTP se
 
 	logHandler := New(myHandler, myLogger, func(req *http.Request) map[string]interface{} {
 		// Add Gorilla mux vars to the log, just because
-		return mux.Vays(req)
+		return mux.Vars(req)
 	})
 
 */
@@ -13,7 +13,7 @@ import (
 	"net/http"
 	"time"
 
-	"gopkg.in/Clever/kayvee-go.v3/logger"
+	"gopkg.in/Clever/kayvee-go.v4/logger"
 )
 
 var defaultHandler = func(req *http.Request) map[string]interface{} {

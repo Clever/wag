@@ -3,8 +3,8 @@ package server
 import (
 	"net/http"
 
-	"gopkg.in/Clever/kayvee-go.v3/logger"
-	kvMiddleware "gopkg.in/Clever/kayvee-go.v3/middleware"
+	"gopkg.in/Clever/kayvee-go.v4/logger"
+	kvMiddleware "gopkg.in/Clever/kayvee-go.v4/middleware"
 
 	opentracing "github.com/opentracing/opentracing-go"
 )
