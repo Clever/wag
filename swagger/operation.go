@@ -16,8 +16,9 @@ func Interface(op *spec.Operation) string {
 
 	successCodes := SuccessStatusCodes(op)
 	successType := ""
-	singleSchema := op.Responses.StatusCodeResponses[successCodes[0]].Schema
-	if singleSchema != nil {
+
+	if len(successCodes) == 1 {
+		singleSchema := op.Responses.StatusCodeResponses[successCodes[0]].Schema
 		var err error
 		successType, err = TypeFromSchema(singleSchema, true)
 		if err != nil {
@@ -76,12 +77,12 @@ func NoSuccessType(op *spec.Operation) bool {
 // then it returns models.TYPE
 func TypeFromSchema(schema *spec.Schema, includeModels bool) (string, error) {
 	// We support three types of schemas
-	// 1. An empty schema, which we represent by an empty string by default
+	// 1. An empty schema, which we represent by the empty struct
 	// 2. A schema with one element, the $ref key
 	// 3. A schema with two elements. One a type with value 'array' and another items field
 	// referencing the $ref
 	if schema == nil {
-		return "string", nil
+		return "struct{}", nil
 	} else if schema.Ref.String() != "" {
 		ref := schema.Ref.String()
 		if !strings.HasPrefix(ref, "#/definitions/") {

@@ -32,7 +32,7 @@ func (o GetBookByID200Output) GetBookByIDStatus() int {
 	return 200
 }
 
-type GetBookByID204Output string
+type GetBookByID204Output struct{}
 
 func (o GetBookByID204Output) GetBookByIDStatus() int {
 	return 204
@@ -43,7 +43,7 @@ type GetBookByIDError interface {
 	GetBookByIDStatusCode() int
 }
 
-type GetBookByID401Output string
+type GetBookByID401Output struct{}
 
 func (o GetBookByID401Output) GetBookByIDData() interface{} {
 	return o
