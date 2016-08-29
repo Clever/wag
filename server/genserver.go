@@ -245,9 +245,21 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 			if err != nil {
 				return err
 			}
+
+			statusCodeLogic := ""
+			successCodes := swagger.SuccessStatusCodes(op)
+			if len(successCodes) == 1 {
+				statusCodeLogic = fmt.Sprintf("%d", successCodes[0])
+			} else {
+				statusCodeLogic = fmt.Sprintf("resp.%sStatus()", swagger.Capitalize(op.ID))
+			}
+
 			var tmpBuf bytes.Buffer
 			err = tmpl.Execute(&tmpBuf, handlerOp{
-				Op: swagger.Capitalize(op.ID), SuccessReturnType: !swagger.NoSuccessType(op)})
+				Op:                swagger.Capitalize(op.ID),
+				SuccessReturnType: !swagger.NoSuccessType(op),
+				StatusCode:        statusCodeLogic,
+			})
 			if err != nil {
 				return err
 			}
@@ -262,11 +274,6 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 	return g.WriteFile("server/handlers.go")
 }
 
-type handlerOp struct {
-	Op                string
-	SuccessReturnType bool
-}
-
 var jsonMarshalString = `
 func jsonMarshalNoError(i interface{}) string {
 	bytes, err := json.Marshal(i)
@@ -277,6 +284,13 @@ func jsonMarshalNoError(i interface{}) string {
 	return string(bytes)
 }
 `
+
+// handlerOp contains the template variables for the handlerTemplate
+type handlerOp struct {
+	Op                string
+	SuccessReturnType bool
+	StatusCode        string
+}
 
 var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	input, err := New{{.Op}}Input(r)
@@ -313,9 +327,11 @@ var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w ht
 		return
 	}
 
+	w.WriteHeader({{.StatusCode}})
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(respBytes)
 {{else}}
+	w.WriteHeader(200)
 	w.Write([]byte(""))
 {{end}}
 }

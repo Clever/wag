@@ -88,6 +88,7 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 		return
 	}
 
+	w.WriteHeader(200)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(respBytes)
 
@@ -229,6 +230,7 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 		return
 	}
 
+	w.WriteHeader(resp.GetBookByIDStatus())
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(respBytes)
 
@@ -307,6 +309,7 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 		return
 	}
 
+	w.WriteHeader(200)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(respBytes)
 
@@ -353,6 +356,7 @@ func (h handler) HealthCheckHandler(ctx context.Context, w http.ResponseWriter, 
 		}
 	}
 
+	w.WriteHeader(200)
 	w.Write([]byte(""))
 
 }
