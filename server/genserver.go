@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	"fmt"
+	"strings"
 
 	"github.com/go-openapi/spec"
 
@@ -122,6 +123,10 @@ func generateInterface(packageName string, paths *spec.Paths) error {
 	return g.WriteFile("server/interface.go")
 }
 
+func lowercase(input string) string {
+	return strings.ToLower(input[0:1]) + input[1:]
+}
+
 func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 	capOpID := swagger.Capitalize(op.ID)
 	g.Printf("func New%sInput(r *http.Request) (*models.%sInput, error) {\n",
@@ -134,6 +139,8 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 	for _, param := range op.Parameters {
 
 		camelParamName := swagger.StructParamName(param)
+		paramVarName := lowercase(camelParamName)
+
 		if param.In != "body" {
 			extractCode := ""
 			switch param.In {
@@ -144,40 +151,40 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 			case "header":
 				extractCode = fmt.Sprintf("r.Header.Get(\"%s\")", param.Name)
 			}
-			g.Printf("\t%sStr := %s\n", param.Name, extractCode)
+			g.Printf("\t%sStr := %s\n", paramVarName, extractCode)
 
 			if param.Required {
-				g.Printf("\tif len(%sStr) == 0{\n", param.Name)
+				g.Printf("\tif len(%sStr) == 0{\n", paramVarName)
 				g.Printf("\t\treturn nil, errors.New(\"Parameter must be specified\")\n")
 				g.Printf("\t}\n")
 			} else if param.Default != nil {
-				g.Printf("\tif len(%sStr) == 0 {\n", param.Name)
+				g.Printf("\tif len(%sStr) == 0 {\n", paramVarName)
 				g.Printf("\t\t// Use the default value\n")
-				g.Printf("\t\t%sStr = \"%s\"\n", param.Name, swagger.DefaultAsString(param))
+				g.Printf("\t\t%sStr = \"%s\"\n", paramVarName, swagger.DefaultAsString(param))
 				g.Printf("\t}\n")
 			}
 
-			g.Printf("\tif len(%sStr) != 0 {\n", param.Name)
+			g.Printf("\tif len(%sStr) != 0 {\n", paramVarName)
 
 			typeName, err := swagger.ParamToType(param, false)
 			if err != nil {
 				return err
 			}
-			typeCode, err := swagger.StringToTypeCode(fmt.Sprintf("%sStr", param.Name), param)
+			typeCode, err := swagger.StringToTypeCode(fmt.Sprintf("%sStr", paramVarName), param)
 			if err != nil {
 				return err
 			}
-			g.Printf("\t\tvar %sTmp %s\n", param.Name, typeName)
-			g.Printf("\t\t%sTmp, err = %s\n", param.Name, typeCode)
+			g.Printf("\t\tvar %sTmp %s\n", paramVarName, typeName)
+			g.Printf("\t\t%sTmp, err = %s\n", paramVarName, typeCode)
 			g.Printf("\t\tif err != nil {\n")
 			g.Printf("\t\t\treturn nil, err\n")
 			g.Printf("\t\t}\n")
 
 			// TODO: Factor this out...
 			if param.Required || param.Type == "array" {
-				g.Printf("\t\tinput.%s = %sTmp\n\n", camelParamName, param.Name)
+				g.Printf("\t\tinput.%s = %sTmp\n\n", camelParamName, paramVarName)
 			} else {
-				g.Printf("\t\tinput.%s = &%sTmp\n\n", camelParamName, param.Name)
+				g.Printf("\t\tinput.%s = &%sTmp\n\n", camelParamName, paramVarName)
 			}
 
 			g.Printf("\t}\n")

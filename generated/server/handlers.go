@@ -172,18 +172,18 @@ func NewGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 		input.MaxPages = &maxPagesTmp
 
 	}
-	min_pagesStr := r.URL.Query().Get("min_pages")
-	if len(min_pagesStr) == 0 {
+	minPagesStr := r.URL.Query().Get("min_pages")
+	if len(minPagesStr) == 0 {
 		// Use the default value
-		min_pagesStr = "5"
+		minPagesStr = "5"
 	}
-	if len(min_pagesStr) != 0 {
-		var min_pagesTmp int32
-		min_pagesTmp, err = swag.ConvertInt32(min_pagesStr)
+	if len(minPagesStr) != 0 {
+		var minPagesTmp int32
+		minPagesTmp, err = swag.ConvertInt32(minPagesStr)
 		if err != nil {
 			return nil, err
 		}
-		input.MinPages = &min_pagesTmp
+		input.MinPages = &minPagesTmp
 
 	}
 	pagesToTimeStr := r.URL.Query().Get("pagesToTime")
@@ -243,17 +243,17 @@ func NewGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 	var err error
 	_ = err
 
-	book_idStr := mux.Vars(r)["book_id"]
-	if len(book_idStr) == 0 {
+	bookIDStr := mux.Vars(r)["book_id"]
+	if len(bookIDStr) == 0 {
 		return nil, errors.New("Parameter must be specified")
 	}
-	if len(book_idStr) != 0 {
-		var book_idTmp int64
-		book_idTmp, err = swag.ConvertInt64(book_idStr)
+	if len(bookIDStr) != 0 {
+		var bookIDTmp int64
+		bookIDTmp, err = swag.ConvertInt64(bookIDStr)
 		if err != nil {
 			return nil, err
 		}
-		input.BookID = book_idTmp
+		input.BookID = bookIDTmp
 
 	}
 	authorizationStr := r.Header.Get("authorization")
