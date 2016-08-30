@@ -58,6 +58,7 @@ func jsonMarshalNoError(i interface{}) string {
 	return string(bytes)
 }
 func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+
 	input, err := NewGetBooksInput(r)
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
@@ -201,6 +202,7 @@ func NewGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 }
 
 func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+
 	input, err := NewGetBookByIDInput(r)
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
@@ -281,6 +283,7 @@ func NewGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 }
 
 func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+
 	input, err := NewCreateBookInput(r)
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
@@ -335,19 +338,8 @@ func NewCreateBookInput(r *http.Request) (*models.CreateBookInput, error) {
 }
 
 func (h handler) HealthCheckHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	input, err := NewHealthCheckInput(r)
-	if err != nil {
-		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
-		return
-	}
 
-	err = input.Validate()
-	if err != nil {
-		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
-		return
-	}
-
-	err = h.HealthCheck(ctx, input)
+	err := h.HealthCheck(ctx)
 
 	if err != nil {
 		if respErr, ok := err.(models.HealthCheckError); ok {

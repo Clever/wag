@@ -35,7 +35,7 @@ func (c *ControllerImpl) CreateBook(ctx context.Context, input *models.CreateBoo
 	c.books[input.NewBook.ID] = input.NewBook
 	return input.NewBook, nil
 }
-func (c *ControllerImpl) HealthCheck(ctx context.Context, input *models.HealthCheckInput) error {
+func (c *ControllerImpl) HealthCheck(ctx context.Context) error {
 	return nil
 }
 
