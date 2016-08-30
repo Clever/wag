@@ -35,11 +35,11 @@ func New(c Controller, addr string) Server {
 		h.GetBooksHandler(r.Context(), w, r)
 	})
 
-	r.Methods("GET").Path("/v1/books/{bookID}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	r.Methods("GET").Path("/v1/books/{book_id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h.GetBookByIDHandler(r.Context(), w, r)
 	})
 
-	r.Methods("POST").Path("/v1/books/{bookID}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	r.Methods("POST").Path("/v1/books/{book_id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h.CreateBookHandler(r.Context(), w, r)
 	})
 

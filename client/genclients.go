@@ -111,7 +111,7 @@ func buildRequestCode(op *spec.Operation, method string) string {
 			if param.Required {
 				buf.WriteString(fmt.Sprintf(queryAddCode))
 			} else {
-				buf.WriteString(fmt.Sprintf("\tif i.%s != nil {\n", swagger.Capitalize(param.Name)))
+				buf.WriteString(fmt.Sprintf("\tif i.%s != nil {\n", swagger.StructParamName(param)))
 				buf.WriteString(fmt.Sprintf(queryAddCode))
 				buf.WriteString(fmt.Sprintf("\t}\n"))
 			}
@@ -126,11 +126,11 @@ func buildRequestCode(op *spec.Operation, method string) string {
 	var err error
 	body, err = json.Marshal(i.%s)
 	%s
-`, swagger.Capitalize(param.Name), errorMessage("err", op))
+`, swagger.StructParamName(param), errorMessage("err", op))
 			if param.Required {
 				buf.WriteString(fmt.Sprintf(bodyMarshalCode))
 			} else {
-				buf.WriteString(fmt.Sprintf("\tif i.%s != nil {\n", swagger.Capitalize(param.Name)))
+				buf.WriteString(fmt.Sprintf("\tif i.%s != nil {\n", swagger.StructParamName(param)))
 				buf.WriteString(fmt.Sprintf(bodyMarshalCode))
 				buf.WriteString(fmt.Sprintf("\t}\n"))
 			}
@@ -151,7 +151,7 @@ func buildRequestCode(op *spec.Operation, method string) string {
 			if param.Required {
 				buf.WriteString(fmt.Sprintf(headerAddCode))
 			} else {
-				buf.WriteString(fmt.Sprintf("\tif i.%s != nil {\n", swagger.Capitalize(param.Name)))
+				buf.WriteString(fmt.Sprintf("\tif i.%s != nil {\n", swagger.StructParamName(param)))
 				buf.WriteString(fmt.Sprintf(headerAddCode))
 				buf.WriteString(fmt.Sprintf("\t}\n"))
 			}

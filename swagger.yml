@@ -20,12 +20,12 @@ paths:
       responses:
         200:
           description: OK response
-  /books/{bookID}:
+  /books/{book_id}:
     get:
       operationId: getBookByID
       description: Returns a book
       parameters:
-        - name: bookID
+        - name: book_id
           in: path
           type: integer
           required: true
@@ -119,7 +119,7 @@ paths:
           minimum: -5
           multipleOf: 0.5
           default: 500.5
-        - name: minPages
+        - name: min_pages
           in: query
           type: integer
           format: int32

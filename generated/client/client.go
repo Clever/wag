@@ -84,7 +84,7 @@ func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models
 		urlVals.Add("maxPages", strconv.FormatFloat(*i.MaxPages, 'E', -1, 64))
 	}
 	if i.MinPages != nil {
-		urlVals.Add("minPages", strconv.FormatInt(int64(*i.MinPages), 10))
+		urlVals.Add("min_pages", strconv.FormatInt(int64(*i.MinPages), 10))
 	}
 	if i.PagesToTime != nil {
 		urlVals.Add("pagesToTime", strconv.FormatFloat(float64(*i.PagesToTime), 'E', -1, 32))
@@ -135,11 +135,11 @@ func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models
 }
 
 func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
-	path := c.BasePath + "/v1/books/{bookID}"
+	path := c.BasePath + "/v1/books/{book_id}"
 	urlVals := url.Values{}
 	var body []byte
 
-	path = strings.Replace(path, "{bookID}", strconv.FormatInt(i.BookID, 10), -1)
+	path = strings.Replace(path, "{book_id}", strconv.FormatInt(i.BookID, 10), -1)
 	if i.RandomBytes != nil {
 		urlVals.Add("randomBytes", string(*i.RandomBytes))
 	}
@@ -201,7 +201,7 @@ func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (mo
 }
 
 func (c Client) CreateBook(ctx context.Context, i *models.CreateBookInput) (*models.Book, error) {
-	path := c.BasePath + "/v1/books/{bookID}"
+	path := c.BasePath + "/v1/books/{book_id}"
 	urlVals := url.Values{}
 	var body []byte
 

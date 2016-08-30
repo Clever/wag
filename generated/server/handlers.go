@@ -172,7 +172,7 @@ func NewGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 		input.MaxPages = &maxPagesTmp
 
 	}
-	minPagesStr := r.URL.Query().Get("minPages")
+	minPagesStr := r.URL.Query().Get("min_pages")
 	if len(minPagesStr) == 0 {
 		// Use the default value
 		minPagesStr = "5"
@@ -243,7 +243,7 @@ func NewGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 	var err error
 	_ = err
 
-	bookIDStr := mux.Vars(r)["bookID"]
+	bookIDStr := mux.Vars(r)["book_id"]
 	if len(bookIDStr) == 0 {
 		return nil, errors.New("Parameter must be specified")
 	}

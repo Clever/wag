@@ -80,13 +80,13 @@ type GetBookByIDInput struct {
 }
 
 func (i GetBookByIDInput) Validate() error {
-	if err := validate.MaximumInt("bookID", "path", i.BookID, int64(10000000), false); err != nil {
+	if err := validate.MaximumInt("book_id", "path", i.BookID, int64(10000000), false); err != nil {
 		return err
 	}
-	if err := validate.MinimumInt("bookID", "path", i.BookID, int64(2), false); err != nil {
+	if err := validate.MinimumInt("book_id", "path", i.BookID, int64(2), false); err != nil {
 		return err
 	}
-	if err := validate.MultipleOf("bookID", "path", float64(i.BookID), 2.000000); err != nil {
+	if err := validate.MultipleOf("book_id", "path", float64(i.BookID), 2.000000); err != nil {
 		return err
 	}
 	if i.Authorization != nil {
