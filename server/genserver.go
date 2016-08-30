@@ -133,7 +133,7 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 
 	for _, param := range op.Parameters {
 
-		capParamName := swagger.Capitalize(param.Name)
+		camelParamName := swagger.SnakeToCamelCase(param.Name)
 		if param.In != "body" {
 			extractCode := ""
 			switch param.In {
@@ -175,9 +175,9 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 
 			// TODO: Factor this out...
 			if param.Required || param.Type == "array" {
-				g.Printf("\t\tinput.%s = %sTmp\n\n", capParamName, param.Name)
+				g.Printf("\t\tinput.%s = %sTmp\n\n", camelParamName, param.Name)
 			} else {
-				g.Printf("\t\tinput.%s = &%sTmp\n\n", capParamName, param.Name)
+				g.Printf("\t\tinput.%s = &%sTmp\n\n", camelParamName, param.Name)
 			}
 
 			g.Printf("\t}\n")
@@ -201,8 +201,8 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 
 			g.Printf("\tif len(data) > 0 {")
 			// Initialize the pointer in the object
-			g.Printf("\t\tinput.%s = &%s{}\n", capParamName, typeName)
-			g.Printf("\t\tif err := json.NewDecoder(bytes.NewReader(data)).Decode(input.%s); err != nil {\n", capParamName)
+			g.Printf("\t\tinput.%s = &%s{}\n", camelParamName, typeName)
+			g.Printf("\t\tif err := json.NewDecoder(bytes.NewReader(data)).Decode(input.%s); err != nil {\n", camelParamName)
 			g.Printf("\t\t\treturn nil, err\n")
 			g.Printf("\t\t}\n")
 			g.Printf("\t}\n")

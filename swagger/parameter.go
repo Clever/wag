@@ -51,7 +51,7 @@ func JoinByFormat(data []string, format string) string {
 // it into a string (for serialization). For example, a integer named 'Size' becomes
 // `strconv.FormatInt(i.Size, 10)`
 func ParamToStringCode(param spec.Parameter) string {
-	valToSet := fmt.Sprintf("i.%s", Capitalize(param.Name))
+	valToSet := fmt.Sprintf("i.%s", SnakeToCamelCase(param.Name))
 	if !param.Required && param.Type != "array" {
 		valToSet = "*" + valToSet
 	}
@@ -295,7 +295,8 @@ func accessString(param spec.Parameter) string {
 	if !param.Required && param.Type != "array" {
 		pointer = "*"
 	}
-	return fmt.Sprintf("%si.%s", pointer, Capitalize(param.Name))
+	// TODO: Use this everywhere...
+	return fmt.Sprintf("%si.%s", pointer, SnakeToCamelCase(param.Name))
 }
 
 // DefaultAsString returns the default value as a string. We convert it into a string so it's easier to insert
