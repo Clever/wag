@@ -31,8 +31,8 @@ import (
 
 var _ = json.Marshal
 var _ = strings.Replace
-
 var _ = strconv.FormatInt
+var _ = bytes.Compare
 
 type Client struct {
 	BasePath    string
