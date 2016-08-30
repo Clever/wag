@@ -64,12 +64,8 @@ func jsonMarshalNoError(i interface{}) string {
 	return string(bytes)
 }
 func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-<<<<<<< 60d0f23f90d41093fff0b1b68ecf1dfd124d5d2e
 
-	input, err := NewGetBooksInput(r)
-=======
 	input, err := newGetBooksInput(r)
->>>>>>> Server comments and linting
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
@@ -222,12 +218,8 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 }
 
 func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-<<<<<<< 60d0f23f90d41093fff0b1b68ecf1dfd124d5d2e
 
-	input, err := NewGetBookByIDInput(r)
-=======
 	input, err := newGetBookByIDInput(r)
->>>>>>> Server comments and linting
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
@@ -250,6 +242,11 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 		return
 	}
 
+<<<<<<< d360785f8477694d6df059d52641c771e3a434f2
+=======
+	w.WriteHeader(resp.GetBookByIDStatusCode())
+
+>>>>>>> Fix merge conflicts
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
@@ -307,12 +304,8 @@ func newGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 }
 
 func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-<<<<<<< 60d0f23f90d41093fff0b1b68ecf1dfd124d5d2e
 
-	input, err := NewCreateBookInput(r)
-=======
 	input, err := newCreateBookInput(r)
->>>>>>> Server comments and linting
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
@@ -366,20 +359,6 @@ func newCreateBookInput(r *http.Request) (*models.CreateBookInput, error) {
 }
 
 func (h handler) HealthCheckHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-<<<<<<< 60d0f23f90d41093fff0b1b68ecf1dfd124d5d2e
-=======
-	input, err := newHealthCheckInput(r)
-	if err != nil {
-		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
-		return
-	}
-
-	err = input.Validate()
-	if err != nil {
-		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
-		return
-	}
->>>>>>> Server comments and linting
 
 	err := h.HealthCheck(ctx)
 

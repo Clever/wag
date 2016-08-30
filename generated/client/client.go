@@ -144,11 +144,7 @@ func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models
 
 // GetBookByID returns...
 func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
-<<<<<<< 8840822c0bcfcfe7eb5289400cca5cd013ae9222
-	path := c.BasePath + "/v1/books/{book_id}"
-=======
-	path := c.basePath + "/v1/books/{bookID}"
->>>>>>> Fix client linting
+	path := c.basePath + "/v1/books/{book_id}"
 	urlVals := url.Values{}
 	var body []byte
 
@@ -215,11 +211,7 @@ func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (mo
 
 // CreateBook returns...
 func (c Client) CreateBook(ctx context.Context, i *models.CreateBookInput) (*models.Book, error) {
-<<<<<<< 8840822c0bcfcfe7eb5289400cca5cd013ae9222
-	path := c.BasePath + "/v1/books/{book_id}"
-=======
-	path := c.basePath + "/v1/books/{bookID}"
->>>>>>> Fix client linting
+	path := c.basePath + "/v1/books/{book_id}"
 	urlVals := url.Values{}
 	var body []byte
 
@@ -279,14 +271,9 @@ func (c Client) CreateBook(ctx context.Context, i *models.CreateBookInput) (*mod
 	}
 }
 
-<<<<<<< 8840822c0bcfcfe7eb5289400cca5cd013ae9222
-func (c Client) HealthCheck(ctx context.Context) error {
-	path := c.BasePath + "/v1/health/check"
-=======
 // HealthCheck returns...
-func (c Client) HealthCheck(ctx context.Context, i *models.HealthCheckInput) error {
+func (c Client) HealthCheck(ctx context.Context) error {
 	path := c.basePath + "/v1/health/check"
->>>>>>> Fix client linting
 	urlVals := url.Values{}
 	var body []byte
 

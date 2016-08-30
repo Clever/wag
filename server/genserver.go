@@ -265,7 +265,7 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 			if len(successCodes) == 1 {
 				statusCodeLogic = fmt.Sprintf("%d", successCodes[0])
 			} else {
-				statusCodeLogic = fmt.Sprintf("resp.%sStatus()", swagger.Capitalize(op.ID))
+				statusCodeLogic = fmt.Sprintf("resp.%sStatusCode()", swagger.Capitalize(op.ID))
 			}
 
 			var tmpBuf bytes.Buffer

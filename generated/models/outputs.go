@@ -39,12 +39,8 @@ func (o GetBookByID200Output) GetBookByIDStatusCode() int {
 	return 200
 }
 
-<<<<<<< 00c2e33fd3a490a64f718eef3cd28b8d3e822989
-type GetBookByID204Output struct{}
-=======
 // GetBookByID204Output defines the 204 status code response for GetBookByID
-type GetBookByID204Output string
->>>>>>> Comments / linting in models package
+type GetBookByID204Output struct{}
 
 // GetBookByIDStatusCode returns the status code for the operation
 func (o GetBookByID204Output) GetBookByIDStatusCode() int {
@@ -57,12 +53,8 @@ type GetBookByIDError interface {
 	GetBookByIDStatusCode() int
 }
 
-<<<<<<< 00c2e33fd3a490a64f718eef3cd28b8d3e822989
-type GetBookByID401Output struct{}
-=======
 // GetBookByID401Output defines the 401 status code response for GetBookByID
-type GetBookByID401Output string
->>>>>>> Comments / linting in models package
+type GetBookByID401Output struct{}
 
 // Error returns `Status Code: X`. We implemeted it to satisfy
 // the error interface. More detailed error messages maybe we available
