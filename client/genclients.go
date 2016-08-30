@@ -34,8 +34,9 @@ var _ = strings.Replace
 var _ = strconv.FormatInt
 var _ = bytes.Compare
 
+// Client makes requests to %s
 type Client struct {
-	BasePath    string
+	basePath    string
 	requestDoer doer
 	transport   *http.Transport
 	// Keep the retry doer around so that we can set the number of retries
@@ -48,15 +49,17 @@ func New(basePath string) Client {
 	tracing := tracingDoer{d: base}
 	retry := retryDoer{d: tracing, defaultRetries: 1}
 
-	return Client{requestDoer: &retry, retryDoer: &retry, transport: &http.Transport{}, BasePath: basePath}
+	return Client{requestDoer: &retry, retryDoer: &retry, transport: &http.Transport{}, basePath: basePath}
 }
 
+// WithRetries returns a new client that retries all GET operations until they either succeed or fail the
+// number of times specified.
 func (c Client) WithRetries(retries int) Client {
 	c.retryDoer.defaultRetries = retries
 	return c
 }
 
-`, packageName)
+`, packageName, s.Info.InfoProps.Title)
 
 	g.Printf(swagger.BaseParamToStringCode())
 
@@ -76,8 +79,9 @@ func methodCode(op *spec.Operation, basePath, method, methodPath string) string 
 	var buf bytes.Buffer
 	capOpID := swagger.Capitalize(op.ID)
 
+	buf.WriteString(swagger.InterfaceComment(op) + "\n")
 	buf.WriteString(fmt.Sprintf("func (c Client) %s {\n", swagger.Interface(op)))
-	buf.WriteString(fmt.Sprintf("\tpath := c.BasePath + \"%s\"\n", basePath+methodPath))
+	buf.WriteString(fmt.Sprintf("\tpath := c.basePath + \"%s\"\n", basePath+methodPath))
 	buf.WriteString(fmt.Sprintf("\turlVals := url.Values{}\n"))
 	buf.WriteString(fmt.Sprintf("\tvar body []byte\n\n"))
 

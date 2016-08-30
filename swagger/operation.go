@@ -43,6 +43,14 @@ func Interface(op *spec.Operation) string {
 		capOpID, input, successType)
 }
 
+// InterfaceComment returns the comment for the interface for the operation
+func InterfaceComment(op *spec.Operation) string {
+
+	capOpID := Capitalize(op.ID)
+	// TODO: Finish this once the new interface code is merged in...
+	return fmt.Sprintf("// %s returns...", capOpID)
+}
+
 // OutputType returns the output type for a given status code of an operation
 func OutputType(op *spec.Operation, statusCode int) string {
 	successCodes := SuccessStatusCodes(op)

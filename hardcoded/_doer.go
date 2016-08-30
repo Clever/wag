@@ -53,9 +53,9 @@ type retryDoer struct {
 	defaultRetries int
 }
 
-// WithRetry returns a new context that overrides the number of retries to do for a particular
+// WithRetries returns a new context that overrides the number of retries to do for a particular
 // request.
-func WithRetry(ctx context.Context, retries int) context.Context {
+func WithRetries(ctx context.Context, retries int) context.Context {
 	return context.WithValue(ctx, retryContext{}, retries)
 }
 
