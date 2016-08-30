@@ -24,7 +24,12 @@ func (c *ControllerImpl) GetBookByID(ctx context.Context, input *models.GetBookB
 	if !ok {
 		return nil, models.GetBookByID404Output{}
 	}
-	return models.GetBookByID200Output(*book), nil
+	if input.BookID%4 == 2 {
+		return models.GetBookByID204Output{}, nil
+	} else {
+		return models.GetBookByID200Output(*book), nil
+	}
+
 }
 func (c *ControllerImpl) CreateBook(ctx context.Context, input *models.CreateBookInput) (*models.Book, error) {
 	c.books[input.NewBook.ID] = input.NewBook

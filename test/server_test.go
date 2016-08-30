@@ -40,6 +40,20 @@ func TestBasicEndToEnd(t *testing.T) {
 	require.True(t, ok)
 	assert.Equal(t, bookID, singleBook.ID)
 	assert.Equal(t, bookName, singleBook.Name)
+
+	// If we have a bookID == 2mod4 then it returns a 204
+	otherBookID := int64(126)
+
+	createdBook, err = c.CreateBook(
+		context.Background(), &models.CreateBookInput{NewBook: &models.Book{ID: otherBookID, Name: bookName}})
+	assert.NoError(t, err)
+	assert.Equal(t, otherBookID, createdBook.ID)
+	assert.Equal(t, bookName, createdBook.Name)
+
+	singleBookOutput, err = c.GetBookByID(context.Background(), &models.GetBookByIDInput{BookID: otherBookID})
+	assert.NoError(t, err)
+	_, ok = singleBookOutput.(models.GetBookByID204Output)
+	require.True(t, ok)
 }
 
 func TestUserDefinedErrorResponse(t *testing.T) {

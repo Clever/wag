@@ -9,23 +9,18 @@ import (
 
 // Interface returns the interface for an operation
 func Interface(op *spec.Operation) string {
-	successCodes := make([]int, 0)
-	for statusCode, _ := range op.Responses.StatusCodeResponses {
-		if statusCode < 400 {
-			successCodes = append(successCodes, statusCode)
-		}
-	}
-
 	capOpID := Capitalize(op.ID)
 	if NoSuccessType(op) {
 		return fmt.Sprintf("%s(ctx context.Context, i *models.%sInput) error", capOpID, capOpID)
 	}
 
-	singleSchema := singleSuccessOutputType(op)
+	successCodes := SuccessStatusCodes(op)
 	successType := ""
-	if singleSchema != nil {
+
+	if len(successCodes) == 1 {
+		singleSchema := op.Responses.StatusCodeResponses[successCodes[0]].Schema
 		var err error
-		successType, err = TypeFromSchema(op.Responses.StatusCodeResponses[successCodes[0]].Schema, true)
+		successType, err = TypeFromSchema(singleSchema, true)
 		if err != nil {
 			panic(fmt.Errorf("Could not convert operation to type %s", err))
 		}
@@ -43,9 +38,9 @@ func Interface(op *spec.Operation) string {
 
 // OutputType returns the output type for a given status code of an operation
 func OutputType(op *spec.Operation, statusCode int) string {
-	singleSuccessSchema := singleSuccessOutputType(op)
-	if singleSuccessSchema != nil && statusCode < 400 {
-		successType, err := TypeFromSchema(singleSuccessSchema, true)
+	successCodes := SuccessStatusCodes(op)
+	if len(successCodes) == 1 && statusCode < 400 {
+		successType, err := TypeFromSchema(op.Responses.StatusCodeResponses[successCodes[0]].Schema, true)
 		if err != nil {
 			panic(fmt.Errorf("Could not convert operation to type %s", err))
 		}
@@ -54,32 +49,21 @@ func OutputType(op *spec.Operation, statusCode int) string {
 	return fmt.Sprintf("models.%s%dOutput", Capitalize(op.ID), statusCode)
 }
 
-// singleSuccessOutputType returns nil if there is more than one success output type for an
-// operation. If there is only one, then it returns its name as a string pointer.
-func singleSuccessOutputType(op *spec.Operation) *spec.Schema {
+// SUccessStatusCodes returns a slice of all the success status codes for an operation
+func SuccessStatusCodes(op *spec.Operation) []int {
 	successCodes := make([]int, 0)
 	for statusCode, _ := range op.Responses.StatusCodeResponses {
 		if statusCode < 400 {
 			successCodes = append(successCodes, statusCode)
 		}
 	}
-
-	if len(successCodes) == 1 {
-		return op.Responses.StatusCodeResponses[successCodes[0]].Schema
-	} else {
-		return nil
-	}
+	return successCodes
 }
 
 // NoSuccessType returns true if the operation has no-success response type. This includes
 // either no 200-399 response code or a 200-399 response code without a schema.
 func NoSuccessType(op *spec.Operation) bool {
-	successCodes := make([]int, 0)
-	for statusCode, _ := range op.Responses.StatusCodeResponses {
-		if statusCode < 400 {
-			successCodes = append(successCodes, statusCode)
-		}
-	}
+	successCodes := SuccessStatusCodes(op)
 	if len(successCodes) > 1 {
 		return false
 	}
@@ -93,12 +77,12 @@ func NoSuccessType(op *spec.Operation) bool {
 // then it returns models.TYPE
 func TypeFromSchema(schema *spec.Schema, includeModels bool) (string, error) {
 	// We support three types of schemas
-	// 1. An empty schema, which we represent by an empty string by default
+	// 1. An empty schema, which we represent by the empty struct
 	// 2. A schema with one element, the $ref key
 	// 3. A schema with two elements. One a type with value 'array' and another items field
 	// referencing the $ref
 	if schema == nil {
-		return "string", nil
+		return "struct{}", nil
 	} else if schema.Ref.String() != "" {
 		ref := schema.Ref.String()
 		if !strings.HasPrefix(ref, "#/definitions/") {
