@@ -10,8 +10,15 @@ import (
 // Interface returns the interface for an operation
 func Interface(op *spec.Operation) string {
 	capOpID := Capitalize(op.ID)
+
+	// Don't add the input parameter argument unless there are some arguments
+	input := ""
+	if len(op.Parameters) != 0 {
+		input = fmt.Sprintf("i *models.%sInput", capOpID)
+	}
+
 	if NoSuccessType(op) {
-		return fmt.Sprintf("%s(ctx context.Context, i *models.%sInput) error", capOpID, capOpID)
+		return fmt.Sprintf("%s(ctx context.Context, %s) error", capOpID, input)
 	}
 
 	successCodes := SuccessStatusCodes(op)
@@ -32,8 +39,8 @@ func Interface(op *spec.Operation) string {
 		successType = fmt.Sprintf("models.%sOutput", capOpID)
 	}
 
-	return fmt.Sprintf("%s(ctx context.Context, i *models.%sInput) (%s, error)",
-		capOpID, capOpID, successType)
+	return fmt.Sprintf("%s(ctx context.Context, %s) (%s, error)",
+		capOpID, input, successType)
 }
 
 // OutputType returns the output type for a given status code of an operation

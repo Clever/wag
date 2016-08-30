@@ -35,7 +35,7 @@ func (c *ClientContextTest) CreateBook(ctx context.Context, input *models.Create
 	return &models.Book{}, nil
 }
 
-func (c *ClientContextTest) HealthCheck(ctx context.Context, input *models.HealthCheckInput) error {
+func (c *ClientContextTest) HealthCheck(ctx context.Context) error {
 	return nil
 }
 

@@ -266,7 +266,7 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 				Op:                swagger.Capitalize(op.ID),
 				SuccessReturnType: !swagger.NoSuccessType(op),
 				StatusCode:        statusCodeLogic,
-			})
+				HasParams:         len(op.Parameters) != 0})
 			if err != nil {
 				return err
 			}
@@ -297,9 +297,11 @@ type handlerOp struct {
 	Op                string
 	SuccessReturnType bool
 	StatusCode        string
+	HasParams         bool
 }
 
 var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+{{if .HasParams}}
 	input, err := New{{.Op}}Input(r)
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
@@ -316,6 +318,13 @@ var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w ht
 	resp, err := h.{{.Op}}(ctx, input)
 {{else}}
 	err = h.{{.Op}}(ctx, input)	
+{{end}}
+{{else}}
+{{if .SuccessReturnType}}
+	resp, err := h.{{.Op}}(ctx)
+{{else}}
+	err := h.{{.Op}}(ctx)	
+{{end}}
 {{end}}
 	if err != nil {
 		if respErr, ok := err.(models.{{.Op}}Error); ok {

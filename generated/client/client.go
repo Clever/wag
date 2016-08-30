@@ -261,7 +261,7 @@ func (c Client) CreateBook(ctx context.Context, i *models.CreateBookInput) (*mod
 	}
 }
 
-func (c Client) HealthCheck(ctx context.Context, i *models.HealthCheckInput) error {
+func (c Client) HealthCheck(ctx context.Context) error {
 	path := c.BasePath + "/v1/health/check"
 	urlVals := url.Values{}
 	var body []byte
