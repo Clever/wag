@@ -94,7 +94,7 @@ func printInputStruct(g *swagger.Generator, op *spec.Operation) error {
 			typeName = "*" + typeName
 		}
 
-		g.Printf("\t%s %s\n", swagger.SnakeToCamelCase(param.Name), typeName)
+		g.Printf("\t%s %s\n", swagger.StructParamName(param), typeName)
 	}
 	g.Printf("}\n\n")
 

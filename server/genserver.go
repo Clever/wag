@@ -133,7 +133,7 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 
 	for _, param := range op.Parameters {
 
-		camelParamName := swagger.SnakeToCamelCase(param.Name)
+		camelParamName := swagger.StructParamName(param)
 		if param.In != "body" {
 			extractCode := ""
 			switch param.In {

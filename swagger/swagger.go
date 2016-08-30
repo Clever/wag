@@ -83,23 +83,6 @@ func Capitalize(input string) string {
 	return strings.ToUpper(input[0:1]) + input[1:]
 }
 
-// CapitalCamelCase converts a string from snake_case into camel case. It leaves
-// non-snake-case strings as is.
-func SnakeToCamelCase(input string) string {
-	output := ""
-	parts := strings.Split(input, "_")
-	for _, part := range parts {
-		// Special case ID since it comes up so often and go's best practices are to
-		// make it captial ID
-		if part == "id" {
-			output += "ID"
-		} else {
-			output += Capitalize(part)
-		}
-	}
-	return output
-}
-
 func PathItemOperations(item spec.PathItem) map[string]*spec.Operation {
 	ops := make(map[string]*spec.Operation)
 	if item.Get != nil {
