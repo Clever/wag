@@ -230,6 +230,7 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 	g.Printf("var _ = swag.ConvertInt32\n")
 	g.Printf("var _ = errors.New\n")
 	g.Printf("var _ = mux.Vars\n")
+	g.Printf("var _ = bytes.Compare\n")
 	g.Printf("var _ = ioutil.ReadAll\n\n")
 
 	g.Printf(swagger.BaseStringToTypeCode())

@@ -19,6 +19,7 @@ var _ = strfmt.Default
 var _ = swag.ConvertInt32
 var _ = errors.New
 var _ = mux.Vars
+var _ = bytes.Compare
 var _ = ioutil.ReadAll
 
 var formats = strfmt.Default
