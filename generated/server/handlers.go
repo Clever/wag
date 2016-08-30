@@ -82,13 +82,14 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 		}
 	}
 
+	w.WriteHeader(200)
+
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(200)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(respBytes)
 
@@ -224,13 +225,14 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 		}
 	}
 
+	w.WriteHeader(resp.GetBookByIDStatus())
+
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(resp.GetBookByIDStatus())
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(respBytes)
 
@@ -303,13 +305,14 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 		}
 	}
 
+	w.WriteHeader(200)
+
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(200)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(respBytes)
 
@@ -357,6 +360,7 @@ func (h handler) HealthCheckHandler(ctx context.Context, w http.ResponseWriter, 
 	}
 
 	w.WriteHeader(200)
+
 	w.Write([]byte(""))
 
 }

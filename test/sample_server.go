@@ -24,10 +24,10 @@ func (c *ControllerImpl) GetBookByID(ctx context.Context, input *models.GetBookB
 	if !ok {
 		return nil, models.GetBookByID404Output{}
 	}
-	if input.BookID%4 == 0 {
-		return models.GetBookByID200Output(*book), nil
-	} else {
+	if input.BookID%4 == 2 {
 		return models.GetBookByID204Output{}, nil
+	} else {
+		return models.GetBookByID200Output(*book), nil
 	}
 
 }

@@ -320,6 +320,7 @@ var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w ht
 		}
 	}
 
+	w.WriteHeader({{.StatusCode}})
 {{if .SuccessReturnType}}
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
@@ -327,11 +328,9 @@ var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w ht
 		return
 	}
 
-	w.WriteHeader({{.StatusCode}})
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(respBytes)
 {{else}}
-	w.WriteHeader(200)
 	w.Write([]byte(""))
 {{end}}
 }
