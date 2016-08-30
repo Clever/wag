@@ -71,7 +71,9 @@ var _ = strfmt.NewFormats
 }
 
 func printInputStruct(g *swagger.Generator, op *spec.Operation) error {
-	g.Printf("type %sInput struct {\n", swagger.Capitalize(op.ID))
+	capOpID := swagger.Capitalize(op.ID)
+	g.Printf("// %sInput holds the input parameters for a %s operation\n", capOpID, op.ID)
+	g.Printf("type %sInput struct {\n", capOpID)
 
 	for _, param := range op.Parameters {
 		if param.In == "formData" {
@@ -102,7 +104,11 @@ func printInputStruct(g *swagger.Generator, op *spec.Operation) error {
 }
 
 func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
-	g.Printf("func (i %sInput) Validate() error{\n", swagger.Capitalize(op.ID))
+	capOpID := swagger.Capitalize(op.ID)
+	g.Printf("// Validate returns an error if any of the %sInput parameters don't satisfy the\n",
+		capOpID)
+	g.Printf("// requirements from the swagger yml file\n")
+	g.Printf("func (i %sInput) Validate() error{\n", capOpID)
 
 	for _, param := range op.Parameters {
 		if param.In == "body" {
@@ -197,8 +203,10 @@ func validateStatusCodes(responses map[int]spec.Response) error {
 
 func generateSuccessTypes(capOpID string, responses map[int]spec.Response) (string, error) {
 	var buf bytes.Buffer
+	buf.WriteString(fmt.Sprintf("// %sOutput defines the success output interface for %s\n",
+		capOpID, capOpID))
 	buf.WriteString(fmt.Sprintf("type %sOutput interface {\n", capOpID))
-	buf.WriteString(fmt.Sprintf("\t%sStatus() int\n", capOpID))
+	buf.WriteString(fmt.Sprintf("\t%sStatusCode() int\n", capOpID))
 	buf.WriteString(fmt.Sprintf("}\n\n"))
 
 	successStatusCodes := make([]int, 0)
@@ -222,8 +230,13 @@ func generateSuccessTypes(capOpID string, responses map[int]spec.Response) (stri
 		if err != nil {
 			return "", err
 		}
+		buf.WriteString(fmt.Sprintf("// %s defines the %d status code response for %s\n",
+			outputName, statusCode, capOpID))
 		buf.WriteString(fmt.Sprintf("type %s %s\n\n", outputName, typeName))
-		buf.WriteString(fmt.Sprintf("func (o %s) %sStatus() int {\n", outputName, capOpID))
+
+		buf.WriteString(fmt.Sprintf("// %sStatusCode returns the status code for the operation\n",
+			capOpID))
+		buf.WriteString(fmt.Sprintf("func (o %s) %sStatusCode() int {\n", outputName, capOpID))
 		buf.WriteString(fmt.Sprintf("\treturn %d\n", statusCode))
 		buf.WriteString(fmt.Sprintf("}\n\n"))
 	}
@@ -232,6 +245,8 @@ func generateSuccessTypes(capOpID string, responses map[int]spec.Response) (stri
 
 func generateErrorTypes(capOpID string, responses map[int]spec.Response) (string, error) {
 	var buf bytes.Buffer
+	buf.WriteString(fmt.Sprintf("// %sError defines the error interface for %s\n",
+		capOpID, capOpID))
 	buf.WriteString(fmt.Sprintf("type %sError interface {\n", capOpID))
 	buf.WriteString(fmt.Sprintf("\terror // Extend the error interface\n"))
 	buf.WriteString(fmt.Sprintf("\t%sStatusCode() int\n", capOpID))
@@ -249,18 +264,19 @@ func generateErrorTypes(capOpID string, responses map[int]spec.Response) (string
 			return "", err
 		}
 
+		buf.WriteString(fmt.Sprintf("// %s defines the %d status code response for %s\n",
+			outputName, statusCode, capOpID))
 		buf.WriteString(fmt.Sprintf("type %s %s\n\n", outputName, typeName))
 
-		buf.WriteString(fmt.Sprintf("func (o %s) %sData() interface{} {\n", outputName, capOpID))
-		buf.WriteString(fmt.Sprintf("\treturn o\n"))
-		buf.WriteString(fmt.Sprintf("}\n\n"))
-
+		buf.WriteString(fmt.Sprintf("// Error returns `Status Code: X`. We implemeted it to satisfy\n"))
+		buf.WriteString(fmt.Sprintf("// the error interface. More detailed error messages maybe we available\n"))
+		buf.WriteString(fmt.Sprintf("// on the output type\n"))
 		buf.WriteString(fmt.Sprintf("func (o %s) Error() string {\n", outputName))
-		buf.WriteString(fmt.Sprintf("\t// We implement this to satisfy the error interface. This has a generic error message.\n"))
-		buf.WriteString(fmt.Sprintf("\t// If the user wants a more details error message they should put it in the output type\n"))
 		buf.WriteString(fmt.Sprintf("\treturn \"Status Code: %d\"\n", statusCode))
 		buf.WriteString(fmt.Sprintf("}\n\n"))
 
+		buf.WriteString(fmt.Sprintf("// %sStatusCode returns the status code for the operation\n",
+			capOpID))
 		buf.WriteString(fmt.Sprintf("func (o %s) %sStatusCode() int {\n", outputName, capOpID))
 		buf.WriteString(fmt.Sprintf("\treturn %d\n", statusCode))
 		buf.WriteString(fmt.Sprintf("}\n\n"))
@@ -276,14 +292,17 @@ type DefaultInternalError struct {
 	Msg string %s
 }
 
+// Error returns the internal error that caused the 500
 func (d DefaultInternalError) Error() string {
 	return d.Msg
 }
 
+// DefaultBadRequest represents a generic 400 response
 type DefaultBadRequest struct {
 	Msg string %s
 }
 
+// Error returns the validation error that caused the 400
 func (d DefaultBadRequest) Error() string {
 	return d.Msg
 }
