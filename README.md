@@ -19,7 +19,7 @@ validate: swagger-validate-deps
 	$(call swagger-validate,$(SWAGGER_CONFIG))
 
 generate: validate swagger-generate-go-deps swagger-generate-javascript-client-deps
-	$(call swagger-generate-go,$(SWAGGER_CONFIG),$(PKG),$(PKG)/generated)
+	$(call swagger-generate-go,$(SWAGGER_CONFIG),$(PKG),$(PKG)/gen-go)
 	$(call swagger-generate-javascript-client,$(SWAGGER_CONFIG),$(SWAGGER_CLIENT_NPM_PACKAGE_NAME),$(SWAGGER_CLIENT_NPM_PACKAGE_VERSION),$(SWAGGER_CLIENT_NPM_PACKAGE_MODULE_NAME))
 ```
 
@@ -29,14 +29,14 @@ make generate
 ```
 
 This generates four directories. You should not have to modify any of the generated code:
-- generated/models: contains all the definitions in your Swagger file as well as API input / output definitions
-- generated/server: contains the router, middleware, and handler logic
-- generated/client: contains the Go client library
+- gen-go/models: contains all the definitions in your Swagger file as well as API input / output definitions
+- gen-go/server: contains the router, middleware, and handler logic
+- gen-go/client: contains the Go client library
 - gen-js: contains the javascript client library
 
 ### Using the Go Server
 To use the generated code you need to do two things:
-- Implement the controller interface defined in `generated/server/interface.go`
+- Implement the controller interface defined in `gen-go/server/interface.go`
 - Pass the controller into the Server constructor. For example:
 ```
   s := server.New(myController, ":8000")
