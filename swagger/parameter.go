@@ -24,7 +24,7 @@ func BaseParamToStringCode() string {
 	return `
 // JoinByFormat joins a string array by a known format:
 //	 csv: comma separated value (default)
-//   ssv: space separated value
+//	 ssv: space separated value
 //	 tsv: tab separated value
 //	 pipes: pipe (|) separated value
 func JoinByFormat(data []string, format string) string {

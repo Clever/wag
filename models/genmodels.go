@@ -269,8 +269,8 @@ func generateErrorTypes(capOpID string, responses map[int]spec.Response) (string
 		buf.WriteString(fmt.Sprintf("type %s %s\n\n", outputName, typeName))
 
 		buf.WriteString(fmt.Sprintf("// Error returns `Status Code: X`. We implemeted it to satisfy\n"))
-		buf.WriteString(fmt.Sprintf("// the error interface. More detailed error messages maybe we available\n"))
-		buf.WriteString(fmt.Sprintf("// on the output type\n"))
+		buf.WriteString(fmt.Sprintf("// the error interface. For a more descriptive error message see\n"))
+		buf.WriteString(fmt.Sprintf("// the output type.\n"))
 		buf.WriteString(fmt.Sprintf("func (o %s) Error() string {\n", outputName))
 		buf.WriteString(fmt.Sprintf("\treturn \"Status Code: %d\"\n", statusCode))
 		buf.WriteString(fmt.Sprintf("}\n\n"))

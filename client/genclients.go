@@ -34,7 +34,7 @@ var _ = strings.Replace
 var _ = strconv.FormatInt
 var _ = bytes.Compare
 
-// Client makes requests to %s
+// Client is used to make requests to %s
 type Client struct {
 	basePath    string
 	requestDoer doer
