@@ -100,7 +100,7 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 
 }
 
-// newGetBooksInput takes in an http.Request an returns the input struct
+// newGetBooksInput takes in an http.Request an returns the input struct.
 func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 	var input models.GetBooksInput
 
@@ -254,7 +254,7 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 
 }
 
-// newGetBookByIDInput takes in an http.Request an returns the input struct
+// newGetBookByIDInput takes in an http.Request an returns the input struct.
 func newGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 	var input models.GetBookByIDInput
 
@@ -335,7 +335,7 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 
 }
 
-// newCreateBookInput takes in an http.Request an returns the input struct
+// newCreateBookInput takes in an http.Request an returns the input struct.
 func newCreateBookInput(r *http.Request) (*models.CreateBookInput, error) {
 	var input models.CreateBookInput
 
@@ -371,7 +371,7 @@ func (h handler) HealthCheckHandler(ctx context.Context, w http.ResponseWriter, 
 
 }
 
-// newHealthCheckInput takes in an http.Request an returns the input struct
+// newHealthCheckInput takes in an http.Request an returns the input struct.
 func newHealthCheckInput(r *http.Request) (*models.HealthCheckInput, error) {
 	var input models.HealthCheckInput
 

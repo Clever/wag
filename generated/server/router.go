@@ -30,7 +30,7 @@ type handler struct {
 	Controller
 }
 
-// New returns a Server that implements the Controller interface. It will start "Serve" is called.
+// New returns a Server that implements the Controller interface. It will start when "Serve" is called.
 func New(c Controller, addr string) Server {
 	r := mux.NewRouter()
 	h := handler{Controller: c}

@@ -16,7 +16,7 @@ var _ = strings.Replace
 var _ = strconv.FormatInt
 var _ = bytes.Compare
 
-// Client is used to make requests to Swagger Test
+// Client is used to make requests to the Swagger Test service.
 type Client struct {
 	basePath    string
 	requestDoer doer
@@ -25,7 +25,7 @@ type Client struct {
 	retryDoer *retryDoer
 }
 
-// New creates a new client. The base path and http transport are configurable
+// New creates a new client. The base path and http transport are configurable.
 func New(basePath string) Client {
 	base := baseDoer{}
 	tracing := tracingDoer{d: base}
@@ -64,7 +64,8 @@ func JoinByFormat(data []string, format string) string {
 	return strings.Join(data, sep)
 }
 
-// GetBooks returns...
+// GetBooks makes a GET request to /books.
+// Returns a list of books
 func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models.Book, error) {
 	path := c.basePath + "/v1/books"
 	urlVals := url.Values{}
@@ -142,7 +143,8 @@ func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models
 	}
 }
 
-// GetBookByID returns...
+// GetBookByID makes a GET request to /books/{book_id}.
+// Returns a book
 func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
 	path := c.basePath + "/v1/books/{book_id}"
 	urlVals := url.Values{}
@@ -209,7 +211,8 @@ func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (mo
 	}
 }
 
-// CreateBook returns...
+// CreateBook makes a POST request to /books/{book_id}.
+// Creates a book
 func (c Client) CreateBook(ctx context.Context, i *models.CreateBookInput) (*models.Book, error) {
 	path := c.basePath + "/v1/books/{book_id}"
 	urlVals := url.Values{}
@@ -271,7 +274,8 @@ func (c Client) CreateBook(ctx context.Context, i *models.CreateBookInput) (*mod
 	}
 }
 
-// HealthCheck returns...
+// HealthCheck makes a GET request to /health/check.
+// Checks if the service is healthy
 func (c Client) HealthCheck(ctx context.Context) error {
 	path := c.basePath + "/v1/health/check"
 	urlVals := url.Values{}

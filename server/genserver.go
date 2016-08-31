@@ -62,7 +62,7 @@ type handler struct {
 	Controller
 }
 
-// New returns a Server that implements the Controller interface. It will start "Serve" is called.
+// New returns a Server that implements the Controller interface. It will start when "Serve" is called.
 func New(c Controller, addr string) Server {
 	r := mux.NewRouter()
 	h := handler{Controller: c}
@@ -113,15 +113,15 @@ func generateInterface(packageName string, serviceName string, paths *spec.Paths
 	g.Printf("package server\n\n")
 	g.Printf(swagger.ImportStatements([]string{"context", packageName + "/models"}))
 	g.Printf("//go:generate $GOPATH/bin/mockgen -source=$GOFILE -destination=mock_controller.go -package=server\n\n")
-	g.Printf("// Controller defines the interface for %s\n", serviceName)
+	g.Printf("// Controller defines the interface for the %s service.\n", serviceName)
 	g.Printf("type Controller interface {\n")
 
 	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
 		path := paths.Paths[pathKey]
 		pathItemOps := swagger.PathItemOperations(path)
-		for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
-			g.Printf("\t%s\n", swagger.InterfaceComment(pathItemOps[opKey]))
-			g.Printf("\t%s\n", swagger.Interface(pathItemOps[opKey]))
+		for _, method := range swagger.SortedOperationsKeys(pathItemOps) {
+			g.Printf("\t%s\n", swagger.InterfaceComment(method, pathKey, pathItemOps[method]))
+			g.Printf("\t%s\n\n", swagger.Interface(pathItemOps[method]))
 		}
 	}
 	g.Printf("}\n")
@@ -135,7 +135,7 @@ func lowercase(input string) string {
 
 func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 	capOpID := swagger.Capitalize(op.ID)
-	g.Printf("// new%sInput takes in an http.Request an returns the input struct\n", capOpID)
+	g.Printf("// new%sInput takes in an http.Request an returns the input struct.\n", capOpID)
 	g.Printf("func new%sInput(r *http.Request) (*models.%sInput, error) {\n",
 		capOpID, capOpID)
 

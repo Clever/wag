@@ -34,7 +34,7 @@ var _ = strings.Replace
 var _ = strconv.FormatInt
 var _ = bytes.Compare
 
-// Client is used to make requests to %s
+// Client is used to make requests to the %s service.
 type Client struct {
 	basePath    string
 	requestDoer doer
@@ -43,7 +43,7 @@ type Client struct {
 	retryDoer *retryDoer
 }
 
-// New creates a new client. The base path and http transport are configurable
+// New creates a new client. The base path and http transport are configurable.
 func New(basePath string) Client {
 	base := baseDoer{}
 	tracing := tracingDoer{d: base}
@@ -79,7 +79,7 @@ func methodCode(op *spec.Operation, basePath, method, methodPath string) string 
 	var buf bytes.Buffer
 	capOpID := swagger.Capitalize(op.ID)
 
-	buf.WriteString(swagger.InterfaceComment(op) + "\n")
+	buf.WriteString(swagger.InterfaceComment(method, methodPath, op) + "\n")
 	buf.WriteString(fmt.Sprintf("func (c Client) %s {\n", swagger.Interface(op)))
 	buf.WriteString(fmt.Sprintf("\tpath := c.basePath + \"%s\"\n", basePath+methodPath))
 	buf.WriteString(fmt.Sprintf("\turlVals := url.Values{}\n"))
