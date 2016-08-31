@@ -18,6 +18,7 @@ type GetBooksInput struct {
 	Available   *bool
 	State       *string
 	Published   *strfmt.Date
+	SnakeCase   *string
 	Completed   *strfmt.DateTime
 	MaxPages    *float64
 	MinPages    *int32
@@ -47,6 +48,11 @@ func (i GetBooksInput) Validate() error {
 	}
 	if i.Published != nil {
 		if err := validate.FormatOf("published", "query", "date", (*i.Published).String(), strfmt.Default); err != nil {
+			return err
+		}
+	}
+	if i.SnakeCase != nil {
+		if err := validate.MaxLength("snake_case", "query", string(*i.SnakeCase), 5); err != nil {
 			return err
 		}
 	}

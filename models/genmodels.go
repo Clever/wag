@@ -106,7 +106,7 @@ func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
 
 	for _, param := range op.Parameters {
 		if param.In == "body" {
-			g.Printf("\tif err := i.%s.Validate(nil); err != nil {\n", swagger.Capitalize(param.Name))
+			g.Printf("\tif err := i.%s.Validate(nil); err != nil {\n", swagger.StructParamName(param))
 			g.Printf("\t\treturn err\n")
 			g.Printf("\t}\n\n")
 		}
@@ -119,7 +119,7 @@ func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
 			if param.Required {
 				g.Printf(errCheck(validation))
 			} else {
-				g.Printf("\tif i.%s != nil {\n", swagger.Capitalize(param.Name))
+				g.Printf("\tif i.%s != nil {\n", swagger.StructParamName(param))
 				g.Printf(errCheck(validation))
 				g.Printf("\t}\n")
 			}

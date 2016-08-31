@@ -77,6 +77,9 @@ func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models
 	if i.Published != nil {
 		urlVals.Add("published", (*i.Published).String())
 	}
+	if i.SnakeCase != nil {
+		urlVals.Add("snake_case", *i.SnakeCase)
+	}
 	if i.Completed != nil {
 		urlVals.Add("completed", (*i.Completed).String())
 	}
