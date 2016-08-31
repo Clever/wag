@@ -5,13 +5,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io/ioutil"
+	"net/http"
+	"strconv"
+
 	"github.com/Clever/wag/gen-go/models"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/gorilla/mux"
-	"io/ioutil"
-	"net/http"
-	"strconv"
 )
 
 var _ = strconv.ParseInt
@@ -306,7 +307,7 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 		return
 	}
 
-	err = input.Validate()
+	err = input.Validate(nil)
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
@@ -336,16 +337,15 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 }
 
 // newCreateBookInput takes in an http.Request an returns the input struct.
-func newCreateBookInput(r *http.Request) (*models.CreateBookInput, error) {
-	var input models.CreateBookInput
+func newCreateBookInput(r *http.Request) (*models.Book, error) {
+	var input models.Book
 
 	var err error
 	_ = err
 
 	data, err := ioutil.ReadAll(r.Body)
 	if len(data) > 0 {
-		input.NewBook = &models.Book{}
-		if err := json.NewDecoder(bytes.NewReader(data)).Decode(input.NewBook); err != nil {
+		if err := json.NewDecoder(bytes.NewReader(data)).Decode(&input); err != nil {
 			return nil, err
 		}
 	}

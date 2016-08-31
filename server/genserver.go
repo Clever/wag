@@ -136,10 +136,17 @@ func lowercase(input string) string {
 func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 	capOpID := swagger.Capitalize(op.ID)
 	g.Printf("// new%sInput takes in an http.Request an returns the input struct.\n", capOpID)
-	g.Printf("func new%sInput(r *http.Request) (*models.%sInput, error) {\n",
-		capOpID, capOpID)
+	singleSchemaedBodyParameter, opModel := swagger.SingleSchemaedBodyParameter(op)
+	if singleSchemaedBodyParameter {
+		g.Printf("func new%sInput(r *http.Request) (*models.%s, error) {\n",
+			capOpID, opModel)
+		g.Printf("\tvar input models.%s\n\n", opModel)
+	} else {
+		g.Printf("func new%sInput(r *http.Request) (*models.%sInput, error) {\n",
+			capOpID, capOpID)
+		g.Printf("\tvar input models.%sInput\n\n", capOpID)
+	}
 
-	g.Printf("\tvar input models.%sInput\n\n", capOpID)
 	g.Printf("\tvar err error\n")
 	g.Printf("\t_ = err\n\n")
 
@@ -214,9 +221,14 @@ func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 			}
 
 			g.Printf("\tif len(data) > 0 {")
-			// Initialize the pointer in the object
-			g.Printf("\t\tinput.%s = &%s{}\n", camelParamName, typeName)
-			g.Printf("\t\tif err := json.NewDecoder(bytes.NewReader(data)).Decode(input.%s); err != nil {\n", camelParamName)
+
+			if singleSchemaedBodyParameter {
+				g.Printf("\t\tif err := json.NewDecoder(bytes.NewReader(data)).Decode(&input); err != nil {\n")
+			} else {
+				// Initialize the pointer in the object
+				g.Printf("\t\tinput.%s = &%s{}\n", camelParamName, typeName)
+				g.Printf("\t\tif err := json.NewDecoder(bytes.NewReader(data)).Decode(input.%s); err != nil {\n", camelParamName)
+			}
 			g.Printf("\t\t\treturn nil, err\n")
 			g.Printf("\t\t}\n")
 			g.Printf("\t}\n")
@@ -269,11 +281,14 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 			}
 
 			var tmpBuf bytes.Buffer
+			singleInputOp, _ := swagger.SingleSchemaedBodyParameter(op)
 			err = tmpl.Execute(&tmpBuf, handlerOp{
 				Op:                swagger.Capitalize(op.ID),
 				SuccessReturnType: !swagger.NoSuccessType(op),
 				StatusCode:        statusCodeLogic,
-				HasParams:         len(op.Parameters) != 0})
+				HasParams:         len(op.Parameters) != 0,
+				SingleInputOp:     singleInputOp,
+			})
 			if err != nil {
 				return err
 			}
@@ -305,6 +320,7 @@ type handlerOp struct {
 	SuccessReturnType bool
 	StatusCode        string
 	HasParams         bool
+	SingleInputOp     bool
 }
 
 var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
@@ -315,7 +331,7 @@ var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w ht
 		return
 	}
 
-	err = input.Validate()
+	err = input.Validate({{if .SingleInputOp}}nil{{end}})
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
@@ -324,20 +340,20 @@ var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w ht
 {{if .SuccessReturnType}}
 	resp, err := h.{{.Op}}(ctx, input)
 {{else}}
-	err = h.{{.Op}}(ctx, input)	
+	err = h.{{.Op}}(ctx, input)
 {{end}}
 {{else}}
 {{if .SuccessReturnType}}
 	resp, err := h.{{.Op}}(ctx)
 {{else}}
-	err := h.{{.Op}}(ctx)	
+	err := h.{{.Op}}(ctx)
 {{end}}
 {{end}}
 	if err != nil {
 		if respErr, ok := err.(models.{{.Op}}Error); ok {
 			http.Error(w, respErr.Error(), respErr.{{.Op}}StatusCode())
 			return
-		} 
+		}
 		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
 	}

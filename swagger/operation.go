@@ -7,13 +7,33 @@ import (
 	"github.com/go-openapi/spec"
 )
 
+// SingleSchemaedBodyParameter returns true if the operation has a single,
+// schema'd body input. It also returns the name of the model (without "models.").
+func SingleSchemaedBodyParameter(op *spec.Operation) (bool, string) {
+	if len(op.Parameters) == 1 && op.Parameters[0].ParamProps.Schema != nil {
+		typ, err := TypeFromSchema(op.Parameters[0].ParamProps.Schema, false)
+		if err != nil {
+			panic(err)
+		}
+		return true, typ
+	}
+	return false, ""
+}
+
 // Interface returns the interface for an operation
 func Interface(op *spec.Operation) string {
 	capOpID := Capitalize(op.ID)
 
-	// Don't add the input parameter argument unless there are some arguments
+	// Don't add the input parameter argument unless there are some arguments.
+	// If a method has a single input parameter, and it's a schema, make the
+	// generated type for that schema the input of the method.
+	// TODO: If a method has a single input parameter, and it's a simple type (int/string),
+	// make that the input of the method.
+	// If a method has multiple input parameters, wrap them in a struct.
 	input := ""
-	if len(op.Parameters) != 0 {
+	if ssbp, opModel := SingleSchemaedBodyParameter(op); ssbp {
+		input = fmt.Sprintf("i *models.%s", opModel)
+	} else if len(op.Parameters) > 1 {
 		input = fmt.Sprintf("i *models.%sInput", capOpID)
 	}
 

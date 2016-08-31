@@ -26,6 +26,7 @@ import (
 		"strconv"
 		"encoding/json"
 		"strconv"
+
 		"%s/models"
 )
 
@@ -126,15 +127,31 @@ func buildRequestCode(op *spec.Operation, method string) string {
 
 	for _, param := range op.Parameters {
 		if param.In == "body" {
-			bodyMarshalCode := fmt.Sprintf(`
+			singleInputSchema, _ := swagger.SingleSchemaedBodyParameter(op)
+			var bodyMarshalCode string
+			if singleInputSchema {
+				// no wrapper struct for single-input methods
+				bodyMarshalCode = fmt.Sprintf(`
+	var err error
+	body, err = json.Marshal(i)
+	%s
+`, errorMessage("err", op))
+			} else {
+				bodyMarshalCode = fmt.Sprintf(`
 	var err error
 	body, err = json.Marshal(i.%s)
 	%s
 `, swagger.StructParamName(param), errorMessage("err", op))
+			}
+
 			if param.Required {
 				buf.WriteString(fmt.Sprintf(bodyMarshalCode))
 			} else {
-				buf.WriteString(fmt.Sprintf("\tif i.%s != nil {\n", swagger.StructParamName(param)))
+				if singleInputSchema {
+					buf.WriteString("\tif i != nil {\n")
+				} else {
+					buf.WriteString(fmt.Sprintf("\tif i.%s != nil {\n", swagger.StructParamName(param)))
+				}
 				buf.WriteString(fmt.Sprintf(bodyMarshalCode))
 				buf.WriteString(fmt.Sprintf("\t}\n"))
 			}

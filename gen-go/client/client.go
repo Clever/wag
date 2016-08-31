@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/Clever/wag/gen-go/models"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/Clever/wag/gen-go/models"
 )
 
 var _ = json.Marshal
@@ -213,17 +214,17 @@ func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (mo
 
 // CreateBook makes a POST request to /books/{book_id}.
 // Creates a book
-func (c Client) CreateBook(ctx context.Context, i *models.CreateBookInput) (*models.Book, error) {
+func (c Client) CreateBook(ctx context.Context, i *models.Book) (*models.Book, error) {
 	path := c.basePath + "/v1/books/{book_id}"
 	urlVals := url.Values{}
 	var body []byte
 
 	path = path + "?" + urlVals.Encode()
 
-	if i.NewBook != nil {
+	if i != nil {
 
 		var err error
-		body, err = json.Marshal(i.NewBook)
+		body, err = json.Marshal(i)
 
 		if err != nil {
 			return nil, err
