@@ -17,7 +17,7 @@ func Generate(packageName string, s spec.Swagger) error {
 	if err := generateRouter(packageName, s, s.Paths); err != nil {
 		return err
 	}
-	if err := generateInterface(packageName, s.Paths); err != nil {
+	if err := generateInterface(packageName, s.Info.InfoProps.Title, s.Paths); err != nil {
 		return err
 	}
 	if err := generateHandlers(packageName, s.Paths); err != nil {
@@ -45,11 +45,14 @@ import (
 
 type contextKey struct{}
 
+// Server defines a HTTP server that implements the Controller interface.
 type Server struct {
+	// Handler should generally not be changed. It exposed to make testing easier.
 	Handler http.Handler
 	addr string
 }
 
+// Serve starts the server. It will return if an error occurs.
 func (s Server) Serve() error {
 	// Give the sever 30 seconds to shut down
 	return graceful.RunWithErr(s.addr,30*time.Second,s.Handler)
@@ -59,6 +62,7 @@ type handler struct {
 	Controller
 }
 
+// New returns a Server that implements the Controller interface. It will start when "Serve" is called.
 func New(c Controller, addr string) Server {
 	r := mux.NewRouter()
 	h := handler{Controller: c}
@@ -104,18 +108,20 @@ var routerFunctionTemplate = `	r.Methods("{{.Method}}").Path("{{.Path}}").Handle
 	})
 `
 
-func generateInterface(packageName string, paths *spec.Paths) error {
+func generateInterface(packageName string, serviceName string, paths *spec.Paths) error {
 	g := swagger.Generator{PackageName: packageName}
 	g.Printf("package server\n\n")
 	g.Printf(swagger.ImportStatements([]string{"context", packageName + "/models"}))
 	g.Printf("//go:generate $GOPATH/bin/mockgen -source=$GOFILE -destination=mock_controller.go -package=server\n\n")
+	g.Printf("// Controller defines the interface for the %s service.\n", serviceName)
 	g.Printf("type Controller interface {\n")
 
 	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
 		path := paths.Paths[pathKey]
 		pathItemOps := swagger.PathItemOperations(path)
-		for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
-			g.Printf("\t%s\n", swagger.Interface(pathItemOps[opKey]))
+		for _, method := range swagger.SortedOperationsKeys(pathItemOps) {
+			g.Printf("\t%s\n", swagger.InterfaceComment(method, pathKey, pathItemOps[method]))
+			g.Printf("\t%s\n\n", swagger.Interface(pathItemOps[method]))
 		}
 	}
 	g.Printf("}\n")
@@ -129,7 +135,8 @@ func lowercase(input string) string {
 
 func printNewInput(g *swagger.Generator, op *spec.Operation) error {
 	capOpID := swagger.Capitalize(op.ID)
-	g.Printf("func New%sInput(r *http.Request) (*models.%sInput, error) {\n",
+	g.Printf("// new%sInput takes in an http.Request an returns the input struct.\n", capOpID)
+	g.Printf("func new%sInput(r *http.Request) (*models.%sInput, error) {\n",
 		capOpID, capOpID)
 
 	g.Printf("\tvar input models.%sInput\n\n", capOpID)
@@ -258,7 +265,7 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 			if len(successCodes) == 1 {
 				statusCodeLogic = fmt.Sprintf("%d", successCodes[0])
 			} else {
-				statusCodeLogic = fmt.Sprintf("resp.%sStatus()", swagger.Capitalize(op.ID))
+				statusCodeLogic = fmt.Sprintf("resp.%sStatusCode()", swagger.Capitalize(op.ID))
 			}
 
 			var tmpBuf bytes.Buffer
@@ -302,7 +309,7 @@ type handlerOp struct {
 
 var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 {{if .HasParams}}
-	input, err := New{{.Op}}Input(r)
+	input, err := new{{.Op}}Input(r)
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
@@ -330,10 +337,9 @@ var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w ht
 		if respErr, ok := err.(models.{{.Op}}Error); ok {
 			http.Error(w, respErr.Error(), respErr.{{.Op}}StatusCode())
 			return
-		} else {
-			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
-			return
-		}
+		} 
+		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		return
 	}
 
 {{if .SuccessReturnType}}

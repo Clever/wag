@@ -68,7 +68,7 @@ func TestCustomContextRetries(t *testing.T) {
 
 	// Should fail if no retries
 	c := client.New(testServer.URL)
-	_, err := c.GetBooks(client.WithRetry(context.Background(), 0), &models.GetBooksInput{})
+	_, err := c.GetBooks(client.WithRetries(context.Background(), 0), &models.GetBooksInput{})
 	assert.Error(t, err)
 	assert.Equal(t, 1, controller.getCount)
 }

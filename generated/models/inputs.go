@@ -13,6 +13,7 @@ var _ = strconv.FormatInt
 var _ = validate.Maximum
 var _ = strfmt.NewFormats
 
+// GetBooksInput holds the input parameters for a getBooks operation.
 type GetBooksInput struct {
 	Authors     []string
 	Available   *bool
@@ -25,6 +26,8 @@ type GetBooksInput struct {
 	PagesToTime *float32
 }
 
+// Validate returns an error if any of the GetBooksInput parameters don't satisfy the
+// requirements from the swagger yml file.
 func (i GetBooksInput) Validate() error {
 	if i.Authors != nil {
 		if err := validate.MaxItems("authors", "query", int64(len(i.Authors)), 2); err != nil {
@@ -79,12 +82,15 @@ func (i GetBooksInput) Validate() error {
 	return nil
 }
 
+// GetBookByIDInput holds the input parameters for a getBookByID operation.
 type GetBookByIDInput struct {
 	BookID        int64
 	Authorization *string
 	RandomBytes   *strfmt.Base64
 }
 
+// Validate returns an error if any of the GetBookByIDInput parameters don't satisfy the
+// requirements from the swagger yml file.
 func (i GetBookByIDInput) Validate() error {
 	if err := validate.MaximumInt("book_id", "path", i.BookID, int64(10000000), false); err != nil {
 		return err
@@ -118,10 +124,13 @@ func (i GetBookByIDInput) Validate() error {
 	return nil
 }
 
+// CreateBookInput holds the input parameters for a createBook operation.
 type CreateBookInput struct {
 	NewBook *Book
 }
 
+// Validate returns an error if any of the CreateBookInput parameters don't satisfy the
+// requirements from the swagger yml file.
 func (i CreateBookInput) Validate() error {
 	if err := i.NewBook.Validate(nil); err != nil {
 		return err
@@ -130,9 +139,12 @@ func (i CreateBookInput) Validate() error {
 	return nil
 }
 
+// HealthCheckInput holds the input parameters for a healthCheck operation.
 type HealthCheckInput struct {
 }
 
+// Validate returns an error if any of the HealthCheckInput parameters don't satisfy the
+// requirements from the swagger yml file.
 func (i HealthCheckInput) Validate() error {
 	return nil
 }

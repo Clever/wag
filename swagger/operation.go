@@ -43,6 +43,18 @@ func Interface(op *spec.Operation) string {
 		capOpID, input, successType)
 }
 
+// InterfaceComment returns the comment for the interface for the operation
+func InterfaceComment(method, path string, op *spec.Operation) string {
+
+	capOpID := Capitalize(op.ID)
+	// TODO: Finish this once the new interface code is merged in...
+	comment := fmt.Sprintf("// %s makes a %s request to %s.\n", capOpID, method, path)
+	if op.Description != "" {
+		comment += "// " + op.Description
+	}
+	return comment
+}
+
 // OutputType returns the output type for a given status code of an operation
 func OutputType(op *spec.Operation, statusCode int) string {
 	successCodes := SuccessStatusCodes(op)

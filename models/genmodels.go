@@ -9,6 +9,8 @@ import (
 	"github.com/Clever/wag/swagger"
 
 	"github.com/go-swagger/go-swagger/generator"
+
+	"text/template"
 )
 
 // Generate writes the files to the client directories
@@ -71,7 +73,9 @@ var _ = strfmt.NewFormats
 }
 
 func printInputStruct(g *swagger.Generator, op *spec.Operation) error {
-	g.Printf("type %sInput struct {\n", swagger.Capitalize(op.ID))
+	capOpID := swagger.Capitalize(op.ID)
+	g.Printf("// %sInput holds the input parameters for a %s operation.\n", capOpID, op.ID)
+	g.Printf("type %sInput struct {\n", capOpID)
 
 	for _, param := range op.Parameters {
 		if param.In == "formData" {
@@ -102,7 +106,11 @@ func printInputStruct(g *swagger.Generator, op *spec.Operation) error {
 }
 
 func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
-	g.Printf("func (i %sInput) Validate() error{\n", swagger.Capitalize(op.ID))
+	capOpID := swagger.Capitalize(op.ID)
+	g.Printf("// Validate returns an error if any of the %sInput parameters don't satisfy the\n",
+		capOpID)
+	g.Printf("// requirements from the swagger yml file.\n")
+	g.Printf("func (i %sInput) Validate() error{\n", capOpID)
 
 	for _, param := range op.Parameters {
 		if param.In == "body" {
@@ -197,8 +205,10 @@ func validateStatusCodes(responses map[int]spec.Response) error {
 
 func generateSuccessTypes(capOpID string, responses map[int]spec.Response) (string, error) {
 	var buf bytes.Buffer
+	buf.WriteString(fmt.Sprintf("// %sOutput defines the success output interface for %s.\n",
+		capOpID, capOpID))
 	buf.WriteString(fmt.Sprintf("type %sOutput interface {\n", capOpID))
-	buf.WriteString(fmt.Sprintf("\t%sStatus() int\n", capOpID))
+	buf.WriteString(fmt.Sprintf("\t%sStatusCode() int\n", capOpID))
 	buf.WriteString(fmt.Sprintf("}\n\n"))
 
 	successStatusCodes := make([]int, 0)
@@ -216,57 +226,85 @@ func generateSuccessTypes(capOpID string, responses map[int]spec.Response) (stri
 	}
 
 	for _, statusCode := range successStatusCodes {
-		response := responses[statusCode]
-		outputName := fmt.Sprintf("%s%dOutput", capOpID, statusCode)
-		typeName, err := swagger.TypeFromSchema(response.Schema, false)
+		typeString, err := generateType(capOpID, statusCode, responses[statusCode])
 		if err != nil {
 			return "", err
 		}
-		buf.WriteString(fmt.Sprintf("type %s %s\n\n", outputName, typeName))
-		buf.WriteString(fmt.Sprintf("func (o %s) %sStatus() int {\n", outputName, capOpID))
-		buf.WriteString(fmt.Sprintf("\treturn %d\n", statusCode))
-		buf.WriteString(fmt.Sprintf("}\n\n"))
+		buf.WriteString(typeString)
 	}
 	return buf.String(), nil
 }
 
 func generateErrorTypes(capOpID string, responses map[int]spec.Response) (string, error) {
 	var buf bytes.Buffer
+	buf.WriteString(fmt.Sprintf("// %sError defines the error interface for %s.\n",
+		capOpID, capOpID))
 	buf.WriteString(fmt.Sprintf("type %sError interface {\n", capOpID))
 	buf.WriteString(fmt.Sprintf("\terror // Extend the error interface\n"))
 	buf.WriteString(fmt.Sprintf("\t%sStatusCode() int\n", capOpID))
 	buf.WriteString(fmt.Sprintf("}\n\n"))
 
 	for _, statusCode := range swagger.SortedStatusCodeKeys(responses) {
-		if statusCode < 400 {
-			continue
+
+		if statusCode >= 400 {
+			typeString, err := generateType(capOpID, statusCode, responses[statusCode])
+			if err != nil {
+				return "", err
+			}
+			buf.WriteString(typeString)
 		}
-		response := responses[statusCode]
-
-		outputName := fmt.Sprintf("%s%dOutput", capOpID, statusCode)
-		typeName, err := swagger.TypeFromSchema(response.Schema, false)
-		if err != nil {
-			return "", err
-		}
-
-		buf.WriteString(fmt.Sprintf("type %s %s\n\n", outputName, typeName))
-
-		buf.WriteString(fmt.Sprintf("func (o %s) %sData() interface{} {\n", outputName, capOpID))
-		buf.WriteString(fmt.Sprintf("\treturn o\n"))
-		buf.WriteString(fmt.Sprintf("}\n\n"))
-
-		buf.WriteString(fmt.Sprintf("func (o %s) Error() string {\n", outputName))
-		buf.WriteString(fmt.Sprintf("\t// We implement this to satisfy the error interface. This has a generic error message.\n"))
-		buf.WriteString(fmt.Sprintf("\t// If the user wants a more details error message they should put it in the output type\n"))
-		buf.WriteString(fmt.Sprintf("\treturn \"Status Code: %d\"\n", statusCode))
-		buf.WriteString(fmt.Sprintf("}\n\n"))
-
-		buf.WriteString(fmt.Sprintf("func (o %s) %sStatusCode() int {\n", outputName, capOpID))
-		buf.WriteString(fmt.Sprintf("\treturn %d\n", statusCode))
-		buf.WriteString(fmt.Sprintf("}\n\n"))
 	}
 	return buf.String(), nil
 }
+
+func generateType(capOpID string, statusCode int, response spec.Response) (string, error) {
+	outputName := fmt.Sprintf("%s%dOutput", capOpID, statusCode)
+	typeName, err := swagger.TypeFromSchema(response.Schema, false)
+	if err != nil {
+		return "", err
+	}
+
+	fields := typeTemplateFields{
+		Output:     outputName,
+		StatusCode: statusCode,
+		OpName:     capOpID,
+		Type:       typeName,
+		ErrorType:  statusCode >= 400,
+	}
+	tmpl := template.Must(template.New("a").Parse(typeTemplate))
+	var tmpBuf bytes.Buffer
+	if err := tmpl.Execute(&tmpBuf, fields); err != nil {
+		return "", err
+	}
+	return tmpBuf.String(), nil
+}
+
+type typeTemplateFields struct {
+	Output     string
+	StatusCode int
+	OpName     string
+	Type       string
+	ErrorType  bool
+}
+
+var typeTemplate = `
+	// {{.Output}} defines the {{.StatusCode}} status code response for {{.OpName}}.
+	type {{.Output}} {{.Type}}
+
+
+	// {{.OpName}}StatusCode returns the status code for the operation.
+	func (o {{.Output}}) {{.OpName}}StatusCode() int {
+		return {{.StatusCode}}
+	}
+
+	{{if .ErrorType}}
+	// Error returns "Status Code: X". We implemented in to satisfy the error
+	// interface. For a more descriptive error message see the output type.
+	func (o {{.Output}}) Error() string {
+		return "Status Code: {{.StatusCode}}"
+	}
+	{{end}}
+`
 
 // defaultOutputTypes returns the string defining the default output type
 func defaultOutputTypes() string {
@@ -276,14 +314,18 @@ type DefaultInternalError struct {
 	Msg string %s
 }
 
+// Error returns the internal error that caused the 500.
 func (d DefaultInternalError) Error() string {
 	return d.Msg
 }
 
+// DefaultBadRequest represents a generic 400 response. It used internally by Swagger as the
+// response when a request fails the validation defined in the Swagger yml file.
 type DefaultBadRequest struct {
 	Msg string %s
 }
 
+// Error returns the validation error that caused the 400.
 func (d DefaultBadRequest) Error() string {
 	return d.Msg
 }

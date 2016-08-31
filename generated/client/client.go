@@ -16,33 +16,36 @@ var _ = strings.Replace
 var _ = strconv.FormatInt
 var _ = bytes.Compare
 
+// Client is used to make requests to the Swagger Test service.
 type Client struct {
-	BasePath    string
+	basePath    string
 	requestDoer doer
 	transport   *http.Transport
 	// Keep the retry doer around so that we can set the number of retries
 	retryDoer *retryDoer
 }
 
-// New creates a new client. The base path and http transport are configurable
+// New creates a new client. The base path and http transport are configurable.
 func New(basePath string) Client {
 	base := baseDoer{}
 	tracing := tracingDoer{d: base}
 	retry := retryDoer{d: tracing, defaultRetries: 1}
 
-	return Client{requestDoer: &retry, retryDoer: &retry, transport: &http.Transport{}, BasePath: basePath}
+	return Client{requestDoer: &retry, retryDoer: &retry, transport: &http.Transport{}, basePath: basePath}
 }
 
+// WithRetries returns a new client that retries all GET operations until they either succeed or fail the
+// number of times specified.
 func (c Client) WithRetries(retries int) Client {
 	c.retryDoer.defaultRetries = retries
 	return c
 }
 
 // JoinByFormat joins a string array by a known format:
-//		ssv: space separated value
-//		tsv: tab separated value
-//		pipes: pipe (|) separated value
-//		csv: comma separated value (default)
+//	 csv: comma separated value (default)
+//	 ssv: space separated value
+//	 tsv: tab separated value
+//	 pipes: pipe (|) separated value
 func JoinByFormat(data []string, format string) string {
 	if len(data) == 0 {
 		return ""
@@ -60,8 +63,11 @@ func JoinByFormat(data []string, format string) string {
 	}
 	return strings.Join(data, sep)
 }
+
+// GetBooks makes a GET request to /books.
+// Returns a list of books
 func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models.Book, error) {
-	path := c.BasePath + "/v1/books"
+	path := c.basePath + "/v1/books"
 	urlVals := url.Values{}
 	var body []byte
 
@@ -137,8 +143,10 @@ func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models
 	}
 }
 
+// GetBookByID makes a GET request to /books/{book_id}.
+// Returns a book
 func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
-	path := c.BasePath + "/v1/books/{book_id}"
+	path := c.basePath + "/v1/books/{book_id}"
 	urlVals := url.Values{}
 	var body []byte
 
@@ -203,8 +211,10 @@ func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (mo
 	}
 }
 
+// CreateBook makes a POST request to /books/{book_id}.
+// Creates a book
 func (c Client) CreateBook(ctx context.Context, i *models.CreateBookInput) (*models.Book, error) {
-	path := c.BasePath + "/v1/books/{book_id}"
+	path := c.basePath + "/v1/books/{book_id}"
 	urlVals := url.Values{}
 	var body []byte
 
@@ -264,8 +274,10 @@ func (c Client) CreateBook(ctx context.Context, i *models.CreateBookInput) (*mod
 	}
 }
 
+// HealthCheck makes a GET request to /health/check.
+// Checks if the service is healthy
 func (c Client) HealthCheck(ctx context.Context) error {
-	path := c.BasePath + "/v1/health/check"
+	path := c.basePath + "/v1/health/check"
 	urlVals := url.Values{}
 	var body []byte
 

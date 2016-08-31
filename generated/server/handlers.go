@@ -25,7 +25,9 @@ var _ = ioutil.ReadAll
 var formats = strfmt.Default
 var _ = formats
 
-func ConvertBase64(input string) (strfmt.Base64, error) {
+// convertBase64 takes in a string and returns a strfmt.Base64 if the input
+// is valid base64 and an error otherwise.
+func convertBase64(input string) (strfmt.Base64, error) {
 	temp, err := formats.Parse("byte", input)
 	if err != nil {
 		return strfmt.Base64{}, err
@@ -33,7 +35,9 @@ func ConvertBase64(input string) (strfmt.Base64, error) {
 	return *temp.(*strfmt.Base64), nil
 }
 
-func ConvertDateTime(input string) (strfmt.DateTime, error) {
+// convertDateTime takes in a string and returns a strfmt.DateTime if the input
+// is a valid DateTime and an error otherwise.
+func convertDateTime(input string) (strfmt.DateTime, error) {
 	temp, err := formats.Parse("date-time", input)
 	if err != nil {
 		return strfmt.DateTime{}, err
@@ -41,7 +45,9 @@ func ConvertDateTime(input string) (strfmt.DateTime, error) {
 	return *temp.(*strfmt.DateTime), nil
 }
 
-func ConvertDate(input string) (strfmt.Date, error) {
+// convertDate takes in a string and returns a strfmt.Date if the input
+// is a valid Date and an error otherwise.
+func convertDate(input string) (strfmt.Date, error) {
 	temp, err := formats.Parse("date", input)
 	if err != nil {
 		return strfmt.Date{}, err
@@ -59,7 +65,7 @@ func jsonMarshalNoError(i interface{}) string {
 }
 func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
-	input, err := NewGetBooksInput(r)
+	input, err := newGetBooksInput(r)
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
@@ -77,10 +83,9 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 		if respErr, ok := err.(models.GetBooksError); ok {
 			http.Error(w, respErr.Error(), respErr.GetBooksStatusCode())
 			return
-		} else {
-			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
-			return
 		}
+		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		return
 	}
 
 	respBytes, err := json.Marshal(resp)
@@ -94,7 +99,9 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 	w.Write(respBytes)
 
 }
-func NewGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
+
+// newGetBooksInput takes in an http.Request an returns the input struct.
+func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 	var input models.GetBooksInput
 
 	var err error
@@ -141,7 +148,7 @@ func NewGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 	publishedStr := r.URL.Query().Get("published")
 	if len(publishedStr) != 0 {
 		var publishedTmp strfmt.Date
-		publishedTmp, err = ConvertDate(publishedStr)
+		publishedTmp, err = convertDate(publishedStr)
 		if err != nil {
 			return nil, err
 		}
@@ -161,7 +168,7 @@ func NewGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 	completedStr := r.URL.Query().Get("completed")
 	if len(completedStr) != 0 {
 		var completedTmp strfmt.DateTime
-		completedTmp, err = ConvertDateTime(completedStr)
+		completedTmp, err = convertDateTime(completedStr)
 		if err != nil {
 			return nil, err
 		}
@@ -212,7 +219,7 @@ func NewGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 
 func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
-	input, err := NewGetBookByIDInput(r)
+	input, err := newGetBookByIDInput(r)
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
@@ -230,10 +237,9 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 		if respErr, ok := err.(models.GetBookByIDError); ok {
 			http.Error(w, respErr.Error(), respErr.GetBookByIDStatusCode())
 			return
-		} else {
-			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
-			return
 		}
+		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		return
 	}
 
 	respBytes, err := json.Marshal(resp)
@@ -243,11 +249,13 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(resp.GetBookByIDStatus())
+	w.WriteHeader(resp.GetBookByIDStatusCode())
 	w.Write(respBytes)
 
 }
-func NewGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
+
+// newGetBookByIDInput takes in an http.Request an returns the input struct.
+func newGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 	var input models.GetBookByIDInput
 
 	var err error
@@ -279,7 +287,7 @@ func NewGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 	randomBytesStr := r.URL.Query().Get("randomBytes")
 	if len(randomBytesStr) != 0 {
 		var randomBytesTmp strfmt.Base64
-		randomBytesTmp, err = ConvertBase64(randomBytesStr)
+		randomBytesTmp, err = convertBase64(randomBytesStr)
 		if err != nil {
 			return nil, err
 		}
@@ -292,7 +300,7 @@ func NewGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 
 func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
-	input, err := NewCreateBookInput(r)
+	input, err := newCreateBookInput(r)
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
@@ -310,10 +318,9 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 		if respErr, ok := err.(models.CreateBookError); ok {
 			http.Error(w, respErr.Error(), respErr.CreateBookStatusCode())
 			return
-		} else {
-			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
-			return
 		}
+		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		return
 	}
 
 	respBytes, err := json.Marshal(resp)
@@ -327,7 +334,9 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 	w.Write(respBytes)
 
 }
-func NewCreateBookInput(r *http.Request) (*models.CreateBookInput, error) {
+
+// newCreateBookInput takes in an http.Request an returns the input struct.
+func newCreateBookInput(r *http.Request) (*models.CreateBookInput, error) {
 	var input models.CreateBookInput
 
 	var err error
@@ -352,17 +361,18 @@ func (h handler) HealthCheckHandler(ctx context.Context, w http.ResponseWriter, 
 		if respErr, ok := err.(models.HealthCheckError); ok {
 			http.Error(w, respErr.Error(), respErr.HealthCheckStatusCode())
 			return
-		} else {
-			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
-			return
 		}
+		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		return
 	}
 
 	w.WriteHeader(200)
 	w.Write([]byte(""))
 
 }
-func NewHealthCheckInput(r *http.Request) (*models.HealthCheckInput, error) {
+
+// newHealthCheckInput takes in an http.Request an returns the input struct.
+func newHealthCheckInput(r *http.Request) (*models.HealthCheckInput, error) {
 	var input models.HealthCheckInput
 
 	var err error

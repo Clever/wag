@@ -23,10 +23,10 @@ import (
 func BaseParamToStringCode() string {
 	return `
 // JoinByFormat joins a string array by a known format:
-//		ssv: space separated value
-//		tsv: tab separated value
-//		pipes: pipe (|) separated value
-//		csv: comma separated value (default)
+//	 csv: comma separated value (default)
+//	 ssv: space separated value
+//	 tsv: tab separated value
+//	 pipes: pipe (|) separated value
 func JoinByFormat(data []string, format string) string {
 	if len(data) == 0 {
 		return ""
@@ -147,7 +147,9 @@ func BaseStringToTypeCode() string {
 var formats = strfmt.Default
 var _ = formats
 
-func ConvertBase64(input string) (strfmt.Base64, error) {
+// convertBase64 takes in a string and returns a strfmt.Base64 if the input
+// is valid base64 and an error otherwise.
+func convertBase64(input string) (strfmt.Base64, error) {
 	temp, err := formats.Parse("byte", input)
 	if err != nil {
 		return strfmt.Base64{}, err
@@ -155,7 +157,9 @@ func ConvertBase64(input string) (strfmt.Base64, error) {
 	return *temp.(*strfmt.Base64), nil
 }
 
-func ConvertDateTime(input string) (strfmt.DateTime, error) {
+// convertDateTime takes in a string and returns a strfmt.DateTime if the input
+// is a valid DateTime and an error otherwise.
+func convertDateTime(input string) (strfmt.DateTime, error) {
 	temp, err := formats.Parse("date-time", input)
 	if err != nil {
 		return strfmt.DateTime{}, err
@@ -163,7 +167,9 @@ func ConvertDateTime(input string) (strfmt.DateTime, error) {
 	return *temp.(*strfmt.DateTime), nil
 }
 
-func ConvertDate(input string) (strfmt.Date, error) {
+// convertDate takes in a string and returns a strfmt.Date if the input
+// is a valid Date and an error otherwise.
+func convertDate(input string) (strfmt.Date, error) {
 	temp, err := formats.Parse("date", input)
 	if err != nil {
 		return strfmt.Date{}, err
@@ -196,13 +202,13 @@ func StringToTypeCode(strField string, param spec.Parameter) (string, error) {
 	case "string":
 		switch param.Format {
 		case "byte":
-			return fmt.Sprintf("ConvertBase64(%s)", strField), nil
+			return fmt.Sprintf("convertBase64(%s)", strField), nil
 		case "":
 			return fmt.Sprintf("%s, error(nil)", strField), nil
 		case "date":
-			return fmt.Sprintf("ConvertDate(%s)", strField), nil
+			return fmt.Sprintf("convertDate(%s)", strField), nil
 		case "date-time":
-			return fmt.Sprintf("ConvertDateTime(%s)", strField), nil
+			return fmt.Sprintf("convertDateTime(%s)", strField), nil
 		default:
 			return "", fmt.Errorf("Param format %s not supported", param.Format)
 		}
