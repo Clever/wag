@@ -57,8 +57,8 @@ type GetBookByIDError interface {
 type GetBookByID401Output struct{}
 
 // Error returns `Status Code: X`. We implemeted it to satisfy
-// the error interface. More detailed error messages maybe we available
-// on the output type
+// the error interface. For a more descriptive error message see
+// the output type.
 func (o GetBookByID401Output) Error() string {
 	return "Status Code: 401"
 }
@@ -72,8 +72,8 @@ func (o GetBookByID401Output) GetBookByIDStatusCode() int {
 type GetBookByID404Output Error
 
 // Error returns `Status Code: X`. We implemeted it to satisfy
-// the error interface. More detailed error messages maybe we available
-// on the output type
+// the error interface. For a more descriptive error message see
+// the output type.
 func (o GetBookByID404Output) Error() string {
 	return "Status Code: 404"
 }

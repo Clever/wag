@@ -242,11 +242,6 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 		return
 	}
 
-<<<<<<< d360785f8477694d6df059d52641c771e3a434f2
-=======
-	w.WriteHeader(resp.GetBookByIDStatusCode())
-
->>>>>>> Fix merge conflicts
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
@@ -254,7 +249,7 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(resp.GetBookByIDStatus())
+	w.WriteHeader(resp.GetBookByIDStatusCode())
 	w.Write(respBytes)
 
 }
