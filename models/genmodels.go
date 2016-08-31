@@ -3,6 +3,7 @@ package models
 import (
 	"bytes"
 	"fmt"
+	"os"
 
 	"github.com/go-openapi/spec"
 
@@ -15,12 +16,11 @@ import (
 
 // Generate writes the files to the client directories
 func Generate(packageName, swaggerFile string, swagger spec.Swagger) error {
-
 	// generate models with go-swagger
 	if err := generator.GenerateServer("", []string{}, []string{}, generator.GenOpts{
 		Spec:           swaggerFile,
 		ModelPackage:   "models",
-		Target:         "./generated/",
+		Target:         fmt.Sprintf("%s/src/%s/", os.Getenv("GOPATH"), packageName),
 		IncludeModel:   true,
 		IncludeHandler: false,
 		IncludeSupport: false,

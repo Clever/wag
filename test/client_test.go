@@ -6,9 +6,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Clever/wag/generated/client"
-	"github.com/Clever/wag/generated/models"
-	"github.com/Clever/wag/generated/server"
+	"github.com/Clever/wag/gen-go/client"
+	"github.com/Clever/wag/gen-go/models"
+	"github.com/Clever/wag/gen-go/server"
 	"github.com/stretchr/testify/assert"
 )
 
