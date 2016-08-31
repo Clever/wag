@@ -149,6 +149,16 @@ func NewGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 		input.Published = &publishedTmp
 
 	}
+	snakeCaseStr := r.URL.Query().Get("snake_case")
+	if len(snakeCaseStr) != 0 {
+		var snakeCaseTmp string
+		snakeCaseTmp, err = snakeCaseStr, error(nil)
+		if err != nil {
+			return nil, err
+		}
+		input.SnakeCase = &snakeCaseTmp
+
+	}
 	completedStr := r.URL.Query().Get("completed")
 	if len(completedStr) != 0 {
 		var completedTmp strfmt.DateTime
