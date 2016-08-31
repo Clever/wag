@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -86,6 +87,22 @@ func TestClientSideError(t *testing.T) {
 	assert.Error(t, err)
 	_, ok := err.(models.DefaultInternalError)
 	assert.True(t, ok)
+}
+
+func TestHeaders(t *testing.T) {
+	s := setupServer()
+
+	bookID := int64(124)
+	c := client.New(s.URL)
+	_, err := c.CreateBook(context.Background(),
+		&models.CreateBookInput{NewBook: &models.Book{ID: bookID, Name: "test"}})
+	assert.NoError(t, err)
+
+	// Make a raw HTTP request (i.e. don't use the client) so we can check the headers
+	resp, err := http.Get(fmt.Sprintf("%s/v1/books/%d", s.URL, bookID))
+	assert.NoError(t, err)
+	defer resp.Body.Close()
+	assert.Equal(t, "application/json", resp.Header.Get("Content-Type"))
 }
 
 type LastCallServer struct {
