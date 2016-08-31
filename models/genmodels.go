@@ -9,6 +9,8 @@ import (
 	"github.com/Clever/wag/swagger"
 
 	"github.com/go-swagger/go-swagger/generator"
+
+	"text/template"
 )
 
 // Generate writes the files to the client directories
@@ -224,21 +226,11 @@ func generateSuccessTypes(capOpID string, responses map[int]spec.Response) (stri
 	}
 
 	for _, statusCode := range successStatusCodes {
-		response := responses[statusCode]
-		outputName := fmt.Sprintf("%s%dOutput", capOpID, statusCode)
-		typeName, err := swagger.TypeFromSchema(response.Schema, false)
+		typeString, err := generateType(capOpID, statusCode, responses[statusCode])
 		if err != nil {
 			return "", err
 		}
-		buf.WriteString(fmt.Sprintf("// %s defines the %d status code response for %s.\n",
-			outputName, statusCode, capOpID))
-		buf.WriteString(fmt.Sprintf("type %s %s\n\n", outputName, typeName))
-
-		buf.WriteString(fmt.Sprintf("// %sStatusCode returns the status code for the operation.\n",
-			capOpID))
-		buf.WriteString(fmt.Sprintf("func (o %s) %sStatusCode() int {\n", outputName, capOpID))
-		buf.WriteString(fmt.Sprintf("\treturn %d\n", statusCode))
-		buf.WriteString(fmt.Sprintf("}\n\n"))
+		buf.WriteString(typeString)
 	}
 	return buf.String(), nil
 }
@@ -253,36 +245,66 @@ func generateErrorTypes(capOpID string, responses map[int]spec.Response) (string
 	buf.WriteString(fmt.Sprintf("}\n\n"))
 
 	for _, statusCode := range swagger.SortedStatusCodeKeys(responses) {
-		if statusCode < 400 {
-			continue
+
+		if statusCode >= 400 {
+			typeString, err := generateType(capOpID, statusCode, responses[statusCode])
+			if err != nil {
+				return "", err
+			}
+			buf.WriteString(typeString)
 		}
-		response := responses[statusCode]
-
-		outputName := fmt.Sprintf("%s%dOutput", capOpID, statusCode)
-		typeName, err := swagger.TypeFromSchema(response.Schema, false)
-		if err != nil {
-			return "", err
-		}
-
-		buf.WriteString(fmt.Sprintf("// %s defines the %d status code response for %s.\n",
-			outputName, statusCode, capOpID))
-		buf.WriteString(fmt.Sprintf("type %s %s\n\n", outputName, typeName))
-
-		buf.WriteString(fmt.Sprintf("// Error returns `Status Code: X`. We implemeted it to satisfy\n"))
-		buf.WriteString(fmt.Sprintf("// the error interface. For a more descriptive error message see\n"))
-		buf.WriteString(fmt.Sprintf("// the output type.\n"))
-		buf.WriteString(fmt.Sprintf("func (o %s) Error() string {\n", outputName))
-		buf.WriteString(fmt.Sprintf("\treturn \"Status Code: %d\"\n", statusCode))
-		buf.WriteString(fmt.Sprintf("}\n\n"))
-
-		buf.WriteString(fmt.Sprintf("// %sStatusCode returns the status code for the operation.\n",
-			capOpID))
-		buf.WriteString(fmt.Sprintf("func (o %s) %sStatusCode() int {\n", outputName, capOpID))
-		buf.WriteString(fmt.Sprintf("\treturn %d\n", statusCode))
-		buf.WriteString(fmt.Sprintf("}\n\n"))
 	}
 	return buf.String(), nil
 }
+
+func generateType(capOpID string, statusCode int, response spec.Response) (string, error) {
+	outputName := fmt.Sprintf("%s%dOutput", capOpID, statusCode)
+	typeName, err := swagger.TypeFromSchema(response.Schema, false)
+	if err != nil {
+		return "", err
+	}
+
+	fields := typeTemplateFields{
+		Output:     outputName,
+		StatusCode: statusCode,
+		OpName:     capOpID,
+		Type:       typeName,
+		ErrorType:  statusCode >= 400,
+	}
+	tmpl := template.Must(template.New("a").Parse(typeTemplate))
+	var tmpBuf bytes.Buffer
+	if err := tmpl.Execute(&tmpBuf, fields); err != nil {
+		return "", err
+	}
+	return tmpBuf.String(), nil
+}
+
+type typeTemplateFields struct {
+	Output     string
+	StatusCode int
+	OpName     string
+	Type       string
+	ErrorType  bool
+}
+
+var typeTemplate = `
+	// {{.Output}} defines the {{.StatusCode}} status code response for {{.OpName}}.
+	type {{.Output}} {{.Type}}
+
+
+	// {{.OpName}}StatusCode returns the status code for the operation.
+	func (o {{.Output}}) {{.OpName}}StatusCode() int {
+		return {{.StatusCode}}
+	}
+
+	{{if .ErrorType}}
+	// Error returns "Status Code: X". We implemented in to satisfy the error
+	// interface. For a more descriptive error message see the output type.
+	func (o {{.Output}}) Error() string {
+		return "Status Code: {{.StatusCode}}"
+	}
+	{{end}}
+`
 
 // defaultOutputTypes returns the string defining the default output type
 func defaultOutputTypes() string {
