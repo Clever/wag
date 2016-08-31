@@ -7,9 +7,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Clever/wag/generated/client"
-	"github.com/Clever/wag/generated/models"
-	"github.com/Clever/wag/generated/server"
+	"github.com/Clever/wag/gen-go/client"
+	"github.com/Clever/wag/gen-go/models"
+	"github.com/Clever/wag/gen-go/server"
 
 	"net/http"
 	"net/http/httptest"
