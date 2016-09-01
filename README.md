@@ -2,6 +2,7 @@
 sWAGger - Web API Generator
 
 ## Usage
+Note that WAG requires Go 1.7.
 ### Generating Code
 Create a swagger.yml file with your [service definition](http://editor.swagger.io/#/). Note that WAG supports a [subset](https://github.com/Clever/wag#swagger-spec) of the Swagger spec.
 Copy the latest `swagger.mk` from the [dev-handbook](https://github.com/Clever/dev-handbook/blob/master/make/swagger.mk).
