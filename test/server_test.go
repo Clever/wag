@@ -116,7 +116,7 @@ func TestCustomStringValidation(t *testing.T) {
 
 	bookID := int64(124)
 	_, err := c.CreateBook(context.Background(),
-		&models.CreateBookInput{NewBook: &models.Book{ID: bookID, Name: "test"}})
+		&models.Book{ID: bookID, Name: "test"})
 	assert.NoError(t, err)
 
 	badFormat := "nonMongoFormat"
