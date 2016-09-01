@@ -39,7 +39,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-
+	"gopkg.in/Clever/kayvee-go.v4/logger"
 	"gopkg.in/tylerb/graceful.v1"
 )
 
@@ -82,8 +82,12 @@ func New(c Controller, addr string) Server {
 				return err
 			}
 			var tmpBuf bytes.Buffer
-			err = tmpl.Execute(&tmpBuf, routerTemplate{Method: method, Path: s.BasePath + path,
-				HandlerName: swagger.Capitalize(op.ID)})
+			err = tmpl.Execute(&tmpBuf, routerTemplate{
+				Method:      method,
+				Path:        s.BasePath + path,
+				HandlerName: swagger.Capitalize(op.ID),
+				OpID:        op.ID,
+			})
 			if err != nil {
 				return err
 			}
@@ -101,9 +105,11 @@ type routerTemplate struct {
 	Method      string
 	Path        string
 	HandlerName string
+	OpID        string
 }
 
 var routerFunctionTemplate = `	r.Methods("{{.Method}}").Path("{{.Path}}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger.FromContext(r.Context()).AddContext("op", "{{.OpID}}")
 		h.{{.HandlerName}}Handler(r.Context(), w, r)
 	})
 `
@@ -247,7 +253,7 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 	g := swagger.Generator{PackageName: packageName}
 
 	g.Printf("package server\n\n")
-	g.Printf(swagger.ImportStatements([]string{"context", "github.com/gorilla/mux",
+	g.Printf(swagger.ImportStatements([]string{"context", "github.com/gorilla/mux", "gopkg.in/Clever/kayvee-go.v4/logger",
 		"net/http", "strconv", "encoding/json", "strconv", packageName + "/models", "errors",
 		"github.com/go-openapi/strfmt", "github.com/go-openapi/swag", "io/ioutil", "bytes"}))
 
@@ -327,12 +333,14 @@ var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w ht
 {{if .HasParams}}
 	input, err := new{{.Op}}Input(r)
 	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	err = input.Validate({{if .SingleInputOp}}nil{{end}})
 	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
@@ -354,6 +362,7 @@ var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w ht
 			http.Error(w, respErr.Error(), respErr.{{.Op}}StatusCode())
 			return
 		}
+		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
 	}
@@ -361,6 +370,7 @@ var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w ht
 {{if .SuccessReturnType}}
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
 	}

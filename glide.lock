@@ -80,7 +80,7 @@ imports:
 - name: golang.org/x/tools
   version: 8ea9d4606980305f7f46cabde046adbb530e71c8
 - name: gopkg.in/Clever/kayvee-go.v4
-  version: 401bc2bbd8409a21efc32aacad81f4a6aa1b2488
+  version: ^4.1.0
   subpackages:
   - /logger
   - middleware

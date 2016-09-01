@@ -10,9 +10,11 @@ import (
 )
 
 func withMiddleware(serviceName string, router http.Handler) http.Handler {
-
-	handler := kvMiddleware.New(router, logger.New(serviceName))
-	handler = tracingMiddleware(handler)
+	handler := tracingMiddleware(router)
+	// Logging middleware comes last, i.e. will be run first.
+	// This makes it so that other middleware has access to the logger
+	// that kvMiddleware injects into the request context.
+	handler = kvMiddleware.New(handler, logger.New(serviceName))
 	return handler
 }
 
@@ -32,6 +34,16 @@ func tracingMiddleware(h http.Handler) http.Handler {
 			sp = opentracing.StartSpan(opName, opentracing.ChildOf(sc))
 		}
 		defer sp.Finish()
+
+		// inject span ID into logs to aid in request debugging
+		t := make(map[string]string)
+		if err := sp.Tracer().Inject(sp.Context(), opentracing.TextMap,
+			opentracing.TextMapCarrier(t)); err == nil {
+			if spanid, ok := t["ot-tracer-spanid"]; ok {
+				logger.FromContext(r.Context()).AddContext("ot-tracer-spanid", spanid)
+			}
+		}
+
 		sp.LogEvent("request_received")
 		defer func() {
 			sp.LogEvent("request_finished")

@@ -34,7 +34,7 @@ hardcoded.go: $(GOPATH)/bin/go-bindata hardcoded/*
 
 .PHONY: $(GOPATH)/bin/glide
 $(GOPATH)/bin/glide:
-	@go get github.com/Masterminds/glide
-	
+	@go get -u github.com/Masterminds/glide
+
 install_deps: $(GOPATH)/bin/glide
 	$(GOPATH)/bin/glide install -v

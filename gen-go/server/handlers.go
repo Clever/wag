@@ -13,6 +13,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/gorilla/mux"
+	"gopkg.in/Clever/kayvee-go.v4/logger"
 )
 
 var _ = strconv.ParseInt
@@ -68,12 +69,14 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 
 	input, err := newGetBooksInput(r)
 	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	err = input.Validate()
 	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
@@ -85,12 +88,14 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 			http.Error(w, respErr.Error(), respErr.GetBooksStatusCode())
 			return
 		}
+		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
 	}
 
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
 	}
@@ -222,12 +227,14 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 
 	input, err := newGetBookByIDInput(r)
 	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	err = input.Validate()
 	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
@@ -239,12 +246,14 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 			http.Error(w, respErr.Error(), respErr.GetBookByIDStatusCode())
 			return
 		}
+		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
 	}
 
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
 	}
@@ -303,12 +312,14 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 
 	input, err := newCreateBookInput(r)
 	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	err = input.Validate(nil)
 	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
@@ -320,12 +331,14 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 			http.Error(w, respErr.Error(), respErr.CreateBookStatusCode())
 			return
 		}
+		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
 	}
 
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
 	}
@@ -357,12 +370,14 @@ func (h handler) GetBookByID2Handler(ctx context.Context, w http.ResponseWriter,
 
 	input, err := newGetBookByID2Input(r)
 	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	err = input.Validate()
 	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
@@ -374,12 +389,14 @@ func (h handler) GetBookByID2Handler(ctx context.Context, w http.ResponseWriter,
 			http.Error(w, respErr.Error(), respErr.GetBookByID2StatusCode())
 			return
 		}
+		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
 	}
 
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
 	}
@@ -423,6 +440,7 @@ func (h handler) HealthCheckHandler(ctx context.Context, w http.ResponseWriter, 
 			http.Error(w, respErr.Error(), respErr.HealthCheckStatusCode())
 			return
 		}
+		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
 	}
