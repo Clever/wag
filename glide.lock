@@ -1,9 +1,8 @@
-hash: 5c062815ab64028c7ff63d5cd86c0b4cef67bcf68bb1ef65854268fe35c1dc32
-updated: 2016-08-31T19:32:07.432869735-07:00
+hash: 681dcd3704e3193fc308bf20c9169b4f5d8e8173e30aac669ae5369d653751a5
+updated: 2016-08-31T20:14:27.623991306-07:00
 imports:
 - name: bitbucket.org/pkg/inflect
   version: 8961c3750a47
-  repo: https://bitbucket.org/pkg/inflect
 - name: github.com/asaskevich/govalidator
   version: 593d64559f7600f29581a3ee42177f5dbded27a9
 - name: github.com/davecgh/go-spew
@@ -13,7 +12,7 @@ imports:
 - name: github.com/go-openapi/analysis
   version: b44dc874b601d9e4e2f6e19140e794ba24bead3b
 - name: github.com/go-openapi/errors
-  version: 4178436c9f2430cdd945c50301cfb61563b56573
+  version: d24ebc2075bad502fac3a8ae27aa6dd58e1952dc
 - name: github.com/go-openapi/jsonpointer
   version: 46af16f9f7b149af66e5d1bd010e3574dc06de98
 - name: github.com/go-openapi/jsonreference
@@ -23,7 +22,7 @@ imports:
   subpackages:
   - fmts
 - name: github.com/go-openapi/runtime
-  version: b5bd5f10b3ecfc154ac2bdf3cfe5119d313a81fb
+  version: 11e322eeecc1032d5a0a96c566ed53f2b5c26e22
 - name: github.com/go-openapi/spec
   version: 6aced65f8501fe1217321abf0749d354824ba2ff
 - name: github.com/go-openapi/strfmt
@@ -33,12 +32,11 @@ imports:
 - name: github.com/go-openapi/validate
   version: deaf2c9013bc1a7f4c774662259a506ba874d80f
 - name: github.com/go-swagger/go-swagger
-  version: 96d8cae5a0dc8da7da293da8d2ad87929a051d55
+  version: fa33185e4cd5c4c787db1047c7bd1fca7f857bca
   subpackages:
   - /generator
 - name: github.com/go-swagger/scan-repo-boundary
   version: 196ec52cfa1c96b45dd793dfa0fa3f8877b299da
-  repo: https://github.com/go-swagger/scan-repo-boundary
 - name: github.com/golang/mock
   version: bd3c8e81be01eef76d4b503f5e687d2d1354d2d9
   subpackages:
@@ -48,16 +46,9 @@ imports:
 - name: github.com/gorilla/mux
   version: 0b13a922203ebdbfd236c818efcd5ed46097d690
 - name: github.com/jessevdk/go-flags
-  version: a8cab0163d48558ffd77076c9c99388529766f63
-  repo: https://github.com/jessevdk/go-flags
+  version: f2785f5820ec967043de79c8be97edfc464ca745
 - name: github.com/mailru/easyjson
-  version: 34560e358dc05e2c28f6fda2f5c9e7494a4b9b19
-- name: github.com/naoina/denco
-  version: 9af2ba0e24214bac003821f4a501b131b2e04c75
-  repo: https://github.com/naoina/denco
-- name: github.com/opennota/urlesc
-  version: 5bd2802263f21d8788851d5305584c82a5c75d7e
-  repo: https://github.com/opennota/urlesc
+  version: 3d7eb5818bd515e07588ded25d0d501516a0309d
 - name: github.com/opentracing/opentracing-go
   version: 77a31d686003349e89c89e58408aafcd20003f41
 - name: github.com/pmezard/go-difflib
@@ -73,30 +64,21 @@ imports:
 - name: github.com/stretchr/testify
   version: d77da356e56a7428ad25149ca77381849a6a5232
 - name: github.com/tylerb/graceful
-  version: 50a48b6e73fcc75b45e22c05b79629a67c79e938
-  repo: https://github.com/tylerb/graceful
+  version: 842f31108f8d3512ce3176d00bf1a32db1d5e3af
 - name: github.com/urfave/negroni
   version: 5d815f907a182b6131cc88af3f17f898b93142a5
-  repo: https://github.com/urfave/negroni
-- name: github.com/willf/bitset
-  version: 1730870b454dde6756091d8c6a3d780ef123674c
-  repo: https://github.com/willf/bitset
+- name: github.com/vburenin/nsync
+  version: 9a75d1c80410815ac45d65fc01ccabac9c98dd4a
 - name: golang.org/x/crypto
   version: f160b6bf95857cd862817875dd958be022e587c4
 - name: golang.org/x/net
-  version: 6250b412798208e6c90b03b7c4f226de5aa299e2
+  version: 7394c112eae4dba7e96bfcfe738e6373d61772b4
   subpackages:
   - /context/ctxhttp
 - name: golang.org/x/text
   version: d69c40b4be55797923cec7457fac7a244d91a9b6
 - name: golang.org/x/tools
-  version: 9deed8c6c1c89e0b6d68d727f215de8e851d1064
-  repo: https://go.googlesource.com/tools
-  subpackages:
-  - go/ast/astutil
-  - go/buildutil
-  - go/loader
-  - imports
+  version: 8ea9d4606980305f7f46cabde046adbb530e71c8
 - name: gopkg.in/Clever/kayvee-go.v4
   version: 401bc2bbd8409a21efc32aacad81f4a6aa1b2488
   subpackages:

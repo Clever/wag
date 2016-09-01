@@ -37,5 +37,4 @@ $(GOPATH)/bin/glide:
 	@go get github.com/Masterminds/glide
 	
 install_deps: $(GOPATH)/bin/glide
-	@# stash dependencies into vendor directory (-v removes nested vendor dirs)
 	$(GOPATH)/bin/glide install -v

@@ -24,3 +24,4 @@ import:
   - /logger
   - middleware
 - package: gopkg.in/tylerb/graceful.v1
+- package: github.com/vburenin/nsync
