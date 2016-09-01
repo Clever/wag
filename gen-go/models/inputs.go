@@ -125,6 +125,20 @@ func (i GetBookByIDInput) Validate() error {
 	return nil
 }
 
+// GetBookByID2Input holds the input parameters for a getBookByID2 operation.
+type GetBookByID2Input struct {
+	ID string
+}
+
+// Validate returns an error if any of the GetBookByID2Input parameters don't satisfy the
+// requirements from the swagger yml file.
+func (i GetBookByID2Input) Validate() error {
+	if err := validate.Pattern("id", "path", string(i.ID), "^[0-9a-f]{24}$"); err != nil {
+		return err
+	}
+	return nil
+}
+
 // HealthCheckInput holds the input parameters for a healthCheck operation.
 type HealthCheckInput struct {
 }

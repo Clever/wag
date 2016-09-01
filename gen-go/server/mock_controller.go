@@ -63,6 +63,17 @@ func (_mr *_MockControllerRecorder) CreateBook(arg0, arg1 interface{}) *gomock.C
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreateBook", arg0, arg1)
 }
 
+func (_m *MockController) GetBookByID2(ctx context.Context, i *models.GetBookByID2Input) (*models.Book, error) {
+	ret := _m.ctrl.Call(_m, "GetBookByID2", ctx, i)
+	ret0, _ := ret[0].(*models.Book)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockControllerRecorder) GetBookByID2(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetBookByID2", arg0, arg1)
+}
+
 func (_m *MockController) HealthCheck(ctx context.Context) error {
 	ret := _m.ctrl.Call(_m, "HealthCheck", ctx)
 	ret0, _ := ret[0].(error)

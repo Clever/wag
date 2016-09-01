@@ -47,6 +47,10 @@ func New(c Controller, addr string) Server {
 		h.CreateBookHandler(r.Context(), w, r)
 	})
 
+	r.Methods("GET").Path("/v1/books/{id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		h.GetBookByID2Handler(r.Context(), w, r)
+	})
+
 	r.Methods("GET").Path("/v1/health/check").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h.HealthCheckHandler(r.Context(), w, r)
 	})

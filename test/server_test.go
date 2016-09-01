@@ -124,6 +124,9 @@ func (d *LastCallServer) GetBooks(ctx context.Context, input *models.GetBooksInp
 func (d *LastCallServer) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
 	return nil, nil
 }
+func (d *LastCallServer) GetBookByID2(ctx context.Context, input *models.GetBookByID2Input) (*models.Book, error) {
+	return nil, nil
+}
 func (d *LastCallServer) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
 	return nil, nil
 }
@@ -168,6 +171,9 @@ func (m *MiddlewareContextTest) GetBooks(ctx context.Context, input *models.GetB
 	return []models.Book{}, nil
 }
 func (m *MiddlewareContextTest) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
+	return nil, nil
+}
+func (m *MiddlewareContextTest) GetBookByID2(ctx context.Context, input *models.GetBookByID2Input) (*models.Book, error) {
 	return nil, nil
 }
 func (m *MiddlewareContextTest) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {

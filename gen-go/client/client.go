@@ -275,6 +275,62 @@ func (c Client) CreateBook(ctx context.Context, i *models.Book) (*models.Book, e
 	}
 }
 
+// GetBookByID2 makes a GET request to /books/{id}.
+// Retrieve a book
+func (c Client) GetBookByID2(ctx context.Context, i *models.GetBookByID2Input) (*models.Book, error) {
+	path := c.basePath + "/v1/books/{id}"
+	urlVals := url.Values{}
+	var body []byte
+
+	path = strings.Replace(path, "{id}", i.ID, -1)
+	path = path + "?" + urlVals.Encode()
+
+	client := &http.Client{Transport: c.transport}
+	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Add the opname for doers like tracing
+	ctx = context.WithValue(ctx, opNameCtx{}, "getBookByID2")
+	resp, err := c.requestDoer.Do(client, req.WithContext(ctx))
+
+	if err != nil {
+		return nil, models.DefaultInternalError{Msg: err.Error()}
+	}
+
+	switch resp.StatusCode {
+	case 200:
+
+		var output models.Book
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, models.DefaultInternalError{Msg: err.Error()}
+		}
+		return &output, nil
+	case 404:
+		var output models.GetBookByID2404Output
+		return nil, output
+
+	case 400:
+		var output models.DefaultBadRequest
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, models.DefaultInternalError{Msg: err.Error()}
+		}
+		return nil, output
+
+	case 500:
+		var output models.DefaultInternalError
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, models.DefaultInternalError{Msg: err.Error()}
+		}
+		return nil, output
+
+	default:
+		return nil, models.DefaultInternalError{Msg: "Unknown response"}
+	}
+}
+
 // HealthCheck makes a GET request to /health/check.
 // Checks if the service is healthy
 func (c Client) HealthCheck(ctx context.Context) error {
