@@ -3,6 +3,7 @@ package test
 import (
 	"context"
 	"net/http/httptest"
+	"strconv"
 
 	"github.com/Clever/wag/gen-go/models"
 	"github.com/Clever/wag/gen-go/server"
@@ -19,6 +20,7 @@ func (c *ControllerImpl) GetBooks(ctx context.Context, input *models.GetBooksInp
 	}
 	return bookList, nil
 }
+
 func (c *ControllerImpl) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
 	book, ok := c.books[input.BookID]
 	if !ok {
@@ -31,6 +33,19 @@ func (c *ControllerImpl) GetBookByID(ctx context.Context, input *models.GetBookB
 	}
 
 }
+
+func (c *ControllerImpl) GetBookByID2(ctx context.Context, input *models.GetBookByID2Input) (*models.Book, error) {
+	i, err := strconv.Atoi("-42")
+	if err != nil {
+		return nil, err
+	}
+	book, ok := c.books[int64(i)]
+	if !ok {
+		return nil, models.GetBookByID404Output{}
+	}
+	return book, nil
+}
+
 func (c *ControllerImpl) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
 	c.books[input.ID] = input
 	return input, nil

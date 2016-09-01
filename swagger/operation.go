@@ -33,7 +33,7 @@ func Interface(op *spec.Operation) string {
 	input := ""
 	if ssbp, opModel := SingleSchemaedBodyParameter(op); ssbp {
 		input = fmt.Sprintf("i *models.%s", opModel)
-	} else if len(op.Parameters) > 1 {
+	} else if len(op.Parameters) > 0 {
 		input = fmt.Sprintf("i *models.%sInput", capOpID)
 	}
 

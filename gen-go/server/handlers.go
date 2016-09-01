@@ -353,6 +353,67 @@ func newCreateBookInput(r *http.Request) (*models.Book, error) {
 	return &input, nil
 }
 
+func (h handler) GetBookByID2Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+
+	input, err := newGetBookByID2Input(r)
+	if err != nil {
+		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		return
+	}
+
+	err = input.Validate()
+	if err != nil {
+		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		return
+	}
+
+	resp, err := h.GetBookByID2(ctx, input)
+
+	if err != nil {
+		if respErr, ok := err.(models.GetBookByID2Error); ok {
+			http.Error(w, respErr.Error(), respErr.GetBookByID2StatusCode())
+			return
+		}
+		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		return
+	}
+
+	respBytes, err := json.Marshal(resp)
+	if err != nil {
+		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	w.Write(respBytes)
+
+}
+
+// newGetBookByID2Input takes in an http.Request an returns the input struct.
+func newGetBookByID2Input(r *http.Request) (*models.GetBookByID2Input, error) {
+	var input models.GetBookByID2Input
+
+	var err error
+	_ = err
+
+	iDStr := mux.Vars(r)["id"]
+	if len(iDStr) == 0 {
+		return nil, errors.New("Parameter must be specified")
+	}
+	if len(iDStr) != 0 {
+		var iDTmp string
+		iDTmp, err = iDStr, error(nil)
+		if err != nil {
+			return nil, err
+		}
+		input.ID = iDTmp
+
+	}
+
+	return &input, nil
+}
+
 func (h handler) HealthCheckHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	err := h.HealthCheck(ctx)
