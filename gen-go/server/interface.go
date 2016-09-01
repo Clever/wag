@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+
 	"github.com/Clever/wag/gen-go/models"
 )
 
@@ -19,7 +20,7 @@ type Controller interface {
 
 	// CreateBook makes a POST request to /books/{book_id}.
 	// Creates a book
-	CreateBook(ctx context.Context, i *models.CreateBookInput) (*models.Book, error)
+	CreateBook(ctx context.Context, i *models.Book) (*models.Book, error)
 
 	// HealthCheck makes a GET request to /health/check.
 	// Checks if the service is healthy

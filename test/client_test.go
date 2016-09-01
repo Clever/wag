@@ -27,7 +27,7 @@ func (c *ClientContextTest) GetBooks(ctx context.Context, input *models.GetBooks
 func (c *ClientContextTest) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
 	return nil, nil
 }
-func (c *ClientContextTest) CreateBook(ctx context.Context, input *models.CreateBookInput) (*models.Book, error) {
+func (c *ClientContextTest) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
 	c.postCount++
 	if c.postCount == 1 {
 		return nil, fmt.Errorf("Error count: %d", c.postCount)
@@ -78,7 +78,7 @@ func TestNonGetRetries(t *testing.T) {
 	s := server.New(&controller, ":8080")
 	testServer := httptest.NewServer(s.Handler)
 	c := client.New(testServer.URL)
-	_, err := c.CreateBook(context.Background(), &models.CreateBookInput{})
+	_, err := c.CreateBook(context.Background(), &models.Book{})
 	assert.Error(t, err)
 	assert.Equal(t, 1, controller.postCount)
 }

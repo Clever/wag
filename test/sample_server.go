@@ -31,9 +31,9 @@ func (c *ControllerImpl) GetBookByID(ctx context.Context, input *models.GetBookB
 	}
 
 }
-func (c *ControllerImpl) CreateBook(ctx context.Context, input *models.CreateBookInput) (*models.Book, error) {
-	c.books[input.NewBook.ID] = input.NewBook
-	return input.NewBook, nil
+func (c *ControllerImpl) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
+	c.books[input.ID] = input
+	return input, nil
 }
 func (c *ControllerImpl) HealthCheck(ctx context.Context) error {
 	return nil

@@ -44,6 +44,7 @@ package models
 import(
 		"encoding/json"
 		"strconv"
+
 		"github.com/go-openapi/validate"
 		"github.com/go-openapi/strfmt"
 )
@@ -60,6 +61,13 @@ var _ = strfmt.NewFormats
 		pathItemOps := swagger.PathItemOperations(path)
 		for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
 			op := pathItemOps[opKey]
+			// Do not generate an input struct + validation for an
+			// operation that has a single, schema'd input.
+			// The input to these will be the model generated for
+			// the schema.
+			if ssbp, _ := swagger.SingleSchemaedBodyParameter(op); ssbp {
+				continue
+			}
 			if err := printInputStruct(&g, op); err != nil {
 				return err
 			}

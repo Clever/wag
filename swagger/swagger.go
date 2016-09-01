@@ -44,8 +44,19 @@ func ImportStatements(imports []string) string {
 	if len(imports) == 0 {
 		return ""
 	}
+	remoteImports := []string{}
 	output := "import (\n"
 	for _, importStr := range imports {
+		if strings.Contains(importStr, ".") {
+			remoteImports = append(remoteImports, importStr)
+		} else {
+			output += fmt.Sprintf("\t\"%s\"\n", importStr)
+		}
+	}
+	if len(remoteImports) > 0 {
+		output += "\n"
+	}
+	for _, importStr := range remoteImports {
 		output += fmt.Sprintf("\t\"%s\"\n", importStr)
 	}
 	output += ")\n\n"

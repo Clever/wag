@@ -2,9 +2,10 @@ package models
 
 import (
 	"encoding/json"
+	"strconv"
+
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
-	"strconv"
 )
 
 // These imports may not be used depending on the input parameters
@@ -121,21 +122,6 @@ func (i GetBookByIDInput) Validate() error {
 			return err
 		}
 	}
-	return nil
-}
-
-// CreateBookInput holds the input parameters for a createBook operation.
-type CreateBookInput struct {
-	NewBook *Book
-}
-
-// Validate returns an error if any of the CreateBookInput parameters don't satisfy the
-// requirements from the swagger yml file.
-func (i CreateBookInput) Validate() error {
-	if err := i.NewBook.Validate(nil); err != nil {
-		return err
-	}
-
 	return nil
 }
 

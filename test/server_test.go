@@ -25,7 +25,7 @@ func TestBasicEndToEnd(t *testing.T) {
 	bookName := "Test"
 
 	createdBook, err := c.CreateBook(
-		context.Background(), &models.CreateBookInput{NewBook: &models.Book{ID: bookID, Name: bookName}})
+		context.Background(), &models.Book{ID: bookID, Name: bookName})
 	assert.NoError(t, err)
 	assert.Equal(t, bookID, createdBook.ID)
 	assert.Equal(t, bookName, createdBook.Name)
@@ -46,7 +46,7 @@ func TestBasicEndToEnd(t *testing.T) {
 	otherBookID := int64(126)
 
 	createdBook, err = c.CreateBook(
-		context.Background(), &models.CreateBookInput{NewBook: &models.Book{ID: otherBookID, Name: bookName}})
+		context.Background(), &models.Book{ID: otherBookID, Name: bookName})
 	assert.NoError(t, err)
 	assert.Equal(t, otherBookID, createdBook.ID)
 	assert.Equal(t, bookName, createdBook.Name)
@@ -95,7 +95,7 @@ func TestHeaders(t *testing.T) {
 	bookID := int64(124)
 	c := client.New(s.URL)
 	_, err := c.CreateBook(context.Background(),
-		&models.CreateBookInput{NewBook: &models.Book{ID: bookID, Name: "test"}})
+		&models.Book{ID: bookID, Name: "test"})
 	assert.NoError(t, err)
 
 	// Make a raw HTTP request (i.e. don't use the client) so we can check the headers
@@ -124,7 +124,7 @@ func (d *LastCallServer) GetBooks(ctx context.Context, input *models.GetBooksInp
 func (d *LastCallServer) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
 	return nil, nil
 }
-func (d *LastCallServer) CreateBook(ctx context.Context, input *models.CreateBookInput) (*models.Book, error) {
+func (d *LastCallServer) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
 	return nil, nil
 }
 func (c *LastCallServer) HealthCheck(ctx context.Context) error {
@@ -170,7 +170,7 @@ func (m *MiddlewareContextTest) GetBooks(ctx context.Context, input *models.GetB
 func (m *MiddlewareContextTest) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
 	return nil, nil
 }
-func (m *MiddlewareContextTest) CreateBook(ctx context.Context, input *models.CreateBookInput) (*models.Book, error) {
+func (m *MiddlewareContextTest) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
 	return nil, nil
 }
 func (m *MiddlewareContextTest) HealthCheck(ctx context.Context) error {
