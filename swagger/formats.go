@@ -8,7 +8,7 @@ import (
 
 func InitCustomFormats() {
 	m := mongoID("")
-	strfmt.Default.Add("mongoID", &m, isMongoID)
+	strfmt.Default.Add("mongo-id", &m, isMongoID)
 }
 
 var mongoRegExp = regexp.MustCompile("^[0-9a-f]{24}$")
