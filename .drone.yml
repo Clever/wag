@@ -25,5 +25,10 @@ publish:
     when:
       branch: master
 script:
+# setup ssh key, to install private dependencies
+- echo ${drone_key} | sed 's|\\n|\n|g' > ~/.ssh/id_rsa
+- chmod 600 ~/.ssh/id_rsa
+# install dependencies
+- make install_deps
 - make test
 - make build

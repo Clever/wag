@@ -32,5 +32,10 @@ hardcoded.go: $(GOPATH)/bin/go-bindata hardcoded/*
 	# gofmt doesn't like what go-bindata creates
 	gofmt -w hardcoded.go
 
-vendor: golang-godep-vendor-deps
-	$(call golang-godep-vendor,$(PKGS))
+.PHONY: $(GOPATH)/bin/glide
+$(GOPATH)/bin/glide:
+	@go get github.com/Masterminds/glide
+	
+install_deps: $(GOPATH)/bin/glide
+	@# stash dependencies into vendor directory (-v removes nested vendor dirs)
+	$(GOPATH)/bin/glide install -v

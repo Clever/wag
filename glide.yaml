@@ -1,0 +1,26 @@
+package: github.com/Clever/wag
+import:
+- package: github.com/go-openapi/errors
+- package: github.com/go-openapi/loads
+  subpackages:
+  - fmts
+- package: github.com/go-openapi/spec
+- package: github.com/go-openapi/strfmt
+- package: github.com/go-openapi/swag
+- package: github.com/go-openapi/validate
+- package: github.com/go-swagger/go-swagger
+  subpackages:
+  - /generator
+- package: github.com/golang/mock
+  subpackages:
+  - /gomock
+- package: github.com/gorilla/mux
+- package: github.com/opentracing/opentracing-go
+- package: golang.org/x/net
+  subpackages:
+  - /context/ctxhttp
+- package: gopkg.in/Clever/kayvee-go.v4
+  subpackages:
+  - /logger
+  - middleware
+- package: gopkg.in/tylerb/graceful.v1
