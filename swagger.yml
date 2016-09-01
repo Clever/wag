@@ -33,6 +33,10 @@ paths:
           minimum: 2
           # This is a silly requirement, but let's add it to show how it would work
           multipleOf: 2
+        - name: authorID
+          in: query
+          type: string
+          format: "mongo-id"
         - name: authorization
           in: header
           type: string
@@ -168,6 +172,9 @@ definitions:
         type: integer
       name:
         type: string
+      author:
+        type: string
+        format: mongo-id
   Error:
     type: object
     properties:

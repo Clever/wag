@@ -15,6 +15,10 @@ swagger:model Book
 */
 type Book struct {
 
+	/* author
+	 */
+	Author string `json:"author,omitempty"`
+
 	/* id
 	 */
 	ID int64 `json:"id,omitempty"`

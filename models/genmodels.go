@@ -25,13 +25,16 @@ func Generate(packageName, swaggerFile string, swagger spec.Swagger) error {
 		IncludeHandler: false,
 		IncludeSupport: false,
 	}); err != nil {
-		return err
+		return fmt.Errorf("error generating go-swagger models: %s", err)
 	}
 
 	if err := generateOutputs(packageName, swagger.Paths); err != nil {
-		return err
+		return fmt.Errorf("error generating outputs: %s", err)
 	}
-	return generateInputs(packageName, swagger.Paths)
+	if err := generateInputs(packageName, swagger.Paths); err != nil {
+		return fmt.Errorf("error generating inputs: %s", err)
+	}
+	return nil
 }
 
 func generateInputs(packageName string, paths *spec.Paths) error {

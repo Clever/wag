@@ -32,6 +32,7 @@ func main() {
 		log.Fatal("package is required")
 	}
 
+	swagger.InitCustomFormats()
 	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
 	doc, err := loads.Spec(*swaggerFile)
 	if err != nil {

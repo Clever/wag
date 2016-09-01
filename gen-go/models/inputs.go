@@ -86,6 +86,7 @@ func (i GetBooksInput) Validate() error {
 // GetBookByIDInput holds the input parameters for a getBookByID operation.
 type GetBookByIDInput struct {
 	BookID        int64
+	AuthorID      *string
 	Authorization *string
 	RandomBytes   *strfmt.Base64
 }
@@ -101,6 +102,11 @@ func (i GetBookByIDInput) Validate() error {
 	}
 	if err := validate.MultipleOf("book_id", "path", float64(i.BookID), 2.000000); err != nil {
 		return err
+	}
+	if i.AuthorID != nil {
+		if err := validate.FormatOf("authorID", "query", "mongo-id", *i.AuthorID, strfmt.Default); err != nil {
+			return err
+		}
 	}
 	if i.Authorization != nil {
 		if err := validate.MaxLength("authorization", "header", string(*i.Authorization), 24); err != nil {
