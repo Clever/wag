@@ -1,9 +1,9 @@
 package swagger
 
 import (
-	"regexp"
-
 	"github.com/go-openapi/strfmt"
+
+	"gopkg.in/mgo.v2/bson"
 )
 
 func InitCustomFormats() {
@@ -11,10 +11,8 @@ func InitCustomFormats() {
 	strfmt.Default.Add("mongo-id", &m, isMongoID)
 }
 
-var mongoRegExp = regexp.MustCompile("^[0-9a-f]{24}$")
-
 func isMongoID(str string) bool {
-	return mongoRegExp.MatchString(str)
+	return bson.IsObjectIdHex(str)
 }
 
 type mongoID string

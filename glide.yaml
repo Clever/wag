@@ -25,3 +25,6 @@ import:
   - middleware
 - package: gopkg.in/tylerb/graceful.v1
 - package: github.com/vburenin/nsync
+- package: gopkg.in/mgo.v2
+  subpackages:
+  - /bson

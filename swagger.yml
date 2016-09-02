@@ -36,7 +36,7 @@ paths:
         - name: authorID
           in: query
           type: string
-          format: "mongo-id"
+          format: mongo-id
         - name: authorization
           in: header
           type: string
