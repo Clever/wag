@@ -64,6 +64,8 @@ func ParamToStringCode(param spec.Parameter) string {
 			return fmt.Sprintf("(%s).String()", valToSet)
 		case "date-time":
 			return fmt.Sprintf("(%s).String()", valToSet)
+		case "mongo-id":
+			return fmt.Sprintf("%s", valToSet)
 		case "":
 			return fmt.Sprintf("%s", valToSet)
 		default:
@@ -105,6 +107,8 @@ func ParamToType(param spec.Parameter, withPointer bool) (string, error) {
 			typeName = "strfmt.Date"
 		case "date-time":
 			typeName = "strfmt.DateTime"
+		case "mongo-id":
+			typeName = "string"
 		case "":
 			typeName = "string"
 		default:
@@ -203,6 +207,8 @@ func StringToTypeCode(strField string, param spec.Parameter) (string, error) {
 		switch param.Format {
 		case "byte":
 			return fmt.Sprintf("convertBase64(%s)", strField), nil
+		case "mongo-id":
+			return fmt.Sprintf("%s, error(nil)", strField), nil
 		case "":
 			return fmt.Sprintf("%s, error(nil)", strField), nil
 		case "date":

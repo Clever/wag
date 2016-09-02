@@ -284,6 +284,16 @@ func newGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 		input.BookID = bookIDTmp
 
 	}
+	authorIDStr := r.URL.Query().Get("authorID")
+	if len(authorIDStr) != 0 {
+		var authorIDTmp string
+		authorIDTmp, err = authorIDStr, error(nil)
+		if err != nil {
+			return nil, err
+		}
+		input.AuthorID = &authorIDTmp
+
+	}
 	authorizationStr := r.Header.Get("authorization")
 	if len(authorizationStr) != 0 {
 		var authorizationTmp string

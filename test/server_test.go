@@ -11,10 +11,15 @@ import (
 	"github.com/Clever/wag/gen-go/client"
 	"github.com/Clever/wag/gen-go/models"
 	"github.com/Clever/wag/gen-go/server"
+	"github.com/Clever/wag/swagger"
 
 	"net/http"
 	"net/http/httptest"
 )
+
+func init() {
+	swagger.InitCustomFormats()
+}
 
 func TestBasicEndToEnd(t *testing.T) {
 	s := setupServer()
@@ -103,6 +108,27 @@ func TestHeaders(t *testing.T) {
 	assert.NoError(t, err)
 	defer resp.Body.Close()
 	assert.Equal(t, "application/json", resp.Header.Get("Content-Type"))
+}
+
+func TestCustomStringValidation(t *testing.T) {
+	s := setupServer()
+	c := client.New(s.URL)
+
+	bookID := int64(124)
+	_, err := c.CreateBook(context.Background(),
+		&models.Book{ID: bookID, Name: "test"})
+	assert.NoError(t, err)
+
+	badFormat := "nonMongoFormat"
+	_, err = c.GetBookByID(context.Background(),
+		&models.GetBookByIDInput{BookID: bookID, AuthorID: &badFormat})
+	_, ok := err.(models.DefaultBadRequest)
+	assert.True(t, ok)
+
+	validFormat := "012345678901234567890123"
+	_, err = c.GetBookByID(context.Background(),
+		&models.GetBookByIDInput{BookID: bookID, AuthorID: &validFormat})
+	assert.NoError(t, err)
 }
 
 type LastCallServer struct {

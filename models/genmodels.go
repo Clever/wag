@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/spec"
 
 	"github.com/Clever/wag/swagger"
@@ -17,6 +19,7 @@ import (
 // Generate writes the files to the client directories
 func Generate(packageName, swaggerFile string, swagger spec.Swagger) error {
 	// generate models with go-swagger
+	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
 	if err := generator.GenerateServer("", []string{}, []string{}, generator.GenOpts{
 		Spec:           swaggerFile,
 		ModelPackage:   "models",
@@ -25,13 +28,16 @@ func Generate(packageName, swaggerFile string, swagger spec.Swagger) error {
 		IncludeHandler: false,
 		IncludeSupport: false,
 	}); err != nil {
-		return err
+		return fmt.Errorf("error generating go-swagger models: %s", err)
 	}
 
 	if err := generateOutputs(packageName, swagger.Paths); err != nil {
-		return err
+		return fmt.Errorf("error generating outputs: %s", err)
 	}
-	return generateInputs(packageName, swagger.Paths)
+	if err := generateInputs(packageName, swagger.Paths); err != nil {
+		return fmt.Errorf("error generating inputs: %s", err)
+	}
+	return nil
 }
 
 func generateInputs(packageName string, paths *spec.Paths) error {

@@ -152,6 +152,9 @@ func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (mo
 	var body []byte
 
 	path = strings.Replace(path, "{book_id}", strconv.FormatInt(i.BookID, 10), -1)
+	if i.AuthorID != nil {
+		urlVals.Add("authorID", *i.AuthorID)
+	}
 	if i.RandomBytes != nil {
 		urlVals.Add("randomBytes", string(*i.RandomBytes))
 	}

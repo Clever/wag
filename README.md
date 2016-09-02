@@ -178,6 +178,22 @@ app.use((req, res, next) => {
 });
 ```
 
+### Custom String Validation
+We've added custom string validation for mongo-ids to avoid repeating: "^[0-9a-f]{24}$"` throughout the swagger.yml. To use it you have must:
+
+- Change you swagger.yml file to have the `mongo-id` format. For example:
+```
+authorID:
+        type: string
+        format: mongo-id
+```
+
+- Import `github.com/Clever/wag/swagger` and call `swagger.InitCustomFormats()` in your server code.
+
+Note that custom string validation only applies to input parameters and does not have any impact on objects defined in '#/definitions'.
+
+Right now we do not allow user-defined custom strings, but this is something we may add if there's sufficient demand.
+
 ## Tests
 ```
 make test
