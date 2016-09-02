@@ -31,10 +31,16 @@ func (g *Generator) WriteFile(path string) error {
 	}
 	fileBytes, err := format.Source(g.buf.Bytes())
 	if err != nil {
-		// This will error if the code isn't valid so let's print it to make it
-		// easier to debug
-		fmt.Printf("BAD CODE\n%s\n", string(g.buf.Bytes()))
-		return err
+		// This will error if the code isn't valid so let's write it out so we can debug
+		f, createErr := os.Create("badcode.txt")
+		if createErr != nil {
+			return createErr
+		}
+		if _, writeErr := f.Write(g.buf.Bytes()); writeErr != nil {
+			return writeErr
+		}
+
+		return fmt.Errorf("INTERNAL ERROR: %s. The invalid code was written to badcode.txt", err)
 	}
 	return ioutil.WriteFile(os.Getenv("GOPATH")+"/src/"+g.PackageName+"/"+path, fileBytes, 0644)
 }
