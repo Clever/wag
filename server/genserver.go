@@ -41,6 +41,7 @@ import (
 	"github.com/gorilla/mux"
 	"gopkg.in/Clever/kayvee-go.v4/logger"
 	"gopkg.in/tylerb/graceful.v1"
+	"github.com/Clever/go-process-metrics/metrics"
 )
 
 type contextKey struct{}
@@ -54,6 +55,11 @@ type Server struct {
 
 // Serve starts the server. It will return if an error occurs.
 func (s Server) Serve() error {
+
+	go func() {
+		metrics.Log("%s", 1*time.Minute)
+	}()
+
 	// Give the sever 30 seconds to shut down
 	return graceful.RunWithErr(s.addr,30*time.Second,s.Handler)
 }
@@ -66,7 +72,7 @@ type handler struct {
 func New(c Controller, addr string) Server {
 	r := mux.NewRouter()
 	h := handler{Controller: c}
-`)
+`, s.Info.InfoProps.Title)
 
 	for _, path := range swagger.SortedPathItemKeys(paths.Paths) {
 		pathItem := paths.Paths[path]
