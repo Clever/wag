@@ -28,3 +28,6 @@ import:
 - package: gopkg.in/mgo.v2
   subpackages:
   - /bson
+- package: github.com/Clever/go-process-metrics
+  subpackages:
+  - /metrics
