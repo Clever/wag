@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -220,10 +221,55 @@ func testContextMiddleware(h http.Handler) http.Handler {
 
 func TestSettingContextInMiddleware(t *testing.T) {
 	controller := MiddlewareContextTest{}
-	s := server.New(&controller, ":8080")
+	s := server.New(&controller, "")
 	testServer := httptest.NewServer(testContextMiddleware(s.Handler))
 	c := client.New(testServer.URL)
 	_, err := c.GetBooks(context.Background(), &models.GetBooksInput{})
 	assert.NoError(t, err)
 	assert.Equal(t, "contextValue", controller.foundKey)
+}
+
+type TimeoutController struct{}
+
+func (m *TimeoutController) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, error) {
+	return nil, nil
+}
+func (m *TimeoutController) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
+	return nil, nil
+}
+func (m *TimeoutController) GetBookByID2(ctx context.Context, input *models.GetBookByID2Input) (*models.Book, error) {
+	return nil, nil
+}
+func (m *TimeoutController) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
+	return nil, nil
+}
+func (m *TimeoutController) HealthCheck(ctx context.Context) error {
+	time.Sleep(100 * time.Millisecond)
+	return nil
+}
+
+func TestTimeout(t *testing.T) {
+	s := server.New(&TimeoutController{}, "")
+	testServer := httptest.NewServer(testContextMiddleware(s.Handler))
+	c := client.New(testServer.URL)
+
+	// Without a timeout, no error
+	assert.NoError(t, c.HealthCheck(context.Background()))
+
+	// Add a per request context timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
+	defer cancel()
+	start := time.Now()
+	err := c.HealthCheck(ctx)
+	assert.Error(t, err)
+	assert.Equal(t, "context deadline exceeded", err.Error())
+	end := time.Now()
+	assert.True(t, end.Sub(start) < 80*time.Millisecond)
+
+	// Try with a global client setting
+	c = c.WithTimeout(10 * time.Millisecond)
+	err = c.HealthCheck(context.Background())
+	assert.Error(t, err)
+	assert.Equal(t, "context deadline exceeded", err.Error())
+
 }

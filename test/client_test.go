@@ -44,7 +44,7 @@ func (c *ClientContextTest) HealthCheck(ctx context.Context) error {
 
 func TestDefaultClientRetries(t *testing.T) {
 	controller := ClientContextTest{}
-	s := server.New(&controller, ":8080")
+	s := server.New(&controller, "")
 	testServer := httptest.NewServer(s.Handler)
 	c := client.New(testServer.URL)
 	_, err := c.GetBooks(context.Background(), &models.GetBooksInput{})
@@ -54,7 +54,7 @@ func TestDefaultClientRetries(t *testing.T) {
 
 func TestCustomClientRetries(t *testing.T) {
 	controller := ClientContextTest{}
-	s := server.New(&controller, ":8080")
+	s := server.New(&controller, "")
 	testServer := httptest.NewServer(s.Handler)
 
 	// Should fail if no retries
@@ -66,7 +66,7 @@ func TestCustomClientRetries(t *testing.T) {
 
 func TestCustomContextRetries(t *testing.T) {
 	controller := ClientContextTest{}
-	s := server.New(&controller, ":8080")
+	s := server.New(&controller, "")
 	testServer := httptest.NewServer(s.Handler)
 
 	// Should fail if no retries
@@ -78,7 +78,7 @@ func TestCustomContextRetries(t *testing.T) {
 
 func TestNonGetRetries(t *testing.T) {
 	controller := ClientContextTest{}
-	s := server.New(&controller, ":8080")
+	s := server.New(&controller, "")
 	testServer := httptest.NewServer(s.Handler)
 	c := client.New(testServer.URL)
 	_, err := c.CreateBook(context.Background(), &models.Book{})
