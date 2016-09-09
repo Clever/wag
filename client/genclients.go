@@ -26,6 +26,7 @@ import (
 		"strconv"
 		"encoding/json"
 		"strconv"
+		"time"
 
 		"%s/models"
 )
@@ -40,8 +41,11 @@ type Client struct {
 	basePath    string
 	requestDoer doer
 	transport   *http.Transport
+	timeout     time.Duration
 	// Keep the retry doer around so that we can set the number of retries
 	retryDoer *retryDoer
+	// Keep the timeout doer around so that we can set the timeout
+	timeoutDoer *timeoutDoer	
 }
 
 // New creates a new client. The base path and http transport are configurable.
@@ -49,14 +53,23 @@ func New(basePath string) Client {
 	base := baseDoer{}
 	tracing := tracingDoer{d: base}
 	retry := retryDoer{d: tracing, defaultRetries: 1}
+	timeout := timeoutDoer{d : &retry, defaultTimeout: 10 * time.Second}
 
-	return Client{requestDoer: &retry, retryDoer: &retry, transport: &http.Transport{}, basePath: basePath}
+	return Client{requestDoer: &timeout, retryDoer: &retry, timeoutDoer: &timeout,
+		transport: &http.Transport{}, basePath: basePath}
 }
 
 // WithRetries returns a new client that retries all GET operations until they either succeed or fail the
 // number of times specified.
 func (c Client) WithRetries(retries int) Client {
 	c.retryDoer.defaultRetries = retries
+	return c
+}
+
+// WithTimeout returns a new client that has the specified timeout on all operations. To make a single request
+// have a timeout use context.WithTimeout as described here: https://godoc.org/golang.org/x/net/context#WithTimeout.
+func (c Client) WithTimeout(timeout time.Duration) Client {
+	c.timeoutDoer.defaultTimeout = timeout
 	return c
 }
 
