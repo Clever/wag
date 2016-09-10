@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Clever/go-process-metrics/metrics"
 	"github.com/gorilla/mux"
 	"gopkg.in/Clever/kayvee-go.v4/logger"
 	"gopkg.in/tylerb/graceful.v1"
@@ -22,6 +23,11 @@ type Server struct {
 
 // Serve starts the server. It will return if an error occurs.
 func (s Server) Serve() error {
+
+	go func() {
+		metrics.Log("Swagger Test", 1*time.Minute)
+	}()
+
 	// Give the sever 30 seconds to shut down
 	return graceful.RunWithErr(s.addr, 30*time.Second, s.Handler)
 }
