@@ -106,6 +106,7 @@ func methodCode(op *spec.Operation, basePath, method, methodPath string) string 
 	ctx = context.WithValue(ctx, opNameCtx{}, "%s")
 	resp, err := c.requestDoer.Do(client, req.WithContext(ctx))
 	%s
+	defer resp.Body.Close()	
 `, op.ID, errorMessage("models.DefaultInternalError{Msg: err.Error()}", op)))
 
 	buf.WriteString(parseResponseCode(op, capOpID))

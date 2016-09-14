@@ -129,6 +129,7 @@ func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models
 		return nil, models.DefaultInternalError{Msg: err.Error()}
 	}
 
+	defer resp.Body.Close()
 	switch resp.StatusCode {
 	case 200:
 
@@ -192,6 +193,7 @@ func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (mo
 		return nil, models.DefaultInternalError{Msg: err.Error()}
 	}
 
+	defer resp.Body.Close()
 	switch resp.StatusCode {
 	case 200:
 
@@ -263,6 +265,7 @@ func (c Client) CreateBook(ctx context.Context, i *models.Book) (*models.Book, e
 		return nil, models.DefaultInternalError{Msg: err.Error()}
 	}
 
+	defer resp.Body.Close()
 	switch resp.StatusCode {
 	case 200:
 
@@ -316,6 +319,7 @@ func (c Client) GetBookByID2(ctx context.Context, i *models.GetBookByID2Input) (
 		return nil, models.DefaultInternalError{Msg: err.Error()}
 	}
 
+	defer resp.Body.Close()
 	switch resp.StatusCode {
 	case 200:
 
@@ -371,6 +375,7 @@ func (c Client) HealthCheck(ctx context.Context) error {
 		return models.DefaultInternalError{Msg: err.Error()}
 	}
 
+	defer resp.Body.Close()
 	switch resp.StatusCode {
 	case 200:
 		return nil
