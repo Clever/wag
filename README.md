@@ -145,6 +145,7 @@ We currently are testing out LightStep, a service that collects tracing data and
 import * as express from 'express';
 import * as Tracer from 'opentracing';
 import * as LightStep from 'lightstep-tracer';
+import * as lodash from 'lodash;
 Tracer.initGlobalTracer(LightStep.tracer({
   access_token   : process.env.LIGHTSTEP_ACCESS_TOKEN,
   component_name : 'repo-name',
@@ -155,18 +156,14 @@ const app = express();
 // Middleware to look for a span from inbound requests
 app.use((req, res, next) => {
   const wireCtx = Tracer.extract(Tracer.FORMAT_HTTP_HEADERS, req.headers);
-  req.span = Tracer.startSpan(req.url, { childOf : wireCtx });
+  req.span = Tracer.startSpan(req.url, {childOf: wireCtx});
   req.span.logEvent("request_received");
 
   // include trace ID in headers so that we can debug slow requests we see in
   // the browser by looking up the trace ID found in response headers
-  let responseHeaders = {};
+  const responseHeaders = {};
   Tracer.inject(req.span, Tracer.FORMAT_TEXT_MAP, responseHeaders);
-  for (let key in responseHeaders) {
-      if (responseHeaders.hasOwnProperty(key)) {
-        res.setHeader(key, responseHeaders[key])
-      }
-  }
+  lodash.forOwn(responseHeaders, (value, key) => res.setHeader(key, responseHeaders[key]));
 
   // finalize the span when the response is completed
   res.on("finish", () => {
@@ -174,7 +171,7 @@ app.use((req, res, next) => {
     req.span.finish();
   });
 
-  next()
+  next();
 });
 ```
 
