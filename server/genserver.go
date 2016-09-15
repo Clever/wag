@@ -35,7 +35,9 @@ func generateRouter(packageName string, s spec.Swagger, paths *spec.Paths) error
 // Code auto-generated. Do not edit.
 
 import (
+	"log"
 	"net/http"
+	_ "net/http/pprof"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -58,6 +60,11 @@ func (s Server) Serve() error {
 
 	go func() {
 		metrics.Log("%s", 1*time.Minute)
+	}()
+
+	go func() {
+		// This should never return. Listen on the pprof port
+		log.Printf("PProf server crashed: %%s", http.ListenAndServe(":6060", nil))
 	}()
 
 	// Give the sever 30 seconds to shut down
