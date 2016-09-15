@@ -145,7 +145,7 @@ We currently are testing out LightStep, a service that collects tracing data and
 import * as express from 'express';
 import * as Tracer from 'opentracing';
 import * as LightStep from 'lightstep-tracer';
-import * as lodash from 'lodash;
+import * as lodash from 'lodash';
 Tracer.initGlobalTracer(LightStep.tracer({
   access_token   : process.env.LIGHTSTEP_ACCESS_TOKEN,
   component_name : 'repo-name',
