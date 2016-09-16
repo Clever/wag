@@ -141,6 +141,10 @@ app.get('/some_route', (req, res) => {
 Additionally, for the above to work you will need to set up server middleware to place tracing-related metadata on the `req` object.
 We currently are testing out LightStep, a service that collects tracing data and displays it in a nice UI:
 
+```bash
+npm install lighstep-tracer opentracing@0.11 --save # >=0.12 contains untested breaking changes to the API
+```
+
 ```javascript
 import * as express from 'express';
 import * as Tracer from 'opentracing';
