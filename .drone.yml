@@ -1,6 +1,3 @@
-env:
-- REPORT_CARD_GITHUB_STATUS_TOKEN=$$report_card_github_status_token
-- REPORT_CARD_GITHUB_REPO_TOKEN=$$report_card_github_repo_token
 image: clever/drone-go:1.7
 notify:
   email:
@@ -12,6 +9,7 @@ notify:
     on_success: false
     webhook_url: $$slack_webhook
 publish:
+  report_card: {}
   docker:
     docker_host: $$docker_server
     email: $$docker_email
