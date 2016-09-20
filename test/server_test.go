@@ -269,7 +269,7 @@ func TestTimeout(t *testing.T) {
 	// Try with a global client setting
 	c = c.WithTimeout(10 * time.Millisecond)
 	err = c.HealthCheck(context.Background())
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Equal(t, "context deadline exceeded", err.Error())
 
 }

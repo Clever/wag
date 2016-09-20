@@ -25,33 +25,31 @@ type Client struct {
 	transport   *http.Transport
 	timeout     time.Duration
 	// Keep the retry doer around so that we can set the number of retries
-	retryDoer *retryDoer
-	// Keep the timeout doer around so that we can set the timeout
-	timeoutDoer *timeoutDoer
+	retryDoer      *retryDoer
+	defaultTimeout time.Duration
 }
 
 // New creates a new client. The base path and http transport are configurable.
-func New(basePath string) Client {
+func New(basePath string) *Client {
 	base := baseDoer{}
 	tracing := tracingDoer{d: base}
 	retry := retryDoer{d: tracing, defaultRetries: 1}
-	timeout := timeoutDoer{d: &retry, defaultTimeout: 10 * time.Second}
 
-	return Client{requestDoer: &timeout, retryDoer: &retry, timeoutDoer: &timeout,
+	return &Client{requestDoer: &retry, retryDoer: &retry, defaultTimeout: 10 * time.Second,
 		transport: &http.Transport{}, basePath: basePath}
 }
 
 // WithRetries returns a new client that retries all GET operations until they either succeed or fail the
 // number of times specified.
-func (c Client) WithRetries(retries int) Client {
+func (c *Client) WithRetries(retries int) *Client {
 	c.retryDoer.defaultRetries = retries
 	return c
 }
 
 // WithTimeout returns a new client that has the specified timeout on all operations. To make a single request
 // have a timeout use context.WithTimeout as described here: https://godoc.org/golang.org/x/net/context#WithTimeout.
-func (c Client) WithTimeout(timeout time.Duration) Client {
-	c.timeoutDoer.defaultTimeout = timeout
+func (c *Client) WithTimeout(timeout time.Duration) *Client {
+	c.defaultTimeout = timeout
 	return c
 }
 
@@ -80,7 +78,7 @@ func JoinByFormat(data []string, format string) string {
 
 // GetBooks makes a GET request to /books.
 // Returns a list of books
-func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models.Book, error) {
+func (c *Client) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models.Book, error) {
 	path := c.basePath + "/v1/books"
 	urlVals := url.Values{}
 	var body []byte
@@ -123,7 +121,16 @@ func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "getBooks")
-	resp, err := c.requestDoer.Do(client, req.WithContext(ctx))
+	req = req.WithContext(ctx)
+	// Don't add the timeout in a "doer" because we don't want to call "defer.cancel()"
+	// until we've finished all the processing of the request object. Otherwise we'll cancel
+	// our own request before we've finished it.
+	if c.defaultTimeout != 0 {
+		ctx, cancel := context.WithTimeout(req.Context(), c.defaultTimeout)
+		defer cancel()
+		req = req.WithContext(ctx)
+	}
+	resp, err := c.requestDoer.Do(client, req)
 
 	if err != nil {
 		return nil, models.DefaultInternalError{Msg: err.Error()}
@@ -160,7 +167,7 @@ func (c Client) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models
 
 // GetBookByID makes a GET request to /books/{book_id}.
 // Returns a book
-func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
+func (c *Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
 	path := c.basePath + "/v1/books/{book_id}"
 	urlVals := url.Values{}
 	var body []byte
@@ -187,7 +194,16 @@ func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (mo
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "getBookByID")
-	resp, err := c.requestDoer.Do(client, req.WithContext(ctx))
+	req = req.WithContext(ctx)
+	// Don't add the timeout in a "doer" because we don't want to call "defer.cancel()"
+	// until we've finished all the processing of the request object. Otherwise we'll cancel
+	// our own request before we've finished it.
+	if c.defaultTimeout != 0 {
+		ctx, cancel := context.WithTimeout(req.Context(), c.defaultTimeout)
+		defer cancel()
+		req = req.WithContext(ctx)
+	}
+	resp, err := c.requestDoer.Do(client, req)
 
 	if err != nil {
 		return nil, models.DefaultInternalError{Msg: err.Error()}
@@ -232,7 +248,7 @@ func (c Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (mo
 
 // CreateBook makes a POST request to /books/{book_id}.
 // Creates a book
-func (c Client) CreateBook(ctx context.Context, i *models.Book) (*models.Book, error) {
+func (c *Client) CreateBook(ctx context.Context, i *models.Book) (*models.Book, error) {
 	path := c.basePath + "/v1/books/{book_id}"
 	urlVals := url.Values{}
 	var body []byte
@@ -259,7 +275,16 @@ func (c Client) CreateBook(ctx context.Context, i *models.Book) (*models.Book, e
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "createBook")
-	resp, err := c.requestDoer.Do(client, req.WithContext(ctx))
+	req = req.WithContext(ctx)
+	// Don't add the timeout in a "doer" because we don't want to call "defer.cancel()"
+	// until we've finished all the processing of the request object. Otherwise we'll cancel
+	// our own request before we've finished it.
+	if c.defaultTimeout != 0 {
+		ctx, cancel := context.WithTimeout(req.Context(), c.defaultTimeout)
+		defer cancel()
+		req = req.WithContext(ctx)
+	}
+	resp, err := c.requestDoer.Do(client, req)
 
 	if err != nil {
 		return nil, models.DefaultInternalError{Msg: err.Error()}
@@ -296,7 +321,7 @@ func (c Client) CreateBook(ctx context.Context, i *models.Book) (*models.Book, e
 
 // GetBookByID2 makes a GET request to /books/{id}.
 // Retrieve a book
-func (c Client) GetBookByID2(ctx context.Context, i *models.GetBookByID2Input) (*models.Book, error) {
+func (c *Client) GetBookByID2(ctx context.Context, i *models.GetBookByID2Input) (*models.Book, error) {
 	path := c.basePath + "/v1/books/{id}"
 	urlVals := url.Values{}
 	var body []byte
@@ -313,7 +338,16 @@ func (c Client) GetBookByID2(ctx context.Context, i *models.GetBookByID2Input) (
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "getBookByID2")
-	resp, err := c.requestDoer.Do(client, req.WithContext(ctx))
+	req = req.WithContext(ctx)
+	// Don't add the timeout in a "doer" because we don't want to call "defer.cancel()"
+	// until we've finished all the processing of the request object. Otherwise we'll cancel
+	// our own request before we've finished it.
+	if c.defaultTimeout != 0 {
+		ctx, cancel := context.WithTimeout(req.Context(), c.defaultTimeout)
+		defer cancel()
+		req = req.WithContext(ctx)
+	}
+	resp, err := c.requestDoer.Do(client, req)
 
 	if err != nil {
 		return nil, models.DefaultInternalError{Msg: err.Error()}
@@ -353,7 +387,7 @@ func (c Client) GetBookByID2(ctx context.Context, i *models.GetBookByID2Input) (
 
 // HealthCheck makes a GET request to /health/check.
 // Checks if the service is healthy
-func (c Client) HealthCheck(ctx context.Context) error {
+func (c *Client) HealthCheck(ctx context.Context) error {
 	path := c.basePath + "/v1/health/check"
 	urlVals := url.Values{}
 	var body []byte
@@ -369,7 +403,16 @@ func (c Client) HealthCheck(ctx context.Context) error {
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "healthCheck")
-	resp, err := c.requestDoer.Do(client, req.WithContext(ctx))
+	req = req.WithContext(ctx)
+	// Don't add the timeout in a "doer" because we don't want to call "defer.cancel()"
+	// until we've finished all the processing of the request object. Otherwise we'll cancel
+	// our own request before we've finished it.
+	if c.defaultTimeout != 0 {
+		ctx, cancel := context.WithTimeout(req.Context(), c.defaultTimeout)
+		defer cancel()
+		req = req.WithContext(ctx)
+	}
+	resp, err := c.requestDoer.Do(client, req)
 
 	if err != nil {
 		return models.DefaultInternalError{Msg: err.Error()}

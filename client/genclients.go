@@ -44,32 +44,30 @@ type Client struct {
 	timeout     time.Duration
 	// Keep the retry doer around so that we can set the number of retries
 	retryDoer *retryDoer
-	// Keep the timeout doer around so that we can set the timeout
-	timeoutDoer *timeoutDoer	
+	defaultTimeout time.Duration
 }
 
 // New creates a new client. The base path and http transport are configurable.
-func New(basePath string) Client {
+func New(basePath string) *Client {
 	base := baseDoer{}
 	tracing := tracingDoer{d: base}
 	retry := retryDoer{d: tracing, defaultRetries: 1}
-	timeout := timeoutDoer{d : &retry, defaultTimeout: 10 * time.Second}
 
-	return Client{requestDoer: &timeout, retryDoer: &retry, timeoutDoer: &timeout,
+	return &Client{requestDoer: &retry, retryDoer: &retry, defaultTimeout: 10 * time.Second,
 		transport: &http.Transport{}, basePath: basePath}
 }
 
 // WithRetries returns a new client that retries all GET operations until they either succeed or fail the
 // number of times specified.
-func (c Client) WithRetries(retries int) Client {
+func (c *Client) WithRetries(retries int) *Client {
 	c.retryDoer.defaultRetries = retries
 	return c
 }
 
 // WithTimeout returns a new client that has the specified timeout on all operations. To make a single request
 // have a timeout use context.WithTimeout as described here: https://godoc.org/golang.org/x/net/context#WithTimeout.
-func (c Client) WithTimeout(timeout time.Duration) Client {
-	c.timeoutDoer.defaultTimeout = timeout
+func (c *Client) WithTimeout(timeout time.Duration) *Client {
+	c.defaultTimeout = timeout
 	return c
 }
 
@@ -94,7 +92,7 @@ func methodCode(op *spec.Operation, basePath, method, methodPath string) string 
 	capOpID := swagger.Capitalize(op.ID)
 
 	buf.WriteString(swagger.InterfaceComment(method, methodPath, op) + "\n")
-	buf.WriteString(fmt.Sprintf("func (c Client) %s {\n", swagger.Interface(op)))
+	buf.WriteString(fmt.Sprintf("func (c *Client) %s {\n", swagger.Interface(op)))
 	buf.WriteString(fmt.Sprintf("\tpath := c.basePath + \"%s\"\n", basePath+methodPath))
 	buf.WriteString(fmt.Sprintf("\turlVals := url.Values{}\n"))
 	buf.WriteString(fmt.Sprintf("\tvar body []byte\n\n"))
@@ -102,9 +100,19 @@ func methodCode(op *spec.Operation, basePath, method, methodPath string) string 
 	buf.WriteString(fmt.Sprintf(buildRequestCode(op, method)))
 
 	buf.WriteString(fmt.Sprintf(`
+
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "%s")
-	resp, err := c.requestDoer.Do(client, req.WithContext(ctx))
+	req = req.WithContext(ctx)
+	// Don't add the timeout in a "doer" because we don't want to call "defer.cancel()"
+	// until we've finished all the processing of the request object. Otherwise we'll cancel
+	// our own request before we've finished it.
+	if c.defaultTimeout != 0 {
+		ctx, cancel := context.WithTimeout(req.Context(), c.defaultTimeout)
+		defer cancel()
+	    req = req.WithContext(ctx)		
+	}
+	resp, err := c.requestDoer.Do(client, req)
 	%s
 	defer resp.Body.Close()	
 `, op.ID, errorMessage("models.DefaultInternalError{Msg: err.Error()}", op)))
