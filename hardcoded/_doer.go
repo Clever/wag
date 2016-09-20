@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"time"
 
 	opentracing "github.com/opentracing/opentracing-go"
 	"golang.org/x/net/context/ctxhttp"
@@ -92,16 +91,3 @@ func (d retryDoer) Do(c *http.Client, r *http.Request) (*http.Response, error) {
 	return resp, err
 }
 
-type timeoutDoer struct {
-	d              doer
-	defaultTimeout time.Duration
-}
-
-func (t timeoutDoer) Do(c *http.Client, r *http.Request) (*http.Response, error) {
-	if t.defaultTimeout != 0 {
-		ctx, cancel := context.WithTimeout(r.Context(), t.defaultTimeout)
-		defer cancel()
-		r = r.WithContext(ctx)
-	}
-	return t.d.Do(c, r)
-}
