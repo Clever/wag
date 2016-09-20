@@ -232,7 +232,12 @@ func TestSettingContextInMiddleware(t *testing.T) {
 type TimeoutController struct{}
 
 func (m *TimeoutController) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, error) {
-	return nil, nil
+	var books []models.Book
+	for i := 0; i < 1000; i++ {
+		books = append(books, models.Book{Name: "testing"})
+	}
+	time.Sleep(100 * time.Millisecond)
+	return books, nil
 }
 func (m *TimeoutController) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
 	return nil, nil
@@ -244,7 +249,6 @@ func (m *TimeoutController) CreateBook(ctx context.Context, input *models.Book) 
 	return nil, nil
 }
 func (m *TimeoutController) HealthCheck(ctx context.Context) error {
-	time.Sleep(100 * time.Millisecond)
 	return nil
 }
 
@@ -254,13 +258,14 @@ func TestTimeout(t *testing.T) {
 	c := client.New(testServer.URL)
 
 	// Without a timeout, no error
-	assert.NoError(t, c.HealthCheck(context.Background()))
+	_, err := c.GetBooks(context.Background(), &models.GetBooksInput{})
+	assert.NoError(t, err)
 
 	// Add a per request context timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
 	defer cancel()
 	start := time.Now()
-	err := c.HealthCheck(ctx)
+	_, err = c.GetBooks(ctx, &models.GetBooksInput{})
 	assert.Error(t, err)
 	assert.Equal(t, "context deadline exceeded", err.Error())
 	end := time.Now()
@@ -268,8 +273,7 @@ func TestTimeout(t *testing.T) {
 
 	// Try with a global client setting
 	c = c.WithTimeout(10 * time.Millisecond)
-	err = c.HealthCheck(context.Background())
+	_, err = c.GetBooks(context.Background(), &models.GetBooksInput{})
 	require.Error(t, err)
 	assert.Equal(t, "context deadline exceeded", err.Error())
-
 }
