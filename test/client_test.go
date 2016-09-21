@@ -90,7 +90,7 @@ func TestNonGetRetries(t *testing.T) {
 
 func TestNewWithDiscovery(t *testing.T) {
 	controller := ClientContextTest{}
-	s := server.New(&controller, "books", "")
+	s := server.New(&controller, "")
 	testServer := httptest.NewServer(s.Handler)
 
 	// Should be an err if env vars aren't set

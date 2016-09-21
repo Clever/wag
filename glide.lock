@@ -1,5 +1,5 @@
-hash: 58cf61feb04a0ed2650f55a270be4a177fe62649c75fca0733a5c61f143c1eec
-updated: 2016-09-09T15:41:51.439947962-07:00
+hash: 254b127b78f5df13010c171cbc6ff7286b1fef62d77d8b74bc52d385aabbe2a3
+updated: 2016-09-20T19:38:52.367180149-07:00
 imports:
 - name: bitbucket.org/pkg/inflect
   version: 8961c3750a47
@@ -9,6 +9,8 @@ imports:
   repo: https://github.com/armon/consul-api
 - name: github.com/asaskevich/govalidator
   version: 593d64559f7600f29581a3ee42177f5dbded27a9
+- name: github.com/Clever/discovery-go
+  version: e432f2a0d4331b80a20674df4c1d0baa753e0bc5
 - name: github.com/Clever/go-process-metrics
   version: b7f30fc286d312e80ccc1d88086a283a0bce48c1
   subpackages:
@@ -48,7 +50,7 @@ imports:
 - name: github.com/go-openapi/validate
   version: deaf2c9013bc1a7f4c774662259a506ba874d80f
 - name: github.com/go-swagger/go-swagger
-  version: df1f8c22c1ba419eb988b48aea446ee7143a4780
+  version: dd82f733d6adc9a78c350e8c2581f0e4612d755e
   subpackages:
   - /generator
 - name: github.com/go-swagger/scan-repo-boundary
@@ -61,7 +63,7 @@ imports:
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
-  version: 0a192a193177452756c362c20087ddafcf6829c4
+  version: 757bef944d0f21880861c2dd9c871ca543023cba
 - name: github.com/hashicorp/hcl
   version: 99df0eb941dd8ddbc83d3f3605a34f6a686ac85e
   repo: https://github.com/hashicorp/hcl
@@ -180,7 +182,7 @@ imports:
 - name: gopkg.in/Clever/kayvee-go.v3
   version: 056c92dcc68b40c5d6045f755197b3776f914154
 - name: gopkg.in/Clever/kayvee-go.v4
-  version: c78a599f8d30cb7c2bb3746690500c4029545784
+  version: 94772833b9df4d5af35c5150af34466d656faeee
   subpackages:
   - /logger
   - middleware
