@@ -53,10 +53,11 @@ type Server struct {
 	// Handler should generally not be changed. It exposed to make testing easier.
 	Handler http.Handler
 	addr string
+	l *logger.Logger
 }
 
 // Serve starts the server. It will return if an error occurs.
-func (s Server) Serve() error {
+func (s *Server) Serve() error {
 
 	go func() {
 		metrics.Log("%s", 1*time.Minute)
@@ -67,6 +68,8 @@ func (s Server) Serve() error {
 		log.Printf("PProf server crashed: %%s", http.ListenAndServe(":6060", nil))
 	}()
 
+	s.l.Counter("server-started")
+
 	// Give the sever 30 seconds to shut down
 	return graceful.RunWithErr(s.addr,30*time.Second,s.Handler)
 }
@@ -76,10 +79,12 @@ type handler struct {
 }
 
 // New returns a Server that implements the Controller interface. It will start when "Serve" is called.
-func New(c Controller, addr string) Server {
+func New(c Controller, addr string) *Server {
 	r := mux.NewRouter()
 	h := handler{Controller: c}
-`, s.Info.InfoProps.Title)
+
+	l := logger.New("%s")
+`, s.Info.InfoProps.Title, s.Info.InfoProps.Title)
 
 	for _, path := range swagger.SortedPathItemKeys(paths.Paths) {
 		pathItem := paths.Paths[path]
@@ -107,8 +112,8 @@ func New(c Controller, addr string) Server {
 			g.Printf(tmpBuf.String())
 		}
 	}
-	g.Printf("\thandler := withMiddleware(\"%s\", r)\n", s.Info.Title)
-	g.Printf("\treturn Server{Handler: handler, addr: addr}\n")
+	g.Printf("\thandler := withMiddleware(\"%s\", r)\n", s.Info.InfoProps.Title)
+	g.Printf("\treturn &Server{Handler: handler, addr: addr, l: l}\n")
 	g.Printf("}\n")
 
 	return g.WriteFile("server/router.go")
