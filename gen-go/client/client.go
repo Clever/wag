@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/Clever/wag/gen-go/models"
+
+	discovery "github.com/Clever/discovery-go"
 )
 
 var _ = json.Marshal
@@ -18,7 +20,7 @@ var _ = strings.Replace
 var _ = strconv.FormatInt
 var _ = bytes.Compare
 
-// Client is used to make requests to the Swagger Test service.
+// Client is used to make requests to the swagger-test service.
 type Client struct {
 	basePath    string
 	requestDoer doer
@@ -37,6 +39,16 @@ func New(basePath string) *Client {
 
 	return &Client{requestDoer: &retry, retryDoer: &retry, defaultTimeout: 10 * time.Second,
 		transport: &http.Transport{}, basePath: basePath}
+}
+
+// NewFromDiscovery creates a client from the discovery environment variables. There must be three
+// env vars with the format: SERVICE_SWAGGER_TEST_HTTP_(HOST/PORT/PROTO)
+func NewFromDiscovery() (*Client, error) {
+	url, err := discovery.URL("swagger-test", "http")
+	if err != nil {
+		return nil, err
+	}
+	return New(url), nil
 }
 
 // WithRetries returns a new client that retries all GET operations until they either succeed or fail the

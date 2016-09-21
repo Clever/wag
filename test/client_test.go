@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http/httptest"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/Clever/wag/gen-go/client"
@@ -84,4 +86,27 @@ func TestNonGetRetries(t *testing.T) {
 	_, err := c.CreateBook(context.Background(), &models.Book{})
 	assert.Error(t, err)
 	assert.Equal(t, 1, controller.postCount)
+}
+
+func TestNewWithDiscovery(t *testing.T) {
+	controller := ClientContextTest{}
+	s := server.New(&controller, "books", "")
+	testServer := httptest.NewServer(s.Handler)
+
+	// Should be an err if env vars aren't set
+	_, err := client.NewFromDiscovery()
+	assert.Error(t, err)
+
+	splitURL := strings.Split(testServer.URL, ":")
+	assert.Equal(t, 3, len(splitURL))
+
+	os.Setenv("SERVICE_SWAGGER_TEST_HTTP_PROTO", "http")
+	os.Setenv("SERVICE_SWAGGER_TEST_HTTP_PORT", splitURL[2])
+	os.Setenv("SERVICE_SWAGGER_TEST_HTTP_HOST", splitURL[1][2:])
+
+	c, err := client.NewFromDiscovery()
+	assert.NoError(t, err)
+	_, err = c.GetBooks(context.Background(), &models.GetBooksInput{})
+	assert.NoError(t, err)
+	assert.Equal(t, 2, controller.getCount)
 }

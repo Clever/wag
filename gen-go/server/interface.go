@@ -8,7 +8,7 @@ import (
 
 //go:generate $GOPATH/bin/mockgen -source=$GOFILE -destination=mock_controller.go -package=server
 
-// Controller defines the interface for the Swagger Test service.
+// Controller defines the interface for the swagger-test service.
 type Controller interface {
 	// GetBooks makes a GET request to /books.
 	// Returns a list of books
