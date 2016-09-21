@@ -200,20 +200,6 @@ Right now we do not allow user-defined custom strings, but this is something we 
 make test
 ```
 
-## Future Features
-
-These are the features we're planning on building in the near future:
-- Better logging, monitoring, and metrics
-  - Logger from the Context
-  - Expose pprof port by default
-  - Automatically log process metrics (https://github.com/Clever/go-process-metrics)
-- More server middleware
-  - Panic recovery / handling (don't crash the server every time you get a panic)
-- More client resiliency best practices
-  - Smarter retry logic
-  - Timeouts
-
-
 ## Swagger Spec
 
 Currently, WAG doesn't implement the entire Swagger Spec. A couple things to keep in mind:
