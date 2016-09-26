@@ -29,6 +29,8 @@ import (
 		"time"
 
 		"%s/models"
+
+		discovery "github.com/Clever/discovery-go"
 )
 
 var _ = json.Marshal
@@ -57,6 +59,16 @@ func New(basePath string) *Client {
 		transport: &http.Transport{}, basePath: basePath}
 }
 
+// NewFromDiscovery creates a client from the discovery environment variables. This method requires
+// the three env vars: SERVICE_%s_HTTP_(HOST/PORT/PROTO) to be set. Otherwise it returns an error.
+func NewFromDiscovery() (*Client, error) {
+	url, err := discovery.URL("%s", "http")
+	if err != nil {
+		return nil, err
+	}
+	return New(url), nil
+}
+
 // WithRetries returns a new client that retries all GET operations until they either succeed or fail the
 // number of times specified.
 func (c *Client) WithRetries(retries int) *Client {
@@ -71,7 +83,10 @@ func (c *Client) WithTimeout(timeout time.Duration) *Client {
 	return c
 }
 
-`, packageName, s.Info.InfoProps.Title)
+`, packageName,
+		s.Info.InfoProps.Title,
+		strings.ToUpper(strings.Replace(s.Info.InfoProps.Title, "-", "_", -1)),
+		s.Info.InfoProps.Title)
 
 	g.Printf(swagger.BaseParamToStringCode())
 

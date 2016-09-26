@@ -31,3 +31,4 @@ import:
 - package: github.com/Clever/go-process-metrics
   subpackages:
   - /metrics
+- package: github.com/Clever/discovery-go
