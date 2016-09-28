@@ -1,7 +1,9 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
+	"runtime/debug"
 
 	"gopkg.in/Clever/kayvee-go.v4/logger"
 	kvMiddleware "gopkg.in/Clever/kayvee-go.v4/middleware"
@@ -11,11 +13,40 @@ import (
 
 func withMiddleware(serviceName string, router http.Handler) http.Handler {
 	handler := tracingMiddleware(router)
+	handler = panicMiddleware(handler)
 	// Logging middleware comes last, i.e. will be run first.
 	// This makes it so that other middleware has access to the logger
 	// that kvMiddleware injects into the request context.
 	handler = kvMiddleware.New(handler, logger.New(serviceName))
 	return handler
+}
+
+// panicMiddleware logs any panics. For now, we're continue throwing the panic up
+// the stack so this may crash the process.
+func panicMiddleware(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			panicErr := recover()
+			if panicErr == nil {
+				return
+			}
+			var err error
+
+			switch panicErr := panicErr.(type) {
+			case string:
+				err = fmt.Errorf(panicErr)
+			case error:
+				err = panicErr
+			default:
+				err = fmt.Errorf("Unknown panic %#v of type %T", panicErr, panicErr)
+			}
+
+			logger.FromContext(r.Context()).ErrorD("panic",
+				logger.M{"err": err, "stack-trace": string(debug.Stack())})
+			panic(panicErr)
+		}()
+		h.ServeHTTP(w, r)
+	})
 }
 
 // tracingMiddleware creates a new span named after the URL path of the request.
