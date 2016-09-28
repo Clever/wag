@@ -28,7 +28,7 @@ type Server struct {
 func (s *Server) Serve() error {
 
 	go func() {
-		metrics.Log("Swagger Test", 1*time.Minute)
+		metrics.Log("swagger-test", 1*time.Minute)
 	}()
 
 	go func() {
@@ -51,7 +51,7 @@ func New(c Controller, addr string) *Server {
 	r := mux.NewRouter()
 	h := handler{Controller: c}
 
-	l := logger.New("Swagger Test")
+	l := logger.New("swagger-test")
 
 	r.Methods("GET").Path("/v1/books").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "getBooks")
@@ -77,6 +77,6 @@ func New(c Controller, addr string) *Server {
 		logger.FromContext(r.Context()).AddContext("op", "healthCheck")
 		h.HealthCheckHandler(r.Context(), w, r)
 	})
-	handler := withMiddleware("Swagger Test", r)
+	handler := withMiddleware("swagger-test", r)
 	return &Server{Handler: handler, addr: addr, l: l}
 }

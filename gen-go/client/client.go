@@ -41,8 +41,8 @@ func New(basePath string) *Client {
 		transport: &http.Transport{}, basePath: basePath}
 }
 
-// NewFromDiscovery creates a client from the discovery environment variables. There must be three
-// env vars with the format: SERVICE_SWAGGER_TEST_HTTP_(HOST/PORT/PROTO)
+// NewFromDiscovery creates a client from the discovery environment variables. This method requires
+// the three env vars: SERVICE_SWAGGER_TEST_HTTP_(HOST/PORT/PROTO) to be set. Otherwise it returns an error.
 func NewFromDiscovery() (*Client, error) {
 	url, err := discovery.URL("swagger-test", "http")
 	if err != nil {
