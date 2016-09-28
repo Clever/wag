@@ -21,8 +21,8 @@ generate: hardcoded/hardcoded.go $(MOCKGEN)
 	./bin/wag -file swagger.yml -package $(PKG)/gen-go
 	go generate $(PKG)/gen-go...
 
-$(PKGS): golang-test-all-deps
-	$(call golang-test-all,$@)
+$(PKGS): golang-test-all-strict-deps
+	$(call golang-test-all-strict,$@)
 
 $(GOPATH)/bin/go-bindata:
 	go get -u github.com/jteeuwen/go-bindata/...

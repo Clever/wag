@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"runtime/debug"
 
-	"gopkg.in/Clever/kayvee-go.v4/logger"
-	kvMiddleware "gopkg.in/Clever/kayvee-go.v4/middleware"
+	"gopkg.in/Clever/kayvee-go.v5/logger"
+	kvMiddleware "gopkg.in/Clever/kayvee-go.v5/middleware"
 
 	opentracing "github.com/opentracing/opentracing-go"
 )

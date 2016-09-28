@@ -13,7 +13,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/gorilla/mux"
-	"gopkg.in/Clever/kayvee-go.v4/logger"
+	"gopkg.in/Clever/kayvee-go.v5/logger"
 )
 
 var _ = strconv.ParseInt
