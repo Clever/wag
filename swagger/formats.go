@@ -6,6 +6,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// InitCustomFormats adds wag's custom formats to the global go-openapi/strfmt Default registry.
 func InitCustomFormats() {
 	m := mongoID("")
 	strfmt.Default.Add("mongo-id", &m, isMongoID)
@@ -28,6 +29,7 @@ func (e *mongoID) UnmarshalText(data []byte) error { // validation is performed 
 	return nil
 }
 
+// String representation of the Mongo ID.
 func (e mongoID) String() string {
 	return string(e)
 }

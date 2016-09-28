@@ -12,6 +12,7 @@ import (
 	"text/template"
 )
 
+// Generate server package for a swagger spec.
 func Generate(packageName string, s spec.Swagger) error {
 
 	if err := generateRouter(packageName, s, s.Paths); err != nil {

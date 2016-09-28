@@ -12,19 +12,24 @@ import (
 	"github.com/go-openapi/spec"
 )
 
+// Generator handles common code generation operations when generating a file in a Go package.
 type Generator struct {
 	PackageName string
 	buf         bytes.Buffer
 }
 
+// Printf writes a formatted string to the buffer.
 func (g *Generator) Printf(format string, args ...interface{}) {
 	fmt.Fprintf(&g.buf, format, args...)
 }
 
+// Write bytes to the buffer.
 func (g *Generator) Write(p []byte) (n int, err error) {
 	return g.buf.Write(p)
 }
 
+// WriteFile writes the buffer to a gofmt-ed file.
+// The file will be located at $GOPATH/src/{PackageName}/{path}.
 func (g *Generator) WriteFile(path string) error {
 	if len(path) == 0 || path[0] == '/' {
 		return fmt.Errorf("path must be relative")
@@ -45,7 +50,7 @@ func (g *Generator) WriteFile(path string) error {
 	return ioutil.WriteFile(os.Getenv("GOPATH")+"/src/"+g.PackageName+"/"+path, fileBytes, 0644)
 }
 
-// importStatements takes a list of import strings and converts them to a formatted imports
+// ImportStatements takes a list of import strings and converts them to a formatted imports
 func ImportStatements(imports []string) string {
 	if len(imports) == 0 {
 		return ""
@@ -69,6 +74,7 @@ func ImportStatements(imports []string) string {
 	return output
 }
 
+// SortedPathItemKeys sorts the keys of a map[string]spec.PathItem.
 func SortedPathItemKeys(m map[string]spec.PathItem) []string {
 	sortedKeys := []string{}
 	for k := range m {
@@ -78,6 +84,7 @@ func SortedPathItemKeys(m map[string]spec.PathItem) []string {
 	return sortedKeys
 }
 
+// SortedOperationsKeys sorts the keys of a map[string]*spec.Operation.
 func SortedOperationsKeys(m map[string]*spec.Operation) []string {
 	sortedKeys := []string{}
 	for k := range m {
@@ -87,6 +94,7 @@ func SortedOperationsKeys(m map[string]*spec.Operation) []string {
 	return sortedKeys
 }
 
+// SortedStatusCodeKeys sorts the keys of a map[int]spec.Response.
 func SortedStatusCodeKeys(m map[int]spec.Response) []int {
 	sortedKeys := []int{}
 	for k := range m {
@@ -96,10 +104,12 @@ func SortedStatusCodeKeys(m map[int]spec.Response) []int {
 	return sortedKeys
 }
 
+// Capitalize the first character of a string.
 func Capitalize(input string) string {
 	return strings.ToUpper(input[0:1]) + input[1:]
 }
 
+// PathItemOperations converts a spec.PathItem to a map from HTTP operation (e.g., "GET") to spec.Operation.
 func PathItemOperations(item spec.PathItem) map[string]*spec.Operation {
 	ops := make(map[string]*spec.Operation)
 	if item.Get != nil {

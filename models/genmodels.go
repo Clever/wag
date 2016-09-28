@@ -225,7 +225,7 @@ func generateSuccessTypes(capOpID string, responses map[int]spec.Response) (stri
 	buf.WriteString(fmt.Sprintf("\t%sStatusCode() int\n", capOpID))
 	buf.WriteString(fmt.Sprintf("}\n\n"))
 
-	successStatusCodes := make([]int, 0)
+	var successStatusCodes []int
 	for _, statusCode := range swagger.SortedStatusCodeKeys(responses) {
 		if statusCode >= 400 {
 			continue

@@ -19,7 +19,8 @@ import (
 // 3. String -> Go type
 // 4. Validation logic
 
-// TODO: Add a nice comment on this...
+// BaseParamToStringCode returns the code for a function that joins a string
+// array by a known format (csv, ssv, tsv, pipes).
 func BaseParamToStringCode() string {
 	return `
 // JoinByFormat joins a string array by a known format:
@@ -192,15 +193,13 @@ func StringToTypeCode(strField string, param spec.Parameter) (string, error) {
 	case "integer":
 		if param.Format == "int32" {
 			return fmt.Sprintf("swag.ConvertInt32(%s)", strField), nil
-		} else {
-			return fmt.Sprintf("swag.ConvertInt64(%s)", strField), nil
 		}
+		return fmt.Sprintf("swag.ConvertInt64(%s)", strField), nil
 	case "number":
 		if param.Format == "float" {
 			return fmt.Sprintf("swag.ConvertFloat32(%s)", strField), nil
-		} else {
-			return fmt.Sprintf("swag.ConvertFloat64(%s)", strField), nil
 		}
+		return fmt.Sprintf("swag.ConvertFloat64(%s)", strField), nil
 	case "boolean":
 		return fmt.Sprintf("strconv.ParseBool(%s)", strField), nil
 	case "string":
@@ -231,7 +230,7 @@ func StringToTypeCode(strField string, param spec.Parameter) (string, error) {
 // ParamToValidationCode takes in a param and returns a list of parameter validation
 // functions, each of which have a single return value, error
 func ParamToValidationCode(param spec.Parameter) ([]string, error) {
-	validations := make([]string, 0)
+	var validations []string
 	if param.Type == "string" {
 		if param.MaxLength != nil {
 			validations = append(validations, fmt.Sprintf("validate.MaxLength(\"%s\", \"%s\", string(%s), %d)",
@@ -341,9 +340,8 @@ func DefaultAsString(param spec.Parameter) string {
 	case float64:
 		if param.Type == "integer" {
 			return strconv.FormatInt(int64(param.Default.(float64)), 10)
-		} else {
-			return strconv.FormatFloat(param.Default.(float64), 'E', -1, 64)
 		}
+		return strconv.FormatFloat(param.Default.(float64), 'E', -1, 64)
 	case bool:
 		return strconv.FormatBool(param.Default.(bool))
 	default:

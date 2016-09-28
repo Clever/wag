@@ -87,10 +87,10 @@ func OutputType(op *spec.Operation, statusCode int) string {
 	return fmt.Sprintf("models.%s%dOutput", Capitalize(op.ID), statusCode)
 }
 
-// SUccessStatusCodes returns a slice of all the success status codes for an operation
+// SuccessStatusCodes returns a slice of all the success status codes for an operation
 func SuccessStatusCodes(op *spec.Operation) []int {
-	successCodes := make([]int, 0)
-	for statusCode, _ := range op.Responses.StatusCodeResponses {
+	var successCodes []int
+	for statusCode := range op.Responses.StatusCodeResponses {
 		if statusCode < 400 {
 			successCodes = append(successCodes, statusCode)
 		}
