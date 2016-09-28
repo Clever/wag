@@ -48,11 +48,11 @@ To use the generated code you need to do two things:
 All interface methods on the controller take in a `context.Context` object.
 This object comes with additional features for you to use in implementing your server logic:
 
-* **Logging**. The [kayvee middleware logger](https://godoc.org/gopkg.in/Clever/kayvee-go.v4/middleware) is automatically added to the context object.
+* **Logging**. The [kayvee middleware logger](https://godoc.org/gopkg.in/Clever/kayvee-go.v5/middleware) is automatically added to the context object.
   It can be pulled out of the context object and used via the kayvee `FromContext` method:
 
 ```go
-import "gopkg.in/Clever/kayvee-go.v4/logger"
+import "gopkg.in/Clever/kayvee-go.v5/logger"
 ...
 logger.FromContext(ctx).Info(...)
 ```

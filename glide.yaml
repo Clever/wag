@@ -10,25 +10,23 @@ import:
 - package: github.com/go-openapi/validate
 - package: github.com/go-swagger/go-swagger
   subpackages:
-  - /generator
+  - generator
 - package: github.com/golang/mock
   subpackages:
-  - /gomock
+  - gomock
 - package: github.com/gorilla/mux
 - package: github.com/opentracing/opentracing-go
 - package: golang.org/x/net
   subpackages:
-  - /context/ctxhttp
-- package: gopkg.in/Clever/kayvee-go.v4
-  subpackages:
-  - /logger
-  - middleware
+  - context/ctxhttp
 - package: gopkg.in/tylerb/graceful.v1
 - package: github.com/vburenin/nsync
 - package: gopkg.in/mgo.v2
   subpackages:
-  - /bson
+  - bson
 - package: github.com/Clever/go-process-metrics
   subpackages:
-  - /metrics
+  - metrics
 - package: github.com/Clever/discovery-go
+- package: gopkg.in/Clever/kayvee-go.v5
+  version: ^5.0.0
