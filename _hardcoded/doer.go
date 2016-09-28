@@ -86,8 +86,8 @@ func (d retryDoer) Do(c *http.Client, r *http.Request) (*http.Response, error) {
 		if resp.StatusCode < 500 {
 			break
 		}
+		resp.Body.Close()
 		resp, err = d.d.Do(c, r)
 	}
 	return resp, err
 }
-
