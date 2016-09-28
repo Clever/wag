@@ -17,7 +17,7 @@ func withMiddleware(serviceName string, router http.Handler) http.Handler {
 	// Logging middleware comes last, i.e. will be run first.
 	// This makes it so that other middleware has access to the logger
 	// that kvMiddleware injects into the request context.
-	handler = kvMiddleware.New(handler, logger.New(serviceName))
+	handler = kvMiddleware.New(handler, serviceName)
 	return handler
 }
 
@@ -59,7 +59,7 @@ func tracingMiddleware(h http.Handler) http.Handler {
 		var sp opentracing.Span
 		if sc, err := opentracing.GlobalTracer().
 			Extract(opentracing.HTTPHeaders,
-			opentracing.HTTPHeadersCarrier(r.Header)); err != nil {
+				opentracing.HTTPHeadersCarrier(r.Header)); err != nil {
 			sp = opentracing.StartSpan(opName)
 		} else {
 			sp = opentracing.StartSpan(opName, opentracing.ChildOf(sc))

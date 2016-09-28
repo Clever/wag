@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"runtime/debug"
 
-	"gopkg.in/Clever/kayvee-go.v4/logger"
-	kvMiddleware "gopkg.in/Clever/kayvee-go.v4/middleware"
+	"gopkg.in/Clever/kayvee-go.v5/logger"
+	kvMiddleware "gopkg.in/Clever/kayvee-go.v5/middleware"
 
 	opentracing "github.com/opentracing/opentracing-go"
 )
@@ -17,7 +17,7 @@ func withMiddleware(serviceName string, router http.Handler) http.Handler {
 	// Logging middleware comes last, i.e. will be run first.
 	// This makes it so that other middleware has access to the logger
 	// that kvMiddleware injects into the request context.
-	handler = kvMiddleware.New(handler, logger.New(serviceName))
+	handler = kvMiddleware.New(handler, serviceName)
 	return handler
 }
 
