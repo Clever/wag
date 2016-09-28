@@ -157,7 +157,7 @@ func (d *LastCallServer) GetBookByID2(ctx context.Context, input *models.GetBook
 func (d *LastCallServer) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
 	return nil, nil
 }
-func (c *LastCallServer) HealthCheck(ctx context.Context) error {
+func (d *LastCallServer) HealthCheck(ctx context.Context) error {
 	return nil
 }
 

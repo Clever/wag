@@ -60,7 +60,7 @@ func validateOp(path, op string, s *spec.Operation) error {
 	return nil
 }
 
-// validates returns an error if the swagger file is invalid or uses fields
+// Validate returns an error if the swagger file is invalid or uses fields
 // we don't support. Note that this isn't a comprehensive check for all things
 // we don't support, so this may not return an error, but the Swagger file might
 // have values we don't support
@@ -82,11 +82,11 @@ func Validate(s spec.Swagger) error {
 	}
 
 	if s.Host != "" {
-		return fmt.Errorf("WAG does not support the host field.")
+		return fmt.Errorf("WAG does not support the host field")
 	}
 
 	if len(s.Parameters) != 0 {
-		return fmt.Errorf("WAG does not support global parameters definitions. Define parameters on a per request basis.")
+		return fmt.Errorf("WAG does not support global parameters definitions. Define parameters on a per request basis")
 	}
 
 	if len(s.Responses) != 0 {
@@ -94,11 +94,11 @@ func Validate(s spec.Swagger) error {
 	}
 
 	if len(s.SecurityDefinitions) != 0 {
-		return fmt.Errorf("WAG does not support the security definitions field.")
+		return fmt.Errorf("WAG does not support the security definitions field")
 	}
 
 	if len(s.Security) != 0 {
-		return fmt.Errorf("WAG does not support the security field.")
+		return fmt.Errorf("WAG does not support the security field")
 	}
 
 	for path, pathItem := range s.Paths.Paths {

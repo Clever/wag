@@ -13,6 +13,7 @@ import (
 	"github.com/go-openapi/spec"
 
 	"github.com/Clever/wag/client"
+	"github.com/Clever/wag/hardcoded"
 	"github.com/Clever/wag/models"
 	"github.com/Clever/wag/server"
 	"github.com/Clever/wag/swagger"
@@ -65,13 +66,13 @@ func main() {
 	}
 
 	middlewareGenerator := swagger.Generator{PackageName: *packageName}
-	middlewareGenerator.Write(MustAsset("hardcoded/_middleware.go"))
+	middlewareGenerator.Write(hardcoded.MustAsset("_hardcoded/middleware.go"))
 	if err := middlewareGenerator.WriteFile("server/middleware.go"); err != nil {
 		log.Fatalf("Failed to copy middleware.go: %s", err)
 	}
 
 	doerGenerator := swagger.Generator{PackageName: *packageName}
-	doerGenerator.Write(MustAsset("hardcoded/_doer.go"))
+	doerGenerator.Write(hardcoded.MustAsset("_hardcoded/doer.go"))
 	if err := doerGenerator.WriteFile("client/doer.go"); err != nil {
 		log.Fatalf("Failed to copy doer.go: %s", err)
 	}

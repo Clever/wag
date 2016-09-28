@@ -125,11 +125,11 @@ func methodCode(op *spec.Operation, basePath, method, methodPath string) string 
 	if c.defaultTimeout != 0 {
 		ctx, cancel := context.WithTimeout(req.Context(), c.defaultTimeout)
 		defer cancel()
-	    req = req.WithContext(ctx)		
+	    req = req.WithContext(ctx)
 	}
 	resp, err := c.requestDoer.Do(client, req)
 	%s
-	defer resp.Body.Close()	
+	defer resp.Body.Close()
 `, op.ID, errorMessage("models.DefaultInternalError{Msg: err.Error()}", op)))
 
 	buf.WriteString(parseResponseCode(op, capOpID))
@@ -317,13 +317,12 @@ func errorMessage(err string, op *spec.Operation) string {
 		return %s
 	}
 `, err)
-	} else {
-		return fmt.Sprintf(`
+	}
+	return fmt.Sprintf(`
 	if err != nil {
 		return nil, %s
 	}
 `, err)
-	}
 }
 
 func successResponse(outputName, pointer string) string {
