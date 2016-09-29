@@ -1,13 +1,19 @@
-hash: caae42879e07dbc0f698f4520012c1971c02f35f13afc6bdf17e57dcfab2631c
-updated: 2016-09-28T21:16:07.4545184Z
+hash: 74a83e7bc566c9482ce4834b5b6157978480144df1f7e7261e0c8e84ebacd1da
+updated: 2016-09-29T23:26:23.65495362Z
 imports:
 - name: bitbucket.org/pkg/inflect
   version: 8961c3750a47b8c0b3e118d52513b97adf85a7e8
   repo: https://bitbucket.org/pkg/inflect
+- name: github.com/afex/hystrix-go
+  version: 39520ddd07a9d9a071d615f7476798659f5a3b89
+  subpackages:
+  - hystrix
+  - hystrix/metric_collector
+  - hystrix/rolling
 - name: github.com/asaskevich/govalidator
   version: 593d64559f7600f29581a3ee42177f5dbded27a9
 - name: github.com/Clever/discovery-go
-  version: 12684ef3012bf55b9827a6e7c96503e37b0d8379
+  version: fd78b9ff3291bf5e69038a9b2da73e91ca0e49c7
 - name: github.com/Clever/go-process-metrics
   version: b7f30fc286d312e80ccc1d88086a283a0bce48c1
   subpackages:
@@ -45,7 +51,7 @@ imports:
 - name: github.com/gorilla/context
   version: aed02d124ae4a0e94fea4541c8effd05bf0c8296
 - name: github.com/gorilla/mux
-  version: 9fa818a44c2bf1396a17f9d5a3c0f6dd39d2ff8e
+  version: 0eeaf8392f5b04950925b8a69fe70f110fa7cbfc
 - name: github.com/mailru/easyjson
   version: 34560e358dc05e2c28f6fda2f5c9e7494a4b9b19
   subpackages:
@@ -99,15 +105,11 @@ imports:
   version: 056c92dcc68b40c5d6045f755197b3776f914154
   subpackages:
   - logger
-- name: gopkg.in/Clever/kayvee-go.v4
-  version: 94772833b9df4d5af35c5150af34466d656faeee
-  subpackages:
-  - logger
-  - middleware
 - name: gopkg.in/Clever/kayvee-go.v5
   version: 905c10b703dfc2b2dae770f7ec05c97f895f3cf3
   subpackages:
   - logger
+  - middleware
 - name: gopkg.in/mgo.v2
   version: f4923a569136442e900b8cf5c1a706c0a8b0883c
   subpackages:

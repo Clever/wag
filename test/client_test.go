@@ -4,13 +4,17 @@ import (
 	"context"
 	"fmt"
 	"net/http/httptest"
+	"net/http/httptrace"
 	"os"
 	"strings"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/Clever/wag/gen-go/client"
 	"github.com/Clever/wag/gen-go/models"
 	"github.com/Clever/wag/gen-go/server"
+	"github.com/afex/hystrix-go/hystrix"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -48,6 +52,7 @@ func TestDefaultClientRetries(t *testing.T) {
 	controller := ClientContextTest{}
 	s := server.New(&controller, "")
 	testServer := httptest.NewServer(s.Handler)
+	defer testServer.Close()
 	c := client.New(testServer.URL)
 	_, err := c.GetBooks(context.Background(), &models.GetBooksInput{})
 	assert.NoError(t, err)
@@ -58,6 +63,7 @@ func TestCustomClientRetries(t *testing.T) {
 	controller := ClientContextTest{}
 	s := server.New(&controller, "")
 	testServer := httptest.NewServer(s.Handler)
+	defer testServer.Close()
 
 	// Should fail if no retries
 	c := client.New(testServer.URL).WithRetries(0)
@@ -70,6 +76,7 @@ func TestCustomContextRetries(t *testing.T) {
 	controller := ClientContextTest{}
 	s := server.New(&controller, "")
 	testServer := httptest.NewServer(s.Handler)
+	defer testServer.Close()
 
 	// Should fail if no retries
 	c := client.New(testServer.URL)
@@ -82,6 +89,7 @@ func TestNonGetRetries(t *testing.T) {
 	controller := ClientContextTest{}
 	s := server.New(&controller, "")
 	testServer := httptest.NewServer(s.Handler)
+	defer testServer.Close()
 	c := client.New(testServer.URL)
 	_, err := c.CreateBook(context.Background(), &models.Book{})
 	assert.Error(t, err)
@@ -109,4 +117,54 @@ func TestNewWithDiscovery(t *testing.T) {
 	_, err = c.GetBooks(context.Background(), &models.GetBooksInput{})
 	assert.NoError(t, err)
 	assert.Equal(t, 2, controller.getCount)
+}
+
+func TestCircuitBreaker(t *testing.T) {
+	controller := ClientContextTest{}
+	s := server.New(&controller, "")
+	testServerDown := httptest.NewServer(s.Handler)
+	testServerDown.Close()
+	testServerUp := httptest.NewServer(s.Handler)
+	defer testServerUp.Close()
+	hystrix.Flush()
+
+	// the circuit should open after 20 consecutive failed attempts (this is
+	// the default volume threshold, after which health can open the circuit)
+	c := client.New(testServerDown.URL)
+	var connAttempts int64
+	ctx := httptrace.WithClientTrace(context.Background(),
+		&httptrace.ClientTrace{
+			GetConn: func(hostPort string) {
+				atomic.AddInt64(&connAttempts, 1)
+			},
+		})
+	for count := 0; count < 100; count++ {
+		_, err := c.CreateBook(ctx, &models.Book{})
+		assert.Error(t, err)
+	}
+	assert.Equal(t, int64(20), connAttempts)
+
+	// we should see an attempts go through after five seconds
+	//c = c.WithBasePath(testServerUp.URL)
+	circuitOpened := time.Now()
+	for _ = range time.Tick(100 * time.Millisecond) {
+		_, err := c.CreateBook(ctx, &models.Book{})
+		assert.Error(t, err)
+		if connAttempts == 21 {
+			assert.WithinDuration(t, time.Now(), circuitOpened,
+				5*time.Second+500*time.Millisecond)
+			break
+		}
+	}
+
+	// bring the server back up, and we should see successes after another 5s
+	c = c.WithBasePath(testServerUp.URL)
+	for _ = range time.Tick(100 * time.Millisecond) {
+		_, err := c.CreateBook(ctx, &models.Book{})
+		if err == nil {
+			assert.WithinDuration(t, time.Now(), circuitOpened,
+				10*time.Second+500*time.Millisecond)
+			break
+		}
+	}
 }

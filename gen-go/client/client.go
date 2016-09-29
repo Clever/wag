@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Clever/wag/gen-go/models"
+	"github.com/afex/hystrix-go/hystrix"
 
 	discovery "github.com/Clever/discovery-go"
 )
@@ -36,8 +37,15 @@ func New(basePath string) *Client {
 	base := baseDoer{}
 	tracing := tracingDoer{d: base}
 	retry := retryDoer{d: tracing, defaultRetries: 1}
-
-	return &Client{requestDoer: &retry, retryDoer: &retry, defaultTimeout: 10 * time.Second,
+	circuit := circuitBreakerDoer{d: &retry, commandName: "swagger-test"}
+	hystrix.ConfigureCommand("swagger-test", hystrix.CommandConfig{
+		Timeout:                100 * 1000, // redundant, so need to keep this in sync with client timeout or set it high so that it's irrelevant :-/
+		MaxConcurrentRequests:  100,
+		RequestVolumeThreshold: 20,
+		SleepWindow:            5000,
+		ErrorPercentThreshold:  25,
+	})
+	return &Client{requestDoer: &circuit, retryDoer: &retry, defaultTimeout: 10 * time.Second,
 		transport: &http.Transport{}, basePath: basePath}
 }
 
@@ -49,6 +57,11 @@ func NewFromDiscovery() (*Client, error) {
 		return nil, err
 	}
 	return New(url), nil
+}
+
+func (c *Client) WithBasePath(basePath string) *Client {
+	c.basePath = basePath
+	return c
 }
 
 // WithRetries returns a new client that retries all GET operations until they either succeed or fail the
