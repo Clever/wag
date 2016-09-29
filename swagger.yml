@@ -14,7 +14,6 @@ paths:
   /health/check:
     get:
       operationId: healthCheck
-      description: Checks if the service is healthy
       tags:
         - Infra
       responses:

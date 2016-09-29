@@ -398,7 +398,6 @@ func (c *Client) GetBookByID2(ctx context.Context, i *models.GetBookByID2Input) 
 }
 
 // HealthCheck makes a GET request to /health/check.
-// Checks if the service is healthy
 func (c *Client) HealthCheck(ctx context.Context) error {
 	path := c.basePath + "/v1/health/check"
 	urlVals := url.Values{}

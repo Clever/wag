@@ -67,9 +67,9 @@ func Interface(op *spec.Operation) string {
 func InterfaceComment(method, path string, op *spec.Operation) string {
 
 	capOpID := Capitalize(op.ID)
-	comment := fmt.Sprintf("// %s makes a %s request to %s.\n", capOpID, method, path)
+	comment := fmt.Sprintf("// %s makes a %s request to %s.", capOpID, method, path)
 	if op.Description != "" {
-		comment += "// " + op.Description
+		comment += "\n// " + op.Description
 	}
 	return comment
 }

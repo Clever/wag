@@ -10,6 +10,7 @@ import (
 
 // Controller defines the interface for the swagger-test service.
 type Controller interface {
+
 	// GetBooks makes a GET request to /books.
 	// Returns a list of books
 	GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models.Book, error)
@@ -27,6 +28,5 @@ type Controller interface {
 	GetBookByID2(ctx context.Context, i *models.GetBookByID2Input) (*models.Book, error)
 
 	// HealthCheck makes a GET request to /health/check.
-	// Checks if the service is healthy
 	HealthCheck(ctx context.Context) error
 }

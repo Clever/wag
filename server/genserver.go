@@ -139,7 +139,7 @@ func generateInterface(packageName string, serviceName string, paths *spec.Paths
 	g.Printf(swagger.ImportStatements([]string{"context", packageName + "/models"}))
 	g.Printf("//go:generate $GOPATH/bin/mockgen -source=$GOFILE -destination=mock_controller.go -package=server\n\n")
 	g.Printf("// Controller defines the interface for the %s service.\n", serviceName)
-	g.Printf("type Controller interface {\n")
+	g.Printf("type Controller interface {\n\n")
 
 	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
 		path := paths.Paths[pathKey]
