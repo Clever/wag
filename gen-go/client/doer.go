@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/afex/hystrix-go/hystrix"
 	opentracing "github.com/opentracing/opentracing-go"
 	"golang.org/x/net/context/ctxhttp"
 )
@@ -63,7 +64,7 @@ func WithRetries(ctx context.Context, retries int) context.Context {
 // of the number of retries right now.
 type retryContext struct{}
 
-func (d retryDoer) Do(c *http.Client, r *http.Request) (*http.Response, error) {
+func (d *retryDoer) Do(c *http.Client, r *http.Request) (*http.Response, error) {
 
 	resp, err := d.d.Do(c, r)
 	if err != nil {
@@ -89,4 +90,20 @@ func (d retryDoer) Do(c *http.Client, r *http.Request) (*http.Response, error) {
 		resp, err = d.d.Do(c, r)
 	}
 	return resp, err
+}
+
+// circuitBreakerDoer implements the circuit breaker pattern.
+type circuitBreakerDoer struct {
+	d           doer
+	commandName string
+}
+
+func (d circuitBreakerDoer) Do(c *http.Client, r *http.Request) (*http.Response, error) {
+	var theresp *http.Response
+	theerr := hystrix.Do(d.commandName, func() error {
+		resp, err := d.d.Do(c, r)
+		theresp = resp
+		return err
+	}, nil /* no fallback function, yet */)
+	return theresp, theerr
 }
