@@ -46,6 +46,10 @@ func main() {
 
 	for _, dir := range []string{"server", "client", "models"} {
 		dirName := os.Getenv("GOPATH") + "/src/" + *packageName + "/" + dir
+		if err := os.RemoveAll(dirName); err != nil {
+			log.Fatalf("Could not remove directory: %s, error :%s", dirName, err)
+		}
+
 		if err := os.MkdirAll(dirName, 0700); err != nil {
 			if !os.IsExist(err.(*os.PathError)) {
 				log.Fatalf("Could not create directory: %s, error: %s", dirName, err)
