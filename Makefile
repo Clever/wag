@@ -17,7 +17,6 @@ build: hardcoded/hardcoded.go
 test: build generate $(PKGS)
 
 generate: hardcoded/hardcoded.go $(MOCKGEN)
-	rm -rf gen-go
 	./bin/wag -file swagger.yml -package $(PKG)/gen-go
 	go generate $(PKG)/gen-go...
 
