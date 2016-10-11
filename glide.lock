@@ -1,9 +1,6 @@
 hash: caae42879e07dbc0f698f4520012c1971c02f35f13afc6bdf17e57dcfab2631c
-updated: 2016-09-28T21:16:07.4545184Z
+updated: 2016-10-10T23:57:19.414552774Z
 imports:
-- name: bitbucket.org/pkg/inflect
-  version: 8961c3750a47b8c0b3e118d52513b97adf85a7e8
-  repo: https://bitbucket.org/pkg/inflect
 - name: github.com/asaskevich/govalidator
   version: 593d64559f7600f29581a3ee42177f5dbded27a9
 - name: github.com/Clever/discovery-go
@@ -12,10 +9,16 @@ imports:
   version: b7f30fc286d312e80ccc1d88086a283a0bce48c1
   subpackages:
   - metrics
+- name: github.com/fsnotify/fsnotify
+  version: 944cff21b3baf3ced9a880365682152ba577d348
+  repo: https://github.com/fsnotify/fsnotify
 - name: github.com/go-openapi/analysis
   version: b44dc874b601d9e4e2f6e19140e794ba24bead3b
 - name: github.com/go-openapi/errors
   version: 4178436c9f2430cdd945c50301cfb61563b56573
+- name: github.com/go-openapi/inflect
+  version: b1f6470ffb9c552dc105dd869f16e36ba86ba7d0
+  repo: https://github.com/go-openapi/inflect
 - name: github.com/go-openapi/jsonpointer
   version: 46af16f9f7b149af66e5d1bd010e3574dc06de98
 - name: github.com/go-openapi/jsonreference
@@ -35,7 +38,7 @@ imports:
 - name: github.com/go-openapi/validate
   version: deaf2c9013bc1a7f4c774662259a506ba874d80f
 - name: github.com/go-swagger/go-swagger
-  version: dd82f733d6adc9a78c350e8c2581f0e4612d755e
+  version: 7816b47e3515eb383b3a0cef439ac3fa530dc2f0
   subpackages:
   - generator
 - name: github.com/golang/mock
@@ -46,49 +49,117 @@ imports:
   version: aed02d124ae4a0e94fea4541c8effd05bf0c8296
 - name: github.com/gorilla/mux
   version: 9fa818a44c2bf1396a17f9d5a3c0f6dd39d2ff8e
+- name: github.com/hashicorp/hcl
+  version: 6f5bfed9a0a22222fbe4e731ae3481730ba41e93
+  repo: https://github.com/hashicorp/hcl
+  subpackages:
+  - hcl/ast
+  - hcl/parser
+  - hcl/scanner
+  - hcl/strconv
+  - hcl/token
+  - json/parser
+  - json/scanner
+  - json/token
+- name: github.com/kr/fs
+  version: 2788f0dbd16903de03cb8186e5c7d97b69ad387b
+  repo: https://github.com/kr/fs
+- name: github.com/magiconair/properties
+  version: 0723e352fa358f9322c938cc2dadda874e9151a9
+  repo: https://github.com/magiconair/properties
 - name: github.com/mailru/easyjson
-  version: 34560e358dc05e2c28f6fda2f5c9e7494a4b9b19
+  version: 2ea6ed0ea8d20091ff80b30ab47e206e776e7c53
   subpackages:
   - buffer
   - jlexer
   - jwriter
+- name: github.com/mitchellh/mapstructure
+  version: a6ef2f080c66d0a2e94e97cf74f80f772855da63
+  repo: https://github.com/mitchellh/mapstructure
 - name: github.com/opentracing/opentracing-go
   version: ca4c9c0010bd9155b6d067b33865d849fe533628
+- name: github.com/pelletier/go-buffruneio
+  version: df1e16fde7fc330a0ca68167c23bf7ed6ac31d6d
+  repo: https://github.com/pelletier/go-buffruneio
+- name: github.com/pelletier/go-toml
+  version: 45932ad32dfdd20826f5671da37a5f3ce9f26a8d
+  repo: https://github.com/pelletier/go-toml
+- name: github.com/pkg/errors
+  version: 839d9e913e063e28dfd0e6c7b7512793e0a48be9
+  repo: https://github.com/pkg/errors
+- name: github.com/pkg/sftp
+  version: 4d0e916071f68db74f8a73926335f809396d6b42
+  repo: https://github.com/pkg/sftp
 - name: github.com/PuerkitoBio/purell
   version: 8a290539e2e8629dbc4e6bad948158f790ec31f4
   repo: https://github.com/PuerkitoBio/purell
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
   repo: https://github.com/PuerkitoBio/urlesc
+- name: github.com/spf13/afero
+  version: 52e4a6cfac46163658bd4f123c49b6ee7dc75f78
+  repo: https://github.com/spf13/afero
+  subpackages:
+  - mem
+  - sftp
+- name: github.com/spf13/cast
+  version: 2580bc98dc0e62908119e4737030cc2fdfc45e4c
+  repo: https://github.com/spf13/cast
+- name: github.com/spf13/jwalterweatherman
+  version: 33c24e77fb80341fe7130ee7c594256ff08ccc46
+  repo: https://github.com/spf13/jwalterweatherman
+- name: github.com/spf13/pflag
+  version: b83537d79690b75cac5e021b036ae16792bf0f20
+  repo: https://github.com/spf13/pflag
+- name: github.com/spf13/viper
+  version: ec4eb2fa8549869ae7a2accd4fcc83d1c0555c15
+  repo: https://github.com/spf13/viper
 - name: github.com/vburenin/nsync
   version: 9a75d1c80410815ac45d65fc01ccabac9c98dd4a
+- name: github.com/xeipuuv/gojsonpointer
+  version: e0fe6f68307607d540ed8eac07a342c33fa1b54a
+- name: github.com/xeipuuv/gojsonreference
+  version: e02fc20de94c78484cd5ffb007f8af96be030a45
+- name: github.com/xeipuuv/gojsonschema
+  version: 00f9fafb54d2244d291b86ab63d12c38bd5c3886
+- name: golang.org/x/crypto
+  version: d172538b2cfce0c13cee31e647d0367aa8cd2486
+  repo: https://go.googlesource.com/crypto
+  subpackages:
+  - cast5
+  - curve25519
+  - ed25519
+  - ed25519/internal/edwards25519
+  - openpgp
+  - ssh
 - name: golang.org/x/net
-  version: 9bc2a3340c92c17a20edcd0080e93851ed58f5d5
+  version: f4b625ec9b21d620bb5ce57f2dfc3e08ca97fce6
   subpackages:
   - context
   - context/ctxhttp
   - idna
+- name: golang.org/x/sys
+  version: 8d1157a435470616f975ff9bb013bea8d0962067
+  repo: https://go.googlesource.com/sys
+  subpackages:
+  - unix
 - name: golang.org/x/text
-  version: 09c7ea1fcb3345da09be5a32c9c52303acd1dc2c
+  version: ede1cb9f9f2f84c3bace9ca113fd740fc916cdd0
   repo: https://go.googlesource.com/text
   subpackages:
   - cases
-  - internal/gen
+  - internal
   - internal/tag
-  - internal/triegen
-  - internal/ucd
   - language
   - runes
   - secure/bidirule
   - secure/precis
   - transform
   - unicode/bidi
-  - unicode/cldr
   - unicode/norm
-  - unicode/rangetable
   - width
 - name: golang.org/x/tools
-  version: 9deed8c6c1c89e0b6d68d727f215de8e851d1064
+  version: 8453f27cc7e9bc769059b8eb7c88f61da9382d1e
   repo: https://go.googlesource.com/tools
   subpackages:
   - go/ast/astutil
@@ -99,15 +170,12 @@ imports:
   version: 056c92dcc68b40c5d6045f755197b3776f914154
   subpackages:
   - logger
-- name: gopkg.in/Clever/kayvee-go.v4
-  version: 94772833b9df4d5af35c5150af34466d656faeee
+- name: gopkg.in/Clever/kayvee-go.v5
+  version: 2bf003d906c004c4578a41237c4fba3e1315daec
   subpackages:
   - logger
   - middleware
-- name: gopkg.in/Clever/kayvee-go.v5
-  version: 905c10b703dfc2b2dae770f7ec05c97f895f3cf3
-  subpackages:
-  - logger
+  - router
 - name: gopkg.in/mgo.v2
   version: f4923a569136442e900b8cf5c1a706c0a8b0883c
   subpackages:
@@ -118,7 +186,7 @@ imports:
   version: 31c299268d302dd0aa9a0dcf765a3d58971ac83f
 testImports:
 - name: github.com/davecgh/go-spew
-  version: 6cf5744a041a0022271cefed95ba843f6d87fd51
+  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
   repo: https://github.com/davecgh/go-spew
   subpackages:
   - spew

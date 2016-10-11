@@ -151,6 +151,19 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 		input.State = &stateTmp
 
 	}
+	stateRequiredStr := r.URL.Query().Get("state_required")
+	if len(stateRequiredStr) == 0 {
+		return nil, errors.New("Parameter must be specified")
+	}
+	if len(stateRequiredStr) != 0 {
+		var stateRequiredTmp string
+		stateRequiredTmp, err = stateRequiredStr, error(nil)
+		if err != nil {
+			return nil, err
+		}
+		input.StateRequired = stateRequiredTmp
+
+	}
 	publishedStr := r.URL.Query().Get("published")
 	if len(publishedStr) != 0 {
 		var publishedTmp strfmt.Date

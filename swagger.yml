@@ -122,6 +122,14 @@ paths:
             - finished
             - inprogress
           default: finished
+        - name: state_required
+          in: query
+          type: string
+          required: true
+          enum:
+            - finished
+            - inprogress
+          default: finished
         - name: published
           in: query
           type: string
@@ -174,6 +182,18 @@ definitions:
       author:
         type: string
         format: mongo-id
+      genre:
+        type: string
+        enum:
+          - scifi
+          - mystery
+          - horror
+  Genre:
+   type: string
+   enum:
+     - scifi
+     - mystery
+     - horror
   Error:
     type: object
     properties:
