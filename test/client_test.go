@@ -100,9 +100,9 @@ func TestNewWithDiscovery(t *testing.T) {
 	splitURL := strings.Split(testServer.URL, ":")
 	assert.Equal(t, 3, len(splitURL))
 
-	os.Setenv("SERVICE_SWAGGER_TEST_HTTP_PROTO", "http")
-	os.Setenv("SERVICE_SWAGGER_TEST_HTTP_PORT", splitURL[2])
-	os.Setenv("SERVICE_SWAGGER_TEST_HTTP_HOST", splitURL[1][2:])
+	os.Setenv("SERVICE_SWAGGER_TEST_DEFAULT_PROTO", "http")
+	os.Setenv("SERVICE_SWAGGER_TEST_DEFAULT_PORT", splitURL[2])
+	os.Setenv("SERVICE_SWAGGER_TEST_DEFAULT_HOST", splitURL[1][2:])
 
 	c, err := client.NewFromDiscovery()
 	assert.NoError(t, err)

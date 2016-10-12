@@ -73,7 +73,7 @@ func New(basePath string) *WagClient {
 // NewFromDiscovery creates a client from the discovery environment variables. This method requires
 // the three env vars: SERVICE_%s_HTTP_(HOST/PORT/PROTO) to be set. Otherwise it returns an error.
 func NewFromDiscovery() (*WagClient, error) {
-	url, err := discovery.URL("%s", "http")
+	url, err := discovery.URL("%s", "default")
 	if err != nil {
 		return nil, err
 	}
