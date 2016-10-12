@@ -20,8 +20,8 @@ var _ = strings.Replace
 var _ = strconv.FormatInt
 var _ = bytes.Compare
 
-// Client is used to make requests to the swagger-test service.
-type Client struct {
+// WagClient is used to make requests to the swagger-test service.
+type WagClient struct {
 	basePath    string
 	requestDoer doer
 	transport   *http.Transport
@@ -31,19 +31,21 @@ type Client struct {
 	defaultTimeout time.Duration
 }
 
+var _ Client = (*WagClient)(nil)
+
 // New creates a new client. The base path and http transport are configurable.
-func New(basePath string) *Client {
+func New(basePath string) *WagClient {
 	base := baseDoer{}
 	tracing := tracingDoer{d: base}
 	retry := retryDoer{d: tracing, defaultRetries: 1}
 
-	return &Client{requestDoer: &retry, retryDoer: &retry, defaultTimeout: 10 * time.Second,
+	return &WagClient{requestDoer: &retry, retryDoer: &retry, defaultTimeout: 10 * time.Second,
 		transport: &http.Transport{}, basePath: basePath}
 }
 
 // NewFromDiscovery creates a client from the discovery environment variables. This method requires
 // the three env vars: SERVICE_SWAGGER_TEST_HTTP_(HOST/PORT/PROTO) to be set. Otherwise it returns an error.
-func NewFromDiscovery() (*Client, error) {
+func NewFromDiscovery() (*WagClient, error) {
 	url, err := discovery.URL("swagger-test", "http")
 	if err != nil {
 		return nil, err
@@ -53,14 +55,14 @@ func NewFromDiscovery() (*Client, error) {
 
 // WithRetries returns a new client that retries all GET operations until they either succeed or fail the
 // number of times specified.
-func (c *Client) WithRetries(retries int) *Client {
+func (c *WagClient) WithRetries(retries int) *WagClient {
 	c.retryDoer.defaultRetries = retries
 	return c
 }
 
 // WithTimeout returns a new client that has the specified timeout on all operations. To make a single request
 // have a timeout use context.WithTimeout as described here: https://godoc.org/golang.org/x/net/context#WithTimeout.
-func (c *Client) WithTimeout(timeout time.Duration) *Client {
+func (c *WagClient) WithTimeout(timeout time.Duration) *WagClient {
 	c.defaultTimeout = timeout
 	return c
 }
@@ -90,7 +92,7 @@ func JoinByFormat(data []string, format string) string {
 
 // GetBooks makes a GET request to /books.
 // Returns a list of books
-func (c *Client) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models.Book, error) {
+func (c *WagClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models.Book, error) {
 	path := c.basePath + "/v1/books"
 	urlVals := url.Values{}
 	var body []byte
@@ -179,7 +181,7 @@ func (c *Client) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]model
 
 // GetBookByID makes a GET request to /books/{book_id}.
 // Returns a book
-func (c *Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
+func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
 	path := c.basePath + "/v1/books/{book_id}"
 	urlVals := url.Values{}
 	var body []byte
@@ -260,7 +262,7 @@ func (c *Client) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (m
 
 // CreateBook makes a POST request to /books/{book_id}.
 // Creates a book
-func (c *Client) CreateBook(ctx context.Context, i *models.Book) (*models.Book, error) {
+func (c *WagClient) CreateBook(ctx context.Context, i *models.Book) (*models.Book, error) {
 	path := c.basePath + "/v1/books/{book_id}"
 	urlVals := url.Values{}
 	var body []byte
@@ -333,7 +335,7 @@ func (c *Client) CreateBook(ctx context.Context, i *models.Book) (*models.Book, 
 
 // GetBookByID2 makes a GET request to /books/{id}.
 // Retrieve a book
-func (c *Client) GetBookByID2(ctx context.Context, i *models.GetBookByID2Input) (*models.Book, error) {
+func (c *WagClient) GetBookByID2(ctx context.Context, i *models.GetBookByID2Input) (*models.Book, error) {
 	path := c.basePath + "/v1/books/{id}"
 	urlVals := url.Values{}
 	var body []byte
@@ -398,7 +400,7 @@ func (c *Client) GetBookByID2(ctx context.Context, i *models.GetBookByID2Input) 
 }
 
 // HealthCheck makes a GET request to /health/check.
-func (c *Client) HealthCheck(ctx context.Context) error {
+func (c *WagClient) HealthCheck(ctx context.Context) error {
 	path := c.basePath + "/v1/health/check"
 	urlVals := url.Values{}
 	var body []byte
