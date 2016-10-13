@@ -12,7 +12,16 @@ import (
 
 // Generate generates a client
 func Generate(packageName string, s spec.Swagger) error {
+	if err := generateClient(packageName, s); err != nil {
+		return err
+	}
+	if err := generateInterface(packageName, s.Info.InfoProps.Title, s.Paths); err != nil {
+		return err
+	}
+	return nil
+}
 
+func generateClient(packageName string, s spec.Swagger) error {
 	g := swagger.Generator{PackageName: packageName}
 
 	g.Printf(`package client
@@ -38,8 +47,8 @@ var _ = strings.Replace
 var _ = strconv.FormatInt
 var _ = bytes.Compare
 
-// Client is used to make requests to the %s service.
-type Client struct {
+// WagClient is used to make requests to the %s service.
+type WagClient struct {
 	basePath    string
 	requestDoer doer
 	transport   *http.Transport
@@ -49,19 +58,21 @@ type Client struct {
 	defaultTimeout time.Duration
 }
 
+var _ Client = (*WagClient)(nil)
+
 // New creates a new client. The base path and http transport are configurable.
-func New(basePath string) *Client {
+func New(basePath string) *WagClient {
 	base := baseDoer{}
 	tracing := tracingDoer{d: base}
 	retry := retryDoer{d: tracing, defaultRetries: 1}
 
-	return &Client{requestDoer: &retry, retryDoer: &retry, defaultTimeout: 10 * time.Second,
+	return &WagClient{requestDoer: &retry, retryDoer: &retry, defaultTimeout: 10 * time.Second,
 		transport: &http.Transport{}, basePath: basePath}
 }
 
 // NewFromDiscovery creates a client from the discovery environment variables. This method requires
 // the three env vars: SERVICE_%s_HTTP_(HOST/PORT/PROTO) to be set. Otherwise it returns an error.
-func NewFromDiscovery() (*Client, error) {
+func NewFromDiscovery() (*WagClient, error) {
 	url, err := discovery.URL("%s", "http")
 	if err != nil {
 		return nil, err
@@ -71,14 +82,14 @@ func NewFromDiscovery() (*Client, error) {
 
 // WithRetries returns a new client that retries all GET operations until they either succeed or fail the
 // number of times specified.
-func (c *Client) WithRetries(retries int) *Client {
+func (c *WagClient) WithRetries(retries int) *WagClient {
 	c.retryDoer.defaultRetries = retries
 	return c
 }
 
 // WithTimeout returns a new client that has the specified timeout on all operations. To make a single request
 // have a timeout use context.WithTimeout as described here: https://godoc.org/golang.org/x/net/context#WithTimeout.
-func (c *Client) WithTimeout(timeout time.Duration) *Client {
+func (c *WagClient) WithTimeout(timeout time.Duration) *WagClient {
 	c.defaultTimeout = timeout
 	return c
 }
@@ -102,12 +113,33 @@ func (c *Client) WithTimeout(timeout time.Duration) *Client {
 	return g.WriteFile("client/client.go")
 }
 
+func generateInterface(packageName string, serviceName string, paths *spec.Paths) error {
+	g := swagger.Generator{PackageName: packageName}
+	g.Printf("package client\n\n")
+	g.Printf(swagger.ImportStatements([]string{"context", packageName + "/models"}))
+	g.Printf("//go:generate $GOPATH/bin/mockgen -source=$GOFILE -destination=mock_client.go -package=client\n\n")
+	g.Printf("// Client defines the methods available to clients of the %s service.\n", serviceName)
+	g.Printf("type Client interface {\n\n")
+
+	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
+		path := paths.Paths[pathKey]
+		pathItemOps := swagger.PathItemOperations(path)
+		for _, method := range swagger.SortedOperationsKeys(pathItemOps) {
+			g.Printf("\t%s\n", swagger.InterfaceComment(method, pathKey, pathItemOps[method]))
+			g.Printf("\t%s\n\n", swagger.Interface(pathItemOps[method]))
+		}
+	}
+	g.Printf("}\n")
+
+	return g.WriteFile("client/interface.go")
+}
+
 func methodCode(op *spec.Operation, basePath, method, methodPath string) string {
 	var buf bytes.Buffer
 	capOpID := swagger.Capitalize(op.ID)
 
 	buf.WriteString(swagger.InterfaceComment(method, methodPath, op) + "\n")
-	buf.WriteString(fmt.Sprintf("func (c *Client) %s {\n", swagger.Interface(op)))
+	buf.WriteString(fmt.Sprintf("func (c *WagClient) %s {\n", swagger.Interface(op)))
 	buf.WriteString(fmt.Sprintf("\tpath := c.basePath + \"%s\"\n", basePath+methodPath))
 	buf.WriteString(fmt.Sprintf("\turlVals := url.Values{}\n"))
 	buf.WriteString(fmt.Sprintf("\tvar body []byte\n\n"))
