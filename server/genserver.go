@@ -292,32 +292,31 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 		pathItemOps := swagger.PathItemOperations(path)
 		for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
 			op := pathItemOps[opKey]
-			tmpl, err := template.New("test").Parse(handlerTemplate)
-			if err != nil {
-				return err
-			}
 
-			statusCodeLogic := ""
-			successCodes := swagger.SuccessStatusCodes(op)
-			if len(successCodes) == 1 {
-				statusCodeLogic = fmt.Sprintf("%d", successCodes[0])
-			} else {
-				statusCodeLogic = fmt.Sprintf("resp.%sStatusCode()", swagger.Capitalize(op.ID))
-			}
-
-			var tmpBuf bytes.Buffer
-			singleInputOp, _ := swagger.SingleSchemaedBodyParameter(op)
-			err = tmpl.Execute(&tmpBuf, handlerOp{
-				Op:                swagger.Capitalize(op.ID),
-				SuccessReturnType: !swagger.NoSuccessType(op),
-				StatusCode:        statusCodeLogic,
-				HasParams:         len(op.Parameters) != 0,
-				SingleInputOp:     singleInputOp,
+			statusCodes, err := writeTemplate(statusCodeTemplate, struct {
+				Op                 string
+				TypesToStatusCodes map[string]int
+			}{
+				swagger.Capitalize(op.ID),
+				swagger.TypeToStatusCodeMap(op),
 			})
 			if err != nil {
 				return err
 			}
-			g.Printf(tmpBuf.String())
+			g.Printf(statusCodes)
+
+			singleInputOp, _ := swagger.SingleSchemaedBodyParameter(op)
+			handlerOp := handlerOp{
+				Op:                swagger.Capitalize(op.ID),
+				SuccessReturnType: !swagger.NoSuccessType(op),
+				HasParams:         len(op.Parameters) != 0,
+				SingleInputOp:     singleInputOp,
+			}
+			handlerCode, err := writeTemplate(handlerTemplate, handlerOp)
+			if err != nil {
+				return err
+			}
+			g.Printf(handlerCode)
 
 			if err := printNewInput(&g, op); err != nil {
 				return err
@@ -326,6 +325,22 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 	}
 
 	return g.WriteFile("server/handlers.go")
+}
+
+// TODO: Add a nice comment
+func writeTemplate(templateStr string, templateStruct interface{}) (string, error) {
+
+	tmpl, err := template.New("test").Parse(templateStr)
+	if err != nil {
+		return "", err
+	}
+
+	var tmpBuf bytes.Buffer
+	err = tmpl.Execute(&tmpBuf, templateStruct)
+	if err != nil {
+		return "", err
+	}
+	return tmpBuf.String(), nil
 }
 
 var jsonMarshalString = `
@@ -339,11 +354,30 @@ func jsonMarshalNoError(i interface{}) string {
 }
 `
 
+// TODO: Add a nice comment explaining why this is internal for now...
+// Explain unknown error response
+// TODO: Should the models list go in the swagger file...
+var statusCodeTemplate = `func statusCodeFor{{.Op}}(obj interface{}) int {
+
+	switch t := obj.(type) {
+	{{ range $type, $code := .TypesToStatusCodes }}
+   	case {{$type}}:
+   		return {{$code}}
+	{{ end }}
+	case models.DefaultBadRequest:
+		return 400
+	case models.DefaultInternalError:
+		return 500
+	default:
+		return -1
+	}
+}
+`
+
 // handlerOp contains the template variables for the handlerTemplate
 type handlerOp struct {
 	Op                string
 	SuccessReturnType bool
-	StatusCode        string
 	HasParams         bool
 	SingleInputOp     bool
 }
@@ -377,12 +411,13 @@ var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w ht
 {{end}}
 {{end}}
 	if err != nil {
-		if respErr, ok := err.(models.{{.Op}}Error); ok {
-			http.Error(w, respErr.Error(), respErr.{{.Op}}StatusCode())
-			return
-		}
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		statusCode := statusCodeFor{{.Op}}(err)
+		if statusCode != -1 {
+			http.Error(w, respErr, statusCode)
+		} else {
+			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		}
 		return
 	}
 
@@ -395,10 +430,11 @@ var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w ht
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader({{.StatusCode}})
+	w.WriteHeader(statusCodeFor{{.Op}}(resp))
 	w.Write(respBytes)
 {{else}}
-	w.WriteHeader({{.StatusCode}})
+	// TODO: This isn't quite right...
+	w.WriteHeader(statusCodeFor{{.Op}}(resp))
 	w.Write([]byte(""))
 {{end}}
 }

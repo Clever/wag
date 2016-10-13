@@ -251,12 +251,6 @@ func generateSuccessTypes(capOpID string, responses map[int]spec.Response) (stri
 
 func generateErrorTypes(capOpID string, responses map[int]spec.Response) (string, error) {
 	var buf bytes.Buffer
-	buf.WriteString(fmt.Sprintf("// %sError defines the error interface for %s.\n",
-		capOpID, capOpID))
-	buf.WriteString(fmt.Sprintf("type %sError interface {\n", capOpID))
-	buf.WriteString(fmt.Sprintf("\terror // Extend the error interface\n"))
-	buf.WriteString(fmt.Sprintf("\t%sStatusCode() int\n", capOpID))
-	buf.WriteString(fmt.Sprintf("}\n\n"))
 
 	for _, statusCode := range swagger.SortedStatusCodeKeys(responses) {
 
@@ -272,6 +266,7 @@ func generateErrorTypes(capOpID string, responses map[int]spec.Response) (string
 }
 
 func generateType(capOpID string, statusCode int, response spec.Response) (string, error) {
+	// outputName := swagger.TypeFromStatusCode(op, statusCode)
 	outputName := fmt.Sprintf("%s%dOutput", capOpID, statusCode)
 	typeName, err := swagger.TypeFromSchema(response.Schema, false)
 	if err != nil {
@@ -305,17 +300,16 @@ var typeTemplate = `
 	// {{.Output}} defines the {{.StatusCode}} status code response for {{.OpName}}.
 	type {{.Output}} {{.Type}}
 
-
-	// {{.OpName}}StatusCode returns the status code for the operation.
-	func (o {{.Output}}) {{.OpName}}StatusCode() int {
-		return {{.StatusCode}}
-	}
-
 	{{if .ErrorType}}
 	// Error returns "Status Code: X". We implemented in to satisfy the error
 	// interface. For a more descriptive error message see the output type.
 	func (o {{.Output}}) Error() string {
 		return "Status Code: {{.StatusCode}}"
+	}
+	{{else}}
+	// {{.OpName}}StatusCode returns the status code for the operation.
+	func (o {{.Output}}) {{.OpName}}StatusCode() int {
+		return {{.StatusCode}}
 	}
 	{{end}}
 `

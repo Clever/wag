@@ -21,12 +21,6 @@ func (d DefaultBadRequest) Error() string {
 	return d.Msg
 }
 
-// GetBooksError defines the error interface for GetBooks.
-type GetBooksError interface {
-	error // Extend the error interface
-	GetBooksStatusCode() int
-}
-
 // GetBookByIDOutput defines the success output interface for GetBookByID.
 type GetBookByIDOutput interface {
 	GetBookByIDStatusCode() int
@@ -48,19 +42,8 @@ func (o GetBookByID204Output) GetBookByIDStatusCode() int {
 	return 204
 }
 
-// GetBookByIDError defines the error interface for GetBookByID.
-type GetBookByIDError interface {
-	error // Extend the error interface
-	GetBookByIDStatusCode() int
-}
-
 // GetBookByID401Output defines the 401 status code response for GetBookByID.
 type GetBookByID401Output struct{}
-
-// GetBookByIDStatusCode returns the status code for the operation.
-func (o GetBookByID401Output) GetBookByIDStatusCode() int {
-	return 401
-}
 
 // Error returns "Status Code: X". We implemented in to satisfy the error
 // interface. For a more descriptive error message see the output type.
@@ -71,45 +54,17 @@ func (o GetBookByID401Output) Error() string {
 // GetBookByID404Output defines the 404 status code response for GetBookByID.
 type GetBookByID404Output Error
 
-// GetBookByIDStatusCode returns the status code for the operation.
-func (o GetBookByID404Output) GetBookByIDStatusCode() int {
-	return 404
-}
-
 // Error returns "Status Code: X". We implemented in to satisfy the error
 // interface. For a more descriptive error message see the output type.
 func (o GetBookByID404Output) Error() string {
 	return "Status Code: 404"
 }
 
-// CreateBookError defines the error interface for CreateBook.
-type CreateBookError interface {
-	error // Extend the error interface
-	CreateBookStatusCode() int
-}
-
-// GetBookByID2Error defines the error interface for GetBookByID2.
-type GetBookByID2Error interface {
-	error // Extend the error interface
-	GetBookByID2StatusCode() int
-}
-
 // GetBookByID2404Output defines the 404 status code response for GetBookByID2.
 type GetBookByID2404Output struct{}
-
-// GetBookByID2StatusCode returns the status code for the operation.
-func (o GetBookByID2404Output) GetBookByID2StatusCode() int {
-	return 404
-}
 
 // Error returns "Status Code: X". We implemented in to satisfy the error
 // interface. For a more descriptive error message see the output type.
 func (o GetBookByID2404Output) Error() string {
 	return "Status Code: 404"
-}
-
-// HealthCheckError defines the error interface for HealthCheck.
-type HealthCheckError interface {
-	error // Extend the error interface
-	HealthCheckStatusCode() int
 }
