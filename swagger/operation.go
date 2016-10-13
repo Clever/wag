@@ -111,6 +111,22 @@ func NoSuccessType(op *spec.Operation) bool {
 	return op.Responses.StatusCodeResponses[successCodes[0]].Schema == nil
 }
 
+// TypeToStatusCodeMap returns a map from type name to status code for an operation
+func TypeToStatusCodeMap(op *spec.Operation) map[string]int {
+
+	resp := make(map[string]int)
+	for _, statusCode := range SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
+		resp[TypeFromStatusCode(op, statusCode)] = statusCode
+	}
+	return resp
+}
+
+// TypeFromStatusCode returns the type string from the status code for an operation
+func TypeFromStatusCode(op *spec.Operation, statusCode int) string {
+	// TODO: Think about this models thing...
+	return fmt.Sprintf("models.%s%dOutput", Capitalize(op.ID), statusCode)
+}
+
 // TypeFromSchema returns the type of a Swagger schema as a string. If includeModels is true
 // then it returns models.TYPE
 func TypeFromSchema(schema *spec.Schema, includeModels bool) (string, error) {
