@@ -27,11 +27,20 @@ func Generate(packageName string, s spec.Swagger) error {
 	return nil
 }
 
-func generateRouter(packageName string, s spec.Swagger, paths *spec.Paths) error {
-	g := swagger.Generator{PackageName: packageName}
+type routerFunction struct {
+	Method      string
+	Path        string
+	HandlerName string
+	OpID        string
+}
 
-	g.Printf(
-		`package server
+type routerTemplate struct {
+	Title     string
+	Functions []routerFunction
+}
+
+var routerTemplateStr = `
+package server
 
 // Code auto-generated. Do not edit.
 
@@ -61,7 +70,7 @@ type Server struct {
 func (s *Server) Serve() error {
 
 	go func() {
-		metrics.Log("%s", 1*time.Minute)
+		metrics.Log("{{.Title}}", 1*time.Minute)
 	}()
 
 	go func() {
@@ -84,54 +93,49 @@ func New(c Controller, addr string) *Server {
 	r := mux.NewRouter()
 	h := handler{Controller: c}
 
-	l := logger.New("%s")
-`, s.Info.InfoProps.Title, s.Info.InfoProps.Title)
+	l := logger.New("{{.Title}}")
 
+	{{range $index, $val := .Functions}}
+	r.Methods("{{$val.Method}}").Path("{{$val.Path}}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger.FromContext(r.Context()).AddContext("op", "{{$val.OpID}}")
+		h.{{$val.HandlerName}}Handler(r.Context(), w, r)
+	})
+	{{end}}
+
+	handler := withMiddleware("{{.Title}}", r)
+	return &Server{Handler: handler, addr: addr, l: l}
+}
+`
+
+func generateRouter(packageName string, s spec.Swagger, paths *spec.Paths) error {
+	g := swagger.Generator{PackageName: packageName}
+
+	var template routerTemplate
+	template.Title = s.Info.Title
 	for _, path := range swagger.SortedPathItemKeys(paths.Paths) {
 		pathItem := paths.Paths[path]
 		pathItemOps := swagger.PathItemOperations(pathItem)
 		for _, method := range swagger.SortedOperationsKeys(pathItemOps) {
 			op := pathItemOps[method]
-			// TODO: Note the coupling for the handler name here and in the handler function. Does that mean these should be
-			// together? Probably...
 
-			g.Printf("\n")
-			tmpl, err := template.New("routerFunction").Parse(routerFunctionTemplate)
-			if err != nil {
-				return err
-			}
-			var tmpBuf bytes.Buffer
-			err = tmpl.Execute(&tmpBuf, routerTemplate{
+			template.Functions = append(template.Functions, routerFunction{
 				Method:      method,
 				Path:        s.BasePath + path,
 				HandlerName: swagger.Capitalize(op.ID),
 				OpID:        op.ID,
 			})
-			if err != nil {
-				return err
-			}
-			g.Printf(tmpBuf.String())
 		}
 	}
-	g.Printf("\thandler := withMiddleware(\"%s\", r)\n", s.Info.InfoProps.Title)
-	g.Printf("\treturn &Server{Handler: handler, addr: addr, l: l}\n")
-	g.Printf("}\n")
+
+	routerCode, err := writeTemplate(routerTemplateStr, template)
+	if err != nil {
+		return err
+	}
+
+	g.Printf(routerCode)
 
 	return g.WriteFile("server/router.go")
 }
-
-type routerTemplate struct {
-	Method      string
-	Path        string
-	HandlerName string
-	OpID        string
-}
-
-var routerFunctionTemplate = `	r.Methods("{{.Method}}").Path("{{.Path}}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger.FromContext(r.Context()).AddContext("op", "{{.OpID}}")
-		h.{{.HandlerName}}Handler(r.Context(), w, r)
-	})
-`
 
 func generateInterface(packageName string, serviceName string, paths *spec.Paths) error {
 	g := swagger.Generator{PackageName: packageName}
