@@ -447,7 +447,7 @@ func (c *WagClient) HealthCheck(ctx context.Context) error {
 	defer resp.Body.Close()
 	switch resp.StatusCode {
 	case 200:
-		return output
+		return nil
 	case 400:
 		var output models.DefaultBadRequest
 

@@ -289,46 +289,50 @@ func errorMessage(err string, op *spec.Operation) string {
 `, err)
 }
 
-// TODO: Add a nice comment and ultimately move this to the (maybe an interface object with all
-// this...)
-// Response:
-//   success
-//   failure
-//   decode
-//   makePointer
-// TODO: make this into a struct
-// TODO: Change this to a list of return values??? (have 2 cases, nil and a type...)
-func pair(op *spec.Operation, statusCode int) (string, string, bool, bool) {
+type statusCodeReturn struct {
+	responseTypes []string
+	// unclear if we need this decode param
+	decode      bool
+	makePointer bool
+}
+
+// outputForCode returns the definition for the output for an operation for a particular
+// status code. The first response value is the list of types in the response in the order they
+// are returned (e.g. GetBookById200Output, nil). The second argument is whether the model object
+// returned should be decode. The final argument is whether the model object should be returned as
+// a pointer.
+func outputForCode(op *spec.Operation, statusCode int) ([]string, bool, bool) {
 
 	noSuccessType := swagger.NoSuccessType(op)
-	successReturn := "nil"
-	if noSuccessType {
-		successReturn = ""
+	successResponses := []string{}
+	if !noSuccessType {
+		successResponses = append(successResponses, "nil")
 	}
 	if statusCode == 400 {
-		return successReturn, "models.DefaultBadRequest", true, false
+		successResponses = append(successResponses, "models.DefaultBadRequest")
+		return successResponses, true, false
 	} else if statusCode == 500 {
-		return successReturn, "models.DefaultInternalError", true, false
+		successResponses = append(successResponses, "models.DefaultInternalError")
+		return successResponses, true, false
 	}
 
 	response := op.Responses.StatusCodeResponses[statusCode]
 	outputName, makePointer := swagger.OutputType(op, statusCode)
-	if noSuccessType && statusCode < 400 {
-		return "", "nil", false, false
+	if noSuccessType {
+		if statusCode < 400 {
+			return []string{"nil"}, false, false
+		}
+		return []string{outputName}, false, false
 	} else if response.Schema == nil {
 		if statusCode < 400 {
-			return outputName, "nil", false, false
+			return []string{outputName, "nil"}, false, false
 		}
-		// TODO: Understand this case...
-		if noSuccessType {
-			return outputName, "nil", false, false
-		}
-		return "nil", outputName, false, false
+		return []string{"nil", outputName}, false, false
 	}
 	if statusCode < 400 {
-		return outputName, "nil", true, makePointer
+		return []string{outputName, "nil"}, true, makePointer
 	}
-	return "nil", fmt.Sprintf("%s", outputName), false, false
+	return []string{"nil", fmt.Sprintf("%s", outputName)}, false, false
 }
 
 // parseResponseCode generates the code for handling the http response.
@@ -367,18 +371,28 @@ func parseResponseCode(op *spec.Operation, capOpID string) string {
 
 func writeStatusCodeDecoder(op *spec.Operation, statusCode int) string {
 	var buf bytes.Buffer
-	success, failure, decode, makePointer := pair(op, statusCode)
+	responses, decode, makePointer := outputForCode(op, statusCode)
 
 	buf.WriteString(fmt.Sprintf("\tcase %d:\n", statusCode))
 
-	if success != "" && success != "nil" {
-		buf.WriteString(fmt.Sprintf("var output %s\n", success))
-	} else if failure != "" && failure != "nil" {
-		buf.WriteString(fmt.Sprintf("var output %s\n", failure))
+	var newResponses []string
+	for _, response := range responses {
+		newResponse := "nil"
+		if response != "nil" {
+			// Turn any of the non-nil output types into variables
+			buf.WriteString(fmt.Sprintf("var output %s\n", response))
+			if makePointer {
+				newResponse = "&output"
+			} else {
+				newResponse = "output"
+			}
+		}
+		newResponses = append(newResponses, newResponse)
 	}
+
 	if decode {
 		nilString := ""
-		if success != "" {
+		if len(responses) > 1 {
 			nilString = "nil, "
 		}
 		buf.WriteString(fmt.Sprintf(`
@@ -390,18 +404,7 @@ func writeStatusCodeDecoder(op *spec.Operation, statusCode int) string {
 `, nilString))
 
 	}
-	if success != "" && success != "nil" {
-		if makePointer {
-			buf.WriteString("return &output, nil\n")
-		} else {
-			buf.WriteString("return output, nil\n")
-		}
-	} else {
-		if success == "" {
-			buf.WriteString("return output\n")
-		} else {
-			buf.WriteString("return nil, output\n")
-		}
-	}
+
+	buf.WriteString("return " + strings.Join(newResponses, ",") + "\n")
 	return buf.String()
 }
