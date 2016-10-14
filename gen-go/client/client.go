@@ -156,25 +156,28 @@ func (c *WagClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]mo
 	defer resp.Body.Close()
 	switch resp.StatusCode {
 	case 200:
-
 		var output []models.Book
+
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
-		return output, nil
 
+		return output, nil
 	case 400:
 		var output models.DefaultBadRequest
+
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
-		return nil, output
 
+		return nil, output
 	case 500:
 		var output models.DefaultInternalError
+
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
+
 		return nil, output
 
 	default:
@@ -229,12 +232,13 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 	defer resp.Body.Close()
 	switch resp.StatusCode {
 	case 200:
-
 		var output models.GetBookByID200Output
+
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
-		return &output, nil
+
+		return output, nil
 	case 204:
 		var output models.GetBookByID204Output
 		return output, nil
@@ -242,20 +246,23 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 		var output models.GetBookByID401Output
 		return nil, output
 	case 404:
-		return nil, models.GetBookByID404Output{}
-
+		var output models.GetBookByID404Output
+		return nil, output
 	case 400:
 		var output models.DefaultBadRequest
+
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
-		return nil, output
 
+		return nil, output
 	case 500:
 		var output models.DefaultInternalError
+
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
+
 		return nil, output
 
 	default:
@@ -310,25 +317,28 @@ func (c *WagClient) CreateBook(ctx context.Context, i *models.Book) (*models.Boo
 	defer resp.Body.Close()
 	switch resp.StatusCode {
 	case 200:
-
 		var output models.Book
+
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
-		return &output, nil
 
+		return &output, nil
 	case 400:
 		var output models.DefaultBadRequest
+
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
-		return nil, output
 
+		return nil, output
 	case 500:
 		var output models.DefaultInternalError
+
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
+
 		return nil, output
 
 	default:
@@ -373,28 +383,31 @@ func (c *WagClient) GetBookByID2(ctx context.Context, i *models.GetBookByID2Inpu
 	defer resp.Body.Close()
 	switch resp.StatusCode {
 	case 200:
-
 		var output models.Book
+
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
+
 		return &output, nil
 	case 404:
 		var output models.GetBookByID2404Output
 		return nil, output
-
 	case 400:
 		var output models.DefaultBadRequest
+
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
-		return nil, output
 
+		return nil, output
 	case 500:
 		var output models.DefaultInternalError
+
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
+
 		return nil, output
 
 	default:
@@ -437,20 +450,22 @@ func (c *WagClient) HealthCheck(ctx context.Context) error {
 	defer resp.Body.Close()
 	switch resp.StatusCode {
 	case 200:
-		return nil
-
+		return output
 	case 400:
 		var output models.DefaultBadRequest
+
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return models.DefaultInternalError{Msg: err.Error()}
 		}
-		return output
 
+		return output
 	case 500:
 		var output models.DefaultInternalError
+
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return models.DefaultInternalError{Msg: err.Error()}
 		}
+
 		return output
 
 	default:

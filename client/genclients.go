@@ -276,97 +276,6 @@ func buildRequestCode(op *spec.Operation, method string) string {
 	return buf.String()
 }
 
-// parseResponseCode generates the code for handling the http response.
-// In the client code we want to return a different object depending on the status code, so
-// let's generate code that switches on the status code and returns the right object in each
-// case. This includes the default 400 and 500 cases.
-func parseResponseCode(op *spec.Operation, capOpID string) string {
-	var buf bytes.Buffer
-
-	buf.WriteString("\tswitch resp.StatusCode {\n")
-
-	noSuccessType := swagger.NoSuccessType(op)
-	for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
-		response := op.Responses.StatusCodeResponses[statusCode]
-		outputName, _ := swagger.OutputType(op, statusCode)
-		buf.WriteString(fmt.Sprintf("\tcase %d:\n", statusCode))
-
-		if noSuccessType && statusCode < 400 {
-			buf.WriteString("\t\treturn nil\n")
-		} else if response.Schema == nil {
-			buf.WriteString(fmt.Sprintf("\t\tvar output %s\n", outputName))
-			if statusCode < 400 {
-				buf.WriteString("\t\treturn output, nil\n")
-			} else {
-				if noSuccessType {
-					buf.WriteString("\t\treturn output\n")
-				} else {
-					buf.WriteString("\t\treturn nil, output\n")
-				}
-			}
-		} else {
-			if statusCode < 400 {
-				pointer := "&"
-				// No pointer for array types (TODO: consider factoring this out...)
-				if response.Schema.Ref.String() == "" {
-					pointer = ""
-				}
-				buf.WriteString(fmt.Sprintf(successResponse(outputName, pointer)))
-			} else {
-				buf.WriteString(fmt.Sprintf("\t\treturn nil, %s{}\n", outputName))
-			}
-		}
-	}
-
-	if !swagger.NoSuccessType(op) {
-		buf.WriteString(`
-	case 400:
-		var output models.DefaultBadRequest
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, models.DefaultInternalError{Msg: err.Error()}
-		}
-		return nil, output
-
-	case 500:
-		var output models.DefaultInternalError
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, models.DefaultInternalError{Msg: err.Error()}
-		}
-		return nil, output
-
-	default:
-		return nil, models.DefaultInternalError{Msg: "Unknown response"}
-	}
-}
-
-`)
-	} else {
-		buf.WriteString(`
-	case 400:
-		var output models.DefaultBadRequest
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return models.DefaultInternalError{Msg: err.Error()}
-		}
-		return output
-
-	case 500:
-		var output models.DefaultInternalError
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return models.DefaultInternalError{Msg: err.Error()}
-		}
-		return output
-
-	default:
-		return models.DefaultInternalError{Msg: "Unknown response"}
-	}
-}
-
-`)
-	}
-
-	return buf.String()
-}
-
 func errorMessage(err string, op *spec.Operation) string {
 	if swagger.NoSuccessType(op) {
 		return fmt.Sprintf(`
@@ -382,12 +291,119 @@ func errorMessage(err string, op *spec.Operation) string {
 `, err)
 }
 
-func successResponse(outputName, pointer string) string {
-	return fmt.Sprintf(`
-		var output %s
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, models.DefaultInternalError{Msg: err.Error()}
+// TODO: Add a nice comment and ultimately move this to the (maybe an interface object with all
+// this...)
+// Response:
+//   success
+//   failure
+//   decode
+//   makePointer
+// TODO: make this into a struct
+// TODO: Change this to a list of return values??? (have 2 cases, nil and a type...)
+func pair(op *spec.Operation, statusCode int) (string, string, bool, bool) {
+
+	noSuccessType := swagger.NoSuccessType(op)
+	successReturn := "nil"
+	if noSuccessType {
+		successReturn = ""
+	}
+	if statusCode == 400 {
+		return successReturn, "models.DefaultBadRequest", true, false
+	} else if statusCode == 500 {
+		return successReturn, "models.DefaultInternalError", true, false
+	}
+
+	response := op.Responses.StatusCodeResponses[statusCode]
+	outputName, makePointer := swagger.OutputType(op, statusCode)
+	if noSuccessType && statusCode < 400 {
+		return "", "nil", false, false
+	} else if response.Schema == nil {
+		if statusCode < 400 {
+			return outputName, "nil", false, false
 		}
-		return %soutput, nil
-`, outputName, pointer)
+		// TODO: Understand this case...
+		if noSuccessType {
+			return outputName, "nil", false, false
+		}
+		return "nil", outputName, false, false
+	}
+	if statusCode < 400 {
+		return outputName, "nil", true, makePointer
+	}
+	return "nil", fmt.Sprintf("%s", outputName), false, false
+}
+
+// parseResponseCode generates the code for handling the http response.
+// In the client code we want to return a different object depending on the status code, so
+// let's generate code that switches on the status code and returns the right object in each
+// case. This includes the default 400 and 500 cases.
+func parseResponseCode(op *spec.Operation, capOpID string) string {
+	var buf bytes.Buffer
+
+	buf.WriteString("\tswitch resp.StatusCode {\n")
+
+	for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
+		buf.WriteString(writeStatusCodeDecoder(op, statusCode))
+	}
+
+	buf.WriteString(writeStatusCodeDecoder(op, 400))
+	buf.WriteString(writeStatusCodeDecoder(op, 500))
+
+	// It would be nice if we could remove this too
+	noSuccessType := swagger.NoSuccessType(op)
+	successReturn := "nil, "
+	if noSuccessType {
+		successReturn = ""
+	}
+
+	buf.WriteString(fmt.Sprintf(`
+	default:
+		return %smodels.DefaultInternalError{Msg: "Unknown response"}
+	}
+}
+
+`, successReturn))
+
+	return buf.String()
+}
+
+func writeStatusCodeDecoder(op *spec.Operation, statusCode int) string {
+	var buf bytes.Buffer
+	success, failure, decode, makePointer := pair(op, statusCode)
+
+	buf.WriteString(fmt.Sprintf("\tcase %d:\n", statusCode))
+
+	if success != "" && success != "nil" {
+		buf.WriteString(fmt.Sprintf("var output %s\n", success))
+	} else if failure != "" && failure != "nil" {
+		buf.WriteString(fmt.Sprintf("var output %s\n", failure))
+	}
+	if decode {
+		nilString := ""
+		if success != "" {
+			nilString = "nil, "
+		}
+		buf.WriteString(fmt.Sprintf(`
+
+	if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+		return %smodels.DefaultInternalError{Msg: err.Error()}
+	}
+
+`, nilString))
+
+	}
+	if success != "" && success != "nil" {
+		if makePointer {
+			buf.WriteString("return &output, nil\n")
+		} else {
+			buf.WriteString("return output, nil\n")
+		}
+	} else {
+		if success == "" {
+			buf.WriteString("return output\n")
+		} else {
+			buf.WriteString("return nil, output\n")
+		}
+	}
+	return buf.String()
 }
