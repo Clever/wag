@@ -40,23 +40,9 @@ func Interface(op *spec.Operation) string {
 	if NoSuccessType(op) {
 		return fmt.Sprintf("%s(ctx context.Context, %s) error", capOpID, input)
 	}
-
-	successCodes := SuccessStatusCodes(op)
-	successType := ""
-
-	if len(successCodes) == 1 {
-		singleSchema := op.Responses.StatusCodeResponses[successCodes[0]].Schema
-		var err error
-		successType, err = TypeFromSchema(singleSchema, true)
-		if err != nil {
-			panic(fmt.Errorf("Could not convert operation to type %s", err))
-		}
-		// Make non-arrays pointers
-		if singleSchema.Ref.String() != "" {
-			successType = "*" + successType
-		}
-	} else {
-		successType = fmt.Sprintf("models.%sOutput", capOpID)
+	successType, makePointer := OutputType(op, -1)
+	if makePointer {
+		successType = "*" + successType
 	}
 
 	return fmt.Sprintf("%s(ctx context.Context, %s) (%s, error)",
@@ -75,16 +61,26 @@ func InterfaceComment(method, path string, op *spec.Operation) string {
 }
 
 // OutputType returns the output type for a given status code of an operation
-func OutputType(op *spec.Operation, statusCode int) string {
+// TODO: Add explanation of second return argument
+func OutputType(op *spec.Operation, statusCode int) (string, bool) {
+	if NoSuccessType(op) {
+		return "", false
+	}
 	successCodes := SuccessStatusCodes(op)
 	if len(successCodes) == 1 && statusCode < 400 {
-		successType, err := TypeFromSchema(op.Responses.StatusCodeResponses[successCodes[0]].Schema, true)
+		singleSchema := op.Responses.StatusCodeResponses[successCodes[0]].Schema
+		var err error
+		successType, err := TypeFromSchema(singleSchema, true)
 		if err != nil {
 			panic(fmt.Errorf("Could not convert operation to type %s", err))
 		}
-		return successType
+		return successType, singleSchema != nil && singleSchema.Ref.String() != ""
 	}
-	return fmt.Sprintf("models.%s%dOutput", Capitalize(op.ID), statusCode)
+	// Not sure I like the -1 magic number...
+	if statusCode == -1 {
+		return fmt.Sprintf("models.%sOutput", Capitalize(op.ID)), false
+	}
+	return fmt.Sprintf("models.%s%dOutput", Capitalize(op.ID), statusCode), false
 }
 
 // SuccessStatusCodes returns a slice of all the success status codes for an operation
@@ -111,20 +107,17 @@ func NoSuccessType(op *spec.Operation) bool {
 	return op.Responses.StatusCodeResponses[successCodes[0]].Schema == nil
 }
 
-// TypeToStatusCodeMap returns a map from type name to status code for an operation
-func TypeToStatusCodeMap(op *spec.Operation) map[string]int {
-
-	resp := make(map[string]int)
+// CodeToTypeMap returns a map from return status code to its corresponding type
+func CodeToTypeMap(op *spec.Operation) map[int]string {
+	resp := make(map[int]string)
 	for _, statusCode := range SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
-		resp[TypeFromStatusCode(op, statusCode)] = statusCode
+		outputType, makePointer := OutputType(op, statusCode)
+		if makePointer {
+			outputType = "*" + outputType
+		}
+		resp[statusCode] = outputType
 	}
 	return resp
-}
-
-// TypeFromStatusCode returns the type string from the status code for an operation
-func TypeFromStatusCode(op *spec.Operation, statusCode int) string {
-	// TODO: Think about this models thing...
-	return fmt.Sprintf("models.%s%dOutput", Capitalize(op.ID), statusCode)
 }
 
 // TypeFromSchema returns the type of a Swagger schema as a string. If includeModels is true
