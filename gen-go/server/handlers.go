@@ -83,6 +83,7 @@ func statusCodeForGetBooks(obj interface{}) int {
 		return -1
 	}
 }
+
 func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	input, err := newGetBooksInput(r)
@@ -268,6 +269,7 @@ func statusCodeForGetBookByID(obj interface{}) int {
 		return -1
 	}
 }
+
 func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	input, err := newGetBookByIDInput(r)
@@ -381,6 +383,7 @@ func statusCodeForCreateBook(obj interface{}) int {
 		return -1
 	}
 }
+
 func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	input, err := newCreateBookInput(r)
@@ -460,6 +463,7 @@ func statusCodeForGetBookByID2(obj interface{}) int {
 		return -1
 	}
 }
+
 func (h handler) GetBookByID2Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	input, err := newGetBookByID2Input(r)
@@ -540,6 +544,7 @@ func statusCodeForHealthCheck(obj interface{}) int {
 		return -1
 	}
 }
+
 func (h handler) HealthCheckHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	err := h.HealthCheck(ctx)

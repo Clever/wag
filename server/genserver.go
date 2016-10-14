@@ -280,24 +280,14 @@ func generateOperationHandler(op *spec.Operation) (string, error) {
 		}
 	}
 
-	statusCodes, err := writeTemplate(statusCodeTemplate, struct {
-		Op                 string
-		TypesToStatusCodes map[string]int
-	}{
-		swagger.Capitalize(op.ID),
-		typeToCode,
-	})
-	if err != nil {
-		return "", err
-	}
-
 	singleInputOp, _ := swagger.SingleSchemaedBodyParameter(op)
 	handlerOp := handlerOp{
-		Op:                swagger.Capitalize(op.ID),
-		SuccessReturnType: !swagger.NoSuccessType(op),
-		HasParams:         len(op.Parameters) != 0,
-		SingleInputOp:     singleInputOp,
-		EmptyStatusCode:   emptyResponseCode,
+		Op:                 swagger.Capitalize(op.ID),
+		SuccessReturnType:  !swagger.NoSuccessType(op),
+		HasParams:          len(op.Parameters) != 0,
+		SingleInputOp:      singleInputOp,
+		EmptyStatusCode:    emptyResponseCode,
+		TypesToStatusCodes: typeToCode,
 	}
 	handlerCode, err := writeTemplate(handlerTemplate, handlerOp)
 	if err != nil {
@@ -310,7 +300,6 @@ func generateOperationHandler(op *spec.Operation) (string, error) {
 	}
 
 	var buf bytes.Buffer
-	buf.WriteString(statusCodes)
 	buf.WriteString(handlerCode)
 	buf.WriteString(newInputCode)
 
@@ -334,7 +323,17 @@ func writeTemplate(templateStr string, templateStruct interface{}) (string, erro
 	return tmpBuf.String(), nil
 }
 
-var statusCodeTemplate = `
+// handlerOp contains the template variables for the handlerTemplate
+type handlerOp struct {
+	Op                 string
+	SuccessReturnType  bool
+	HasParams          bool
+	SingleInputOp      bool
+	EmptyStatusCode    int
+	TypesToStatusCodes map[string]int
+}
+
+var handlerTemplate = `
 // statusCodeFor{{.Op}} returns the status code corresponding to the returned
 // object. It returns -1 if the type doesn't correspond to anything.
 func statusCodeFor{{.Op}}(obj interface{}) int {
@@ -352,18 +351,8 @@ func statusCodeFor{{.Op}}(obj interface{}) int {
 		return -1
 	}
 }
-`
 
-// handlerOp contains the template variables for the handlerTemplate
-type handlerOp struct {
-	Op                string
-	SuccessReturnType bool
-	HasParams         bool
-	SingleInputOp     bool
-	EmptyStatusCode   int
-}
-
-var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 {{if .HasParams}}
 	input, err := new{{.Op}}Input(r)
 	if err != nil {
