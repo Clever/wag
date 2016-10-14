@@ -306,11 +306,9 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 			statusCodes, err := writeTemplate(statusCodeTemplate, struct {
 				Op                 string
 				TypesToStatusCodes map[string]int
-				EmptyType          int
 			}{
 				swagger.Capitalize(op.ID),
 				typeToCode,
-				emptyResponseCode,
 			})
 			if err != nil {
 				return err
@@ -323,6 +321,7 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 				SuccessReturnType: !swagger.NoSuccessType(op),
 				HasParams:         len(op.Parameters) != 0,
 				SingleInputOp:     singleInputOp,
+				EmptyStatusCode:   emptyResponseCode,
 			}
 			handlerCode, err := writeTemplate(handlerTemplate, handlerOp)
 			if err != nil {
@@ -339,7 +338,8 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 	return g.WriteFile("server/handlers.go")
 }
 
-// TODO: Add a nice comment
+// writeTemplate takes in the template and the definition of its variables
+// and returns a filled-out template.
 func writeTemplate(templateStr string, templateStruct interface{}) (string, error) {
 
 	tmpl, err := template.New("test").Parse(templateStr)
@@ -366,14 +366,10 @@ func jsonMarshalNoError(i interface{}) string {
 }
 `
 
-// TODO: Add a nice comment explaining why this is internal for now...
-// Explain unknown error response
-// TODO: Should the models list go in the swagger file...
-var statusCodeTemplate = `func statusCodeFor{{.Op}}(obj interface{}) int {
-
-	if obj == nil {
-		return {{ .EmptyType }}
-	}
+var statusCodeTemplate = `
+// statusCodeFor{{.Op}} returns the status code corresponding to the returned
+// object. It returns -1 if the type doesn't correspond to anything.
+func statusCodeFor{{.Op}}(obj interface{}) int {
 
 	switch obj.(type) {
 	{{ range $type, $code := .TypesToStatusCodes }}
@@ -396,6 +392,7 @@ type handlerOp struct {
 	SuccessReturnType bool
 	HasParams         bool
 	SingleInputOp     bool
+	EmptyStatusCode   int
 }
 
 var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
@@ -449,7 +446,7 @@ var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w ht
 	w.WriteHeader(statusCodeFor{{.Op}}(resp))
 	w.Write(respBytes)
 {{else}}
-	w.WriteHeader(statusCodeFor{{.Op}}(nil))
+	w.WriteHeader({{.EmptyStatusCode}})
 	w.Write([]byte(""))
 {{end}}
 }
