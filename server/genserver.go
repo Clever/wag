@@ -108,7 +108,6 @@ func New(c Controller, addr string) *Server {
 `
 
 func generateRouter(packageName string, s spec.Swagger, paths *spec.Paths) error {
-	g := swagger.Generator{PackageName: packageName}
 
 	var template routerTemplate
 	template.Title = s.Info.Title
@@ -131,30 +130,63 @@ func generateRouter(packageName string, s spec.Swagger, paths *spec.Paths) error
 	if err != nil {
 		return err
 	}
-
+	g := swagger.Generator{PackageName: packageName}
 	g.Printf(routerCode)
-
 	return g.WriteFile("server/router.go")
 }
 
+type interfaceTemplate struct {
+	Comment    string
+	Definition string
+}
+
+type interfaceFileTemplate struct {
+	ImportStatements string
+	ServiceName      string
+	Interfaces       []interfaceTemplate
+}
+
+var interfaceTemplateStr = `
+package server
+
+{{.ImportStatements}}
+
+//go:generate $GOPATH/bin/mockgen -source=$GOFILE -destination=mock_controller.go -package=server
+
+// Controller defines the interface for the {{.ServiceName}} service.
+type Controller interface {
+
+	{{range $interface := .Interfaces}}
+		{{$interface.Comment}}
+		{{$interface.Definition}}
+	{{end}}
+}
+`
+
 func generateInterface(packageName string, serviceName string, paths *spec.Paths) error {
-	g := swagger.Generator{PackageName: packageName}
-	g.Printf("package server\n\n")
-	g.Printf(swagger.ImportStatements([]string{"context", packageName + "/models"}))
-	g.Printf("//go:generate $GOPATH/bin/mockgen -source=$GOFILE -destination=mock_controller.go -package=server\n\n")
-	g.Printf("// Controller defines the interface for the %s service.\n", serviceName)
-	g.Printf("type Controller interface {\n\n")
+
+	tmpl := interfaceFileTemplate{
+		ImportStatements: swagger.ImportStatements([]string{"context", packageName + "/models"}),
+		ServiceName:      serviceName,
+	}
 
 	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
 		path := paths.Paths[pathKey]
 		pathItemOps := swagger.PathItemOperations(path)
 		for _, method := range swagger.SortedOperationsKeys(pathItemOps) {
-			g.Printf("\t%s\n", swagger.InterfaceComment(method, pathKey, pathItemOps[method]))
-			g.Printf("\t%s\n\n", swagger.Interface(pathItemOps[method]))
+			tmpl.Interfaces = append(tmpl.Interfaces, interfaceTemplate{
+				Comment:    swagger.InterfaceComment(method, pathKey, pathItemOps[method]),
+				Definition: swagger.Interface(pathItemOps[method]),
+			})
 		}
 	}
-	g.Printf("}\n")
 
+	interfaceCode, err := writeTemplate(interfaceTemplateStr, tmpl)
+	if err != nil {
+		return err
+	}
+	g := swagger.Generator{PackageName: packageName}
+	g.Printf(interfaceCode)
 	return g.WriteFile("server/interface.go")
 }
 
