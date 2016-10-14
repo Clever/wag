@@ -194,134 +194,50 @@ func lowercase(input string) string {
 	return strings.ToLower(input[0:1]) + input[1:]
 }
 
-func printNewInput(g *swagger.Generator, op *spec.Operation) error {
-	capOpID := swagger.Capitalize(op.ID)
-	g.Printf("// new%sInput takes in an http.Request an returns the input struct.\n", capOpID)
-	singleSchemaedBodyParameter, opModel := swagger.SingleSchemaedBodyParameter(op)
-	if singleSchemaedBodyParameter {
-		g.Printf("func new%sInput(r *http.Request) (*models.%s, error) {\n",
-			capOpID, opModel)
-		g.Printf("\tvar input models.%s\n\n", opModel)
-	} else {
-		g.Printf("func new%sInput(r *http.Request) (*models.%sInput, error) {\n",
-			capOpID, capOpID)
-		g.Printf("\tvar input models.%sInput\n\n", capOpID)
-	}
-
-	g.Printf("\tvar err error\n")
-	g.Printf("\t_ = err\n\n")
-
-	for _, param := range op.Parameters {
-
-		camelParamName := swagger.StructParamName(param)
-		paramVarName := lowercase(camelParamName)
-
-		if param.In != "body" {
-			extractCode := ""
-			switch param.In {
-			case "query":
-				extractCode = fmt.Sprintf("r.URL.Query().Get(\"%s\")", param.Name)
-			case "path":
-				extractCode = fmt.Sprintf("mux.Vars(r)[\"%s\"]", param.Name)
-			case "header":
-				extractCode = fmt.Sprintf("r.Header.Get(\"%s\")", param.Name)
-			}
-			g.Printf("\t%sStr := %s\n", paramVarName, extractCode)
-
-			if param.Required {
-				g.Printf("\tif len(%sStr) == 0{\n", paramVarName)
-				g.Printf("\t\treturn nil, errors.New(\"Parameter must be specified\")\n")
-				g.Printf("\t}\n")
-			} else if param.Default != nil {
-				g.Printf("\tif len(%sStr) == 0 {\n", paramVarName)
-				g.Printf("\t\t// Use the default value\n")
-				g.Printf("\t\t%sStr = \"%s\"\n", paramVarName, swagger.DefaultAsString(param))
-				g.Printf("\t}\n")
-			}
-
-			g.Printf("\tif len(%sStr) != 0 {\n", paramVarName)
-
-			typeName, err := swagger.ParamToType(param, false)
-			if err != nil {
-				return err
-			}
-			typeCode, err := swagger.StringToTypeCode(fmt.Sprintf("%sStr", paramVarName), param)
-			if err != nil {
-				return err
-			}
-			g.Printf("\t\tvar %sTmp %s\n", paramVarName, typeName)
-			g.Printf("\t\t%sTmp, err = %s\n", paramVarName, typeCode)
-			g.Printf("\t\tif err != nil {\n")
-			g.Printf("\t\t\treturn nil, err\n")
-			g.Printf("\t\t}\n")
-
-			// TODO: Factor this out...
-			if param.Required || param.Type == "array" {
-				g.Printf("\t\tinput.%s = %sTmp\n\n", camelParamName, paramVarName)
-			} else {
-				g.Printf("\t\tinput.%s = &%sTmp\n\n", camelParamName, paramVarName)
-			}
-
-			g.Printf("\t}\n")
-
-		} else {
-			if param.Schema == nil {
-				return fmt.Errorf("Body parameters must have a schema defined")
-			}
-			typeName, err := swagger.TypeFromSchema(param.Schema, true)
-			if err != nil {
-				return err
-			}
-
-			g.Printf("\tdata, err := ioutil.ReadAll(r.Body)\n")
-
-			if param.Required {
-				g.Printf("\tif len(data) == 0 {\n")
-				g.Printf("\t\treturn nil, errors.New(\"Parameter must be specified\")\n")
-				g.Printf("\t}\n")
-			}
-
-			g.Printf("\tif len(data) > 0 {")
-
-			if singleSchemaedBodyParameter {
-				g.Printf("\t\tif err := json.NewDecoder(bytes.NewReader(data)).Decode(&input); err != nil {\n")
-			} else {
-				// Initialize the pointer in the object
-				g.Printf("\t\tinput.%s = &%s{}\n", camelParamName, typeName)
-				g.Printf("\t\tif err := json.NewDecoder(bytes.NewReader(data)).Decode(input.%s); err != nil {\n", camelParamName)
-			}
-			g.Printf("\t\t\treturn nil, err\n")
-			g.Printf("\t\t}\n")
-			g.Printf("\t}\n")
-
-		}
-	}
-	g.Printf("\n")
-
-	g.Printf("\treturn &input, nil\n")
-	g.Printf("}\n\n")
-
-	return nil
+type handlerFileTemplate struct {
+	ImportStatements string
+	// TODO: Think about possibly factoring this out...
+	BaseStringToTypeCode string
+	Handlers             []string
 }
 
+var handlerFileTemplateStr = `
+package server
+
+{{.ImportStatements}}
+
+var _ = strconv.ParseInt
+var _ = strfmt.Default
+var _ = swag.ConvertInt32
+var _ = errors.New
+var _ = mux.Vars
+var _ = bytes.Compare
+var _ = ioutil.ReadAll
+
+{{.BaseStringToTypeCode}}
+
+func jsonMarshalNoError(i interface{}) string {
+	bytes, err := json.Marshal(i)
+	if err != nil {
+		// This should never happen
+		return ""
+	}
+	return string(bytes)
+}
+
+{{ range $handler := .Handlers }}
+	{{ $handler }}
+{{end}}
+`
+
 func generateHandlers(packageName string, paths *spec.Paths) error {
-	g := swagger.Generator{PackageName: packageName}
 
-	g.Printf("package server\n\n")
-	g.Printf(swagger.ImportStatements([]string{"context", "github.com/gorilla/mux", "gopkg.in/Clever/kayvee-go.v5/logger",
-		"net/http", "strconv", "encoding/json", "strconv", packageName + "/models", "errors",
-		"github.com/go-openapi/strfmt", "github.com/go-openapi/swag", "io/ioutil", "bytes"}))
-
-	g.Printf("var _ = strconv.ParseInt\n")
-	g.Printf("var _ = strfmt.Default\n")
-	g.Printf("var _ = swag.ConvertInt32\n")
-	g.Printf("var _ = errors.New\n")
-	g.Printf("var _ = mux.Vars\n")
-	g.Printf("var _ = bytes.Compare\n")
-	g.Printf("var _ = ioutil.ReadAll\n\n")
-
-	g.Printf(swagger.BaseStringToTypeCode())
-	g.Printf(jsonMarshalString)
+	tmpl := handlerFileTemplate{
+		ImportStatements: swagger.ImportStatements([]string{"context", "github.com/gorilla/mux", "gopkg.in/Clever/kayvee-go.v5/logger",
+			"net/http", "strconv", "encoding/json", "strconv", packageName + "/models", "errors",
+			"github.com/go-openapi/strfmt", "github.com/go-openapi/swag", "io/ioutil", "bytes"}),
+		BaseStringToTypeCode: swagger.BaseStringToTypeCode(),
+	}
 
 	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
 		path := paths.Paths[pathKey]
@@ -329,49 +245,76 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 		for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
 			op := pathItemOps[opKey]
 
-			typeToCode := make(map[string]int)
-			emptyResponseCode := 200
-			for code, typeStr := range swagger.CodeToTypeMap(op) {
-				if typeStr != "" {
-					typeToCode[typeStr] = code
-				} else {
-					emptyResponseCode = code
-				}
-			}
+			// TODO: Fill this in...
 
-			statusCodes, err := writeTemplate(statusCodeTemplate, struct {
-				Op                 string
-				TypesToStatusCodes map[string]int
-			}{
-				swagger.Capitalize(op.ID),
-				typeToCode,
-			})
+			operationHandler, err := generateOperationHandler(op)
 			if err != nil {
 				return err
 			}
-			g.Printf(statusCodes)
-
-			singleInputOp, _ := swagger.SingleSchemaedBodyParameter(op)
-			handlerOp := handlerOp{
-				Op:                swagger.Capitalize(op.ID),
-				SuccessReturnType: !swagger.NoSuccessType(op),
-				HasParams:         len(op.Parameters) != 0,
-				SingleInputOp:     singleInputOp,
-				EmptyStatusCode:   emptyResponseCode,
-			}
-			handlerCode, err := writeTemplate(handlerTemplate, handlerOp)
-			if err != nil {
-				return err
-			}
-			g.Printf(handlerCode)
-
-			if err := printNewInput(&g, op); err != nil {
-				return err
-			}
+			tmpl.Handlers = append(tmpl.Handlers, operationHandler)
 		}
 	}
 
+	handlerCode, err := writeTemplate(handlerFileTemplateStr, tmpl)
+	if err != nil {
+		return err
+	}
+	g := swagger.Generator{PackageName: packageName}
+	g.Printf(handlerCode)
 	return g.WriteFile("server/handlers.go")
+}
+
+var jsonMarshalString = `
+
+`
+
+// generateOperationHandler generates the handler code for a single handler
+func generateOperationHandler(op *spec.Operation) (string, error) {
+	typeToCode := make(map[string]int)
+	emptyResponseCode := 200
+	for code, typeStr := range swagger.CodeToTypeMap(op) {
+		if typeStr != "" {
+			typeToCode[typeStr] = code
+		} else {
+			emptyResponseCode = code
+		}
+	}
+
+	statusCodes, err := writeTemplate(statusCodeTemplate, struct {
+		Op                 string
+		TypesToStatusCodes map[string]int
+	}{
+		swagger.Capitalize(op.ID),
+		typeToCode,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	singleInputOp, _ := swagger.SingleSchemaedBodyParameter(op)
+	handlerOp := handlerOp{
+		Op:                swagger.Capitalize(op.ID),
+		SuccessReturnType: !swagger.NoSuccessType(op),
+		HasParams:         len(op.Parameters) != 0,
+		SingleInputOp:     singleInputOp,
+		EmptyStatusCode:   emptyResponseCode,
+	}
+	handlerCode, err := writeTemplate(handlerTemplate, handlerOp)
+	if err != nil {
+		return "", err
+	}
+
+	newInputCode, err := generateNewInput(op)
+	if err != nil {
+		return "", err
+	}
+
+	var buf bytes.Buffer
+	buf.WriteString(statusCodes)
+	buf.WriteString(handlerCode)
+	buf.WriteString(newInputCode)
+
+	return buf.String(), nil
 }
 
 // writeTemplate takes in the template and the definition of its variables
@@ -390,17 +333,6 @@ func writeTemplate(templateStr string, templateStruct interface{}) (string, erro
 	}
 	return tmpBuf.String(), nil
 }
-
-var jsonMarshalString = `
-func jsonMarshalNoError(i interface{}) string {
-	bytes, err := json.Marshal(i)
-	if err != nil {
-		// This should never happen
-		return ""
-	}
-	return string(bytes)
-}
-`
 
 var statusCodeTemplate = `
 // statusCodeFor{{.Op}} returns the status code corresponding to the returned
@@ -487,3 +419,115 @@ var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w ht
 {{end}}
 }
 `
+
+func generateNewInput(op *spec.Operation) (string, error) {
+	var buf bytes.Buffer
+	capOpID := swagger.Capitalize(op.ID)
+
+	buf.WriteString(fmt.Sprintf("// new%sInput takes in an http.Request an returns the input struct.\n", capOpID))
+	singleSchemaedBodyParameter, opModel := swagger.SingleSchemaedBodyParameter(op)
+	if singleSchemaedBodyParameter {
+		buf.WriteString(fmt.Sprintf("func new%sInput(r *http.Request) (*models.%s, error) {\n",
+			capOpID, opModel))
+		buf.WriteString(fmt.Sprintf("\tvar input models.%s\n\n", opModel))
+	} else {
+		buf.WriteString(fmt.Sprintf("func new%sInput(r *http.Request) (*models.%sInput, error) {\n",
+			capOpID, capOpID))
+		buf.WriteString(fmt.Sprintf("\tvar input models.%sInput\n\n", capOpID))
+	}
+
+	buf.WriteString(fmt.Sprintf("\tvar err error\n"))
+	buf.WriteString(fmt.Sprintf("\t_ = err\n\n"))
+
+	for _, param := range op.Parameters {
+
+		camelParamName := swagger.StructParamName(param)
+		paramVarName := lowercase(camelParamName)
+
+		if param.In != "body" {
+			extractCode := ""
+			switch param.In {
+			case "query":
+				extractCode = fmt.Sprintf("r.URL.Query().Get(\"%s\")", param.Name)
+			case "path":
+				extractCode = fmt.Sprintf("mux.Vars(r)[\"%s\"]", param.Name)
+			case "header":
+				extractCode = fmt.Sprintf("r.Header.Get(\"%s\")", param.Name)
+			}
+			buf.WriteString(fmt.Sprintf("\t%sStr := %s\n", paramVarName, extractCode))
+
+			if param.Required {
+				buf.WriteString(fmt.Sprintf("\tif len(%sStr) == 0{\n", paramVarName))
+				buf.WriteString(fmt.Sprintf("\t\treturn nil, errors.New(\"Parameter must be specified\")\n"))
+				buf.WriteString(fmt.Sprintf("\t}\n"))
+			} else if param.Default != nil {
+				buf.WriteString(fmt.Sprintf("\tif len(%sStr) == 0 {\n", paramVarName))
+				buf.WriteString(fmt.Sprintf("\t\t// Use the default value\n"))
+				buf.WriteString(fmt.Sprintf("\t\t%sStr = \"%s\"\n", paramVarName, swagger.DefaultAsString(param)))
+				buf.WriteString(fmt.Sprintf("\t}\n"))
+			}
+
+			buf.WriteString(fmt.Sprintf("\tif len(%sStr) != 0 {\n", paramVarName))
+
+			typeName, err := swagger.ParamToType(param, false)
+			if err != nil {
+				return "", err
+			}
+			typeCode, err := swagger.StringToTypeCode(fmt.Sprintf("%sStr", paramVarName), param)
+			if err != nil {
+				return "", err
+			}
+			buf.WriteString(fmt.Sprintf("\t\tvar %sTmp %s\n", paramVarName, typeName))
+			buf.WriteString(fmt.Sprintf("\t\t%sTmp, err = %s\n", paramVarName, typeCode))
+			buf.WriteString(fmt.Sprintf("\t\tif err != nil {\n"))
+			buf.WriteString(fmt.Sprintf("\t\t\treturn nil, err\n"))
+			buf.WriteString(fmt.Sprintf("\t\t}\n"))
+
+			// TODO: Factor this out...
+			if param.Required || param.Type == "array" {
+				buf.WriteString(fmt.Sprintf("\t\tinput.%s = %sTmp\n\n", camelParamName, paramVarName))
+			} else {
+				buf.WriteString(fmt.Sprintf("\t\tinput.%s = &%sTmp\n\n", camelParamName, paramVarName))
+			}
+
+			buf.WriteString(fmt.Sprintf("\t}\n"))
+
+		} else {
+			if param.Schema == nil {
+				return "", fmt.Errorf("Body parameters must have a schema defined")
+			}
+			typeName, err := swagger.TypeFromSchema(param.Schema, true)
+			if err != nil {
+				return "", err
+			}
+
+			buf.WriteString(fmt.Sprintf("\tdata, err := ioutil.ReadAll(r.Body)\n"))
+
+			if param.Required {
+				buf.WriteString(fmt.Sprintf("\tif len(data) == 0 {\n"))
+				buf.WriteString(fmt.Sprintf("\t\treturn nil, errors.New(\"Parameter must be specified\")\n"))
+				buf.WriteString(fmt.Sprintf("\t}\n"))
+			}
+
+			buf.WriteString(fmt.Sprintf("\tif len(data) > 0 {"))
+
+			if singleSchemaedBodyParameter {
+				buf.WriteString(fmt.Sprintf("\t\tif err := json.NewDecoder(bytes.NewReader(data)).Decode(&input); err != nil {\n"))
+			} else {
+				// Initialize the pointer in the object
+				buf.WriteString(fmt.Sprintf("\t\tinput.%s = &%s{}\n", camelParamName, typeName))
+				buf.WriteString(fmt.Sprintf("\t\tif err := json.NewDecoder(bytes.NewReader(data)).Decode(input.%s); err != nil {\n", camelParamName))
+			}
+			buf.WriteString(fmt.Sprintf("\t\t\treturn nil, err\n"))
+			buf.WriteString(fmt.Sprintf("\t\t}\n"))
+			buf.WriteString(fmt.Sprintf("\t}\n"))
+
+		}
+	}
+	buf.WriteString(fmt.Sprintf("\n"))
+
+	buf.WriteString(fmt.Sprintf("\treturn &input, nil\n"))
+	buf.WriteString(fmt.Sprintf("}\n\n"))
+
+	return buf.String(), nil
+}
