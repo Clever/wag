@@ -8,6 +8,7 @@ import (
 	"github.com/go-openapi/spec"
 
 	"github.com/Clever/wag/swagger"
+	"github.com/Clever/wag/templates"
 )
 
 // Generate generates a client
@@ -21,10 +22,16 @@ func Generate(packageName string, s spec.Swagger) error {
 	return nil
 }
 
-func generateClient(packageName string, s spec.Swagger) error {
-	g := swagger.Generator{PackageName: packageName}
+type clientCodeTemplate struct {
+	PackageName           string
+	ServiceName           string
+	FormattedServiceName  string
+	BaseParamToStringCode string
+	Methods               []string
+}
 
-	g.Printf(`package client
+var clientCodeTemplateStr = `
+package client
 
 import (
 		"context"
@@ -37,7 +44,7 @@ import (
 		"strconv"
 		"time"
 
-		"%s/models"
+		"{{.PackageName}}/models"
 
 		discovery "github.com/Clever/discovery-go"
 )
@@ -47,7 +54,7 @@ var _ = strings.Replace
 var _ = strconv.FormatInt
 var _ = bytes.Compare
 
-// WagClient is used to make requests to the %s service.
+// WagClient is used to make requests to the {{.ServiceName}} service.
 type WagClient struct {
 	basePath    string
 	requestDoer doer
@@ -71,9 +78,9 @@ func New(basePath string) *WagClient {
 }
 
 // NewFromDiscovery creates a client from the discovery environment variables. This method requires
-// the three env vars: SERVICE_%s_HTTP_(HOST/PORT/PROTO) to be set. Otherwise it returns an error.
+// the three env vars: SERVICE_{{.FormattedServiceName}}_HTTP_(HOST/PORT/PROTO) to be set. Otherwise it returns an error.
 func NewFromDiscovery() (*WagClient, error) {
-	url, err := discovery.URL("%s", "http")
+	url, err := discovery.URL("{{.ServiceName}}", "http")
 	if err != nil {
 		return nil, err
 	}
@@ -94,22 +101,39 @@ func (c *WagClient) WithTimeout(timeout time.Duration) *WagClient {
 	return c
 }
 
-`, packageName,
-		s.Info.InfoProps.Title,
-		strings.ToUpper(strings.Replace(s.Info.InfoProps.Title, "-", "_", -1)),
-		s.Info.InfoProps.Title)
+{{.BaseParamToStringCode}}
 
-	g.Printf(swagger.BaseParamToStringCode())
+{{range $methodCode := .Methods}}
+	{{$methodCode}}
+{{end}}
+
+`
+
+func generateClient(packageName string, s spec.Swagger) error {
+
+	codeTemplate := clientCodeTemplate{
+		PackageName:           packageName,
+		ServiceName:           s.Info.InfoProps.Title,
+		FormattedServiceName:  strings.ToUpper(strings.Replace(s.Info.InfoProps.Title, "-", "_", -1)),
+		BaseParamToStringCode: swagger.BaseParamToStringCode(),
+	}
 
 	for _, path := range swagger.SortedPathItemKeys(s.Paths.Paths) {
 		pathItem := s.Paths.Paths[path]
 		pathItemOps := swagger.PathItemOperations(pathItem)
 		for _, method := range swagger.SortedOperationsKeys(pathItemOps) {
 			op := pathItemOps[method]
-			g.Printf(methodCode(op, s.BasePath, method, path))
+			codeTemplate.Methods = append(codeTemplate.Methods, methodCode(op, s.BasePath, method, path))
 		}
 	}
 
+	clientCode, err := templates.WriteTemplate(clientCodeTemplateStr, codeTemplate)
+	if err != nil {
+		return err
+	}
+
+	g := swagger.Generator{PackageName: packageName}
+	g.Printf(clientCode)
 	return g.WriteFile("client/client.go")
 }
 

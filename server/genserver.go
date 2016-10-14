@@ -8,8 +8,7 @@ import (
 	"github.com/go-openapi/spec"
 
 	"github.com/Clever/wag/swagger"
-
-	"text/template"
+	"github.com/Clever/wag/templates"
 )
 
 // Generate server package for a swagger spec.
@@ -126,7 +125,7 @@ func generateRouter(packageName string, s spec.Swagger, paths *spec.Paths) error
 		}
 	}
 
-	routerCode, err := writeTemplate(routerTemplateStr, template)
+	routerCode, err := templates.WriteTemplate(routerTemplateStr, template)
 	if err != nil {
 		return err
 	}
@@ -181,7 +180,7 @@ func generateInterface(packageName string, serviceName string, paths *spec.Paths
 		}
 	}
 
-	interfaceCode, err := writeTemplate(interfaceTemplateStr, tmpl)
+	interfaceCode, err := templates.WriteTemplate(interfaceTemplateStr, tmpl)
 	if err != nil {
 		return err
 	}
@@ -255,7 +254,7 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 		}
 	}
 
-	handlerCode, err := writeTemplate(handlerFileTemplateStr, tmpl)
+	handlerCode, err := templates.WriteTemplate(handlerFileTemplateStr, tmpl)
 	if err != nil {
 		return err
 	}
@@ -289,7 +288,7 @@ func generateOperationHandler(op *spec.Operation) (string, error) {
 		EmptyStatusCode:    emptyResponseCode,
 		TypesToStatusCodes: typeToCode,
 	}
-	handlerCode, err := writeTemplate(handlerTemplate, handlerOp)
+	handlerCode, err := templates.WriteTemplate(handlerTemplate, handlerOp)
 	if err != nil {
 		return "", err
 	}
@@ -304,23 +303,6 @@ func generateOperationHandler(op *spec.Operation) (string, error) {
 	buf.WriteString(newInputCode)
 
 	return buf.String(), nil
-}
-
-// writeTemplate takes in the template and the definition of its variables
-// and returns a filled-out template.
-func writeTemplate(templateStr string, templateStruct interface{}) (string, error) {
-
-	tmpl, err := template.New("test").Parse(templateStr)
-	if err != nil {
-		return "", err
-	}
-
-	var tmpBuf bytes.Buffer
-	err = tmpl.Execute(&tmpBuf, templateStruct)
-	if err != nil {
-		return "", err
-	}
-	return tmpBuf.String(), nil
 }
 
 // handlerOp contains the template variables for the handlerTemplate
