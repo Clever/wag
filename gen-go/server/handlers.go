@@ -65,11 +65,10 @@ func jsonMarshalNoError(i interface{}) string {
 	}
 	return string(bytes)
 }
-func statusCodeForGetBooks(obj interface{}) int {
 
-	if obj == nil {
-		return 200
-	}
+// statusCodeForGetBooks returns the status code corresponding to the returned
+// object. It returns -1 if the type doesn't correspond to anything.
+func statusCodeForGetBooks(obj interface{}) int {
 
 	switch obj.(type) {
 
@@ -243,11 +242,9 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 	return &input, nil
 }
 
+// statusCodeForGetBookByID returns the status code corresponding to the returned
+// object. It returns -1 if the type doesn't correspond to anything.
 func statusCodeForGetBookByID(obj interface{}) int {
-
-	if obj == nil {
-		return 200
-	}
 
 	switch obj.(type) {
 
@@ -367,11 +364,9 @@ func newGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 	return &input, nil
 }
 
+// statusCodeForCreateBook returns the status code corresponding to the returned
+// object. It returns -1 if the type doesn't correspond to anything.
 func statusCodeForCreateBook(obj interface{}) int {
-
-	if obj == nil {
-		return 200
-	}
 
 	switch obj.(type) {
 
@@ -445,11 +440,9 @@ func newCreateBookInput(r *http.Request) (*models.Book, error) {
 	return &input, nil
 }
 
+// statusCodeForGetBookByID2 returns the status code corresponding to the returned
+// object. It returns -1 if the type doesn't correspond to anything.
 func statusCodeForGetBookByID2(obj interface{}) int {
-
-	if obj == nil {
-		return 200
-	}
 
 	switch obj.(type) {
 
@@ -533,11 +526,9 @@ func newGetBookByID2Input(r *http.Request) (*models.GetBookByID2Input, error) {
 	return &input, nil
 }
 
+// statusCodeForHealthCheck returns the status code corresponding to the returned
+// object. It returns -1 if the type doesn't correspond to anything.
 func statusCodeForHealthCheck(obj interface{}) int {
-
-	if obj == nil {
-		return 200
-	}
 
 	switch obj.(type) {
 
@@ -564,7 +555,7 @@ func (h handler) HealthCheckHandler(ctx context.Context, w http.ResponseWriter, 
 		return
 	}
 
-	w.WriteHeader(statusCodeForHealthCheck(nil))
+	w.WriteHeader(200)
 	w.Write([]byte(""))
 
 }

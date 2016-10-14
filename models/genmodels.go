@@ -266,7 +266,6 @@ func generateErrorTypes(capOpID string, responses map[int]spec.Response) (string
 }
 
 func generateType(capOpID string, statusCode int, response spec.Response) (string, error) {
-	// outputName := swagger.TypeFromStatusCode(op, statusCode)
 	outputName := fmt.Sprintf("%s%dOutput", capOpID, statusCode)
 	typeName, err := swagger.TypeFromSchema(response.Schema, false)
 	if err != nil {

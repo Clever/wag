@@ -2,23 +2,9 @@ package swagger
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/go-openapi/spec"
 )
-
-// SingleSchemaedBodyParameter returns true if the operation has a single,
-// schema'd body input. It also returns the name of the model (without "models.").
-func SingleSchemaedBodyParameter(op *spec.Operation) (bool, string) {
-	if len(op.Parameters) == 1 && op.Parameters[0].ParamProps.Schema != nil {
-		typ, err := TypeFromSchema(op.Parameters[0].ParamProps.Schema, false)
-		if err != nil {
-			panic(err)
-		}
-		return true, typ
-	}
-	return false, ""
-}
 
 // Interface returns the interface for an operation
 func Interface(op *spec.Operation) string {
@@ -60,13 +46,13 @@ func InterfaceComment(method, path string, op *spec.Operation) string {
 	return comment
 }
 
-// OutputType returns the output type for a given status code of an operation
-// TODO: Add explanation of second return argument
+// OutputType returns the output type for a given status code of an operation and whether it
+// is a pointer in the interface.
 func OutputType(op *spec.Operation, statusCode int) (string, bool) {
 	if NoSuccessType(op) {
 		return "", false
 	}
-	successCodes := SuccessStatusCodes(op)
+	successCodes := successStatusCodes(op)
 	if len(successCodes) == 1 && statusCode < 400 {
 		singleSchema := op.Responses.StatusCodeResponses[successCodes[0]].Schema
 		var err error
@@ -76,28 +62,17 @@ func OutputType(op *spec.Operation, statusCode int) (string, bool) {
 		}
 		return successType, singleSchema != nil && singleSchema.Ref.String() != ""
 	}
-	// Not sure I like the -1 magic number...
+	// This magic number is only used internally in this file. I will clean it up soon.
 	if statusCode == -1 {
 		return fmt.Sprintf("models.%sOutput", Capitalize(op.ID)), false
 	}
 	return fmt.Sprintf("models.%s%dOutput", Capitalize(op.ID), statusCode), false
 }
 
-// SuccessStatusCodes returns a slice of all the success status codes for an operation
-func SuccessStatusCodes(op *spec.Operation) []int {
-	var successCodes []int
-	for statusCode := range op.Responses.StatusCodeResponses {
-		if statusCode < 400 {
-			successCodes = append(successCodes, statusCode)
-		}
-	}
-	return successCodes
-}
-
 // NoSuccessType returns true if the operation has no-success response type. This includes
 // either no 200-399 response code or a 200-399 response code without a schema.
 func NoSuccessType(op *spec.Operation) bool {
-	successCodes := SuccessStatusCodes(op)
+	successCodes := successStatusCodes(op)
 	if len(successCodes) > 1 {
 		return false
 	}
@@ -120,43 +95,26 @@ func CodeToTypeMap(op *spec.Operation) map[int]string {
 	return resp
 }
 
-// TypeFromSchema returns the type of a Swagger schema as a string. If includeModels is true
-// then it returns models.TYPE
-func TypeFromSchema(schema *spec.Schema, includeModels bool) (string, error) {
-	// We support three types of schemas
-	// 1. An empty schema, which we represent by the empty struct
-	// 2. A schema with one element, the $ref key
-	// 3. A schema with two elements. One a type with value 'array' and another items field
-	// referencing the $ref
-	if schema == nil {
-		return "struct{}", nil
-	} else if schema.Ref.String() != "" {
-		ref := schema.Ref.String()
-		if !strings.HasPrefix(ref, "#/definitions/") {
-			return "", fmt.Errorf("schema.$ref has undefined reference type. Must start with #/definitions")
+// successStatusCodes returns a slice of all the success status codes for an operation
+func successStatusCodes(op *spec.Operation) []int {
+	var successCodes []int
+	for statusCode := range op.Responses.StatusCodeResponses {
+		if statusCode < 400 {
+			successCodes = append(successCodes, statusCode)
 		}
-		def := ref[len("#/definitions/"):]
-		if includeModels {
-			def = "models." + def
-		}
-		return def, nil
-	} else {
-		schemaType := schema.Type
-		if len(schemaType) != 1 || schemaType[0] != "array" {
-			return "", fmt.Errorf("Two element schemas must have a 'type' field with the value 'array'")
-		}
-		items := schema.Items
-		if items == nil || items.Schema == nil {
-			return "", fmt.Errorf("Two element schemas must have a '$ref' field in the 'items' descriptions")
-		}
-		ref := items.Schema.Ref.String()
-		if !strings.HasPrefix(ref, "#/definitions/") {
-			return "", fmt.Errorf("schema.$ref has undefined reference type. Must start with #/definitions")
-		}
-		def := ref[len("#/definitions/"):]
-		if includeModels {
-			def = "models." + def
-		}
-		return "[]" + def, nil
 	}
+	return successCodes
+}
+
+// SingleSchemaedBodyParameter returns true if the operation has a single,
+// schema'd body input. It also returns the name of the model (without "models.").
+func SingleSchemaedBodyParameter(op *spec.Operation) (bool, string) {
+	if len(op.Parameters) == 1 && op.Parameters[0].ParamProps.Schema != nil {
+		typ, err := TypeFromSchema(op.Parameters[0].ParamProps.Schema, false)
+		if err != nil {
+			panic(err)
+		}
+		return true, typ
+	}
+	return false, ""
 }
