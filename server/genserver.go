@@ -293,12 +293,24 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 		for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
 			op := pathItemOps[opKey]
 
+			typeToCode := make(map[string]int)
+			emptyResponseCode := 200
+			for code, typeStr := range swagger.CodeToTypeMap(op) {
+				if typeStr != "" {
+					typeToCode[typeStr] = code
+				} else {
+					emptyResponseCode = code
+				}
+			}
+
 			statusCodes, err := writeTemplate(statusCodeTemplate, struct {
 				Op                 string
 				TypesToStatusCodes map[string]int
+				EmptyType          int
 			}{
 				swagger.Capitalize(op.ID),
-				swagger.TypeToStatusCodeMap(op),
+				typeToCode,
+				emptyResponseCode,
 			})
 			if err != nil {
 				return err
@@ -359,7 +371,11 @@ func jsonMarshalNoError(i interface{}) string {
 // TODO: Should the models list go in the swagger file...
 var statusCodeTemplate = `func statusCodeFor{{.Op}}(obj interface{}) int {
 
-	switch t := obj.(type) {
+	if obj == nil {
+		return {{ .EmptyType }}
+	}
+
+	switch obj.(type) {
 	{{ range $type, $code := .TypesToStatusCodes }}
    	case {{$type}}:
    		return {{$code}}
@@ -414,7 +430,7 @@ var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w ht
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		statusCode := statusCodeFor{{.Op}}(err)
 		if statusCode != -1 {
-			http.Error(w, respErr, statusCode)
+			http.Error(w, err.Error(), statusCode)
 		} else {
 			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		}
@@ -433,8 +449,7 @@ var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w ht
 	w.WriteHeader(statusCodeFor{{.Op}}(resp))
 	w.Write(respBytes)
 {{else}}
-	// TODO: This isn't quite right...
-	w.WriteHeader(statusCodeFor{{.Op}}(resp))
+	w.WriteHeader(statusCodeFor{{.Op}}(nil))
 	w.Write([]byte(""))
 {{end}}
 }
