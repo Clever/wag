@@ -37,7 +37,7 @@ import (
 		"strconv"
 		"time"
 
-		"%s/models"
+		"%[1]s/models"
 
 		discovery "github.com/Clever/discovery-go"
 )
@@ -47,7 +47,7 @@ var _ = strings.Replace
 var _ = strconv.FormatInt
 var _ = bytes.Compare
 
-// WagClient is used to make requests to the %s service.
+// WagClient is used to make requests to the %[2]s service.
 type WagClient struct {
 	basePath    string
 	requestDoer doer
@@ -71,11 +71,14 @@ func New(basePath string) *WagClient {
 }
 
 // NewFromDiscovery creates a client from the discovery environment variables. This method requires
-// the three env vars: SERVICE_%s_HTTP_(HOST/PORT/PROTO) to be set. Otherwise it returns an error.
+// the three env vars: SERVICE_%[3]s_HTTP_(HOST/PORT/PROTO) to be set. Otherwise it returns an error.
 func NewFromDiscovery() (*WagClient, error) {
-	url, err := discovery.URL("%s", "http")
+	url, err := discovery.URL("%[2]s", "default")
 	if err != nil {
-		return nil, err
+		url, err = discovery.URL("%[2]s", "http") // Added fallback to maintain reverse compatibility
+		if err != nil {
+			return nil, err
+		}
 	}
 	return New(url), nil
 }
@@ -96,8 +99,7 @@ func (c *WagClient) WithTimeout(timeout time.Duration) *WagClient {
 
 `, packageName,
 		s.Info.InfoProps.Title,
-		strings.ToUpper(strings.Replace(s.Info.InfoProps.Title, "-", "_", -1)),
-		s.Info.InfoProps.Title)
+		strings.ToUpper(strings.Replace(s.Info.InfoProps.Title, "-", "_", -1)))
 
 	g.Printf(swagger.BaseParamToStringCode())
 
