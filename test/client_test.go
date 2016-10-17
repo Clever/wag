@@ -109,4 +109,18 @@ func TestNewWithDiscovery(t *testing.T) {
 	_, err = c.GetBooks(context.Background(), &models.GetBooksInput{})
 	assert.NoError(t, err)
 	assert.Equal(t, 2, controller.getCount)
+
+	// Testing fallback
+	os.Unsetenv("SERVICE_SWAGGER_TEST_DEFAULT_PROTO")
+	os.Unsetenv("SERVICE_SWAGGER_TEST_DEFAULT_PORT")
+	os.Unsetenv("SERVICE_SWAGGER_TEST_DEFAULT_HOST")
+	os.Setenv("SERVICE_SWAGGER_TEST_HTTP_PROTO", "http")
+	os.Setenv("SERVICE_SWAGGER_TEST_HTTP_PORT", splitURL[2])
+	os.Setenv("SERVICE_SWAGGER_TEST_HTTP_HOST", splitURL[1][2:])
+
+	c, err = client.NewFromDiscovery()
+	assert.NoError(t, err)
+	_, err = c.GetBooks(context.Background(), &models.GetBooksInput{})
+	assert.NoError(t, err)
+	assert.Equal(t, 3, controller.getCount)
 }

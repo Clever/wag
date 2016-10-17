@@ -48,7 +48,10 @@ func New(basePath string) *WagClient {
 func NewFromDiscovery() (*WagClient, error) {
 	url, err := discovery.URL("swagger-test", "default")
 	if err != nil {
-		return nil, err
+		url, err = discovery.URL("swagger-test", "http") // Added fallback to maintain reverse compatibility
+		if err != nil {
+			return nil, err
+		}
 	}
 	return New(url), nil
 }
