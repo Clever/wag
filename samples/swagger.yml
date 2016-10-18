@@ -187,6 +187,9 @@ definitions:
       author:
         type: string
         format: mongo-id
+      other:
+        additionalProperties:
+          type: string
 
   Error:
     type: object
