@@ -25,6 +25,11 @@ func (c *ControllerImpl) GetBooks(ctx context.Context, input *models.GetBooksInp
 
 // GetBookByID returns a book by ID.
 func (c *ControllerImpl) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
+	if input.BookID == 400 {
+		// TODO: Don't force this...
+		return nil, models.DefaultBadRequest{Msg: "{\"msg\" : \"400 means failure\"}"}
+	}
+
 	book, ok := c.books[input.BookID]
 	if !ok {
 		return nil, models.GetBookByID404Output{}

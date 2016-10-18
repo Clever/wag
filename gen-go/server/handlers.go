@@ -65,6 +65,25 @@ func jsonMarshalNoError(i interface{}) string {
 	}
 	return string(bytes)
 }
+
+// statusCodeForGetBooks returns the status code corresponding to the returned
+// object. It returns -1 if the type doesn't correspond to anything.
+func statusCodeForGetBooks(obj interface{}) int {
+
+	switch obj.(type) {
+
+	case []models.Book:
+		return 200
+
+	case models.DefaultBadRequest:
+		return 400
+	case models.DefaultInternalError:
+		return 500
+	default:
+		return -1
+	}
+}
+
 func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	input, err := newGetBooksInput(r)
@@ -84,12 +103,13 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 	resp, err := h.GetBooks(ctx, input)
 
 	if err != nil {
-		if respErr, ok := err.(models.GetBooksError); ok {
-			http.Error(w, respErr.Error(), respErr.GetBooksStatusCode())
-			return
-		}
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		statusCode := statusCodeForGetBooks(err)
+		if statusCode != -1 {
+			http.Error(w, err.Error(), statusCode)
+		} else {
+			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		}
 		return
 	}
 
@@ -101,7 +121,7 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
+	w.WriteHeader(statusCodeForGetBooks(resp))
 	w.Write(respBytes)
 
 }
@@ -223,6 +243,45 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 	return &input, nil
 }
 
+// statusCodeForGetBookByID returns the status code corresponding to the returned
+// object. It returns -1 if the type doesn't correspond to anything.
+func statusCodeForGetBookByID(obj interface{}) int {
+
+	switch obj.(type) {
+
+	case *models.GetBookByID200Output:
+		return 200
+
+	case *models.GetBookByID204Output:
+		return 204
+
+	case *models.GetBookByID401Output:
+		return 401
+
+	case *models.GetBookByID404Output:
+		return 404
+
+	case models.GetBookByID200Output:
+		return 200
+
+	case models.GetBookByID204Output:
+		return 204
+
+	case models.GetBookByID401Output:
+		return 401
+
+	case models.GetBookByID404Output:
+		return 404
+
+	case models.DefaultBadRequest:
+		return 400
+	case models.DefaultInternalError:
+		return 500
+	default:
+		return -1
+	}
+}
+
 func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	input, err := newGetBookByIDInput(r)
@@ -242,12 +301,13 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 	resp, err := h.GetBookByID(ctx, input)
 
 	if err != nil {
-		if respErr, ok := err.(models.GetBookByIDError); ok {
-			http.Error(w, respErr.Error(), respErr.GetBookByIDStatusCode())
-			return
-		}
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		statusCode := statusCodeForGetBookByID(err)
+		if statusCode != -1 {
+			http.Error(w, err.Error(), statusCode)
+		} else {
+			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		}
 		return
 	}
 
@@ -259,7 +319,7 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(resp.GetBookByIDStatusCode())
+	w.WriteHeader(statusCodeForGetBookByID(resp))
 	w.Write(respBytes)
 
 }
@@ -318,6 +378,27 @@ func newGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 	return &input, nil
 }
 
+// statusCodeForCreateBook returns the status code corresponding to the returned
+// object. It returns -1 if the type doesn't correspond to anything.
+func statusCodeForCreateBook(obj interface{}) int {
+
+	switch obj.(type) {
+
+	case *models.Book:
+		return 200
+
+	case models.Book:
+		return 200
+
+	case models.DefaultBadRequest:
+		return 400
+	case models.DefaultInternalError:
+		return 500
+	default:
+		return -1
+	}
+}
+
 func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	input, err := newCreateBookInput(r)
@@ -337,12 +418,13 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 	resp, err := h.CreateBook(ctx, input)
 
 	if err != nil {
-		if respErr, ok := err.(models.CreateBookError); ok {
-			http.Error(w, respErr.Error(), respErr.CreateBookStatusCode())
-			return
-		}
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		statusCode := statusCodeForCreateBook(err)
+		if statusCode != -1 {
+			http.Error(w, err.Error(), statusCode)
+		} else {
+			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		}
 		return
 	}
 
@@ -354,7 +436,7 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
+	w.WriteHeader(statusCodeForCreateBook(resp))
 	w.Write(respBytes)
 
 }
@@ -376,6 +458,33 @@ func newCreateBookInput(r *http.Request) (*models.Book, error) {
 	return &input, nil
 }
 
+// statusCodeForGetBookByID2 returns the status code corresponding to the returned
+// object. It returns -1 if the type doesn't correspond to anything.
+func statusCodeForGetBookByID2(obj interface{}) int {
+
+	switch obj.(type) {
+
+	case *models.Book:
+		return 200
+
+	case *models.GetBookByID2404Output:
+		return 404
+
+	case models.Book:
+		return 200
+
+	case models.GetBookByID2404Output:
+		return 404
+
+	case models.DefaultBadRequest:
+		return 400
+	case models.DefaultInternalError:
+		return 500
+	default:
+		return -1
+	}
+}
+
 func (h handler) GetBookByID2Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	input, err := newGetBookByID2Input(r)
@@ -395,12 +504,13 @@ func (h handler) GetBookByID2Handler(ctx context.Context, w http.ResponseWriter,
 	resp, err := h.GetBookByID2(ctx, input)
 
 	if err != nil {
-		if respErr, ok := err.(models.GetBookByID2Error); ok {
-			http.Error(w, respErr.Error(), respErr.GetBookByID2StatusCode())
-			return
-		}
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		statusCode := statusCodeForGetBookByID2(err)
+		if statusCode != -1 {
+			http.Error(w, err.Error(), statusCode)
+		} else {
+			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		}
 		return
 	}
 
@@ -412,7 +522,7 @@ func (h handler) GetBookByID2Handler(ctx context.Context, w http.ResponseWriter,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
+	w.WriteHeader(statusCodeForGetBookByID2(resp))
 	w.Write(respBytes)
 
 }
@@ -441,17 +551,33 @@ func newGetBookByID2Input(r *http.Request) (*models.GetBookByID2Input, error) {
 	return &input, nil
 }
 
+// statusCodeForHealthCheck returns the status code corresponding to the returned
+// object. It returns -1 if the type doesn't correspond to anything.
+func statusCodeForHealthCheck(obj interface{}) int {
+
+	switch obj.(type) {
+
+	case models.DefaultBadRequest:
+		return 400
+	case models.DefaultInternalError:
+		return 500
+	default:
+		return -1
+	}
+}
+
 func (h handler) HealthCheckHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	err := h.HealthCheck(ctx)
 
 	if err != nil {
-		if respErr, ok := err.(models.HealthCheckError); ok {
-			http.Error(w, respErr.Error(), respErr.HealthCheckStatusCode())
-			return
-		}
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		statusCode := statusCodeForHealthCheck(err)
+		if statusCode != -1 {
+			http.Error(w, err.Error(), statusCode)
+		} else {
+			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		}
 		return
 	}
 

@@ -8,6 +8,7 @@ import (
 	"github.com/go-openapi/spec"
 
 	"github.com/Clever/wag/swagger"
+	"github.com/Clever/wag/templates"
 )
 
 // Generate generates a client
@@ -21,10 +22,16 @@ func Generate(packageName string, s spec.Swagger) error {
 	return nil
 }
 
-func generateClient(packageName string, s spec.Swagger) error {
-	g := swagger.Generator{PackageName: packageName}
+type clientCodeTemplate struct {
+	PackageName           string
+	ServiceName           string
+	FormattedServiceName  string
+	BaseParamToStringCode string
+	Methods               []string
+}
 
-	g.Printf(`package client
+var clientCodeTemplateStr = `
+package client
 
 import (
 		"context"
@@ -36,8 +43,7 @@ import (
 		"encoding/json"
 		"strconv"
 		"time"
-
-		"%[1]s/models"
+		"{{.PackageName}}/models"
 
 		discovery "github.com/Clever/discovery-go"
 )
@@ -47,7 +53,7 @@ var _ = strings.Replace
 var _ = strconv.FormatInt
 var _ = bytes.Compare
 
-// WagClient is used to make requests to the %[2]s service.
+// WagClient is used to make requests to the {{.ServiceName}} service.
 type WagClient struct {
 	basePath    string
 	requestDoer doer
@@ -71,11 +77,11 @@ func New(basePath string) *WagClient {
 }
 
 // NewFromDiscovery creates a client from the discovery environment variables. This method requires
-// the three env vars: SERVICE_%[3]s_HTTP_(HOST/PORT/PROTO) to be set. Otherwise it returns an error.
+// the three env vars: SERVICE_{{.FormattedServiceName}}_HTTP_(HOST/PORT/PROTO) to be set. Otherwise it returns an error.
 func NewFromDiscovery() (*WagClient, error) {
-	url, err := discovery.URL("%[2]s", "default")
+	url, err := discovery.URL("{{.ServiceName}}", "default")
 	if err != nil {
-		url, err = discovery.URL("%[2]s", "http") // Added fallback to maintain reverse compatibility
+		url, err = discovery.URL("{{.ServiceName}}", "http") // Added fallback to maintain reverse compatibility
 		if err != nil {
 			return nil, err
 		}
@@ -97,21 +103,39 @@ func (c *WagClient) WithTimeout(timeout time.Duration) *WagClient {
 	return c
 }
 
-`, packageName,
-		s.Info.InfoProps.Title,
-		strings.ToUpper(strings.Replace(s.Info.InfoProps.Title, "-", "_", -1)))
+{{.BaseParamToStringCode}}
 
-	g.Printf(swagger.BaseParamToStringCode())
+{{range $methodCode := .Methods}}
+	{{$methodCode}}
+{{end}}
+
+`
+
+func generateClient(packageName string, s spec.Swagger) error {
+
+	codeTemplate := clientCodeTemplate{
+		PackageName:           packageName,
+		ServiceName:           s.Info.InfoProps.Title,
+		FormattedServiceName:  strings.ToUpper(strings.Replace(s.Info.InfoProps.Title, "-", "_", -1)),
+		BaseParamToStringCode: swagger.BaseParamToStringCode(),
+	}
 
 	for _, path := range swagger.SortedPathItemKeys(s.Paths.Paths) {
 		pathItem := s.Paths.Paths[path]
 		pathItemOps := swagger.PathItemOperations(pathItem)
 		for _, method := range swagger.SortedOperationsKeys(pathItemOps) {
 			op := pathItemOps[method]
-			g.Printf(methodCode(op, s.BasePath, method, path))
+			codeTemplate.Methods = append(codeTemplate.Methods, methodCode(op, s.BasePath, method, path))
 		}
 	}
 
+	clientCode, err := templates.WriteTemplate(clientCodeTemplateStr, codeTemplate)
+	if err != nil {
+		return err
+	}
+
+	g := swagger.Generator{PackageName: packageName}
+	g.Printf(clientCode)
 	return g.WriteFile("client/client.go")
 }
 
@@ -252,98 +276,6 @@ func buildRequestCode(op *spec.Operation, method string) string {
 	return buf.String()
 }
 
-// parseResponseCode generates the code for handling the http response.
-// In the client code we want to return a different object depending on the status code, so
-// let's generate code that switches on the status code and returns the right object in each
-// case. This includes the default 400 and 500 cases.
-func parseResponseCode(op *spec.Operation, capOpID string) string {
-	var buf bytes.Buffer
-
-	buf.WriteString("\tswitch resp.StatusCode {\n")
-
-	noSuccessType := swagger.NoSuccessType(op)
-	for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
-		response := op.Responses.StatusCodeResponses[statusCode]
-		outputName := swagger.OutputType(op, statusCode)
-
-		buf.WriteString(fmt.Sprintf("\tcase %d:\n", statusCode))
-
-		if noSuccessType && statusCode < 400 {
-			buf.WriteString("\t\treturn nil\n")
-		} else if response.Schema == nil {
-			buf.WriteString(fmt.Sprintf("\t\tvar output %s\n", outputName))
-			if statusCode < 400 {
-				buf.WriteString("\t\treturn output, nil\n")
-			} else {
-				if noSuccessType {
-					buf.WriteString("\t\treturn output\n")
-				} else {
-					buf.WriteString("\t\treturn nil, output\n")
-				}
-			}
-		} else {
-			if statusCode < 400 {
-				pointer := "&"
-				// No pointer for array types (TODO: consider factoring this out...)
-				if response.Schema.Ref.String() == "" {
-					pointer = ""
-				}
-				buf.WriteString(fmt.Sprintf(successResponse(outputName, pointer)))
-			} else {
-				buf.WriteString(fmt.Sprintf("\t\treturn nil, %s{}\n", outputName))
-			}
-		}
-	}
-
-	if !swagger.NoSuccessType(op) {
-		buf.WriteString(`
-	case 400:
-		var output models.DefaultBadRequest
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, models.DefaultInternalError{Msg: err.Error()}
-		}
-		return nil, output
-
-	case 500:
-		var output models.DefaultInternalError
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, models.DefaultInternalError{Msg: err.Error()}
-		}
-		return nil, output
-
-	default:
-		return nil, models.DefaultInternalError{Msg: "Unknown response"}
-	}
-}
-
-`)
-	} else {
-		buf.WriteString(`
-	case 400:
-		var output models.DefaultBadRequest
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return models.DefaultInternalError{Msg: err.Error()}
-		}
-		return output
-
-	case 500:
-		var output models.DefaultInternalError
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return models.DefaultInternalError{Msg: err.Error()}
-		}
-		return output
-
-	default:
-		return models.DefaultInternalError{Msg: "Unknown response"}
-	}
-}
-
-`)
-	}
-
-	return buf.String()
-}
-
 func errorMessage(err string, op *spec.Operation) string {
 	if swagger.NoSuccessType(op) {
 		return fmt.Sprintf(`
@@ -359,12 +291,122 @@ func errorMessage(err string, op *spec.Operation) string {
 `, err)
 }
 
-func successResponse(outputName, pointer string) string {
-	return fmt.Sprintf(`
-		var output %s
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, models.DefaultInternalError{Msg: err.Error()}
+type statusCodeReturn struct {
+	responseTypes []string
+	// unclear if we need this decode param
+	decode      bool
+	makePointer bool
+}
+
+// outputForCode returns the definition for the output for an operation for a particular
+// status code. The first response value is the list of types in the response in the order they
+// are returned (e.g. GetBookById200Output, nil). The second argument is whether the model object
+// returned should be decode. The final argument is whether the model object should be returned as
+// a pointer.
+func outputForCode(op *spec.Operation, statusCode int) ([]string, bool, bool) {
+
+	noSuccessType := swagger.NoSuccessType(op)
+	successResponses := []string{}
+	if !noSuccessType {
+		successResponses = append(successResponses, "nil")
+	}
+	if statusCode == 400 {
+		successResponses = append(successResponses, "models.DefaultBadRequest")
+		return successResponses, true, false
+	} else if statusCode == 500 {
+		successResponses = append(successResponses, "models.DefaultInternalError")
+		return successResponses, true, false
+	}
+
+	response := op.Responses.StatusCodeResponses[statusCode]
+	outputName, makePointer := swagger.OutputType(op, statusCode)
+	if noSuccessType {
+		if statusCode < 400 {
+			return []string{"nil"}, false, false
 		}
-		return %soutput, nil
-`, outputName, pointer)
+		return []string{outputName}, false, false
+	} else if response.Schema == nil {
+		if statusCode < 400 {
+			return []string{outputName, "nil"}, false, false
+		}
+		return []string{"nil", outputName}, false, false
+	}
+	if statusCode < 400 {
+		return []string{outputName, "nil"}, true, makePointer
+	}
+	return []string{"nil", fmt.Sprintf("%s", outputName)}, false, false
+}
+
+// parseResponseCode generates the code for handling the http response.
+// In the client code we want to return a different object depending on the status code, so
+// let's generate code that switches on the status code and returns the right object in each
+// case. This includes the default 400 and 500 cases.
+func parseResponseCode(op *spec.Operation, capOpID string) string {
+	var buf bytes.Buffer
+
+	buf.WriteString("\tswitch resp.StatusCode {\n")
+
+	for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
+		buf.WriteString(writeStatusCodeDecoder(op, statusCode))
+	}
+
+	buf.WriteString(writeStatusCodeDecoder(op, 400))
+	buf.WriteString(writeStatusCodeDecoder(op, 500))
+
+	// It would be nice if we could remove this too
+	noSuccessType := swagger.NoSuccessType(op)
+	successReturn := "nil, "
+	if noSuccessType {
+		successReturn = ""
+	}
+
+	buf.WriteString(fmt.Sprintf(`
+	default:
+		return %smodels.DefaultInternalError{Msg: "Unknown response"}
+	}
+}
+
+`, successReturn))
+
+	return buf.String()
+}
+
+func writeStatusCodeDecoder(op *spec.Operation, statusCode int) string {
+	var buf bytes.Buffer
+	responses, decode, makePointer := outputForCode(op, statusCode)
+
+	buf.WriteString(fmt.Sprintf("\tcase %d:\n", statusCode))
+
+	var newResponses []string
+	for _, response := range responses {
+		newResponse := "nil"
+		if response != "nil" {
+			// Turn any of the non-nil output types into variables
+			buf.WriteString(fmt.Sprintf("var output %s\n", response))
+			if makePointer {
+				newResponse = "&output"
+			} else {
+				newResponse = "output"
+			}
+		}
+		newResponses = append(newResponses, newResponse)
+	}
+
+	if decode {
+		nilString := ""
+		if len(responses) > 1 {
+			nilString = "nil, "
+		}
+		buf.WriteString(fmt.Sprintf(`
+
+	if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+		return %smodels.DefaultInternalError{Msg: err.Error()}
+	}
+
+`, nilString))
+
+	}
+
+	buf.WriteString("return " + strings.Join(newResponses, ",") + "\n")
+	return buf.String()
 }

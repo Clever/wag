@@ -8,8 +8,7 @@ import (
 	"github.com/go-openapi/spec"
 
 	"github.com/Clever/wag/swagger"
-
-	"text/template"
+	"github.com/Clever/wag/templates"
 )
 
 // Generate server package for a swagger spec.
@@ -27,11 +26,20 @@ func Generate(packageName string, s spec.Swagger) error {
 	return nil
 }
 
-func generateRouter(packageName string, s spec.Swagger, paths *spec.Paths) error {
-	g := swagger.Generator{PackageName: packageName}
+type routerFunction struct {
+	Method      string
+	Path        string
+	HandlerName string
+	OpID        string
+}
 
-	g.Printf(
-		`package server
+type routerTemplate struct {
+	Title     string
+	Functions []routerFunction
+}
+
+var routerTemplateStr = `
+package server
 
 // Code auto-generated. Do not edit.
 
@@ -61,7 +69,7 @@ type Server struct {
 func (s *Server) Serve() error {
 
 	go func() {
-		metrics.Log("%s", 1*time.Minute)
+		metrics.Log("{{.Title}}", 1*time.Minute)
 	}()
 
 	go func() {
@@ -84,73 +92,100 @@ func New(c Controller, addr string) *Server {
 	r := mux.NewRouter()
 	h := handler{Controller: c}
 
-	l := logger.New("%s")
-`, s.Info.InfoProps.Title, s.Info.InfoProps.Title)
+	l := logger.New("{{.Title}}")
 
+	{{range $index, $val := .Functions}}
+	r.Methods("{{$val.Method}}").Path("{{$val.Path}}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger.FromContext(r.Context()).AddContext("op", "{{$val.OpID}}")
+		h.{{$val.HandlerName}}Handler(r.Context(), w, r)
+	})
+	{{end}}
+
+	handler := withMiddleware("{{.Title}}", r)
+	return &Server{Handler: handler, addr: addr, l: l}
+}
+`
+
+func generateRouter(packageName string, s spec.Swagger, paths *spec.Paths) error {
+
+	var template routerTemplate
+	template.Title = s.Info.Title
 	for _, path := range swagger.SortedPathItemKeys(paths.Paths) {
 		pathItem := paths.Paths[path]
 		pathItemOps := swagger.PathItemOperations(pathItem)
 		for _, method := range swagger.SortedOperationsKeys(pathItemOps) {
 			op := pathItemOps[method]
-			// TODO: Note the coupling for the handler name here and in the handler function. Does that mean these should be
-			// together? Probably...
 
-			g.Printf("\n")
-			tmpl, err := template.New("routerFunction").Parse(routerFunctionTemplate)
-			if err != nil {
-				return err
-			}
-			var tmpBuf bytes.Buffer
-			err = tmpl.Execute(&tmpBuf, routerTemplate{
+			template.Functions = append(template.Functions, routerFunction{
 				Method:      method,
 				Path:        s.BasePath + path,
 				HandlerName: swagger.Capitalize(op.ID),
 				OpID:        op.ID,
 			})
-			if err != nil {
-				return err
-			}
-			g.Printf(tmpBuf.String())
 		}
 	}
-	g.Printf("\thandler := withMiddleware(\"%s\", r)\n", s.Info.InfoProps.Title)
-	g.Printf("\treturn &Server{Handler: handler, addr: addr, l: l}\n")
-	g.Printf("}\n")
 
+	routerCode, err := templates.WriteTemplate(routerTemplateStr, template)
+	if err != nil {
+		return err
+	}
+	g := swagger.Generator{PackageName: packageName}
+	g.Printf(routerCode)
 	return g.WriteFile("server/router.go")
 }
 
-type routerTemplate struct {
-	Method      string
-	Path        string
-	HandlerName string
-	OpID        string
+type interfaceTemplate struct {
+	Comment    string
+	Definition string
 }
 
-var routerFunctionTemplate = `	r.Methods("{{.Method}}").Path("{{.Path}}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger.FromContext(r.Context()).AddContext("op", "{{.OpID}}")
-		h.{{.HandlerName}}Handler(r.Context(), w, r)
-	})
+type interfaceFileTemplate struct {
+	ImportStatements string
+	ServiceName      string
+	Interfaces       []interfaceTemplate
+}
+
+var interfaceTemplateStr = `
+package server
+
+{{.ImportStatements}}
+
+//go:generate $GOPATH/bin/mockgen -source=$GOFILE -destination=mock_controller.go -package=server
+
+// Controller defines the interface for the {{.ServiceName}} service.
+type Controller interface {
+
+	{{range $interface := .Interfaces}}
+		{{$interface.Comment}}
+		{{$interface.Definition}}
+	{{end}}
+}
 `
 
 func generateInterface(packageName string, serviceName string, paths *spec.Paths) error {
-	g := swagger.Generator{PackageName: packageName}
-	g.Printf("package server\n\n")
-	g.Printf(swagger.ImportStatements([]string{"context", packageName + "/models"}))
-	g.Printf("//go:generate $GOPATH/bin/mockgen -source=$GOFILE -destination=mock_controller.go -package=server\n\n")
-	g.Printf("// Controller defines the interface for the %s service.\n", serviceName)
-	g.Printf("type Controller interface {\n\n")
+
+	tmpl := interfaceFileTemplate{
+		ImportStatements: swagger.ImportStatements([]string{"context", packageName + "/models"}),
+		ServiceName:      serviceName,
+	}
 
 	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
 		path := paths.Paths[pathKey]
 		pathItemOps := swagger.PathItemOperations(path)
 		for _, method := range swagger.SortedOperationsKeys(pathItemOps) {
-			g.Printf("\t%s\n", swagger.InterfaceComment(method, pathKey, pathItemOps[method]))
-			g.Printf("\t%s\n\n", swagger.Interface(pathItemOps[method]))
+			tmpl.Interfaces = append(tmpl.Interfaces, interfaceTemplate{
+				Comment:    swagger.InterfaceComment(method, pathKey, pathItemOps[method]),
+				Definition: swagger.Interface(pathItemOps[method]),
+			})
 		}
 	}
-	g.Printf("}\n")
 
+	interfaceCode, err := templates.WriteTemplate(interfaceTemplateStr, tmpl)
+	if err != nil {
+		return err
+	}
+	g := swagger.Generator{PackageName: packageName}
+	g.Printf(interfaceCode)
 	return g.WriteFile("server/interface.go")
 }
 
@@ -158,177 +193,28 @@ func lowercase(input string) string {
 	return strings.ToLower(input[0:1]) + input[1:]
 }
 
-func printNewInput(g *swagger.Generator, op *spec.Operation) error {
-	capOpID := swagger.Capitalize(op.ID)
-	g.Printf("// new%sInput takes in an http.Request an returns the input struct.\n", capOpID)
-	singleSchemaedBodyParameter, opModel := swagger.SingleSchemaedBodyParameter(op)
-	if singleSchemaedBodyParameter {
-		g.Printf("func new%sInput(r *http.Request) (*models.%s, error) {\n",
-			capOpID, opModel)
-		g.Printf("\tvar input models.%s\n\n", opModel)
-	} else {
-		g.Printf("func new%sInput(r *http.Request) (*models.%sInput, error) {\n",
-			capOpID, capOpID)
-		g.Printf("\tvar input models.%sInput\n\n", capOpID)
-	}
-
-	g.Printf("\tvar err error\n")
-	g.Printf("\t_ = err\n\n")
-
-	for _, param := range op.Parameters {
-
-		camelParamName := swagger.StructParamName(param)
-		paramVarName := lowercase(camelParamName)
-
-		if param.In != "body" {
-			extractCode := ""
-			switch param.In {
-			case "query":
-				extractCode = fmt.Sprintf("r.URL.Query().Get(\"%s\")", param.Name)
-			case "path":
-				extractCode = fmt.Sprintf("mux.Vars(r)[\"%s\"]", param.Name)
-			case "header":
-				extractCode = fmt.Sprintf("r.Header.Get(\"%s\")", param.Name)
-			}
-			g.Printf("\t%sStr := %s\n", paramVarName, extractCode)
-
-			if param.Required {
-				g.Printf("\tif len(%sStr) == 0{\n", paramVarName)
-				g.Printf("\t\treturn nil, errors.New(\"Parameter must be specified\")\n")
-				g.Printf("\t}\n")
-			} else if param.Default != nil {
-				g.Printf("\tif len(%sStr) == 0 {\n", paramVarName)
-				g.Printf("\t\t// Use the default value\n")
-				g.Printf("\t\t%sStr = \"%s\"\n", paramVarName, swagger.DefaultAsString(param))
-				g.Printf("\t}\n")
-			}
-
-			g.Printf("\tif len(%sStr) != 0 {\n", paramVarName)
-
-			typeName, err := swagger.ParamToType(param, false)
-			if err != nil {
-				return err
-			}
-			typeCode, err := swagger.StringToTypeCode(fmt.Sprintf("%sStr", paramVarName), param)
-			if err != nil {
-				return err
-			}
-			g.Printf("\t\tvar %sTmp %s\n", paramVarName, typeName)
-			g.Printf("\t\t%sTmp, err = %s\n", paramVarName, typeCode)
-			g.Printf("\t\tif err != nil {\n")
-			g.Printf("\t\t\treturn nil, err\n")
-			g.Printf("\t\t}\n")
-
-			// TODO: Factor this out...
-			if param.Required || param.Type == "array" {
-				g.Printf("\t\tinput.%s = %sTmp\n\n", camelParamName, paramVarName)
-			} else {
-				g.Printf("\t\tinput.%s = &%sTmp\n\n", camelParamName, paramVarName)
-			}
-
-			g.Printf("\t}\n")
-
-		} else {
-			if param.Schema == nil {
-				return fmt.Errorf("Body parameters must have a schema defined")
-			}
-			typeName, err := swagger.TypeFromSchema(param.Schema, true)
-			if err != nil {
-				return err
-			}
-
-			g.Printf("\tdata, err := ioutil.ReadAll(r.Body)\n")
-
-			if param.Required {
-				g.Printf("\tif len(data) == 0 {\n")
-				g.Printf("\t\treturn nil, errors.New(\"Parameter must be specified\")\n")
-				g.Printf("\t}\n")
-			}
-
-			g.Printf("\tif len(data) > 0 {")
-
-			if singleSchemaedBodyParameter {
-				g.Printf("\t\tif err := json.NewDecoder(bytes.NewReader(data)).Decode(&input); err != nil {\n")
-			} else {
-				// Initialize the pointer in the object
-				g.Printf("\t\tinput.%s = &%s{}\n", camelParamName, typeName)
-				g.Printf("\t\tif err := json.NewDecoder(bytes.NewReader(data)).Decode(input.%s); err != nil {\n", camelParamName)
-			}
-			g.Printf("\t\t\treturn nil, err\n")
-			g.Printf("\t\t}\n")
-			g.Printf("\t}\n")
-
-		}
-	}
-	g.Printf("\n")
-
-	g.Printf("\treturn &input, nil\n")
-	g.Printf("}\n\n")
-
-	return nil
+type handlerFileTemplate struct {
+	ImportStatements string
+	// TODO: Think about possibly factoring this out...
+	BaseStringToTypeCode string
+	Handlers             []string
 }
 
-func generateHandlers(packageName string, paths *spec.Paths) error {
-	g := swagger.Generator{PackageName: packageName}
+var handlerFileTemplateStr = `
+package server
 
-	g.Printf("package server\n\n")
-	g.Printf(swagger.ImportStatements([]string{"context", "github.com/gorilla/mux", "gopkg.in/Clever/kayvee-go.v5/logger",
-		"net/http", "strconv", "encoding/json", "strconv", packageName + "/models", "errors",
-		"github.com/go-openapi/strfmt", "github.com/go-openapi/swag", "io/ioutil", "bytes"}))
+{{.ImportStatements}}
 
-	g.Printf("var _ = strconv.ParseInt\n")
-	g.Printf("var _ = strfmt.Default\n")
-	g.Printf("var _ = swag.ConvertInt32\n")
-	g.Printf("var _ = errors.New\n")
-	g.Printf("var _ = mux.Vars\n")
-	g.Printf("var _ = bytes.Compare\n")
-	g.Printf("var _ = ioutil.ReadAll\n\n")
+var _ = strconv.ParseInt
+var _ = strfmt.Default
+var _ = swag.ConvertInt32
+var _ = errors.New
+var _ = mux.Vars
+var _ = bytes.Compare
+var _ = ioutil.ReadAll
 
-	g.Printf(swagger.BaseStringToTypeCode())
-	g.Printf(jsonMarshalString)
+{{.BaseStringToTypeCode}}
 
-	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
-		path := paths.Paths[pathKey]
-		pathItemOps := swagger.PathItemOperations(path)
-		for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
-			op := pathItemOps[opKey]
-			tmpl, err := template.New("test").Parse(handlerTemplate)
-			if err != nil {
-				return err
-			}
-
-			statusCodeLogic := ""
-			successCodes := swagger.SuccessStatusCodes(op)
-			if len(successCodes) == 1 {
-				statusCodeLogic = fmt.Sprintf("%d", successCodes[0])
-			} else {
-				statusCodeLogic = fmt.Sprintf("resp.%sStatusCode()", swagger.Capitalize(op.ID))
-			}
-
-			var tmpBuf bytes.Buffer
-			singleInputOp, _ := swagger.SingleSchemaedBodyParameter(op)
-			err = tmpl.Execute(&tmpBuf, handlerOp{
-				Op:                swagger.Capitalize(op.ID),
-				SuccessReturnType: !swagger.NoSuccessType(op),
-				StatusCode:        statusCodeLogic,
-				HasParams:         len(op.Parameters) != 0,
-				SingleInputOp:     singleInputOp,
-			})
-			if err != nil {
-				return err
-			}
-			g.Printf(tmpBuf.String())
-
-			if err := printNewInput(&g, op); err != nil {
-				return err
-			}
-		}
-	}
-
-	return g.WriteFile("server/handlers.go")
-}
-
-var jsonMarshalString = `
 func jsonMarshalNoError(i interface{}) string {
 	bytes, err := json.Marshal(i)
 	if err != nil {
@@ -337,18 +223,123 @@ func jsonMarshalNoError(i interface{}) string {
 	}
 	return string(bytes)
 }
+
+{{ range $handler := .Handlers }}
+	{{ $handler }}
+{{end}}
 `
+
+func generateHandlers(packageName string, paths *spec.Paths) error {
+
+	tmpl := handlerFileTemplate{
+		ImportStatements: swagger.ImportStatements([]string{"context", "github.com/gorilla/mux", "gopkg.in/Clever/kayvee-go.v5/logger",
+			"net/http", "strconv", "encoding/json", "strconv", packageName + "/models", "errors",
+			"github.com/go-openapi/strfmt", "github.com/go-openapi/swag", "io/ioutil", "bytes"}),
+		BaseStringToTypeCode: swagger.BaseStringToTypeCode(),
+	}
+
+	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
+		path := paths.Paths[pathKey]
+		pathItemOps := swagger.PathItemOperations(path)
+		for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
+			op := pathItemOps[opKey]
+
+			// TODO: Fill this in...
+
+			operationHandler, err := generateOperationHandler(op)
+			if err != nil {
+				return err
+			}
+			tmpl.Handlers = append(tmpl.Handlers, operationHandler)
+		}
+	}
+
+	handlerCode, err := templates.WriteTemplate(handlerFileTemplateStr, tmpl)
+	if err != nil {
+		return err
+	}
+	g := swagger.Generator{PackageName: packageName}
+	g.Printf(handlerCode)
+	return g.WriteFile("server/handlers.go")
+}
+
+var jsonMarshalString = `
+
+`
+
+// generateOperationHandler generates the handler code for a single handler
+func generateOperationHandler(op *spec.Operation) (string, error) {
+	typeToCode := make(map[string]int)
+	emptyResponseCode := 200
+	for code, typeStr := range swagger.CodeToTypeMap(op) {
+		if typeStr != "" {
+			typeToCode[typeStr] = code
+			// Support non-pointer types too so that the implementer can
+			// return either (this is a bit icky)
+			if len(typeStr) > 0 && typeStr[0] == '*' {
+				typeToCode[typeStr[1:]] = code
+			}
+		} else {
+			emptyResponseCode = code
+		}
+	}
+
+	singleInputOp, _ := swagger.SingleSchemaedBodyParameter(op)
+	handlerOp := handlerOp{
+		Op:                 swagger.Capitalize(op.ID),
+		SuccessReturnType:  !swagger.NoSuccessType(op),
+		HasParams:          len(op.Parameters) != 0,
+		SingleInputOp:      singleInputOp,
+		EmptyStatusCode:    emptyResponseCode,
+		TypesToStatusCodes: typeToCode,
+	}
+	handlerCode, err := templates.WriteTemplate(handlerTemplate, handlerOp)
+	if err != nil {
+		return "", err
+	}
+
+	newInputCode, err := generateNewInput(op)
+	if err != nil {
+		return "", err
+	}
+
+	var buf bytes.Buffer
+	buf.WriteString(handlerCode)
+	buf.WriteString(newInputCode)
+
+	return buf.String(), nil
+}
 
 // handlerOp contains the template variables for the handlerTemplate
 type handlerOp struct {
-	Op                string
-	SuccessReturnType bool
-	StatusCode        string
-	HasParams         bool
-	SingleInputOp     bool
+	Op                 string
+	SuccessReturnType  bool
+	HasParams          bool
+	SingleInputOp      bool
+	EmptyStatusCode    int
+	TypesToStatusCodes map[string]int
 }
 
-var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+var handlerTemplate = `
+// statusCodeFor{{.Op}} returns the status code corresponding to the returned
+// object. It returns -1 if the type doesn't correspond to anything.
+func statusCodeFor{{.Op}}(obj interface{}) int {
+
+	switch obj.(type) {
+	{{ range $type, $code := .TypesToStatusCodes }}
+   	case {{$type}}:
+   		return {{$code}}
+	{{ end }}
+	case models.DefaultBadRequest:
+		return 400
+	case models.DefaultInternalError:
+		return 500
+	default:
+		return -1
+	}
+}
+
+func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 {{if .HasParams}}
 	input, err := new{{.Op}}Input(r)
 	if err != nil {
@@ -377,12 +368,13 @@ var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w ht
 {{end}}
 {{end}}
 	if err != nil {
-		if respErr, ok := err.(models.{{.Op}}Error); ok {
-			http.Error(w, respErr.Error(), respErr.{{.Op}}StatusCode())
-			return
-		}
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		statusCode := statusCodeFor{{.Op}}(err)
+		if statusCode != -1 {
+			http.Error(w, err.Error(), statusCode)
+		} else {
+			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		}
 		return
 	}
 
@@ -395,11 +387,123 @@ var handlerTemplate = `func (h handler) {{.Op}}Handler(ctx context.Context, w ht
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader({{.StatusCode}})
+	w.WriteHeader(statusCodeFor{{.Op}}(resp))
 	w.Write(respBytes)
 {{else}}
-	w.WriteHeader({{.StatusCode}})
+	w.WriteHeader({{.EmptyStatusCode}})
 	w.Write([]byte(""))
 {{end}}
 }
 `
+
+func generateNewInput(op *spec.Operation) (string, error) {
+	var buf bytes.Buffer
+	capOpID := swagger.Capitalize(op.ID)
+
+	buf.WriteString(fmt.Sprintf("// new%sInput takes in an http.Request an returns the input struct.\n", capOpID))
+	singleSchemaedBodyParameter, opModel := swagger.SingleSchemaedBodyParameter(op)
+	if singleSchemaedBodyParameter {
+		buf.WriteString(fmt.Sprintf("func new%sInput(r *http.Request) (*models.%s, error) {\n",
+			capOpID, opModel))
+		buf.WriteString(fmt.Sprintf("\tvar input models.%s\n\n", opModel))
+	} else {
+		buf.WriteString(fmt.Sprintf("func new%sInput(r *http.Request) (*models.%sInput, error) {\n",
+			capOpID, capOpID))
+		buf.WriteString(fmt.Sprintf("\tvar input models.%sInput\n\n", capOpID))
+	}
+
+	buf.WriteString(fmt.Sprintf("\tvar err error\n"))
+	buf.WriteString(fmt.Sprintf("\t_ = err\n\n"))
+
+	for _, param := range op.Parameters {
+
+		camelParamName := swagger.StructParamName(param)
+		paramVarName := lowercase(camelParamName)
+
+		if param.In != "body" {
+			extractCode := ""
+			switch param.In {
+			case "query":
+				extractCode = fmt.Sprintf("r.URL.Query().Get(\"%s\")", param.Name)
+			case "path":
+				extractCode = fmt.Sprintf("mux.Vars(r)[\"%s\"]", param.Name)
+			case "header":
+				extractCode = fmt.Sprintf("r.Header.Get(\"%s\")", param.Name)
+			}
+			buf.WriteString(fmt.Sprintf("\t%sStr := %s\n", paramVarName, extractCode))
+
+			if param.Required {
+				buf.WriteString(fmt.Sprintf("\tif len(%sStr) == 0{\n", paramVarName))
+				buf.WriteString(fmt.Sprintf("\t\treturn nil, errors.New(\"Parameter must be specified\")\n"))
+				buf.WriteString(fmt.Sprintf("\t}\n"))
+			} else if param.Default != nil {
+				buf.WriteString(fmt.Sprintf("\tif len(%sStr) == 0 {\n", paramVarName))
+				buf.WriteString(fmt.Sprintf("\t\t// Use the default value\n"))
+				buf.WriteString(fmt.Sprintf("\t\t%sStr = \"%s\"\n", paramVarName, swagger.DefaultAsString(param)))
+				buf.WriteString(fmt.Sprintf("\t}\n"))
+			}
+
+			buf.WriteString(fmt.Sprintf("\tif len(%sStr) != 0 {\n", paramVarName))
+
+			typeName, err := swagger.ParamToType(param, false)
+			if err != nil {
+				return "", err
+			}
+			typeCode, err := swagger.StringToTypeCode(fmt.Sprintf("%sStr", paramVarName), param)
+			if err != nil {
+				return "", err
+			}
+			buf.WriteString(fmt.Sprintf("\t\tvar %sTmp %s\n", paramVarName, typeName))
+			buf.WriteString(fmt.Sprintf("\t\t%sTmp, err = %s\n", paramVarName, typeCode))
+			buf.WriteString(fmt.Sprintf("\t\tif err != nil {\n"))
+			buf.WriteString(fmt.Sprintf("\t\t\treturn nil, err\n"))
+			buf.WriteString(fmt.Sprintf("\t\t}\n"))
+
+			// TODO: Factor this out...
+			if param.Required || param.Type == "array" {
+				buf.WriteString(fmt.Sprintf("\t\tinput.%s = %sTmp\n\n", camelParamName, paramVarName))
+			} else {
+				buf.WriteString(fmt.Sprintf("\t\tinput.%s = &%sTmp\n\n", camelParamName, paramVarName))
+			}
+
+			buf.WriteString(fmt.Sprintf("\t}\n"))
+
+		} else {
+			if param.Schema == nil {
+				return "", fmt.Errorf("Body parameters must have a schema defined")
+			}
+			typeName, err := swagger.TypeFromSchema(param.Schema, true)
+			if err != nil {
+				return "", err
+			}
+
+			buf.WriteString(fmt.Sprintf("\tdata, err := ioutil.ReadAll(r.Body)\n"))
+
+			if param.Required {
+				buf.WriteString(fmt.Sprintf("\tif len(data) == 0 {\n"))
+				buf.WriteString(fmt.Sprintf("\t\treturn nil, errors.New(\"Parameter must be specified\")\n"))
+				buf.WriteString(fmt.Sprintf("\t}\n"))
+			}
+
+			buf.WriteString(fmt.Sprintf("\tif len(data) > 0 {"))
+
+			if singleSchemaedBodyParameter {
+				buf.WriteString(fmt.Sprintf("\t\tif err := json.NewDecoder(bytes.NewReader(data)).Decode(&input); err != nil {\n"))
+			} else {
+				// Initialize the pointer in the object
+				buf.WriteString(fmt.Sprintf("\t\tinput.%s = &%s{}\n", camelParamName, typeName))
+				buf.WriteString(fmt.Sprintf("\t\tif err := json.NewDecoder(bytes.NewReader(data)).Decode(input.%s); err != nil {\n", camelParamName))
+			}
+			buf.WriteString(fmt.Sprintf("\t\t\treturn nil, err\n"))
+			buf.WriteString(fmt.Sprintf("\t\t}\n"))
+			buf.WriteString(fmt.Sprintf("\t}\n"))
+
+		}
+	}
+	buf.WriteString(fmt.Sprintf("\n"))
+
+	buf.WriteString(fmt.Sprintf("\treturn &input, nil\n"))
+	buf.WriteString(fmt.Sprintf("}\n\n"))
+
+	return buf.String(), nil
+}
