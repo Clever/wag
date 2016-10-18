@@ -66,7 +66,7 @@ func OutputType(op *spec.Operation, statusCode int) (string, bool) {
 	if statusCode == -1 {
 		return fmt.Sprintf("models.%sOutput", Capitalize(op.ID)), false
 	}
-	return fmt.Sprintf("models.%s%dOutput", Capitalize(op.ID), statusCode), false
+	return fmt.Sprintf("models.%s%dOutput", Capitalize(op.ID), statusCode), true
 }
 
 // NoSuccessType returns true if the operation has no-success response type. This includes

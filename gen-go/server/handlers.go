@@ -249,6 +249,18 @@ func statusCodeForGetBookByID(obj interface{}) int {
 
 	switch obj.(type) {
 
+	case *models.GetBookByID200Output:
+		return 200
+
+	case *models.GetBookByID204Output:
+		return 204
+
+	case *models.GetBookByID401Output:
+		return 401
+
+	case *models.GetBookByID404Output:
+		return 404
+
 	case models.GetBookByID200Output:
 		return 200
 
@@ -375,6 +387,9 @@ func statusCodeForCreateBook(obj interface{}) int {
 	case *models.Book:
 		return 200
 
+	case models.Book:
+		return 200
+
 	case models.DefaultBadRequest:
 		return 400
 	case models.DefaultInternalError:
@@ -450,6 +465,12 @@ func statusCodeForGetBookByID2(obj interface{}) int {
 	switch obj.(type) {
 
 	case *models.Book:
+		return 200
+
+	case *models.GetBookByID2404Output:
+		return 404
+
+	case models.Book:
 		return 200
 
 	case models.GetBookByID2404Output:

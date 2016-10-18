@@ -274,6 +274,11 @@ func generateOperationHandler(op *spec.Operation) (string, error) {
 	for code, typeStr := range swagger.CodeToTypeMap(op) {
 		if typeStr != "" {
 			typeToCode[typeStr] = code
+			// Support non-pointer types too so that the implementer can
+			// return either (this is a bit icky)
+			if len(typeStr) > 0 && typeStr[0] == '*' {
+				typeToCode[typeStr[1:]] = code
+			}
 		} else {
 			emptyResponseCode = code
 		}
