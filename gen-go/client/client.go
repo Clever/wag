@@ -235,7 +235,7 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 			return nil, models.DefaultInternalError{Msg: err.Error()}
 		}
 
-		return output, nil
+		return &output, nil
 	case 204:
 		var output models.GetBookByID204Output
 		return output, nil
