@@ -4,13 +4,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"github.com/Clever/wag/gen-go/models"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/Clever/wag/gen-go/models"
 
 	discovery "github.com/Clever/discovery-go"
 )
