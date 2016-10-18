@@ -212,6 +212,8 @@ Below is a more comprehensive list of the features that aren't currently support
 ### Unsupported Features
 Mime Types
 
+AdditionalProperties: these are supported by the Go server and client, but not the Javascript client
+
 Multi-File Swagger Definitions
 
 Schema:
