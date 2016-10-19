@@ -142,7 +142,7 @@ Additionally, for the above to work you will need to set up server middleware to
 We currently are testing out LightStep, a service that collects tracing data and displays it in a nice UI:
 
 ```bash
-npm install lighstep-tracer opentracing@0.11 --save # >=0.12 contains untested breaking changes to the API
+npm install lightstep-tracer opentracing@0.11 --save # >=0.12 contains untested breaking changes to the API
 ```
 
 ```javascript
