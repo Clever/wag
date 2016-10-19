@@ -19,6 +19,8 @@ test: build generate $(PKGS)
 generate: hardcoded/hardcoded.go $(MOCKGEN)
 	./bin/wag -file swagger.yml -package $(PKG)/gen-go
 	go generate $(PKG)/gen-go...
+	./bin/wag -file nodefinitions.yml -package $(PKG)/gen-no-definitions
+	go generate ${PKG}/gen-no-definitions...
 
 $(PKGS): golang-test-all-strict-deps
 	$(call golang-test-all-strict,$@)
