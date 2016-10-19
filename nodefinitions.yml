@@ -19,7 +19,7 @@ paths:
         - name: id
           in: path
           required: true
-          type: string
+          type: integer
       responses:
         200:
           description: OK response

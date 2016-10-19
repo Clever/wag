@@ -53,29 +53,9 @@ func New(c Controller, addr string) *Server {
 
 	l := logger.New("swagger-test")
 
-	r.Methods("GET").Path("/v1/books").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger.FromContext(r.Context()).AddContext("op", "getBooks")
-		h.GetBooksHandler(r.Context(), w, r)
-	})
-
-	r.Methods("GET").Path("/v1/books/{book_id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger.FromContext(r.Context()).AddContext("op", "getBookByID")
-		h.GetBookByIDHandler(r.Context(), w, r)
-	})
-
-	r.Methods("POST").Path("/v1/books/{book_id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger.FromContext(r.Context()).AddContext("op", "createBook")
-		h.CreateBookHandler(r.Context(), w, r)
-	})
-
-	r.Methods("GET").Path("/v1/books/{id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger.FromContext(r.Context()).AddContext("op", "getBookByID2")
-		h.GetBookByID2Handler(r.Context(), w, r)
-	})
-
-	r.Methods("GET").Path("/v1/health/check").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger.FromContext(r.Context()).AddContext("op", "healthCheck")
-		h.HealthCheckHandler(r.Context(), w, r)
+	r.Methods("DELETE").Path("/v1/books/{id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger.FromContext(r.Context()).AddContext("op", "deleteBook")
+		h.DeleteBookHandler(r.Context(), w, r)
 	})
 
 	handler := withMiddleware("swagger-test", r)
