@@ -97,6 +97,7 @@ paths:
             $ref: '#/definitions/Book'
         404:
           description: Job not found
+
   /books:
     get:
       operationId: getBooks
@@ -163,6 +164,7 @@ paths:
           description: "Error"
           schema:
             $ref: "#/definitions/Error"
+
 definitions:
   Book:
     type: object

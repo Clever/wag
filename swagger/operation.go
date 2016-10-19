@@ -49,7 +49,9 @@ func InterfaceComment(method, path string, op *spec.Operation) string {
 // OutputType returns the output type for a given status code of an operation and whether it
 // is a pointer in the interface.
 func OutputType(op *spec.Operation, statusCode int) (string, bool) {
-	if NoSuccessType(op) {
+	// If there is no success type and this is a success status code return the empty
+	// string to indicate no type
+	if NoSuccessType(op) && statusCode < 400 {
 		return "", false
 	}
 	successCodes := successStatusCodes(op)
@@ -58,7 +60,7 @@ func OutputType(op *spec.Operation, statusCode int) (string, bool) {
 		var err error
 		successType, err := TypeFromSchema(singleSchema, true)
 		if err != nil {
-			panic(fmt.Errorf("Could not convert operation to type %s", err))
+			panic(fmt.Errorf("Could not convert operation to type for %s, %s", op.ID, err))
 		}
 		return successType, singleSchema != nil && singleSchema.Ref.String() != ""
 	}
