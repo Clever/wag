@@ -60,6 +60,15 @@ func (o GetBookByID404Output) Error() string {
 	return "Status Code: 404"
 }
 
+// DeleteBook404Output defines the 404 status code response for DeleteBook.
+type DeleteBook404Output struct{}
+
+// Error returns "Status Code: X". We implemented in to satisfy the error
+// interface. For a more descriptive error message see the output type.
+func (o DeleteBook404Output) Error() string {
+	return "Status Code: 404"
+}
+
 // GetBookByID2404Output defines the 404 status code response for GetBookByID2.
 type GetBookByID2404Output struct{}
 

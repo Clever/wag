@@ -68,6 +68,11 @@ func New(c Controller, addr string) *Server {
 		h.CreateBookHandler(r.Context(), w, r)
 	})
 
+	r.Methods("DELETE").Path("/v1/books/{id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger.FromContext(r.Context()).AddContext("op", "deleteBook")
+		h.DeleteBookHandler(r.Context(), w, r)
+	})
+
 	r.Methods("GET").Path("/v1/books/{id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "getBookByID2")
 		h.GetBookByID2Handler(r.Context(), w, r)

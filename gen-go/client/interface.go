@@ -23,6 +23,9 @@ type Client interface {
 	// Creates a book
 	CreateBook(ctx context.Context, i *models.Book) (*models.Book, error)
 
+	// DeleteBook makes a DELETE request to /books/{id}.
+	DeleteBook(ctx context.Context, i *models.DeleteBookInput) error
+
 	// GetBookByID2 makes a GET request to /books/{id}.
 	// Retrieve a book
 	GetBookByID2(ctx context.Context, i *models.GetBookByID2Input) (*models.Book, error)

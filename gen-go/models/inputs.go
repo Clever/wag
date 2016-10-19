@@ -131,6 +131,17 @@ func (i GetBookByIDInput) Validate() error {
 	return nil
 }
 
+// DeleteBookInput holds the input parameters for a deleteBook operation.
+type DeleteBookInput struct {
+	ID string
+}
+
+// Validate returns an error if any of the DeleteBookInput parameters don't satisfy the
+// requirements from the swagger yml file.
+func (i DeleteBookInput) Validate() error {
+	return nil
+}
+
 // GetBookByID2Input holds the input parameters for a getBookByID2 operation.
 type GetBookByID2Input struct {
 	ID string

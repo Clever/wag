@@ -458,6 +458,85 @@ func newCreateBookInput(r *http.Request) (*models.Book, error) {
 	return &input, nil
 }
 
+// statusCodeForDeleteBook returns the status code corresponding to the returned
+// object. It returns -1 if the type doesn't correspond to anything.
+func statusCodeForDeleteBook(obj interface{}) int {
+
+	switch obj.(type) {
+
+	case *models.DeleteBook404Output:
+		return 404
+
+	case models.DeleteBook404Output:
+		return 404
+
+	case models.DefaultBadRequest:
+		return 400
+	case models.DefaultInternalError:
+		return 500
+	default:
+		return -1
+	}
+}
+
+func (h handler) DeleteBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+
+	input, err := newDeleteBookInput(r)
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		return
+	}
+
+	err = input.Validate()
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		return
+	}
+
+	err = h.DeleteBook(ctx, input)
+
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		statusCode := statusCodeForDeleteBook(err)
+		if statusCode != -1 {
+			http.Error(w, err.Error(), statusCode)
+		} else {
+			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	w.WriteHeader(200)
+	w.Write([]byte(""))
+
+}
+
+// newDeleteBookInput takes in an http.Request an returns the input struct.
+func newDeleteBookInput(r *http.Request) (*models.DeleteBookInput, error) {
+	var input models.DeleteBookInput
+
+	var err error
+	_ = err
+
+	iDStr := mux.Vars(r)["id"]
+	if len(iDStr) == 0 {
+		return nil, errors.New("Parameter must be specified")
+	}
+	if len(iDStr) != 0 {
+		var iDTmp string
+		iDTmp, err = iDStr, error(nil)
+		if err != nil {
+			return nil, err
+		}
+		input.ID = iDTmp
+
+	}
+
+	return &input, nil
+}
+
 // statusCodeForGetBookByID2 returns the status code corresponding to the returned
 // object. It returns -1 if the type doesn't correspond to anything.
 func statusCodeForGetBookByID2(obj interface{}) int {

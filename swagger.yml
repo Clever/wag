@@ -97,6 +97,19 @@ paths:
             $ref: '#/definitions/Book'
         404:
           description: Job not found
+    delete:
+      operationId: deleteBook
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+      responses:
+        200:
+          description: OK response
+        404:
+          description: OK response
+
   /books:
     get:
       operationId: getBooks
@@ -163,6 +176,7 @@ paths:
           description: "Error"
           schema:
             $ref: "#/definitions/Error"
+
 definitions:
   Book:
     type: object

@@ -345,6 +345,68 @@ func (c *WagClient) CreateBook(ctx context.Context, i *models.Book) (*models.Boo
 	}
 }
 
+// DeleteBook makes a DELETE request to /books/{id}.
+func (c *WagClient) DeleteBook(ctx context.Context, i *models.DeleteBookInput) error {
+	path := c.basePath + "/v1/books/{id}"
+	urlVals := url.Values{}
+	var body []byte
+
+	path = strings.Replace(path, "{id}", i.ID, -1)
+	path = path + "?" + urlVals.Encode()
+
+	client := &http.Client{Transport: c.transport}
+	req, err := http.NewRequest("DELETE", path, bytes.NewBuffer(body))
+
+	if err != nil {
+		return err
+	}
+
+	// Add the opname for doers like tracing
+	ctx = context.WithValue(ctx, opNameCtx{}, "deleteBook")
+	req = req.WithContext(ctx)
+	// Don't add the timeout in a "doer" because we don't want to call "defer.cancel()"
+	// until we've finished all the processing of the request object. Otherwise we'll cancel
+	// our own request before we've finished it.
+	if c.defaultTimeout != 0 {
+		ctx, cancel := context.WithTimeout(req.Context(), c.defaultTimeout)
+		defer cancel()
+		req = req.WithContext(ctx)
+	}
+	resp, err := c.requestDoer.Do(client, req)
+
+	if err != nil {
+		return models.DefaultInternalError{Msg: err.Error()}
+	}
+
+	defer resp.Body.Close()
+	switch resp.StatusCode {
+	case 200:
+		return nil
+	case 404:
+		var output models.DeleteBook404Output
+		return output
+	case 400:
+		var output models.DefaultBadRequest
+
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return models.DefaultInternalError{Msg: err.Error()}
+		}
+
+		return output
+	case 500:
+		var output models.DefaultInternalError
+
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return models.DefaultInternalError{Msg: err.Error()}
+		}
+
+		return output
+
+	default:
+		return models.DefaultInternalError{Msg: "Unknown response"}
+	}
+}
+
 // GetBookByID2 makes a GET request to /books/{id}.
 // Retrieve a book
 func (c *WagClient) GetBookByID2(ctx context.Context, i *models.GetBookByID2Input) (*models.Book, error) {

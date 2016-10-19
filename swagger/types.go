@@ -20,7 +20,8 @@ func TypeFromSchema(schema *spec.Schema, includeModels bool) (string, error) {
 	} else if schema.Ref.String() != "" {
 		ref := schema.Ref.String()
 		if !strings.HasPrefix(ref, "#/definitions/") {
-			return "", fmt.Errorf("schema.$ref has undefined reference type. Must start with #/definitions")
+			return "", fmt.Errorf("schema.$ref has undefined reference type %s. "+
+				"Must start with #/definitions.", ref)
 		}
 		def := ref[len("#/definitions/"):]
 		if includeModels {
