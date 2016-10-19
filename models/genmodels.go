@@ -20,7 +20,7 @@ import (
 func Generate(packageName, swaggerFile string, swagger spec.Swagger) error {
 	// generate models with go-swagger
 	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
-	if err := generator.GenerateServer("", []string{}, []string{}, generator.GenOpts{
+	if err := generator.GenerateServer("", []string{}, []string{}, &generator.GenOpts{
 		Spec:           swaggerFile,
 		ModelPackage:   "models",
 		Target:         fmt.Sprintf("%s/src/%s/", os.Getenv("GOPATH"), packageName),
@@ -48,11 +48,12 @@ func generateInputs(packageName string, paths *spec.Paths) error {
 package models
 
 import(
-		"encoding/json"
-		"strconv"
+	"encoding/json"
+	"strconv"
 
-		"github.com/go-openapi/validate"
-		"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/validate"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/strfmt"
 )
 
 // These imports may not be used depending on the input parameters
@@ -60,6 +61,7 @@ var _ = json.Marshal
 var _ = strconv.FormatInt
 var _ = validate.Maximum
 var _ = strfmt.NewFormats
+var _ = swag.String
 `)
 
 	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
@@ -75,6 +77,9 @@ var _ = strfmt.NewFormats
 				continue
 			}
 			if err := printInputStruct(&g, op); err != nil {
+				return err
+			}
+			if err := printInputGlobals(&g, op); err != nil {
 				return err
 			}
 			if err := printInputValidation(&g, op); err != nil {
@@ -115,6 +120,41 @@ func printInputStruct(g *swagger.Generator, op *spec.Operation) error {
 		g.Printf("\t%s %s\n", swagger.StructParamName(param), typeName)
 	}
 	g.Printf("}\n\n")
+
+	return nil
+}
+
+func printInputGlobals(g *swagger.Generator, op *spec.Operation) error {
+	capOpID := swagger.Capitalize(op.ID)
+
+	var consts string
+	var vars string
+
+	for _, param := range op.Parameters {
+		if param.In == "query" && param.Type == "string" && len(param.Enum) > 0 {
+			for _, val := range param.Enum {
+				exportName := fmt.Sprintf("%s%s", swagger.StructParamName(param), swagger.Capitalize(val.(string)))
+				if param.Required {
+					consts += fmt.Sprintf("\t// %s provides the '%s' value for the %s input of the %s operation.\n", exportName, val, param.Name, capOpID)
+					consts += fmt.Sprintf("\t%s = \"%s\"\n", exportName, val)
+				} else {
+					vars += fmt.Sprintf("\t// %s provides the '%s' value for the %s input of the %s operation.\n", exportName, val, param.Name, capOpID)
+					vars += fmt.Sprintf("\t%s = swag.String(\"%s\")\n", exportName, val)
+				}
+			}
+		}
+	}
+
+	if len(consts) > 0 {
+		g.Printf("const (\n")
+		g.Printf(consts)
+		g.Printf(")\n\n")
+	}
+	if len(vars) > 0 {
+		g.Printf("var (\n")
+		g.Printf(vars)
+		g.Printf(")\n\n")
+	}
 
 	return nil
 }

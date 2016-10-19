@@ -108,6 +108,7 @@ func (c *WagClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]mo
 	if i.State != nil {
 		urlVals.Add("state", *i.State)
 	}
+	urlVals.Add("state_required", i.StateRequired)
 	if i.Published != nil {
 		urlVals.Add("published", (*i.Published).String())
 	}

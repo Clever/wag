@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
@@ -13,19 +14,35 @@ var _ = json.Marshal
 var _ = strconv.FormatInt
 var _ = validate.Maximum
 var _ = strfmt.NewFormats
+var _ = swag.String
 
 // GetBooksInput holds the input parameters for a getBooks operation.
 type GetBooksInput struct {
-	Authors     []string
-	Available   *bool
-	State       *string
-	Published   *strfmt.Date
-	SnakeCase   *string
-	Completed   *strfmt.DateTime
-	MaxPages    *float64
-	MinPages    *int32
-	PagesToTime *float32
+	Authors       []string
+	Available     *bool
+	State         *string
+	StateRequired string
+	Published     *strfmt.Date
+	SnakeCase     *string
+	Completed     *strfmt.DateTime
+	MaxPages      *float64
+	MinPages      *int32
+	PagesToTime   *float32
 }
+
+const (
+	// StateRequiredFinished provides the 'finished' value for the state_required input of the GetBooks operation.
+	StateRequiredFinished = "finished"
+	// StateRequiredInprogress provides the 'inprogress' value for the state_required input of the GetBooks operation.
+	StateRequiredInprogress = "inprogress"
+)
+
+var (
+	// StateFinished provides the 'finished' value for the state input of the GetBooks operation.
+	StateFinished = swag.String("finished")
+	// StateInprogress provides the 'inprogress' value for the state input of the GetBooks operation.
+	StateInprogress = swag.String("inprogress")
+)
 
 // Validate returns an error if any of the GetBooksInput parameters don't satisfy the
 // requirements from the swagger yml file.
@@ -49,6 +66,9 @@ func (i GetBooksInput) Validate() error {
 		if err := validate.Enum("state", "query", *i.State, []interface{}{"finished", "inprogress"}); err != nil {
 			return err
 		}
+	}
+	if err := validate.Enum("state_required", "query", i.StateRequired, []interface{}{"finished", "inprogress"}); err != nil {
+		return err
 	}
 	if i.Published != nil {
 		if err := validate.FormatOf("published", "query", "date", (*i.Published).String(), strfmt.Default); err != nil {
