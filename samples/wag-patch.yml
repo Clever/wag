@@ -15,6 +15,7 @@ paths:
       description: Special wag patch type
       parameters:
         - name: specialPatch
+          x-wag-patch: true
           in: body
           schema:
             $ref: "#/definitions/Data"
@@ -23,7 +24,6 @@ paths:
           description: OK response
           schema:
             $ref: "#/definitions/Data"
-
 
 definitions:
 
@@ -41,7 +41,6 @@ definitions:
       nested:
         schema:
           $ref: "#/definitions/NestedData"
-
 
   NestedData:
     type: object

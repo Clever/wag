@@ -2,11 +2,12 @@ package models
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"strings"
 
-	"github.com/go-openapi/loads"
-	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/spec"
 
 	"github.com/Clever/wag/swagger"
@@ -17,11 +18,18 @@ import (
 )
 
 // Generate writes the files to the client directories
-func Generate(packageName, swaggerFile string, swagger spec.Swagger) error {
+func Generate(packageName string, swagger spec.Swagger) error {
+
+	// TODO: Almost certainly should re-generate this
+	modifiedSpecFile, err := extendedDefinitions(swagger)
+	if err != nil {
+		return err
+	}
+	defer os.Remove(modifiedSpecFile)
+
 	// generate models with go-swagger
-	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
 	if err := generator.GenerateServer("", []string{}, []string{}, generator.GenOpts{
-		Spec:           swaggerFile,
+		Spec:           modifiedSpecFile,
 		ModelPackage:   "models",
 		Target:         fmt.Sprintf("%s/src/%s/", os.Getenv("GOPATH"), packageName),
 		IncludeModel:   true,
@@ -38,6 +46,62 @@ func Generate(packageName, swaggerFile string, swagger spec.Swagger) error {
 		return fmt.Errorf("error generating inputs: %s", err)
 	}
 	return nil
+}
+
+func extendedDefinitions(s spec.Swagger) (string, error) {
+
+	definitionsToExtend := make(map[string]struct{})
+
+	for _, path := range s.Paths.Paths {
+		if path.Patch != nil {
+			for _, param := range path.Patch.Parameters {
+				wagPatch, ok := param.Extensions.GetBool("x-wag-patch")
+				if wagPatch && ok {
+					if param.Schema == nil {
+						return "", fmt.Errorf("TODO: nice error message")
+					}
+					ref := param.Schema.Ref.String()
+					if !strings.HasPrefix(ref, "#/definitions/") {
+						return "", fmt.Errorf("TODO: add a nice error message")
+					}
+					definitionsToExtend[ref[len("#/definitions/"):]] = struct{}{}
+				}
+			}
+		}
+	}
+
+	newDefinitions := make(spec.Definitions)
+	for name, definition := range s.Definitions {
+		newDefinitions[name] = definition
+		if _, ok := definitionsToExtend[name]; ok {
+			newName := "Patch" + name
+			if _, ok := s.Definitions[newName]; ok {
+				return "", fmt.Errorf("can't apply x-wag-patch extension. Conflict with name %s", newName)
+			}
+
+			// TODO: Add a nice comment...
+			var requiredFields []string
+			for field := range definition.Properties {
+				requiredFields = append(requiredFields, field)
+			}
+			definition.Required = requiredFields
+			newDefinitions[newName] = definition
+		}
+	}
+
+	s.Definitions = newDefinitions
+
+	bytes, err := json.Marshal(s)
+	if err != nil {
+		// TODO: Better error...
+		return "", err
+	}
+	fileName := "swagger.tmp"
+	if err := ioutil.WriteFile(fileName, bytes, 0644); err != nil {
+		return "", err
+	}
+
+	return fileName, nil
 }
 
 func generateInputs(packageName string, paths *spec.Paths) error {
