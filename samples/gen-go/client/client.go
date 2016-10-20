@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/Clever/wag/gen-go/models"
+	"github.com/Clever/wag/samples/gen-go/models"
 	"net/http"
 	"net/url"
 	"strconv"

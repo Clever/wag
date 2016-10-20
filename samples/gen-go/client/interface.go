@@ -1,15 +1,15 @@
-package server
+package client
 
 import (
 	"context"
 
-	"github.com/Clever/wag/gen-go/models"
+	"github.com/Clever/wag/samples/gen-go/models"
 )
 
-//go:generate $GOPATH/bin/mockgen -source=$GOFILE -destination=mock_controller.go -package=server
+//go:generate $GOPATH/bin/mockgen -source=$GOFILE -destination=mock_client.go -package=client
 
-// Controller defines the interface for the swagger-test service.
-type Controller interface {
+// Client defines the methods available to clients of the swagger-test service.
+type Client interface {
 
 	// GetBooks makes a GET request to /books.
 	// Returns a list of books

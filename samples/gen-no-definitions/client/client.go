@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/Clever/wag/gen-no-definitions/models"
+	"github.com/Clever/wag/samples/gen-no-definitions/models"
 	"net/http"
 	"net/url"
 	"strconv"

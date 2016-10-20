@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 
-	"github.com/Clever/wag/gen-no-definitions/models"
+	"github.com/Clever/wag/samples/gen-no-definitions/models"
 )
 
 //go:generate $GOPATH/bin/mockgen -source=$GOFILE -destination=mock_controller.go -package=server
