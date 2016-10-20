@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Clever/wag/gen-go/client"
-	"github.com/Clever/wag/gen-go/models"
-	"github.com/Clever/wag/gen-go/server"
+	"github.com/Clever/wag/samples/gen-go/client"
+	"github.com/Clever/wag/samples/gen-go/models"
+	"github.com/Clever/wag/samples/gen-go/server"
 	"github.com/stretchr/testify/assert"
 )
 

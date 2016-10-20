@@ -5,9 +5,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Clever/wag/gen-no-definitions/client"
-	"github.com/Clever/wag/gen-no-definitions/models"
-	"github.com/Clever/wag/gen-no-definitions/server"
+	"github.com/Clever/wag/samples/gen-no-definitions/client"
+	"github.com/Clever/wag/samples/gen-no-definitions/models"
+	"github.com/Clever/wag/samples/gen-no-definitions/server"
 	"github.com/stretchr/testify/assert"
 )
 

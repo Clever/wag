@@ -5,7 +5,7 @@ package server
 
 import (
 	context "context"
-	models "github.com/Clever/wag/gen-go/models"
+	models "github.com/Clever/wag/samples/gen-go/models"
 	gomock "github.com/golang/mock/gomock"
 )
 
