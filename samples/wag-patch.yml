@@ -1,0 +1,52 @@
+swagger: '2.0'
+info:
+  title: wag-patch
+  description: Wag Patch
+  version: "1.0.0"
+schemes:
+  - http
+produces:
+  - application/json
+
+paths:
+  /wagpatch:
+    patch:
+      operationId: wagpatch
+      description: Special wag patch type
+      parameters:
+        - name: specialPatch
+          in: body
+          schema:
+            $ref: "#/definitions/Data"
+      responses:
+        200:
+          description: OK response
+          schema:
+            $ref: "#/definitions/Data"
+
+
+definitions:
+
+  Data:
+    type: object
+    properties:
+      id:
+        type: string
+      num:
+        type: integer
+      arrayField:
+        type: array
+        items:
+          type: string
+      nested:
+        schema:
+          $ref: "#/definitions/NestedData"
+
+
+  NestedData:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
