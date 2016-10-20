@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/Clever/wag/swagger"
 	"github.com/go-openapi/spec"
 )
 
@@ -11,49 +12,71 @@ import (
 var alphaNumRegex = regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9]*$")
 
 // Validate checks if the swagger operation has any fields we don't support
-func validateOp(path, op string, s *spec.Operation) error {
-	if len(s.Consumes) != 0 {
+func validateOp(path, method string, op *spec.Operation) error {
+	if len(op.Consumes) != 0 {
 		return fmt.Errorf("%s %s cannot have a consumes field. WAG does not support the consumes field "+
-			"on operations", op, path)
+			"on operations", method, path)
 	}
-	if len(s.Produces) != 0 {
+	if len(op.Produces) != 0 {
 		return fmt.Errorf("%s %s cannot have a produces field. WAG does not support the produces field "+
-			"on operations", op, path)
+			"on operations", method, path)
 	}
-	if len(s.Schemes) != 0 {
+	if len(op.Schemes) != 0 {
 		return fmt.Errorf("%s %s cannot have a schemes field. WAG does not support the schemes field "+
-			"on operations", op, path)
+			"on operations", method, path)
 	}
-	if len(s.Security) != 0 {
+	if len(op.Security) != 0 {
 		return fmt.Errorf("%s %s cannot have a security field. WAG does not support the security field "+
-			"on operations", op, path)
+			"on operations", method, path)
 	}
 
-	if s.ID == "" {
+	if op.ID == "" {
 		return fmt.Errorf("%s %s must have an operationId field, "+
-			"see http://swagger.io/specification/#operationObject", op, path)
+			"see http://swagger.io/specification/#operationObject", method, path)
 	}
 
-	if !alphaNumRegex.MatchString(s.ID) {
+	if !alphaNumRegex.MatchString(op.ID) {
 		// We need this because we build function / struct names with the operationID.
 		// We could strip out the special characters, but it seems clearly to just enforce
 		// this.
 		return fmt.Errorf("The operationId for %s %s must be alphanumeric and start with a letter",
-			op, path)
+			method, path)
 	}
 
-	for _, param := range s.Parameters {
+	for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
+		if statusCode < 200 || statusCode > 599 {
+			return fmt.Errorf("Response map key must be an integer between 200 and 599 or "+
+				"the string 'default'. Was %d", statusCode)
+		}
+		if statusCode == 400 {
+			return fmt.Errorf("Use the pre-defined default 400 response 'DefaultBadRequest' " +
+				"instead of defining your own")
+		} else if statusCode == 500 {
+			return fmt.Errorf("Use the pre-defined default 500 response `DefaultInternalError` " +
+				"instead of defining your own")
+		}
+		_, err := swagger.TypeFromSchema(op.Responses.StatusCodeResponses[statusCode].Schema, false)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, param := range op.Parameters {
 		if param.In == "path" && !param.Required {
 			return fmt.Errorf("%s for %s %s is a path parameter so it must be required",
-				param.Name, op, path)
+				param.Name, method, path)
 		}
 
 		if param.Type == "string" && param.Format != "" {
 			if param.MaxLength != nil || param.MinLength != nil || param.Pattern != "" || len(param.Enum) > 0 {
 				return fmt.Errorf("%s for %s %s cannot have min/max length, pattern, or enum fields. "+
 					"Only string type parameters without a format can have additional validation.",
-					param.Name, op, path)
+					param.Name, method, path)
 			}
+		}
+
+		if param.Type == "array" && param.Items.Type != "string" {
+			return fmt.Errorf("Array parameters must have string sub-types")
 		}
 	}
 

@@ -181,9 +181,6 @@ func generateOutputs(packageName string, paths *spec.Paths) error {
 			// 	defined above
 			// 2. 400-599 - these are "failure" responses and implement the error interface
 			// 3. Default - this is defined as a 500
-			if err := validateStatusCodes(op.Responses.StatusCodeResponses); err != nil {
-				return err
-			}
 			successTypes, err := generateSuccessTypes(capOpID, op.Responses.StatusCodeResponses)
 			if err != nil {
 				return err
@@ -197,24 +194,6 @@ func generateOutputs(packageName string, paths *spec.Paths) error {
 		}
 	}
 	return g.WriteFile("models/outputs.go")
-}
-
-func validateStatusCodes(responses map[int]spec.Response) error {
-	for _, statusCode := range swagger.SortedStatusCodeKeys(responses) {
-		if statusCode < 200 || statusCode > 599 {
-			// TODO: Write a test for this...
-			return fmt.Errorf("Response map key must be an integer between 200 and 599 or "+
-				"the string 'default'. Was %d", statusCode)
-		}
-		if statusCode == 400 {
-			return fmt.Errorf("Use the pre-defined default 400 response 'DefaultBadRequest' " +
-				"instead of defining your own")
-		} else if statusCode == 500 {
-			return fmt.Errorf("Use the pre-defined default 500 response `DefaultInternalError` " +
-				"instead of defining your own")
-		}
-	}
-	return nil
 }
 
 func generateSuccessTypes(capOpID string, responses map[int]spec.Response) (string, error) {

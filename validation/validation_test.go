@@ -23,6 +23,7 @@ func TestValidatePathParams(t *testing.T) {
 	param.In = "path"
 	param.Required = false
 	op.Parameters = []spec.Parameter{param}
+	op.Responses = &spec.Responses{}
 	err := validateOp("/books", "GET", &op)
 	assert.Error(t, err)
 	assert.Equal(t, "paramName for GET /books is a path parameter so it must be required", err.Error())
