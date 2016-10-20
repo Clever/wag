@@ -70,9 +70,9 @@ func (d retryDoer) Do(c *http.Client, r *http.Request) (*http.Response, error) {
 		return resp, err
 	}
 
-	// If the request can't be retried then just return immediately. For this proof of concept only
-	// GETs can be retried
-	if r.Method != "GET" {
+	// If the request can't be retried then just return immediately. We retry all idempotent
+	// http requests. The only two that can't be retried are post and patch
+	if r.Method == "POST" || r.Method == "PATCH" {
 		return resp, err
 	}
 
@@ -86,6 +86,7 @@ func (d retryDoer) Do(c *http.Client, r *http.Request) (*http.Response, error) {
 		if resp.StatusCode < 500 {
 			break
 		}
+		resp.Body.Close()
 		resp, err = d.d.Do(c, r)
 	}
 	return resp, err
