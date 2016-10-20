@@ -94,7 +94,7 @@ func JoinByFormat(data []string, format string) string {
 
 // Wagpatch makes a PATCH request to /wagpatch.
 // Special wag patch type
-func (c *WagClient) Wagpatch(ctx context.Context, i *models.Data) (*models.Data, error) {
+func (c *WagClient) Wagpatch(ctx context.Context, i *models.PatchData) (*models.Data, error) {
 	path := c.basePath + "/wagpatch"
 	urlVals := url.Values{}
 	var body []byte

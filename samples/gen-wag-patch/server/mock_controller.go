@@ -30,7 +30,7 @@ func (_m *MockController) EXPECT() *_MockControllerRecorder {
 	return _m.recorder
 }
 
-func (_m *MockController) Wagpatch(ctx context.Context, i *models.Data) (*models.Data, error) {
+func (_m *MockController) Wagpatch(ctx context.Context, i *models.PatchData) (*models.Data, error) {
 	ret := _m.ctrl.Call(_m, "Wagpatch", ctx, i)
 	ret0, _ := ret[0].(*models.Data)
 	ret1, _ := ret[1].(error)

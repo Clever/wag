@@ -13,5 +13,5 @@ type Controller interface {
 
 	// Wagpatch makes a PATCH request to /wagpatch.
 	// Special wag patch type
-	Wagpatch(ctx context.Context, i *models.Data) (*models.Data, error)
+	Wagpatch(ctx context.Context, i *models.PatchData) (*models.Data, error)
 }

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strings"
 
 	"github.com/go-openapi/spec"
 
@@ -48,26 +47,13 @@ func Generate(packageName string, swagger spec.Swagger) error {
 	return nil
 }
 
+// TODO: Add a nice coment and clean up this definition
 func extendedDefinitions(s spec.Swagger) (string, error) {
 
-	definitionsToExtend := make(map[string]struct{})
-
-	for _, path := range s.Paths.Paths {
-		if path.Patch != nil {
-			for _, param := range path.Patch.Parameters {
-				wagPatch, ok := param.Extensions.GetBool("x-wag-patch")
-				if wagPatch && ok {
-					if param.Schema == nil {
-						return "", fmt.Errorf("TODO: nice error message")
-					}
-					ref := param.Schema.Ref.String()
-					if !strings.HasPrefix(ref, "#/definitions/") {
-						return "", fmt.Errorf("TODO: add a nice error message")
-					}
-					definitionsToExtend[ref[len("#/definitions/"):]] = struct{}{}
-				}
-			}
-		}
+	definitionsToExtend, err := swagger.WagPatchDataTypes(s.Paths.Paths)
+	if err != nil {
+		// TODO: better error message
+		return "", err
 	}
 
 	newDefinitions := make(spec.Definitions)
