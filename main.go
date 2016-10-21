@@ -121,35 +121,3 @@ func importStatements(imports []string) string {
 	output += ")\n\n"
 	return output
 }
-
-func typeFromSchema(schema *spec.Schema) (string, error) {
-	// We support three types of schemas
-	// 1. An empty schema
-	// 2. A schema with one element, the $ref key
-	// 3. A schema with two elements. One a type with value 'array' and another items field
-	// referencing the $ref
-	if schema == nil {
-		// represent this as a string, which is empty by default
-		return "string", nil
-	} else if schema.Ref.String() != "" {
-		ref := schema.Ref.String()
-		if !strings.HasPrefix(ref, "#/definitions/") {
-			return "", fmt.Errorf("schema.$ref has undefined reference type. Must be #/definitions")
-		}
-		return ref[len("#/definitions/"):], nil
-	} else {
-		schemaType := schema.Type
-		if len(schemaType) != 1 || schemaType[0] != "array" {
-			return "", fmt.Errorf("Two element schemas must have a 'type' field with the value 'array'")
-		}
-		items := schema.Items
-		if items == nil || items.Schema == nil {
-			return "", fmt.Errorf("Two element schemas must have an '$ref' field in the 'items' descriptions")
-		}
-		ref := items.Schema.Ref.String()
-		if !strings.HasPrefix(ref, "#/definitions/") {
-			return "", fmt.Errorf("schema.$ref has undefined reference type. Must be #/definitions")
-		}
-		return "[]" + ref[len("#/definitions/"):], nil
-	}
-}
