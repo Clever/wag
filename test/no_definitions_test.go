@@ -22,7 +22,7 @@ func (m *NoDefinitionsController) DeleteBook(ctx context.Context, i *models.Dele
 
 func TestNoDefinitions(t *testing.T) {
 	s := server.New(&NoDefinitionsController{}, "")
-	testServer := httptest.NewServer(testContextMiddleware(s.Handler))
+	testServer := httptest.NewServer(s.Handler)
 	c := client.New(testServer.URL)
 
 	// Success
