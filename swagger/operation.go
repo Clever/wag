@@ -2,7 +2,6 @@ package swagger
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/go-openapi/spec"
 )
@@ -117,48 +116,44 @@ func SingleSchemaedBodyParameter(op *spec.Operation) (bool, string) {
 		if err != nil {
 			panic(err)
 		}
-		// Assuming that we're in a patch here (should we check that somehow???)
-		if t, _ := wagPatchType(op); t != "" {
-			typ = "Patch" + t
+		if wagPatchParam(op) != nil {
+			typ = "Patch" + typ
 		}
 		return true, typ
 	}
 	return false, ""
 }
 
-func wagPatchType(op *spec.Operation) (string, error) {
+// wagPatchParam returns a pointer to the schema for a x-patch-param if one
+// exists.
+func wagPatchParam(op *spec.Operation) *spec.Schema {
 	for _, param := range op.Parameters {
 		wagPatch, ok := param.Extensions.GetBool("x-wag-patch")
 		if wagPatch && ok {
-			if param.Schema == nil {
-				// TODO: Should move these to validation before this code?
-				return "", fmt.Errorf("TODO: nice error message")
-			}
-			ref := param.Schema.Ref.String()
-			if !strings.HasPrefix(ref, "#/definitions/") {
-				return "", fmt.Errorf("TODO: add a nice error message")
-			}
-			return ref[len("#/definitions/"):], nil
+			return param.Schema
 		}
 	}
-	return "", nil
+	return nil
 }
 
-// WagPatchDataTypes returns a set of all the data types that will have Patch{{Name}}
-// structs created. This the input parameters marked with `x-wag-patch`
+// WagPatchDataTypes returns a set of all the data types that have x-wag-patch associated
+// with them. These data types should also have a Patch{{Name}} data type created for them.
 func WagPatchDataTypes(paths map[string]spec.PathItem) (map[string]struct{}, error) {
 
-	// TODO: Better name from definitionsToExtend
-	definitionsToExtend := make(map[string]struct{})
-
+	wagPatchDataTypes := make(map[string]struct{})
 	for _, path := range paths {
 		if path.Patch != nil {
-			typeStr, err := wagPatchType(path.Patch)
-			if err != nil {
-				return nil, err
+			schema := wagPatchParam(path.Patch)
+
+			if schema != nil {
+				typ, err := TypeFromSchema(schema, false)
+				if err != nil {
+					return nil, err
+				}
+				wagPatchDataTypes[typ] = struct{}{}
 			}
-			definitionsToExtend[typeStr] = struct{}{}
+
 		}
 	}
-	return definitionsToExtend, nil
+	return wagPatchDataTypes, nil
 }

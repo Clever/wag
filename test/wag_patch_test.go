@@ -26,7 +26,9 @@ func (w *WagPatchController) Wagpatch(ctx context.Context, i *models.PatchData) 
 	if i.Num != nil {
 		w.Data.Num = *i.Num
 	}
-	// TODO: Add nested...
+	if i.Nested != nil {
+		w.Data.Nested = i.Nested
+	}
 	return w.Data, nil
 }
 
@@ -42,32 +44,38 @@ func TestWagPatch(t *testing.T) {
 	out, err := c.Wagpatch(context.Background(), &models.PatchData{
 		ID:         &id,
 		ArrayField: []string{"start"},
-		Num:        &num})
+		Num:        &num,
+		Nested:     &models.NestedData{Name: "test"}})
 	assert.NoError(t, err)
 	assert.Equal(t, "id", out.ID)
 	assert.Equal(t, int64(4), out.Num)
 	assert.Equal(t, 1, len(out.ArrayField))
+	assert.Equal(t, "test", out.Nested.Name)
 
 	// Setting the values to nil shouldn't do anything
 	out, err = c.Wagpatch(context.Background(), &models.PatchData{
 		ID:         nil,
 		ArrayField: nil,
 		Num:        nil,
+		Nested:     nil,
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, "id", out.ID)
 	assert.Equal(t, int64(4), out.Num)
 	assert.Equal(t, 1, len(out.ArrayField))
+	assert.Equal(t, "test", out.Nested.Name)
 
 	id = ""
 	num = int64(0)
 	out, err = c.Wagpatch(context.Background(), &models.PatchData{
 		ID: &id,
 		//ArrayField: []string{},
-		Num: &num})
+		Num:    &num,
+		Nested: &models.NestedData{}})
 	assert.NoError(t, err)
 	assert.Equal(t, "", out.ID)
 	assert.Equal(t, int64(0), out.Num)
 	// TODO: Fix this in go-swagger
 	//assert.Equal(t, 0, len(out.ArrayField))
+	assert.Equal(t, "", out.Nested.Name)
 }

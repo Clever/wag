@@ -26,7 +26,7 @@ type PatchData struct {
 
 	/* nested
 	 */
-	Nested interface{} `json:"nested,omitempty"`
+	Nested *NestedData `json:"nested,omitempty"`
 
 	/* num
 	 */
@@ -42,6 +42,11 @@ func (m *PatchData) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateNested(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -52,6 +57,22 @@ func (m *PatchData) validateArrayField(formats strfmt.Registry) error {
 
 	if swag.IsZero(m.ArrayField) { // not required
 		return nil
+	}
+
+	return nil
+}
+
+func (m *PatchData) validateNested(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Nested) { // not required
+		return nil
+	}
+
+	if m.Nested != nil {
+
+		if err := m.Nested.Validate(formats); err != nil {
+			return err
+		}
 	}
 
 	return nil

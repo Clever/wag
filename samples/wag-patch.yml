@@ -39,8 +39,7 @@ definitions:
         items:
           type: string
       nested:
-        schema:
-          $ref: "#/definitions/NestedData"
+        $ref: "#/definitions/NestedData"
 
   NestedData:
     type: object
