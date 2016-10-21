@@ -5,9 +5,9 @@ package models
 
 import (
 	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 
 	"github.com/go-openapi/errors"
-	"github.com/go-openapi/validate"
 )
 
 /*PatchData patch data
@@ -17,28 +17,20 @@ swagger:model PatchData
 type PatchData struct {
 
 	/* array field
-
-	Required: true
-	*/
-	ArrayField []string `json:"arrayField"`
+	 */
+	ArrayField []string `json:"arrayField,omitempty"`
 
 	/* id
-
-	Required: true
-	*/
-	ID *string `json:"id"`
+	 */
+	ID *string `json:"id,omitempty"`
 
 	/* nested
-
-	Required: true
-	*/
-	Nested interface{} `json:"nested"`
+	 */
+	Nested interface{} `json:"nested,omitempty"`
 
 	/* num
-
-	Required: true
-	*/
-	Num *int64 `json:"num"`
+	 */
+	Num *int64 `json:"num,omitempty"`
 }
 
 // Validate validates this patch data
@@ -46,21 +38,6 @@ func (m *PatchData) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateArrayField(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateID(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateNested(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateNum(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -73,31 +50,8 @@ func (m *PatchData) Validate(formats strfmt.Registry) error {
 
 func (m *PatchData) validateArrayField(formats strfmt.Registry) error {
 
-	if err := validate.Required("arrayField", "body", m.ArrayField); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *PatchData) validateID(formats strfmt.Registry) error {
-
-	if err := validate.Required("id", "body", m.ID); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *PatchData) validateNested(formats strfmt.Registry) error {
-
-	return nil
-}
-
-func (m *PatchData) validateNum(formats strfmt.Registry) error {
-
-	if err := validate.Required("num", "body", m.Num); err != nil {
-		return err
+	if swag.IsZero(m.ArrayField) { // not required
+		return nil
 	}
 
 	return nil

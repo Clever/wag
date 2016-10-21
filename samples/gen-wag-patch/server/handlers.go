@@ -130,8 +130,8 @@ func (h handler) WagpatchHandler(ctx context.Context, w http.ResponseWriter, r *
 }
 
 // newWagpatchInput takes in an http.Request an returns the input struct.
-func newWagpatchInput(r *http.Request) (*models.Data, error) {
-	var input models.Data
+func newWagpatchInput(r *http.Request) (*models.PatchData, error) {
+	var input models.PatchData
 
 	var err error
 	_ = err

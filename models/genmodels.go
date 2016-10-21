@@ -67,11 +67,15 @@ func extendedDefinitions(s spec.Swagger) (string, error) {
 
 			// TODO: Add a nice comment...
 			var requiredFields []string
-			for field := range definition.Properties {
+			newProps := make(map[string]spec.Schema)
+			for field, prop := range definition.Properties {
 				requiredFields = append(requiredFields, field)
+				prop.AddExtension("x-isnullable", true)
+				newProps[field] = prop
 			}
-			definition.Required = requiredFields
+			definition.Properties = newProps
 			newDefinitions[newName] = definition
+
 		}
 	}
 
