@@ -2,7 +2,7 @@ include golang.mk
 .DEFAULT_GOAL := test # override default goal set in library makefile
 .PHONY: test build
 PKG := github.com/Clever/wag
-PKGS := $(shell go list ./... | grep -v /vendor | grep -v /gen-go | grep -v /gen-no-definitions | grep -v /hardcoded)
+PKGS := $(shell go list ./... | grep -v /vendor | grep -v /samples/gen* | grep -v /hardcoded)
 $(eval $(call golang-version-check,1.7))
 
 MOCKGEN := $(GOPATH)/bin/mockgen
