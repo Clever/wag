@@ -124,7 +124,7 @@ func SingleSchemaedBodyParameter(op *spec.Operation) (bool, string) {
 	return false, ""
 }
 
-// wagPatchParam returns a pointer to the schema for a x-patch-param if one
+// wagPatchParam returns a pointer to the schema for a x-wag-patch if one
 // exists.
 func wagPatchParam(op *spec.Operation) *spec.Schema {
 	for _, param := range op.Parameters {
