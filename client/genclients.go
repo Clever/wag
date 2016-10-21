@@ -125,6 +125,9 @@ func generateClient(packageName string, s spec.Swagger) error {
 		pathItemOps := swagger.PathItemOperations(pathItem)
 		for _, method := range swagger.SortedOperationsKeys(pathItemOps) {
 			op := pathItemOps[method]
+			if op.Deprecated {
+				continue
+			}
 			codeTemplate.Methods = append(codeTemplate.Methods, methodCode(op, s.BasePath, method, path))
 		}
 	}
@@ -151,6 +154,11 @@ func generateInterface(packageName string, serviceName string, paths *spec.Paths
 		path := paths.Paths[pathKey]
 		pathItemOps := swagger.PathItemOperations(path)
 		for _, method := range swagger.SortedOperationsKeys(pathItemOps) {
+			op := pathItemOps[method]
+			if op.Deprecated {
+				continue
+			}
+
 			g.Printf("\t%s\n", swagger.InterfaceComment(method, pathKey, pathItemOps[method]))
 			g.Printf("\t%s\n\n", swagger.Interface(pathItemOps[method]))
 		}
