@@ -207,7 +207,40 @@ Currently, WAG doesn't implement the entire Swagger Spec. A couple things to kee
 - All parameters and definitions should be defined in their specific path object instead of globally.
 - Scheme, produces, and consumers can only be defined in the top-level swagger object, not individual operations. On the top level object the scheme must be 'http', produces must be 'application/json' and consumes must be 'application/json'
 
-Below is a more comprehensive list of the features that aren't currently supported.
+Below is a more comprehensive list of the features we don't support along with some custom extensions.
+
+### Extensions
+You can mark a patch request parameter with the flag `x-wag-patch`. This is a convenience method that
+automatically generates a new data type based on the schema of the patch with all its fields optionals.
+This allows you to re-use your data types while also getting nice, backwards-compatible patch methods.
+
+For example:
+```
+  operationId: wagPatch
+  parameters:
+    - name: testPatch
+      x-wag-patch: true
+      in: body
+      schema:
+        $ref: "#/definitions/Data"
+```
+```
+  Data:
+    type: object
+    properties:
+      name:
+        type: string
+```
+
+Generates a new data type, PatchData, and changes the interface of wagPatch
+```
+type PatchData struct {
+  Name *string `json:"name"`
+}
+```
+func WagPatch(ctx context.Context, i *models.DataPatch) error
+```
+
 
 ### Unsupported Features
 Mime Types
