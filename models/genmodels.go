@@ -68,7 +68,7 @@ func specWithWagPatchTypes(s spec.Swagger) (string, error) {
 				return "", fmt.Errorf("can't apply x-wag-patch extension. Conflict with name %s", newName)
 			}
 
-			// Mark all the proeprties nullable so they show up as pointers. We do this so that
+			// Mark all the properties nullable so they show up as pointers. We do this so that
 			// all the fields in the patch type are optional.
 			// We don't use the required field in the swagger schema since go-swagger makes optional
 			// fields non-pointers (we're not sure why)
