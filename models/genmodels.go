@@ -26,7 +26,7 @@ func Generate(packageName string, swagger spec.Swagger) error {
 	defer os.Remove(modifiedSpecFile)
 
 	// generate models with go-swagger
-	if err := generator.GenerateServer("", []string{}, []string{}, generator.GenOpts{
+	if err := generator.GenerateServer("", []string{}, []string{}, &generator.GenOpts{
 		Spec:           modifiedSpecFile,
 		ModelPackage:   "models",
 		Target:         fmt.Sprintf("%s/src/%s/", os.Getenv("GOPATH"), packageName),

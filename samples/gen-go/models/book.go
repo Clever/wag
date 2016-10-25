@@ -9,22 +9,17 @@ import (
 	"github.com/go-openapi/errors"
 )
 
-/*Book book
-
-swagger:model Book
-*/
+// Book book
+// swagger:model Book
 type Book struct {
 
-	/* author
-	 */
+	// author
 	Author string `json:"author,omitempty"`
 
-	/* id
-	 */
+	// id
 	ID int64 `json:"id,omitempty"`
 
-	/* name
-	 */
+	// name
 	Name string `json:"name,omitempty"`
 }
 

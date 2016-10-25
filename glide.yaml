@@ -11,6 +11,7 @@ import:
 - package: github.com/go-swagger/go-swagger
   subpackages:
   - generator
+  version: dae55c0fc2df02e480114804b1d5b35a0e584c66
 - package: github.com/golang/mock
   subpackages:
   - gomock
