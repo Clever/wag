@@ -237,7 +237,7 @@ Generates a new data type, PatchData, and changes the interface of wagPatch
 type PatchData struct {
   Name *string `json:"name"`
 }
-```
+
 func WagPatch(ctx context.Context, i *models.DataPatch) error
 ```
 
