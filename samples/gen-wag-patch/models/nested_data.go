@@ -9,18 +9,14 @@ import (
 	"github.com/go-openapi/errors"
 )
 
-/*NestedData nested data
-
-swagger:model NestedData
-*/
+// NestedData nested data
+// swagger:model NestedData
 type NestedData struct {
 
-	/* id
-	 */
+	// id
 	ID string `json:"id,omitempty"`
 
-	/* name
-	 */
+	// name
 	Name string `json:"name,omitempty"`
 }
 

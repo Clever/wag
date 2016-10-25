@@ -10,26 +10,20 @@ import (
 	"github.com/go-openapi/errors"
 )
 
-/*PatchData patch data
-
-swagger:model PatchData
-*/
+// PatchData patch data
+// swagger:model PatchData
 type PatchData struct {
 
-	/* array field
-	 */
-	ArrayField []string `json:"arrayField,omitempty"`
+	// array field
+	ArrayField []string `json:"arrayField"`
 
-	/* id
-	 */
+	// id
 	ID *string `json:"id,omitempty"`
 
-	/* nested
-	 */
+	// nested
 	Nested *NestedData `json:"nested,omitempty"`
 
-	/* num
-	 */
+	// num
 	Num *int64 `json:"num,omitempty"`
 }
 
