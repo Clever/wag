@@ -238,15 +238,18 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 		BaseStringToTypeCode: swagger.BaseStringToTypeCode(),
 	}
 
+	wagPatchTypes, err := swagger.WagPatchDataTypes(paths.Paths)
+	if err != nil {
+		return err
+	}
+
 	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
 		path := paths.Paths[pathKey]
 		pathItemOps := swagger.PathItemOperations(path)
 		for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
 			op := pathItemOps[opKey]
 
-			// TODO: Fill this in...
-
-			operationHandler, err := generateOperationHandler(op)
+			operationHandler, err := generateOperationHandler(op, wagPatchTypes)
 			if err != nil {
 				return err
 			}
@@ -268,7 +271,7 @@ var jsonMarshalString = `
 `
 
 // generateOperationHandler generates the handler code for a single handler
-func generateOperationHandler(op *spec.Operation) (string, error) {
+func generateOperationHandler(op *spec.Operation, wagPatchTypes map[string]struct{}) (string, error) {
 	typeToCode := make(map[string]int)
 	emptyResponseCode := 200
 	for code, typeStr := range swagger.CodeToTypeMap(op) {
@@ -298,7 +301,7 @@ func generateOperationHandler(op *spec.Operation) (string, error) {
 		return "", err
 	}
 
-	newInputCode, err := generateNewInput(op)
+	newInputCode, err := generateNewInput(op, wagPatchTypes)
 	if err != nil {
 		return "", err
 	}
@@ -396,7 +399,7 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 }
 `
 
-func generateNewInput(op *spec.Operation) (string, error) {
+func generateNewInput(op *spec.Operation, wagPatchTypes map[string]struct{}) (string, error) {
 	var buf bytes.Buffer
 	capOpID := swagger.Capitalize(op.ID)
 
@@ -475,6 +478,11 @@ func generateNewInput(op *spec.Operation) (string, error) {
 			typeName, err := swagger.TypeFromSchema(param.Schema, true)
 			if err != nil {
 				return "", err
+			}
+			noModelsTypeName, _ := swagger.TypeFromSchema(param.Schema, false)
+			if _, ok := wagPatchTypes[noModelsTypeName]; ok {
+				// This is a hack that doesn't work on arrays
+				typeName = "models.Patch" + noModelsTypeName
 			}
 
 			buf.WriteString(fmt.Sprintf("\tdata, err := ioutil.ReadAll(r.Body)\n"))
