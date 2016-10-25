@@ -14,12 +14,7 @@ import (
 // swagger:model PatchData
 type PatchData struct {
 
-<<<<<<< HEAD
 	// array field
-=======
-	/* array field
-	 */
->>>>>>> Add generated code
 	ArrayField []string `json:"arrayField"`
 
 	// id
