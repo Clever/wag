@@ -68,14 +68,13 @@ func TestWagPatch(t *testing.T) {
 	id = ""
 	num = int64(0)
 	out, err = c.Wagpatch(context.Background(), &models.PatchData{
-		ID: &id,
-		//ArrayField: []string{},
-		Num:    &num,
-		Nested: &models.NestedData{}})
+		ID:         &id,
+		ArrayField: []string{},
+		Num:        &num,
+		Nested:     &models.NestedData{}})
 	assert.NoError(t, err)
 	assert.Equal(t, "", out.ID)
 	assert.Equal(t, int64(0), out.Num)
-	// TODO: Fix this in go-swagger
-	//assert.Equal(t, 0, len(out.ArrayField))
+	assert.Equal(t, 0, len(out.ArrayField))
 	assert.Equal(t, "", out.Nested.Name)
 }
