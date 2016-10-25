@@ -249,7 +249,7 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 		for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
 			op := pathItemOps[opKey]
 
-			operationHandler, err := generateOperationHandler(op, wagPatchTypes)
+			operationHandler, err := generateOperationHandler(op, opKey, wagPatchTypes)
 			if err != nil {
 				return err
 			}
@@ -271,7 +271,7 @@ var jsonMarshalString = `
 `
 
 // generateOperationHandler generates the handler code for a single handler
-func generateOperationHandler(op *spec.Operation, wagPatchTypes map[string]struct{}) (string, error) {
+func generateOperationHandler(op *spec.Operation, method string, wagPatchTypes map[string]struct{}) (string, error) {
 	typeToCode := make(map[string]int)
 	emptyResponseCode := 200
 	for code, typeStr := range swagger.CodeToTypeMap(op) {
@@ -301,7 +301,7 @@ func generateOperationHandler(op *spec.Operation, wagPatchTypes map[string]struc
 		return "", err
 	}
 
-	newInputCode, err := generateNewInput(op, wagPatchTypes)
+	newInputCode, err := generateNewInput(op, method, wagPatchTypes)
 	if err != nil {
 		return "", err
 	}
@@ -399,7 +399,7 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 }
 `
 
-func generateNewInput(op *spec.Operation, wagPatchTypes map[string]struct{}) (string, error) {
+func generateNewInput(op *spec.Operation, method string, wagPatchTypes map[string]struct{}) (string, error) {
 	var buf bytes.Buffer
 	capOpID := swagger.Capitalize(op.ID)
 
@@ -480,7 +480,7 @@ func generateNewInput(op *spec.Operation, wagPatchTypes map[string]struct{}) (st
 				return "", err
 			}
 			noModelsTypeName, _ := swagger.TypeFromSchema(param.Schema, false)
-			if _, ok := wagPatchTypes[noModelsTypeName]; ok {
+			if _, ok := wagPatchTypes[noModelsTypeName]; ok && strings.ToUpper(method) == "PATCH" {
 				// This is a hack that doesn't work on arrays
 				typeName = "models.Patch" + noModelsTypeName
 			}

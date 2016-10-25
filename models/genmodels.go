@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/go-openapi/spec"
 
@@ -133,7 +134,7 @@ var _ = strfmt.NewFormats
 			if ssbp, _ := swagger.SingleSchemaedBodyParameter(op); ssbp {
 				continue
 			}
-			if err := printInputStruct(&g, op, wagPatchTypes); err != nil {
+			if err := printInputStruct(&g, op, opKey, wagPatchTypes); err != nil {
 				return err
 			}
 			if err := printInputValidation(&g, op); err != nil {
@@ -145,7 +146,7 @@ var _ = strfmt.NewFormats
 	return g.WriteFile("models/inputs.go")
 }
 
-func printInputStruct(g *swagger.Generator, op *spec.Operation, wagPatchTypes map[string]struct{}) error {
+func printInputStruct(g *swagger.Generator, op *spec.Operation, method string, wagPatchTypes map[string]struct{}) error {
 	capOpID := swagger.Capitalize(op.ID)
 	g.Printf("// %sInput holds the input parameters for a %s operation.\n", capOpID, op.ID)
 	g.Printf("type %sInput struct {\n", capOpID)
@@ -167,7 +168,7 @@ func printInputStruct(g *swagger.Generator, op *spec.Operation, wagPatchTypes ma
 			if err != nil {
 				return err
 			}
-			if _, ok := wagPatchTypes[typeName]; ok {
+			if _, ok := wagPatchTypes[typeName]; ok && strings.ToUpper(method) == "PATCH" {
 				typeName = "Patch" + typeName
 			}
 			// All schema types are pointers
