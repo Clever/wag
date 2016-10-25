@@ -145,3 +145,94 @@ func newWagpatchInput(r *http.Request) (*models.PatchData, error) {
 
 	return &input, nil
 }
+
+// statusCodeForWagpatch2 returns the status code corresponding to the returned
+// object. It returns -1 if the type doesn't correspond to anything.
+func statusCodeForWagpatch2(obj interface{}) int {
+
+	switch obj.(type) {
+
+	case *models.Data:
+		return 200
+
+	case models.Data:
+		return 200
+
+	case models.DefaultBadRequest:
+		return 400
+	case models.DefaultInternalError:
+		return 500
+	default:
+		return -1
+	}
+}
+
+func (h handler) Wagpatch2Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+
+	input, err := newWagpatch2Input(r)
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		return
+	}
+
+	err = input.Validate()
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		return
+	}
+
+	resp, err := h.Wagpatch2(ctx, input)
+
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		statusCode := statusCodeForWagpatch2(err)
+		if statusCode != -1 {
+			http.Error(w, err.Error(), statusCode)
+		} else {
+			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	respBytes, err := json.Marshal(resp)
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCodeForWagpatch2(resp))
+	w.Write(respBytes)
+
+}
+
+// newWagpatch2Input takes in an http.Request an returns the input struct.
+func newWagpatch2Input(r *http.Request) (*models.Wagpatch2Input, error) {
+	var input models.Wagpatch2Input
+
+	var err error
+	_ = err
+
+	otherStr := r.URL.Query().Get("other")
+	if len(otherStr) != 0 {
+		var otherTmp string
+		otherTmp, err = otherStr, error(nil)
+		if err != nil {
+			return nil, err
+		}
+		input.Other = &otherTmp
+
+	}
+	data, err := ioutil.ReadAll(r.Body)
+	if len(data) > 0 {
+		input.SpecialPatch = &models.PatchData{}
+		if err := json.NewDecoder(bytes.NewReader(data)).Decode(input.SpecialPatch); err != nil {
+			return nil, err
+		}
+	}
+
+	return &input, nil
+}

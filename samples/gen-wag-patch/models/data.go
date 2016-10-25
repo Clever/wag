@@ -14,7 +14,12 @@ import (
 // swagger:model Data
 type Data struct {
 
+<<<<<<< HEAD
 	// array field
+=======
+	/* array field
+	 */
+>>>>>>> Add generated code
 	ArrayField []string `json:"arrayField"`
 
 	// id
