@@ -1,0 +1,11 @@
+{
+  "name": "swagger-test",
+  "version": "0.1.0",
+  "description": "Testing Swagger Codegen",
+  "main": "index.js",
+  "dependencies": {
+    "@clever/discovery": "0.0.8",
+    "opentracing": "^0.11.1",
+    "request": "^2.75.0"
+  }
+}
