@@ -31,11 +31,13 @@ func TypeFromSchema(schema *spec.Schema, includeModels bool) (string, error) {
 	} else {
 		schemaType := schema.Type
 		if len(schemaType) != 1 || schemaType[0] != "array" {
-			return "", fmt.Errorf("Two element schemas must have a 'type' field with the value 'array'")
+			return "", fmt.Errorf("Cannot define complex data types inline. They must be defined in" +
+				"the #/definitions section of the swagger yaml")
 		}
 		items := schema.Items
 		if items == nil || items.Schema == nil {
-			return "", fmt.Errorf("Two element schemas must have a '$ref' field in the 'items' descriptions")
+			return "", fmt.Errorf("Cannot define complex data types inline. They must be defined in" +
+				"the #/definitions section of the swagger yaml")
 		}
 		ref := items.Schema.Ref.String()
 		if !strings.HasPrefix(ref, "#/definitions/") {
