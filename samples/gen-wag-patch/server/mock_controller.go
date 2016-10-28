@@ -40,3 +40,14 @@ func (_m *MockController) Wagpatch(ctx context.Context, i *models.PatchData) (*m
 func (_mr *_MockControllerRecorder) Wagpatch(arg0, arg1 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "Wagpatch", arg0, arg1)
 }
+
+func (_m *MockController) Wagpatch2(ctx context.Context, i *models.Wagpatch2Input) (*models.Data, error) {
+	ret := _m.ctrl.Call(_m, "Wagpatch2", ctx, i)
+	ret0, _ := ret[0].(*models.Data)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockControllerRecorder) Wagpatch2(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "Wagpatch2", arg0, arg1)
+}

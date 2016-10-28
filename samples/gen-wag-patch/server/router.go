@@ -58,6 +58,11 @@ func New(c Controller, addr string) *Server {
 		h.WagpatchHandler(r.Context(), w, r)
 	})
 
+	r.Methods("PATCH").Path("/wagpatch2").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger.FromContext(r.Context()).AddContext("op", "wagpatch2")
+		h.Wagpatch2Handler(r.Context(), w, r)
+	})
+
 	handler := withMiddleware("wag-patch", r)
 	return &Server{Handler: handler, addr: addr, l: l}
 }

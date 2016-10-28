@@ -167,3 +167,82 @@ func (c *WagClient) Wagpatch(ctx context.Context, i *models.PatchData) (*models.
 		return nil, models.DefaultInternalError{Msg: "Unknown response"}
 	}
 }
+
+// Wagpatch2 makes a PATCH request to /wagpatch2.
+// Wag patch with another argument
+func (c *WagClient) Wagpatch2(ctx context.Context, i *models.Wagpatch2Input) (*models.Data, error) {
+	path := c.basePath + "/wagpatch2"
+	urlVals := url.Values{}
+	var body []byte
+
+	if i.Other != nil {
+		urlVals.Add("other", *i.Other)
+	}
+	path = path + "?" + urlVals.Encode()
+
+	if i.SpecialPatch != nil {
+
+		var err error
+		body, err = json.Marshal(i.SpecialPatch)
+
+		if err != nil {
+			return nil, err
+		}
+
+	}
+
+	client := &http.Client{Transport: c.transport}
+	req, err := http.NewRequest("PATCH", path, bytes.NewBuffer(body))
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Add the opname for doers like tracing
+	ctx = context.WithValue(ctx, opNameCtx{}, "wagpatch2")
+	req = req.WithContext(ctx)
+	// Don't add the timeout in a "doer" because we don't want to call "defer.cancel()"
+	// until we've finished all the processing of the request object. Otherwise we'll cancel
+	// our own request before we've finished it.
+	if c.defaultTimeout != 0 {
+		ctx, cancel := context.WithTimeout(req.Context(), c.defaultTimeout)
+		defer cancel()
+		req = req.WithContext(ctx)
+	}
+	resp, err := c.requestDoer.Do(client, req)
+
+	if err != nil {
+		return nil, models.DefaultInternalError{Msg: err.Error()}
+	}
+
+	defer resp.Body.Close()
+	switch resp.StatusCode {
+	case 200:
+		var output models.Data
+
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, models.DefaultInternalError{Msg: err.Error()}
+		}
+
+		return &output, nil
+	case 400:
+		var output models.DefaultBadRequest
+
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, models.DefaultInternalError{Msg: err.Error()}
+		}
+
+		return nil, output
+	case 500:
+		var output models.DefaultInternalError
+
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, models.DefaultInternalError{Msg: err.Error()}
+		}
+
+		return nil, output
+
+	default:
+		return nil, models.DefaultInternalError{Msg: "Unknown response"}
+	}
+}

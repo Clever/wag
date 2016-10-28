@@ -32,6 +32,10 @@ func (w *WagPatchController) Wagpatch(ctx context.Context, i *models.PatchData) 
 	return w.Data, nil
 }
 
+func (w *WagPatchController) Wagpatch2(ctx context.Context, i *models.Wagpatch2Input) (*models.Data, error) {
+	return nil, nil
+}
+
 func TestWagPatch(t *testing.T) {
 	s := server.New(&WagPatchController{Data: &models.Data{}}, "")
 	testServer := httptest.NewServer(s.Handler)
