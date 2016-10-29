@@ -9,9 +9,9 @@ import:
 - package: github.com/go-openapi/swag
 - package: github.com/go-openapi/validate
 - package: github.com/go-swagger/go-swagger
+  version: dae55c0fc2df02e480114804b1d5b35a0e584c66
   subpackages:
   - generator
-  version: dae55c0fc2df02e480114804b1d5b35a0e584c66
 - package: github.com/golang/mock
   subpackages:
   - gomock
@@ -32,3 +32,5 @@ import:
 - package: gopkg.in/Clever/kayvee-go.v5
   version: ^5.0.0
 - package: github.com/go-errors/errors
+- package: github.com/afex/hystrix-go
+- package: github.com/donovanhide/eventsource

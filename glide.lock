@@ -1,6 +1,12 @@
-hash: ebc59ce7f5c728b119a9eb709af1fa2fdd61be3901511d7d3a72f26a5f6e62ca
-updated: 2016-11-01T23:28:58.046954807Z
+hash: ff3b7dcfa749780831f2593bc0ca89b5f6d8fb7e6a6bd48d603f75ccdd064c40
+updated: 2016-11-02T19:12:07.132852608Z
 imports:
+- name: github.com/afex/hystrix-go
+  version: 39520ddd07a9d9a071d615f7476798659f5a3b89
+  subpackages:
+  - hystrix
+  - hystrix/metric_collector
+  - hystrix/rolling
 - name: github.com/asaskevich/govalidator
   version: 7b3beb6df3c42abd3509abfc3bcacc0fbfb7c877
   repo: https://github.com/asaskevich/govalidator
@@ -10,6 +16,8 @@ imports:
   version: f511aded0581f03bd588598f281d236fd246e995
   subpackages:
   - metrics
+- name: github.com/donovanhide/eventsource
+  version: fd1de70867126402be23c306e1ce32828455d85b
 - name: github.com/fsnotify/fsnotify
   version: bd2828f9f176e52d7222e565abb2d338d3f3c103
   repo: https://github.com/fsnotify/fsnotify
@@ -197,7 +205,6 @@ testImports:
   - difflib
 - name: github.com/stretchr/testify
   version: 976c720a22c8eb4eb6a0b4348ad85ad12491a506
-  repo: https://github.com/stretchr/testify
   subpackages:
   - assert
   - require
