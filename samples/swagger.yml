@@ -63,24 +63,7 @@ paths:
           description: "Error"
           schema:
             $ref: "#/definitions/Error"
-    post:
-      operationId: createBook
-      description: Creates a book
-      parameters:
-        - name: newBook
-          in: body
-          schema:
-            $ref: "#/definitions/Book"
-      responses:
-        200:
-          description: "Success"
-          schema:
-            $ref: "#/definitions/Book"
-        default:
-          description: "Error"
-          schema:
-            $ref: "#/definitions/Error"
-  /books/{id}:
+  /books2/{id}:
     get:
       operationId: getBookByID2
       description: Retrieve a book
@@ -160,6 +143,23 @@ paths:
             type: array
             items:
               $ref: "#/definitions/Book"
+        default:
+          description: "Error"
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      operationId: createBook
+      description: Creates a book
+      parameters:
+        - name: newBook
+          in: body
+          schema:
+            $ref: "#/definitions/Book"
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/Book"
         default:
           description: "Error"
           schema:

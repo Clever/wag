@@ -58,17 +58,17 @@ func New(c Controller, addr string) *Server {
 		h.GetBooksHandler(r.Context(), w, r)
 	})
 
+	r.Methods("POST").Path("/v1/books").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger.FromContext(r.Context()).AddContext("op", "createBook")
+		h.CreateBookHandler(r.Context(), w, r)
+	})
+
 	r.Methods("GET").Path("/v1/books/{book_id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "getBookByID")
 		h.GetBookByIDHandler(r.Context(), w, r)
 	})
 
-	r.Methods("POST").Path("/v1/books/{book_id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger.FromContext(r.Context()).AddContext("op", "createBook")
-		h.CreateBookHandler(r.Context(), w, r)
-	})
-
-	r.Methods("GET").Path("/v1/books/{id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	r.Methods("GET").Path("/v1/books2/{id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "getBookByID2")
 		h.GetBookByID2Handler(r.Context(), w, r)
 	})
