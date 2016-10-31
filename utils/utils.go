@@ -1,11 +1,12 @@
-package jsclient
+package utils
 
 import (
 	"bytes"
 	"regexp"
 )
 
-func camelCase(src string, capFirst bool) string {
+// CamelCase converts strings to CamelCase
+func CamelCase(src string, capFirst bool) string {
 	camelingRegex := regexp.MustCompile("[0-9A-Za-z]+")
 
 	// commonInitialisms, taken from

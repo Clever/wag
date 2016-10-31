@@ -8,6 +8,7 @@ import (
 
 	"github.com/Clever/wag/swagger"
 	"github.com/Clever/wag/templates"
+	"github.com/Clever/wag/utils"
 	"github.com/go-openapi/spec"
 )
 
@@ -19,7 +20,7 @@ func Generate(modulePath string, s spec.Swagger) error {
 	}
 
 	tmplInfo := clientCodeTemplate{
-		ClassName:   camelCase(s.Info.InfoProps.Title, true),
+		ClassName:   utils.CamelCase(s.Info.InfoProps.Title, true),
 		PackageName: pkgName,
 		ServiceName: s.Info.InfoProps.Title,
 		Version:     s.Info.InfoProps.Version,
@@ -56,11 +57,7 @@ func Generate(modulePath string, s spec.Swagger) error {
 		return err
 	}
 
-	if err = ioutil.WriteFile(filepath.Join(modulePath, "package.json"), []byte(packageJSON), 0644); err != nil {
-		return err
-	}
-
-	return nil
+	return ioutil.WriteFile(filepath.Join(modulePath, "package.json"), []byte(packageJSON), 0644)
 }
 
 type clientCodeTemplate struct {
@@ -217,7 +214,7 @@ func fillOutPath(path string) string {
 	paramNameRegex := regexp.MustCompile("{(.+?)}")
 	return paramRegex.ReplaceAllStringFunc(path, func(param string) string {
 		return paramNameRegex.ReplaceAllStringFunc(param, func(paramName string) string {
-			return "\" + params." + camelCase(paramName, false) + " + \""
+			return "\" + params." + utils.CamelCase(paramName, false) + " + \""
 		})
 	})
 }
@@ -233,7 +230,7 @@ func methodCode(op *spec.Operation, method, basePath, path string) (string, erro
 
 	for _, wagParam := range op.Parameters {
 		param := paramMapping{
-			JSName:  camelCase(wagParam.Name, false),
+			JSName:  utils.CamelCase(wagParam.Name, false),
 			WagName: wagParam.Name,
 		}
 
