@@ -243,6 +243,86 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 	return &input, nil
 }
 
+// statusCodeForCreateBook returns the status code corresponding to the returned
+// object. It returns -1 if the type doesn't correspond to anything.
+func statusCodeForCreateBook(obj interface{}) int {
+
+	switch obj.(type) {
+
+	case *models.Book:
+		return 200
+
+	case models.Book:
+		return 200
+
+	case models.DefaultBadRequest:
+		return 400
+	case models.DefaultInternalError:
+		return 500
+	default:
+		return -1
+	}
+}
+
+func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+
+	input, err := newCreateBookInput(r)
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		return
+	}
+
+	err = input.Validate(nil)
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		return
+	}
+
+	resp, err := h.CreateBook(ctx, input)
+
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		statusCode := statusCodeForCreateBook(err)
+		if statusCode != -1 {
+			http.Error(w, err.Error(), statusCode)
+		} else {
+			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	respBytes, err := json.Marshal(resp)
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCodeForCreateBook(resp))
+	w.Write(respBytes)
+
+}
+
+// newCreateBookInput takes in an http.Request an returns the input struct.
+func newCreateBookInput(r *http.Request) (*models.Book, error) {
+	var input models.Book
+
+	var err error
+	_ = err
+
+	data, err := ioutil.ReadAll(r.Body)
+	if len(data) > 0 {
+		if err := json.NewDecoder(bytes.NewReader(data)).Decode(&input); err != nil {
+			return nil, err
+		}
+	}
+
+	return &input, nil
+}
+
 // statusCodeForGetBookByID returns the status code corresponding to the returned
 // object. It returns -1 if the type doesn't correspond to anything.
 func statusCodeForGetBookByID(obj interface{}) int {
@@ -373,86 +453,6 @@ func newGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 		}
 		input.RandomBytes = &randomBytesTmp
 
-	}
-
-	return &input, nil
-}
-
-// statusCodeForCreateBook returns the status code corresponding to the returned
-// object. It returns -1 if the type doesn't correspond to anything.
-func statusCodeForCreateBook(obj interface{}) int {
-
-	switch obj.(type) {
-
-	case *models.Book:
-		return 200
-
-	case models.Book:
-		return 200
-
-	case models.DefaultBadRequest:
-		return 400
-	case models.DefaultInternalError:
-		return 500
-	default:
-		return -1
-	}
-}
-
-func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-
-	input, err := newCreateBookInput(r)
-	if err != nil {
-		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
-		return
-	}
-
-	err = input.Validate(nil)
-	if err != nil {
-		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
-		return
-	}
-
-	resp, err := h.CreateBook(ctx, input)
-
-	if err != nil {
-		logger.FromContext(ctx).AddContext("error", err.Error())
-		statusCode := statusCodeForCreateBook(err)
-		if statusCode != -1 {
-			http.Error(w, err.Error(), statusCode)
-		} else {
-			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
-		}
-		return
-	}
-
-	respBytes, err := json.Marshal(resp)
-	if err != nil {
-		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCodeForCreateBook(resp))
-	w.Write(respBytes)
-
-}
-
-// newCreateBookInput takes in an http.Request an returns the input struct.
-func newCreateBookInput(r *http.Request) (*models.Book, error) {
-	var input models.Book
-
-	var err error
-	_ = err
-
-	data, err := ioutil.ReadAll(r.Body)
-	if len(data) > 0 {
-		if err := json.NewDecoder(bytes.NewReader(data)).Decode(&input); err != nil {
-			return nil, err
-		}
 	}
 
 	return &input, nil

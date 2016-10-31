@@ -1,12 +1,17 @@
 package validation
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
 
 	"github.com/Clever/wag/swagger"
+	swaggererrors "github.com/go-openapi/errors"
+	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/validate"
 )
 
 // A regex requiring the field to be start with a letter and be alphanumeric
@@ -94,7 +99,18 @@ func validateOp(path, method string, op *spec.Operation) error {
 // we don't support. Note that this isn't a comprehensive check for all things
 // we don't support, so this may not return an error, but the Swagger file might
 // have values we don't support
-func Validate(s spec.Swagger) error {
+func Validate(d loads.Document) error {
+	s := d.Spec()
+
+	goSwaggerError := validate.Spec(&d, strfmt.Default)
+	if goSwaggerError != nil {
+		str := ""
+		for _, desc := range goSwaggerError.(*swaggererrors.CompositeError).Errors {
+			str += fmt.Sprintf("- %s\n", desc)
+		}
+		return errors.New(str)
+	}
+
 	if s.Swagger != "2.0" {
 		return fmt.Errorf("Unsupported Swagger version %s", s.Swagger)
 	}
