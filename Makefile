@@ -1,8 +1,11 @@
 include golang.mk
 .DEFAULT_GOAL := test # override default goal set in library makefile
-.PHONY: test build
+.PHONY: test build release
 PKG := github.com/Clever/wag
 PKGS := $(shell go list ./... | grep -v /vendor | grep -v /samples/gen* | grep -v /hardcoded)
+VERSION := $(shell head -n 1 VERSION)
+EXECUTABLE := wag
+
 $(eval $(call golang-version-check,1.7))
 
 MOCKGEN := $(GOPATH)/bin/mockgen
@@ -11,8 +14,7 @@ $(MOCKGEN):
 	go get -u github.com/golang/mock/mockgen
 
 build: hardcoded/hardcoded.go
-	# disable CGO and link completely statically (this is to enable us to run in containers that don't use glibc)
-	CGO_ENABLED=0 go build -installsuffix cgo -o bin/wag
+	go build -o bin/wag
 
 test: build generate $(PKGS)
 
@@ -43,3 +45,11 @@ $(GOPATH)/bin/glide:
 
 install_deps: $(GOPATH)/bin/glide
 	$(GOPATH)/bin/glide install -v
+
+release: hardcoded/hardcoded.go
+	GOOS=linux GOARCH=amd64 go build -ldflags="-s -w -X main.version=$(VERSION)" -o="$@/$(EXECUTABLE)"
+	tar -C $@ -zcvf "$@/$(EXECUTABLE)-$(VERSION)-linux-amd64.tar.gz" $(EXECUTABLE)
+	@rm "$@/$(EXECUTABLE)"
+	GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w -X main.version=$(VERSION)" -o="$@/$(EXECUTABLE)"
+	tar -C $@ -zcvf "$@/$(EXECUTABLE)-$(VERSION)-darwin-amd64.tar.gz" $(EXECUTABLE)
+	@rm "$@/$(EXECUTABLE)"

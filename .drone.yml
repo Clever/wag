@@ -10,16 +10,15 @@ notify:
     webhook_url: $$slack_webhook
 publish:
   report_card: {}
-  docker:
-    docker_host: $$docker_server
-    email: $$docker_email
-    image_name: clever/wag
-    password: $$docker_password
-    registry_login: true
-    tags:
-    - $(git rev-parse --short HEAD)
-    - latest
-    username: $$docker_username
+  github:
+    artifacts:
+    - release
+    repo: wag
+    script:
+    - make release
+    tag: v$(cat VERSION)
+    token: $$github_token
+    user: Clever
     when:
       branch: master
 script:
