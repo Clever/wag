@@ -147,6 +147,11 @@ func Validate(d loads.Document) error {
 		return fmt.Errorf("WAG does not support the security field")
 	}
 
+	_, ok := s.Info.Extensions.GetString("x-npm-package")
+	if !ok {
+		return fmt.Errorf("Must provide 'x-npm-package' in the 'info' section of the swagger.yml.")
+	}
+
 	for path, pathItem := range s.Paths.Paths {
 		if pathItem.Ref.String() != "" {
 			return fmt.Errorf("WAG does not support paths with $ref fields. Define the references on " +

@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Clever/wag/utils"
 	"github.com/go-openapi/spec"
 )
 
@@ -306,29 +307,12 @@ func accessString(param spec.Parameter) string {
 	if !param.Required && param.Type != "array" {
 		pointer = "*"
 	}
-	return fmt.Sprintf("%si.%s", pointer, snakeToCamelCase(param.Name))
-}
-
-// snakeToCamelCase converts a string from snake_case into camel case. It leaves
-// non-snake-case strings as is.
-func snakeToCamelCase(input string) string {
-	output := ""
-	parts := strings.Split(input, "_")
-	for _, part := range parts {
-		// Special case ID since it comes up so often and go's best practices are to
-		// make it captial ID
-		if part == "id" {
-			output += "ID"
-		} else {
-			output += Capitalize(part)
-		}
-	}
-	return output
+	return fmt.Sprintf("%si.%s", pointer, utils.CamelCase(param.Name, true))
 }
 
 // StructParamName returns the name of the struct as used in the model struct
 func StructParamName(param spec.Parameter) string {
-	return snakeToCamelCase(param.Name)
+	return utils.CamelCase(param.Name, true)
 }
 
 // DefaultAsString returns the default value as a string. We convert it into a string so it's easier to insert

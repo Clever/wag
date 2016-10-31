@@ -3,6 +3,7 @@ info:
   title: wag-patch
   description: Wag Patch
   version: "1.0.0"
+  x-npm-package: wag-patch
 schemes:
   - http
 produces:

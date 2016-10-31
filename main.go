@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -12,7 +13,8 @@ import (
 	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/spec"
 
-	"github.com/Clever/wag/client"
+	"github.com/Clever/wag/clients/go"
+	"github.com/Clever/wag/clients/js"
 	"github.com/Clever/wag/hardcoded"
 	"github.com/Clever/wag/models"
 	"github.com/Clever/wag/server"
@@ -27,10 +29,14 @@ func capitalize(input string) string {
 func main() {
 
 	swaggerFile := flag.String("file", "swagger.yml", "the spec file to use")
-	packageName := flag.String("package", "", "package of the generated code")
+	goPackageName := flag.String("go-package", "", "package of the generated go code")
+	jsModulePath := flag.String("js-path", "", "path to put the js client")
 	flag.Parse()
-	if *packageName == "" {
-		log.Fatal("package is required")
+	if *goPackageName == "" {
+		log.Fatal("go-package is required")
+	}
+	if *jsModulePath == "" {
+		log.Fatal("js-path is required")
 	}
 
 	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
@@ -44,38 +50,48 @@ func main() {
 		log.Fatalf("Swagger file not valid: %s", err)
 	}
 
-	for _, dir := range []string{"server", "client", "models"} {
-		dirName := os.Getenv("GOPATH") + "/src/" + *packageName + "/" + dir
-		if err := os.RemoveAll(dirName); err != nil {
-			log.Fatalf("Could not remove directory: %s, error :%s", dirName, err)
+	dirs := []string{
+		filepath.Join(os.Getenv("GOPATH"), "src", *goPackageName, "server"),
+		filepath.Join(os.Getenv("GOPATH"), "src", *goPackageName, "client"),
+		filepath.Join(os.Getenv("GOPATH"), "src", *goPackageName, "models"),
+		*jsModulePath,
+	}
+
+	for _, dir := range dirs {
+		if err := os.RemoveAll(dir); err != nil {
+			log.Fatalf("Could not remove directory: %s, error :%s", dir, err)
 		}
 
-		if err := os.MkdirAll(dirName, 0700); err != nil {
+		if err := os.MkdirAll(dir, 0700); err != nil {
 			if !os.IsExist(err.(*os.PathError)) {
-				log.Fatalf("Could not create directory: %s, error: %s", dirName, err)
+				log.Fatalf("Could not create directory: %s, error: %s", dir, err)
 			}
 		}
 	}
 
-	if err := models.Generate(*packageName, swaggerSpec); err != nil {
+	if err := models.Generate(*goPackageName, swaggerSpec); err != nil {
 		log.Fatalf("Error generating models: %s", err)
 	}
 
-	if err := server.Generate(*packageName, swaggerSpec); err != nil {
+	if err := server.Generate(*goPackageName, swaggerSpec); err != nil {
 		log.Fatalf("Failed to generate server: %s", err)
 	}
 
-	if err := client.Generate(*packageName, swaggerSpec); err != nil {
-		log.Fatalf("Failed generating clients %s", err)
+	if err := goclient.Generate(*goPackageName, swaggerSpec); err != nil {
+		log.Fatalf("Failed generating go client %s", err)
 	}
 
-	middlewareGenerator := swagger.Generator{PackageName: *packageName}
+	if err := jsclient.Generate(*jsModulePath, swaggerSpec); err != nil {
+		log.Fatalf("Failed generating js client %s", err)
+	}
+
+	middlewareGenerator := swagger.Generator{PackageName: *goPackageName}
 	middlewareGenerator.Write(hardcoded.MustAsset("_hardcoded/middleware.go"))
 	if err := middlewareGenerator.WriteFile("server/middleware.go"); err != nil {
 		log.Fatalf("Failed to copy middleware.go: %s", err)
 	}
 
-	doerGenerator := swagger.Generator{PackageName: *packageName}
+	doerGenerator := swagger.Generator{PackageName: *goPackageName}
 	doerGenerator.Write(hardcoded.MustAsset("_hardcoded/doer.go"))
 	if err := doerGenerator.WriteFile("client/doer.go"); err != nil {
 		log.Fatalf("Failed to copy doer.go: %s", err)
