@@ -26,12 +26,19 @@ func capitalize(input string) string {
 	return strings.ToUpper(input[0:1]) + input[1:]
 }
 
+var version string
+
 func main() {
 
 	swaggerFile := flag.String("file", "swagger.yml", "the spec file to use")
 	goPackageName := flag.String("go-package", "", "package of the generated go code")
 	jsModulePath := flag.String("js-path", "", "path to put the js client")
+	versionFlag := flag.Bool("version", false, "print the wag version and exit")
 	flag.Parse()
+	if *versionFlag {
+		fmt.Println(version)
+		os.Exit(0)
+	}
 	if *goPackageName == "" {
 		log.Fatal("go-package is required")
 	}
