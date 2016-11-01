@@ -5,23 +5,16 @@ sWAGger - Web API Generator
 Note that WAG requires Go 1.7.
 ### Generating Code
 Create a swagger.yml file with your [service definition](http://editor.swagger.io/#/). Note that WAG supports a [subset](https://github.com/Clever/wag#swagger-spec) of the Swagger spec.
-Copy the latest `swagger.mk` from the [dev-handbook](https://github.com/Clever/dev-handbook/blob/master/make/swagger.mk).
+Copy the latest `wag.mk` from the [dev-handbook](https://github.com/Clever/dev-handbook/blob/master/make/wag.mk).
 Set up a `generate` target in your `Makefile` that will generate server and client code:
 
 ```
-include swagger.mk
+include wag.mk
 
-SWAGGER_CONFIG := swagger.yml
-SWAGGER_CLIENT_NPM_PACKAGE_NAME := @clever/<servicename>
-SWAGGER_CLIENT_NPM_PACKAGE_VERSION := 0.1.0
-SWAGGER_CLIENT_NPM_PACKAGE_MODULE_NAME := <servicename>
+WAG_VERSION := 0.1.0
 
-validate: swagger-validate-deps
-	$(call swagger-validate,$(SWAGGER_CONFIG))
-
-generate: validate swagger-generate-go-deps swagger-generate-javascript-client-deps
-	$(call swagger-generate-go,$(SWAGGER_CONFIG),$(PKG),$(PKG)/gen-go)
-	$(call swagger-generate-javascript-client,$(SWAGGER_CONFIG),$(SWAGGER_CLIENT_NPM_PACKAGE_NAME),$(SWAGGER_CLIENT_NPM_PACKAGE_VERSION),$(SWAGGER_CLIENT_NPM_PACKAGE_MODULE_NAME))
+generate: wag-generate-deps
+	$(call wag-generate,./swagger.yml, $(PKG))
 ```
 
 Then generate your code:
