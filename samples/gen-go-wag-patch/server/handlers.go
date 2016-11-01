@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 
 	"github.com/Clever/wag/samples/gen-go-wag-patch/models"
+	"github.com/go-errors/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/gorilla/mux"
@@ -107,6 +107,9 @@ func (h handler) WagpatchHandler(ctx context.Context, w http.ResponseWriter, r *
 
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
+		if btErr, ok := err.(*errors.Error); ok {
+			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
+		}
 		statusCode := statusCodeForWagpatch(err)
 		if statusCode != -1 {
 			http.Error(w, err.Error(), statusCode)
@@ -187,6 +190,9 @@ func (h handler) Wagpatch2Handler(ctx context.Context, w http.ResponseWriter, r 
 
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
+		if btErr, ok := err.(*errors.Error); ok {
+			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
+		}
 		statusCode := statusCodeForWagpatch2(err)
 		if statusCode != -1 {
 			http.Error(w, err.Error(), statusCode)
