@@ -71,7 +71,7 @@ func ParamToStringCode(param spec.Parameter) string {
 		case "":
 			return fmt.Sprintf("%s", valToSet)
 		default:
-			panic(fmt.Errorf("Unsupported string format %s", param.Format))
+			panic(fmt.Errorf("unsupported string format %s", param.Format))
 		}
 	case "integer":
 		if param.Format == "int32" {
@@ -92,7 +92,7 @@ func ParamToStringCode(param spec.Parameter) string {
 		return fmt.Sprintf("JoinByFormat(%s, \"%s\")", valToSet, param.Format)
 	default:
 		// Theoretically should have validated before getting here
-		panic(fmt.Errorf("Unsupported parameter type %s", param.Type))
+		panic(fmt.Errorf("unsupported parameter type %s", param.Type))
 	}
 }
 
@@ -114,7 +114,7 @@ func ParamToType(param spec.Parameter, withPointer bool) (string, error) {
 		case "":
 			typeName = "string"
 		default:
-			return "", fmt.Errorf("Unsupported string format \"%s\"", param.Format)
+			return "", fmt.Errorf("unsupported string format \"%s\"", param.Format)
 		}
 	case "integer":
 		if param.Format == "int32" {
@@ -132,13 +132,13 @@ func ParamToType(param spec.Parameter, withPointer bool) (string, error) {
 		}
 	case "array":
 		if param.Items.Type != "string" {
-			return "", fmt.Errorf("Array parameters must have string sub-types")
+			return "", fmt.Errorf("array parameters must have string sub-types")
 		}
 		typeName = "[]string"
 	default:
 		// Note. We don't support 'array' or 'file' types even though they're in the
 		// Swagger spec.
-		return "", fmt.Errorf("Unsupported param type: \"%s\"", param.Type)
+		return "", fmt.Errorf("unsupported param type: \"%s\"", param.Type)
 	}
 	if withPointer && !param.Required && param.Type != "array" {
 		typeName = "*" + typeName
@@ -216,15 +216,15 @@ func StringToTypeCode(strField string, param spec.Parameter) (string, error) {
 		case "date-time":
 			return fmt.Sprintf("convertDateTime(%s)", strField), nil
 		default:
-			return "", fmt.Errorf("Param format %s not supported", param.Format)
+			return "", fmt.Errorf("param format %s not supported", param.Format)
 		}
 	case "array":
 		if param.Items.Type != "string" {
-			return "", fmt.Errorf("Array parameters must have string sub-types")
+			return "", fmt.Errorf("array parameters must have string sub-types")
 		}
 		return fmt.Sprintf("swag.SplitByFormat(%s, \"%s\"), error(nil)", strField, param.Format), nil
 	default:
-		return "", fmt.Errorf("Param type %s not supported", param.Type)
+		return "", fmt.Errorf("param type %s not supported", param.Type)
 	}
 }
 
@@ -329,6 +329,6 @@ func DefaultAsString(param spec.Parameter) string {
 	case bool:
 		return strconv.FormatBool(param.Default.(bool))
 	default:
-		panic(fmt.Errorf("Unknown param type: %T", param))
+		panic(fmt.Errorf("unknown param type: %T", param))
 	}
 }

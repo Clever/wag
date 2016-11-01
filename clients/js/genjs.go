@@ -16,7 +16,7 @@ import (
 func Generate(modulePath string, s spec.Swagger) error {
 	pkgName, ok := s.Info.Extensions.GetString("x-npm-package")
 	if !ok {
-		return errors.New("Must provide 'x-npm-package' in the 'info' section of the swagger.yml.")
+		return errors.New("must provide 'x-npm-package' in the 'info' section of the swagger.yml")
 	}
 
 	tmplInfo := clientCodeTemplate{

@@ -473,7 +473,7 @@ func generateNewInput(op *spec.Operation, method string, wagPatchTypes map[strin
 
 		} else {
 			if param.Schema == nil {
-				return "", fmt.Errorf("Body parameters must have a schema defined")
+				return "", fmt.Errorf("body parameters must have a schema defined")
 			}
 			typeName, err := swagger.TypeFromSchema(param.Schema, true)
 			if err != nil {
