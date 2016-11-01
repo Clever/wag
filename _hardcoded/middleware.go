@@ -38,11 +38,11 @@ func panicMiddleware(h http.Handler) http.Handler {
 			case error:
 				err = panicErr
 			default:
-				err = fmt.Errorf("Unknown panic %#v of type %T", panicErr, panicErr)
+				err = fmt.Errorf("unknown panic %#v of type %T", panicErr, panicErr)
 			}
 
 			logger.FromContext(r.Context()).ErrorD("panic",
-				logger.M{"err": err, "stack-trace": string(debug.Stack())})
+				logger.M{"err": err, "stacktrace": string(debug.Stack())})
 			panic(panicErr)
 		}()
 		h.ServeHTTP(w, r)

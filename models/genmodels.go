@@ -153,7 +153,7 @@ func printInputStruct(g *swagger.Generator, op *spec.Operation, method string, w
 
 	for _, param := range op.Parameters {
 		if param.In == "formData" {
-			return fmt.Errorf("Input parameters with 'In' formData are not supported")
+			return fmt.Errorf("input parameters with 'In' formData are not supported")
 		}
 
 		var typeName string
