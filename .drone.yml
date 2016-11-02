@@ -24,5 +24,6 @@ publish:
 script:
 # install dependencies
 - make install_deps
+- cp .tmp/circuit vendor/github.com/afex/hystrix-go/hystrix/circuit.go
 - make test
 - make build
