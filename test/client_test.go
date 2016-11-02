@@ -180,13 +180,13 @@ func TestCircuitBreaker(t *testing.T) {
 	c.SetCircuitBreakerDebug(false)
 	c.SetCircuitBreakerSettings(client.CircuitBreakerSettings{
 		MaxConcurrentRequests:  client.DefaultCircuitBreakerSettings.MaxConcurrentRequests,
-		RequestVolumeThreshold: 1,
+		RequestVolumeThreshold: 0,
 		SleepWindow:            2000,
 		ErrorPercentThreshold:  client.DefaultCircuitBreakerSettings.ErrorPercentThreshold,
 	})
 
-	// the circuit should open after one failed attempt (this is the volume
-	// threshold set above)
+	// the circuit should open after one failed attempt, since the volume
+	// threshold set above is 0.
 	controller.down = true
 	var connAttempts int64
 	ctx := httptrace.WithClientTrace(context.Background(),
