@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/http/httptest"
 	"net/http/httptrace"
 	"os"
@@ -185,10 +184,6 @@ func TestCircuitBreaker(t *testing.T) {
 		SleepWindow:            2000,
 		ErrorPercentThreshold:  client.DefaultCircuitBreakerSettings.ErrorPercentThreshold,
 	})
-
-	for k, v := range hystrix.GetCircuitSettings() {
-		log.Print(k, *v)
-	}
 
 	// the circuit should open after one failed attempt (this is the volume
 	// threshold set above)
