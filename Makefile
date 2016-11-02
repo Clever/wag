@@ -16,7 +16,8 @@ $(MOCKGEN):
 build: hardcoded/hardcoded.go
 	go build -o bin/wag
 
-test: build generate $(PKGS)
+test: build generate
+	go test github.com/Clever/wag/test -test.v -run TestCircuitBreaker
 
 generate: hardcoded/hardcoded.go $(MOCKGEN)
 	./bin/wag -file samples/swagger.yml -go-package $(PKG)/samples/gen-go -js-path $(GOPATH)/src/$(PKG)/samples/gen-js
