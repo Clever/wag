@@ -180,13 +180,13 @@ func TestCircuitBreaker(t *testing.T) {
 	c.SetCircuitBreakerDebug(false)
 	c.SetCircuitBreakerSettings(client.CircuitBreakerSettings{
 		MaxConcurrentRequests:  client.DefaultCircuitBreakerSettings.MaxConcurrentRequests,
-		RequestVolumeThreshold: 0,
+		RequestVolumeThreshold: 1,
 		SleepWindow:            2000,
 		ErrorPercentThreshold:  client.DefaultCircuitBreakerSettings.ErrorPercentThreshold,
 	})
 
-	// the circuit should open after one failed attempt, since the volume
-	// threshold set above is 0.
+	// the circuit should open after one or two failed attempts, since the volume
+	// threshold (set above) is 1.
 	controller.down = true
 	var connAttempts int64
 	ctx := httptrace.WithClientTrace(context.Background(),
@@ -198,10 +198,11 @@ func TestCircuitBreaker(t *testing.T) {
 
 	_, err := c.CreateBook(ctx, &models.Book{})
 	assert.Error(t, err)
-	assert.Equal(t, int64(1), connAttempts)
 	_, err = c.CreateBook(ctx, &models.Book{})
 	assert.Error(t, err)
-	assert.Equal(t, int64(1), connAttempts)
+	_, err = c.CreateBook(ctx, &models.Book{})
+	assert.Error(t, err)
+	assert.Equal(t, true, connAttempts <= int64(2), "circuit should have opened, saw too many connection attempts: %d", connAttempts)
 
 	// we should see an attempt go through after two seconds (this is the
 	// sleep window configured above).
