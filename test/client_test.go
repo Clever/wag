@@ -215,7 +215,7 @@ func TestCircuitBreaker(t *testing.T) {
 			break
 		}
 		if time.Now().Sub(circuitOpened) > 10*time.Second {
-			t.Fatal("circuit should have closed by now")
+			t.Fatal("circuit should let through a 2nd attempt by now")
 		}
 	}
 
@@ -228,6 +228,9 @@ func TestCircuitBreaker(t *testing.T) {
 			assert.WithinDuration(t, time.Now(), circuitOpened,
 				4*time.Second+500*time.Millisecond)
 			break
+		}
+		if time.Now().Sub(circuitOpened) > 10*time.Second {
+			t.Fatal("circuit should have closed by now")
 		}
 	}
 }
