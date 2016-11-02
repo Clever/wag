@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 
 	"github.com/Clever/wag/samples/gen-go/models"
+	"github.com/go-errors/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/gorilla/mux"
@@ -104,6 +104,9 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
+		if btErr, ok := err.(*errors.Error); ok {
+			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
+		}
 		statusCode := statusCodeForGetBooks(err)
 		if statusCode != -1 {
 			http.Error(w, err.Error(), statusCode)
@@ -284,6 +287,9 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
+		if btErr, ok := err.(*errors.Error); ok {
+			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
+		}
 		statusCode := statusCodeForCreateBook(err)
 		if statusCode != -1 {
 			http.Error(w, err.Error(), statusCode)
@@ -382,6 +388,9 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
+		if btErr, ok := err.(*errors.Error); ok {
+			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
+		}
 		statusCode := statusCodeForGetBookByID(err)
 		if statusCode != -1 {
 			http.Error(w, err.Error(), statusCode)
@@ -505,6 +514,9 @@ func (h handler) GetBookByID2Handler(ctx context.Context, w http.ResponseWriter,
 
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
+		if btErr, ok := err.(*errors.Error); ok {
+			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
+		}
 		statusCode := statusCodeForGetBookByID2(err)
 		if statusCode != -1 {
 			http.Error(w, err.Error(), statusCode)
@@ -572,6 +584,9 @@ func (h handler) HealthCheckHandler(ctx context.Context, w http.ResponseWriter, 
 
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
+		if btErr, ok := err.(*errors.Error); ok {
+			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
+		}
 		statusCode := statusCodeForHealthCheck(err)
 		if statusCode != -1 {
 			http.Error(w, err.Error(), statusCode)

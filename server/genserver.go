@@ -233,8 +233,9 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 
 	tmpl := handlerFileTemplate{
 		ImportStatements: swagger.ImportStatements([]string{"context", "github.com/gorilla/mux", "gopkg.in/Clever/kayvee-go.v5/logger",
-			"net/http", "strconv", "encoding/json", "strconv", packageName + "/models", "errors",
-			"github.com/go-openapi/strfmt", "github.com/go-openapi/swag", "io/ioutil", "bytes"}),
+			"net/http", "strconv", "encoding/json", "strconv", packageName + "/models",
+			"github.com/go-openapi/strfmt", "github.com/go-openapi/swag", "io/ioutil", "bytes",
+			"github.com/go-errors/errors"}),
 		BaseStringToTypeCode: swagger.BaseStringToTypeCode(),
 	}
 
@@ -372,6 +373,9 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 {{end}}
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
+		if btErr, ok := err.(*errors.Error); ok {
+			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
+		}
 		statusCode := statusCodeFor{{.Op}}(err)
 		if statusCode != -1 {
 			http.Error(w, err.Error(), statusCode)
