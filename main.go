@@ -76,7 +76,7 @@ func main() {
 		}
 	}
 
-	if err := models.Generate(*goPackageName, swaggerSpec); err != nil {
+	if err := models.Generate(*goPackageName, *swaggerFile, swaggerSpec); err != nil {
 		log.Fatalf("Error generating models: %s", err)
 	}
 
