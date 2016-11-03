@@ -8,10 +8,9 @@ import (
 	"github.com/go-openapi/spec"
 
 	"github.com/Clever/wag/swagger"
+	"github.com/Clever/wag/templates"
 
 	"github.com/go-swagger/go-swagger/generator"
-
-	"text/template"
 )
 
 // Generate writes the files to the client directories
@@ -29,7 +28,7 @@ func Generate(packageName, swaggerFile string, swagger spec.Swagger) error {
 		return fmt.Errorf("error generating go-swagger models: %s", err)
 	}
 
-	if err := generateOutputs(packageName, swagger.Paths); err != nil {
+	if err := generateOutputs(packageName, swagger); err != nil {
 		return fmt.Errorf("error generating outputs: %s", err)
 	}
 	if err := generateInputs(packageName, swagger.Paths); err != nil {
@@ -160,15 +159,22 @@ func errCheck(ifCondition string) string {
 `, ifCondition)
 }
 
-func generateOutputs(packageName string, paths *spec.Paths) error {
+func generateOutputs(packageName string, s spec.Swagger) error {
 	g := swagger.Generator{PackageName: packageName}
 
 	g.Printf("package models\n\n")
 
+	// TODO: Remove this code...
 	g.Printf(defaultOutputTypes())
 
-	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
-		path := paths.Paths[pathKey]
+	globalOutputs, err := generateGlobalResponseTypes(s)
+	if err != nil {
+		return err
+	}
+	g.Printf(globalOutputs)
+
+	for _, pathKey := range swagger.SortedPathItemKeys(s.Paths.Paths) {
+		path := s.Paths.Paths[pathKey]
 		pathItemOps := swagger.PathItemOperations(path)
 		for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
 			op := pathItemOps[opKey]
@@ -193,6 +199,47 @@ func generateOutputs(packageName string, paths *spec.Paths) error {
 	}
 	return g.WriteFile("models/outputs.go")
 }
+
+// generateGlobalResponseTypes generates code from the global response type definitions.
+// Note that all the global response types are automatically error types and have a Msg
+// fields (for the Error()) call.
+func generateGlobalResponseTypes(s spec.Swagger) (string, error) {
+	var buf bytes.Buffer
+
+	for name, resp := range s.Responses {
+		typeName, err := swagger.TypeFromSchema(resp.Schema, false)
+		if err != nil {
+			return "", err
+		}
+		responseDefinition, err := templates.WriteTemplate(globalResponseTmplStr,
+			&globalResponseTmpl{
+				Name: name,
+				Type: typeName,
+			})
+		if err != nil {
+			return "", err
+		}
+		buf.WriteString(responseDefinition)
+	}
+
+	return buf.String(), nil
+}
+
+type globalResponseTmpl struct {
+	Name string
+	Type string
+}
+
+// TODO: Put the description in here...
+var globalResponseTmplStr = `
+	// {{.Name}} defines a global response type
+	type {{.Name}} {{.Type}}
+
+	// Error returns the message encoded in the error type
+	func (o {{.Name}}) Error() string {
+		return o.Msg
+	}
+`
 
 func generateSuccessTypes(capOpID string, responses map[int]spec.Response) (string, error) {
 	var buf bytes.Buffer
@@ -256,12 +303,7 @@ func generateType(capOpID string, statusCode int, response spec.Response) (strin
 		Type:       typeName,
 		ErrorType:  statusCode >= 400,
 	}
-	tmpl := template.Must(template.New("a").Parse(typeTemplate))
-	var tmpBuf bytes.Buffer
-	if err := tmpl.Execute(&tmpBuf, fields); err != nil {
-		return "", err
-	}
-	return tmpBuf.String(), nil
+	return templates.WriteTemplate(typeTemplate, fields)
 }
 
 type typeTemplateFields struct {
@@ -283,6 +325,7 @@ var typeTemplate = `
 		return "Status Code: {{.StatusCode}}"
 	}
 	{{else}}
+	// TODO: Can I remove this?
 	// {{.OpName}}StatusCode returns the status code for the operation.
 	func (o {{.Output}}) {{.OpName}}StatusCode() int {
 		return {{.StatusCode}}
