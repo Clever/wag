@@ -128,10 +128,6 @@ func Validate(d loads.Document) error {
 		return fmt.Errorf("WAG does not support global parameters definitions. Define parameters on a per request basis")
 	}
 
-	if len(s.Responses) != 0 {
-		return fmt.Errorf("WAG does not support global response definitions.  Define responses on a per request basis")
-	}
-
 	if len(s.SecurityDefinitions) != 0 {
 		return fmt.Errorf("WAG does not support the security definitions field")
 	}

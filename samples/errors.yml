@@ -1,0 +1,41 @@
+swagger: '2.0'
+info:
+  title: swagger-test
+  description: Testing Swagger Codegen
+  version: 0.1.0
+  x-npm-package: swagger-test
+basePath: /v1
+schemes:
+  - http
+produces:
+  - application/json
+consumes:
+  - application/json
+responses:
+  # TODO: make this lower case?? Call defaultBadRequest?
+  BadRequest:
+    description: "Bad Request"
+    schema:
+      $ref: "#/definitions/Error"
+paths:
+  /books/{id}:
+    get:
+      operationId: getBook
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+      deprecated: true
+      responses:
+        200:
+          description: OK response
+        404:
+          description: OK response
+
+definitions:
+  Error:
+    type: object
+    properties:
+      msg:
+        type: string
