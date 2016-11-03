@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-	"strings"
 
 	"github.com/Clever/wag/swagger"
 	swaggererrors "github.com/go-openapi/errors"
@@ -83,12 +82,6 @@ func validateOp(path, method string, op *spec.Operation) error {
 
 		if param.Type == "array" && param.Items.Type != "string" {
 			return fmt.Errorf("Array parameters must have string sub-types")
-		}
-
-		if wagPatch, ok := param.Extensions.GetBool("x-wag-patch"); wagPatch && ok {
-			if strings.ToUpper(method) != "PATCH" {
-				return fmt.Errorf("Can only set the x-wag-patch extension on patch types")
-			}
 		}
 	}
 

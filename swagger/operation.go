@@ -116,44 +116,7 @@ func SingleSchemaedBodyParameter(op *spec.Operation) (bool, string) {
 		if err != nil {
 			panic(err)
 		}
-		if wagPatchParam(op) != nil {
-			typ = "Patch" + typ
-		}
 		return true, typ
 	}
 	return false, ""
-}
-
-// wagPatchParam returns a pointer to the schema for a x-wag-patch if one
-// exists.
-func wagPatchParam(op *spec.Operation) *spec.Schema {
-	for _, param := range op.Parameters {
-		wagPatch, ok := param.Extensions.GetBool("x-wag-patch")
-		if wagPatch && ok {
-			return param.Schema
-		}
-	}
-	return nil
-}
-
-// WagPatchDataTypes returns a set of all the data types that have x-wag-patch associated
-// with them. These data types should also have a Patch{{Name}} data type created for them.
-func WagPatchDataTypes(paths map[string]spec.PathItem) (map[string]struct{}, error) {
-
-	wagPatchDataTypes := make(map[string]struct{})
-	for _, path := range paths {
-		if path.Patch != nil {
-			schema := wagPatchParam(path.Patch)
-
-			if schema != nil {
-				typ, err := TypeFromSchema(schema, false)
-				if err != nil {
-					return nil, err
-				}
-				wagPatchDataTypes[typ] = struct{}{}
-			}
-
-		}
-	}
-	return wagPatchDataTypes, nil
 }

@@ -2,11 +2,8 @@ package models
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
-	"strings"
 
 	"github.com/go-openapi/spec"
 
@@ -18,17 +15,11 @@ import (
 )
 
 // Generate writes the files to the client directories
-func Generate(packageName string, swagger spec.Swagger) error {
-
-	modifiedSpecFile, err := specWithWagPatchTypes(swagger)
-	if err != nil {
-		return err
-	}
-	defer os.Remove(modifiedSpecFile)
+func Generate(packageName, swaggerFile string, swagger spec.Swagger) error {
 
 	// generate models with go-swagger
 	if err := generator.GenerateServer("", []string{}, []string{}, &generator.GenOpts{
-		Spec:           modifiedSpecFile,
+		Spec:           swaggerFile,
 		ModelPackage:   "models",
 		Target:         fmt.Sprintf("%s/src/%s/", os.Getenv("GOPATH"), packageName),
 		IncludeModel:   true,
@@ -45,55 +36,6 @@ func Generate(packageName string, swagger spec.Swagger) error {
 		return fmt.Errorf("error generating inputs: %s", err)
 	}
 	return nil
-}
-
-// specWithWagPatchTypes takes in a swagger spec and returns a new version of the spec
-// with extra type definitions for patch data types (see readme for more details on patch
-// data types). The spec is returned as a file path. The caller should remove the file when
-// they are finished with it.
-func specWithWagPatchTypes(s spec.Swagger) (string, error) {
-
-	definitionsToExtend, err := swagger.WagPatchDataTypes(s.Paths.Paths)
-	if err != nil {
-		return "", fmt.Errorf("internal error: getting wag patch data types: %s", err)
-	}
-
-	allDefinitions := make(spec.Definitions)
-	for name, definition := range s.Definitions {
-		allDefinitions[name] = definition
-		if _, ok := definitionsToExtend[name]; ok {
-			// We calculate "Patch" + name in two places. If there becomes a third we should
-			// consolidate the logic.
-			newName := "Patch" + name
-			if _, ok := s.Definitions[newName]; ok {
-				return "", fmt.Errorf("can't apply x-wag-patch extension. Conflict with name %s", newName)
-			}
-
-			// Mark all the properties nullable so they show up as pointers. We do this so that
-			// all the fields in the patch type are optional.
-			// We don't use the required field in the swagger schema since go-swagger makes optional
-			// fields non-pointers (we're not sure why)
-			newProps := make(map[string]spec.Schema)
-			for field, prop := range definition.Properties {
-				prop.AddExtension("x-isnullable", true)
-				newProps[field] = prop
-			}
-			definition.Properties = newProps
-			allDefinitions[newName] = definition
-
-		}
-	}
-	s.Definitions = allDefinitions
-
-	bytes, err := json.Marshal(s)
-	if err != nil {
-		return "", fmt.Errorf("internal error: wag patch type marshal failure: %s", err)
-	}
-	fileName := "swagger.tmp"
-	if err := ioutil.WriteFile(fileName, bytes, 0644); err != nil {
-		return "", err
-	}
-	return fileName, nil
 }
 
 func generateInputs(packageName string, paths *spec.Paths) error {
@@ -118,10 +60,6 @@ var _ = validate.Maximum
 var _ = strfmt.NewFormats
 `)
 
-	wagPatchTypes, err := swagger.WagPatchDataTypes(paths.Paths)
-	if err != nil {
-		return err
-	}
 	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
 		path := paths.Paths[pathKey]
 		pathItemOps := swagger.PathItemOperations(path)
@@ -134,7 +72,7 @@ var _ = strfmt.NewFormats
 			if ssbp, _ := swagger.SingleSchemaedBodyParameter(op); ssbp {
 				continue
 			}
-			if err := printInputStruct(&g, op, opKey, wagPatchTypes); err != nil {
+			if err := printInputStruct(&g, op); err != nil {
 				return err
 			}
 			if err := printInputValidation(&g, op); err != nil {
@@ -146,7 +84,7 @@ var _ = strfmt.NewFormats
 	return g.WriteFile("models/inputs.go")
 }
 
-func printInputStruct(g *swagger.Generator, op *spec.Operation, method string, wagPatchTypes map[string]struct{}) error {
+func printInputStruct(g *swagger.Generator, op *spec.Operation) error {
 	capOpID := swagger.Capitalize(op.ID)
 	g.Printf("// %sInput holds the input parameters for a %s operation.\n", capOpID, op.ID)
 	g.Printf("type %sInput struct {\n", capOpID)
@@ -167,9 +105,6 @@ func printInputStruct(g *swagger.Generator, op *spec.Operation, method string, w
 			typeName, err = swagger.TypeFromSchema(param.Schema, false)
 			if err != nil {
 				return err
-			}
-			if _, ok := wagPatchTypes[typeName]; ok && strings.ToUpper(method) == "PATCH" {
-				typeName = "Patch" + typeName
 			}
 			// All schema types are pointers
 			typeName = "*" + typeName
