@@ -98,6 +98,7 @@ func statusCodeForGetBook(obj interface{}) int {
 func (h handler) GetBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	input, err := newGetBookInput(r)
+
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.GetBook400Output{Msg: err.Error()}), http.StatusBadRequest)
@@ -105,6 +106,7 @@ func (h handler) GetBookHandler(ctx context.Context, w http.ResponseWriter, r *h
 	}
 
 	err = input.Validate()
+
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.GetBook400Output{Msg: err.Error()}), http.StatusBadRequest)

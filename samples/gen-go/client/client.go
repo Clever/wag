@@ -446,12 +446,12 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 
 // GetBookByID2 makes a GET request to /books2/{id}.
 // Retrieve a book
-func (c *WagClient) GetBookByID2(ctx context.Context, i *models.GetBookByID2Input) (*models.Book, error) {
+func (c *WagClient) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
 	path := c.basePath + "/v1/books2/{id}"
 	urlVals := url.Values{}
 	var body []byte
 
-	path = strings.Replace(path, "{id}", i.ID, -1)
+	path = strings.Replace(path, "{id}", id, -1)
 	path = path + "?" + urlVals.Encode()
 
 	client := &http.Client{Transport: c.transport}

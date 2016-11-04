@@ -136,10 +136,10 @@ type GetBookByID2Input struct {
 	ID string
 }
 
-// Validate returns an error if any of the GetBookByID2Input parameters don't satisfy the
-// requirements from the swagger yml file.
-func (i GetBookByID2Input) Validate() error {
-	if err := validate.Pattern("id", "path", string(i.ID), "^[0-9a-f]{24}$"); err != nil {
+// ValidateGetBookByID2Input returns an error if the input parameter doesn't
+// satisfy the requirements in the swagger yml file.
+func ValidateGetBookByID2Input(id string) error {
+	if err := validate.Pattern("id", "path", string(id), "^[0-9a-f]{24}$"); err != nil {
 		return err
 	}
 	return nil

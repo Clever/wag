@@ -270,24 +270,30 @@ func methodCode(op *spec.Operation, basePath, method, methodPath string) string 
 func buildRequestCode(op *spec.Operation, method string) string {
 	var buf bytes.Buffer
 
-	for _, param := range op.Parameters {
-		if param.In == "path" {
-			// TODO: Should this be done with regex at some point?
-			buf.WriteString(fmt.Sprintf("\tpath = strings.Replace(path, \"%s\", %s, -1)\n",
-				"{"+param.Name+"}", swagger.ParamToStringCode(param)))
-		} else if param.In == "query" {
-			var queryAddCode string
-			if param.Type == "array" {
-				queryAddCode = fmt.Sprintf("\tfor _, v := range i.%s {\n\t\turlVals.Add(\"%s\", v)\n\t}\n", swagger.StructParamName(param), param.Name)
-			} else {
-				queryAddCode = fmt.Sprintf("\turlVals.Add(\"%s\", %s)\n", param.Name, swagger.ParamToStringCode(param))
-			}
-			if param.Required {
-				buf.WriteString(fmt.Sprintf(queryAddCode))
-			} else {
-				buf.WriteString(fmt.Sprintf("\tif i.%s != nil {\n", swagger.StructParamName(param)))
-				buf.WriteString(fmt.Sprintf(queryAddCode))
-				buf.WriteString(fmt.Sprintf("\t}\n"))
+	singleStringPathParameter, singleParamName := swagger.SingleStringPathParameter(op)
+	if singleStringPathParameter {
+		buf.WriteString(fmt.Sprintf("\tpath = strings.Replace(path, \"%s\", %s, -1)\n",
+			"{"+op.Parameters[0].Name+"}", singleParamName))
+	} else {
+		for _, param := range op.Parameters {
+			if param.In == "path" {
+				// TODO: Should this be done with regex at some point?
+				buf.WriteString(fmt.Sprintf("\tpath = strings.Replace(path, \"%s\", %s, -1)\n",
+					"{"+param.Name+"}", swagger.ParamToStringCode(param)))
+			} else if param.In == "query" {
+				var queryAddCode string
+				if param.Type == "array" {
+					queryAddCode = fmt.Sprintf("\tfor _, v := range i.%s {\n\t\turlVals.Add(\"%s\", v)\n\t}\n", swagger.StructParamName(param), param.Name)
+				} else {
+					queryAddCode = fmt.Sprintf("\turlVals.Add(\"%s\", %s)\n", param.Name, swagger.ParamToStringCode(param))
+				}
+				if param.Required {
+					buf.WriteString(fmt.Sprintf(queryAddCode))
+				} else {
+					buf.WriteString(fmt.Sprintf("\tif i.%s != nil {\n", swagger.StructParamName(param)))
+					buf.WriteString(fmt.Sprintf(queryAddCode))
+					buf.WriteString(fmt.Sprintf("\t}\n"))
+				}
 			}
 		}
 	}
@@ -296,9 +302,9 @@ func buildRequestCode(op *spec.Operation, method string) string {
 
 	for _, param := range op.Parameters {
 		if param.In == "body" {
-			singleInputSchema, _ := swagger.SingleSchemaedBodyParameter(op)
+			singleSchemaedBodyParameter, _ := swagger.SingleSchemaedBodyParameter(op)
 			var bodyMarshalCode string
-			if singleInputSchema {
+			if singleSchemaedBodyParameter {
 				// no wrapper struct for single-input methods
 				bodyMarshalCode = fmt.Sprintf(`
 	var err error
@@ -316,7 +322,7 @@ func buildRequestCode(op *spec.Operation, method string) string {
 			if param.Required {
 				buf.WriteString(fmt.Sprintf(bodyMarshalCode))
 			} else {
-				if singleInputSchema {
+				if singleSchemaedBodyParameter {
 					buf.WriteString("\tif i != nil {\n")
 				} else {
 					buf.WriteString(fmt.Sprintf("\tif i.%s != nil {\n", swagger.StructParamName(param)))

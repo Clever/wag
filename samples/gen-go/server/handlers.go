@@ -98,6 +98,7 @@ func statusCodeForGetBooks(obj interface{}) int {
 func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	input, err := newGetBooksInput(r)
+
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.BadRequest{Msg: err.Error()}), http.StatusBadRequest)
@@ -105,6 +106,7 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 	}
 
 	err = input.Validate()
+
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.BadRequest{Msg: err.Error()}), http.StatusBadRequest)
@@ -282,6 +284,7 @@ func statusCodeForCreateBook(obj interface{}) int {
 func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	input, err := newCreateBookInput(r)
+
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.BadRequest{Msg: err.Error()}), http.StatusBadRequest)
@@ -289,6 +292,7 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 	}
 
 	err = input.Validate(nil)
+
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.BadRequest{Msg: err.Error()}), http.StatusBadRequest)
@@ -391,6 +395,7 @@ func statusCodeForGetBookByID(obj interface{}) int {
 func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	input, err := newGetBookByIDInput(r)
+
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.BadRequest{Msg: err.Error()}), http.StatusBadRequest)
@@ -398,6 +403,7 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 	}
 
 	err = input.Validate()
+
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.BadRequest{Msg: err.Error()}), http.StatusBadRequest)
@@ -524,21 +530,23 @@ func statusCodeForGetBookByID2(obj interface{}) int {
 
 func (h handler) GetBookByID2Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
-	input, err := newGetBookByID2Input(r)
+	id, err := newGetBookByID2Input(r)
+
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.BadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
-	err = input.Validate()
+	err = models.ValidateGetBookByID2Input(id)
+
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.BadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
-	resp, err := h.GetBookByID2(ctx, input)
+	resp, err := h.GetBookByID2(ctx, id)
 
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
@@ -567,28 +575,14 @@ func (h handler) GetBookByID2Handler(ctx context.Context, w http.ResponseWriter,
 
 }
 
-// newGetBookByID2Input takes in an http.Request an returns the input struct.
-func newGetBookByID2Input(r *http.Request) (*models.GetBookByID2Input, error) {
-	var input models.GetBookByID2Input
-
-	var err error
-	_ = err
-
-	iDStr := mux.Vars(r)["id"]
-	if len(iDStr) == 0 {
-		return nil, errors.New("Parameter must be specified")
+// newGetBookByID2Input takes in an http.Request an returns the id parameter
+// that it contains. It returns an error if the request doesn't contain the parameter.
+func newGetBookByID2Input(r *http.Request) (string, error) {
+	id := mux.Vars(r)["id"]
+	if len(id) == 0 {
+		return "", errors.New("Parameter id must be specified")
 	}
-	if len(iDStr) != 0 {
-		var iDTmp string
-		iDTmp, err = iDStr, error(nil)
-		if err != nil {
-			return nil, err
-		}
-		input.ID = iDTmp
-
-	}
-
-	return &input, nil
+	return id, nil
 }
 
 // statusCodeForHealthCheck returns the status code corresponding to the returned
