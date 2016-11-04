@@ -4,27 +4,30 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/go-openapi/jsonreference"
 	"github.com/go-openapi/spec"
 )
 
 // TransformErrors - TODO: Add a nice comment! This is a somewhat non-trivial function.
-// TODO: Figure out the exact interface here...
-// Probably worth testing this directly...
+// TODO: Figure out the exact interface here... Know that it modifies the input...
+// TODO: Add some unit tests...
 func TransformErrors(s spec.Swagger) error {
 
 	// Confirm that we have the global error types we're expecting
 	global400 := false
 	global500 := false
 	for name, resp := range s.Responses {
+
+		if resp.Schema == nil {
+			return fmt.Errorf("%s response must have schema", name)
+		}
+
+		if err := validReference(resp.Schema.Ref, s); err != nil {
+			return fmt.Errorf("%s response is invalid: %s", name, err)
+		}
 		if name == "BadRequest" {
-			if err := validErrorResponse(resp, s); err != nil {
-				return fmt.Errorf("invalid bad request defined: %s", err)
-			}
 			global400 = true
 		} else if name == "InternalError" {
-			if err := validErrorResponse(resp, s); err != nil {
-				return fmt.Errorf("invalid bad request defined: %s", err)
-			}
 			global500 = true
 		}
 	}
@@ -32,8 +35,11 @@ func TransformErrors(s spec.Swagger) error {
 		// TODO: add these to the template-wag
 		// TODO: should I reference something to make it more clear what I mean...
 		// probably the readme
-		return errors.New("must specify global 'BadRequest' response type and global " +
-			"'InternalResponse' response type")
+
+		// TODO: Add this check back...
+		return nil
+		//return errors.New("must specify global 'BadRequest' response type and global " +
+		//	"'InternalResponse' response type")
 	}
 
 	for _, pathKey := range SortedPathItemKeys(s.Paths.Paths) {
@@ -46,26 +52,44 @@ func TransformErrors(s spec.Swagger) error {
 			has500 := false
 
 			for code, resp := range op.Responses.StatusCodeResponses {
-				if code == 400 {
-					if err := validErrorResponse(resp, s); err != nil {
+
+				// Do I need to do any more checking???
+
+				if code == 400 || code == 500 {
+
+					// Two cases to support here. One is a reference to a
+					// response object. The other is a schema with a reference to
+					// a type
+					refToCheck := resp.Ref
+					if resp.Schema != nil {
+						refToCheck = resp.Schema.Ref
+					}
+
+					if err := validReference(refToCheck, s); err != nil {
+						// TODO: clean up this message...
 						return fmt.Errorf("invalid 400 response: %s", err)
 					}
-					has400 = true
-				} else if code == 500 {
-					if err := validErrorResponse(resp, s); err != nil {
-						return fmt.Errorf("invalid 500 response: %s", err)
+					if code == 400 {
+						has400 = true
+					} else {
+						has500 = true
 					}
-					has500 = true
 				}
 			}
 
 			if !has400 {
-				// TODO: build the default response
-				op.Responses.StatusCodeResponses[400] = spec.Response{}
+				refResponse, err := createRefResponse("BadRequest", "#/responses/BadRequest")
+				if err != nil {
+					return err
+				}
+				op.Responses.StatusCodeResponses[400] = *refResponse
 			}
 			if !has500 {
-				// TODO: build the default response
-				op.Responses.StatusCodeResponses[500] = spec.Response{}
+				refResponse, err := createRefResponse("InternalError", "#/responses/InternalError")
+				if err != nil {
+					return err
+				}
+				op.Responses.StatusCodeResponses[500] = *refResponse
 			}
 		}
 	}
@@ -73,22 +97,55 @@ func TransformErrors(s spec.Swagger) error {
 	return nil
 }
 
+// createRefResponse returns a pointer to a spec.Response object
+func createRefResponse(description, ref string) (*spec.Response, error) {
+	jsonref, err := jsonreference.New(ref)
+	if err != nil {
+		return nil, err
+	}
+
+	return &spec.Response{
+		ResponseProps: spec.ResponseProps{
+			Description: description,
+			Schema: &spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Ref: spec.Ref{Ref: jsonref},
+				},
+			},
+		},
+	}, nil
+}
+
 // TODO: Add a nice comment
 // Make sure we have a Msg field and no other fields are required
-func validErrorResponse(r spec.Response, s spec.Swagger) error {
-	if r.Schema == nil {
-		return errors.New("response must have schema")
+func validReference(ref spec.Ref, s spec.Swagger) error {
+
+	refObj, _, err := ref.GetPointer().Get(s)
+	if err != nil {
+		return fmt.Errorf("invalid schema reference: %s", err)
 	}
 
-	// We support either object types or types that ref another object
-	if r.Schema.Type[0] == "object" {
-		// handle this
+	schema, ok := refObj.(spec.Schema)
+	if !ok {
 
-		// TODO: this isn't right. Need to learn how schema references work better...
-		// } else if r.Schema.Ref.Ref.GetPointer().Get(s) {
-
-		return nil
-
+		// TODO: clean this up... maybe move it into the upper layer?
+		r, ok := refObj.(spec.Response)
+		if !ok {
+			return errors.New("invalid schema reference")
+		}
+		return validReference(r.Schema.Ref, s)
 	}
-	return errors.New("response schema must be an object or reference an object")
+
+	msgField, ok := schema.Properties["msg"]
+	if !ok {
+		return fmt.Errorf("schema must have a 'msg' field: %s", ref.String())
+	}
+
+	if len(msgField.Type) != 1 || msgField.Type[0] != "string" {
+		return fmt.Errorf("msg field must be of type 'string': %s", ref.String())
+	}
+
+	// TODO: Check for required fields...
+
+	return nil
 }

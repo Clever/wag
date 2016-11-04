@@ -1,0 +1,23 @@
+responses:
+  BadRequest:
+    description: "Bad Request"
+    schema:
+      $ref: "#/definitions/Error"
+  InternalError:
+    description: "Internal Error"
+    schema:
+      $ref: "#/definitions/Error"
+
+paths:
+  /path:
+    get:
+      responses:
+        404:
+          description: "Other response"
+
+definitions:
+  Error:
+    type: object
+    properties:
+      msg:
+        type: string
