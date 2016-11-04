@@ -36,10 +36,8 @@ func TransformErrors(s spec.Swagger) error {
 		// TODO: should I reference something to make it more clear what I mean...
 		// probably the readme
 
-		// TODO: Add this check back...
-		return nil
-		//return errors.New("must specify global 'BadRequest' response type and global " +
-		//	"'InternalResponse' response type")
+		return errors.New("must specify global 'BadRequest' response type and global " +
+			"'InternalResponse' response type")
 	}
 
 	for _, pathKey := range SortedPathItemKeys(s.Paths.Paths) {
@@ -105,14 +103,7 @@ func createRefResponse(description, ref string) (*spec.Response, error) {
 	}
 
 	return &spec.Response{
-		ResponseProps: spec.ResponseProps{
-			Description: description,
-			Schema: &spec.Schema{
-				SchemaProps: spec.SchemaProps{
-					Ref: spec.Ref{Ref: jsonref},
-				},
-			},
-		},
+		Refable: spec.Refable{Ref: spec.Ref{Ref: jsonref}},
 	}, nil
 }
 

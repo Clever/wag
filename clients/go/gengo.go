@@ -256,7 +256,7 @@ func methodCode(op *spec.Operation, basePath, method, methodPath string) string 
 	resp, err := c.requestDoer.Do(client, req)
 	%s
 	defer resp.Body.Close()
-`, op.ID, errorMessage("models.DefaultInternalError{Msg: err.Error()}", op)))
+`, op.ID, errorMessage("models.InternalError{Msg: err.Error()}", op)))
 
 	buf.WriteString(parseResponseCode(op, capOpID))
 
@@ -325,7 +325,7 @@ func buildRequestCode(op *spec.Operation, method string) string {
 		}
 	}
 
-	// TODO: decide how to represent this error (should it be model.DefaultInternalError?)
+	// TODO: decide how to represent this error (should it be model.InternalError?)
 	// and whether the client should retry
 	buf.WriteString(fmt.Sprintf(`
 	client := &http.Client{Transport: c.transport}
@@ -382,13 +382,6 @@ func outputForCode(op *spec.Operation, statusCode int) ([]string, bool, bool) {
 	if !noSuccessType {
 		successResponses = append(successResponses, "nil")
 	}
-	if statusCode == 400 {
-		successResponses = append(successResponses, "models.DefaultBadRequest")
-		return successResponses, true, false
-	} else if statusCode == 500 {
-		successResponses = append(successResponses, "models.DefaultInternalError")
-		return successResponses, true, false
-	}
 
 	response := op.Responses.StatusCodeResponses[statusCode]
 	outputName, makePointer := swagger.OutputType(op, statusCode)
@@ -412,7 +405,7 @@ func outputForCode(op *spec.Operation, statusCode int) ([]string, bool, bool) {
 // parseResponseCode generates the code for handling the http response.
 // In the client code we want to return a different object depending on the status code, so
 // let's generate code that switches on the status code and returns the right object in each
-// case. This includes the default 400 and 500 cases.
+// case.
 func parseResponseCode(op *spec.Operation, capOpID string) string {
 	var buf bytes.Buffer
 
@@ -421,9 +414,6 @@ func parseResponseCode(op *spec.Operation, capOpID string) string {
 	for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
 		buf.WriteString(writeStatusCodeDecoder(op, statusCode))
 	}
-
-	buf.WriteString(writeStatusCodeDecoder(op, 400))
-	buf.WriteString(writeStatusCodeDecoder(op, 500))
 
 	// It would be nice if we could remove this too
 	noSuccessType := swagger.NoSuccessType(op)
@@ -434,7 +424,7 @@ func parseResponseCode(op *spec.Operation, capOpID string) string {
 
 	buf.WriteString(fmt.Sprintf(`
 	default:
-		return %smodels.DefaultInternalError{Msg: "Unknown response"}
+		return %smodels.InternalError{Msg: "Unknown response"}
 	}
 }
 
@@ -472,7 +462,7 @@ func writeStatusCodeDecoder(op *spec.Operation, statusCode int) string {
 		buf.WriteString(fmt.Sprintf(`
 
 	if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-		return %smodels.DefaultInternalError{Msg: err.Error()}
+		return %smodels.InternalError{Msg: err.Error()}
 	}
 
 `, nilString))
