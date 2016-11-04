@@ -1,4 +1,4 @@
-Gswagger: '2.0'
+swagger: '2.0'
 info:
   title: swagger-test
   description: Testing Swagger Codegen

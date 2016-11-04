@@ -270,13 +270,16 @@ var jsonMarshalString = `
 func generateOperationHandler(op *spec.Operation) (string, error) {
 	typeToCode := make(map[string]int)
 	emptyResponseCode := 200
-	for code, typeStr := range swagger.CodeToTypeMap(op) {
+	codeToType := swagger.CodeToTypeMap(op)
+	for code, typeStr := range codeToType {
+
 		if typeStr != "" {
 			typeToCode[typeStr] = code
 			// Support non-pointer types too so that the implementer can
 			// return either (this is a bit icky)
 			if len(typeStr) > 0 && typeStr[0] == '*' {
 				typeToCode[typeStr[1:]] = code
+				codeToType[code] = typeStr[1:]
 			}
 		} else {
 			emptyResponseCode = code
@@ -291,6 +294,7 @@ func generateOperationHandler(op *spec.Operation) (string, error) {
 		SingleInputOp:      singleInputOp,
 		EmptyStatusCode:    emptyResponseCode,
 		TypesToStatusCodes: typeToCode,
+		StatusCodetoType:   codeToType,
 	}
 	handlerCode, err := templates.WriteTemplate(handlerTemplate, handlerOp)
 	if err != nil {
@@ -317,6 +321,7 @@ type handlerOp struct {
 	SingleInputOp      bool
 	EmptyStatusCode    int
 	TypesToStatusCodes map[string]int
+	StatusCodetoType   map[int]string
 }
 
 var handlerTemplate = `
@@ -339,14 +344,14 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 	input, err := new{{.Op}}Input(r)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.BadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError({{index .StatusCodetoType 400}}{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	err = input.Validate({{if .SingleInputOp}}nil{{end}})
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.BadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError({{index .StatusCodetoType 400}}{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
@@ -371,7 +376,7 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 		if statusCode != -1 {
 			http.Error(w, err.Error(), statusCode)
 		} else {
-			http.Error(w, jsonMarshalNoError(models.InternalError{Msg: err.Error()}), http.StatusInternalServerError)
+			http.Error(w, jsonMarshalNoError({{index .StatusCodetoType 500}}{Msg: err.Error()}), http.StatusInternalServerError)
 		}
 		return
 	}
@@ -380,7 +385,7 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.InternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		http.Error(w, jsonMarshalNoError({{index .StatusCodetoType 500}}{Msg: err.Error()}), http.StatusInternalServerError)
 		return
 	}
 
