@@ -11,6 +11,7 @@ responses:
 paths:
   /path:
     get:
+      operationId: op
       responses:
         404:
           description: "Other response"
