@@ -271,20 +271,16 @@ func generateOperationHandler(op *spec.Operation) (string, error) {
 	typeToCode := make(map[string]int)
 	emptyResponseCode := 200
 	codeToType := swagger.CodeToTypeMap(op)
-	for code, typeStr := range codeToType {
-
-		if typeStr != "" {
-			typeToCode[typeStr] = code
-			// Support non-pointer types too so that the implementer can
-			// return either (this is a bit icky)
-			if len(typeStr) > 0 && typeStr[0] == '*' {
-				typeToCode[typeStr[1:]] = code
-				codeToType[code] = typeStr[1:]
-			}
-		} else {
-			emptyResponseCode = code
-		}
+	typeToCode, err := swagger.TypeToCodeMap(op)
+	if err != nil {
+		return "", err
 	}
+	if empty, ok := typeToCode[""]; ok {
+		emptyResponseCode = empty
+		delete(typeToCode, "")
+	}
+
+	fmt.Printf("Type to code: %#v\n", typeToCode)
 
 	singleInputOp, _ := swagger.SingleSchemaedBodyParameter(op)
 	handlerOp := handlerOp{

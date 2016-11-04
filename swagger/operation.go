@@ -1,6 +1,7 @@
 package swagger
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -94,14 +95,28 @@ func NoSuccessType(op *spec.Operation) bool {
 func CodeToTypeMap(op *spec.Operation) map[int]string {
 	resp := make(map[int]string)
 	for _, statusCode := range SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
-		outputType, makePointer := OutputType(op, statusCode)
-		// TODO: clean up this pointer logic...
-		if makePointer {
-			outputType = "*" + outputType
-		}
+		outputType, _ := OutputType(op, statusCode)
 		resp[statusCode] = outputType
 	}
 	return resp
+}
+
+// TypeToCodeMap returns a map from the type to its corresponding status code. It returns
+// an error if mutiple status codes map to the same type
+func TypeToCodeMap(op *spec.Operation) (map[string]int, error) {
+	typeToCode := make(map[string]int)
+	for code, typeStr := range CodeToTypeMap(op) {
+		if typeStr != "" {
+			if _, ok := typeToCode[typeStr]; ok {
+				return nil, errors.New("duplicate response types")
+			}
+			typeToCode[typeStr] = code
+			typeToCode["*"+typeStr] = code
+		} else {
+			typeToCode[""] = code
+		}
+	}
+	return typeToCode, nil
 }
 
 // successStatusCodes returns a slice of all the success status codes for an operation

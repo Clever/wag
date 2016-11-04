@@ -75,6 +75,12 @@ func TransformErrors(s spec.Swagger) error {
 				}
 				op.Responses.StatusCodeResponses[500] = *refResponse
 			}
+
+			// Confirm that the operation has a one-to-one map from status code -> type.
+			_, err := TypeToCodeMap(op)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
