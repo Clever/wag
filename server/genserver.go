@@ -280,8 +280,6 @@ func generateOperationHandler(op *spec.Operation) (string, error) {
 		delete(typeToCode, "")
 	}
 
-	fmt.Printf("Type to code: %#v\n", typeToCode)
-
 	singleInputOp, _ := swagger.SingleSchemaedBodyParameter(op)
 	handlerOp := handlerOp{
 		Op:                 swagger.Capitalize(op.ID),

@@ -209,7 +209,8 @@ func generateOutputs(packageName string, s spec.Swagger) error {
 func generateGlobalResponseTypes(s spec.Swagger) (string, error) {
 	var buf bytes.Buffer
 
-	for name, resp := range s.Responses {
+	for _, name := range swagger.SortedResponses(s.Responses) {
+		resp := s.Responses[name]
 		typeName, err := swagger.TypeFromSchema(resp.Schema, false)
 		if err != nil {
 			return "", err
