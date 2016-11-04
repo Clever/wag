@@ -1,17 +1,5 @@
 package models
 
-<<<<<<< HEAD
-// NotFound defines a response type.
-// Not found
-type NotFound Error
-
-// Error returns the message encoded in the error type
-func (o NotFound) Error() string {
-	return o.Msg
-}
-
-=======
->>>>>>> Generated
 // BadRequest defines a response type.
 // Bad Request
 type BadRequest Error
@@ -30,8 +18,6 @@ func (o InternalError) Error() string {
 	return o.Msg
 }
 
-<<<<<<< HEAD
-=======
 // NotFound defines a response type.
 // Not found
 type NotFound Error
@@ -41,7 +27,6 @@ func (o NotFound) Error() string {
 	return o.Msg
 }
 
->>>>>>> Generated
 // GetBook400Output defines the 400 status code response for GetBook.
 type GetBook400Output ExtendedError
 

@@ -37,6 +37,7 @@ import (
 		"context"
 		"strings"
 		"bytes"
+		"io"
 		"net/http"
 		"net/url"
 		"strconv"
@@ -257,7 +258,7 @@ func methodCode(op *spec.Operation, basePath, method, methodPath string) string 
 	resp, err := c.requestDoer.Do(client, req)
 	%s
 	defer resp.Body.Close()
-`, op.ID, errorMessage(fmt.Sprintf("%s{Msg: err.Error()}", errorType), op)))
+`, op.ID, errorMessage(fmt.Sprintf("&%s{Msg: err.Error()}", errorType), op)))
 
 	buf.WriteString(parseResponseCode(op, capOpID))
 
@@ -367,37 +368,6 @@ type statusCodeReturn struct {
 	makePointer bool
 }
 
-// outputForCode returns the definition for the output for an operation for a particular
-// status code. The first response value is the list of types in the response in the order they
-// are returned (e.g. GetBookById200Output, nil). The second argument is whether the model object
-// returned should be decode. The final argument is whether the model object should be returned as
-// a pointer.
-func outputForCode(op *spec.Operation, statusCode int) ([]string, bool) {
-	noSuccessType := swagger.NoSuccessType(op)
-	successResponses := []string{}
-	if !noSuccessType {
-		successResponses = append(successResponses, "nil")
-	}
-
-	response := op.Responses.StatusCodeResponses[statusCode]
-	outputName, makePointer := swagger.OutputType(op, statusCode)
-	if noSuccessType {
-		if statusCode < 400 {
-			return []string{"nil"}, false
-		}
-		return []string{outputName}, false
-	} else if response.Schema == nil {
-		if statusCode < 400 {
-			return []string{outputName, "nil"}, false
-		}
-		return []string{"nil", outputName}, false
-	}
-	if statusCode < 400 {
-		return []string{outputName, "nil"}, makePointer
-	}
-	return []string{"nil", fmt.Sprintf("%s", outputName)}, false
-}
-
 // parseResponseCode generates the code for handling the http response.
 // In the client code we want to return a different object depending on the status code, so
 // let's generate code that switches on the status code and returns the right object in each
@@ -408,7 +378,12 @@ func parseResponseCode(op *spec.Operation, capOpID string) string {
 	buf.WriteString("\tswitch resp.StatusCode {\n")
 
 	for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
-		buf.WriteString(writeStatusCodeDecoder(op, statusCode))
+		statusCodeDecoder, err := writeStatusCodeDecoder(op, statusCode)
+		if err != nil {
+			// TODO: move this up???
+			panic(fmt.Errorf("error parsing response code: %s", err))
+		}
+		buf.WriteString(statusCodeDecoder)
 	}
 
 	// It would be nice if we could remove this too
@@ -422,7 +397,7 @@ func parseResponseCode(op *spec.Operation, capOpID string) string {
 	errorType, _ := swagger.OutputType(op, 500)
 	buf.WriteString(fmt.Sprintf(`
 	default:
-		return %s%s{Msg: "Unknown response"}
+		return %s&%s{Msg: "Unknown response"}
 	}
 }
 
@@ -431,44 +406,68 @@ func parseResponseCode(op *spec.Operation, capOpID string) string {
 	return buf.String()
 }
 
-func writeStatusCodeDecoder(op *spec.Operation, statusCode int) string {
-	var buf bytes.Buffer
-	responses, makePointer := outputForCode(op, statusCode)
-	decode := !swagger.NoSuccessType(op)
+func writeStatusCodeDecoder(op *spec.Operation, statusCode int) (string, error) {
+	outputName, makePointer := swagger.OutputType(op, statusCode)
+	internalErrorType, _ := swagger.OutputType(op, 500)
 
-	buf.WriteString(fmt.Sprintf("\tcase %d:\n", statusCode))
-
-	var newResponses []string
-	for _, response := range responses {
-		newResponse := "nil"
-		if response != "nil" {
-			// Turn any of the non-nil output types into variables
-			buf.WriteString(fmt.Sprintf("var output %s\n", response))
-			if makePointer {
-				newResponse = "&output"
-			} else {
-				newResponse = "output"
-			}
-		}
-		newResponses = append(newResponses, newResponse)
+	// TODO: Need makePointer to handle arrays... not sure if there's a better way to do this...
+	outputType := "output"
+	if makePointer {
+		outputType = "&output"
 	}
 
-	if decode {
-		nilString := ""
-		if len(responses) > 1 {
-			nilString = "nil, "
-		}
-		errorType, _ := swagger.OutputType(op, 500)
-		buf.WriteString(fmt.Sprintf(`
-
-	if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-		return %s%s{Msg: err.Error()}
-	}
-
-`, nilString, errorType))
-
-	}
-
-	buf.WriteString("return " + strings.Join(newResponses, ",") + "\n")
-	return buf.String()
+	return templates.WriteTemplate(codeDetectorTmplStr,
+		codeDetectorTmpl{
+			StatusCode:        statusCode,
+			NoSuccessType:     swagger.NoSuccessType(op),
+			ErrorType:         statusCode >= 400,
+			TypeName:          outputName,
+			InternalErrorType: internalErrorType,
+			OutputType:        outputType,
+		})
 }
+
+type codeDetectorTmpl struct {
+	StatusCode        int
+	NoSuccessType     bool
+	ErrorType         bool
+	TypeName          string
+	InternalErrorType string
+	OutputType        string
+}
+
+var codeDetectorTmplStr = `
+	case {{.StatusCode}}:
+
+	{{if .NoSuccessType}}
+		{{if .ErrorType}}
+		var output {{.TypeName}}
+		// Any errors other than EOF should result in an error. EOF is acceptable for empty
+		// types.
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+			return &{{.InternalErrorType}}{Msg: err.Error()}
+		}
+		return {{.OutputType}}
+		{{else}}
+		return nil
+		{{end}}
+	{{else}}
+		{{if .ErrorType}}
+		var output {{.TypeName}}
+		// Any errors other than EOF should result in an error. EOF is acceptable for empty
+		// types.
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+			return nil, &{{.InternalErrorType}}{Msg: err.Error()}
+		}
+		return nil, {{.OutputType}}
+		{{else}}
+		var output {{.TypeName}}
+		// Any errors other than EOF should result in an error. EOF is acceptable for empty
+		// types.
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+			return nil, &{{.InternalErrorType}}{Msg: err.Error()}
+		}
+		return {{.OutputType}}, nil
+		{{end}}
+	{{end}}
+`

@@ -6,6 +6,7 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -41,15 +42,7 @@ var _ Client = (*WagClient)(nil)
 func New(basePath string) *WagClient {
 	base := baseDoer{}
 	tracing := tracingDoer{d: base}
-<<<<<<< HEAD
-<<<<<<< HEAD
 	retry := retryDoer{d: tracing, retryPolicy: DefaultRetryPolicy{}}
-=======
-	retry := retryDoer{d: tracing, defaultRetries: 1}
->>>>>>> Generated
-=======
-	retry := retryDoer{d: tracing, retryPolicy: DefaultRetryPolicy{}}
->>>>>>> Sort responses
 	circuit := &circuitBreakerDoer{
 		d:     &retry,
 		debug: true,
@@ -76,23 +69,10 @@ func NewFromDiscovery() (*WagClient, error) {
 	return New(url), nil
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> Sort responses
 // WithRetryPolicy returns a new client that will use the given retry policy for
 // all requests.
 func (c *WagClient) WithRetryPolicy(retryPolicy RetryPolicy) *WagClient {
 	c.retryDoer.retryPolicy = retryPolicy
-<<<<<<< HEAD
-=======
-// WithRetries returns a new client that retries all GET operations until they either succeed or fail the
-// number of times specified.
-func (c *WagClient) WithRetries(retries int) *WagClient {
-	c.retryDoer.defaultRetries = retries
->>>>>>> Generated
-=======
->>>>>>> Sort responses
 	return c
 }
 
@@ -200,25 +180,48 @@ func (c *WagClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
 	resp, err := c.requestDoer.Do(client, req)
 
 	if err != nil {
-		return models.InternalError{Msg: err.Error()}
+		return &models.InternalError{Msg: err.Error()}
 	}
 
 	defer resp.Body.Close()
 	switch resp.StatusCode {
+
 	case 200:
+
 		return nil
+
 	case 400:
+
 		var output models.GetBook400Output
-		return output
+		// Any errors other than EOF should result in an error. EOF is acceptable for empty
+		// types.
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+			return &models.InternalError{Msg: err.Error()}
+		}
+		return &output
+
 	case 404:
+
 		var output models.NotFound
-		return output
+		// Any errors other than EOF should result in an error. EOF is acceptable for empty
+		// types.
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+			return &models.InternalError{Msg: err.Error()}
+		}
+		return &output
+
 	case 500:
+
 		var output models.InternalError
-		return output
+		// Any errors other than EOF should result in an error. EOF is acceptable for empty
+		// types.
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+			return &models.InternalError{Msg: err.Error()}
+		}
+		return &output
 
 	default:
-		return models.InternalError{Msg: "Unknown response"}
+		return &models.InternalError{Msg: "Unknown response"}
 	}
 }
 
