@@ -6,7 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"log"
+<<<<<<< HEAD
 	"math/rand"
+=======
+>>>>>>> Generated
 	"net"
 	"net/http"
 	"sync"
@@ -59,6 +62,7 @@ func (d tracingDoer) Do(c *http.Client, r *http.Request) (*http.Response, error)
 
 // retryHandler retries 50X http requests
 type retryDoer struct {
+<<<<<<< HEAD
 	d           doer
 	retryPolicy RetryPolicy
 }
@@ -136,6 +140,47 @@ func (d *retryDoer) Do(c *http.Client, r *http.Request) (*http.Response, error) 
 		// Close the response body and try again
 		resp.Body.Close()
 		time.Sleep(backoffs[retries])
+=======
+	d              doer
+	defaultRetries int
+}
+
+// WithRetries returns a new context that overrides the number of retries to do for a particular
+// request.
+func WithRetries(ctx context.Context, retries int) context.Context {
+	return context.WithValue(ctx, retryContext{}, retries)
+}
+
+// retryContext is the key the retry configuration. For demonstration purposes it's just a count
+// of the number of retries right now.
+type retryContext struct{}
+
+func (d *retryDoer) Do(c *http.Client, r *http.Request) (*http.Response, error) {
+
+	resp, err := d.d.Do(c, r)
+	if err != nil {
+		return resp, err
+	}
+
+	// If the request can't be retried then just return immediately. We retry all idempotent
+	// http requests. The only two that can't be retried are post and patch
+	if r.Method == "POST" || r.Method == "PATCH" {
+		return resp, err
+	}
+
+	var retries int
+	retries, ok := r.Context().Value(retryContext{}).(int)
+	if !ok {
+		retries = d.defaultRetries
+	}
+
+	for i := 0; i < retries; i++ {
+		if resp.StatusCode < 500 {
+			break
+		}
+		resp.Body.Close()
+		resp, err = d.d.Do(c, r)
+>>>>>>> Generated
 	}
 	return resp, err
 }
@@ -191,12 +236,16 @@ func logEvent(l *logger.Logger, e HystrixSSEEvent) {
 }
 
 func (d *circuitBreakerDoer) init() {
+<<<<<<< HEAD
 	// Periodically log internal circuit state to assist in setting
 	// circuit thresholds and understanding application behavior.
 	// Unfortunately, hystrix-go doesn't have a great way to expose this
 	// data, so we resort to turning on its support for broadcasting
 	// circuit metrics via http server-sent events (SSE).
 	// See https://github.com/afex/hystrix-go/issues/56.
+=======
+	// Turn on the SSE port + listener once
+>>>>>>> Generated
 	circuitSSEOnce.Do(func() {
 		hystrixStreamHandler := hystrix.NewStreamHandler()
 		hystrixStreamHandler.Start()
