@@ -95,6 +95,7 @@ func CodeToTypeMap(op *spec.Operation) map[int]string {
 	resp := make(map[int]string)
 	for _, statusCode := range SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
 		outputType, makePointer := OutputType(op, statusCode)
+		// TODO: clean up this pointer logic...
 		if makePointer {
 			outputType = "*" + outputType
 		}
