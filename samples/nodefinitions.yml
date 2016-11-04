@@ -11,7 +11,15 @@ produces:
   - application/json
 consumes:
   - application/json
-
+responses:
+  BadRequest:
+    description: "Bad Request"
+    schema:
+      $ref: "#/definitions/Error"
+  InternalError:
+    description: "Internal Error"
+    schema:
+      $ref: "#/definitions/Error"
 paths:
   /books/{id}:
     delete:
@@ -26,3 +34,10 @@ paths:
           description: OK response
         404:
           description: OK response
+
+definitions:
+  Error:
+    type: object
+    properties:
+      msg:
+        type: string

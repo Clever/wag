@@ -11,6 +11,15 @@ produces:
   - application/json
 consumes:
   - application/json
+responses:
+  BadRequest:
+    description: "Bad Request"
+    schema:
+      $ref: "#/definitions/Error"
+  InternalError:
+    description: "Internal Error"
+    schema:
+      $ref: "#/definitions/Error"
 paths:
   /health/check:
     get:
@@ -183,5 +192,5 @@ definitions:
       code:
         type: integer
         format: int32
-      message:
+      msg:
         type: string

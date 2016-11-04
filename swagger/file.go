@@ -9,16 +9,19 @@ import (
 )
 
 // WriteToFile writes the swagger spec to a temporary file. It returns
-// the name of the file.
+// the name of the created file.
 func WriteToFile(s *spec.Swagger) (string, error) {
 	bytes, err := json.Marshal(s)
 	if err != nil {
 		return "", fmt.Errorf("internal error: wag patch type marshal failure: %s", err)
 	}
-	// TODO: Better way to do temporary files... I think there's one in Go
-	fileName := "swagger.tmp"
-	if err := ioutil.WriteFile(fileName, bytes, 0644); err != nil {
+	tmpfile, err := ioutil.TempFile("", "example")
+	if err != nil {
 		return "", err
 	}
-	return fileName, nil
+
+	if _, err := tmpfile.Write(bytes); err != nil {
+		return "", err
+	}
+	return tmpfile.Name(), nil
 }

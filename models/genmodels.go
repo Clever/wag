@@ -204,8 +204,8 @@ func generateOutputs(packageName string, s spec.Swagger) error {
 }
 
 // generateGlobalResponseTypes generates code from the global response type definitions.
-// Note that all the global response types are automatically error types and have a Msg
-// fields (for the Error()) call.
+// Note that all the global response types are automatically error types and are required
+// to have a Msg field (for the Error()) call.
 func generateGlobalResponseTypes(s spec.Swagger) (string, error) {
 	var buf bytes.Buffer
 
@@ -216,8 +216,9 @@ func generateGlobalResponseTypes(s spec.Swagger) (string, error) {
 		}
 		responseDefinition, err := templates.WriteTemplate(globalResponseTmplStr,
 			&globalResponseTmpl{
-				Name: name,
-				Type: typeName,
+				Name:        name,
+				Type:        typeName,
+				Description: resp.Description,
 			})
 		if err != nil {
 			return "", err
@@ -229,13 +230,14 @@ func generateGlobalResponseTypes(s spec.Swagger) (string, error) {
 }
 
 type globalResponseTmpl struct {
-	Name string
-	Type string
+	Name        string
+	Type        string
+	Description string
 }
 
-// TODO: Put the description in here...
 var globalResponseTmplStr = `
-	// {{.Name}} defines a global response type
+	// {{.Name}} defines a response type.
+	// {{.Description}}
 	type {{.Name}} {{.Type}}
 
 	// Error returns the message encoded in the error type
@@ -328,7 +330,6 @@ var typeTemplate = `
 		return "Status Code: {{.StatusCode}}"
 	}
 	{{else}}
-	// TODO: Can I remove this?
 	// {{.OpName}}StatusCode returns the status code for the operation.
 	func (o {{.Output}}) {{.OpName}}StatusCode() int {
 		return {{.StatusCode}}
