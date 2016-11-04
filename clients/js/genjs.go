@@ -84,6 +84,37 @@ function serializeQueryString(data) {
   return data;
 }
 
+const defaultRetryPolicy = {
+  backoffs() {
+    const ret = [];
+    let next = 100.0; // milliseconds
+    const e = 0.05; // +/- 5% jitter
+    while (ret.length < 5) {
+      const jitter = (Math.random()*2-1.0)*e*next;
+      ret.push(next + jitter);
+      next *= 2;
+    }
+    return ret;
+  },
+  retry(requestOptions, err, res, body) {
+    if (err || requestOptions.method === "POST" ||
+        requestOptions.method === "PATCH" ||
+        res.statusCode < 500) {
+      return false;
+    }
+    return true;
+  },
+};
+
+const noRetryPolicy = {
+  backoffs() {
+    return [];
+  },
+  retry(requestOptions, err, res, body) {
+    return false;
+  },
+};
+
 module.exports = class {{.ClassName}} {
 
   constructor(options) {
@@ -103,8 +134,16 @@ module.exports = class {{.ClassName}} {
     if (options.timeout) {
       this.timeout = options.timeout
     }
+    if (options.retryPolicy) {
+      this.retryPolicy = options.retryPolicy;
+    }
   }
 {{range $methodCode := .Methods}}{{$methodCode}}{{end}}}
+
+module.exports.RetryPolicies = {
+  Default: defaultRetryPolicy,
+  None: noRetryPolicy,
+};
 `
 
 var packageJSONTmplStr = `{
@@ -170,15 +209,25 @@ var methodTmplStr = `
         }
       }
 
-      request(requestOptions, (err, response, body) => {
-        if (err) {
-          return rejecter(err);
-        }
-        if (response.statusCode >= 400) {
-          return rejecter(new Error(body));
-        }
-        resolver(body);
-      });
+      const retryPolicy = options.retryPolicy || this.retryPolicy || defaultRetryPolicy;
+      const backoffs = retryPolicy.backoffs();
+      let retries = 0;
+      (function requestOnce() {
+        request(requestOptions, (err, response, body) => {
+          if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
+            const backoff = backoffs[retries];
+            retries += 1;
+            return setTimeout(requestOnce, backoff);
+          }
+          if (err) {
+            return rejecter(err);
+          }
+          if (response.statusCode >= 400) {
+            return rejecter(new Error(body));
+          }
+          resolver(body);
+        });
+      })();
     });
   }
 `

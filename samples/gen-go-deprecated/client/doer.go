@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
 	"net/http"
 	"sync"
@@ -58,45 +59,83 @@ func (d tracingDoer) Do(c *http.Client, r *http.Request) (*http.Response, error)
 
 // retryHandler retries 50X http requests
 type retryDoer struct {
-	d              doer
-	defaultRetries int
+	d           doer
+	retryPolicy RetryPolicy
 }
 
-// WithRetries returns a new context that overrides the number of retries to do for a particular
-// request.
-func WithRetries(ctx context.Context, retries int) context.Context {
-	return context.WithValue(ctx, retryContext{}, retries)
+// RetryPolicy defines a retry policy.
+type RetryPolicy interface {
+	// Backoffs returns the number and timing of retry attempts.
+	Backoffs() []time.Duration
+	// Retry receives the http request, as well as the result of
+	// net/http.Client's `Do` method.
+	Retry(*http.Request, *http.Response, error) bool
 }
 
-// retryContext is the key the retry configuration. For demonstration purposes it's just a count
-// of the number of retries right now.
+// DefaultRetryPolicy defines the default retry policy.
+type DefaultRetryPolicy struct{}
+
+// Backoffs returns five backoffs with exponentially increasing wait times
+// between requests: 100, 200, 400, 800, and 1600 milliseconds +/- up to 5% jitter.
+func (DefaultRetryPolicy) Backoffs() []time.Duration {
+	ret := make([]time.Duration, 5)
+	next := 100 * time.Millisecond
+	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
+	e := 0.05 // +/- 5 percent jitter
+	for i := range ret {
+		ret[i] = next + time.Duration(((rnd.Float64()*2)-1)*e*float64(next))
+		next *= 2
+	}
+	return ret
+}
+
+// Retry will retry non-POST, non-PATCH requests that 5XX.
+// TODO: It does not currently retry any errors returned by net/http.Client's `Do`.
+func (DefaultRetryPolicy) Retry(req *http.Request, resp *http.Response, err error) bool {
+	if err != nil || req.Method == "POST" || req.Method == "PATCH" ||
+		resp.StatusCode < 500 {
+		return false
+	}
+	return true
+}
+
+// NoRetryPolicy defines a policy of never retrying a request.
+type NoRetryPolicy struct{}
+
+// Backoffs returns an empty slice.
+func (NoRetryPolicy) Backoffs() []time.Duration {
+	return []time.Duration{}
+}
+
+// Retry always returns false.
+func (NoRetryPolicy) Retry(*http.Request, *http.Response, error) bool {
+	return false
+}
+
 type retryContext struct{}
 
+// WithRetryPolicy returns a new context that overrides the client object's
+// retry policy.
+func WithRetryPolicy(ctx context.Context, retryPolicy RetryPolicy) context.Context {
+	return context.WithValue(ctx, retryContext{}, retryPolicy)
+}
+
 func (d *retryDoer) Do(c *http.Client, r *http.Request) (*http.Response, error) {
-
-	resp, err := d.d.Do(c, r)
-	if err != nil {
-		return resp, err
-	}
-
-	// If the request can't be retried then just return immediately. We retry all idempotent
-	// http requests. The only two that can't be retried are post and patch
-	if r.Method == "POST" || r.Method == "PATCH" {
-		return resp, err
-	}
-
-	var retries int
-	retries, ok := r.Context().Value(retryContext{}).(int)
+	retryPolicy, ok := r.Context().Value(retryContext{}).(RetryPolicy)
 	if !ok {
-		retries = d.defaultRetries
+		retryPolicy = d.retryPolicy
 	}
-
-	for i := 0; i < retries; i++ {
-		if resp.StatusCode < 500 {
+	backoffs := retryPolicy.Backoffs()
+	var resp *http.Response
+	var err error
+	for retries := 0; true; retries++ {
+		resp, err = d.d.Do(c, r)
+		if retries == len(backoffs) || !retryPolicy.Retry(r, resp, err) {
 			break
 		}
+		// Close the response body and try again
 		resp.Body.Close()
-		resp, err = d.d.Do(c, r)
+		time.Sleep(backoffs[retries])
 	}
 	return resp, err
 }

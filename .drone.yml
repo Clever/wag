@@ -24,5 +24,6 @@ publish:
 script:
 # install dependencies
 - make install_deps
+- ./npmrc_drone_setup.sh
 - make test
 - make build
