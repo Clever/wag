@@ -72,7 +72,6 @@ func OutputType(op *spec.Operation, statusCode int) (string, bool) {
 
 	resp := op.Responses.StatusCodeResponses[statusCode]
 	if strings.HasPrefix(resp.Ref.String(), "#/responses") {
-		// TODO: does this break any abstractions???
 		return fmt.Sprintf("models.%s", resp.Ref.String()[len("#/responses/"):]), true
 	}
 	return fmt.Sprintf("models.%s%dOutput", Capitalize(op.ID), statusCode), true

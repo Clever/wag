@@ -1,4 +1,4 @@
-swagger: '2.0'
+Gswagger: '2.0'
 info:
   title: swagger-test
   description: Testing Swagger Codegen
@@ -11,7 +11,15 @@ produces:
   - application/json
 consumes:
   - application/json
-
+responses:
+  BadRequest:
+    description: "Bad Request"
+    schema:
+      $ref: "#/definitions/Error"
+  InternalError:
+    description: "Internal Error"
+    schema:
+      $ref: "#/definitions/Error"
 paths:
   /books/{id}:
     get:
@@ -27,3 +35,10 @@ paths:
           description: OK response
         404:
           description: OK response
+
+definitions:
+  Error:
+    type: object
+    properties:
+      msg:
+        type: string
