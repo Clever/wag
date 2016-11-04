@@ -104,6 +104,16 @@ func SortedStatusCodeKeys(m map[int]spec.Response) []int {
 	return sortedKeys
 }
 
+// SortedResponses sorts the keys of a map[string[spec].Response
+func SortedResponses(m map[string]spec.Response) []string {
+	sortedKeys := []string{}
+	for k := range m {
+		sortedKeys = append(sortedKeys, k)
+	}
+	sort.Strings(sortedKeys)
+	return sortedKeys
+}
+
 // Capitalize the first character of a string.
 func Capitalize(input string) string {
 	return strings.ToUpper(input[0:1]) + input[1:]
