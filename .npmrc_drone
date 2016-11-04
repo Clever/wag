@@ -1,0 +1,5 @@
+ca = null
+//registry.npmjs.org/:_authToken=${npm_token}
+@clever:registry=https://registry.npmjs.org
+always-auth = true
+strict-ssl = true
