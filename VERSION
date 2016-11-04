@@ -1,1 +1,4 @@
-0.2.0
+0.2.1
+- Exponential backoff in clients (#89)
+- Circuit breakers in clients (#81)
+- Remove x-wag-patch (#88)

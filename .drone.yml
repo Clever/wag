@@ -16,7 +16,8 @@ publish:
     repo: wag
     script:
     - make release
-    tag: v$(cat VERSION)
+    tag: $(head -n 1 VERSION)
+    description: $(tail -n +2 VERSION)
     token: $$github_token
     user: Clever
     when:
