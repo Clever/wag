@@ -1,5 +1,14 @@
 package models
 
+// NotFound defines a response type.
+// Not found
+type NotFound Error
+
+// Error returns the message encoded in the error type
+func (o NotFound) Error() string {
+	return o.Msg
+}
+
 // BadRequest defines a response type.
 // Bad Request
 type BadRequest Error
@@ -11,7 +20,7 @@ func (o BadRequest) Error() string {
 
 // InternalError defines a response type.
 // Internal Error
-type InternalError Error
+type InternalError ExtendedError
 
 // Error returns the message encoded in the error type
 func (o InternalError) Error() string {
@@ -19,7 +28,7 @@ func (o InternalError) Error() string {
 }
 
 // GetBook400Output defines the 400 status code response for GetBook.
-type GetBook400Output struct{}
+type GetBook400Output ExtendedError
 
 // Error returns "Status Code: X". We implemented in to satisfy the error
 // interface. For a more descriptive error message see the output type.

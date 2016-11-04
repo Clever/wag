@@ -13,9 +13,6 @@ import (
 // swagger:model Error
 type Error struct {
 
-	// code
-	Code int32 `json:"code,omitempty"`
-
 	// msg
 	Msg string `json:"msg,omitempty"`
 }

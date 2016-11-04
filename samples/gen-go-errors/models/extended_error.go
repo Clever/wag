@@ -9,19 +9,19 @@ import (
 	"github.com/go-openapi/errors"
 )
 
-// Error error
-// swagger:model Error
-type Error struct {
+// ExtendedError extended error
+// swagger:model ExtendedError
+type ExtendedError struct {
 
 	// code
-	Code int32 `json:"code,omitempty"`
+	Code int64 `json:"code,omitempty"`
 
 	// msg
 	Msg string `json:"msg,omitempty"`
 }
 
-// Validate validates this error
-func (m *Error) Validate(formats strfmt.Registry) error {
+// Validate validates this extended error
+func (m *ExtendedError) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
