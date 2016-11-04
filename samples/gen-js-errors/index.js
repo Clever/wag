@@ -13,10 +13,6 @@ function serializeQueryString(data) {
   return data;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> Sort responses
 const defaultRetryPolicy = {
   backoffs() {
     const ret = [];
@@ -48,11 +44,6 @@ const noRetryPolicy = {
   },
 };
 
-<<<<<<< HEAD
-=======
->>>>>>> Generated
-=======
->>>>>>> Sort responses
 module.exports = class SwaggerTest {
 
   constructor(options) {
@@ -72,18 +63,9 @@ module.exports = class SwaggerTest {
     if (options.timeout) {
       this.timeout = options.timeout
     }
-<<<<<<< HEAD
-<<<<<<< HEAD
     if (options.retryPolicy) {
       this.retryPolicy = options.retryPolicy;
     }
-=======
->>>>>>> Generated
-=======
-    if (options.retryPolicy) {
-      this.retryPolicy = options.retryPolicy;
-    }
->>>>>>> Sort responses
   }
 
   getBook(id, options, cb) {
@@ -134,10 +116,6 @@ module.exports = class SwaggerTest {
         }
       }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> Sort responses
       const retryPolicy = options.retryPolicy || this.retryPolicy || defaultRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       let retries = 0;
@@ -157,7 +135,6 @@ module.exports = class SwaggerTest {
           resolver(body);
         });
       })();
-<<<<<<< HEAD
     });
   }
 }
@@ -166,27 +143,3 @@ module.exports.RetryPolicies = {
   Default: defaultRetryPolicy,
   None: noRetryPolicy,
 };
-=======
-      request(requestOptions, (err, response, body) => {
-        if (err) {
-          return rejecter(err);
-        }
-        if (response.statusCode >= 400) {
-          return rejecter(new Error(body));
-        }
-        resolver(body);
-      });
-    });
-  }
-}
->>>>>>> Generated
-=======
-    });
-  }
-}
-
-module.exports.RetryPolicies = {
-  Default: defaultRetryPolicy,
-  None: noRetryPolicy,
-};
->>>>>>> Sort responses

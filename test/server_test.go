@@ -59,8 +59,7 @@ func TestBasicEndToEnd(t *testing.T) {
 
 	singleBookOutput, err = c.GetBookByID(context.Background(), &models.GetBookByIDInput{BookID: otherBookID})
 	assert.NoError(t, err)
-	_, ok = singleBookOutput.(models.GetBookByID204Output)
-	require.True(t, ok)
+	assert.IsType(t, &models.GetBookByID204Output{}, singleBookOutput)
 }
 
 func TestUserDefinedErrorResponse(t *testing.T) {
@@ -71,8 +70,7 @@ func TestUserDefinedErrorResponse(t *testing.T) {
 
 	_, err := c.GetBookByID(context.Background(), &models.GetBookByIDInput{BookID: 124})
 	assert.Error(t, err)
-	_, ok := err.(models.GetBookByID404Output)
-	assert.True(t, ok, fmt.Sprintf("Type was %T", err))
+	assert.IsType(t, &models.GetBookByID404Output{}, err)
 }
 
 func TestDefaultErrorResponse(t *testing.T) {
@@ -82,7 +80,7 @@ func TestDefaultErrorResponse(t *testing.T) {
 
 	_, err := c.GetBookByID(context.Background(), &models.GetBookByIDInput{BookID: 400})
 	assert.Error(t, err)
-	badReq, ok := err.(models.BadRequest)
+	badReq, ok := err.(*models.BadRequest)
 	assert.True(t, ok)
 	assert.Equal(t, "My 400 failure", badReq.Msg)
 }
@@ -94,8 +92,7 @@ func TestValidationErrorResponse(t *testing.T) {
 	// Book ID should be a multiple of two
 	_, err := c.GetBookByID(context.Background(), &models.GetBookByIDInput{BookID: 123})
 	assert.Error(t, err)
-	_, ok := err.(models.BadRequest)
-	assert.True(t, ok)
+	assert.IsType(t, &models.BadRequest{}, err)
 }
 
 func TestClientSideError(t *testing.T) {
@@ -103,8 +100,7 @@ func TestClientSideError(t *testing.T) {
 
 	_, err := c.GetBooks(context.Background(), &models.GetBooksInput{})
 	assert.Error(t, err)
-	_, ok := err.(models.InternalError)
-	assert.True(t, ok)
+	assert.IsType(t, &models.InternalError{}, err)
 }
 
 func TestHeaders(t *testing.T) {
@@ -135,8 +131,8 @@ func TestCustomStringValidation(t *testing.T) {
 	badFormat := "nonMongoFormat"
 	_, err = c.GetBookByID(context.Background(),
 		&models.GetBookByIDInput{BookID: bookID, AuthorID: &badFormat})
-	_, ok := err.(models.BadRequest)
-	assert.True(t, ok)
+	require.Error(t, err)
+	assert.IsType(t, &models.BadRequest{}, err)
 
 	validFormat := "012345678901234567890123"
 	_, err = c.GetBookByID(context.Background(),
