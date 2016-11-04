@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Clever/wag/samples/gen-go-deprecated/models"
+	"github.com/Clever/wag/samples/gen-go-errors/models"
 	"github.com/go-errors/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -72,23 +72,23 @@ func statusCodeForGetBook(obj interface{}) int {
 
 	switch obj.(type) {
 
-	case *models.BadRequest:
+	case *models.GetBook400Output:
 		return 400
-
-	case *models.GetBook404Output:
-		return 404
 
 	case *models.InternalError:
 		return 500
 
-	case models.BadRequest:
-		return 400
-
-	case models.GetBook404Output:
+	case *models.NotFound:
 		return 404
+
+	case models.GetBook400Output:
+		return 400
 
 	case models.InternalError:
 		return 500
+
+	case models.NotFound:
+		return 404
 
 	default:
 		return -1
@@ -100,14 +100,14 @@ func (h handler) GetBookHandler(ctx context.Context, w http.ResponseWriter, r *h
 	input, err := newGetBookInput(r)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.BadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.GetBook400Output{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	err = input.Validate()
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.BadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.GetBook400Output{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 

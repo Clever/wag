@@ -206,7 +206,7 @@ func (c *WagClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]mo
 	resp, err := c.requestDoer.Do(client, req)
 
 	if err != nil {
-		return nil, models.DefaultInternalError{Msg: err.Error()}
+		return nil, models.InternalError{Msg: err.Error()}
 	}
 
 	defer resp.Body.Close()
@@ -215,29 +215,19 @@ func (c *WagClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]mo
 		var output []models.Book
 
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, models.DefaultInternalError{Msg: err.Error()}
+			return nil, models.InternalError{Msg: err.Error()}
 		}
 
 		return output, nil
 	case 400:
-		var output models.DefaultBadRequest
-
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, models.DefaultInternalError{Msg: err.Error()}
-		}
-
+		var output models.BadRequest
 		return nil, output
 	case 500:
-		var output models.DefaultInternalError
-
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, models.DefaultInternalError{Msg: err.Error()}
-		}
-
+		var output models.InternalError
 		return nil, output
 
 	default:
-		return nil, models.DefaultInternalError{Msg: "Unknown response"}
+		return nil, models.InternalError{Msg: "Unknown response"}
 	}
 }
 
@@ -282,7 +272,7 @@ func (c *WagClient) CreateBook(ctx context.Context, i *models.Book) (*models.Boo
 	resp, err := c.requestDoer.Do(client, req)
 
 	if err != nil {
-		return nil, models.DefaultInternalError{Msg: err.Error()}
+		return nil, models.InternalError{Msg: err.Error()}
 	}
 
 	defer resp.Body.Close()
@@ -291,29 +281,19 @@ func (c *WagClient) CreateBook(ctx context.Context, i *models.Book) (*models.Boo
 		var output models.Book
 
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, models.DefaultInternalError{Msg: err.Error()}
+			return nil, models.InternalError{Msg: err.Error()}
 		}
 
 		return &output, nil
 	case 400:
-		var output models.DefaultBadRequest
-
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, models.DefaultInternalError{Msg: err.Error()}
-		}
-
+		var output models.BadRequest
 		return nil, output
 	case 500:
-		var output models.DefaultInternalError
-
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, models.DefaultInternalError{Msg: err.Error()}
-		}
-
+		var output models.InternalError
 		return nil, output
 
 	default:
-		return nil, models.DefaultInternalError{Msg: "Unknown response"}
+		return nil, models.InternalError{Msg: "Unknown response"}
 	}
 }
 
@@ -358,7 +338,7 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 	resp, err := c.requestDoer.Do(client, req)
 
 	if err != nil {
-		return nil, models.DefaultInternalError{Msg: err.Error()}
+		return nil, models.InternalError{Msg: err.Error()}
 	}
 
 	defer resp.Body.Close()
@@ -367,38 +347,28 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 		var output models.GetBookByID200Output
 
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, models.DefaultInternalError{Msg: err.Error()}
+			return nil, models.InternalError{Msg: err.Error()}
 		}
 
 		return &output, nil
 	case 204:
 		var output models.GetBookByID204Output
 		return output, nil
+	case 400:
+		var output models.BadRequest
+		return nil, output
 	case 401:
 		var output models.GetBookByID401Output
 		return nil, output
 	case 404:
 		var output models.GetBookByID404Output
 		return nil, output
-	case 400:
-		var output models.DefaultBadRequest
-
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, models.DefaultInternalError{Msg: err.Error()}
-		}
-
-		return nil, output
 	case 500:
-		var output models.DefaultInternalError
-
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, models.DefaultInternalError{Msg: err.Error()}
-		}
-
+		var output models.InternalError
 		return nil, output
 
 	default:
-		return nil, models.DefaultInternalError{Msg: "Unknown response"}
+		return nil, models.InternalError{Msg: "Unknown response"}
 	}
 }
 
@@ -433,7 +403,7 @@ func (c *WagClient) GetBookByID2(ctx context.Context, i *models.GetBookByID2Inpu
 	resp, err := c.requestDoer.Do(client, req)
 
 	if err != nil {
-		return nil, models.DefaultInternalError{Msg: err.Error()}
+		return nil, models.InternalError{Msg: err.Error()}
 	}
 
 	defer resp.Body.Close()
@@ -442,32 +412,22 @@ func (c *WagClient) GetBookByID2(ctx context.Context, i *models.GetBookByID2Inpu
 		var output models.Book
 
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, models.DefaultInternalError{Msg: err.Error()}
+			return nil, models.InternalError{Msg: err.Error()}
 		}
 
 		return &output, nil
+	case 400:
+		var output models.BadRequest
+		return nil, output
 	case 404:
 		var output models.GetBookByID2404Output
 		return nil, output
-	case 400:
-		var output models.DefaultBadRequest
-
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, models.DefaultInternalError{Msg: err.Error()}
-		}
-
-		return nil, output
 	case 500:
-		var output models.DefaultInternalError
-
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, models.DefaultInternalError{Msg: err.Error()}
-		}
-
+		var output models.InternalError
 		return nil, output
 
 	default:
-		return nil, models.DefaultInternalError{Msg: "Unknown response"}
+		return nil, models.InternalError{Msg: "Unknown response"}
 	}
 }
 
@@ -500,7 +460,7 @@ func (c *WagClient) HealthCheck(ctx context.Context) error {
 	resp, err := c.requestDoer.Do(client, req)
 
 	if err != nil {
-		return models.DefaultInternalError{Msg: err.Error()}
+		return models.InternalError{Msg: err.Error()}
 	}
 
 	defer resp.Body.Close()
@@ -508,24 +468,14 @@ func (c *WagClient) HealthCheck(ctx context.Context) error {
 	case 200:
 		return nil
 	case 400:
-		var output models.DefaultBadRequest
-
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return models.DefaultInternalError{Msg: err.Error()}
-		}
-
+		var output models.BadRequest
 		return output
 	case 500:
-		var output models.DefaultInternalError
-
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return models.DefaultInternalError{Msg: err.Error()}
-		}
-
+		var output models.InternalError
 		return output
 
 	default:
-		return models.DefaultInternalError{Msg: "Unknown response"}
+		return models.InternalError{Msg: "Unknown response"}
 	}
 }
 

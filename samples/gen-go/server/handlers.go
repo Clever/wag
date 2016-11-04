@@ -72,13 +72,24 @@ func statusCodeForGetBooks(obj interface{}) int {
 
 	switch obj.(type) {
 
+	case *[]models.Book:
+		return 200
+
+	case *models.BadRequest:
+		return 400
+
+	case *models.InternalError:
+		return 500
+
 	case []models.Book:
 		return 200
 
-	case models.DefaultBadRequest:
+	case models.BadRequest:
 		return 400
-	case models.DefaultInternalError:
+
+	case models.InternalError:
 		return 500
+
 	default:
 		return -1
 	}
@@ -89,14 +100,14 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 	input, err := newGetBooksInput(r)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.BadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	err = input.Validate()
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.BadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
@@ -111,7 +122,7 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 		if statusCode != -1 {
 			http.Error(w, err.Error(), statusCode)
 		} else {
-			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+			http.Error(w, jsonMarshalNoError(models.InternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		}
 		return
 	}
@@ -119,7 +130,7 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		http.Error(w, jsonMarshalNoError(models.InternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
 	}
 
@@ -252,16 +263,24 @@ func statusCodeForCreateBook(obj interface{}) int {
 
 	switch obj.(type) {
 
+	case *models.BadRequest:
+		return 400
+
 	case *models.Book:
 		return 200
+
+	case *models.InternalError:
+		return 500
+
+	case models.BadRequest:
+		return 400
 
 	case models.Book:
 		return 200
 
-	case models.DefaultBadRequest:
-		return 400
-	case models.DefaultInternalError:
+	case models.InternalError:
 		return 500
+
 	default:
 		return -1
 	}
@@ -272,14 +291,14 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 	input, err := newCreateBookInput(r)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.BadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	err = input.Validate(nil)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.BadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
@@ -294,7 +313,7 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 		if statusCode != -1 {
 			http.Error(w, err.Error(), statusCode)
 		} else {
-			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+			http.Error(w, jsonMarshalNoError(models.InternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		}
 		return
 	}
@@ -302,7 +321,7 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		http.Error(w, jsonMarshalNoError(models.InternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
 	}
 
@@ -335,6 +354,9 @@ func statusCodeForGetBookByID(obj interface{}) int {
 
 	switch obj.(type) {
 
+	case *models.BadRequest:
+		return 400
+
 	case *models.GetBookByID200Output:
 		return 200
 
@@ -346,6 +368,12 @@ func statusCodeForGetBookByID(obj interface{}) int {
 
 	case *models.GetBookByID404Output:
 		return 404
+
+	case *models.InternalError:
+		return 500
+
+	case models.BadRequest:
+		return 400
 
 	case models.GetBookByID200Output:
 		return 200
@@ -359,10 +387,9 @@ func statusCodeForGetBookByID(obj interface{}) int {
 	case models.GetBookByID404Output:
 		return 404
 
-	case models.DefaultBadRequest:
-		return 400
-	case models.DefaultInternalError:
+	case models.InternalError:
 		return 500
+
 	default:
 		return -1
 	}
@@ -373,14 +400,14 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 	input, err := newGetBookByIDInput(r)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.BadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	err = input.Validate()
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.BadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
@@ -395,7 +422,7 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 		if statusCode != -1 {
 			http.Error(w, err.Error(), statusCode)
 		} else {
-			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+			http.Error(w, jsonMarshalNoError(models.InternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		}
 		return
 	}
@@ -403,7 +430,7 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		http.Error(w, jsonMarshalNoError(models.InternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
 	}
 
@@ -473,11 +500,20 @@ func statusCodeForGetBookByID2(obj interface{}) int {
 
 	switch obj.(type) {
 
+	case *models.BadRequest:
+		return 400
+
 	case *models.Book:
 		return 200
 
 	case *models.GetBookByID2404Output:
 		return 404
+
+	case *models.InternalError:
+		return 500
+
+	case models.BadRequest:
+		return 400
 
 	case models.Book:
 		return 200
@@ -485,10 +521,9 @@ func statusCodeForGetBookByID2(obj interface{}) int {
 	case models.GetBookByID2404Output:
 		return 404
 
-	case models.DefaultBadRequest:
-		return 400
-	case models.DefaultInternalError:
+	case models.InternalError:
 		return 500
+
 	default:
 		return -1
 	}
@@ -499,14 +534,14 @@ func (h handler) GetBookByID2Handler(ctx context.Context, w http.ResponseWriter,
 	input, err := newGetBookByID2Input(r)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.BadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	err = input.Validate()
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.BadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
@@ -521,7 +556,7 @@ func (h handler) GetBookByID2Handler(ctx context.Context, w http.ResponseWriter,
 		if statusCode != -1 {
 			http.Error(w, err.Error(), statusCode)
 		} else {
-			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+			http.Error(w, jsonMarshalNoError(models.InternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		}
 		return
 	}
@@ -529,7 +564,7 @@ func (h handler) GetBookByID2Handler(ctx context.Context, w http.ResponseWriter,
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		http.Error(w, jsonMarshalNoError(models.InternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		return
 	}
 
@@ -569,10 +604,18 @@ func statusCodeForHealthCheck(obj interface{}) int {
 
 	switch obj.(type) {
 
-	case models.DefaultBadRequest:
+	case *models.BadRequest:
 		return 400
-	case models.DefaultInternalError:
+
+	case *models.InternalError:
 		return 500
+
+	case models.BadRequest:
+		return 400
+
+	case models.InternalError:
+		return 500
+
 	default:
 		return -1
 	}
@@ -591,7 +634,7 @@ func (h handler) HealthCheckHandler(ctx context.Context, w http.ResponseWriter, 
 		if statusCode != -1 {
 			http.Error(w, err.Error(), statusCode)
 		} else {
-			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+			http.Error(w, jsonMarshalNoError(models.InternalError{Msg: err.Error()}), http.StatusInternalServerError)
 		}
 		return
 	}
