@@ -372,8 +372,7 @@ type statusCodeReturn struct {
 // are returned (e.g. GetBookById200Output, nil). The second argument is whether the model object
 // returned should be decode. The final argument is whether the model object should be returned as
 // a pointer.
-func outputForCode(op *spec.Operation, statusCode int) ([]string, bool, bool) {
-
+func outputForCode(op *spec.Operation, statusCode int) ([]string, bool) {
 	noSuccessType := swagger.NoSuccessType(op)
 	successResponses := []string{}
 	if !noSuccessType {
@@ -384,19 +383,19 @@ func outputForCode(op *spec.Operation, statusCode int) ([]string, bool, bool) {
 	outputName, makePointer := swagger.OutputType(op, statusCode)
 	if noSuccessType {
 		if statusCode < 400 {
-			return []string{"nil"}, false, false
+			return []string{"nil"}, false
 		}
-		return []string{outputName}, false, false
+		return []string{outputName}, false
 	} else if response.Schema == nil {
 		if statusCode < 400 {
-			return []string{outputName, "nil"}, false, false
+			return []string{outputName, "nil"}, false
 		}
-		return []string{"nil", outputName}, false, false
+		return []string{"nil", outputName}, false
 	}
 	if statusCode < 400 {
-		return []string{outputName, "nil"}, true, makePointer
+		return []string{outputName, "nil"}, makePointer
 	}
-	return []string{"nil", fmt.Sprintf("%s", outputName)}, false, false
+	return []string{"nil", fmt.Sprintf("%s", outputName)}, false
 }
 
 // parseResponseCode generates the code for handling the http response.
@@ -434,7 +433,8 @@ func parseResponseCode(op *spec.Operation, capOpID string) string {
 
 func writeStatusCodeDecoder(op *spec.Operation, statusCode int) string {
 	var buf bytes.Buffer
-	responses, decode, makePointer := outputForCode(op, statusCode)
+	responses, makePointer := outputForCode(op, statusCode)
+	decode := !swagger.NoSuccessType(op)
 
 	buf.WriteString(fmt.Sprintf("\tcase %d:\n", statusCode))
 
