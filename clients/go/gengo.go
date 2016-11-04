@@ -231,6 +231,7 @@ func generateInterface(packageName string, serviceName string, paths *spec.Paths
 func methodCode(op *spec.Operation, basePath, method, methodPath string) string {
 	var buf bytes.Buffer
 	capOpID := swagger.Capitalize(op.ID)
+	errorType, _ := swagger.OutputType(op, 500)
 
 	buf.WriteString(swagger.InterfaceComment(method, methodPath, op) + "\n")
 	buf.WriteString(fmt.Sprintf("func (c *WagClient) %s {\n", swagger.Interface(op)))
@@ -256,7 +257,7 @@ func methodCode(op *spec.Operation, basePath, method, methodPath string) string 
 	resp, err := c.requestDoer.Do(client, req)
 	%s
 	defer resp.Body.Close()
-`, op.ID, errorMessage("models.InternalError{Msg: err.Error()}", op)))
+`, op.ID, errorMessage(fmt.Sprintf("%s{Msg: err.Error()}", errorType), op)))
 
 	buf.WriteString(parseResponseCode(op, capOpID))
 
@@ -422,13 +423,15 @@ func parseResponseCode(op *spec.Operation, capOpID string) string {
 		successReturn = ""
 	}
 
+	// TODO: at some point should encapsulate this behind an interface on the operation
+	errorType, _ := swagger.OutputType(op, 500)
 	buf.WriteString(fmt.Sprintf(`
 	default:
-		return %smodels.InternalError{Msg: "Unknown response"}
+		return %s%s{Msg: "Unknown response"}
 	}
 }
 
-`, successReturn))
+`, successReturn, errorType))
 
 	return buf.String()
 }
@@ -459,13 +462,14 @@ func writeStatusCodeDecoder(op *spec.Operation, statusCode int) string {
 		if len(responses) > 1 {
 			nilString = "nil, "
 		}
+		errorType, _ := swagger.OutputType(op, 500)
 		buf.WriteString(fmt.Sprintf(`
 
 	if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-		return %smodels.InternalError{Msg: err.Error()}
+		return %s%s{Msg: err.Error()}
 	}
 
-`, nilString))
+`, nilString, errorType))
 
 	}
 
