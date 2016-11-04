@@ -423,53 +423,56 @@ func generateNewInput(op *spec.Operation) (string, error) {
 		paramVarName := lowercase(camelParamName)
 
 		if param.In != "body" {
-			extractCode := ""
-			switch param.In {
-			case "query":
-				extractCode = fmt.Sprintf("r.URL.Query().Get(\"%s\")", param.Name)
-			case "path":
-				extractCode = fmt.Sprintf("mux.Vars(r)[\"%s\"]", param.Name)
-			case "header":
-				extractCode = fmt.Sprintf("r.Header.Get(\"%s\")", param.Name)
-			}
-			buf.WriteString(fmt.Sprintf("\t%sStr := %s\n", paramVarName, extractCode))
-
-			if param.Required {
-				buf.WriteString(fmt.Sprintf("\tif len(%sStr) == 0{\n", paramVarName))
-				buf.WriteString(fmt.Sprintf("\t\treturn nil, errors.New(\"Parameter must be specified\")\n"))
-				buf.WriteString(fmt.Sprintf("\t}\n"))
-			} else if param.Default != nil {
-				buf.WriteString(fmt.Sprintf("\tif len(%sStr) == 0 {\n", paramVarName))
-				buf.WriteString(fmt.Sprintf("\t\t// Use the default value\n"))
-				buf.WriteString(fmt.Sprintf("\t\t%sStr = \"%s\"\n", paramVarName, swagger.DefaultAsString(param)))
-				buf.WriteString(fmt.Sprintf("\t}\n"))
-			}
-
-			buf.WriteString(fmt.Sprintf("\tif len(%sStr) != 0 {\n", paramVarName))
-
-			typeName, err := swagger.ParamToType(param, false)
-			if err != nil {
-				return "", err
-			}
-			typeCode, err := swagger.StringToTypeCode(fmt.Sprintf("%sStr", paramVarName), param)
-			if err != nil {
-				return "", err
-			}
-			buf.WriteString(fmt.Sprintf("\t\tvar %sTmp %s\n", paramVarName, typeName))
-			buf.WriteString(fmt.Sprintf("\t\t%sTmp, err = %s\n", paramVarName, typeCode))
-			buf.WriteString(fmt.Sprintf("\t\tif err != nil {\n"))
-			buf.WriteString(fmt.Sprintf("\t\t\treturn nil, err\n"))
-			buf.WriteString(fmt.Sprintf("\t\t}\n"))
-
-			// TODO: Factor this out...
-			if param.Required || param.Type == "array" {
-				buf.WriteString(fmt.Sprintf("\t\tinput.%s = %sTmp\n\n", camelParamName, paramVarName))
+			if param.Type == "array" && param.In == "query" {
+				buf.WriteString(fmt.Sprintf("\tif %s, ok := r.URL.Query()[\"%s\"]; ok {\n\t\tinput.%s = %s\n\t}\n", paramVarName, param.Name, camelParamName, paramVarName))
 			} else {
-				buf.WriteString(fmt.Sprintf("\t\tinput.%s = &%sTmp\n\n", camelParamName, paramVarName))
+				extractCode := ""
+				switch param.In {
+				case "query":
+					extractCode = fmt.Sprintf("r.URL.Query().Get(\"%s\")", param.Name)
+				case "path":
+					extractCode = fmt.Sprintf("mux.Vars(r)[\"%s\"]", param.Name)
+				case "header":
+					extractCode = fmt.Sprintf("r.Header.Get(\"%s\")", param.Name)
+				}
+				buf.WriteString(fmt.Sprintf("\t%sStr := %s\n", paramVarName, extractCode))
+
+				if param.Required {
+					buf.WriteString(fmt.Sprintf("\tif len(%sStr) == 0{\n", paramVarName))
+					buf.WriteString(fmt.Sprintf("\t\treturn nil, errors.New(\"Parameter must be specified\")\n"))
+					buf.WriteString(fmt.Sprintf("\t}\n"))
+				} else if param.Default != nil {
+					buf.WriteString(fmt.Sprintf("\tif len(%sStr) == 0 {\n", paramVarName))
+					buf.WriteString(fmt.Sprintf("\t\t// Use the default value\n"))
+					buf.WriteString(fmt.Sprintf("\t\t%sStr = \"%s\"\n", paramVarName, swagger.DefaultAsString(param)))
+					buf.WriteString(fmt.Sprintf("\t}\n"))
+				}
+
+				buf.WriteString(fmt.Sprintf("\tif len(%sStr) != 0 {\n", paramVarName))
+
+				typeName, err := swagger.ParamToType(param, false)
+				if err != nil {
+					return "", err
+				}
+				typeCode, err := swagger.StringToTypeCode(fmt.Sprintf("%sStr", paramVarName), param)
+				if err != nil {
+					return "", err
+				}
+				buf.WriteString(fmt.Sprintf("\t\tvar %sTmp %s\n", paramVarName, typeName))
+				buf.WriteString(fmt.Sprintf("\t\t%sTmp, err = %s\n", paramVarName, typeCode))
+				buf.WriteString(fmt.Sprintf("\t\tif err != nil {\n"))
+				buf.WriteString(fmt.Sprintf("\t\t\treturn nil, err\n"))
+				buf.WriteString(fmt.Sprintf("\t\t}\n"))
+
+				// TODO: Factor this out...
+				if param.Required || param.Type == "array" {
+					buf.WriteString(fmt.Sprintf("\t\tinput.%s = %sTmp\n\n", camelParamName, paramVarName))
+				} else {
+					buf.WriteString(fmt.Sprintf("\t\tinput.%s = &%sTmp\n\n", camelParamName, paramVarName))
+				}
+
+				buf.WriteString(fmt.Sprintf("\t}\n"))
 			}
-
-			buf.WriteString(fmt.Sprintf("\t}\n"))
-
 		} else {
 			if param.Schema == nil {
 				return "", fmt.Errorf("body parameters must have a schema defined")

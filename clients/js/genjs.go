@@ -74,16 +74,6 @@ const request = require("request");
 const url = require("url");
 const opentracing = require("opentracing");
 
-// go-swagger treats handles/expects arrays in the query string to be a string of comma joined values
-// so...do that thing. It's worth noting that this has lots of issues ("what if my values have commas in them?")
-// but that's an issue with go-swagger
-function serializeQueryString(data) {
-  if (Array.isArray(data)) {
-    return data.join(",");
-  }
-  return data;
-}
-
 const defaultRetryPolicy = {
   backoffs() {
     const ret = [];
@@ -176,8 +166,13 @@ var methodTmplStr = `
     const headers = {};{{range $param := .HeaderParams}}
     headers["{{$param.WagName}}"] = params.{{$param.JSName}};{{end}}
 
-    const query = {};{{range $param := .QueryParams}}
-    query["{{$param.WagName}}"] = serializeQueryString(params.{{$param.JSName}});{{end}}
+    const query = {};{{range $param := .QueryParams}}{{ if $param.Required }}
+    query["{{$param.WagName}}"] = params.{{$param.JSName}};
+{{else}}
+    if (typeof params.{{$param.JSName}} !== "undefined") {
+      query["{{$param.WagName}}"] = params.{{$param.JSName}};
+    }
+{{end}}{{end}}
 
     if (span) {
       opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
@@ -191,6 +186,7 @@ var methodTmplStr = `
       timeout,
       headers,
       qs: query,
+      useQuerystring: true,
     };
 {{ if ne .BodyParam ""}}
     requestOptions.body = params.{{.BodyParam}};
@@ -240,8 +236,9 @@ var singleParamMethodDefinionTemplateString = `{{.MethodName}}({{range $param :=
 var pluralParamMethodDefinionTemplateString = `{{.MethodName}}(params, options, cb) {`
 
 type paramMapping struct {
-	JSName  string
-	WagName string
+	JSName   string
+	WagName  string
+	Required bool
 }
 
 type methodTemplate struct {
@@ -279,8 +276,9 @@ func methodCode(op *spec.Operation, method, basePath, path string) (string, erro
 
 	for _, wagParam := range op.Parameters {
 		param := paramMapping{
-			JSName:  utils.CamelCase(wagParam.Name, false),
-			WagName: wagParam.Name,
+			JSName:   utils.CamelCase(wagParam.Name, false),
+			WagName:  wagParam.Name,
+			Required: wagParam.Required,
 		}
 
 		tmplInfo.Params = append(tmplInfo.Params, param)

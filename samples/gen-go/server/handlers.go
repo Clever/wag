@@ -136,15 +136,8 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 	var err error
 	_ = err
 
-	authorsStr := r.URL.Query().Get("authors")
-	if len(authorsStr) != 0 {
-		var authorsTmp []string
-		authorsTmp, err = swag.SplitByFormat(authorsStr, ""), error(nil)
-		if err != nil {
-			return nil, err
-		}
-		input.Authors = authorsTmp
-
+	if authors, ok := r.URL.Query()["authors"]; ok {
+		input.Authors = authors
 	}
 	availableStr := r.URL.Query().Get("available")
 	if len(availableStr) == 0 {

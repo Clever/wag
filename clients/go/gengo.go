@@ -273,9 +273,13 @@ func buildRequestCode(op *spec.Operation, method string) string {
 			// TODO: Should this be done with regex at some point?
 			buf.WriteString(fmt.Sprintf("\tpath = strings.Replace(path, \"%s\", %s, -1)\n",
 				"{"+param.Name+"}", swagger.ParamToStringCode(param)))
-
 		} else if param.In == "query" {
-			queryAddCode := fmt.Sprintf("\turlVals.Add(\"%s\", %s)\n", param.Name, swagger.ParamToStringCode(param))
+			var queryAddCode string
+			if param.Type == "array" {
+				queryAddCode = fmt.Sprintf("\tfor _, v := range i.%s {\n\t\turlVals.Add(\"%s\", v)\n\t}\n", swagger.StructParamName(param), param.Name)
+			} else {
+				queryAddCode = fmt.Sprintf("\turlVals.Add(\"%s\", %s)\n", param.Name, swagger.ParamToStringCode(param))
+			}
 			if param.Required {
 				buf.WriteString(fmt.Sprintf(queryAddCode))
 			} else {

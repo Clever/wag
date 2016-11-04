@@ -85,11 +85,6 @@ func ParamToStringCode(param spec.Parameter) string {
 		return fmt.Sprintf("strconv.FormatFloat(%s, 'E', -1, 64)", valToSet)
 	case "boolean":
 		return fmt.Sprintf("strconv.FormatBool(%s)", valToSet)
-	case "array":
-		if param.Items.Type != "string" {
-			panic(fmt.Errorf("Array parameters must have string sub-types"))
-		}
-		return fmt.Sprintf("JoinByFormat(%s, \"%s\")", valToSet, param.Format)
 	default:
 		// Theoretically should have validated before getting here
 		panic(fmt.Errorf("unsupported parameter type %s", param.Type))

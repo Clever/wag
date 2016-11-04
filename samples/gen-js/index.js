@@ -3,16 +3,6 @@ const request = require("request");
 const url = require("url");
 const opentracing = require("opentracing");
 
-// go-swagger treats handles/expects arrays in the query string to be a string of comma joined values
-// so...do that thing. It's worth noting that this has lots of issues ("what if my values have commas in them?")
-// but that's an issue with go-swagger
-function serializeQueryString(data) {
-  if (Array.isArray(data)) {
-    return data.join(",");
-  }
-  return data;
-}
-
 const defaultRetryPolicy = {
   backoffs() {
     const ret = [];
@@ -84,15 +74,42 @@ module.exports = class SwaggerTest {
     const headers = {};
 
     const query = {};
-    query["authors"] = serializeQueryString(params.authors);
-    query["available"] = serializeQueryString(params.available);
-    query["state"] = serializeQueryString(params.state);
-    query["published"] = serializeQueryString(params.published);
-    query["snake_case"] = serializeQueryString(params.snakeCase);
-    query["completed"] = serializeQueryString(params.completed);
-    query["maxPages"] = serializeQueryString(params.maxPages);
-    query["min_pages"] = serializeQueryString(params.minPages);
-    query["pagesToTime"] = serializeQueryString(params.pagesToTime);
+    if (typeof params.authors !== "undefined") {
+      query["authors"] = params.authors;
+    }
+
+    if (typeof params.available !== "undefined") {
+      query["available"] = params.available;
+    }
+
+    if (typeof params.state !== "undefined") {
+      query["state"] = params.state;
+    }
+
+    if (typeof params.published !== "undefined") {
+      query["published"] = params.published;
+    }
+
+    if (typeof params.snakeCase !== "undefined") {
+      query["snake_case"] = params.snakeCase;
+    }
+
+    if (typeof params.completed !== "undefined") {
+      query["completed"] = params.completed;
+    }
+
+    if (typeof params.maxPages !== "undefined") {
+      query["maxPages"] = params.maxPages;
+    }
+
+    if (typeof params.minPages !== "undefined") {
+      query["min_pages"] = params.minPages;
+    }
+
+    if (typeof params.pagesToTime !== "undefined") {
+      query["pagesToTime"] = params.pagesToTime;
+    }
+
 
     if (span) {
       opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
@@ -106,6 +123,7 @@ module.exports = class SwaggerTest {
       timeout,
       headers,
       qs: query,
+      useQuerystring: true,
     };
 
     return new Promise((resolve, reject) => {
@@ -176,6 +194,7 @@ module.exports = class SwaggerTest {
       timeout,
       headers,
       qs: query,
+      useQuerystring: true,
     };
 
     requestOptions.body = params.newBook;
@@ -233,8 +252,14 @@ module.exports = class SwaggerTest {
     headers["authorization"] = params.authorization;
 
     const query = {};
-    query["authorID"] = serializeQueryString(params.authorID);
-    query["randomBytes"] = serializeQueryString(params.randomBytes);
+    if (typeof params.authorID !== "undefined") {
+      query["authorID"] = params.authorID;
+    }
+
+    if (typeof params.randomBytes !== "undefined") {
+      query["randomBytes"] = params.randomBytes;
+    }
+
 
     if (span) {
       opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
@@ -248,6 +273,7 @@ module.exports = class SwaggerTest {
       timeout,
       headers,
       qs: query,
+      useQuerystring: true,
     };
 
     return new Promise((resolve, reject) => {
@@ -318,6 +344,7 @@ module.exports = class SwaggerTest {
       timeout,
       headers,
       qs: query,
+      useQuerystring: true,
     };
 
     return new Promise((resolve, reject) => {
@@ -387,6 +414,7 @@ module.exports = class SwaggerTest {
       timeout,
       headers,
       qs: query,
+      useQuerystring: true,
     };
 
     return new Promise((resolve, reject) => {
