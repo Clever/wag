@@ -152,7 +152,12 @@ func logEvent(l *logger.Logger, e HystrixSSEEvent) {
 }
 
 func (d *circuitBreakerDoer) init() {
-	// Turn on the SSE port + listener once
+	// Periodically log internal circuit state to assist in setting
+	// circuit thresholds and understanding application behavior.
+	// Unfortunately, hystrix-go doesn't have a great way to expose this
+	// data, so we resort to turning on its support for broadcasting
+	// circuit metrics via http server-sent events (SSE).
+	// See https://github.com/afex/hystrix-go/issues/56.
 	circuitSSEOnce.Do(func() {
 		hystrixStreamHandler := hystrix.NewStreamHandler()
 		hystrixStreamHandler.Start()
