@@ -1,0 +1,33 @@
+responses:
+  BadRequest:
+    description: "Bad Request"
+    schema:
+      $ref: "#/definitions/Error"
+  InternalError:
+    description: "Internal Error"
+    schema:
+      $ref: "#/definitions/Error"
+
+paths:
+  /path:
+    get:
+      responses:
+        400:
+          description: "Override"
+          schema:
+            $ref: "#/definitions/ExtendedError"
+
+definitions:
+  Error:
+    type: object
+    properties:
+      msg:
+        type: string
+
+  ExtendedError:
+    type: object
+    properties:
+      msg:
+        type: string
+      extendedField:
+        type: string
