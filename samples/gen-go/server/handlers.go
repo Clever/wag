@@ -119,11 +119,11 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
 		}
 		statusCode := statusCodeForGetBooks(err)
-		if statusCode != -1 {
-			http.Error(w, err.Error(), statusCode)
-		} else {
-			http.Error(w, jsonMarshalNoError(models.InternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		if statusCode == -1 {
+			err = models.InternalError{Msg: err.Error()}
+			statusCode = 500
 		}
+		http.Error(w, jsonMarshalNoError(err), statusCode)
 		return
 	}
 
@@ -303,11 +303,11 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
 		}
 		statusCode := statusCodeForCreateBook(err)
-		if statusCode != -1 {
-			http.Error(w, err.Error(), statusCode)
-		} else {
-			http.Error(w, jsonMarshalNoError(models.InternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		if statusCode == -1 {
+			err = models.InternalError{Msg: err.Error()}
+			statusCode = 500
 		}
+		http.Error(w, jsonMarshalNoError(err), statusCode)
 		return
 	}
 
@@ -412,11 +412,11 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
 		}
 		statusCode := statusCodeForGetBookByID(err)
-		if statusCode != -1 {
-			http.Error(w, err.Error(), statusCode)
-		} else {
-			http.Error(w, jsonMarshalNoError(models.InternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		if statusCode == -1 {
+			err = models.InternalError{Msg: err.Error()}
+			statusCode = 500
 		}
+		http.Error(w, jsonMarshalNoError(err), statusCode)
 		return
 	}
 
@@ -546,11 +546,11 @@ func (h handler) GetBookByID2Handler(ctx context.Context, w http.ResponseWriter,
 			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
 		}
 		statusCode := statusCodeForGetBookByID2(err)
-		if statusCode != -1 {
-			http.Error(w, err.Error(), statusCode)
-		} else {
-			http.Error(w, jsonMarshalNoError(models.InternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		if statusCode == -1 {
+			err = models.InternalError{Msg: err.Error()}
+			statusCode = 500
 		}
+		http.Error(w, jsonMarshalNoError(err), statusCode)
 		return
 	}
 
@@ -624,11 +624,11 @@ func (h handler) HealthCheckHandler(ctx context.Context, w http.ResponseWriter, 
 			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
 		}
 		statusCode := statusCodeForHealthCheck(err)
-		if statusCode != -1 {
-			http.Error(w, err.Error(), statusCode)
-		} else {
-			http.Error(w, jsonMarshalNoError(models.InternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		if statusCode == -1 {
+			err = models.InternalError{Msg: err.Error()}
+			statusCode = 500
 		}
+		http.Error(w, jsonMarshalNoError(err), statusCode)
 		return
 	}
 

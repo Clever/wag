@@ -223,9 +223,19 @@ func (c *WagClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]mo
 		return output, nil
 	case 400:
 		var output models.BadRequest
+
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, models.InternalError{Msg: err.Error()}
+		}
+
 		return nil, output
 	case 500:
 		var output models.InternalError
+
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, models.InternalError{Msg: err.Error()}
+		}
+
 		return nil, output
 
 	default:
@@ -289,9 +299,19 @@ func (c *WagClient) CreateBook(ctx context.Context, i *models.Book) (*models.Boo
 		return &output, nil
 	case 400:
 		var output models.BadRequest
+
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, models.InternalError{Msg: err.Error()}
+		}
+
 		return nil, output
 	case 500:
 		var output models.InternalError
+
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, models.InternalError{Msg: err.Error()}
+		}
+
 		return nil, output
 
 	default:
@@ -355,18 +375,43 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 		return &output, nil
 	case 204:
 		var output models.GetBookByID204Output
+
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, models.InternalError{Msg: err.Error()}
+		}
+
 		return output, nil
 	case 400:
 		var output models.BadRequest
+
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, models.InternalError{Msg: err.Error()}
+		}
+
 		return nil, output
 	case 401:
 		var output models.GetBookByID401Output
+
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, models.InternalError{Msg: err.Error()}
+		}
+
 		return nil, output
 	case 404:
 		var output models.GetBookByID404Output
+
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, models.InternalError{Msg: err.Error()}
+		}
+
 		return nil, output
 	case 500:
 		var output models.InternalError
+
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, models.InternalError{Msg: err.Error()}
+		}
+
 		return nil, output
 
 	default:
@@ -420,12 +465,27 @@ func (c *WagClient) GetBookByID2(ctx context.Context, i *models.GetBookByID2Inpu
 		return &output, nil
 	case 400:
 		var output models.BadRequest
+
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, models.InternalError{Msg: err.Error()}
+		}
+
 		return nil, output
 	case 404:
 		var output models.GetBookByID2404Output
+
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, models.InternalError{Msg: err.Error()}
+		}
+
 		return nil, output
 	case 500:
 		var output models.InternalError
+
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, models.InternalError{Msg: err.Error()}
+		}
+
 		return nil, output
 
 	default:

@@ -72,19 +72,19 @@ func TestUserDefinedErrorResponse(t *testing.T) {
 	_, err := c.GetBookByID(context.Background(), &models.GetBookByIDInput{BookID: 124})
 	assert.Error(t, err)
 	_, ok := err.(models.GetBookByID404Output)
-	assert.True(t, ok)
+	assert.True(t, ok, fmt.Sprintf("Type was %T", err))
 }
 
-func TestDefaultErroResponse(t *testing.T) {
+func TestDefaultErrorResponse(t *testing.T) {
 	s := setupServer()
 
 	c := client.New(s.URL)
 
 	_, err := c.GetBookByID(context.Background(), &models.GetBookByIDInput{BookID: 400})
 	assert.Error(t, err)
-	fmt.Printf("ERROR: %T\n", err)
-	_, ok := err.(models.BadRequest)
+	badReq, ok := err.(models.BadRequest)
 	assert.True(t, ok)
+	assert.Equal(t, "My 400 failure", badReq.Msg)
 }
 
 func TestValidationErrorResponse(t *testing.T) {

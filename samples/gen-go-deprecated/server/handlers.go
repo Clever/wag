@@ -119,11 +119,11 @@ func (h handler) GetBookHandler(ctx context.Context, w http.ResponseWriter, r *h
 			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
 		}
 		statusCode := statusCodeForGetBook(err)
-		if statusCode != -1 {
-			http.Error(w, err.Error(), statusCode)
-		} else {
-			http.Error(w, jsonMarshalNoError(models.InternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		if statusCode == -1 {
+			err = models.InternalError{Msg: err.Error()}
+			statusCode = 500
 		}
+		http.Error(w, jsonMarshalNoError(err), statusCode)
 		return
 	}
 

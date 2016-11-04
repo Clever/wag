@@ -367,11 +367,11 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
 		}
 		statusCode := statusCodeFor{{.Op}}(err)
-		if statusCode != -1 {
-			http.Error(w, err.Error(), statusCode)
-		} else {
-			http.Error(w, jsonMarshalNoError({{index .StatusCodetoType 500}}{Msg: err.Error()}), http.StatusInternalServerError)
+		if statusCode == -1 {
+			err = {{index .StatusCodetoType 500}}{Msg: err.Error()}
+			statusCode = 500
 		}
+		http.Error(w, jsonMarshalNoError(err), statusCode)
 		return
 	}
 
