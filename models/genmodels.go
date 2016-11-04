@@ -14,11 +14,17 @@ import (
 )
 
 // Generate writes the files to the client directories
-func Generate(packageName, swaggerFile string, swagger spec.Swagger) error {
+func Generate(packageName string, s spec.Swagger) error {
+
+	tmpFile, err := swagger.WriteToFile(&s)
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tmpFile)
 
 	// generate models with go-swagger
 	if err := generator.GenerateServer("", []string{}, []string{}, &generator.GenOpts{
-		Spec:           swaggerFile,
+		Spec:           tmpFile,
 		ModelPackage:   "models",
 		Target:         fmt.Sprintf("%s/src/%s/", os.Getenv("GOPATH"), packageName),
 		IncludeModel:   true,
@@ -28,10 +34,10 @@ func Generate(packageName, swaggerFile string, swagger spec.Swagger) error {
 		return fmt.Errorf("error generating go-swagger models: %s", err)
 	}
 
-	if err := generateOutputs(packageName, swagger); err != nil {
+	if err := generateOutputs(packageName, s); err != nil {
 		return fmt.Errorf("error generating outputs: %s", err)
 	}
-	if err := generateInputs(packageName, swagger.Paths); err != nil {
+	if err := generateInputs(packageName, s.Paths); err != nil {
 		return fmt.Errorf("error generating inputs: %s", err)
 	}
 	return nil
@@ -163,9 +169,6 @@ func generateOutputs(packageName string, s spec.Swagger) error {
 	g := swagger.Generator{PackageName: packageName}
 
 	g.Printf("package models\n\n")
-
-	// TODO: Remove this code...
-	g.Printf(defaultOutputTypes())
 
 	globalOutputs, err := generateGlobalResponseTypes(s)
 	if err != nil {
@@ -332,30 +335,3 @@ var typeTemplate = `
 	}
 	{{end}}
 `
-
-// defaultOutputTypes returns the string defining the default output type
-func defaultOutputTypes() string {
-	return fmt.Sprintf(`
-// DefaultInternalError represents a generic 500 response.
-type DefaultInternalError struct {
-	Msg string %s
-}
-
-// Error returns the internal error that caused the 500.
-func (d DefaultInternalError) Error() string {
-	return d.Msg
-}
-
-// DefaultBadRequest represents a generic 400 response. It used internally by Swagger as the
-// response when a request fails the validation defined in the Swagger yml file.
-type DefaultBadRequest struct {
-	Msg string %s
-}
-
-// Error returns the validation error that caused the 400.
-func (d DefaultBadRequest) Error() string {
-	return d.Msg
-}
-
-`, "`json:\"msg\"`", "`json:\"msg\"`")
-}

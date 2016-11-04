@@ -2,6 +2,7 @@ package swagger
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/go-openapi/spec"
 )
@@ -60,13 +61,19 @@ func OutputType(op *spec.Operation, statusCode int) (string, bool) {
 		var err error
 		successType, err := TypeFromSchema(singleSchema, true)
 		if err != nil {
-			panic(fmt.Errorf("Could not convert operation to type for %s, %s", op.ID, err))
+			panic(fmt.Errorf("could not convert operation to type for %s, %s", op.ID, err))
 		}
 		return successType, singleSchema != nil && singleSchema.Ref.String() != ""
 	}
-	// This magic number is only used internally in this file. I will clean it up soon.
+	// This magic number is only used internally in this file. I will clean it up at some point.
 	if statusCode == -1 {
 		return fmt.Sprintf("models.%sOutput", Capitalize(op.ID)), false
+	}
+
+	resp := op.Responses.StatusCodeResponses[statusCode]
+	if strings.HasPrefix(resp.Ref.String(), "#/responses") {
+		// TODO: does this break any abstractions???
+		return fmt.Sprintf("models.%s", resp.Ref.String()[len("#/responses/"):]), true
 	}
 	return fmt.Sprintf("models.%s%dOutput", Capitalize(op.ID), statusCode), true
 }
