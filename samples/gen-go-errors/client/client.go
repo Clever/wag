@@ -41,7 +41,11 @@ var _ Client = (*WagClient)(nil)
 func New(basePath string) *WagClient {
 	base := baseDoer{}
 	tracing := tracingDoer{d: base}
+<<<<<<< HEAD
 	retry := retryDoer{d: tracing, retryPolicy: DefaultRetryPolicy{}}
+=======
+	retry := retryDoer{d: tracing, defaultRetries: 1}
+>>>>>>> Generated
 	circuit := &circuitBreakerDoer{
 		d:     &retry,
 		debug: true,
@@ -68,10 +72,17 @@ func NewFromDiscovery() (*WagClient, error) {
 	return New(url), nil
 }
 
+<<<<<<< HEAD
 // WithRetryPolicy returns a new client that will use the given retry policy for
 // all requests.
 func (c *WagClient) WithRetryPolicy(retryPolicy RetryPolicy) *WagClient {
 	c.retryDoer.retryPolicy = retryPolicy
+=======
+// WithRetries returns a new client that retries all GET operations until they either succeed or fail the
+// number of times specified.
+func (c *WagClient) WithRetries(retries int) *WagClient {
+	c.retryDoer.defaultRetries = retries
+>>>>>>> Generated
 	return c
 }
 

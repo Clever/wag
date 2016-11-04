@@ -13,6 +13,7 @@ function serializeQueryString(data) {
   return data;
 }
 
+<<<<<<< HEAD
 const defaultRetryPolicy = {
   backoffs() {
     const ret = [];
@@ -44,6 +45,8 @@ const noRetryPolicy = {
   },
 };
 
+=======
+>>>>>>> Generated
 module.exports = class SwaggerTest {
 
   constructor(options) {
@@ -63,9 +66,12 @@ module.exports = class SwaggerTest {
     if (options.timeout) {
       this.timeout = options.timeout
     }
+<<<<<<< HEAD
     if (options.retryPolicy) {
       this.retryPolicy = options.retryPolicy;
     }
+=======
+>>>>>>> Generated
   }
 
   getBook(id, options, cb) {
@@ -116,6 +122,7 @@ module.exports = class SwaggerTest {
         }
       }
 
+<<<<<<< HEAD
       const retryPolicy = options.retryPolicy || this.retryPolicy || defaultRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       let retries = 0;
@@ -143,3 +150,17 @@ module.exports.RetryPolicies = {
   Default: defaultRetryPolicy,
   None: noRetryPolicy,
 };
+=======
+      request(requestOptions, (err, response, body) => {
+        if (err) {
+          return rejecter(err);
+        }
+        if (response.statusCode >= 400) {
+          return rejecter(new Error(body));
+        }
+        resolver(body);
+      });
+    });
+  }
+}
+>>>>>>> Generated
