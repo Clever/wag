@@ -16,7 +16,10 @@ $(MOCKGEN):
 build: hardcoded/hardcoded.go
 	go build -o bin/wag
 
-test: build generate $(PKGS)
+test: build generate $(PKGS) js-tests
+
+js-tests:
+	cd test/js && npm install && npm test
 
 generate: hardcoded/hardcoded.go $(MOCKGEN)
 	./bin/wag -file samples/swagger.yml -go-package $(PKG)/samples/gen-go -js-path $(GOPATH)/src/$(PKG)/samples/gen-js

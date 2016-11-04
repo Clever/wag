@@ -17,16 +17,20 @@ import (
 	"github.com/Clever/wag/samples/gen-go/server"
 	"github.com/afex/hystrix-go/hystrix"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type ClientContextTest struct {
-	getCount  int
-	postCount int
+	getCount      int
+	getTimes      []time.Time
+	getErrorCount int
+	postCount     int
 }
 
 func (c *ClientContextTest) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, error) {
 	c.getCount++
-	if c.getCount == 1 {
+	c.getTimes = append(c.getTimes, time.Now())
+	if c.getCount <= c.getErrorCount {
 		return nil, fmt.Errorf("Error count: %d", c.getCount)
 	}
 	return []models.Book{}, nil
@@ -86,38 +90,42 @@ func (c *ClientCircuitTest) HealthCheck(ctx context.Context) error {
 }
 
 func TestDefaultClientRetries(t *testing.T) {
-	controller := ClientContextTest{}
+	controller := ClientContextTest{getErrorCount: 2}
 	s := server.New(&controller, "")
 	testServer := httptest.NewServer(s.Handler)
 	defer testServer.Close()
 	c := client.New(testServer.URL)
 	_, err := c.GetBooks(context.Background(), &models.GetBooksInput{})
-	assert.NoError(t, err)
-	assert.Equal(t, 2, controller.getCount)
+	require.NoError(t, err)
+	require.Equal(t, len(controller.getTimes), 3, "expected three requests")
+	assert.WithinDuration(t, controller.getTimes[1], controller.getTimes[0].Add(100*time.Millisecond), 10*time.Millisecond,
+		"expected first backoff to be about 100ms")
+	assert.WithinDuration(t, controller.getTimes[2], controller.getTimes[1].Add(200*time.Millisecond), 20*time.Millisecond,
+		"expected first backoff to be about 200ms")
 }
 
 func TestCustomClientRetries(t *testing.T) {
-	controller := ClientContextTest{}
+	controller := ClientContextTest{getErrorCount: 1}
 	s := server.New(&controller, "")
 	testServer := httptest.NewServer(s.Handler)
 	defer testServer.Close()
 
 	// Should fail if no retries
-	c := client.New(testServer.URL).WithRetries(0)
+	c := client.New(testServer.URL).WithRetryPolicy(client.NoRetryPolicy{})
 	_, err := c.GetBooks(context.Background(), &models.GetBooksInput{})
 	assert.Error(t, err)
 	assert.Equal(t, 1, controller.getCount)
 }
 
 func TestCustomContextRetries(t *testing.T) {
-	controller := ClientContextTest{}
+	controller := ClientContextTest{getErrorCount: 1}
 	s := server.New(&controller, "")
 	testServer := httptest.NewServer(s.Handler)
 	defer testServer.Close()
 
 	// Should fail if no retries
 	c := client.New(testServer.URL)
-	_, err := c.GetBooks(client.WithRetries(context.Background(), 0), &models.GetBooksInput{})
+	_, err := c.GetBooks(client.WithRetryPolicy(context.Background(), client.NoRetryPolicy{}), &models.GetBooksInput{})
 	assert.Error(t, err)
 	assert.Equal(t, 1, controller.getCount)
 }
@@ -133,8 +141,14 @@ func TestNonGetRetries(t *testing.T) {
 	assert.Equal(t, 1, controller.postCount)
 }
 
+func TestNetworkErrorRetries(t *testing.T) {
+	c := client.New("https://thisshouldnotresolve1234567890.com/")
+	_, err := c.CreateBook(context.Background(), &models.Book{})
+	assert.Error(t, err)
+}
+
 func TestNewWithDiscovery(t *testing.T) {
-	controller := ClientContextTest{}
+	controller := ClientContextTest{getErrorCount: 1}
 	s := server.New(&controller, "")
 	testServer := httptest.NewServer(s.Handler)
 

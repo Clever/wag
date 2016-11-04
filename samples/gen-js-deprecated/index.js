@@ -13,6 +13,37 @@ function serializeQueryString(data) {
   return data;
 }
 
+const defaultRetryPolicy = {
+  backoffs() {
+    const ret = [];
+    let next = 100.0; // milliseconds
+    const e = 0.05; // +/- 5% jitter
+    while (ret.length < 5) {
+      const jitter = (Math.random()*2-1.0)*e*next;
+      ret.push(next + jitter);
+      next *= 2;
+    }
+    return ret;
+  },
+  retry(requestOptions, err, res, body) {
+    if (err || requestOptions.method === "POST" ||
+        requestOptions.method === "PATCH" ||
+        res.statusCode < 500) {
+      return false;
+    }
+    return true;
+  },
+};
+
+const noRetryPolicy = {
+  backoffs() {
+    return [];
+  },
+  retry(requestOptions, err, res, body) {
+    return false;
+  },
+};
+
 module.exports = class SwaggerTest {
 
   constructor(options) {
@@ -32,5 +63,13 @@ module.exports = class SwaggerTest {
     if (options.timeout) {
       this.timeout = options.timeout
     }
+    if (options.retryPolicy) {
+      this.retryPolicy = options.retryPolicy;
+    }
   }
 }
+
+module.exports.RetryPolicies = {
+  Default: defaultRetryPolicy,
+  None: noRetryPolicy,
+};

@@ -32,3 +32,5 @@ badcode.txt
 release/
 .DS_Store
 
+node_modules/
+
