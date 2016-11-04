@@ -8,9 +8,9 @@ import (
 	"github.com/go-openapi/spec"
 )
 
-// TransformErrors - TODO: Add a nice comment! This is a somewhat non-trivial function.
-// TODO: Figure out the exact interface here... Know that it modifies the input...
-// TODO: Add some unit tests...
+// TransformErrors transforms the errors of the swagger spec object. This means
+// both verifying that the required errors exist, and also adding the 400 / 500
+// responses to any operation that doesn't have them defined.
 func TransformErrors(s spec.Swagger) error {
 
 	// Confirm that we have the global error types we're expecting
@@ -21,8 +21,7 @@ func TransformErrors(s spec.Swagger) error {
 		if resp.Schema == nil {
 			return fmt.Errorf("%s response must have schema", name)
 		}
-
-		if err := validReference(resp.Schema.Ref, s); err != nil {
+		if err := refHasMsgField(resp.Schema.Ref, s); err != nil {
 			return fmt.Errorf("%s response is invalid: %s", name, err)
 		}
 		if name == "BadRequest" {
@@ -32,10 +31,6 @@ func TransformErrors(s spec.Swagger) error {
 		}
 	}
 	if !global400 || !global500 {
-		// TODO: add these to the template-wag
-		// TODO: should I reference something to make it more clear what I mean...
-		// probably the readme
-
 		return errors.New("must specify global 'BadRequest' response type and global " +
 			"'InternalResponse' response type")
 	}
@@ -51,27 +46,18 @@ func TransformErrors(s spec.Swagger) error {
 
 			for code, resp := range op.Responses.StatusCodeResponses {
 
-				// Do I need to do any more checking???
-
-				if code == 400 || code == 500 {
-
-					// Two cases to support here. One is a reference to a
-					// response object. The other is a schema with a reference to
-					// a type
-					refToCheck := resp.Ref
-					if resp.Schema != nil {
-						refToCheck = resp.Schema.Ref
-					}
-
-					if err := validReference(refToCheck, s); err != nil {
-						// TODO: clean up this message...
+				// Any defined 400 / 500 responses must have `msg` field so that
+				// they can be used by the Swagger internals.
+				if code == 400 {
+					if err := responseHasMsgField(resp, s); err != nil {
 						return fmt.Errorf("invalid 400 response: %s", err)
 					}
-					if code == 400 {
-						has400 = true
-					} else {
-						has500 = true
+					has400 = true
+				} else if code == 500 {
+					if err := responseHasMsgField(resp, s); err != nil {
+						return fmt.Errorf("invalid 500 response: %s", err)
 					}
+					has500 = true
 				}
 			}
 
@@ -107,24 +93,39 @@ func createRefResponse(description, ref string) (*spec.Response, error) {
 	}, nil
 }
 
-// TODO: Add a nice comment
-// Make sure we have a Msg field and no other fields are required
-func validReference(ref spec.Ref, s spec.Swagger) error {
+// responseHasMsgField checks that a response points to a type with
+// a msg field. This should be used by responses defined in an operation
+// (i.e. not global response type). Responses in an operation can either
+// have a reference to a global response type or they have have a schema.
+func responseHasMsgField(r spec.Response, s spec.Swagger) error {
+	refToCheck := r.Ref
+	if r.Schema != nil {
+		refToCheck = r.Schema.Ref
+	}
+
+	return refHasMsgField(refToCheck, s)
+}
+
+// refHasMsgField ensures that the reference points to a schema with
+// a `msg` field and no other required fields.
+func refHasMsgField(ref spec.Ref, s spec.Swagger) error {
 
 	refObj, _, err := ref.GetPointer().Get(s)
 	if err != nil {
 		return fmt.Errorf("invalid schema reference: %s", err)
 	}
 
+	// The reference can point directly to a schema, or it can
+	// point to a global response type which can then point to a
+	// schema.
+	r, ok := refObj.(spec.Response)
+	if ok {
+		return refHasMsgField(r.Schema.Ref, s)
+	}
 	schema, ok := refObj.(spec.Schema)
 	if !ok {
+		return errors.New("invalid schema reference")
 
-		// TODO: clean this up... maybe move it into the upper layer?
-		r, ok := refObj.(spec.Response)
-		if !ok {
-			return errors.New("invalid schema reference")
-		}
-		return validReference(r.Schema.Ref, s)
 	}
 
 	msgField, ok := schema.Properties["msg"]
@@ -136,7 +137,17 @@ func validReference(ref spec.Ref, s spec.Swagger) error {
 		return fmt.Errorf("msg field must be of type 'string': %s", ref.String())
 	}
 
-	// TODO: Check for required fields...
+	// Don't allow any required fields. We need this because Wag won't know what those
+	// fields should be when it generates the default 400 + 500 responses. We don't even
+	// allow `msg` to be required because go-swagger would make it a pointer which
+	// complicates things.
+	//
+	// Note that we enforce this on all global response types, not just the 400 / 500s.
+	// For now we do it because it makes the code simpler, but we could relax the
+	// restriction if it limits users.
+	if len(schema.Required) > 0 {
+		return fmt.Errorf("%s cannot have required fields", ref.String())
+	}
 
 	return nil
 }
