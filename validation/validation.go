@@ -53,13 +53,6 @@ func validateOp(path, method string, op *spec.Operation) error {
 			return fmt.Errorf("Response map key must be an integer between 200 and 599 or "+
 				"the string 'default'. Was %d", statusCode)
 		}
-		if statusCode == 400 {
-			return fmt.Errorf("Use the pre-defined default 400 response 'DefaultBadRequest' " +
-				"instead of defining your own")
-		} else if statusCode == 500 {
-			return fmt.Errorf("Use the pre-defined default 500 response `DefaultInternalError` " +
-				"instead of defining your own")
-		}
 		_, err := swagger.TypeFromSchema(op.Responses.StatusCodeResponses[statusCode].Schema, false)
 		if err != nil {
 			return err

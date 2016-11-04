@@ -83,7 +83,7 @@ func TestDefaultErroResponse(t *testing.T) {
 	_, err := c.GetBookByID(context.Background(), &models.GetBookByIDInput{BookID: 400})
 	assert.Error(t, err)
 	fmt.Printf("ERROR: %T\n", err)
-	_, ok := err.(models.DefaultBadRequest)
+	_, ok := err.(models.BadRequest)
 	assert.True(t, ok)
 }
 
@@ -94,7 +94,7 @@ func TestValidationErrorResponse(t *testing.T) {
 	// Book ID should be a multiple of two
 	_, err := c.GetBookByID(context.Background(), &models.GetBookByIDInput{BookID: 123})
 	assert.Error(t, err)
-	_, ok := err.(models.DefaultBadRequest)
+	_, ok := err.(models.BadRequest)
 	assert.True(t, ok)
 }
 
@@ -103,7 +103,7 @@ func TestClientSideError(t *testing.T) {
 
 	_, err := c.GetBooks(context.Background(), &models.GetBooksInput{})
 	assert.Error(t, err)
-	_, ok := err.(models.DefaultInternalError)
+	_, ok := err.(models.InternalError)
 	assert.True(t, ok)
 }
 
@@ -135,7 +135,7 @@ func TestCustomStringValidation(t *testing.T) {
 	badFormat := "nonMongoFormat"
 	_, err = c.GetBookByID(context.Background(),
 		&models.GetBookByIDInput{BookID: bookID, AuthorID: &badFormat})
-	_, ok := err.(models.DefaultBadRequest)
+	_, ok := err.(models.BadRequest)
 	assert.True(t, ok)
 
 	validFormat := "012345678901234567890123"
