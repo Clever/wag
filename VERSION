@@ -1,2 +1,4 @@
-0.3.0
-- Don't comma encode arrays in querystring params - instead use multiple querystring items.
+0.4.0
+- Add support for globally defined error types.
+- Enforce that a BadRequest and InternalError error type are defined.
+- Allow error types to extend the default types
