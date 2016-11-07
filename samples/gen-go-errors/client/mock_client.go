@@ -5,7 +5,7 @@ package client
 
 import (
 	context "context"
-	models "github.com/Clever/wag/samples/gen-go-no-definitions/models"
+	models "github.com/Clever/wag/samples/gen-go-errors/models"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -30,12 +30,12 @@ func (_m *MockClient) EXPECT() *_MockClientRecorder {
 	return _m.recorder
 }
 
-func (_m *MockClient) DeleteBook(ctx context.Context, i *models.DeleteBookInput) error {
-	ret := _m.ctrl.Call(_m, "DeleteBook", ctx, i)
+func (_m *MockClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
+	ret := _m.ctrl.Call(_m, "GetBook", ctx, i)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-func (_mr *_MockClientRecorder) DeleteBook(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteBook", arg0, arg1)
+func (_mr *_MockClientRecorder) GetBook(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetBook", arg0, arg1)
 }

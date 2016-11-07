@@ -3,6 +3,16 @@ const request = require("request");
 const url = require("url");
 const opentracing = require("opentracing");
 
+// go-swagger treats handles/expects arrays in the query string to be a string of comma joined values
+// so...do that thing. It's worth noting that this has lots of issues ("what if my values have commas in them?")
+// but that's an issue with go-swagger
+function serializeQueryString(data) {
+  if (Array.isArray(data)) {
+    return data.join(",");
+  }
+  return data;
+}
+
 const defaultRetryPolicy = {
   backoffs() {
     const ret = [];
@@ -58,7 +68,7 @@ module.exports = class SwaggerTest {
     }
   }
 
-  deleteBook(id, options, cb) {
+  getBook(id, options, cb) {
     const params = {};
     params["id"] = id;
 
@@ -80,17 +90,16 @@ module.exports = class SwaggerTest {
 
     if (span) {
       opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
-      span.logEvent("DELETE /v1/books/{id}");
+      span.logEvent("GET /v1/books/{id}");
     }
 
     const requestOptions = {
-      method: "DELETE",
+      method: "GET",
       uri: this.address + "/v1/books/" + params.id + "",
       json: true,
       timeout,
       headers,
       qs: query,
-      useQuerystring: true,
     };
 
     return new Promise((resolve, reject) => {

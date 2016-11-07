@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Clever/wag/samples/gen-go-no-definitions/models"
+	"github.com/Clever/wag/samples/gen-go-errors/models"
 	"github.com/go-errors/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -66,56 +66,64 @@ func jsonMarshalNoError(i interface{}) string {
 	return string(bytes)
 }
 
-// statusCodeForDeleteBook returns the status code corresponding to the returned
+// statusCodeForGetBook returns the status code corresponding to the returned
 // object. It returns -1 if the type doesn't correspond to anything.
-func statusCodeForDeleteBook(obj interface{}) int {
+func statusCodeForGetBook(obj interface{}) int {
 
 	switch obj.(type) {
 
-	case *models.DeleteBook404Output:
-		return 404
-
-	case models.DeleteBook404Output:
-		return 404
-
-	case models.DefaultBadRequest:
+	case *models.GetBook400Output:
 		return 400
-	case models.DefaultInternalError:
+
+	case *models.InternalError:
 		return 500
+
+	case *models.NotFound:
+		return 404
+
+	case models.GetBook400Output:
+		return 400
+
+	case models.InternalError:
+		return 500
+
+	case models.NotFound:
+		return 404
+
 	default:
 		return -1
 	}
 }
 
-func (h handler) DeleteBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func (h handler) GetBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
-	input, err := newDeleteBookInput(r)
+	input, err := newGetBookInput(r)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.GetBook400Output{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	err = input.Validate()
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.GetBook400Output{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
-	err = h.DeleteBook(ctx, input)
+	err = h.GetBook(ctx, input)
 
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		if btErr, ok := err.(*errors.Error); ok {
 			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
 		}
-		statusCode := statusCodeForDeleteBook(err)
-		if statusCode != -1 {
-			http.Error(w, err.Error(), statusCode)
-		} else {
-			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		statusCode := statusCodeForGetBook(err)
+		if statusCode == -1 {
+			err = models.InternalError{Msg: err.Error()}
+			statusCode = 500
 		}
+		http.Error(w, jsonMarshalNoError(err), statusCode)
 		return
 	}
 
@@ -124,9 +132,9 @@ func (h handler) DeleteBookHandler(ctx context.Context, w http.ResponseWriter, r
 
 }
 
-// newDeleteBookInput takes in an http.Request an returns the input struct.
-func newDeleteBookInput(r *http.Request) (*models.DeleteBookInput, error) {
-	var input models.DeleteBookInput
+// newGetBookInput takes in an http.Request an returns the input struct.
+func newGetBookInput(r *http.Request) (*models.GetBookInput, error) {
+	var input models.GetBookInput
 
 	var err error
 	_ = err

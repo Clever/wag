@@ -19,7 +19,12 @@ responses:
   InternalError:
     description: "Internal Error"
     schema:
+      $ref: "#/definitions/ExtendedError"
+  NotFound:
+    description: "Not found"
+    schema:
       $ref: "#/definitions/Error"
+
 paths:
   /books/{id}:
     get:
@@ -29,12 +34,18 @@ paths:
           in: path
           required: true
           type: integer
-      deprecated: true
+          maximum: 4000
       responses:
         200:
           description: OK response
+        400:
+          description: "Extended error"
+          schema:
+            $ref: "#/definitions/ExtendedError"
         404:
-          description: OK response
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalError"
 
 definitions:
   Error:
@@ -42,3 +53,12 @@ definitions:
     properties:
       msg:
         type: string
+
+  ExtendedError:
+    type: object
+    properties:
+      msg:
+        type: string
+      code:
+        type: integer
+

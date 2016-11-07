@@ -1,7 +1,9 @@
 package swagger
 
 import (
+	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/go-openapi/spec"
 )
@@ -60,13 +62,18 @@ func OutputType(op *spec.Operation, statusCode int) (string, bool) {
 		var err error
 		successType, err := TypeFromSchema(singleSchema, true)
 		if err != nil {
-			panic(fmt.Errorf("Could not convert operation to type for %s, %s", op.ID, err))
+			panic(fmt.Errorf("could not convert operation to type for %s, %s", op.ID, err))
 		}
 		return successType, singleSchema != nil && singleSchema.Ref.String() != ""
 	}
-	// This magic number is only used internally in this file. I will clean it up soon.
+	// This magic number is only used internally in this file. I will clean it up at some point.
 	if statusCode == -1 {
 		return fmt.Sprintf("models.%sOutput", Capitalize(op.ID)), false
+	}
+
+	resp := op.Responses.StatusCodeResponses[statusCode]
+	if strings.HasPrefix(resp.Ref.String(), "#/responses") {
+		return fmt.Sprintf("models.%s", resp.Ref.String()[len("#/responses/"):]), true
 	}
 	return fmt.Sprintf("models.%s%dOutput", Capitalize(op.ID), statusCode), true
 }
@@ -88,13 +95,28 @@ func NoSuccessType(op *spec.Operation) bool {
 func CodeToTypeMap(op *spec.Operation) map[int]string {
 	resp := make(map[int]string)
 	for _, statusCode := range SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
-		outputType, makePointer := OutputType(op, statusCode)
-		if makePointer {
-			outputType = "*" + outputType
-		}
+		outputType, _ := OutputType(op, statusCode)
 		resp[statusCode] = outputType
 	}
 	return resp
+}
+
+// TypeToCodeMap returns a map from the type to its corresponding status code. It returns
+// an error if mutiple status codes map to the same type
+func TypeToCodeMap(op *spec.Operation) (map[string]int, error) {
+	typeToCode := make(map[string]int)
+	for code, typeStr := range CodeToTypeMap(op) {
+		if typeStr != "" {
+			if _, ok := typeToCode[typeStr]; ok {
+				return nil, errors.New("duplicate response types")
+			}
+			typeToCode[typeStr] = code
+			typeToCode["*"+typeStr] = code
+		} else {
+			typeToCode[""] = code
+		}
+	}
+	return typeToCode, nil
 }
 
 // successStatusCodes returns a slice of all the success status codes for an operation

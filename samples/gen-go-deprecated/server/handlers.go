@@ -72,16 +72,24 @@ func statusCodeForGetBook(obj interface{}) int {
 
 	switch obj.(type) {
 
+	case *models.BadRequest:
+		return 400
+
 	case *models.GetBook404Output:
 		return 404
+
+	case *models.InternalError:
+		return 500
+
+	case models.BadRequest:
+		return 400
 
 	case models.GetBook404Output:
 		return 404
 
-	case models.DefaultBadRequest:
-		return 400
-	case models.DefaultInternalError:
+	case models.InternalError:
 		return 500
+
 	default:
 		return -1
 	}
@@ -92,14 +100,14 @@ func (h handler) GetBookHandler(ctx context.Context, w http.ResponseWriter, r *h
 	input, err := newGetBookInput(r)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.BadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	err = input.Validate()
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.BadRequest{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
@@ -111,11 +119,11 @@ func (h handler) GetBookHandler(ctx context.Context, w http.ResponseWriter, r *h
 			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
 		}
 		statusCode := statusCodeForGetBook(err)
-		if statusCode != -1 {
-			http.Error(w, err.Error(), statusCode)
-		} else {
-			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		if statusCode == -1 {
+			err = models.InternalError{Msg: err.Error()}
+			statusCode = 500
 		}
+		http.Error(w, jsonMarshalNoError(err), statusCode)
 		return
 	}
 

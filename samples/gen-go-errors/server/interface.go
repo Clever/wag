@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 
-	"github.com/Clever/wag/samples/gen-go-no-definitions/models"
+	"github.com/Clever/wag/samples/gen-go-errors/models"
 )
 
 //go:generate $GOPATH/bin/mockgen -source=$GOFILE -destination=mock_controller.go -package=server
@@ -11,6 +11,6 @@ import (
 // Controller defines the interface for the swagger-test service.
 type Controller interface {
 
-	// DeleteBook makes a DELETE request to /books/{id}.
-	DeleteBook(ctx context.Context, i *models.DeleteBookInput) error
+	// GetBook makes a GET request to /books/{id}.
+	GetBook(ctx context.Context, i *models.GetBookInput) error
 }

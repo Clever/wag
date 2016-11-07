@@ -6,6 +6,7 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -13,7 +14,7 @@ import (
 	"time"
 
 	discovery "github.com/Clever/discovery-go"
-	"github.com/Clever/wag/samples/gen-go-no-definitions/models"
+	"github.com/Clever/wag/samples/gen-go-errors/models"
 	"github.com/afex/hystrix-go/hystrix"
 )
 
@@ -149,8 +150,8 @@ func JoinByFormat(data []string, format string) string {
 	return strings.Join(data, sep)
 }
 
-// DeleteBook makes a DELETE request to /books/{id}.
-func (c *WagClient) DeleteBook(ctx context.Context, i *models.DeleteBookInput) error {
+// GetBook makes a GET request to /books/{id}.
+func (c *WagClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
 	path := c.basePath + "/v1/books/{id}"
 	urlVals := url.Values{}
 	var body []byte
@@ -159,14 +160,14 @@ func (c *WagClient) DeleteBook(ctx context.Context, i *models.DeleteBookInput) e
 	path = path + "?" + urlVals.Encode()
 
 	client := &http.Client{Transport: c.transport}
-	req, err := http.NewRequest("DELETE", path, bytes.NewBuffer(body))
+	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
 
 	if err != nil {
 		return err
 	}
 
 	// Add the opname for doers like tracing
-	ctx = context.WithValue(ctx, opNameCtx{}, "deleteBook")
+	ctx = context.WithValue(ctx, opNameCtx{}, "getBook")
 	req = req.WithContext(ctx)
 	// Don't add the timeout in a "doer" because we don't want to call "defer.cancel()"
 	// until we've finished all the processing of the request object. Otherwise we'll cancel
@@ -179,35 +180,48 @@ func (c *WagClient) DeleteBook(ctx context.Context, i *models.DeleteBookInput) e
 	resp, err := c.requestDoer.Do(client, req)
 
 	if err != nil {
-		return models.DefaultInternalError{Msg: err.Error()}
+		return &models.InternalError{Msg: err.Error()}
 	}
 
 	defer resp.Body.Close()
 	switch resp.StatusCode {
+
 	case 200:
+
 		return nil
-	case 404:
-		var output models.DeleteBook404Output
-		return output
+
 	case 400:
-		var output models.DefaultBadRequest
 
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return models.DefaultInternalError{Msg: err.Error()}
+		var output models.GetBook400Output
+		// Any errors other than EOF should result in an error. EOF is acceptable for empty
+		// types.
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+			return &models.InternalError{Msg: err.Error()}
 		}
+		return &output
 
-		return output
+	case 404:
+
+		var output models.NotFound
+		// Any errors other than EOF should result in an error. EOF is acceptable for empty
+		// types.
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+			return &models.InternalError{Msg: err.Error()}
+		}
+		return &output
+
 	case 500:
-		var output models.DefaultInternalError
 
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return models.DefaultInternalError{Msg: err.Error()}
+		var output models.InternalError
+		// Any errors other than EOF should result in an error. EOF is acceptable for empty
+		// types.
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+			return &models.InternalError{Msg: err.Error()}
 		}
-
-		return output
+		return &output
 
 	default:
-		return models.DefaultInternalError{Msg: "Unknown response"}
+		return &models.InternalError{Msg: "Unknown response"}
 	}
 }
 

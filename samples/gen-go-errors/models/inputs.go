@@ -14,13 +14,16 @@ var _ = strconv.FormatInt
 var _ = validate.Maximum
 var _ = strfmt.NewFormats
 
-// DeleteBookInput holds the input parameters for a deleteBook operation.
-type DeleteBookInput struct {
+// GetBookInput holds the input parameters for a getBook operation.
+type GetBookInput struct {
 	ID int64
 }
 
-// Validate returns an error if any of the DeleteBookInput parameters don't satisfy the
+// Validate returns an error if any of the GetBookInput parameters don't satisfy the
 // requirements from the swagger yml file.
-func (i DeleteBookInput) Validate() error {
+func (i GetBookInput) Validate() error {
+	if err := validate.MaximumInt("id", "path", i.ID, int64(4000), false); err != nil {
+		return err
+	}
 	return nil
 }

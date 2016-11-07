@@ -8,18 +8,23 @@ import (
 	"github.com/go-openapi/spec"
 
 	"github.com/Clever/wag/swagger"
+	"github.com/Clever/wag/templates"
 
 	"github.com/go-swagger/go-swagger/generator"
-
-	"text/template"
 )
 
 // Generate writes the files to the client directories
-func Generate(packageName, swaggerFile string, swagger spec.Swagger) error {
+func Generate(packageName string, s spec.Swagger) error {
+
+	tmpFile, err := swagger.WriteToFile(&s)
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tmpFile)
 
 	// generate models with go-swagger
 	if err := generator.GenerateServer("", []string{}, []string{}, &generator.GenOpts{
-		Spec:           swaggerFile,
+		Spec:           tmpFile,
 		ModelPackage:   "models",
 		Target:         fmt.Sprintf("%s/src/%s/", os.Getenv("GOPATH"), packageName),
 		IncludeModel:   true,
@@ -29,10 +34,10 @@ func Generate(packageName, swaggerFile string, swagger spec.Swagger) error {
 		return fmt.Errorf("error generating go-swagger models: %s", err)
 	}
 
-	if err := generateOutputs(packageName, swagger.Paths); err != nil {
+	if err := generateOutputs(packageName, s); err != nil {
 		return fmt.Errorf("error generating outputs: %s", err)
 	}
-	if err := generateInputs(packageName, swagger.Paths); err != nil {
+	if err := generateInputs(packageName, s.Paths); err != nil {
 		return fmt.Errorf("error generating inputs: %s", err)
 	}
 	return nil
@@ -160,15 +165,19 @@ func errCheck(ifCondition string) string {
 `, ifCondition)
 }
 
-func generateOutputs(packageName string, paths *spec.Paths) error {
+func generateOutputs(packageName string, s spec.Swagger) error {
 	g := swagger.Generator{PackageName: packageName}
 
 	g.Printf("package models\n\n")
 
-	g.Printf(defaultOutputTypes())
+	globalOutputs, err := generateGlobalResponseTypes(s)
+	if err != nil {
+		return err
+	}
+	g.Printf(globalOutputs)
 
-	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
-		path := paths.Paths[pathKey]
+	for _, pathKey := range swagger.SortedPathItemKeys(s.Paths.Paths) {
+		path := s.Paths.Paths[pathKey]
 		pathItemOps := swagger.PathItemOperations(path)
 		for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
 			op := pathItemOps[opKey]
@@ -193,6 +202,50 @@ func generateOutputs(packageName string, paths *spec.Paths) error {
 	}
 	return g.WriteFile("models/outputs.go")
 }
+
+// generateGlobalResponseTypes generates code from the global response type definitions.
+// Note that all the global response types are automatically error types and are required
+// to have a Msg field (for the Error()) call.
+func generateGlobalResponseTypes(s spec.Swagger) (string, error) {
+	var buf bytes.Buffer
+
+	for _, name := range swagger.SortedResponses(s.Responses) {
+		resp := s.Responses[name]
+		typeName, err := swagger.TypeFromSchema(resp.Schema, false)
+		if err != nil {
+			return "", err
+		}
+		responseDefinition, err := templates.WriteTemplate(globalResponseTmplStr,
+			&globalResponseTmpl{
+				Name:        name,
+				Type:        typeName,
+				Description: resp.Description,
+			})
+		if err != nil {
+			return "", err
+		}
+		buf.WriteString(responseDefinition)
+	}
+
+	return buf.String(), nil
+}
+
+type globalResponseTmpl struct {
+	Name        string
+	Type        string
+	Description string
+}
+
+var globalResponseTmplStr = `
+	// {{.Name}} defines a response type.
+	// {{.Description}}
+	type {{.Name}} {{.Type}}
+
+	// Error returns the message encoded in the error type
+	func (o {{.Name}}) Error() string {
+		return o.Msg
+	}
+`
 
 func generateSuccessTypes(capOpID string, responses map[int]spec.Response) (string, error) {
 	var buf bytes.Buffer
@@ -256,12 +309,7 @@ func generateType(capOpID string, statusCode int, response spec.Response) (strin
 		Type:       typeName,
 		ErrorType:  statusCode >= 400,
 	}
-	tmpl := template.Must(template.New("a").Parse(typeTemplate))
-	var tmpBuf bytes.Buffer
-	if err := tmpl.Execute(&tmpBuf, fields); err != nil {
-		return "", err
-	}
-	return tmpBuf.String(), nil
+	return templates.WriteTemplate(typeTemplate, fields)
 }
 
 type typeTemplateFields struct {
@@ -289,30 +337,3 @@ var typeTemplate = `
 	}
 	{{end}}
 `
-
-// defaultOutputTypes returns the string defining the default output type
-func defaultOutputTypes() string {
-	return fmt.Sprintf(`
-// DefaultInternalError represents a generic 500 response.
-type DefaultInternalError struct {
-	Msg string %s
-}
-
-// Error returns the internal error that caused the 500.
-func (d DefaultInternalError) Error() string {
-	return d.Msg
-}
-
-// DefaultBadRequest represents a generic 400 response. It used internally by Swagger as the
-// response when a request fails the validation defined in the Swagger yml file.
-type DefaultBadRequest struct {
-	Msg string %s
-}
-
-// Error returns the validation error that caused the 400.
-func (d DefaultBadRequest) Error() string {
-	return d.Msg
-}
-
-`, "`json:\"msg\"`", "`json:\"msg\"`")
-}

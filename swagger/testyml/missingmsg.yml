@@ -1,0 +1,12 @@
+responses:
+  BadRequest:
+    description: "Bad Request"
+    schema:
+      $ref: "#/definitions/Test"
+
+definitions:
+  Test:
+    type: object
+    properties:
+      name:
+        type: string

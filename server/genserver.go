@@ -270,17 +270,14 @@ var jsonMarshalString = `
 func generateOperationHandler(op *spec.Operation) (string, error) {
 	typeToCode := make(map[string]int)
 	emptyResponseCode := 200
-	for code, typeStr := range swagger.CodeToTypeMap(op) {
-		if typeStr != "" {
-			typeToCode[typeStr] = code
-			// Support non-pointer types too so that the implementer can
-			// return either (this is a bit icky)
-			if len(typeStr) > 0 && typeStr[0] == '*' {
-				typeToCode[typeStr[1:]] = code
-			}
-		} else {
-			emptyResponseCode = code
-		}
+	codeToType := swagger.CodeToTypeMap(op)
+	typeToCode, err := swagger.TypeToCodeMap(op)
+	if err != nil {
+		return "", err
+	}
+	if empty, ok := typeToCode[""]; ok {
+		emptyResponseCode = empty
+		delete(typeToCode, "")
 	}
 
 	singleInputOp, _ := swagger.SingleSchemaedBodyParameter(op)
@@ -291,6 +288,7 @@ func generateOperationHandler(op *spec.Operation) (string, error) {
 		SingleInputOp:      singleInputOp,
 		EmptyStatusCode:    emptyResponseCode,
 		TypesToStatusCodes: typeToCode,
+		StatusCodetoType:   codeToType,
 	}
 	handlerCode, err := templates.WriteTemplate(handlerTemplate, handlerOp)
 	if err != nil {
@@ -317,6 +315,7 @@ type handlerOp struct {
 	SingleInputOp      bool
 	EmptyStatusCode    int
 	TypesToStatusCodes map[string]int
+	StatusCodetoType   map[int]string
 }
 
 var handlerTemplate = `
@@ -329,10 +328,6 @@ func statusCodeFor{{.Op}}(obj interface{}) int {
    	case {{$type}}:
    		return {{$code}}
 	{{ end }}
-	case models.DefaultBadRequest:
-		return 400
-	case models.DefaultInternalError:
-		return 500
 	default:
 		return -1
 	}
@@ -343,14 +338,14 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 	input, err := new{{.Op}}Input(r)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError({{index .StatusCodetoType 400}}{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
 	err = input.Validate({{if .SingleInputOp}}nil{{end}})
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultBadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError({{index .StatusCodetoType 400}}{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
@@ -372,11 +367,11 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
 		}
 		statusCode := statusCodeFor{{.Op}}(err)
-		if statusCode != -1 {
-			http.Error(w, err.Error(), statusCode)
-		} else {
-			http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		if statusCode == -1 {
+			err = {{index .StatusCodetoType 500}}{Msg: err.Error()}
+			statusCode = 500
 		}
+		http.Error(w, jsonMarshalNoError(err), statusCode)
 		return
 	}
 
@@ -384,7 +379,7 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.DefaultInternalError{Msg: err.Error()}), http.StatusInternalServerError)
+		http.Error(w, jsonMarshalNoError({{index .StatusCodetoType 500}}{Msg: err.Error()}), http.StatusInternalServerError)
 		return
 	}
 

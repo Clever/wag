@@ -53,9 +53,9 @@ func New(c Controller, addr string) *Server {
 
 	l := logger.New("swagger-test")
 
-	r.Methods("DELETE").Path("/v1/books/{id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger.FromContext(r.Context()).AddContext("op", "deleteBook")
-		h.DeleteBookHandler(r.Context(), w, r)
+	r.Methods("GET").Path("/v1/books/{id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger.FromContext(r.Context()).AddContext("op", "getBook")
+		h.GetBookHandler(r.Context(), w, r)
 	})
 
 	handler := withMiddleware("swagger-test", r)

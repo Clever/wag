@@ -18,12 +18,10 @@ func TypeFromSchema(schema *spec.Schema, includeModels bool) (string, error) {
 	if schema == nil {
 		return "struct{}", nil
 	} else if schema.Ref.String() != "" {
-		ref := schema.Ref.String()
-		if !strings.HasPrefix(ref, "#/definitions/") {
-			return "", fmt.Errorf("schema.$ref has undefined reference type \"%s\". "+
-				"Must start with #/definitions.", ref)
+		def, err := defFromRef(schema.Ref.String())
+		if err != nil {
+			return "", err
 		}
-		def := ref[len("#/definitions/"):]
 		if includeModels {
 			def = "models." + def
 		}
@@ -39,15 +37,21 @@ func TypeFromSchema(schema *spec.Schema, includeModels bool) (string, error) {
 			return "", fmt.Errorf("Cannot define complex data types inline. They must be defined in" +
 				"the #/definitions section of the swagger yaml")
 		}
-		ref := items.Schema.Ref.String()
-		if !strings.HasPrefix(ref, "#/definitions/") {
-			return "", fmt.Errorf("schema.$ref has undefined reference type \"%s\". "+
-				"Must start with #/definitions", ref)
+		def, err := defFromRef(items.Schema.Ref.String())
+		if err != nil {
+			return "", err
 		}
-		def := ref[len("#/definitions/"):]
 		if includeModels {
 			def = "models." + def
 		}
 		return "[]" + def, nil
 	}
+}
+
+func defFromRef(ref string) (string, error) {
+	if strings.HasPrefix(ref, "#/definitions/") {
+		return ref[len("#/definitions/"):], nil
+	}
+	return "", fmt.Errorf("schema.$ref has undefined reference type \"%s\". "+
+		"Must start with #/definitions or #/responses.", ref)
 }
