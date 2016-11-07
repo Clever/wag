@@ -8,10 +8,10 @@ import (
 	"github.com/go-openapi/spec"
 )
 
-// TransformErrors transforms the errors of the swagger spec object. This means
+// ValidateErrors transforms the errors of the swagger spec object. This means
 // both verifying that the required errors exist, and also adding the 400 / 500
 // responses to any operation that doesn't have them defined.
-func TransformErrors(s spec.Swagger) error {
+func ValidateErrors(s spec.Swagger) error {
 
 	// Confirm that we have the global error types we're expecting
 	global400 := false

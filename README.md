@@ -38,7 +38,7 @@ definitions:
         type: string
 ```
 
-If your yml doesn't define a 400 or a 500 response for any of your operations, Wag will implicitly set it to the globally defined response.
+If your yml doesn't define a 400 or a 500 response for any of your operations, Wag will implicitly set it to the globally defined responses: models.BadRequest and models.InternalError.
 
 Then generate your code:
 ```
@@ -77,7 +77,7 @@ logger.FromContext(ctx).Info(...)
 
 * **Errors**.
   * Wag supports three types of errors
-    * Global error response types: "models.{{.ResponseName}}"
+    * Global error response types: "models.{{.ResponseID}}"
     * Response types for a specific operation: "models.{{.OperationId}}{{.StatusCode}}Output"
     * Undefined error types: anything that implements the Error interface
 

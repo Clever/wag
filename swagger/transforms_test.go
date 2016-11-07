@@ -13,28 +13,28 @@ import (
 
 func TestBadReference(t *testing.T) {
 	s := loadTestFile(t, "testyml/badref.yml")
-	err := TransformErrors(s)
+	err := ValidateErrors(s)
 	require.Error(t, err)
 	assert.True(t, strings.Contains(err.Error(), "invalid schema reference"), err.Error())
 }
 
 func TestReferenceMissingMsgField(t *testing.T) {
 	s := loadTestFile(t, "testyml/missingmsg.yml")
-	err := TransformErrors(s)
+	err := ValidateErrors(s)
 	assert.Error(t, err)
 	assert.True(t, strings.Contains(err.Error(), "'msg' field"), err.Error())
 }
 
 func TestErrorOnMissingTypes(t *testing.T) {
 	s := loadTestFile(t, "testyml/missinginternal.yml")
-	err := TransformErrors(s)
+	err := ValidateErrors(s)
 	assert.Error(t, err)
 	assert.True(t, strings.Contains(err.Error(), "must specify global"), err.Error())
 }
 
 func TestOtherRequiredField(t *testing.T) {
 	s := loadTestFile(t, "testyml/requiredfield.yml")
-	err := TransformErrors(s)
+	err := ValidateErrors(s)
 	assert.Error(t, err)
 	assert.True(t, strings.Contains(err.Error(), "cannot have required fields"), err.Error())
 }
@@ -48,7 +48,7 @@ func loadTestFile(t *testing.T, filename string) spec.Swagger {
 
 func TestAddingDefaultTypes(t *testing.T) {
 	s := loadTestFile(t, "testyml/defaults.yml")
-	assert.NoError(t, TransformErrors(s))
+	assert.NoError(t, ValidateErrors(s))
 
 	responses := s.Paths.Paths["/path"].Get.Responses.StatusCodeResponses
 	require.Equal(t, 3, len(responses))
@@ -56,5 +56,5 @@ func TestAddingDefaultTypes(t *testing.T) {
 
 func TestOverrideDefaults(t *testing.T) {
 	s := loadTestFile(t, "testyml/override.yml")
-	assert.NoError(t, TransformErrors(s))
+	assert.NoError(t, ValidateErrors(s))
 }
