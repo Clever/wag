@@ -157,7 +157,9 @@ func (c *WagClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]mo
 	var body []byte
 
 	if i.Authors != nil {
-		urlVals.Add("authors", JoinByFormat(i.Authors, ""))
+		for _, v := range i.Authors {
+			urlVals.Add("authors", v)
+		}
 	}
 	if i.Available != nil {
 		urlVals.Add("available", strconv.FormatBool(*i.Available))

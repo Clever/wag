@@ -1,2 +1,2 @@
-0.2.2
-- Fix release process to include v prefix
+0.3.0
+- Don't comma encode arrays in querystring params - instead use multiple querystring items.
