@@ -13,30 +13,44 @@ import (
 
 func TestBadReference(t *testing.T) {
 	s := loadTestFile(t, "testyml/badref.yml")
-	err := ValidateErrors(s)
+	err := ValidateResponses(s)
 	require.Error(t, err)
 	assert.True(t, strings.Contains(err.Error(), "invalid schema reference"), err.Error())
 }
 
 func TestReferenceMissingMessageField(t *testing.T) {
 	s := loadTestFile(t, "testyml/missingmessage.yml")
-	err := ValidateErrors(s)
+	err := ValidateResponses(s)
 	assert.Error(t, err)
 	assert.True(t, strings.Contains(err.Error(), "'message' field"), err.Error())
 }
 
 func TestErrorOnMissingTypes(t *testing.T) {
 	s := loadTestFile(t, "testyml/missinginternal.yml")
-	err := ValidateErrors(s)
+	err := ValidateResponses(s)
 	assert.Error(t, err)
 	assert.True(t, strings.Contains(err.Error(), "must specify global"), err.Error())
 }
 
 func TestOtherRequiredField(t *testing.T) {
 	s := loadTestFile(t, "testyml/requiredfield.yml")
-	err := ValidateErrors(s)
+	err := ValidateResponses(s)
 	assert.Error(t, err)
 	assert.True(t, strings.Contains(err.Error(), "cannot have required fields"), err.Error())
+}
+
+func Test3xxError(t *testing.T) {
+	s := loadTestFile(t, "testyml/3xxresponse.yml")
+	err := ValidateResponses(s)
+	assert.Error(t, err)
+	assert.True(t, strings.Contains(err.Error(), "cannot define 3XX status codes"), err.Error())
+}
+
+func TestMultiSuccessError(t *testing.T) {
+	s := loadTestFile(t, "testyml/multisuccess.yml")
+	err := ValidateResponses(s)
+	assert.Error(t, err)
+	assert.True(t, strings.Contains(err.Error(), "one success type"), err.Error())
 }
 
 func loadTestFile(t *testing.T, filename string) spec.Swagger {
@@ -48,7 +62,7 @@ func loadTestFile(t *testing.T, filename string) spec.Swagger {
 
 func TestAddingDefaultTypes(t *testing.T) {
 	s := loadTestFile(t, "testyml/defaults.yml")
-	assert.NoError(t, ValidateErrors(s))
+	assert.NoError(t, ValidateResponses(s))
 
 	responses := s.Paths.Paths["/path"].Get.Responses.StatusCodeResponses
 	require.Equal(t, 3, len(responses))
@@ -56,5 +70,5 @@ func TestAddingDefaultTypes(t *testing.T) {
 
 func TestOverrideDefaults(t *testing.T) {
 	s := loadTestFile(t, "testyml/override.yml")
-	assert.NoError(t, ValidateErrors(s))
+	assert.NoError(t, ValidateResponses(s))
 }

@@ -334,7 +334,7 @@ func (c *WagClient) CreateBook(ctx context.Context, i *models.Book) (*models.Boo
 
 // GetBookByID makes a GET request to /books/{book_id}.
 // Returns a book
-func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
+func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (*models.Book, error) {
 	path := c.basePath + "/v1/books/{book_id}"
 	urlVals := url.Values{}
 	var body []byte
@@ -381,17 +381,7 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 
 	case 200:
 
-		var output models.GetBookByID200Output
-		// Any errors other than EOF should result in an error. EOF is acceptable for empty
-		// types.
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
-			return nil, &models.InternalError{Message: err.Error()}
-		}
-		return &output, nil
-
-	case 204:
-
-		var output models.GetBookByID204Output
+		var output models.Book
 		// Any errors other than EOF should result in an error. EOF is acceptable for empty
 		// types.
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {

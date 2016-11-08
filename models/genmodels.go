@@ -11,7 +11,6 @@ import (
 
 	"github.com/Clever/go-utils/stringset"
 	"github.com/Clever/wag/swagger"
-	"github.com/Clever/wag/templates"
 	"github.com/Clever/wag/utils"
 
 	"github.com/go-swagger/go-swagger/generator"
@@ -197,96 +196,8 @@ func generateOutputs(packageName string, s spec.Swagger) error {
 		return err
 	}
 	g.Printf(errorMethodCode)
-
-	for _, pathKey := range swagger.SortedPathItemKeys(s.Paths.Paths) {
-		path := s.Paths.Paths[pathKey]
-		pathItemOps := swagger.PathItemOperations(path)
-		for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
-			op := pathItemOps[opKey]
-			capOpID := swagger.Capitalize(op.ID)
-
-			// We classify response keys into three types:
-			// 1. 200-399 - these are "success" responses and implement the Output interface
-			// 	defined above
-			// 2. 400-599 - these are "failure" responses and implement the error interface
-			// 3. Default - this is defined as a 500
-			successTypes, err := generateSuccessTypes(capOpID, op.Responses.StatusCodeResponses)
-			if err != nil {
-				return err
-			}
-			g.Printf(successTypes)
-
-		}
-	}
 	return g.WriteFile("models/outputs.go")
 }
-
-func generateSuccessTypes(capOpID string, responses map[int]spec.Response) (string, error) {
-	var buf bytes.Buffer
-	buf.WriteString(fmt.Sprintf("// %sOutput defines the success output interface for %s.\n",
-		capOpID, capOpID))
-	buf.WriteString(fmt.Sprintf("type %sOutput interface {\n", capOpID))
-	buf.WriteString(fmt.Sprintf("\t%sStatusCode() int\n", capOpID))
-	buf.WriteString(fmt.Sprintf("}\n\n"))
-
-	var successStatusCodes []int
-	for _, statusCode := range swagger.SortedStatusCodeKeys(responses) {
-		if statusCode >= 400 {
-			continue
-		}
-		successStatusCodes = append(successStatusCodes, statusCode)
-	}
-
-	// We don't need to generate any success types if there is one or less success responses. In that
-	// case we can just use the raw type
-	if len(successStatusCodes) < 2 {
-		return "", nil
-	}
-
-	for _, statusCode := range successStatusCodes {
-		typeString, err := generateType(capOpID, statusCode, responses[statusCode])
-		if err != nil {
-			return "", err
-		}
-		buf.WriteString(typeString)
-	}
-	return buf.String(), nil
-}
-
-func generateType(capOpID string, statusCode int, response spec.Response) (string, error) {
-	outputName := fmt.Sprintf("%s%dOutput", capOpID, statusCode)
-	typeName, err := swagger.TypeFromSchema(response.Schema, false)
-	if err != nil {
-		return "", err
-	}
-
-	fields := typeTemplateFields{
-		Output:     outputName,
-		StatusCode: statusCode,
-		OpName:     capOpID,
-		Type:       typeName,
-		ErrorType:  statusCode >= 400,
-	}
-	return templates.WriteTemplate(typeTemplate, fields)
-}
-
-type typeTemplateFields struct {
-	Output     string
-	StatusCode int
-	OpName     string
-	Type       string
-	ErrorType  bool
-}
-
-var typeTemplate = `
-	// {{.Output}} defines the {{.StatusCode}} status code response for {{.OpName}}.
-	type {{.Output}} {{.Type}}
-
-	// {{.OpName}}StatusCode returns the status code for the operation.
-	func (o {{.Output}}) {{.OpName}}StatusCode() int {
-		return {{.StatusCode}}
-	}
-`
 
 // generateErrorMethods finds all responses all error responses and generates an error
 // method for them.

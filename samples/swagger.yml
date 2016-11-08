@@ -62,8 +62,6 @@ paths:
           description: "Success"
           schema:
             $ref: "#/definitions/Book"
-        204:
-          description: "No content"
         401:
           description: "Unauthorized"
           schema:

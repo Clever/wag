@@ -354,14 +354,11 @@ func statusCodeForGetBookByID(obj interface{}) int {
 	case *models.BadRequest:
 		return 400
 
-	case *models.Error:
-		return 404
-
-	case *models.GetBookByID200Output:
+	case *models.Book:
 		return 200
 
-	case *models.GetBookByID204Output:
-		return 204
+	case *models.Error:
+		return 404
 
 	case *models.InternalError:
 		return 500
@@ -372,14 +369,11 @@ func statusCodeForGetBookByID(obj interface{}) int {
 	case models.BadRequest:
 		return 400
 
-	case models.Error:
-		return 404
-
-	case models.GetBookByID200Output:
+	case models.Book:
 		return 200
 
-	case models.GetBookByID204Output:
-		return 204
+	case models.Error:
+		return 404
 
 	case models.InternalError:
 		return 500

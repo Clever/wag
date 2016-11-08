@@ -8,10 +8,12 @@ import (
 	"github.com/go-openapi/spec"
 )
 
-// ValidateErrors transforms the errors of the swagger spec object. This means
-// both verifying that the required errors exist, and also adding the 400 / 500
-// responses to any operation that doesn't have them defined.
-func ValidateErrors(s spec.Swagger) error {
+// ValidateResponses checks the responses from swagger operations, and in a few cases
+// tweaks the swagger spec to make them valid. This means a few things:
+// - Verifying that the spec only has one success type
+// - Verifying the required global error types exist and that they have the required fields
+// - Adding 400 / 500 responses to any operation that doesn't have them defined
+func ValidateResponses(s spec.Swagger) error {
 
 	// Confirm that we have the global error types we're expecting
 	global400 := false
@@ -44,11 +46,16 @@ func ValidateErrors(s spec.Swagger) error {
 			has400 := false
 			has500 := false
 
+			successResponseCount := 0
 			for code, resp := range op.Responses.StatusCodeResponses {
 
 				// Any 400+ responses must have `message` field so that
 				// they can have a generated Error message
-				if code >= 400 {
+				if code < 300 {
+					successResponseCount++
+				} else if code < 400 {
+					return fmt.Errorf("cannot define 3XX status codes: %s", op.ID)
+				} else {
 					if err := responseHasMessageField(resp, s); err != nil {
 						return fmt.Errorf("invalid %d response: %s", code, err)
 					}
@@ -59,6 +66,10 @@ func ValidateErrors(s spec.Swagger) error {
 				} else if code == 500 {
 					has500 = true
 				}
+			}
+
+			if successResponseCount > 1 {
+				return fmt.Errorf("can only define one success type (statusCode < 400) for %s", op.ID)
 			}
 
 			if !has400 {
