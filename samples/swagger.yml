@@ -15,11 +15,11 @@ responses:
   BadRequest:
     description: "Bad Request"
     schema:
-      $ref: "#/definitions/Error"
+      $ref: "#/definitions/BadRequestError"
   InternalError:
     description: "Internal Error"
     schema:
-      $ref: "#/definitions/Error"
+      $ref: "#/definitions/InternalError"
 paths:
   /health/check:
     get:
@@ -29,6 +29,7 @@ paths:
       responses:
         200:
           description: OK response
+
   /books/{book_id}:
     get:
       operationId: getBookByID
@@ -65,14 +66,13 @@ paths:
           description: "No content"
         401:
           description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/UnathorizedError"
         404:
           description: "Not found"
           schema:
             $ref: "#/definitions/Error"
-        default:
-          description: "Error"
-          schema:
-            $ref: "#/definitions/Error"
+
   /books2/{id}:
     get:
       operationId: getBookByID2
@@ -186,11 +186,30 @@ definitions:
       author:
         type: string
         format: mongo-id
+
   Error:
     type: object
     properties:
       code:
         type: integer
         format: int32
+      msg:
+        type: string
+
+  BadRequestError:
+    type: object
+    properties:
+      msg:
+        type: string
+
+  InternalError:
+    type: object
+    properties:
+      msg:
+        type: string
+
+  UnathorizedError:
+    type: object
+    properties:
       msg:
         type: string

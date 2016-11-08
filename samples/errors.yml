@@ -15,11 +15,11 @@ responses:
   BadRequest:
     description: "Bad Request"
     schema:
-      $ref: "#/definitions/Error"
+      $ref: "#/definitions/BadRequestError"
   InternalError:
     description: "Internal Error"
     schema:
-      $ref: "#/definitions/ExtendedError"
+      $ref: "#/definitions/InternalError"
   NotFound:
     description: "Not found"
     schema:
@@ -48,11 +48,26 @@ paths:
           $ref: "#/responses/InternalError"
 
 definitions:
+
   Error:
     type: object
     properties:
       msg:
         type: string
+
+  BadRequestError:
+    type: object
+    properties:
+      msg:
+        type: string
+
+  InternalError:
+    type: object
+    properties:
+      msg:
+        type: string
+      code:
+        type: integer
 
   ExtendedError:
     type: object
