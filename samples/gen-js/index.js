@@ -1,7 +1,8 @@
 const discovery = require("@clever/discovery");
 const request = require("request");
-const url = require("url");
 const opentracing = require("opentracing");
+
+const { Errors } = require("./types");
 
 const defaultRetryPolicy = {
   backoffs() {
@@ -9,13 +10,13 @@ const defaultRetryPolicy = {
     let next = 100.0; // milliseconds
     const e = 0.05; // +/- 5% jitter
     while (ret.length < 5) {
-      const jitter = (Math.random()*2-1.0)*e*next;
+      const jitter = ((Math.random() * 2) - 1) * e * next;
       ret.push(next + jitter);
       next *= 2;
     }
     return ret;
   },
-  retry(requestOptions, err, res, body) {
+  retry(requestOptions, err, res) {
     if (err || requestOptions.method === "POST" ||
         requestOptions.method === "PATCH" ||
         res.statusCode < 500) {
@@ -29,7 +30,7 @@ const noRetryPolicy = {
   backoffs() {
     return [];
   },
-  retry(requestOptions, err, res, body) {
+  retry() {
     return false;
   },
 };
@@ -44,14 +45,14 @@ module.exports = class SwaggerTest {
         this.address = discovery("swagger-test", "http").url();
       } catch (e) {
         this.address = discovery("swagger-test", "default").url();
-      };
+      }
     } else if (options.address) {
       this.address = options.address;
     } else {
       throw new Error("Cannot initialize swagger-test without discovery or address");
     }
     if (options.timeout) {
-      this.timeout = options.timeout
+      this.timeout = options.timeout;
     }
     if (options.retryPolicy) {
       this.retryPolicy = options.retryPolicy;
@@ -132,13 +133,13 @@ module.exports = class SwaggerTest {
         if (cb) {
           cb(err);
         }
-      }
+      };
       const resolver = (data) => {
         resolve(data);
         if (cb) {
           cb(null, data);
         }
-      }
+      };
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || defaultRetryPolicy;
       const backoffs = retryPolicy.backoffs();
@@ -148,17 +149,29 @@ module.exports = class SwaggerTest {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
-            return setTimeout(requestOnce, backoff);
+            setTimeout(requestOnce, backoff);
+            return;
           }
           if (err) {
-            return rejecter(err);
+            rejecter(err);
+            return;
           }
-          if (response.statusCode >= 400) {
-            return rejecter(new Error(body));
+          switch (response.statusCode) {
+            case 200:
+              resolver(body);
+              break;
+            case 400:
+              rejecter(new Errors.BadRequest(body || {}));
+              break;
+            case 500:
+              rejecter(new Errors.InternalError(body || {}));
+              break;
+            default:
+              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
           }
-          resolver(body);
+          return;
         });
-      })();
+      }());
     });
   }
 
@@ -205,13 +218,13 @@ module.exports = class SwaggerTest {
         if (cb) {
           cb(err);
         }
-      }
+      };
       const resolver = (data) => {
         resolve(data);
         if (cb) {
           cb(null, data);
         }
-      }
+      };
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || defaultRetryPolicy;
       const backoffs = retryPolicy.backoffs();
@@ -221,17 +234,29 @@ module.exports = class SwaggerTest {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
-            return setTimeout(requestOnce, backoff);
+            setTimeout(requestOnce, backoff);
+            return;
           }
           if (err) {
-            return rejecter(err);
+            rejecter(err);
+            return;
           }
-          if (response.statusCode >= 400) {
-            return rejecter(new Error(body));
+          switch (response.statusCode) {
+            case 200:
+              resolver(body);
+              break;
+            case 400:
+              rejecter(new Errors.BadRequest(body || {}));
+              break;
+            case 500:
+              rejecter(new Errors.InternalError(body || {}));
+              break;
+            default:
+              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
           }
-          resolver(body);
+          return;
         });
-      })();
+      }());
     });
   }
 
@@ -282,13 +307,13 @@ module.exports = class SwaggerTest {
         if (cb) {
           cb(err);
         }
-      }
+      };
       const resolver = (data) => {
         resolve(data);
         if (cb) {
           cb(null, data);
         }
-      }
+      };
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || defaultRetryPolicy;
       const backoffs = retryPolicy.backoffs();
@@ -298,17 +323,35 @@ module.exports = class SwaggerTest {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
-            return setTimeout(requestOnce, backoff);
+            setTimeout(requestOnce, backoff);
+            return;
           }
           if (err) {
-            return rejecter(err);
+            rejecter(err);
+            return;
           }
-          if (response.statusCode >= 400) {
-            return rejecter(new Error(body));
+          switch (response.statusCode) {
+            case 200:
+              resolver(body);
+              break;
+            case 400:
+              rejecter(new Errors.BadRequest(body || {}));
+              break;
+            case 401:
+              rejecter(new Errors.Unathorized(body || {}));
+              break;
+            case 404:
+              rejecter(new Errors.Error(body || {}));
+              break;
+            case 500:
+              rejecter(new Errors.InternalError(body || {}));
+              break;
+            default:
+              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
           }
-          resolver(body);
+          return;
         });
-      })();
+      }());
     });
   }
 
@@ -353,13 +396,13 @@ module.exports = class SwaggerTest {
         if (cb) {
           cb(err);
         }
-      }
+      };
       const resolver = (data) => {
         resolve(data);
         if (cb) {
           cb(null, data);
         }
-      }
+      };
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || defaultRetryPolicy;
       const backoffs = retryPolicy.backoffs();
@@ -369,17 +412,32 @@ module.exports = class SwaggerTest {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
-            return setTimeout(requestOnce, backoff);
+            setTimeout(requestOnce, backoff);
+            return;
           }
           if (err) {
-            return rejecter(err);
+            rejecter(err);
+            return;
           }
-          if (response.statusCode >= 400) {
-            return rejecter(new Error(body));
+          switch (response.statusCode) {
+            case 200:
+              resolver(body);
+              break;
+            case 400:
+              rejecter(new Errors.BadRequest(body || {}));
+              break;
+            case 404:
+              rejecter(new Errors.Error(body || {}));
+              break;
+            case 500:
+              rejecter(new Errors.InternalError(body || {}));
+              break;
+            default:
+              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
           }
-          resolver(body);
+          return;
         });
-      })();
+      }());
     });
   }
 
@@ -423,13 +481,13 @@ module.exports = class SwaggerTest {
         if (cb) {
           cb(err);
         }
-      }
+      };
       const resolver = (data) => {
         resolve(data);
         if (cb) {
           cb(null, data);
         }
-      }
+      };
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || defaultRetryPolicy;
       const backoffs = retryPolicy.backoffs();
@@ -439,22 +497,35 @@ module.exports = class SwaggerTest {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
-            return setTimeout(requestOnce, backoff);
+            setTimeout(requestOnce, backoff);
+            return;
           }
           if (err) {
-            return rejecter(err);
+            rejecter(err);
+            return;
           }
-          if (response.statusCode >= 400) {
-            return rejecter(new Error(body));
+          switch (response.statusCode) {
+            case 200:
+              resolver();
+              break;
+            case 400:
+              rejecter(new Errors.BadRequest(body || {}));
+              break;
+            case 500:
+              rejecter(new Errors.InternalError(body || {}));
+              break;
+            default:
+              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
           }
-          resolver(body);
+          return;
         });
-      })();
+      }());
     });
   }
-}
+};
 
 module.exports.RetryPolicies = {
   Default: defaultRetryPolicy,
   None: noRetryPolicy,
 };
+module.exports.Errors = Errors;
