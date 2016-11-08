@@ -6,7 +6,6 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -193,9 +192,7 @@ func (c *WagClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
 	case 400:
 
 		var output models.ExtendedError
-		// Any errors other than EOF should result in an error. EOF is acceptable for empty
-		// types.
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return &models.InternalError{Message: err.Error()}
 		}
 		return &output
@@ -203,9 +200,7 @@ func (c *WagClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
 	case 404:
 
 		var output models.NotFound
-		// Any errors other than EOF should result in an error. EOF is acceptable for empty
-		// types.
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return &models.InternalError{Message: err.Error()}
 		}
 		return &output
@@ -213,9 +208,7 @@ func (c *WagClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
 	case 500:
 
 		var output models.InternalError
-		// Any errors other than EOF should result in an error. EOF is acceptable for empty
-		// types.
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return &models.InternalError{Message: err.Error()}
 		}
 		return &output
