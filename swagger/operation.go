@@ -30,7 +30,8 @@ func Interface(s *spec.Swagger, op *spec.Operation) string {
 	if NoSuccessType(op) {
 		return fmt.Sprintf("%s(ctx context.Context, %s) error", capOpID, input)
 	}
-	successType, makePointer := OutputType(s, op, -1)
+	successCode := successStatusCode(op)
+	successType, makePointer := OutputType(s, op, *successCode)
 	if makePointer {
 		successType = "*" + successType
 	}
@@ -97,14 +98,11 @@ func OutputType(s *spec.Swagger, op *spec.Operation, statusCode int) (string, bo
 // NoSuccessType returns true if the operation has no-success response type. This includes
 // either no 200-399 response code or a 200-399 response code without a schema.
 func NoSuccessType(op *spec.Operation) bool {
-	successCodes := successStatusCodes(op)
-	if len(successCodes) > 1 {
-		return false
-	}
-	if len(successCodes) == 0 {
+	successCode := successStatusCodes(op)
+	if successCode == nil {
 		return true
 	}
-	return op.Responses.StatusCodeResponses[successCodes[0]].Schema == nil
+	return op.Responses.StatusCodeResponses[*successCode].Schema == nil
 }
 
 // CodeToTypeMap returns a map from return status code to its corresponding type
@@ -135,16 +133,15 @@ func TypeToCodeMap(s *spec.Swagger, op *spec.Operation) (map[string]int, error) 
 	return typeToCode, nil
 }
 
-// TODO: get rid of this...
-// successStatusCodes returns a slice of all the success status codes for an operation
-func successStatusCodes(op *spec.Operation) []int {
-	var successCodes []int
+// successStatusCode returns the success status code. If there is no success status code
+// then it returns nil.
+func successStatusCode(op *spec.Operation) *int {
 	for statusCode := range op.Responses.StatusCodeResponses {
 		if statusCode < 400 {
-			successCodes = append(successCodes, statusCode)
+			return &statusCode
 		}
 	}
-	return successCodes
+	return nil
 }
 
 // SingleSchemaedBodyParameter returns true if the operation has a single,

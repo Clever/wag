@@ -1,0 +1,41 @@
+responses:
+  BadRequest:
+    description: "Bad Request"
+    schema:
+      $ref: "#/definitions/BadRequest"
+  InternalError:
+    description: "Internal Error"
+    schema:
+      $ref: "#/definitions/InternalError"
+
+paths:
+  /path:
+    get:
+      operationId: op
+      responses:
+        200:
+          description: "Success1"
+          schema:
+            $ref: "#/definitions/SuccessType"
+        204:
+          description: "Success2"
+
+definitions:
+
+  SuccessType:
+    type: object
+    properties:
+      id:
+        type: string
+
+  InternalError:
+    type: object
+    properties:
+      message:
+        type: string
+
+  BadRequest:
+    type: object
+    properties:
+      message:
+        type: string
