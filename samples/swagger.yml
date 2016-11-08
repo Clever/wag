@@ -15,7 +15,7 @@ responses:
   BadRequest:
     description: "Bad Request"
     schema:
-      $ref: "#/definitions/BadRequestError"
+      $ref: "#/definitions/BadRequest"
   InternalError:
     description: "Internal Error"
     schema:
@@ -67,7 +67,7 @@ paths:
         401:
           description: "Unauthorized"
           schema:
-            $ref: "#/definitions/UnathorizedError"
+            $ref: "#/definitions/Unathorized"
         404:
           description: "Not found"
           schema:
@@ -198,7 +198,7 @@ definitions:
       msg:
         type: string
 
-  BadRequestError:
+  BadRequest:
     type: object
     properties:
       msg:
@@ -210,7 +210,7 @@ definitions:
       msg:
         type: string
 
-  UnathorizedError:
+  Unathorized:
     type: object
     properties:
       msg:

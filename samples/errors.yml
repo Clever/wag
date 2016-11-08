@@ -15,7 +15,7 @@ responses:
   BadRequest:
     description: "Bad Request"
     schema:
-      $ref: "#/definitions/BadRequestError"
+      $ref: "#/definitions/BadRequest"
   InternalError:
     description: "Internal Error"
     schema:
@@ -23,7 +23,7 @@ responses:
   NotFound:
     description: "Not found"
     schema:
-      $ref: "#/definitions/NotFoundError"
+      $ref: "#/definitions/NotFound"
 
 paths:
   /books/{id}:
@@ -49,13 +49,13 @@ paths:
 
 definitions:
 
-  NotFoundError:
+  NotFound:
     type: object
     properties:
       msg:
         type: string
 
-  BadRequestError:
+  BadRequest:
     type: object
     properties:
       msg:
