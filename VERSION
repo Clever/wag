@@ -1,3 +1,4 @@
-0.5.0
-- Generate error types only from definitions
-- If the input has a single string input parameter make the interface take in a string
+0.6.0
+- Remove support for multiple success types
+- Change field requirement from 'msg' to 'message'
+
