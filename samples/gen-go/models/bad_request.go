@@ -9,16 +9,16 @@ import (
 	"github.com/go-openapi/errors"
 )
 
-// NotFoundError not found error
-// swagger:model NotFoundError
-type NotFoundError struct {
+// BadRequest bad request
+// swagger:model BadRequest
+type BadRequest struct {
 
 	// msg
 	Msg string `json:"msg,omitempty"`
 }
 
-// Validate validates this not found error
-func (m *NotFoundError) Validate(formats strfmt.Registry) error {
+// Validate validates this bad request
+func (m *BadRequest) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {

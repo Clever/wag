@@ -9,16 +9,16 @@ import (
 	"github.com/go-openapi/errors"
 )
 
-// UnathorizedError unathorized error
-// swagger:model UnathorizedError
-type UnathorizedError struct {
+// NotFound not found
+// swagger:model NotFound
+type NotFound struct {
 
 	// msg
 	Msg string `json:"msg,omitempty"`
 }
 
-// Validate validates this unathorized error
-func (m *UnathorizedError) Validate(formats strfmt.Registry) error {
+// Validate validates this not found
+func (m *NotFound) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {

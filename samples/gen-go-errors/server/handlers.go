@@ -78,7 +78,7 @@ func statusCodeForGetBook(obj interface{}) int {
 	case *models.InternalError:
 		return 500
 
-	case *models.NotFoundError:
+	case *models.NotFound:
 		return 404
 
 	case models.ExtendedError:
@@ -87,7 +87,7 @@ func statusCodeForGetBook(obj interface{}) int {
 	case models.InternalError:
 		return 500
 
-	case models.NotFoundError:
+	case models.NotFound:
 		return 404
 
 	default:
