@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/go-openapi/spec"
 
+	"github.com/Clever/go-utils/stringset"
 	"github.com/Clever/wag/swagger"
 	"github.com/Clever/wag/templates"
 	"github.com/Clever/wag/utils"
@@ -187,6 +189,15 @@ func generateOutputs(packageName string, s spec.Swagger) error {
 
 	g.Printf("package models\n\n")
 
+	// It's a bit wonky that we're writing these into output.go instead of the file
+	// defining each of the types, but I think that's okay for now. We can clean this
+	// up if it becomes confusing.
+	errorMethodCode, err := generateErrorMethods(&s)
+	if err != nil {
+		return err
+	}
+	g.Printf(errorMethodCode)
+
 	for _, pathKey := range swagger.SortedPathItemKeys(s.Paths.Paths) {
 		path := s.Paths.Paths[pathKey]
 		pathItemOps := swagger.PathItemOperations(path)
@@ -204,6 +215,7 @@ func generateOutputs(packageName string, s spec.Swagger) error {
 				return err
 			}
 			g.Printf(successTypes)
+
 		}
 	}
 	return g.WriteFile("models/outputs.go")
@@ -275,3 +287,45 @@ var typeTemplate = `
 		return {{.StatusCode}}
 	}
 `
+
+// generateErrorMethods finds all responses all error responses and generates an error
+// method for them.
+func generateErrorMethods(s *spec.Swagger) (string, error) {
+	errorTypes := stringset.New()
+
+	for _, pathKey := range swagger.SortedPathItemKeys(s.Paths.Paths) {
+		path := s.Paths.Paths[pathKey]
+		pathItemOps := swagger.PathItemOperations(path)
+		for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
+			op := pathItemOps[opKey]
+			for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
+
+				if statusCode < 400 {
+					continue
+				}
+
+				typeName, _ := swagger.OutputType(s, op, statusCode)
+				if strings.HasPrefix(typeName, "models.") {
+					typeName = typeName[7:]
+				}
+				errorTypes.Add(typeName)
+			}
+		}
+	}
+
+	sortedErrors := errorTypes.ToList()
+	sort.Strings(sortedErrors)
+
+	var buf bytes.Buffer
+	for _, errorType := range sortedErrors {
+		buf.WriteString(fmt.Sprintf(`
+func (o %s) Error() string {
+	return o.Msg
+}
+
+`, errorType))
+	}
+
+	return buf.String(), nil
+
+}
