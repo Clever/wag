@@ -1,4 +1,2 @@
-0.6.0
-- Remove support for multiple success types
-- Change field requirement from 'msg' to 'message'
-
+0.6.1
+- Convert errors into rich JS types, and export those types.

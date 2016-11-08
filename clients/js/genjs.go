@@ -5,7 +5,9 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"regexp"
+	"strings"
 
+	"github.com/Clever/go-utils/stringset"
 	"github.com/Clever/wag/swagger"
 	"github.com/Clever/wag/templates"
 	"github.com/Clever/wag/utils"
@@ -35,12 +37,17 @@ func Generate(modulePath string, s spec.Swagger) error {
 			if op.Deprecated {
 				continue
 			}
-			methodCode, err := methodCode(op, method, s.BasePath, path)
+			methodCode, err := methodCode(s, op, method, s.BasePath, path)
 			if err != nil {
 				return err
 			}
 			tmplInfo.Methods = append(tmplInfo.Methods, methodCode)
 		}
+	}
+
+	typeFileCode, err := generateTypesFile(s)
+	if err != nil {
+		return err
 	}
 
 	indexJS, err := templates.WriteTemplate(indexJSTmplStr, tmplInfo)
@@ -50,6 +57,10 @@ func Generate(modulePath string, s spec.Swagger) error {
 
 	packageJSON, err := templates.WriteTemplate(packageJSONTmplStr, tmplInfo)
 	if err != nil {
+		return err
+	}
+
+	if err = ioutil.WriteFile(filepath.Join(modulePath, "types.js"), []byte(typeFileCode), 0644); err != nil {
 		return err
 	}
 
@@ -71,8 +82,9 @@ type clientCodeTemplate struct {
 
 var indexJSTmplStr = `const discovery = require("@clever/discovery");
 const request = require("request");
-const url = require("url");
 const opentracing = require("opentracing");
+
+const { Errors } = require("./types");
 
 const defaultRetryPolicy = {
   backoffs() {
@@ -80,13 +92,13 @@ const defaultRetryPolicy = {
     let next = 100.0; // milliseconds
     const e = 0.05; // +/- 5% jitter
     while (ret.length < 5) {
-      const jitter = (Math.random()*2-1.0)*e*next;
+      const jitter = ((Math.random() * 2) - 1) * e * next;
       ret.push(next + jitter);
       next *= 2;
     }
     return ret;
   },
-  retry(requestOptions, err, res, body) {
+  retry(requestOptions, err, res) {
     if (err || requestOptions.method === "POST" ||
         requestOptions.method === "PATCH" ||
         res.statusCode < 500) {
@@ -100,7 +112,7 @@ const noRetryPolicy = {
   backoffs() {
     return [];
   },
-  retry(requestOptions, err, res, body) {
+  retry() {
     return false;
   },
 };
@@ -115,25 +127,26 @@ module.exports = class {{.ClassName}} {
         this.address = discovery("{{.ServiceName}}", "http").url();
       } catch (e) {
         this.address = discovery("{{.ServiceName}}", "default").url();
-      };
+      }
     } else if (options.address) {
       this.address = options.address;
     } else {
       throw new Error("Cannot initialize {{.ServiceName}} without discovery or address");
     }
     if (options.timeout) {
-      this.timeout = options.timeout
+      this.timeout = options.timeout;
     }
     if (options.retryPolicy) {
       this.retryPolicy = options.retryPolicy;
     }
   }
-{{range $methodCode := .Methods}}{{$methodCode}}{{end}}}
+{{range $methodCode := .Methods}}{{$methodCode}}{{end}}};
 
 module.exports.RetryPolicies = {
   Default: defaultRetryPolicy,
   None: noRetryPolicy,
 };
+module.exports.Errors = Errors;
 `
 
 var packageJSONTmplStr = `{
@@ -197,13 +210,13 @@ var methodTmplStr = `
         if (cb) {
           cb(err);
         }
-      }
+      };
       const resolver = (data) => {
         resolve(data);
         if (cb) {
           cb(null, data);
         }
-      }
+      };
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || defaultRetryPolicy;
       const backoffs = retryPolicy.backoffs();
@@ -213,17 +226,27 @@ var methodTmplStr = `
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
-            return setTimeout(requestOnce, backoff);
+            setTimeout(requestOnce, backoff);
+            return;
           }
           if (err) {
-            return rejecter(err);
+            rejecter(err);
+            return;
           }
-          if (response.statusCode >= 400) {
-            return rejecter(new Error(body));
+          switch (response.statusCode) {
+            {{ range $response := .Responses }}case {{ $response.StatusCode }}:{{if $response.IsError }}
+              rejecter(new Errors.{{ $response.Name }}(body || {}));
+            {{else}}{{if $response.IsNoData}}
+              resolver();
+            {{else}}
+              resolver(body);
+            {{end}}{{end}}  break;
+            {{end}}default:
+              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
           }
-          resolver(body);
+          return;
         });
-      })();
+      }());
     });
   }
 `
@@ -241,6 +264,13 @@ type paramMapping struct {
 	Required bool
 }
 
+type responseMapping struct {
+	StatusCode int
+	Name       string
+	IsError    bool
+	IsNoData   bool
+}
+
 type methodTemplate struct {
 	MethodName       string
 	MethodDefinition string
@@ -251,6 +281,7 @@ type methodTemplate struct {
 	HeaderParams     []paramMapping
 	QueryParams      []paramMapping
 	BodyParam        string
+	Responses        []responseMapping
 }
 
 // This function takes in a swagger path such as "/path/goes/to/{location}/and/to/{other_Location}"
@@ -265,13 +296,29 @@ func fillOutPath(path string) string {
 	})
 }
 
-func methodCode(op *spec.Operation, method, basePath, path string) (string, error) {
+func methodCode(s spec.Swagger, op *spec.Operation, method, basePath, path string) (string, error) {
 
 	tmplInfo := methodTemplate{
 		MethodName: op.ID,
 		Method:     method,
 		PathCode:   basePath + fillOutPath(path),
 		Path:       basePath + path,
+	}
+
+	for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
+		response := responseMapping{
+			StatusCode: statusCode,
+			IsError:    statusCode >= 400,
+		}
+		typeName, _ := swagger.OutputType(&s, op, statusCode)
+		if strings.HasPrefix(typeName, "models.") {
+			typeName = typeName[7:] // models.ResponseType -> ResponseType
+		}
+		response.Name = typeName
+		if typeName == "" {
+			response.IsNoData = true
+		}
+		tmplInfo.Responses = append(tmplInfo.Responses, response)
 	}
 
 	for _, wagParam := range op.Parameters {
@@ -304,4 +351,51 @@ func methodCode(op *spec.Operation, method, basePath, path string) (string, erro
 	}
 	tmplInfo.MethodDefinition = methodDefinition
 	return templates.WriteTemplate(methodTmplStr, tmplInfo)
+}
+
+var typeTmplString = `module.exports.Errors = {};
+
+{{ range .}}module.exports.Errors.{{ .Name }} = class extends Error {
+  constructor(body) {
+    super(body.message);
+    for (const k of Object.keys(body)) {
+      this[k] = body[k];
+    }
+  }
+};
+{{ end }}
+`
+
+func generateTypesFile(s spec.Swagger) (string, error) {
+	var responses []responseMapping
+
+	typeNames := stringset.New()
+
+	for _, pathKey := range swagger.SortedPathItemKeys(s.Paths.Paths) {
+		path := s.Paths.Paths[pathKey]
+		pathItemOps := swagger.PathItemOperations(path)
+		for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
+			op := pathItemOps[opKey]
+			for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
+				if statusCode < 400 {
+					continue
+				}
+				typeName, _ := swagger.OutputType(&s, op, statusCode)
+				if strings.HasPrefix(typeName, "models.") {
+					typeName = typeName[7:]
+				}
+				if typeNames.Contains(typeName) {
+					continue
+				}
+				typeNames.Add(typeName)
+				response := responseMapping{
+					StatusCode: statusCode,
+					Name:       typeName,
+				}
+				responses = append(responses, response)
+			}
+		}
+	}
+
+	return templates.WriteTemplate(typeTmplString, responses)
 }

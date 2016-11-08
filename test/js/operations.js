@@ -30,10 +30,11 @@ describe("operations", function() {
     const c = new Client({address: mockAddress});
     const scope = nock(mockAddress)
       .get(`/v1/books`)
-      .reply(400, {problems: 99});
+      .reply(400, {problems: 99, message: "hit me"});
     c.getBooks({}, {}, function(err, resp) {
       assert.equal(resp, undefined);
-      assert.equal(err.message, "[object Object]"); // TODO
+      assert.equal(err.message, "hit me");
+      assert.equal(err.problems, 99);
       done();
     });
   });
@@ -53,11 +54,12 @@ describe("operations", function() {
     const c = new Client({address: mockAddress});
     const scope = nock(mockAddress)
       .get(`/v1/books`)
-      .reply(400, {problems: 99});
+      .reply(400, {problems: 99, message: "hit me"});
     c.getBooks({}, {}).then(function() {
       assert(false, "then callback should not have been called");
     }).catch(function(err) {
-      assert.equal(err.message, "[object Object]"); // TODO
+      assert.equal(err.message, "hit me");
+      assert.equal(err.problems, 99);
       done();
     });
   });
