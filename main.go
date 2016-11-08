@@ -76,7 +76,7 @@ func main() {
 		}
 	}
 
-	err = swagger.ValidateErrors(swaggerSpec)
+	err = swagger.ValidateResponses(swaggerSpec)
 	if err != nil {
 		log.Fatalf("Failed processing the swagger spec: %s", err)
 	}

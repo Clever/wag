@@ -24,7 +24,7 @@ func (c *ControllerImpl) GetBooks(ctx context.Context, input *models.GetBooksInp
 }
 
 // GetBookByID returns a book by ID.
-func (c *ControllerImpl) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
+func (c *ControllerImpl) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (*models.Book, error) {
 	if input.BookID == 400 {
 		return nil, models.BadRequest{Message: "My 400 failure"}
 	}
@@ -33,10 +33,7 @@ func (c *ControllerImpl) GetBookByID(ctx context.Context, input *models.GetBookB
 	if !ok {
 		return nil, models.Error{}
 	}
-	if input.BookID%4 == 2 {
-		return models.GetBookByID204Output{}, nil
-	}
-	return models.GetBookByID200Output(*book), nil
+	return book, nil
 }
 
 // GetBookByID2 returns a book by ID.

@@ -60,19 +60,6 @@ func OutputType(s *spec.Swagger, op *spec.Operation, statusCode int) (string, bo
 		return "", false
 	}
 
-	// This magic number is only used internally in this file. I will clean it up at some point.
-	// It is used if there are multiple success types
-	successCodes := successStatusCodes(op)
-	if len(successCodes) > 1 {
-		if statusCode == -1 {
-			return fmt.Sprintf("models.%sOutput", Capitalize(op.ID)), false
-		} else if statusCode < 400 {
-			return fmt.Sprintf("models.%s%dOutput", Capitalize(op.ID), statusCode), true
-		}
-	} else if statusCode == -1 {
-		statusCode = successCodes[0]
-	}
-
 	resp := op.Responses.StatusCodeResponses[statusCode]
 	schema := resp.Schema
 	if strings.HasPrefix(resp.Ref.String(), "#/responses") {
@@ -98,7 +85,7 @@ func OutputType(s *spec.Swagger, op *spec.Operation, statusCode int) (string, bo
 // NoSuccessType returns true if the operation has no-success response type. This includes
 // either no 200-399 response code or a 200-399 response code without a schema.
 func NoSuccessType(op *spec.Operation) bool {
-	successCode := successStatusCodes(op)
+	successCode := successStatusCode(op)
 	if successCode == nil {
 		return true
 	}

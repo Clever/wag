@@ -41,25 +41,10 @@ func TestBasicEndToEnd(t *testing.T) {
 	assert.Equal(t, bookID, (booksOutput)[0].ID)
 	assert.Equal(t, bookName, (booksOutput)[0].Name)
 
-	singleBookOutput, err := c.GetBookByID(context.Background(), &models.GetBookByIDInput{BookID: bookID})
+	singleBook, err := c.GetBookByID(context.Background(), &models.GetBookByIDInput{BookID: bookID})
 	assert.NoError(t, err)
-	singleBook, ok := singleBookOutput.(*models.GetBookByID200Output)
-	require.True(t, ok)
 	assert.Equal(t, bookID, singleBook.ID)
 	assert.Equal(t, bookName, singleBook.Name)
-
-	// If we have a bookID == 2mod4 then it returns a 204
-	otherBookID := int64(126)
-
-	createdBook, err = c.CreateBook(
-		context.Background(), &models.Book{ID: otherBookID, Name: bookName})
-	assert.NoError(t, err)
-	assert.Equal(t, otherBookID, createdBook.ID)
-	assert.Equal(t, bookName, createdBook.Name)
-
-	singleBookOutput, err = c.GetBookByID(context.Background(), &models.GetBookByIDInput{BookID: otherBookID})
-	assert.NoError(t, err)
-	assert.IsType(t, &models.GetBookByID204Output{}, singleBookOutput)
 }
 
 func TestUserDefinedErrorResponse(t *testing.T) {
@@ -156,7 +141,7 @@ func (d *LastCallServer) GetBooks(ctx context.Context, input *models.GetBooksInp
 	d.lastAuthors = input.Authors
 	return []models.Book{}, nil
 }
-func (d *LastCallServer) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
+func (d *LastCallServer) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (*models.Book, error) {
 	return nil, nil
 }
 func (d *LastCallServer) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
@@ -205,7 +190,7 @@ func (m *MiddlewareContextTest) GetBooks(ctx context.Context, input *models.GetB
 	m.foundKey = ctx.Value(testContextKey{}).(string)
 	return []models.Book{}, nil
 }
-func (m *MiddlewareContextTest) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
+func (m *MiddlewareContextTest) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (*models.Book, error) {
 	return nil, nil
 }
 func (m *MiddlewareContextTest) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
@@ -247,7 +232,7 @@ func (m *TimeoutController) GetBooks(ctx context.Context, input *models.GetBooks
 	time.Sleep(100 * time.Millisecond)
 	return books, nil
 }
-func (m *TimeoutController) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
+func (m *TimeoutController) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (*models.Book, error) {
 	return nil, nil
 }
 func (m *TimeoutController) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
