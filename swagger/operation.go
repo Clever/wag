@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Clever/wag/utils"
 	"github.com/go-openapi/spec"
 )
 
@@ -15,12 +16,14 @@ func Interface(op *spec.Operation) string {
 	// Don't add the input parameter argument unless there are some arguments.
 	// If a method has a single input parameter, and it's a schema, make the
 	// generated type for that schema the input of the method.
-	// TODO: If a method has a single input parameter, and it's a simple type (int/string),
+	// If a method has a single input parameter, and it's a simple type (string, TODO: int),
 	// make that the input of the method.
 	// If a method has multiple input parameters, wrap them in a struct.
 	input := ""
-	if ssbp, opModel := SingleSchemaedBodyParameter(op); ssbp {
+	if singleSchemaedBodyParameter, opModel := SingleSchemaedBodyParameter(op); singleSchemaedBodyParameter {
 		input = fmt.Sprintf("i *models.%s", opModel)
+	} else if singleStringPathParameter, inputName := SingleStringPathParameter(op); singleStringPathParameter {
+		input = fmt.Sprintf("%s string", inputName)
 	} else if len(op.Parameters) > 0 {
 		input = fmt.Sprintf("i *models.%sInput", capOpID)
 	}
@@ -139,6 +142,20 @@ func SingleSchemaedBodyParameter(op *spec.Operation) (bool, string) {
 			panic(err)
 		}
 		return true, typ
+	}
+	return false, ""
+}
+
+// SingleStringPathParameter returns true if the operation has a single, required
+// string input in the URL path. It also returns the name of the parameter.
+func SingleStringPathParameter(op *spec.Operation) (bool, string) {
+	if len(op.Parameters) != 1 {
+		return false, ""
+	}
+	param := op.Parameters[0]
+	if param.ParamProps.In == "path" && param.SimpleSchema.Type == "string" &&
+		param.ParamProps.Required {
+		return true, utils.CamelCase(param.Name, false)
 	}
 	return false, ""
 }

@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/go-openapi/spec"
 
 	"github.com/Clever/wag/swagger"
 	"github.com/Clever/wag/templates"
+	"github.com/Clever/wag/utils"
 
 	"github.com/go-swagger/go-swagger/generator"
 )
@@ -74,7 +76,7 @@ var _ = strfmt.NewFormats
 			// operation that has a single, schema'd input.
 			// The input to these will be the model generated for
 			// the schema.
-			if ssbp, _ := swagger.SingleSchemaedBodyParameter(op); ssbp {
+			if singleSchemaedBodyParameter, _ := swagger.SingleSchemaedBodyParameter(op); singleSchemaedBodyParameter {
 				continue
 			}
 			if err := printInputStruct(&g, op); err != nil {
@@ -123,11 +125,20 @@ func printInputStruct(g *swagger.Generator, op *spec.Operation) error {
 }
 
 func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
-	capOpID := swagger.Capitalize(op.ID)
-	g.Printf("// Validate returns an error if any of the %sInput parameters don't satisfy the\n",
-		capOpID)
-	g.Printf("// requirements from the swagger yml file.\n")
-	g.Printf("func (i %sInput) Validate() error{\n", capOpID)
+	singleStringPathParameter, paramName := swagger.SingleStringPathParameter(op)
+	if singleStringPathParameter {
+		capOpID := swagger.Capitalize(op.ID)
+		g.Printf("// Validate%sInput returns an error if the input parameter doesn't\n",
+			capOpID)
+		g.Printf("// satisfy the requirements in the swagger yml file.\n")
+		g.Printf("func Validate%sInput(%s string) error{\n", capOpID, paramName)
+	} else {
+		capOpID := swagger.Capitalize(op.ID)
+		g.Printf("// Validate returns an error if any of the %sInput parameters don't satisfy the\n",
+			capOpID)
+		g.Printf("// requirements from the swagger yml file.\n")
+		g.Printf("func (i %sInput) Validate() error{\n", capOpID)
+	}
 
 	for _, param := range op.Parameters {
 		if param.In == "body" {
@@ -142,6 +153,12 @@ func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
 		}
 		for _, validation := range validations {
 			if param.Required {
+				if singleStringPathParameter {
+					// replace i.<Param> with <param>
+					validation = strings.Replace(validation,
+						fmt.Sprintf("i.%s", utils.CamelCase(param.Name, true)),
+						paramName, -1)
+				}
 				g.Printf(errCheck(validation))
 			} else {
 				g.Printf("\tif i.%s != nil {\n", swagger.StructParamName(param))

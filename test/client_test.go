@@ -38,7 +38,7 @@ func (c *ClientContextTest) GetBooks(ctx context.Context, input *models.GetBooks
 func (c *ClientContextTest) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (models.GetBookByIDOutput, error) {
 	return nil, nil
 }
-func (c *ClientContextTest) GetBookByID2(ctx context.Context, input *models.GetBookByID2Input) (*models.Book, error) {
+func (c *ClientContextTest) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
 	return nil, nil
 }
 func (c *ClientContextTest) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
@@ -69,7 +69,7 @@ func (c *ClientCircuitTest) GetBookByID(ctx context.Context, input *models.GetBo
 	}
 	return nil, nil
 }
-func (c *ClientCircuitTest) GetBookByID2(ctx context.Context, input *models.GetBookByID2Input) (*models.Book, error) {
+func (c *ClientCircuitTest) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
 	if c.down {
 		return nil, errors.New("fail")
 	}

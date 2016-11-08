@@ -25,7 +25,7 @@ type Controller interface {
 
 	// GetBookByID2 makes a GET request to /books2/{id}.
 	// Retrieve a book
-	GetBookByID2(ctx context.Context, i *models.GetBookByID2Input) (*models.Book, error)
+	GetBookByID2(ctx context.Context, id string) (*models.Book, error)
 
 	// HealthCheck makes a GET request to /health/check.
 	HealthCheck(ctx context.Context) error

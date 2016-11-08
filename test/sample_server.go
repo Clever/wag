@@ -40,7 +40,7 @@ func (c *ControllerImpl) GetBookByID(ctx context.Context, input *models.GetBookB
 }
 
 // GetBookByID2 returns a book by ID.
-func (c *ControllerImpl) GetBookByID2(ctx context.Context, input *models.GetBookByID2Input) (*models.Book, error) {
+func (c *ControllerImpl) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
 	i, err := strconv.Atoi("-42")
 	if err != nil {
 		return nil, err

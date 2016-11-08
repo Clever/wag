@@ -280,15 +280,18 @@ func generateOperationHandler(op *spec.Operation) (string, error) {
 		delete(typeToCode, "")
 	}
 
-	singleInputOp, _ := swagger.SingleSchemaedBodyParameter(op)
+	singleSchemaedBodyParameter, _ := swagger.SingleSchemaedBodyParameter(op)
+	singleStringPathParameter, singleStringPathParameterVarName := swagger.SingleStringPathParameter(op)
 	handlerOp := handlerOp{
-		Op:                 swagger.Capitalize(op.ID),
-		SuccessReturnType:  !swagger.NoSuccessType(op),
-		HasParams:          len(op.Parameters) != 0,
-		SingleInputOp:      singleInputOp,
-		EmptyStatusCode:    emptyResponseCode,
-		TypesToStatusCodes: typeToCode,
-		StatusCodetoType:   codeToType,
+		Op:                               swagger.Capitalize(op.ID),
+		SuccessReturnType:                !swagger.NoSuccessType(op),
+		HasParams:                        len(op.Parameters) != 0,
+		SingleSchemaedBodyParameter:      singleSchemaedBodyParameter,
+		EmptyStatusCode:                  emptyResponseCode,
+		TypesToStatusCodes:               typeToCode,
+		SingleStringPathParameter:        singleStringPathParameter,
+		SingleStringPathParameterVarName: singleStringPathParameterVarName,
+		StatusCodetoType:                 codeToType,
 	}
 	handlerCode, err := templates.WriteTemplate(handlerTemplate, handlerOp)
 	if err != nil {
@@ -309,13 +312,15 @@ func generateOperationHandler(op *spec.Operation) (string, error) {
 
 // handlerOp contains the template variables for the handlerTemplate
 type handlerOp struct {
-	Op                 string
-	SuccessReturnType  bool
-	HasParams          bool
-	SingleInputOp      bool
-	EmptyStatusCode    int
-	TypesToStatusCodes map[string]int
-	StatusCodetoType   map[int]string
+	Op                               string
+	SuccessReturnType                bool
+	HasParams                        bool
+	SingleSchemaedBodyParameter      bool
+	EmptyStatusCode                  int
+	TypesToStatusCodes               map[string]int
+	SingleStringPathParameter        bool
+	SingleStringPathParameterVarName string
+	StatusCodetoType                 map[int]string
 }
 
 var handlerTemplate = `
@@ -335,14 +340,22 @@ func statusCodeFor{{.Op}}(obj interface{}) int {
 
 func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 {{if .HasParams}}
+{{if .SingleStringPathParameter}}
+	{{.SingleStringPathParameterVarName}}, err := new{{.Op}}Input(r)
+{{else}}
 	input, err := new{{.Op}}Input(r)
+{{end}}
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError({{index .StatusCodetoType 400}}{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
-	err = input.Validate({{if .SingleInputOp}}nil{{end}})
+{{if .SingleStringPathParameter}}
+	err = models.Validate{{.Op}}Input({{.SingleStringPathParameterVarName}})
+{{else}}
+	err = input.Validate({{if .SingleSchemaedBodyParameter}}nil{{end}})
+{{end}}
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError({{index .StatusCodetoType 400}}{Msg: err.Error()}), http.StatusBadRequest)
@@ -350,9 +363,9 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 	}
 
 {{if .SuccessReturnType}}
-	resp, err := h.{{.Op}}(ctx, input)
+	resp, err := h.{{.Op}}(ctx, {{if .SingleStringPathParameter}}{{.SingleStringPathParameterVarName}}{{else}}input{{end}})
 {{else}}
-	err = h.{{.Op}}(ctx, input)
+	err = h.{{.Op}}(ctx, {{if .SingleStringPathParameter}}{{.SingleStringPathParameterVarName}}{{else}}input{{end}})
 {{end}}
 {{else}}
 {{if .SuccessReturnType}}
@@ -393,10 +406,38 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 }
 `
 
+type singleStringPathParameterTemplateData struct {
+	Op           string
+	ParamName    string
+	ParamVarName string
+}
+
+var singleStringPathParameterTemplate = `
+// new{{.Op}}Input takes in an http.Request an returns the {{.ParamName}} parameter
+// that it contains. It returns an error if the request doesn't contain the parameter.
+func new{{.Op}}Input(r *http.Request) (string, error) {
+	{{.ParamVarName}} := mux.Vars(r)["{{.ParamName}}"]
+	if len({{.ParamVarName}}) == 0 {
+		return "", errors.New("Parameter {{.ParamName}} must be specified")
+	}
+	return {{.ParamVarName}}, nil
+}
+`
+
 func generateNewInput(op *spec.Operation) (string, error) {
-	var buf bytes.Buffer
 	capOpID := swagger.Capitalize(op.ID)
 
+	singleStringPathParameter, paramVarName := swagger.SingleStringPathParameter(op)
+	if singleStringPathParameter {
+		return templates.WriteTemplate(singleStringPathParameterTemplate,
+			singleStringPathParameterTemplateData{
+				Op:           capOpID,
+				ParamName:    op.Parameters[0].Name,
+				ParamVarName: paramVarName,
+			})
+	}
+
+	var buf bytes.Buffer
 	buf.WriteString(fmt.Sprintf("// new%sInput takes in an http.Request an returns the input struct.\n", capOpID))
 	singleSchemaedBodyParameter, opModel := swagger.SingleSchemaedBodyParameter(op)
 	if singleSchemaedBodyParameter {
