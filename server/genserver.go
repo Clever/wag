@@ -17,10 +17,10 @@ func Generate(packageName string, s spec.Swagger) error {
 	if err := generateRouter(packageName, s, s.Paths); err != nil {
 		return err
 	}
-	if err := generateInterface(packageName, s.Info.InfoProps.Title, s.Paths); err != nil {
+	if err := generateInterface(packageName, &s, s.Info.InfoProps.Title, s.Paths); err != nil {
 		return err
 	}
-	if err := generateHandlers(packageName, s.Paths); err != nil {
+	if err := generateHandlers(packageName, &s, s.Paths); err != nil {
 		return err
 	}
 	return nil
@@ -162,7 +162,7 @@ type Controller interface {
 }
 `
 
-func generateInterface(packageName string, serviceName string, paths *spec.Paths) error {
+func generateInterface(packageName string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
 
 	tmpl := interfaceFileTemplate{
 		ImportStatements: swagger.ImportStatements([]string{"context", packageName + "/models"}),
@@ -175,7 +175,7 @@ func generateInterface(packageName string, serviceName string, paths *spec.Paths
 		for _, method := range swagger.SortedOperationsKeys(pathItemOps) {
 			tmpl.Interfaces = append(tmpl.Interfaces, interfaceTemplate{
 				Comment:    swagger.InterfaceComment(method, pathKey, pathItemOps[method]),
-				Definition: swagger.Interface(pathItemOps[method]),
+				Definition: swagger.Interface(s, pathItemOps[method]),
 			})
 		}
 	}
@@ -229,7 +229,7 @@ func jsonMarshalNoError(i interface{}) string {
 {{end}}
 `
 
-func generateHandlers(packageName string, paths *spec.Paths) error {
+func generateHandlers(packageName string, s *spec.Swagger, paths *spec.Paths) error {
 
 	tmpl := handlerFileTemplate{
 		ImportStatements: swagger.ImportStatements([]string{"context", "github.com/gorilla/mux", "gopkg.in/Clever/kayvee-go.v5/logger",
@@ -245,7 +245,7 @@ func generateHandlers(packageName string, paths *spec.Paths) error {
 		for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
 			op := pathItemOps[opKey]
 
-			operationHandler, err := generateOperationHandler(op)
+			operationHandler, err := generateOperationHandler(s, op)
 			if err != nil {
 				return err
 			}
@@ -267,11 +267,11 @@ var jsonMarshalString = `
 `
 
 // generateOperationHandler generates the handler code for a single handler
-func generateOperationHandler(op *spec.Operation) (string, error) {
+func generateOperationHandler(s *spec.Swagger, op *spec.Operation) (string, error) {
 	typeToCode := make(map[string]int)
 	emptyResponseCode := 200
-	codeToType := swagger.CodeToTypeMap(op)
-	typeToCode, err := swagger.TypeToCodeMap(op)
+	codeToType := swagger.CodeToTypeMap(s, op)
+	typeToCode, err := swagger.TypeToCodeMap(s, op)
 	if err != nil {
 		return "", err
 	}

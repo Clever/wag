@@ -77,7 +77,7 @@ func ValidateErrors(s spec.Swagger) error {
 			}
 
 			// Confirm that the operation has a one-to-one map from status code -> type.
-			_, err := TypeToCodeMap(op)
+			_, err := TypeToCodeMap(&s, op)
 			if err != nil {
 				return err
 			}
