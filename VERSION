@@ -1,4 +1,3 @@
-0.4.0
-- Add support for globally defined error types.
-- Enforce that a BadRequest and InternalError error type are defined.
-- Allow error types to extend the default types
+0.5.0
+- Generate error types only from definitions
+- If the input has a single string input parameter make the interface take in a string
