@@ -1,6 +1,6 @@
 package models
 
-func (o BadRequestError) Error() string {
+func (o BadRequest) Error() string {
 	return o.Msg
 }
 
@@ -12,7 +12,7 @@ func (o InternalError) Error() string {
 	return o.Msg
 }
 
-func (o UnathorizedError) Error() string {
+func (o Unathorized) Error() string {
 	return o.Msg
 }
 

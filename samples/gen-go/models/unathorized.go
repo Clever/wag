@@ -9,16 +9,16 @@ import (
 	"github.com/go-openapi/errors"
 )
 
-// BadRequestError bad request error
-// swagger:model BadRequestError
-type BadRequestError struct {
+// Unathorized unathorized
+// swagger:model Unathorized
+type Unathorized struct {
 
 	// msg
 	Msg string `json:"msg,omitempty"`
 }
 
-// Validate validates this bad request error
-func (m *BadRequestError) Validate(formats strfmt.Registry) error {
+// Validate validates this unathorized
+func (m *Unathorized) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {

@@ -17,7 +17,7 @@ type ErrorsController struct{}
 
 func (e *ErrorsController) GetBook(ctx context.Context, i *models.GetBookInput) error {
 	if i.ID == 404 {
-		return models.NotFoundError{}
+		return models.NotFound{}
 	}
 	return nil
 }
@@ -29,7 +29,7 @@ func TestGlobal404(t *testing.T) {
 
 	err := c.GetBook(context.Background(), &models.GetBookInput{ID: 404})
 	require.Error(t, err)
-	assert.IsType(t, &models.NotFoundError{}, err)
+	assert.IsType(t, &models.NotFound{}, err)
 }
 
 func TestOverridenBadRequest(t *testing.T) {

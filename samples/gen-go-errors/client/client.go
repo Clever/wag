@@ -202,7 +202,7 @@ func (c *WagClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
 
 	case 404:
 
-		var output models.NotFoundError
+		var output models.NotFound
 		// Any errors other than EOF should result in an error. EOF is acceptable for empty
 		// types.
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
