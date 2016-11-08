@@ -32,7 +32,7 @@ func ValidateErrors(s spec.Swagger) error {
 	}
 	if !global400 || !global500 {
 		return errors.New("must specify global 'BadRequest' response type and global " +
-			"'InternalResponse' response type")
+			"'InternalError' response type")
 	}
 
 	for _, pathKey := range SortedPathItemKeys(s.Paths.Paths) {

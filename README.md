@@ -17,7 +17,7 @@ generate: wag-generate-deps
 	$(call wag-generate,./swagger.yml, $(PKG))
 ```
 
-Define global BadRequest and InternalError response types. These are used internally for validation errors and unknown errors respectively. They must reference a definition with a msg field. For example:
+Define global BadRequest and InternalError response types. These are used internally for validation errors and unknown errors respectively. They must reference a definition with a message field. For example:
 
 ```
 responses:
@@ -45,7 +45,7 @@ definitions:
 
 If your yml doesn't define a 400 or a 500 response for any of your operations, Wag will implicitly set it to the globally defined responses, models.BadRequest and models.InternalError respectively.
 
-Also, all your 400+ responses must return a schema type with a Msg field. The msg field is required so that we can covert the response into Go's error type and use the Msg in `Error() string`. Each of the responses must also be unique so that the client and server can convert between status code and type.
+Also, all your 400+ responses must return a schema type with a Message field. The message field is required so that we can covert the response into Go's error type and use the message in `Error() string`. Each of the responses must also be unique so that the client and server can convert between status code and type.
 
 Then generate your code:
 ```
