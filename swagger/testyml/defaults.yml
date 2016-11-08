@@ -15,8 +15,16 @@ paths:
       responses:
         404:
           description: "Other response"
+          schema:
+            $ref: "#/definitions/Error"
 
 definitions:
+  Error:
+    type: object
+    properties:
+      msg:
+        type: string
+
   InternalError:
     type: object
     properties:

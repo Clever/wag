@@ -46,17 +46,17 @@ func ValidateErrors(s spec.Swagger) error {
 
 			for code, resp := range op.Responses.StatusCodeResponses {
 
-				// Any defined 400 / 500 responses must have `msg` field so that
-				// they can be used by the Swagger internals.
-				if code == 400 {
+				// Any 400+ responses must have `msg` field so that
+				// they can have a generated Error message
+				if code >= 400 {
 					if err := responseHasMsgField(resp, s); err != nil {
-						return fmt.Errorf("invalid 400 response: %s", err)
+						return fmt.Errorf("invalid %d response: %s", code, err)
 					}
+				}
+
+				if code == 400 {
 					has400 = true
 				} else if code == 500 {
-					if err := responseHasMsgField(resp, s); err != nil {
-						return fmt.Errorf("invalid 500 response: %s", err)
-					}
 					has500 = true
 				}
 			}
