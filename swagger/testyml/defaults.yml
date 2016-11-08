@@ -2,11 +2,11 @@ responses:
   BadRequest:
     description: "Bad Request"
     schema:
-      $ref: "#/definitions/Error"
+      $ref: "#/definitions/BadRequestError"
   InternalError:
     description: "Internal Error"
     schema:
-      $ref: "#/definitions/Error"
+      $ref: "#/definitions/InternalError"
 
 paths:
   /path:
@@ -15,9 +15,23 @@ paths:
       responses:
         404:
           description: "Other response"
+          schema:
+            $ref: "#/definitions/Error"
 
 definitions:
   Error:
+    type: object
+    properties:
+      msg:
+        type: string
+
+  InternalError:
+    type: object
+    properties:
+      msg:
+        type: string
+
+  BadRequestError:
     type: object
     properties:
       msg:

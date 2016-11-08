@@ -16,7 +16,7 @@ func Generate(packageName string, s spec.Swagger) error {
 	if err := generateClient(packageName, s); err != nil {
 		return err
 	}
-	if err := generateInterface(packageName, s.Info.InfoProps.Title, s.Paths); err != nil {
+	if err := generateInterface(packageName, &s, s.Info.InfoProps.Title, s.Paths); err != nil {
 		return err
 	}
 	return nil
@@ -189,7 +189,7 @@ func generateClient(packageName string, s spec.Swagger) error {
 			if op.Deprecated {
 				continue
 			}
-			codeTemplate.Methods = append(codeTemplate.Methods, methodCode(op, s.BasePath, method, path))
+			codeTemplate.Methods = append(codeTemplate.Methods, methodCode(&s, op, s.BasePath, method, path))
 		}
 	}
 
@@ -203,7 +203,7 @@ func generateClient(packageName string, s spec.Swagger) error {
 	return g.WriteFile("client/client.go")
 }
 
-func generateInterface(packageName string, serviceName string, paths *spec.Paths) error {
+func generateInterface(packageName string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
 	g := swagger.Generator{PackageName: packageName}
 	g.Printf("package client\n\n")
 	g.Printf(swagger.ImportStatements([]string{"context", packageName + "/models"}))
@@ -221,7 +221,7 @@ func generateInterface(packageName string, serviceName string, paths *spec.Paths
 			}
 
 			g.Printf("\t%s\n", swagger.InterfaceComment(method, pathKey, pathItemOps[method]))
-			g.Printf("\t%s\n\n", swagger.Interface(pathItemOps[method]))
+			g.Printf("\t%s\n\n", swagger.Interface(s, pathItemOps[method]))
 		}
 	}
 	g.Printf("}\n")
@@ -229,13 +229,13 @@ func generateInterface(packageName string, serviceName string, paths *spec.Paths
 	return g.WriteFile("client/interface.go")
 }
 
-func methodCode(op *spec.Operation, basePath, method, methodPath string) string {
+func methodCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPath string) string {
 	var buf bytes.Buffer
 	capOpID := swagger.Capitalize(op.ID)
-	errorType, _ := swagger.OutputType(op, 500)
+	errorType, _ := swagger.OutputType(s, op, 500)
 
 	buf.WriteString(swagger.InterfaceComment(method, methodPath, op) + "\n")
-	buf.WriteString(fmt.Sprintf("func (c *WagClient) %s {\n", swagger.Interface(op)))
+	buf.WriteString(fmt.Sprintf("func (c *WagClient) %s {\n", swagger.Interface(s, op)))
 	buf.WriteString(fmt.Sprintf("\tpath := c.basePath + \"%s\"\n", basePath+methodPath))
 	buf.WriteString(fmt.Sprintf("\turlVals := url.Values{}\n"))
 	buf.WriteString(fmt.Sprintf("\tvar body []byte\n\n"))
@@ -260,7 +260,7 @@ func methodCode(op *spec.Operation, basePath, method, methodPath string) string 
 	defer resp.Body.Close()
 `, op.ID, errorMessage(fmt.Sprintf("&%s{Msg: err.Error()}", errorType), op)))
 
-	buf.WriteString(parseResponseCode(op, capOpID))
+	buf.WriteString(parseResponseCode(s, op, capOpID))
 
 	return buf.String()
 
@@ -382,13 +382,13 @@ type statusCodeReturn struct {
 // In the client code we want to return a different object depending on the status code, so
 // let's generate code that switches on the status code and returns the right object in each
 // case.
-func parseResponseCode(op *spec.Operation, capOpID string) string {
+func parseResponseCode(s *spec.Swagger, op *spec.Operation, capOpID string) string {
 	var buf bytes.Buffer
 
 	buf.WriteString("\tswitch resp.StatusCode {\n")
 
 	for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
-		statusCodeDecoder, err := writeStatusCodeDecoder(op, statusCode)
+		statusCodeDecoder, err := writeStatusCodeDecoder(s, op, statusCode)
 		if err != nil {
 			// TODO: move this up???
 			panic(fmt.Errorf("error parsing response code: %s", err))
@@ -404,7 +404,7 @@ func parseResponseCode(op *spec.Operation, capOpID string) string {
 	}
 
 	// TODO: at some point should encapsulate this behind an interface on the operation
-	errorType, _ := swagger.OutputType(op, 500)
+	errorType, _ := swagger.OutputType(s, op, 500)
 	buf.WriteString(fmt.Sprintf(`
 	default:
 		return %s&%s{Msg: "Unknown response"}
@@ -416,9 +416,9 @@ func parseResponseCode(op *spec.Operation, capOpID string) string {
 	return buf.String()
 }
 
-func writeStatusCodeDecoder(op *spec.Operation, statusCode int) (string, error) {
-	outputName, makePointer := swagger.OutputType(op, statusCode)
-	internalErrorType, _ := swagger.OutputType(op, 500)
+func writeStatusCodeDecoder(s *spec.Swagger, op *spec.Operation, statusCode int) (string, error) {
+	outputName, makePointer := swagger.OutputType(s, op, statusCode)
+	internalErrorType, _ := swagger.OutputType(s, op, 500)
 
 	// TODO: Need makePointer to handle arrays... not sure if there's a better way to do this...
 	outputType := "output"

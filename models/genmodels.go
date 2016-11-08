@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/go-openapi/spec"
 
+	"github.com/Clever/go-utils/stringset"
 	"github.com/Clever/wag/swagger"
 	"github.com/Clever/wag/templates"
 	"github.com/Clever/wag/utils"
@@ -187,11 +189,14 @@ func generateOutputs(packageName string, s spec.Swagger) error {
 
 	g.Printf("package models\n\n")
 
-	globalOutputs, err := generateGlobalResponseTypes(s)
+	// It's a bit wonky that we're writing these into output.go instead of the file
+	// defining each of the types, but I think that's okay for now. We can clean this
+	// up if it becomes confusing.
+	errorMethodCode, err := generateErrorMethods(&s)
 	if err != nil {
 		return err
 	}
-	g.Printf(globalOutputs)
+	g.Printf(errorMethodCode)
 
 	for _, pathKey := range swagger.SortedPathItemKeys(s.Paths.Paths) {
 		path := s.Paths.Paths[pathKey]
@@ -210,59 +215,11 @@ func generateOutputs(packageName string, s spec.Swagger) error {
 				return err
 			}
 			g.Printf(successTypes)
-			errorTypes, err := generateErrorTypes(capOpID, op.Responses.StatusCodeResponses)
-			if err != nil {
-				return err
-			}
-			g.Printf(errorTypes)
+
 		}
 	}
 	return g.WriteFile("models/outputs.go")
 }
-
-// generateGlobalResponseTypes generates code from the global response type definitions.
-// Note that all the global response types are automatically error types and are required
-// to have a Msg field (for the Error()) call.
-func generateGlobalResponseTypes(s spec.Swagger) (string, error) {
-	var buf bytes.Buffer
-
-	for _, name := range swagger.SortedResponses(s.Responses) {
-		resp := s.Responses[name]
-		typeName, err := swagger.TypeFromSchema(resp.Schema, false)
-		if err != nil {
-			return "", err
-		}
-		responseDefinition, err := templates.WriteTemplate(globalResponseTmplStr,
-			&globalResponseTmpl{
-				Name:        name,
-				Type:        typeName,
-				Description: resp.Description,
-			})
-		if err != nil {
-			return "", err
-		}
-		buf.WriteString(responseDefinition)
-	}
-
-	return buf.String(), nil
-}
-
-type globalResponseTmpl struct {
-	Name        string
-	Type        string
-	Description string
-}
-
-var globalResponseTmplStr = `
-	// {{.Name}} defines a response type.
-	// {{.Description}}
-	type {{.Name}} {{.Type}}
-
-	// Error returns the message encoded in the error type
-	func (o {{.Name}}) Error() string {
-		return o.Msg
-	}
-`
 
 func generateSuccessTypes(capOpID string, responses map[int]spec.Response) (string, error) {
 	var buf bytes.Buffer
@@ -296,22 +253,6 @@ func generateSuccessTypes(capOpID string, responses map[int]spec.Response) (stri
 	return buf.String(), nil
 }
 
-func generateErrorTypes(capOpID string, responses map[int]spec.Response) (string, error) {
-	var buf bytes.Buffer
-
-	for _, statusCode := range swagger.SortedStatusCodeKeys(responses) {
-
-		if statusCode >= 400 {
-			typeString, err := generateType(capOpID, statusCode, responses[statusCode])
-			if err != nil {
-				return "", err
-			}
-			buf.WriteString(typeString)
-		}
-	}
-	return buf.String(), nil
-}
-
 func generateType(capOpID string, statusCode int, response spec.Response) (string, error) {
 	outputName := fmt.Sprintf("%s%dOutput", capOpID, statusCode)
 	typeName, err := swagger.TypeFromSchema(response.Schema, false)
@@ -341,16 +282,50 @@ var typeTemplate = `
 	// {{.Output}} defines the {{.StatusCode}} status code response for {{.OpName}}.
 	type {{.Output}} {{.Type}}
 
-	{{if .ErrorType}}
-	// Error returns "Status Code: X". We implemented in to satisfy the error
-	// interface. For a more descriptive error message see the output type.
-	func (o {{.Output}}) Error() string {
-		return "Status Code: {{.StatusCode}}"
-	}
-	{{else}}
 	// {{.OpName}}StatusCode returns the status code for the operation.
 	func (o {{.Output}}) {{.OpName}}StatusCode() int {
 		return {{.StatusCode}}
 	}
-	{{end}}
 `
+
+// generateErrorMethods finds all responses all error responses and generates an error
+// method for them.
+func generateErrorMethods(s *spec.Swagger) (string, error) {
+	errorTypes := stringset.New()
+
+	for _, pathKey := range swagger.SortedPathItemKeys(s.Paths.Paths) {
+		path := s.Paths.Paths[pathKey]
+		pathItemOps := swagger.PathItemOperations(path)
+		for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
+			op := pathItemOps[opKey]
+			for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
+
+				if statusCode < 400 {
+					continue
+				}
+
+				typeName, _ := swagger.OutputType(s, op, statusCode)
+				if strings.HasPrefix(typeName, "models.") {
+					typeName = typeName[7:]
+				}
+				errorTypes.Add(typeName)
+			}
+		}
+	}
+
+	sortedErrors := errorTypes.ToList()
+	sort.Strings(sortedErrors)
+
+	var buf bytes.Buffer
+	for _, errorType := range sortedErrors {
+		buf.WriteString(fmt.Sprintf(`
+func (o %s) Error() string {
+	return o.Msg
+}
+
+`, errorType))
+	}
+
+	return buf.String(), nil
+
+}

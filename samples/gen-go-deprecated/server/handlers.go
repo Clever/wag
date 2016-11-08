@@ -72,23 +72,23 @@ func statusCodeForGetBook(obj interface{}) int {
 
 	switch obj.(type) {
 
-	case *models.BadRequest:
+	case *models.BadRequestError:
 		return 400
-
-	case *models.GetBook404Output:
-		return 404
 
 	case *models.InternalError:
 		return 500
 
-	case models.BadRequest:
-		return 400
-
-	case models.GetBook404Output:
+	case *models.NotFoundError:
 		return 404
+
+	case models.BadRequestError:
+		return 400
 
 	case models.InternalError:
 		return 500
+
+	case models.NotFoundError:
+		return 404
 
 	default:
 		return -1
@@ -101,7 +101,7 @@ func (h handler) GetBookHandler(ctx context.Context, w http.ResponseWriter, r *h
 
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.BadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.BadRequestError{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
@@ -109,7 +109,7 @@ func (h handler) GetBookHandler(ctx context.Context, w http.ResponseWriter, r *h
 
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.BadRequest{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.BadRequestError{Msg: err.Error()}), http.StatusBadRequest)
 		return
 	}
 

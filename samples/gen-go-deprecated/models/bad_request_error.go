@@ -9,16 +9,16 @@ import (
 	"github.com/go-openapi/errors"
 )
 
-// Error error
-// swagger:model Error
-type Error struct {
+// BadRequestError bad request error
+// swagger:model BadRequestError
+type BadRequestError struct {
 
 	// msg
 	Msg string `json:"msg,omitempty"`
 }
 
-// Validate validates this error
-func (m *Error) Validate(formats strfmt.Registry) error {
+// Validate validates this bad request error
+func (m *BadRequestError) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
