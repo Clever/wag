@@ -52,19 +52,19 @@ definitions:
   NotFound:
     type: object
     properties:
-      msg:
+      message:
         type: string
 
   BadRequest:
     type: object
     properties:
-      msg:
+      message:
         type: string
 
   InternalError:
     type: object
     properties:
-      msg:
+      message:
         type: string
       code:
         type: integer
@@ -72,7 +72,7 @@ definitions:
   ExtendedError:
     type: object
     properties:
-      msg:
+      message:
         type: string
       code:
         type: integer

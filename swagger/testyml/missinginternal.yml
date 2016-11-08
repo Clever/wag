@@ -8,5 +8,5 @@ definitions:
   Test:
     type: object
     properties:
-      msg:
+      message:
         type: string

@@ -320,7 +320,7 @@ func generateErrorMethods(s *spec.Swagger) (string, error) {
 	for _, errorType := range sortedErrors {
 		buf.WriteString(fmt.Sprintf(`
 func (o %s) Error() string {
-	return o.Msg
+	return o.Message
 }
 
 `, errorType))

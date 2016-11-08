@@ -195,23 +195,23 @@ definitions:
       code:
         type: integer
         format: int32
-      msg:
+      message:
         type: string
 
   BadRequest:
     type: object
     properties:
-      msg:
+      message:
         type: string
 
   InternalError:
     type: object
     properties:
-      msg:
+      message:
         type: string
 
   Unathorized:
     type: object
     properties:
-      msg:
+      message:
         type: string

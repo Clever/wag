@@ -18,11 +18,11 @@ func TestBadReference(t *testing.T) {
 	assert.True(t, strings.Contains(err.Error(), "invalid schema reference"), err.Error())
 }
 
-func TestReferenceMissingMsgField(t *testing.T) {
-	s := loadTestFile(t, "testyml/missingmsg.yml")
+func TestReferenceMissingMessageField(t *testing.T) {
+	s := loadTestFile(t, "testyml/missingmessage.yml")
 	err := ValidateErrors(s)
 	assert.Error(t, err)
-	assert.True(t, strings.Contains(err.Error(), "'msg' field"), err.Error())
+	assert.True(t, strings.Contains(err.Error(), "'message' field"), err.Error())
 }
 
 func TestErrorOnMissingTypes(t *testing.T) {

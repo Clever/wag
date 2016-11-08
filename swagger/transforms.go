@@ -21,7 +21,7 @@ func ValidateErrors(s spec.Swagger) error {
 		if resp.Schema == nil {
 			return fmt.Errorf("%s response must have schema", name)
 		}
-		if err := refHasMsgField(resp.Schema.Ref, s); err != nil {
+		if err := refHasMessageField(resp.Schema.Ref, s); err != nil {
 			return fmt.Errorf("%s response is invalid: %s", name, err)
 		}
 		if name == "BadRequest" {
@@ -46,10 +46,10 @@ func ValidateErrors(s spec.Swagger) error {
 
 			for code, resp := range op.Responses.StatusCodeResponses {
 
-				// Any 400+ responses must have `msg` field so that
+				// Any 400+ responses must have `message` field so that
 				// they can have a generated Error message
 				if code >= 400 {
-					if err := responseHasMsgField(resp, s); err != nil {
+					if err := responseHasMessageField(resp, s); err != nil {
 						return fmt.Errorf("invalid %d response: %s", code, err)
 					}
 				}
@@ -99,22 +99,22 @@ func createRefResponse(description, ref string) (*spec.Response, error) {
 	}, nil
 }
 
-// responseHasMsgField checks that a response points to a type with
-// a msg field. This should be used by responses defined in an operation
+// responseHasMessageField checks that a response points to a type with
+// a message field. This should be used by responses defined in an operation
 // (i.e. not global response type). Responses in an operation can either
 // have a reference to a global response type or they have have a schema.
-func responseHasMsgField(r spec.Response, s spec.Swagger) error {
+func responseHasMessageField(r spec.Response, s spec.Swagger) error {
 	refToCheck := r.Ref
 	if r.Schema != nil {
 		refToCheck = r.Schema.Ref
 	}
 
-	return refHasMsgField(refToCheck, s)
+	return refHasMessageField(refToCheck, s)
 }
 
-// refHasMsgField ensures that the reference points to a schema with
-// a `msg` field and no other required fields.
-func refHasMsgField(ref spec.Ref, s spec.Swagger) error {
+// refHasMessageField ensures that the reference points to a schema with
+// a `message` field and no other required fields.
+func refHasMessageField(ref spec.Ref, s spec.Swagger) error {
 
 	refObj, _, err := ref.GetPointer().Get(s)
 	if err != nil {
@@ -126,7 +126,7 @@ func refHasMsgField(ref spec.Ref, s spec.Swagger) error {
 	// schema.
 	r, ok := refObj.(spec.Response)
 	if ok {
-		return refHasMsgField(r.Schema.Ref, s)
+		return refHasMessageField(r.Schema.Ref, s)
 	}
 	schema, ok := refObj.(spec.Schema)
 	if !ok {
@@ -134,18 +134,18 @@ func refHasMsgField(ref spec.Ref, s spec.Swagger) error {
 
 	}
 
-	msgField, ok := schema.Properties["msg"]
+	messageField, ok := schema.Properties["message"]
 	if !ok {
-		return fmt.Errorf("schema must have a 'msg' field: %s", ref.String())
+		return fmt.Errorf("schema must have a 'message' field: %s", ref.String())
 	}
 
-	if len(msgField.Type) != 1 || msgField.Type[0] != "string" {
-		return fmt.Errorf("msg field must be of type 'string': %s", ref.String())
+	if len(messageField.Type) != 1 || messageField.Type[0] != "string" {
+		return fmt.Errorf("'message' field must be of type 'string': %s", ref.String())
 	}
 
 	// Don't allow any required fields. We need this because Wag won't know what those
 	// fields should be when it generates the default 400 + 500 responses. We don't even
-	// allow `msg` to be required because go-swagger would make it a pointer which
+	// allow `message` to be required because go-swagger would make it a pointer which
 	// complicates things.
 	//
 	// Note that we enforce this on all global response types, not just the 400 / 500s.
