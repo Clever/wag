@@ -37,7 +37,6 @@ import (
 		"context"
 		"strings"
 		"bytes"
-		"io"
 		"net/http"
 		"net/url"
 		"strconv"
@@ -452,9 +451,7 @@ var codeDetectorTmplStr = `
 	{{if .NoSuccessType}}
 		{{if .ErrorType}}
 		var output {{.TypeName}}
-		// Any errors other than EOF should result in an error. EOF is acceptable for empty
-		// types.
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return &{{.InternalErrorType}}{Message: err.Error()}
 		}
 		return {{.OutputType}}
@@ -464,17 +461,13 @@ var codeDetectorTmplStr = `
 	{{else}}
 		{{if .ErrorType}}
 		var output {{.TypeName}}
-		// Any errors other than EOF should result in an error. EOF is acceptable for empty
-		// types.
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, &{{.InternalErrorType}}{Message: err.Error()}
 		}
 		return nil, {{.OutputType}}
 		{{else}}
 		var output {{.TypeName}}
-		// Any errors other than EOF should result in an error. EOF is acceptable for empty
-		// types.
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, &{{.InternalErrorType}}{Message: err.Error()}
 		}
 		return {{.OutputType}}, nil

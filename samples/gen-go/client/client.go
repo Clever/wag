@@ -6,7 +6,6 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -218,9 +217,7 @@ func (c *WagClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]mo
 	case 200:
 
 		var output []models.Book
-		// Any errors other than EOF should result in an error. EOF is acceptable for empty
-		// types.
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, &models.InternalError{Message: err.Error()}
 		}
 		return output, nil
@@ -228,9 +225,7 @@ func (c *WagClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]mo
 	case 400:
 
 		var output models.BadRequest
-		// Any errors other than EOF should result in an error. EOF is acceptable for empty
-		// types.
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, &models.InternalError{Message: err.Error()}
 		}
 		return nil, &output
@@ -238,9 +233,7 @@ func (c *WagClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]mo
 	case 500:
 
 		var output models.InternalError
-		// Any errors other than EOF should result in an error. EOF is acceptable for empty
-		// types.
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, &models.InternalError{Message: err.Error()}
 		}
 		return nil, &output
@@ -300,9 +293,7 @@ func (c *WagClient) CreateBook(ctx context.Context, i *models.Book) (*models.Boo
 	case 200:
 
 		var output models.Book
-		// Any errors other than EOF should result in an error. EOF is acceptable for empty
-		// types.
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, &models.InternalError{Message: err.Error()}
 		}
 		return &output, nil
@@ -310,9 +301,7 @@ func (c *WagClient) CreateBook(ctx context.Context, i *models.Book) (*models.Boo
 	case 400:
 
 		var output models.BadRequest
-		// Any errors other than EOF should result in an error. EOF is acceptable for empty
-		// types.
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, &models.InternalError{Message: err.Error()}
 		}
 		return nil, &output
@@ -320,9 +309,7 @@ func (c *WagClient) CreateBook(ctx context.Context, i *models.Book) (*models.Boo
 	case 500:
 
 		var output models.InternalError
-		// Any errors other than EOF should result in an error. EOF is acceptable for empty
-		// types.
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, &models.InternalError{Message: err.Error()}
 		}
 		return nil, &output
@@ -382,9 +369,7 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 	case 200:
 
 		var output models.Book
-		// Any errors other than EOF should result in an error. EOF is acceptable for empty
-		// types.
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, &models.InternalError{Message: err.Error()}
 		}
 		return &output, nil
@@ -392,9 +377,7 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 	case 400:
 
 		var output models.BadRequest
-		// Any errors other than EOF should result in an error. EOF is acceptable for empty
-		// types.
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, &models.InternalError{Message: err.Error()}
 		}
 		return nil, &output
@@ -402,9 +385,7 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 	case 401:
 
 		var output models.Unathorized
-		// Any errors other than EOF should result in an error. EOF is acceptable for empty
-		// types.
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, &models.InternalError{Message: err.Error()}
 		}
 		return nil, &output
@@ -412,9 +393,7 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 	case 404:
 
 		var output models.Error
-		// Any errors other than EOF should result in an error. EOF is acceptable for empty
-		// types.
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, &models.InternalError{Message: err.Error()}
 		}
 		return nil, &output
@@ -422,9 +401,7 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 	case 500:
 
 		var output models.InternalError
-		// Any errors other than EOF should result in an error. EOF is acceptable for empty
-		// types.
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, &models.InternalError{Message: err.Error()}
 		}
 		return nil, &output
@@ -474,9 +451,7 @@ func (c *WagClient) GetBookByID2(ctx context.Context, id string) (*models.Book, 
 	case 200:
 
 		var output models.Book
-		// Any errors other than EOF should result in an error. EOF is acceptable for empty
-		// types.
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, &models.InternalError{Message: err.Error()}
 		}
 		return &output, nil
@@ -484,9 +459,7 @@ func (c *WagClient) GetBookByID2(ctx context.Context, id string) (*models.Book, 
 	case 400:
 
 		var output models.BadRequest
-		// Any errors other than EOF should result in an error. EOF is acceptable for empty
-		// types.
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, &models.InternalError{Message: err.Error()}
 		}
 		return nil, &output
@@ -494,9 +467,7 @@ func (c *WagClient) GetBookByID2(ctx context.Context, id string) (*models.Book, 
 	case 404:
 
 		var output models.Error
-		// Any errors other than EOF should result in an error. EOF is acceptable for empty
-		// types.
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, &models.InternalError{Message: err.Error()}
 		}
 		return nil, &output
@@ -504,9 +475,7 @@ func (c *WagClient) GetBookByID2(ctx context.Context, id string) (*models.Book, 
 	case 500:
 
 		var output models.InternalError
-		// Any errors other than EOF should result in an error. EOF is acceptable for empty
-		// types.
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, &models.InternalError{Message: err.Error()}
 		}
 		return nil, &output
@@ -558,9 +527,7 @@ func (c *WagClient) HealthCheck(ctx context.Context) error {
 	case 400:
 
 		var output models.BadRequest
-		// Any errors other than EOF should result in an error. EOF is acceptable for empty
-		// types.
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return &models.InternalError{Message: err.Error()}
 		}
 		return &output
@@ -568,9 +535,7 @@ func (c *WagClient) HealthCheck(ctx context.Context) error {
 	case 500:
 
 		var output models.InternalError
-		// Any errors other than EOF should result in an error. EOF is acceptable for empty
-		// types.
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return &models.InternalError{Message: err.Error()}
 		}
 		return &output
