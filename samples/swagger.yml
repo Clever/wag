@@ -90,6 +90,8 @@ paths:
             $ref: '#/definitions/Book'
         404:
           description: Job not found
+          schema:
+            $ref: "#/definitions/Error"
 
   /books:
     get:

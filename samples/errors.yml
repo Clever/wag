@@ -23,7 +23,7 @@ responses:
   NotFound:
     description: "Not found"
     schema:
-      $ref: "#/definitions/Error"
+      $ref: "#/definitions/NotFoundError"
 
 paths:
   /books/{id}:
@@ -49,7 +49,7 @@ paths:
 
 definitions:
 
-  Error:
+  NotFoundError:
     type: object
     properties:
       msg:
