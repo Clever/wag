@@ -39,6 +39,13 @@ func TestOtherRequiredField(t *testing.T) {
 	assert.True(t, strings.Contains(err.Error(), "cannot have required fields"), err.Error())
 }
 
+func Test3xxError(t *testing.T) {
+	s := loadTestFile(t, "testyml/3xxresponse.yml")
+	err := ValidateResponses(s)
+	assert.Error(t, err)
+	assert.True(t, strings.Contains(err.Error(), "cannot define 3XX status codes"), err.Error())
+}
+
 func TestMultiSuccessError(t *testing.T) {
 	s := loadTestFile(t, "testyml/multisuccess.yml")
 	err := ValidateResponses(s)

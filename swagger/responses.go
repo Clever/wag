@@ -51,8 +51,10 @@ func ValidateResponses(s spec.Swagger) error {
 
 				// Any 400+ responses must have `message` field so that
 				// they can have a generated Error message
-				if code < 400 {
+				if code < 300 {
 					successResponseCount++
+				} else if code < 400 {
+					return fmt.Errorf("cannot define 3XX status codes: %s", op.ID)
 				} else {
 					if err := responseHasMessageField(resp, s); err != nil {
 						return fmt.Errorf("invalid %d response: %s", code, err)

@@ -83,7 +83,7 @@ logger.FromContext(ctx).Info(...)
   You should use this logger for all logging within your controller implementation.
 
 * **Success Response Types**
-  * Wag only supports operations with a single success response type.
+  * Wag only supports a single 2XX response status code and no 3XX status codes.
     * If the success response type has a data type associated with it then Wag generates an interface that takes a pointer to that data type as the first argument.
     `func(...) (*SuccessType, error)`
     * If the success response type doesn't have a data type then Wag generates an interface with only an error response. A nil error tells the client that the request succeeded.
