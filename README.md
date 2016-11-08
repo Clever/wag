@@ -24,7 +24,7 @@ responses:
   BadRequest:
     description: Bad Request
     schema:
-      $ref: "#/definitions/BadRequestError"
+      $ref: "#/definitions/BadRequest"
   InternalError:
     description: Internal Error
     schema:
