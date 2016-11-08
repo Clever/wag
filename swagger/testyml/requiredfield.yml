@@ -8,7 +8,7 @@ definitions:
   Test:
     type: object
     properties:
-      msg:
+      message:
         type: string
     required:
-      - msg
+      - message

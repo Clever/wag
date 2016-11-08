@@ -31,15 +31,15 @@ responses:
       $ref: "#/definitions/InternalError"
 
 definitions:
-  BadRequestError:
+  BadRequest:
     type: object
     properties:
-      msg:
+      message:
         type: string
   InternalError:
     type: object
     properties:
-      msg:
+      message:
         type: string
 ```
 

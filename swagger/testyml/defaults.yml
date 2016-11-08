@@ -22,17 +22,17 @@ definitions:
   Error:
     type: object
     properties:
-      msg:
+      message:
         type: string
 
   InternalError:
     type: object
     properties:
-      msg:
+      message:
         type: string
 
   BadRequestError:
     type: object
     properties:
-      msg:
+      message:
         type: string

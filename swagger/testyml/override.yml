@@ -22,13 +22,13 @@ definitions:
   Error:
     type: object
     properties:
-      msg:
+      message:
         type: string
 
   ExtendedError:
     type: object
     properties:
-      msg:
+      message:
         type: string
       extendedField:
         type: string

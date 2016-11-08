@@ -42,17 +42,17 @@ definitions:
   BadRequest:
     type: object
     properties:
-      msg:
+      message:
         type: string
 
   InternalError:
     type: object
     properties:
-      msg:
+      message:
         type: string
 
   NotFound:
     type: object
     properties:
-      msg:
+      message:
         type: string

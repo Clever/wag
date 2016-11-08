@@ -258,7 +258,7 @@ func methodCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPat
 	resp, err := c.requestDoer.Do(client, req)
 	%s
 	defer resp.Body.Close()
-`, op.ID, errorMessage(fmt.Sprintf("&%s{Msg: err.Error()}", errorType), op)))
+`, op.ID, errorMessage(fmt.Sprintf("&%s{Message: err.Error()}", errorType), op)))
 
 	buf.WriteString(parseResponseCode(s, op, capOpID))
 
@@ -407,7 +407,7 @@ func parseResponseCode(s *spec.Swagger, op *spec.Operation, capOpID string) stri
 	errorType, _ := swagger.OutputType(s, op, 500)
 	buf.WriteString(fmt.Sprintf(`
 	default:
-		return %s&%s{Msg: "Unknown response"}
+		return %s&%s{Message: "Unknown response"}
 	}
 }
 
@@ -455,7 +455,7 @@ var codeDetectorTmplStr = `
 		// Any errors other than EOF should result in an error. EOF is acceptable for empty
 		// types.
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
-			return &{{.InternalErrorType}}{Msg: err.Error()}
+			return &{{.InternalErrorType}}{Message: err.Error()}
 		}
 		return {{.OutputType}}
 		{{else}}
@@ -467,7 +467,7 @@ var codeDetectorTmplStr = `
 		// Any errors other than EOF should result in an error. EOF is acceptable for empty
 		// types.
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
-			return nil, &{{.InternalErrorType}}{Msg: err.Error()}
+			return nil, &{{.InternalErrorType}}{Message: err.Error()}
 		}
 		return nil, {{.OutputType}}
 		{{else}}
@@ -475,7 +475,7 @@ var codeDetectorTmplStr = `
 		// Any errors other than EOF should result in an error. EOF is acceptable for empty
 		// types.
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
-			return nil, &{{.InternalErrorType}}{Msg: err.Error()}
+			return nil, &{{.InternalErrorType}}{Message: err.Error()}
 		}
 		return {{.OutputType}}, nil
 		{{end}}

@@ -180,7 +180,7 @@ func (c *WagClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
 	resp, err := c.requestDoer.Do(client, req)
 
 	if err != nil {
-		return &models.InternalError{Msg: err.Error()}
+		return &models.InternalError{Message: err.Error()}
 	}
 
 	defer resp.Body.Close()
@@ -196,7 +196,7 @@ func (c *WagClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
 		// Any errors other than EOF should result in an error. EOF is acceptable for empty
 		// types.
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
-			return &models.InternalError{Msg: err.Error()}
+			return &models.InternalError{Message: err.Error()}
 		}
 		return &output
 
@@ -206,7 +206,7 @@ func (c *WagClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
 		// Any errors other than EOF should result in an error. EOF is acceptable for empty
 		// types.
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
-			return &models.InternalError{Msg: err.Error()}
+			return &models.InternalError{Message: err.Error()}
 		}
 		return &output
 
@@ -216,12 +216,12 @@ func (c *WagClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
 		// Any errors other than EOF should result in an error. EOF is acceptable for empty
 		// types.
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil && err != io.EOF {
-			return &models.InternalError{Msg: err.Error()}
+			return &models.InternalError{Message: err.Error()}
 		}
 		return &output
 
 	default:
-		return &models.InternalError{Msg: "Unknown response"}
+		return &models.InternalError{Message: "Unknown response"}
 	}
 }
 

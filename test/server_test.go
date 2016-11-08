@@ -82,7 +82,7 @@ func TestDefaultErrorResponse(t *testing.T) {
 	assert.Error(t, err)
 	badReq, ok := err.(*models.BadRequest)
 	assert.True(t, ok)
-	assert.Equal(t, "My 400 failure", badReq.Msg)
+	assert.Equal(t, "My 400 failure", badReq.Message)
 }
 
 func TestValidationErrorResponse(t *testing.T) {

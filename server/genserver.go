@@ -347,7 +347,7 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 {{end}}
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError({{index .StatusCodetoType 400}}{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError({{index .StatusCodetoType 400}}{Message: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
@@ -358,7 +358,7 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 {{end}}
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError({{index .StatusCodetoType 400}}{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError({{index .StatusCodetoType 400}}{Message: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
@@ -381,7 +381,7 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 		}
 		statusCode := statusCodeFor{{.Op}}(err)
 		if statusCode == -1 {
-			err = {{index .StatusCodetoType 500}}{Msg: err.Error()}
+			err = {{index .StatusCodetoType 500}}{Message: err.Error()}
 			statusCode = 500
 		}
 		http.Error(w, jsonMarshalNoError(err), statusCode)
@@ -392,7 +392,7 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError({{index .StatusCodetoType 500}}{Msg: err.Error()}), http.StatusInternalServerError)
+		http.Error(w, jsonMarshalNoError({{index .StatusCodetoType 500}}{Message: err.Error()}), http.StatusInternalServerError)
 		return
 	}
 

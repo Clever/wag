@@ -1,13 +1,13 @@
 package models
 
 func (o BadRequest) Error() string {
-	return o.Msg
+	return o.Message
 }
 
 func (o InternalError) Error() string {
-	return o.Msg
+	return o.Message
 }
 
 func (o NotFound) Error() string {
-	return o.Msg
+	return o.Message
 }

@@ -16,8 +16,8 @@ type ExtendedError struct {
 	// code
 	Code int64 `json:"code,omitempty"`
 
-	// msg
-	Msg string `json:"msg,omitempty"`
+	// message
+	Message string `json:"message,omitempty"`
 }
 
 // Validate validates this extended error
