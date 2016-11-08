@@ -101,7 +101,7 @@ func (h handler) GetBookHandler(ctx context.Context, w http.ResponseWriter, r *h
 
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.ExtendedError{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.ExtendedError{Message: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
@@ -109,7 +109,7 @@ func (h handler) GetBookHandler(ctx context.Context, w http.ResponseWriter, r *h
 
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.ExtendedError{Msg: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.ExtendedError{Message: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
@@ -122,7 +122,7 @@ func (h handler) GetBookHandler(ctx context.Context, w http.ResponseWriter, r *h
 		}
 		statusCode := statusCodeForGetBook(err)
 		if statusCode == -1 {
-			err = models.InternalError{Msg: err.Error()}
+			err = models.InternalError{Message: err.Error()}
 			statusCode = 500
 		}
 		http.Error(w, jsonMarshalNoError(err), statusCode)

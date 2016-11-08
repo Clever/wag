@@ -13,8 +13,8 @@ import (
 // swagger:model NotFound
 type NotFound struct {
 
-	// msg
-	Msg string `json:"msg,omitempty"`
+	// message
+	Message string `json:"message,omitempty"`
 }
 
 // Validate validates this not found
