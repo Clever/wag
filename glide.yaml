@@ -31,6 +31,10 @@ import:
 - package: github.com/Clever/discovery-go
 - package: gopkg.in/Clever/kayvee-go.v5
   version: ^5.0.0
+- package: github.com/Clever/go-utils
+  version: abc2536
+  subpackages:
+  - stringset
 - package: github.com/go-errors/errors
 - package: github.com/afex/hystrix-go
 - package: github.com/donovanhide/eventsource
