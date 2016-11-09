@@ -102,11 +102,9 @@ func NewFromDiscovery() (*WagClient, error) {
 	return New(url), nil
 }
 
-// WithRetryPolicy returns a new client that will use the given retry policy for
-// all requests.
-func (c *WagClient) WithRetryPolicy(retryPolicy RetryPolicy) *WagClient {
+// SetRetryPolicy sets a the given retry policy for all requests.
+func (c *WagClient) SetRetryPolicy(retryPolicy RetryPolicy) {
 	c.retryDoer.retryPolicy = retryPolicy
-	return c
 }
 
 // SetCircuitBreakerDebug puts the circuit
@@ -154,10 +152,9 @@ func (c *WagClient) SetCircuitBreakerSettings(settings CircuitBreakerSettings) {
 }
 
 // SetTimeout sets a timeout on all operations for the client. To make a single request
-// with a timeout use context.SetTimeout as described here: https://godoc.org/golang.org/x/net/context#SetTimeout.
+// with a timeout use context.WithTimeout as described here: https://godoc.org/golang.org/x/net/context#WithTimeout.
 func (c *WagClient) SetTimeout(timeout time.Duration){
 	c.defaultTimeout = timeout
-	return c
 }
 
 {{range $methodCode := .Methods}}

@@ -265,7 +265,7 @@ func TestTimeout(t *testing.T) {
 	assert.True(t, end.Sub(start) < 80*time.Millisecond)
 
 	// Try with a global client setting
-	c = c.WithTimeout(10 * time.Millisecond)
+	c.SetTimeout(10 * time.Millisecond)
 	_, err = c.GetBooks(context.Background(), &models.GetBooksInput{})
 	require.Error(t, err)
 	assert.Equal(t, "context deadline exceeded", err.Error())
