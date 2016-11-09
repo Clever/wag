@@ -21,12 +21,19 @@ test: build generate $(PKGS) js-tests
 js-tests:
 	cd test/js && npm install && npm test
 
-generate: hardcoded/hardcoded.go $(MOCKGEN)
+jsdoc2md:
+	hash npm 2>/dev/null || (echo "Could not run npm, please install node" && false)
+	hash jsdoc2md 2>/dev/null || npm install -g jsdoc-to-markdown@^2.0.0
+
+generate: hardcoded/hardcoded.go $(MOCKGEN) jsdoc2md
 	./bin/wag -file samples/swagger.yml -go-package $(PKG)/samples/gen-go -js-path $(GOPATH)/src/$(PKG)/samples/gen-js
+	(cd $(GOPATH)/src/$(PKG)/samples/gen-js && jsdoc2md index.js types.js > ./README.md)
 	go generate $(PKG)/samples/gen-go...
 	./bin/wag -file samples/deprecated.yml -go-package $(PKG)/samples/gen-go-deprecated -js-path $(GOPATH)/src/$(PKG)/samples/gen-js-deprecated
+	(cd $(GOPATH)/src/$(PKG)/samples/gen-js-deprecated && jsdoc2md index.js types.js > ./README.md)
 	go generate ${PKG}/samples/gen-go-deprecated...
 	./bin/wag -file samples/errors.yml -go-package $(PKG)/samples/gen-go-errors -js-path $(GOPATH)/src/$(PKG)/samples/gen-js-errors
+	(cd $(GOPATH)/src/$(PKG)/samples/gen-js-errors && jsdoc2md index.js types.js > ./README.md)
 	go generate ${PKG}/samples/gen-go-errors...
 
 $(PKGS): golang-test-all-strict-deps
