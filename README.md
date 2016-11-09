@@ -11,7 +11,7 @@ Set up a `generate` target in your `Makefile` that will generate server and clie
 ```
 include wag.mk
 
-WAG_VERSION := 0.1.0
+WAG_VERSION := latest
 
 generate: wag-generate-deps
 	$(call wag-generate,./swagger.yml, $(PKG))
