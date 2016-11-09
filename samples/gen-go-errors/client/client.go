@@ -127,29 +127,6 @@ func (c *WagClient) WithTimeout(timeout time.Duration) *WagClient {
 	return c
 }
 
-// JoinByFormat joins a string array by a known format:
-//	 csv: comma separated value (default)
-//	 ssv: space separated value
-//	 tsv: tab separated value
-//	 pipes: pipe (|) separated value
-func JoinByFormat(data []string, format string) string {
-	if len(data) == 0 {
-		return ""
-	}
-	var sep string
-	switch format {
-	case "ssv":
-		sep = " "
-	case "tsv":
-		sep = "\t"
-	case "pipes":
-		sep = "|"
-	default:
-		sep = ","
-	}
-	return strings.Join(data, sep)
-}
-
 // GetBook makes a GET request to /books/{id}.
 func (c *WagClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
 	path := c.basePath + "/v1/books/{id}"

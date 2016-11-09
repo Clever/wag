@@ -23,11 +23,10 @@ func Generate(packageName string, s spec.Swagger) error {
 }
 
 type clientCodeTemplate struct {
-	PackageName           string
-	ServiceName           string
-	FormattedServiceName  string
-	BaseParamToStringCode string
-	Methods               []string
+	PackageName          string
+	ServiceName          string
+	FormattedServiceName string
+	Methods              []string
 }
 
 var clientCodeTemplateStr = `
@@ -154,14 +153,12 @@ func (c *WagClient) SetCircuitBreakerSettings(settings CircuitBreakerSettings) {
 	})
 }
 
-// WithTimeout returns a new client that has the specified timeout on all operations. To make a single request
-// have a timeout use context.WithTimeout as described here: https://godoc.org/golang.org/x/net/context#WithTimeout.
-func (c *WagClient) WithTimeout(timeout time.Duration) *WagClient {
+// SetTimeout sets a timeout on all operations for the client. To make a single request
+// with a timeout use context.SetTimeout as described here: https://godoc.org/golang.org/x/net/context#SetTimeout.
+func (c *WagClient) SetTimeout(timeout time.Duration){
 	c.defaultTimeout = timeout
 	return c
 }
-
-{{.BaseParamToStringCode}}
 
 {{range $methodCode := .Methods}}
 	{{$methodCode}}
@@ -175,10 +172,9 @@ func shortHash(s string) string {
 func generateClient(packageName string, s spec.Swagger) error {
 
 	codeTemplate := clientCodeTemplate{
-		PackageName:           packageName,
-		ServiceName:           s.Info.InfoProps.Title,
-		FormattedServiceName:  strings.ToUpper(strings.Replace(s.Info.InfoProps.Title, "-", "_", -1)),
-		BaseParamToStringCode: swagger.BaseParamToStringCode(),
+		PackageName:          packageName,
+		ServiceName:          s.Info.InfoProps.Title,
+		FormattedServiceName: strings.ToUpper(strings.Replace(s.Info.InfoProps.Title, "-", "_", -1)),
 	}
 
 	for _, path := range swagger.SortedPathItemKeys(s.Paths.Paths) {
