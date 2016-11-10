@@ -21,12 +21,12 @@ responses:
     schema:
       $ref: "#/definitions/InternalError"
 paths:
-  /books/{id}:
+  /health:
     get:
-      operationId: getBook
+      operationId: health
       parameters:
-        - name: id
-          in: path
+        - name: section
+          in: query
           required: true
           type: integer
       deprecated: true

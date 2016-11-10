@@ -14,13 +14,13 @@ var _ = strconv.FormatInt
 var _ = validate.Maximum
 var _ = strfmt.NewFormats
 
-// GetBookInput holds the input parameters for a getBook operation.
-type GetBookInput struct {
-	ID int64
+// HealthInput holds the input parameters for a health operation.
+type HealthInput struct {
+	Section int64
 }
 
-// Validate returns an error if any of the GetBookInput parameters don't satisfy the
+// Validate returns an error if any of the HealthInput parameters don't satisfy the
 // requirements from the swagger yml file.
-func (i GetBookInput) Validate() error {
+func (i HealthInput) Validate() error {
 	return nil
 }
