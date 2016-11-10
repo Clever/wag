@@ -41,7 +41,9 @@ var _ Client = (*WagClient)(nil)
 func New(basePath string) *WagClient {
 	base := baseDoer{}
 	tracing := tracingDoer{d: base}
-	retry := retryDoer{d: tracing, retryPolicy: DefaultRetryPolicy{}}
+	// For the short-term don't use the default retry policy since its 5 retries can 5X
+	// the traffic. Once we've enabled circuit breakers by default we can turn it on.
+	retry := retryDoer{d: tracing, retryPolicy: SingleRetryPolicy{}}
 	circuit := &circuitBreakerDoer{
 		d:     &retry,
 		debug: true,

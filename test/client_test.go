@@ -89,12 +89,13 @@ func (c *ClientCircuitTest) HealthCheck(ctx context.Context) error {
 	return nil
 }
 
-func TestDefaultClientRetries(t *testing.T) {
+func TestExponentialClientRetries(t *testing.T) {
 	controller := ClientContextTest{getErrorCount: 2}
 	s := server.New(&controller, "")
 	testServer := httptest.NewServer(s.Handler)
 	defer testServer.Close()
 	c := client.New(testServer.URL)
+	c.SetRetryPolicy(client.ExponentialRetryPolicy{})
 	_, err := c.GetBooks(context.Background(), &models.GetBooksInput{})
 	require.NoError(t, err)
 	require.Equal(t, len(controller.getTimes), 3, "expected three requests")
