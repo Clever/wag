@@ -86,6 +86,11 @@ var indexJSTmplStr = `const discovery = require("@clever/discovery");
 const request = require("request");
 const opentracing = require("opentracing");
 
+/**
+ * @external Span
+ * @see {@link https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html}
+ */
+
 const { Errors } = require("./types");
 
 /**
@@ -93,12 +98,6 @@ const { Errors } = require("./types");
  * @alias module:{{.ServiceName}}.RetryPolicies.Default
  */
 const defaultRetryPolicy = {
-  /**
-   * backoffs returns an array of five backoffs: 100ms, 200ms, 400ms, 800ms, and
-   * 1.6s. It adds a random 5% jitter to each backoff.
-   * @function
-   * @returns {Array<number>}
-   */
   backoffs() {
     const ret = [];
     let next = 100.0; // milliseconds
@@ -110,13 +109,6 @@ const defaultRetryPolicy = {
     }
     return ret;
   },
-  /**
-   * retry will not retry a request if the HTTP client returns an error, if the
-   * is a POST or PATCH, or if the status code is less than 500. It will retry
-   * all other requests.
-   * @function
-   * @returns {boolean}
-   */
   retry(requestOptions, err, res) {
     if (err || requestOptions.method === "POST" ||
         requestOptions.method === "PATCH" ||
@@ -132,15 +124,9 @@ const defaultRetryPolicy = {
  * @alias module:{{.ServiceName}}.RetryPolicies.None
  */
 const noRetryPolicy = {
-  /**
-   * returns an empty array
-   */
   backoffs() {
     return [];
   },
-  /**
-   * returns false
-   */
   retry() {
     return false;
   },
@@ -153,7 +139,7 @@ const noRetryPolicy = {
  */
 
 /**
- * The main client object to instantiate.
+ * {{.ServiceName}} client
  * @alias module:{{.ServiceName}}
  */
 class {{.ClassName}} {
@@ -161,14 +147,14 @@ class {{.ClassName}} {
   /**
    * Create a new client object.
    * @param {Object} options - Options for constructing a client object.
-   * @param {string} options.address - URL where the server is located. If not
-   * specified, the address will be discovered via @clever/discovery.
-   * @param {number} options.timeout - The timeout to use for all client requests,
+   * @param {string} [options.address] - URL where the server is located. Must provide
+   * this or the discovery argument
+   * @param {bool} [options.discovery] - Use @clever/discovery to locate the server. Must provide
+   * this or the address argument
+   * @param {number} [options.timeout] - The timeout to use for all client requests,
    * in milliseconds. This can be overridden on a per-request basis.
-   * @param {Object} [options.retryPolicy=RetryPolicies.Default] - The logic to
+   * @param {module:{{.ServiceName}}.RetryPolicies} [options.retryPolicy=RetryPolicies.Default] - The logic to
    * determine which requests to retry, as well as how many times to retry.
-   * @param {function} options.retryPolicy.backoffs
-   * @param {function} options.retryPolicy.retry
    */
   constructor(options) {
     options = options || {};
@@ -315,7 +301,11 @@ var methodTmplStr = `
 
 var singleParamMethodDefinitionTemplateString = `/**{{if .Description}}
    * {{.Description}}{{end}}{{range $param := .Params}}
-   * @param {{if $param.JSDocType}}{{.JSDocType}} {{end}}{{$param.JSName}}{{if $param.Default}}={{$param.Default}}{{end}}{{end}}
+   * @param {{if $param.JSDocType}}{{.JSDocType}} {{end}}{{$param.JSName}}{{if $param.Default}}={{$param.Default}}{{end}}{{if $param.Description}} - {{.Description}}{{end}}{{end}}
+   * @param {object} [options]
+   * @param {number} [options.timeout] - A request specific timeout
+   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
+   * @param {module:{{.ServiceName}}.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
    * @fulfill{{if .JSDocSuccessReturnType}} {{.JSDocSuccessReturnType}}{{else}} {*}{{end}}{{$ServiceName := .ServiceName}}{{range $response := .Responses}}{{if $response.IsError}}
@@ -330,7 +320,11 @@ var singleParamMethodDefinitionTemplateString = `/**{{if .Description}}
 var pluralParamMethodDefinitionTemplateString = `/**{{if .Description}}
    * {{.Description}}{{end}}
    * @param {Object} params{{range $param := .Params}}
-   * @param {{if $param.JSDocType}}{{.JSDocType}} {{end}}{{if not $param.Required}}[{{end}}params.{{$param.JSName}}{{if $param.Default}}={{$param.Default}}{{end}}{{if not $param.Required}}]{{end}}{{end}}
+   * @param {{if $param.JSDocType}}{{.JSDocType}} {{end}}{{if not $param.Required}}[{{end}}params.{{$param.JSName}}{{if $param.Default}}={{$param.Default}}{{end}}{{if not $param.Required}}]{{end}}{{if $param.Description}} - {{.Description}}{{end}}{{end}}
+   * @param {object} [options]
+   * @param {number} [options.timeout] - A request specific timeout
+   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
+   * @param {module:{{.ServiceName}}.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
    * @fulfill{{if .JSDocSuccessReturnType}} {{.JSDocSuccessReturnType}}{{else}} {*}{{end}}{{$ServiceName := .ServiceName}}{{range $response := .Responses}}{{if $response.IsError}}
@@ -340,11 +334,12 @@ var pluralParamMethodDefinitionTemplateString = `/**{{if .Description}}
   {{.MethodName}}(params, options, cb) {`
 
 type paramMapping struct {
-	JSName    string
-	WagName   string
-	Required  bool
-	JSDocType string
-	Default   interface{}
+	JSName      string
+	WagName     string
+	Required    bool
+	JSDocType   string
+	Default     interface{}
+	Description string
 }
 
 type responseMapping struct {
@@ -417,11 +412,12 @@ func methodCode(s spec.Swagger, op *spec.Operation, method, basePath, path strin
 
 	for _, wagParam := range op.Parameters {
 		param := paramMapping{
-			JSName:    utils.CamelCase(wagParam.Name, false),
-			WagName:   wagParam.Name,
-			Required:  wagParam.Required,
-			JSDocType: paramToJSDocType(wagParam),
-			Default:   wagParam.Default,
+			JSName:      utils.CamelCase(wagParam.Name, false),
+			WagName:     wagParam.Name,
+			Required:    wagParam.Required,
+			JSDocType:   paramToJSDocType(wagParam),
+			Description: wagParam.Description,
+			Default:     wagParam.Default,
 		}
 
 		tmplInfo.Params = append(tmplInfo.Params, param)

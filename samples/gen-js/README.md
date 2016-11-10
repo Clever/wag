@@ -8,19 +8,15 @@ swagger-test client library.
     * [SwaggerTest](#exp_module_swagger-test--SwaggerTest) ⏏
         * [new SwaggerTest(options)](#new_module_swagger-test--SwaggerTest_new)
         * _instance_
-            * [.getBooks(params, [cb])](#module_swagger-test--SwaggerTest+getBooks) ⇒ <code>Promise</code>
-            * [.createBook(newBook, [cb])](#module_swagger-test--SwaggerTest+createBook) ⇒ <code>Promise</code>
-            * [.getBookByID(params, [cb])](#module_swagger-test--SwaggerTest+getBookByID) ⇒ <code>Promise</code>
-            * [.getBookByID2(id, [cb])](#module_swagger-test--SwaggerTest+getBookByID2) ⇒ <code>Promise</code>
-            * [.healthCheck([cb])](#module_swagger-test--SwaggerTest+healthCheck) ⇒ <code>Promise</code>
+            * [.getBooks(params, [options], [cb])](#module_swagger-test--SwaggerTest+getBooks) ⇒ <code>Promise</code>
+            * [.createBook(newBook, [options], [cb])](#module_swagger-test--SwaggerTest+createBook) ⇒ <code>Promise</code>
+            * [.getBookByID(params, [options], [cb])](#module_swagger-test--SwaggerTest+getBookByID) ⇒ <code>Promise</code>
+            * [.getBookByID2(id, [options], [cb])](#module_swagger-test--SwaggerTest+getBookByID2) ⇒ <code>Promise</code>
+            * [.healthCheck([options], [cb])](#module_swagger-test--SwaggerTest+healthCheck) ⇒ <code>Promise</code>
         * _static_
             * [.RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)
                 * [.Default](#module_swagger-test--SwaggerTest.RetryPolicies.Default)
-                    * [.backoffs()](#module_swagger-test--SwaggerTest.RetryPolicies.Default.backoffs) ⇒ <code>Array.&lt;number&gt;</code>
-                    * [.retry()](#module_swagger-test--SwaggerTest.RetryPolicies.Default.retry) ⇒ <code>boolean</code>
                 * [.None](#module_swagger-test--SwaggerTest.RetryPolicies.None)
-                    * [.backoffs()](#module_swagger-test--SwaggerTest.RetryPolicies.None.backoffs)
-                    * [.retry()](#module_swagger-test--SwaggerTest.RetryPolicies.None.retry)
             * [.Errors](#module_swagger-test--SwaggerTest.Errors)
                 * [.BadRequest](#module_swagger-test--SwaggerTest.Errors.BadRequest) ⇐ <code>Error</code>
                 * [.InternalError](#module_swagger-test--SwaggerTest.Errors.InternalError) ⇐ <code>Error</code>
@@ -30,7 +26,7 @@ swagger-test client library.
 <a name="exp_module_swagger-test--SwaggerTest"></a>
 
 ### SwaggerTest ⏏
-The main client object to instantiate.
+swagger-test client
 
 **Kind**: Exported class  
 <a name="new_module_swagger-test--SwaggerTest_new"></a>
@@ -42,15 +38,14 @@ Create a new client object.
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | options | <code>Object</code> |  | Options for constructing a client object. |
-| options.address | <code>string</code> |  | URL where the server is located. If not specified, the address will be discovered via @clever/discovery. |
-| options.timeout | <code>number</code> |  | The timeout to use for all client requests, in milliseconds. This can be overridden on a per-request basis. |
-| [options.retryPolicy] | <code>Object</code> | <code>RetryPolicies.Default</code> | The logic to determine which requests to retry, as well as how many times to retry. |
-| options.retryPolicy.backoffs | <code>function</code> |  |  |
-| options.retryPolicy.retry | <code>function</code> |  |  |
+| [options.address] | <code>string</code> |  | URL where the server is located. Must provide this or the discovery argument |
+| [options.discovery] | <code>bool</code> |  | Use @clever/discovery to locate the server. Must provide this or the address argument |
+| [options.timeout] | <code>number</code> |  | The timeout to use for all client requests, in milliseconds. This can be overridden on a per-request basis. |
+| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | <code>RetryPolicies.Default</code> | The logic to determine which requests to retry, as well as how many times to retry. |
 
 <a name="module_swagger-test--SwaggerTest+getBooks"></a>
 
-#### swaggerTest.getBooks(params, [cb]) ⇒ <code>Promise</code>
+#### swaggerTest.getBooks(params, [options], [cb]) ⇒ <code>Promise</code>
 Returns a list of books
 
 **Kind**: instance method of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
@@ -59,23 +54,27 @@ Returns a list of books
 **Reject**: <code>[InternalError](#module_swagger-test--SwaggerTest.Errors.InternalError)</code>  
 **Reject**: <code>Error</code>  
 
-| Param | Type | Default |
-| --- | --- | --- |
-| params | <code>Object</code> |  | 
-| [params.authors] | <code>Array.&lt;string&gt;</code> |  | 
-| [params.available] | <code>boolean</code> | <code>true</code> | 
-| [params.state] | <code>string</code> | <code>&quot;finished&quot;</code> | 
-| [params.published] | <code>string</code> |  | 
-| [params.snakeCase] | <code>string</code> |  | 
-| [params.completed] | <code>string</code> |  | 
-| [params.maxPages] | <code>number</code> | <code>500.5</code> | 
-| [params.minPages] | <code>number</code> | <code>5</code> | 
-| [params.pagesToTime] | <code>number</code> |  | 
-| [cb] | <code>function</code> |  | 
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| params | <code>Object</code> |  |  |
+| [params.authors] | <code>Array.&lt;string&gt;</code> |  | A list of authors. Must specify at least one and at most two |
+| [params.available] | <code>boolean</code> | <code>true</code> |  |
+| [params.state] | <code>string</code> | <code>&quot;finished&quot;</code> |  |
+| [params.published] | <code>string</code> |  |  |
+| [params.snakeCase] | <code>string</code> |  |  |
+| [params.completed] | <code>string</code> |  |  |
+| [params.maxPages] | <code>number</code> | <code>500.5</code> |  |
+| [params.minPages] | <code>number</code> | <code>5</code> |  |
+| [params.pagesToTime] | <code>number</code> |  |  |
+| [options] | <code>object</code> |  |  |
+| [options.timeout] | <code>number</code> |  | A request specific timeout |
+| [options.span] | <code>[Span](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html)</code> |  | An OpenTracing span - For example from the parent request |
+| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> |  | A request specific retryPolicy |
+| [cb] | <code>function</code> |  |  |
 
 <a name="module_swagger-test--SwaggerTest+createBook"></a>
 
-#### swaggerTest.createBook(newBook, [cb]) ⇒ <code>Promise</code>
+#### swaggerTest.createBook(newBook, [options], [cb]) ⇒ <code>Promise</code>
 Creates a book
 
 **Kind**: instance method of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
@@ -84,14 +83,18 @@ Creates a book
 **Reject**: <code>[InternalError](#module_swagger-test--SwaggerTest.Errors.InternalError)</code>  
 **Reject**: <code>Error</code>  
 
-| Param | Type |
-| --- | --- |
-| newBook |  | 
-| [cb] | <code>function</code> | 
+| Param | Type | Description |
+| --- | --- | --- |
+| newBook |  |  |
+| [options] | <code>object</code> |  |
+| [options.timeout] | <code>number</code> | A request specific timeout |
+| [options.span] | <code>[Span](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html)</code> | An OpenTracing span - For example from the parent request |
+| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | A request specific retryPolicy |
+| [cb] | <code>function</code> |  |
 
 <a name="module_swagger-test--SwaggerTest+getBookByID"></a>
 
-#### swaggerTest.getBookByID(params, [cb]) ⇒ <code>Promise</code>
+#### swaggerTest.getBookByID(params, [options], [cb]) ⇒ <code>Promise</code>
 Returns a book
 
 **Kind**: instance method of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
@@ -102,18 +105,22 @@ Returns a book
 **Reject**: <code>[InternalError](#module_swagger-test--SwaggerTest.Errors.InternalError)</code>  
 **Reject**: <code>Error</code>  
 
-| Param | Type |
-| --- | --- |
-| params | <code>Object</code> | 
-| params.bookID | <code>number</code> | 
-| [params.authorID] | <code>string</code> | 
-| [params.authorization] | <code>string</code> | 
-| [params.randomBytes] | <code>string</code> | 
-| [cb] | <code>function</code> | 
+| Param | Type | Description |
+| --- | --- | --- |
+| params | <code>Object</code> |  |
+| params.bookID | <code>number</code> |  |
+| [params.authorID] | <code>string</code> |  |
+| [params.authorization] | <code>string</code> |  |
+| [params.randomBytes] | <code>string</code> |  |
+| [options] | <code>object</code> |  |
+| [options.timeout] | <code>number</code> | A request specific timeout |
+| [options.span] | <code>[Span](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html)</code> | An OpenTracing span - For example from the parent request |
+| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | A request specific retryPolicy |
+| [cb] | <code>function</code> |  |
 
 <a name="module_swagger-test--SwaggerTest+getBookByID2"></a>
 
-#### swaggerTest.getBookByID2(id, [cb]) ⇒ <code>Promise</code>
+#### swaggerTest.getBookByID2(id, [options], [cb]) ⇒ <code>Promise</code>
 Retrieve a book
 
 **Kind**: instance method of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
@@ -123,23 +130,31 @@ Retrieve a book
 **Reject**: <code>[InternalError](#module_swagger-test--SwaggerTest.Errors.InternalError)</code>  
 **Reject**: <code>Error</code>  
 
-| Param | Type |
-| --- | --- |
-| id | <code>string</code> | 
-| [cb] | <code>function</code> | 
+| Param | Type | Description |
+| --- | --- | --- |
+| id | <code>string</code> |  |
+| [options] | <code>object</code> |  |
+| [options.timeout] | <code>number</code> | A request specific timeout |
+| [options.span] | <code>[Span](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html)</code> | An OpenTracing span - For example from the parent request |
+| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | A request specific retryPolicy |
+| [cb] | <code>function</code> |  |
 
 <a name="module_swagger-test--SwaggerTest+healthCheck"></a>
 
-#### swaggerTest.healthCheck([cb]) ⇒ <code>Promise</code>
+#### swaggerTest.healthCheck([options], [cb]) ⇒ <code>Promise</code>
 **Kind**: instance method of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
 **Fulfill**: <code>undefined</code>  
 **Reject**: <code>[BadRequest](#module_swagger-test--SwaggerTest.Errors.BadRequest)</code>  
 **Reject**: <code>[InternalError](#module_swagger-test--SwaggerTest.Errors.InternalError)</code>  
 **Reject**: <code>Error</code>  
 
-| Param | Type |
-| --- | --- |
-| [cb] | <code>function</code> | 
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>object</code> |  |
+| [options.timeout] | <code>number</code> | A request specific timeout |
+| [options.span] | <code>[Span](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html)</code> | An OpenTracing span - For example from the parent request |
+| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | A request specific retryPolicy |
+| [cb] | <code>function</code> |  |
 
 <a name="module_swagger-test--SwaggerTest.RetryPolicies"></a>
 
@@ -150,11 +165,7 @@ Retry policies available to use.
 
 * [.RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)
     * [.Default](#module_swagger-test--SwaggerTest.RetryPolicies.Default)
-        * [.backoffs()](#module_swagger-test--SwaggerTest.RetryPolicies.Default.backoffs) ⇒ <code>Array.&lt;number&gt;</code>
-        * [.retry()](#module_swagger-test--SwaggerTest.RetryPolicies.Default.retry) ⇒ <code>boolean</code>
     * [.None](#module_swagger-test--SwaggerTest.RetryPolicies.None)
-        * [.backoffs()](#module_swagger-test--SwaggerTest.RetryPolicies.None.backoffs)
-        * [.retry()](#module_swagger-test--SwaggerTest.RetryPolicies.None.retry)
 
 <a name="module_swagger-test--SwaggerTest.RetryPolicies.Default"></a>
 
@@ -162,49 +173,12 @@ Retry policies available to use.
 The default retry policy will retry five times with an exponential backoff.
 
 **Kind**: static constant of <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code>  
-
-* [.Default](#module_swagger-test--SwaggerTest.RetryPolicies.Default)
-    * [.backoffs()](#module_swagger-test--SwaggerTest.RetryPolicies.Default.backoffs) ⇒ <code>Array.&lt;number&gt;</code>
-    * [.retry()](#module_swagger-test--SwaggerTest.RetryPolicies.Default.retry) ⇒ <code>boolean</code>
-
-<a name="module_swagger-test--SwaggerTest.RetryPolicies.Default.backoffs"></a>
-
-###### Default.backoffs() ⇒ <code>Array.&lt;number&gt;</code>
-backoffs returns an array of five backoffs: 100ms, 200ms, 400ms, 800ms, and
-1.6s. It adds a random 5% jitter to each backoff.
-
-**Kind**: static method of <code>[Default](#module_swagger-test--SwaggerTest.RetryPolicies.Default)</code>  
-<a name="module_swagger-test--SwaggerTest.RetryPolicies.Default.retry"></a>
-
-###### Default.retry() ⇒ <code>boolean</code>
-retry will not retry a request if the HTTP client returns an error, if the
-is a POST or PATCH, or if the status code is less than 500. It will retry
-all other requests.
-
-**Kind**: static method of <code>[Default](#module_swagger-test--SwaggerTest.RetryPolicies.Default)</code>  
 <a name="module_swagger-test--SwaggerTest.RetryPolicies.None"></a>
 
 ##### RetryPolicies.None
 Use this retry policy to turn off retries.
 
 **Kind**: static constant of <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code>  
-
-* [.None](#module_swagger-test--SwaggerTest.RetryPolicies.None)
-    * [.backoffs()](#module_swagger-test--SwaggerTest.RetryPolicies.None.backoffs)
-    * [.retry()](#module_swagger-test--SwaggerTest.RetryPolicies.None.retry)
-
-<a name="module_swagger-test--SwaggerTest.RetryPolicies.None.backoffs"></a>
-
-###### None.backoffs()
-returns an empty array
-
-**Kind**: static method of <code>[None](#module_swagger-test--SwaggerTest.RetryPolicies.None)</code>  
-<a name="module_swagger-test--SwaggerTest.RetryPolicies.None.retry"></a>
-
-###### None.retry()
-returns false
-
-**Kind**: static method of <code>[None](#module_swagger-test--SwaggerTest.RetryPolicies.None)</code>  
 <a name="module_swagger-test--SwaggerTest.Errors"></a>
 
 #### SwaggerTest.Errors
