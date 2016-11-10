@@ -111,7 +111,8 @@ func TestCustomClientRetries(t *testing.T) {
 	defer testServer.Close()
 
 	// Should fail if no retries
-	c := client.New(testServer.URL).WithRetryPolicy(client.NoRetryPolicy{})
+	c := client.New(testServer.URL)
+	c.SetRetryPolicy(client.NoRetryPolicy{})
 	_, err := c.GetBooks(context.Background(), &models.GetBooksInput{})
 	assert.Error(t, err)
 	assert.Equal(t, 1, controller.getCount)
