@@ -72,12 +72,30 @@ type RetryPolicy interface {
 	Retry(*http.Request, *http.Response, error) bool
 }
 
-// DefaultRetryPolicy defines the default retry policy.
-type DefaultRetryPolicy struct{}
+// SingleRetryPolicy defines a retry that retries a request once
+type SingleRetryPolicy struct{}
+
+// Backoffs returns that you should retry the request 1second after it fails.
+func (SingleRetryPolicy) Backoffs() []time.Duration {
+	return []time.Duration{1 * time.Second}
+}
+
+// Retry will retry non-POST, non-PATCH requests that 5XX.
+// TODO: It does not currently retry any errors returned by net/http.Client's `Do`.
+func (SingleRetryPolicy) Retry(req *http.Request, resp *http.Response, err error) bool {
+	if err != nil || req.Method == "POST" || req.Method == "PATCH" ||
+		resp.StatusCode < 500 {
+		return false
+	}
+	return true
+}
+
+// ExponentialRetryPolicy defines an exponential retry policy
+type ExponentialRetryPolicy struct{}
 
 // Backoffs returns five backoffs with exponentially increasing wait times
 // between requests: 100, 200, 400, 800, and 1600 milliseconds +/- up to 5% jitter.
-func (DefaultRetryPolicy) Backoffs() []time.Duration {
+func (ExponentialRetryPolicy) Backoffs() []time.Duration {
 	ret := make([]time.Duration, 5)
 	next := 100 * time.Millisecond
 	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -91,7 +109,7 @@ func (DefaultRetryPolicy) Backoffs() []time.Duration {
 
 // Retry will retry non-POST, non-PATCH requests that 5XX.
 // TODO: It does not currently retry any errors returned by net/http.Client's `Do`.
-func (DefaultRetryPolicy) Retry(req *http.Request, resp *http.Response, err error) bool {
+func (ExponentialRetryPolicy) Retry(req *http.Request, resp *http.Response, err error) bool {
 	if err != nil || req.Method == "POST" || req.Method == "PATCH" ||
 		resp.StatusCode < 500 {
 		return false

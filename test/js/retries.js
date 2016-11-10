@@ -8,8 +8,11 @@ const {RetryPolicies} = Client;
 const mockAddress = "http://localhost:8000";
 
 describe("retries", function() {
-  it("performs exponential backoff by default", function(done) {
-    const client = new Client({address: mockAddress});
+  it("performs exponential retries when set backoff by default", function(done) {
+    const client = new Client({
+      address: mockAddress,
+      retryPolicy: RetryPolicies.Exponential
+    });
     let requestCount = 0;
     let requestTimes = [];
     const scope = nock(mockAddress)

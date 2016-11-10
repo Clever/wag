@@ -5,8 +5,8 @@ module.exports.Errors = {};
  * @extends Error
  * @memberof module:swagger-test
  * @alias module:swagger-test.Errors.ExtendedError
- * @property {number} code
  * @property {string} message
+ * @property {number} code
  */
 module.exports.Errors.ExtendedError = class extends Error {
   constructor(body) {
