@@ -181,7 +181,11 @@ func generateClient(packageName string, s spec.Swagger) error {
 			if op.Deprecated {
 				continue
 			}
-			codeTemplate.Methods = append(codeTemplate.Methods, methodCode(&s, op, s.BasePath, method, path))
+			method, err := methodCode(&s, op, s.BasePath, method, path)
+			if err != nil {
+				return err
+			}
+			codeTemplate.Methods = append(codeTemplate.Methods, method)
 		}
 	}
 
@@ -212,7 +216,11 @@ func generateInterface(packageName string, s *spec.Swagger, serviceName string, 
 				continue
 			}
 
-			g.Printf("\t%s\n", swagger.InterfaceComment(method, pathKey, pathItemOps[method]))
+			interfaceComment, err := swagger.InterfaceComment(method, pathKey, s, pathItemOps[method])
+			if err != nil {
+				return err
+			}
+			g.Printf("\t%s\n", interfaceComment)
 			g.Printf("\t%s\n\n", swagger.Interface(s, pathItemOps[method]))
 		}
 	}
@@ -221,11 +229,15 @@ func generateInterface(packageName string, s *spec.Swagger, serviceName string, 
 	return g.WriteFile("client/interface.go")
 }
 
-func methodCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPath string) string {
+func methodCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPath string) (string, error) {
 	var buf bytes.Buffer
 	capOpID := swagger.Capitalize(op.ID)
 
-	buf.WriteString(swagger.InterfaceComment(method, methodPath, op) + "\n")
+	interfaceComment, err := swagger.InterfaceComment(method, methodPath, s, op)
+	if err != nil {
+		return "", err
+	}
+	buf.WriteString(interfaceComment + "\n")
 	buf.WriteString(fmt.Sprintf("func (c *WagClient) %s {\n", swagger.Interface(s, op)))
 	buf.WriteString(fmt.Sprintf("\tpath := c.basePath + \"%s\"\n", basePath+methodPath))
 	buf.WriteString(fmt.Sprintf("\turlVals := url.Values{}\n"))
@@ -253,7 +265,7 @@ func methodCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPat
 
 	buf.WriteString(parseResponseCode(s, op, capOpID))
 
-	return buf.String()
+	return buf.String(), nil
 
 }
 

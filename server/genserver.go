@@ -173,8 +173,12 @@ func generateInterface(packageName string, s *spec.Swagger, serviceName string, 
 		path := paths.Paths[pathKey]
 		pathItemOps := swagger.PathItemOperations(path)
 		for _, method := range swagger.SortedOperationsKeys(pathItemOps) {
+			interfaceComment, err := swagger.InterfaceComment(method, pathKey, s, pathItemOps[method])
+			if err != nil {
+				return err
+			}
 			tmpl.Interfaces = append(tmpl.Interfaces, interfaceTemplate{
-				Comment:    swagger.InterfaceComment(method, pathKey, pathItemOps[method]),
+				Comment:    interfaceComment,
 				Definition: swagger.Interface(s, pathItemOps[method]),
 			})
 		}
@@ -270,7 +274,7 @@ var jsonMarshalString = `
 func generateOperationHandler(s *spec.Swagger, op *spec.Operation) (string, error) {
 	typeToCode := make(map[string]int)
 	emptyResponseCode := 200
-	codeToType := swagger.CodeToTypeMap(s, op)
+	codeToType := swagger.CodeToTypeMap(s, op, false)
 	typeToCode, err := swagger.TypeToCodeMap(s, op)
 	if err != nil {
 		return "", err
@@ -291,7 +295,7 @@ func generateOperationHandler(s *spec.Swagger, op *spec.Operation) (string, erro
 		TypesToStatusCodes:               typeToCode,
 		SingleStringPathParameter:        singleStringPathParameter,
 		SingleStringPathParameterVarName: singleStringPathParameterVarName,
-		StatusCodetoType:                 codeToType,
+		StatusCodeToType:                 codeToType,
 	}
 	handlerCode, err := templates.WriteTemplate(handlerTemplate, handlerOp)
 	if err != nil {
@@ -320,7 +324,7 @@ type handlerOp struct {
 	TypesToStatusCodes               map[string]int
 	SingleStringPathParameter        bool
 	SingleStringPathParameterVarName string
-	StatusCodetoType                 map[int]string
+	StatusCodeToType                 map[int]string
 }
 
 var handlerTemplate = `
@@ -347,7 +351,7 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 {{end}}
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError({{index .StatusCodetoType 400}}{Message: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError({{index .StatusCodeToType 400}}{Message: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
@@ -358,7 +362,7 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 {{end}}
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError({{index .StatusCodetoType 400}}{Message: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError({{index .StatusCodeToType 400}}{Message: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
@@ -381,7 +385,7 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 		}
 		statusCode := statusCodeFor{{.Op}}(err)
 		if statusCode == -1 {
-			err = {{index .StatusCodetoType 500}}{Message: err.Error()}
+			err = {{index .StatusCodeToType 500}}{Message: err.Error()}
 			statusCode = 500
 		}
 		http.Error(w, jsonMarshalNoError(err), statusCode)
@@ -392,7 +396,7 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError({{index .StatusCodetoType 500}}{Message: err.Error()}), http.StatusInternalServerError)
+		http.Error(w, jsonMarshalNoError({{index .StatusCodeToType 500}}{Message: err.Error()}), http.StatusInternalServerError)
 		return
 	}
 

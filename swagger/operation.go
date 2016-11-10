@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Clever/wag/templates"
 	"github.com/Clever/wag/utils"
 	"github.com/go-openapi/spec"
 )
@@ -41,15 +42,35 @@ func Interface(s *spec.Swagger, op *spec.Operation) string {
 }
 
 // InterfaceComment returns the comment for the interface for the operation
-func InterfaceComment(method, path string, op *spec.Operation) string {
+func InterfaceComment(method, path string, s *spec.Swagger, op *spec.Operation) (string, error) {
 
-	capOpID := Capitalize(op.ID)
-	comment := fmt.Sprintf("// %s makes a %s request to %s.", capOpID, method, path)
-	if op.Description != "" {
-		comment += "\n// " + op.Description
+	statusCodeToType := CodeToTypeMap(s, op, true)
+	for code, typ := range statusCodeToType {
+		if typ == "" {
+			statusCodeToType[code] = "nil"
+		}
 	}
-	return comment
+	tmpl := struct {
+		OpID             string
+		Method           string
+		Path             string
+		Description      string
+		StatusCodeToType map[int]string
+	}{
+		OpID:             Capitalize(op.ID),
+		Method:           method,
+		Path:             path,
+		Description:      op.Description,
+		StatusCodeToType: statusCodeToType,
+	}
+	return templates.WriteTemplate(interfaceCommentTmplStr, tmpl)
 }
+
+var interfaceCommentTmplStr = `
+// {{.OpID}} makes a {{.Method}} request to {{.Path}}
+// {{.Description}} {{ range $code, $type := .StatusCodeToType }}
+// {{$code}}: {{$type}} {{end}}
+// default: client side HTTP errors, for example: context.DeadlineExceeded.`
 
 // OutputType returns the output type for a given status code of an operation and whether it
 // is a pointer in the interface.
@@ -93,10 +114,13 @@ func NoSuccessType(op *spec.Operation) bool {
 }
 
 // CodeToTypeMap returns a map from return status code to its corresponding type
-func CodeToTypeMap(s *spec.Swagger, op *spec.Operation) map[int]string {
+func CodeToTypeMap(s *spec.Swagger, op *spec.Operation, makePointers bool) map[int]string {
 	resp := make(map[int]string)
 	for _, statusCode := range SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
-		outputType, _ := OutputType(s, op, statusCode)
+		outputType, makeTypePtr := OutputType(s, op, statusCode)
+		if makeTypePtr && makePointers {
+			outputType = "*" + outputType
+		}
 		resp[statusCode] = outputType
 	}
 	return resp
@@ -106,7 +130,7 @@ func CodeToTypeMap(s *spec.Swagger, op *spec.Operation) map[int]string {
 // an error if mutiple status codes map to the same type
 func TypeToCodeMap(s *spec.Swagger, op *spec.Operation) (map[string]int, error) {
 	typeToCode := make(map[string]int)
-	for code, typeStr := range CodeToTypeMap(s, op) {
+	for code, typeStr := range CodeToTypeMap(s, op, false) {
 		if typeStr != "" {
 			if _, ok := typeToCode[typeStr]; ok {
 				return nil, fmt.Errorf("duplicate response types %s, %s", typeStr, op.ID)
