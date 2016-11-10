@@ -125,7 +125,13 @@ func (c *WagClient) SetTimeout(timeout time.Duration) {
 	c.defaultTimeout = timeout
 }
 
-// GetBook makes a GET request to /books/{id}.
+// GetBook makes a GET request to /books/{id}
+//
+// 200: nil
+// 400: *models.ExtendedError
+// 404: *models.NotFound
+// 500: *models.InternalError
+// default: client side HTTP errors, for example: context.DeadlineExceeded.
 func (c *WagClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
 	path := c.basePath + "/v1/books/{id}"
 	urlVals := url.Values{}

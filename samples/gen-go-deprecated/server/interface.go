@@ -11,6 +11,12 @@ import (
 // Controller defines the interface for the swagger-test service.
 type Controller interface {
 
-	// GetBook makes a GET request to /books/{id}.
-	GetBook(ctx context.Context, i *models.GetBookInput) error
+	// Health makes a GET request to /health
+	//
+	// 200: nil
+	// 400: *models.BadRequest
+	// 404: *models.NotFound
+	// 500: *models.InternalError
+	// default: client side HTTP errors, for example: context.DeadlineExceeded.
+	Health(ctx context.Context, i *models.HealthInput) error
 }

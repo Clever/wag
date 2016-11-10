@@ -66,9 +66,9 @@ func jsonMarshalNoError(i interface{}) string {
 	return string(bytes)
 }
 
-// statusCodeForGetBook returns the status code corresponding to the returned
+// statusCodeForHealth returns the status code corresponding to the returned
 // object. It returns -1 if the type doesn't correspond to anything.
-func statusCodeForGetBook(obj interface{}) int {
+func statusCodeForHealth(obj interface{}) int {
 
 	switch obj.(type) {
 
@@ -95,9 +95,9 @@ func statusCodeForGetBook(obj interface{}) int {
 	}
 }
 
-func (h handler) GetBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func (h handler) HealthHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
-	input, err := newGetBookInput(r)
+	input, err := newHealthInput(r)
 
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
@@ -113,14 +113,14 @@ func (h handler) GetBookHandler(ctx context.Context, w http.ResponseWriter, r *h
 		return
 	}
 
-	err = h.GetBook(ctx, input)
+	err = h.Health(ctx, input)
 
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		if btErr, ok := err.(*errors.Error); ok {
 			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
 		}
-		statusCode := statusCodeForGetBook(err)
+		statusCode := statusCodeForHealth(err)
 		if statusCode == -1 {
 			err = models.InternalError{Message: err.Error()}
 			statusCode = 500
@@ -134,24 +134,24 @@ func (h handler) GetBookHandler(ctx context.Context, w http.ResponseWriter, r *h
 
 }
 
-// newGetBookInput takes in an http.Request an returns the input struct.
-func newGetBookInput(r *http.Request) (*models.GetBookInput, error) {
-	var input models.GetBookInput
+// newHealthInput takes in an http.Request an returns the input struct.
+func newHealthInput(r *http.Request) (*models.HealthInput, error) {
+	var input models.HealthInput
 
 	var err error
 	_ = err
 
-	iDStr := mux.Vars(r)["id"]
-	if len(iDStr) == 0 {
+	sectionStr := r.URL.Query().Get("section")
+	if len(sectionStr) == 0 {
 		return nil, errors.New("Parameter must be specified")
 	}
-	if len(iDStr) != 0 {
-		var iDTmp int64
-		iDTmp, err = swag.ConvertInt64(iDStr)
+	if len(sectionStr) != 0 {
+		var sectionTmp int64
+		sectionTmp, err = swag.ConvertInt64(sectionStr)
 		if err != nil {
 			return nil, err
 		}
-		input.ID = iDTmp
+		input.Section = sectionTmp
 
 	}
 

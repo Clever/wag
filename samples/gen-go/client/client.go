@@ -125,8 +125,12 @@ func (c *WagClient) SetTimeout(timeout time.Duration) {
 	c.defaultTimeout = timeout
 }
 
-// GetBooks makes a GET request to /books.
+// GetBooks makes a GET request to /books
 // Returns a list of books
+// 200: []models.Book
+// 400: *models.BadRequest
+// 500: *models.InternalError
+// default: client side HTTP errors, for example: context.DeadlineExceeded.
 func (c *WagClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models.Book, error) {
 	path := c.basePath + "/v1/books"
 	urlVals := url.Values{}
@@ -219,8 +223,12 @@ func (c *WagClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]mo
 	}
 }
 
-// CreateBook makes a POST request to /books.
+// CreateBook makes a POST request to /books
 // Creates a book
+// 200: *models.Book
+// 400: *models.BadRequest
+// 500: *models.InternalError
+// default: client side HTTP errors, for example: context.DeadlineExceeded.
 func (c *WagClient) CreateBook(ctx context.Context, i *models.Book) (*models.Book, error) {
 	path := c.basePath + "/v1/books"
 	urlVals := url.Values{}
@@ -295,8 +303,14 @@ func (c *WagClient) CreateBook(ctx context.Context, i *models.Book) (*models.Boo
 	}
 }
 
-// GetBookByID makes a GET request to /books/{book_id}.
+// GetBookByID makes a GET request to /books/{book_id}
 // Returns a book
+// 200: *models.Book
+// 400: *models.BadRequest
+// 401: *models.Unathorized
+// 404: *models.Error
+// 500: *models.InternalError
+// default: client side HTTP errors, for example: context.DeadlineExceeded.
 func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (*models.Book, error) {
 	path := c.basePath + "/v1/books/{book_id}"
 	urlVals := url.Values{}
@@ -387,8 +401,13 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 	}
 }
 
-// GetBookByID2 makes a GET request to /books2/{id}.
+// GetBookByID2 makes a GET request to /books2/{id}
 // Retrieve a book
+// 200: *models.Book
+// 400: *models.BadRequest
+// 404: *models.Error
+// 500: *models.InternalError
+// default: client side HTTP errors, for example: context.DeadlineExceeded.
 func (c *WagClient) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
 	path := c.basePath + "/v1/books2/{id}"
 	urlVals := url.Values{}
@@ -461,7 +480,12 @@ func (c *WagClient) GetBookByID2(ctx context.Context, id string) (*models.Book, 
 	}
 }
 
-// HealthCheck makes a GET request to /health/check.
+// HealthCheck makes a GET request to /health/check
+//
+// 200: nil
+// 400: *models.BadRequest
+// 500: *models.InternalError
+// default: client side HTTP errors, for example: context.DeadlineExceeded.
 func (c *WagClient) HealthCheck(ctx context.Context) error {
 	path := c.basePath + "/v1/health/check"
 	urlVals := url.Values{}
