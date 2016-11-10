@@ -231,7 +231,6 @@ func generateInterface(packageName string, s *spec.Swagger, serviceName string, 
 func methodCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPath string) string {
 	var buf bytes.Buffer
 	capOpID := swagger.Capitalize(op.ID)
-	errorType, _ := swagger.OutputType(s, op, 500)
 
 	buf.WriteString(swagger.InterfaceComment(method, methodPath, op) + "\n")
 	buf.WriteString(fmt.Sprintf("func (c *WagClient) %s {\n", swagger.Interface(s, op)))
@@ -257,7 +256,7 @@ func methodCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPat
 	resp, err := c.requestDoer.Do(client, req)
 	%s
 	defer resp.Body.Close()
-`, op.ID, errorMessage(fmt.Sprintf("&%s{Message: err.Error()}", errorType), op)))
+`, op.ID, errorMessage(op)))
 
 	buf.WriteString(parseResponseCode(s, op, capOpID))
 
@@ -309,13 +308,13 @@ func buildRequestCode(op *spec.Operation, method string) string {
 	var err error
 	body, err = json.Marshal(i)
 	%s
-`, errorMessage("err", op))
+`, errorMessage(op))
 			} else {
 				bodyMarshalCode = fmt.Sprintf(`
 	var err error
 	body, err = json.Marshal(i.%s)
 	%s
-`, swagger.StructParamName(param), errorMessage("err", op))
+`, swagger.StructParamName(param), errorMessage(op))
 			}
 
 			if param.Required {
@@ -332,13 +331,11 @@ func buildRequestCode(op *spec.Operation, method string) string {
 		}
 	}
 
-	// TODO: decide how to represent this error (should it be model.InternalError?)
-	// and whether the client should retry
 	buf.WriteString(fmt.Sprintf(`
 	client := &http.Client{Transport: c.transport}
 	req, err := http.NewRequest("%s", path, bytes.NewBuffer(body))
 	%s
-`, strings.ToUpper(method), errorMessage("err", op)))
+`, strings.ToUpper(method), errorMessage(op)))
 
 	for _, param := range op.Parameters {
 		if param.In == "header" {
@@ -355,20 +352,29 @@ func buildRequestCode(op *spec.Operation, method string) string {
 	return buf.String()
 }
 
-func errorMessage(err string, op *spec.Operation) string {
-	if swagger.NoSuccessType(op) {
-		return fmt.Sprintf(`
+func errorMessage(op *spec.Operation) string {
+	str, err := templates.WriteTemplate(errMsgTemplStr, errMsgTmpl{NoSuccessType: swagger.NoSuccessType(op)})
 	if err != nil {
-		return %s
+		panic("internal error generating client")
 	}
-`, err)
-	}
-	return fmt.Sprintf(`
-	if err != nil {
-		return nil, %s
-	}
-`, err)
+	return str
 }
+
+type errMsgTmpl struct {
+	NoSuccessType bool
+}
+
+var errMsgTemplStr = `
+	{{if .NoSuccessType}}
+		if err != nil {
+			return err
+		}
+	{{else}}	
+		if err != nil {
+			return nil, err
+		}
+	{{end}}
+`
 
 type statusCodeReturn struct {
 	responseTypes []string
@@ -417,7 +423,6 @@ func parseResponseCode(s *spec.Swagger, op *spec.Operation, capOpID string) stri
 
 func writeStatusCodeDecoder(s *spec.Swagger, op *spec.Operation, statusCode int) (string, error) {
 	outputName, makePointer := swagger.OutputType(s, op, statusCode)
-	internalErrorType, _ := swagger.OutputType(s, op, 500)
 
 	// TODO: Need makePointer to handle arrays... not sure if there's a better way to do this...
 	outputType := "output"
@@ -427,22 +432,20 @@ func writeStatusCodeDecoder(s *spec.Swagger, op *spec.Operation, statusCode int)
 
 	return templates.WriteTemplate(codeDetectorTmplStr,
 		codeDetectorTmpl{
-			StatusCode:        statusCode,
-			NoSuccessType:     swagger.NoSuccessType(op),
-			ErrorType:         statusCode >= 400,
-			TypeName:          outputName,
-			InternalErrorType: internalErrorType,
-			OutputType:        outputType,
+			StatusCode:    statusCode,
+			NoSuccessType: swagger.NoSuccessType(op),
+			ErrorType:     statusCode >= 400,
+			TypeName:      outputName,
+			OutputType:    outputType,
 		})
 }
 
 type codeDetectorTmpl struct {
-	StatusCode        int
-	NoSuccessType     bool
-	ErrorType         bool
-	TypeName          string
-	InternalErrorType string
-	OutputType        string
+	StatusCode    int
+	NoSuccessType bool
+	ErrorType     bool
+	TypeName      string
+	OutputType    string
 }
 
 var codeDetectorTmplStr = `
@@ -452,7 +455,7 @@ var codeDetectorTmplStr = `
 		{{if .ErrorType}}
 		var output {{.TypeName}}
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return &{{.InternalErrorType}}{Message: err.Error()}
+			return err
 		}
 		return {{.OutputType}}
 		{{else}}
@@ -462,13 +465,13 @@ var codeDetectorTmplStr = `
 		{{if .ErrorType}}
 		var output {{.TypeName}}
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, &{{.InternalErrorType}}{Message: err.Error()}
+			return nil, err
 		}
 		return nil, {{.OutputType}}
 		{{else}}
 		var output {{.TypeName}}
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, &{{.InternalErrorType}}{Message: err.Error()}
+			return nil, err
 		}
 		return {{.OutputType}}, nil
 		{{end}}

@@ -208,7 +208,7 @@ func (c *WagClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]mo
 	resp, err := c.requestDoer.Do(client, req)
 
 	if err != nil {
-		return nil, &models.InternalError{Message: err.Error()}
+		return nil, err
 	}
 
 	defer resp.Body.Close()
@@ -218,7 +218,7 @@ func (c *WagClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]mo
 
 		var output []models.Book
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, &models.InternalError{Message: err.Error()}
+			return nil, err
 		}
 		return output, nil
 
@@ -226,7 +226,7 @@ func (c *WagClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]mo
 
 		var output models.BadRequest
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, &models.InternalError{Message: err.Error()}
+			return nil, err
 		}
 		return nil, &output
 
@@ -234,7 +234,7 @@ func (c *WagClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]mo
 
 		var output models.InternalError
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, &models.InternalError{Message: err.Error()}
+			return nil, err
 		}
 		return nil, &output
 
@@ -284,7 +284,7 @@ func (c *WagClient) CreateBook(ctx context.Context, i *models.Book) (*models.Boo
 	resp, err := c.requestDoer.Do(client, req)
 
 	if err != nil {
-		return nil, &models.InternalError{Message: err.Error()}
+		return nil, err
 	}
 
 	defer resp.Body.Close()
@@ -294,7 +294,7 @@ func (c *WagClient) CreateBook(ctx context.Context, i *models.Book) (*models.Boo
 
 		var output models.Book
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, &models.InternalError{Message: err.Error()}
+			return nil, err
 		}
 		return &output, nil
 
@@ -302,7 +302,7 @@ func (c *WagClient) CreateBook(ctx context.Context, i *models.Book) (*models.Boo
 
 		var output models.BadRequest
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, &models.InternalError{Message: err.Error()}
+			return nil, err
 		}
 		return nil, &output
 
@@ -310,7 +310,7 @@ func (c *WagClient) CreateBook(ctx context.Context, i *models.Book) (*models.Boo
 
 		var output models.InternalError
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, &models.InternalError{Message: err.Error()}
+			return nil, err
 		}
 		return nil, &output
 
@@ -360,7 +360,7 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 	resp, err := c.requestDoer.Do(client, req)
 
 	if err != nil {
-		return nil, &models.InternalError{Message: err.Error()}
+		return nil, err
 	}
 
 	defer resp.Body.Close()
@@ -370,7 +370,7 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 
 		var output models.Book
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, &models.InternalError{Message: err.Error()}
+			return nil, err
 		}
 		return &output, nil
 
@@ -378,7 +378,7 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 
 		var output models.BadRequest
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, &models.InternalError{Message: err.Error()}
+			return nil, err
 		}
 		return nil, &output
 
@@ -386,7 +386,7 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 
 		var output models.Unathorized
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, &models.InternalError{Message: err.Error()}
+			return nil, err
 		}
 		return nil, &output
 
@@ -394,7 +394,7 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 
 		var output models.Error
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, &models.InternalError{Message: err.Error()}
+			return nil, err
 		}
 		return nil, &output
 
@@ -402,7 +402,7 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 
 		var output models.InternalError
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, &models.InternalError{Message: err.Error()}
+			return nil, err
 		}
 		return nil, &output
 
@@ -442,7 +442,7 @@ func (c *WagClient) GetBookByID2(ctx context.Context, id string) (*models.Book, 
 	resp, err := c.requestDoer.Do(client, req)
 
 	if err != nil {
-		return nil, &models.InternalError{Message: err.Error()}
+		return nil, err
 	}
 
 	defer resp.Body.Close()
@@ -452,7 +452,7 @@ func (c *WagClient) GetBookByID2(ctx context.Context, id string) (*models.Book, 
 
 		var output models.Book
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, &models.InternalError{Message: err.Error()}
+			return nil, err
 		}
 		return &output, nil
 
@@ -460,7 +460,7 @@ func (c *WagClient) GetBookByID2(ctx context.Context, id string) (*models.Book, 
 
 		var output models.BadRequest
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, &models.InternalError{Message: err.Error()}
+			return nil, err
 		}
 		return nil, &output
 
@@ -468,7 +468,7 @@ func (c *WagClient) GetBookByID2(ctx context.Context, id string) (*models.Book, 
 
 		var output models.Error
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, &models.InternalError{Message: err.Error()}
+			return nil, err
 		}
 		return nil, &output
 
@@ -476,7 +476,7 @@ func (c *WagClient) GetBookByID2(ctx context.Context, id string) (*models.Book, 
 
 		var output models.InternalError
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, &models.InternalError{Message: err.Error()}
+			return nil, err
 		}
 		return nil, &output
 
@@ -514,7 +514,7 @@ func (c *WagClient) HealthCheck(ctx context.Context) error {
 	resp, err := c.requestDoer.Do(client, req)
 
 	if err != nil {
-		return &models.InternalError{Message: err.Error()}
+		return err
 	}
 
 	defer resp.Body.Close()
@@ -528,7 +528,7 @@ func (c *WagClient) HealthCheck(ctx context.Context) error {
 
 		var output models.BadRequest
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return &models.InternalError{Message: err.Error()}
+			return err
 		}
 		return &output
 
@@ -536,7 +536,7 @@ func (c *WagClient) HealthCheck(ctx context.Context) error {
 
 		var output models.InternalError
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return &models.InternalError{Message: err.Error()}
+			return err
 		}
 		return &output
 
