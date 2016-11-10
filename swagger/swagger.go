@@ -114,6 +114,16 @@ func SortedResponses(m map[string]spec.Response) []string {
 	return sortedKeys
 }
 
+// SortedSchemaProperties sorts the properties of a schema
+func SortedSchemaProperties(schema spec.Schema) []string {
+	sortedKeys := []string{}
+	for k := range schema.Properties {
+		sortedKeys = append(sortedKeys, k)
+	}
+	sort.Strings(sortedKeys)
+	return sortedKeys
+}
+
 // Capitalize the first character of a string.
 func Capitalize(input string) string {
 	return strings.ToUpper(input[0:1]) + input[1:]
