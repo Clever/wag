@@ -179,7 +179,7 @@ func (c *WagClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
 	resp, err := c.requestDoer.Do(client, req)
 
 	if err != nil {
-		return &models.InternalError{Message: err.Error()}
+		return err
 	}
 
 	defer resp.Body.Close()
@@ -193,7 +193,7 @@ func (c *WagClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
 
 		var output models.ExtendedError
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return &models.InternalError{Message: err.Error()}
+			return err
 		}
 		return &output
 
@@ -201,7 +201,7 @@ func (c *WagClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
 
 		var output models.NotFound
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return &models.InternalError{Message: err.Error()}
+			return err
 		}
 		return &output
 
@@ -209,7 +209,7 @@ func (c *WagClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
 
 		var output models.InternalError
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return &models.InternalError{Message: err.Error()}
+			return err
 		}
 		return &output
 

@@ -16,6 +16,7 @@ import (
 
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 )
 
 func init() {
@@ -85,7 +86,7 @@ func TestClientSideError(t *testing.T) {
 
 	_, err := c.GetBooks(context.Background(), &models.GetBooksInput{})
 	assert.Error(t, err)
-	assert.IsType(t, &models.InternalError{}, err)
+	assert.IsType(t, &url.Error{}, err)
 }
 
 func TestHeaders(t *testing.T) {
@@ -260,7 +261,7 @@ func TestTimeout(t *testing.T) {
 	start := time.Now()
 	_, err = c.GetBooks(ctx, &models.GetBooksInput{})
 	assert.Error(t, err)
-	assert.Equal(t, "context deadline exceeded", err.Error())
+	assert.IsType(t, context.DeadlineExceeded, err)
 	end := time.Now()
 	assert.True(t, end.Sub(start) < 80*time.Millisecond)
 
@@ -268,5 +269,5 @@ func TestTimeout(t *testing.T) {
 	c = c.WithTimeout(10 * time.Millisecond)
 	_, err = c.GetBooks(context.Background(), &models.GetBooksInput{})
 	require.Error(t, err)
-	assert.Equal(t, "context deadline exceeded", err.Error())
+	assert.IsType(t, context.DeadlineExceeded, err)
 }
