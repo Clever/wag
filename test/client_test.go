@@ -99,7 +99,7 @@ func TestExponentialClientRetries(t *testing.T) {
 	_, err := c.GetBooks(context.Background(), &models.GetBooksInput{})
 	require.NoError(t, err)
 	require.Equal(t, len(controller.getTimes), 3, "expected three requests")
-	assert.WithinDuration(t, controller.getTimes[1], controller.getTimes[0].Add(100*time.Millisecond), 10*time.Millisecond,
+	assert.WithinDuration(t, controller.getTimes[1], controller.getTimes[0].Add(100*time.Millisecond), 20*time.Millisecond,
 		"expected first backoff to be about 100ms")
 	assert.WithinDuration(t, controller.getTimes[2], controller.getTimes[1].Add(200*time.Millisecond), 20*time.Millisecond,
 		"expected first backoff to be about 200ms")
