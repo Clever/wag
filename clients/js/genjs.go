@@ -94,10 +94,10 @@ const opentracing = require("opentracing");
 const { Errors } = require("./types");
 
 /**
- * The default retry policy will retry five times with an exponential backoff.
- * @alias module:{{.ServiceName}}.RetryPolicies.Default
+ * The exponential retry policy will retry five times with an exponential backoff.
+ * @alias module:{{.ServiceName}}.RetryPolicies.Exponential
  */
-const defaultRetryPolicy = {
+const exponentialRetryPolicy = {
   backoffs() {
     const ret = [];
     let next = 100.0; // milliseconds
@@ -119,6 +119,24 @@ const defaultRetryPolicy = {
   },
 };
 
+/**
+ * Use this retry policy to retry a request once.
+ * @alias module:{{.ServiceName}}.RetryPolicies.Single
+ */
+const singleRetryPolicy = {
+  backoffs() {
+    return [1000];
+  },
+  retry(requestOptions, err, res) {
+    if (err || requestOptions.method === "POST" ||
+        requestOptions.method === "PATCH" ||
+        res.statusCode < 500) {
+      return false;
+    }
+    return true;
+  },
+};
+ 
 /**
  * Use this retry policy to turn off retries.
  * @alias module:{{.ServiceName}}.RetryPolicies.None
@@ -153,7 +171,7 @@ class {{.ClassName}} {
    * this or the address argument
    * @param {number} [options.timeout] - The timeout to use for all client requests,
    * in milliseconds. This can be overridden on a per-request basis.
-   * @param {module:{{.ServiceName}}.RetryPolicies} [options.retryPolicy=RetryPolicies.Default] - The logic to
+   * @param {module:{{.ServiceName}}.RetryPolicies} [options.retryPolicy=RetryPolicies.Single] - The logic to
    * determine which requests to retry, as well as how many times to retry.
    */
   constructor(options) {
@@ -186,7 +204,8 @@ module.exports = {{.ClassName}};
  * @alias module:{{.ServiceName}}.RetryPolicies
  */
 module.exports.RetryPolicies = {
-  Default: defaultRetryPolicy,
+  Single: singleRetryPolicy,
+  Exponential: exponentialRetryPolicy,
   None: noRetryPolicy,
 };
 
@@ -266,7 +285,7 @@ var methodTmplStr = `
         }
       };
 
-      const retryPolicy = options.retryPolicy || this.retryPolicy || defaultRetryPolicy;
+      const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       let retries = 0;
       (function requestOnce() {

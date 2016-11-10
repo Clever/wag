@@ -19,7 +19,7 @@ build: hardcoded/hardcoded.go
 test: build generate $(PKGS) js-tests
 
 js-tests:
-	cd test/js && npm install && npm test
+	cd test/js && rm -rf node_modules && npm install && npm test
 
 jsdoc2md:
 	hash npm 2>/dev/null || (echo "Could not run npm, please install node" && false)

@@ -8,7 +8,8 @@ swagger-test client library.
     * [SwaggerTest](#exp_module_swagger-test--SwaggerTest) ⏏
         * [new SwaggerTest(options)](#new_module_swagger-test--SwaggerTest_new)
         * [.RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)
-            * [.Default](#module_swagger-test--SwaggerTest.RetryPolicies.Default)
+            * [.Exponential](#module_swagger-test--SwaggerTest.RetryPolicies.Exponential)
+            * [.Single](#module_swagger-test--SwaggerTest.RetryPolicies.Single)
             * [.None](#module_swagger-test--SwaggerTest.RetryPolicies.None)
         * [.Errors](#module_swagger-test--SwaggerTest.Errors)
             * [.BadRequest](#module_swagger-test--SwaggerTest.Errors.BadRequest) ⇐ <code>Error</code>
@@ -33,7 +34,7 @@ Create a new client object.
 | [options.address] | <code>string</code> |  | URL where the server is located. Must provide this or the discovery argument |
 | [options.discovery] | <code>bool</code> |  | Use @clever/discovery to locate the server. Must provide this or the address argument |
 | [options.timeout] | <code>number</code> |  | The timeout to use for all client requests, in milliseconds. This can be overridden on a per-request basis. |
-| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | <code>RetryPolicies.Default</code> | The logic to determine which requests to retry, as well as how many times to retry. |
+| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | <code>RetryPolicies.Single</code> | The logic to determine which requests to retry, as well as how many times to retry. |
 
 <a name="module_swagger-test--SwaggerTest.RetryPolicies"></a>
 
@@ -43,13 +44,20 @@ Retry policies available to use.
 **Kind**: static property of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
 
 * [.RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)
-    * [.Default](#module_swagger-test--SwaggerTest.RetryPolicies.Default)
+    * [.Exponential](#module_swagger-test--SwaggerTest.RetryPolicies.Exponential)
+    * [.Single](#module_swagger-test--SwaggerTest.RetryPolicies.Single)
     * [.None](#module_swagger-test--SwaggerTest.RetryPolicies.None)
 
-<a name="module_swagger-test--SwaggerTest.RetryPolicies.Default"></a>
+<a name="module_swagger-test--SwaggerTest.RetryPolicies.Exponential"></a>
 
-##### RetryPolicies.Default
-The default retry policy will retry five times with an exponential backoff.
+##### RetryPolicies.Exponential
+The exponential retry policy will retry five times with an exponential backoff.
+
+**Kind**: static constant of <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code>  
+<a name="module_swagger-test--SwaggerTest.RetryPolicies.Single"></a>
+
+##### RetryPolicies.Single
+Use this retry policy to retry a request once.
 
 **Kind**: static constant of <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code>  
 <a name="module_swagger-test--SwaggerTest.RetryPolicies.None"></a>
