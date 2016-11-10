@@ -2,8 +2,17 @@ const discovery = require("@clever/discovery");
 const request = require("request");
 const opentracing = require("opentracing");
 
+/**
+ * @external Span
+ * @see {@link https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html}
+ */
+
 const { Errors } = require("./types");
 
+/**
+ * The default retry policy will retry five times with an exponential backoff.
+ * @alias module:swagger-test.RetryPolicies.Default
+ */
 const defaultRetryPolicy = {
   backoffs() {
     const ret = [];
@@ -26,6 +35,10 @@ const defaultRetryPolicy = {
   },
 };
 
+/**
+ * Use this retry policy to turn off retries.
+ * @alias module:swagger-test.RetryPolicies.None
+ */
 const noRetryPolicy = {
   backoffs() {
     return [];
@@ -35,8 +48,30 @@ const noRetryPolicy = {
   },
 };
 
-module.exports = class SwaggerTest {
+/**
+ * swagger-test client library.
+ * @module swagger-test
+ * @typicalname SwaggerTest
+ */
 
+/**
+ * swagger-test client
+ * @alias module:swagger-test
+ */
+class SwaggerTest {
+
+  /**
+   * Create a new client object.
+   * @param {Object} options - Options for constructing a client object.
+   * @param {string} [options.address] - URL where the server is located. Must provide
+   * this or the discovery argument
+   * @param {bool} [options.discovery] - Use @clever/discovery to locate the server. Must provide
+   * this or the address argument
+   * @param {number} [options.timeout] - The timeout to use for all client requests,
+   * in milliseconds. This can be overridden on a per-request basis.
+   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy=RetryPolicies.Default] - The logic to
+   * determine which requests to retry, as well as how many times to retry.
+   */
   constructor(options) {
     options = options || {};
 
@@ -59,6 +94,29 @@ module.exports = class SwaggerTest {
     }
   }
 
+  /**
+   * Returns a list of books
+   * @param {Object} params
+   * @param {string[]} [params.authors] - A list of authors. Must specify at least one and at most two
+   * @param {boolean} [params.available=true]
+   * @param {string} [params.state=finished]
+   * @param {string} [params.published]
+   * @param {string} [params.snakeCase]
+   * @param {string} [params.completed]
+   * @param {number} [params.maxPages=500.5]
+   * @param {number} [params.minPages=5]
+   * @param {number} [params.pagesToTime]
+   * @param {object} [options]
+   * @param {number} [options.timeout] - A request specific timeout
+   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
+   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {function} [cb]
+   * @returns {Promise}
+   * @fulfill {Object[]}
+   * @reject {module:swagger-test.Errors.BadRequest}
+   * @reject {module:swagger-test.Errors.InternalError}
+   * @reject {Error}
+   */
   getBooks(params, options, cb) {
     if (!cb && typeof options === "function") {
       cb = options;
@@ -175,6 +233,20 @@ module.exports = class SwaggerTest {
     });
   }
 
+  /**
+   * Creates a book
+   * @param newBook
+   * @param {object} [options]
+   * @param {number} [options.timeout] - A request specific timeout
+   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
+   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {function} [cb]
+   * @returns {Promise}
+   * @fulfill {Object}
+   * @reject {module:swagger-test.Errors.BadRequest}
+   * @reject {module:swagger-test.Errors.InternalError}
+   * @reject {Error}
+   */
   createBook(newBook, options, cb) {
     const params = {};
     params["newBook"] = newBook;
@@ -260,6 +332,26 @@ module.exports = class SwaggerTest {
     });
   }
 
+  /**
+   * Returns a book
+   * @param {Object} params
+   * @param {number} params.bookID
+   * @param {string} [params.authorID]
+   * @param {string} [params.authorization]
+   * @param {string} [params.randomBytes]
+   * @param {object} [options]
+   * @param {number} [options.timeout] - A request specific timeout
+   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
+   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {function} [cb]
+   * @returns {Promise}
+   * @fulfill {Object}
+   * @reject {module:swagger-test.Errors.BadRequest}
+   * @reject {module:swagger-test.Errors.Unathorized}
+   * @reject {module:swagger-test.Errors.Error}
+   * @reject {module:swagger-test.Errors.InternalError}
+   * @reject {Error}
+   */
   getBookByID(params, options, cb) {
     if (!cb && typeof options === "function") {
       cb = options;
@@ -355,6 +447,21 @@ module.exports = class SwaggerTest {
     });
   }
 
+  /**
+   * Retrieve a book
+   * @param {string} id
+   * @param {object} [options]
+   * @param {number} [options.timeout] - A request specific timeout
+   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
+   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {function} [cb]
+   * @returns {Promise}
+   * @fulfill {Object}
+   * @reject {module:swagger-test.Errors.BadRequest}
+   * @reject {module:swagger-test.Errors.Error}
+   * @reject {module:swagger-test.Errors.InternalError}
+   * @reject {Error}
+   */
   getBookByID2(id, options, cb) {
     const params = {};
     params["id"] = id;
@@ -441,6 +548,18 @@ module.exports = class SwaggerTest {
     });
   }
 
+  /**
+   * @param {object} [options]
+   * @param {number} [options.timeout] - A request specific timeout
+   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
+   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {function} [cb]
+   * @returns {Promise}
+   * @fulfill {undefined}
+   * @reject {module:swagger-test.Errors.BadRequest}
+   * @reject {module:swagger-test.Errors.InternalError}
+   * @reject {Error}
+   */
   healthCheck(options, cb) {
     const params = {};
 
@@ -524,8 +643,19 @@ module.exports = class SwaggerTest {
   }
 };
 
+module.exports = SwaggerTest;
+
+/**
+ * Retry policies available to use.
+ * @alias module:swagger-test.RetryPolicies
+ */
 module.exports.RetryPolicies = {
   Default: defaultRetryPolicy,
   None: noRetryPolicy,
 };
+
+/**
+ * Errors returned by methods.
+ * @alias module:swagger-test.Errors
+ */
 module.exports.Errors = Errors;

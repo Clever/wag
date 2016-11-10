@@ -2,8 +2,17 @@ const discovery = require("@clever/discovery");
 const request = require("request");
 const opentracing = require("opentracing");
 
+/**
+ * @external Span
+ * @see {@link https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html}
+ */
+
 const { Errors } = require("./types");
 
+/**
+ * The default retry policy will retry five times with an exponential backoff.
+ * @alias module:swagger-test.RetryPolicies.Default
+ */
 const defaultRetryPolicy = {
   backoffs() {
     const ret = [];
@@ -26,6 +35,10 @@ const defaultRetryPolicy = {
   },
 };
 
+/**
+ * Use this retry policy to turn off retries.
+ * @alias module:swagger-test.RetryPolicies.None
+ */
 const noRetryPolicy = {
   backoffs() {
     return [];
@@ -35,8 +48,30 @@ const noRetryPolicy = {
   },
 };
 
-module.exports = class SwaggerTest {
+/**
+ * swagger-test client library.
+ * @module swagger-test
+ * @typicalname SwaggerTest
+ */
 
+/**
+ * swagger-test client
+ * @alias module:swagger-test
+ */
+class SwaggerTest {
+
+  /**
+   * Create a new client object.
+   * @param {Object} options - Options for constructing a client object.
+   * @param {string} [options.address] - URL where the server is located. Must provide
+   * this or the discovery argument
+   * @param {bool} [options.discovery] - Use @clever/discovery to locate the server. Must provide
+   * this or the address argument
+   * @param {number} [options.timeout] - The timeout to use for all client requests,
+   * in milliseconds. This can be overridden on a per-request basis.
+   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy=RetryPolicies.Default] - The logic to
+   * determine which requests to retry, as well as how many times to retry.
+   */
   constructor(options) {
     options = options || {};
 
@@ -60,8 +95,19 @@ module.exports = class SwaggerTest {
   }
 };
 
+module.exports = SwaggerTest;
+
+/**
+ * Retry policies available to use.
+ * @alias module:swagger-test.RetryPolicies
+ */
 module.exports.RetryPolicies = {
   Default: defaultRetryPolicy,
   None: noRetryPolicy,
 };
+
+/**
+ * Errors returned by methods.
+ * @alias module:swagger-test.Errors
+ */
 module.exports.Errors = Errors;

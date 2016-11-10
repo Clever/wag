@@ -1,5 +1,12 @@
 module.exports.Errors = {};
 
+/**
+ * BadRequest
+ * @extends Error
+ * @memberof module:swagger-test
+ * @alias module:swagger-test.Errors.BadRequest
+ * @property {string} message
+ */
 module.exports.Errors.BadRequest = class extends Error {
   constructor(body) {
     super(body.message);
@@ -8,6 +15,14 @@ module.exports.Errors.BadRequest = class extends Error {
     }
   }
 };
+
+/**
+ * NotFound
+ * @extends Error
+ * @memberof module:swagger-test
+ * @alias module:swagger-test.Errors.NotFound
+ * @property {string} message
+ */
 module.exports.Errors.NotFound = class extends Error {
   constructor(body) {
     super(body.message);
@@ -16,6 +31,14 @@ module.exports.Errors.NotFound = class extends Error {
     }
   }
 };
+
+/**
+ * InternalError
+ * @extends Error
+ * @memberof module:swagger-test
+ * @alias module:swagger-test.Errors.InternalError
+ * @property {string} message
+ */
 module.exports.Errors.InternalError = class extends Error {
   constructor(body) {
     super(body.message);

@@ -2,7 +2,9 @@ package jsclient
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
+	"log"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -84,8 +86,17 @@ var indexJSTmplStr = `const discovery = require("@clever/discovery");
 const request = require("request");
 const opentracing = require("opentracing");
 
+/**
+ * @external Span
+ * @see {@link https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html}
+ */
+
 const { Errors } = require("./types");
 
+/**
+ * The default retry policy will retry five times with an exponential backoff.
+ * @alias module:{{.ServiceName}}.RetryPolicies.Default
+ */
 const defaultRetryPolicy = {
   backoffs() {
     const ret = [];
@@ -108,6 +119,10 @@ const defaultRetryPolicy = {
   },
 };
 
+/**
+ * Use this retry policy to turn off retries.
+ * @alias module:{{.ServiceName}}.RetryPolicies.None
+ */
 const noRetryPolicy = {
   backoffs() {
     return [];
@@ -117,8 +132,30 @@ const noRetryPolicy = {
   },
 };
 
-module.exports = class {{.ClassName}} {
+/**
+ * {{.ServiceName}} client library.
+ * @module {{.ServiceName}}
+ * @typicalname {{.ClassName}}
+ */
 
+/**
+ * {{.ServiceName}} client
+ * @alias module:{{.ServiceName}}
+ */
+class {{.ClassName}} {
+
+  /**
+   * Create a new client object.
+   * @param {Object} options - Options for constructing a client object.
+   * @param {string} [options.address] - URL where the server is located. Must provide
+   * this or the discovery argument
+   * @param {bool} [options.discovery] - Use @clever/discovery to locate the server. Must provide
+   * this or the address argument
+   * @param {number} [options.timeout] - The timeout to use for all client requests,
+   * in milliseconds. This can be overridden on a per-request basis.
+   * @param {module:{{.ServiceName}}.RetryPolicies} [options.retryPolicy=RetryPolicies.Default] - The logic to
+   * determine which requests to retry, as well as how many times to retry.
+   */
   constructor(options) {
     options = options || {};
 
@@ -142,10 +179,21 @@ module.exports = class {{.ClassName}} {
   }
 {{range $methodCode := .Methods}}{{$methodCode}}{{end}}};
 
+module.exports = {{.ClassName}};
+
+/**
+ * Retry policies available to use.
+ * @alias module:{{.ServiceName}}.RetryPolicies
+ */
 module.exports.RetryPolicies = {
   Default: defaultRetryPolicy,
   None: noRetryPolicy,
 };
+
+/**
+ * Errors returned by methods.
+ * @alias module:{{.ServiceName}}.Errors
+ */
 module.exports.Errors = Errors;
 `
 
@@ -251,17 +299,47 @@ var methodTmplStr = `
   }
 `
 
-var singleParamMethodDefinionTemplateString = `{{.MethodName}}({{range $param := .Params}}{{$param.JSName}}, {{end}}options, cb) {
+var singleParamMethodDefinitionTemplateString = `/**{{if .Description}}
+   * {{.Description}}{{end}}{{range $param := .Params}}
+   * @param {{if $param.JSDocType}}{{.JSDocType}} {{end}}{{$param.JSName}}{{if $param.Default}}={{$param.Default}}{{end}}{{if $param.Description}} - {{.Description}}{{end}}{{end}}
+   * @param {object} [options]
+   * @param {number} [options.timeout] - A request specific timeout
+   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
+   * @param {module:{{.ServiceName}}.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {function} [cb]
+   * @returns {Promise}
+   * @fulfill{{if .JSDocSuccessReturnType}} {{.JSDocSuccessReturnType}}{{else}} {*}{{end}}{{$ServiceName := .ServiceName}}{{range $response := .Responses}}{{if $response.IsError}}
+   * @reject {module:{{$ServiceName}}.Errors.{{$response.Name}}}{{end}}{{end}}
+   * @reject {Error}
+   */
+  {{.MethodName}}({{range $param := .Params}}{{$param.JSName}}, {{end}}options, cb) {
     const params = {};{{range $param := .Params}}
     params["{{$param.JSName}}"] = {{$param.JSName}};{{end}}
 `
 
-var pluralParamMethodDefinionTemplateString = `{{.MethodName}}(params, options, cb) {`
+var pluralParamMethodDefinitionTemplateString = `/**{{if .Description}}
+   * {{.Description}}{{end}}
+   * @param {Object} params{{range $param := .Params}}
+   * @param {{if $param.JSDocType}}{{.JSDocType}} {{end}}{{if not $param.Required}}[{{end}}params.{{$param.JSName}}{{if $param.Default}}={{$param.Default}}{{end}}{{if not $param.Required}}]{{end}}{{if $param.Description}} - {{.Description}}{{end}}{{end}}
+   * @param {object} [options]
+   * @param {number} [options.timeout] - A request specific timeout
+   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
+   * @param {module:{{.ServiceName}}.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {function} [cb]
+   * @returns {Promise}
+   * @fulfill{{if .JSDocSuccessReturnType}} {{.JSDocSuccessReturnType}}{{else}} {*}{{end}}{{$ServiceName := .ServiceName}}{{range $response := .Responses}}{{if $response.IsError}}
+   * @reject {module:{{$ServiceName}}.Errors.{{$response.Name}}}{{end}}{{end}}
+   * @reject {Error}
+   */
+  {{.MethodName}}(params, options, cb) {`
 
 type paramMapping struct {
-	JSName   string
-	WagName  string
-	Required bool
+	JSName      string
+	WagName     string
+	Required    bool
+	JSDocType   string
+	Default     interface{}
+	Description string
 }
 
 type responseMapping struct {
@@ -272,16 +350,19 @@ type responseMapping struct {
 }
 
 type methodTemplate struct {
-	MethodName       string
-	MethodDefinition string
-	Params           []paramMapping
-	Method           string
-	PathCode         string
-	Path             string
-	HeaderParams     []paramMapping
-	QueryParams      []paramMapping
-	BodyParam        string
-	Responses        []responseMapping
+	ServiceName            string
+	MethodName             string
+	Description            string
+	MethodDefinition       string
+	Params                 []paramMapping
+	Method                 string
+	PathCode               string
+	Path                   string
+	HeaderParams           []paramMapping
+	QueryParams            []paramMapping
+	BodyParam              string
+	Responses              []responseMapping
+	JSDocSuccessReturnType string
 }
 
 // This function takes in a swagger path such as "/path/goes/to/{location}/and/to/{other_Location}"
@@ -299,13 +380,20 @@ func fillOutPath(path string) string {
 func methodCode(s spec.Swagger, op *spec.Operation, method, basePath, path string) (string, error) {
 
 	tmplInfo := methodTemplate{
-		MethodName: op.ID,
-		Method:     method,
-		PathCode:   basePath + fillOutPath(path),
-		Path:       basePath + path,
+		ServiceName: s.Info.InfoProps.Title,
+		MethodName:  op.ID,
+		Description: op.Description,
+		Method:      method,
+		PathCode:    basePath + fillOutPath(path),
+		Path:        basePath + path,
 	}
 
+	var successResponse *spec.Response
 	for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
+		if successResponse == nil && statusCode >= 200 && statusCode < 400 {
+			r := op.Responses.StatusCodeResponses[statusCode]
+			successResponse = &r
+		}
 		response := responseMapping{
 			StatusCode: statusCode,
 			IsError:    statusCode >= 400,
@@ -320,12 +408,16 @@ func methodCode(s spec.Swagger, op *spec.Operation, method, basePath, path strin
 		}
 		tmplInfo.Responses = append(tmplInfo.Responses, response)
 	}
+	tmplInfo.JSDocSuccessReturnType = responseToJSDocReturnType(successResponse)
 
 	for _, wagParam := range op.Parameters {
 		param := paramMapping{
-			JSName:   utils.CamelCase(wagParam.Name, false),
-			WagName:  wagParam.Name,
-			Required: wagParam.Required,
+			JSName:      utils.CamelCase(wagParam.Name, false),
+			WagName:     wagParam.Name,
+			Required:    wagParam.Required,
+			JSDocType:   paramToJSDocType(wagParam),
+			Description: wagParam.Description,
+			Default:     wagParam.Default,
 		}
 
 		tmplInfo.Params = append(tmplInfo.Params, param)
@@ -342,9 +434,9 @@ func methodCode(s spec.Swagger, op *spec.Operation, method, basePath, path strin
 	var err error
 	var methodDefinition string
 	if len(op.Parameters) <= 1 {
-		methodDefinition, err = templates.WriteTemplate(singleParamMethodDefinionTemplateString, tmplInfo)
+		methodDefinition, err = templates.WriteTemplate(singleParamMethodDefinitionTemplateString, tmplInfo)
 	} else {
-		methodDefinition, err = templates.WriteTemplate(pluralParamMethodDefinionTemplateString, tmplInfo)
+		methodDefinition, err = templates.WriteTemplate(pluralParamMethodDefinitionTemplateString, tmplInfo)
 	}
 	if err != nil {
 		return "", err
@@ -353,9 +445,61 @@ func methodCode(s spec.Swagger, op *spec.Operation, method, basePath, path strin
 	return templates.WriteTemplate(methodTmplStr, tmplInfo)
 }
 
-var typeTmplString = `module.exports.Errors = {};
+// paramToJSDocType returns the JSDoc type to assign a parameter.
+// It returns empty string if it cannot discern a type for the parameter.
+func paramToJSDocType(param spec.Parameter) string {
+	if param.Type == "string" || param.Type == "number" || param.Type == "boolean" {
+		return "{" + param.Type + "}"
+	} else if param.Type == "integer" {
+		return "{number}"
+	} else if param.Type == "array" && param.Items != nil &&
+		(param.Items.Type == "string" || param.Items.Type == "number" || param.Items.Type == "boolean") {
+		return fmt.Sprintf("{%s[]}", param.Items.Type)
+	}
+	log.Printf("TODO: unhandled param name=%s. Documentation will be incomplete for this parameter.", param.Name)
+	return ""
+}
 
-{{ range .}}module.exports.Errors.{{ .Name }} = class extends Error {
+// schemaToJSDocType returns the JSDoc type to assign a schema.
+// It returns empty string if it cannot discern a type for the schema.
+func schemaToJSDocType(schema *spec.Schema) string {
+	if len(schema.Type) == 1 {
+		typ := schema.Type[0]
+		if typ == "string" {
+			return "{string}"
+		} else if typ == "integer" {
+			return "{number}"
+		}
+	}
+	log.Printf("TODO: unhandled schema type %v.", schema.Type)
+	return ""
+}
+
+// responseToJSDocReturnType returns the JS Doc type for a response.
+// It returns empty string if it cannot determine the type.
+func responseToJSDocReturnType(r *spec.Response) string {
+	if r.Schema == nil {
+		return "{undefined}"
+	} else if r.Schema.Type != nil && len(r.Schema.Type) == 1 && r.Schema.Type[0] == "array" &&
+		r.Schema.Items != nil && r.Schema.Items.Schema != nil {
+		return "{Object[]}" // in the future, a more specific type would be nice
+	} else if r.Schema.Ref.String() != "" {
+		return "{Object}" // in the future, a more specific type would be nice
+	}
+	log.Printf("TODO: unhandled response: %#v. Documentation will be incomplete for this response type.", *r)
+	return ""
+}
+
+var typeTmplString = `module.exports.Errors = {};
+{{$ServiceName := .ServiceName}}
+{{range .ErrorTypes}}/**
+ * {{.Name}}
+ * @extends Error
+ * @memberof module:{{$ServiceName}}
+ * @alias module:{{$ServiceName}}.Errors.{{.Name}}{{range .JSDocProperties}}
+ * @property {{.Type}} {{.Name}}{{end}}
+ */
+module.exports.Errors.{{ .Name }} = class extends Error {
   constructor(body) {
     super(body.message);
     for (const k of Object.keys(body)) {
@@ -363,11 +507,36 @@ var typeTmplString = `module.exports.Errors = {};
     }
   }
 };
-{{ end }}
-`
+
+{{ end }}`
+
+type typesTemplate struct {
+	ServiceName string
+	ErrorTypes  []errorType
+}
+
+type errorType struct {
+	StatusCode      int
+	Name            string
+	JSDocProperties []jsDocProperty
+}
+
+type jsDocProperty struct {
+	Type string
+	Name string
+}
+
+func jsDocPropertyFromSchema(name string, schema *spec.Schema) jsDocProperty {
+	return jsDocProperty{
+		Name: name,
+		Type: schemaToJSDocType(schema),
+	}
+}
 
 func generateTypesFile(s spec.Swagger) (string, error) {
-	var responses []responseMapping
+	typesTmpl := typesTemplate{
+		ServiceName: s.Info.InfoProps.Title,
+	}
 
 	typeNames := stringset.New()
 
@@ -388,14 +557,24 @@ func generateTypesFile(s spec.Swagger) (string, error) {
 					continue
 				}
 				typeNames.Add(typeName)
-				response := responseMapping{
+
+				etype := errorType{
 					StatusCode: statusCode,
 					Name:       typeName,
 				}
-				responses = append(responses, response)
+
+				if schema, ok := s.Definitions[typeName]; !ok {
+					log.Printf("TODO: could not find schema for %s, JS documentation will be incomplete", typeName)
+				} else if len(schema.Properties) > 0 {
+					for name, propertySchema := range schema.Properties {
+						etype.JSDocProperties = append(etype.JSDocProperties, jsDocPropertyFromSchema(name, &propertySchema))
+					}
+				}
+
+				typesTmpl.ErrorTypes = append(typesTmpl.ErrorTypes, etype)
 			}
 		}
 	}
 
-	return templates.WriteTemplate(typeTmplString, responses)
+	return templates.WriteTemplate(typeTmplString, typesTmpl)
 }

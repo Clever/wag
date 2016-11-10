@@ -101,6 +101,7 @@ paths:
           type: array
           items:
             type: string
+          description: "A list of authors. Must specify at least one and at most two"
           maxItems: 2
           minItems: 1
           uniqueItems: true
