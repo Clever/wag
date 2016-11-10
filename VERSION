@@ -1,2 +1,3 @@
-0.6.1
-- Convert errors into rich JS types, and export those types.
+1.0.0
+- Added JS docs
+- Final polishes for 1.0 release
