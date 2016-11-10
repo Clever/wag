@@ -566,7 +566,8 @@ func generateTypesFile(s spec.Swagger) (string, error) {
 				if schema, ok := s.Definitions[typeName]; !ok {
 					log.Printf("TODO: could not find schema for %s, JS documentation will be incomplete", typeName)
 				} else if len(schema.Properties) > 0 {
-					for name, propertySchema := range schema.Properties {
+					for _, name := range swagger.SortedSchemaProperties(schema) {
+						propertySchema := schema.Properties[name]
 						etype.JSDocProperties = append(etype.JSDocProperties, jsDocPropertyFromSchema(name, &propertySchema))
 					}
 				}
