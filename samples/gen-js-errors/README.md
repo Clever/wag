@@ -111,8 +111,8 @@ ExtendedError
 
 | Name | Type |
 | --- | --- |
-| message | <code>string</code> | 
 | code | <code>number</code> | 
+| message | <code>string</code> | 
 
 <a name="module_swagger-test--SwaggerTest.Errors.NotFound"></a>
 
