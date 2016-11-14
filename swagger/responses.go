@@ -57,7 +57,7 @@ func ValidateResponses(s spec.Swagger) error {
 					return fmt.Errorf("cannot define 3XX status codes: %s", op.ID)
 				} else {
 					if err := responseHasMessageField(resp, s); err != nil {
-						return fmt.Errorf("invalid %d response: %s", code, err)
+						return fmt.Errorf("invalid %d response for %s: %s", code, op.ID, err)
 					}
 				}
 
@@ -141,17 +141,17 @@ func refHasMessageField(ref spec.Ref, s spec.Swagger) error {
 	}
 	schema, ok := refObj.(spec.Schema)
 	if !ok {
-		return errors.New("invalid schema reference")
+		return errors.New("errors must reference a schema with a 'message' field")
 
 	}
 
 	messageField, ok := schema.Properties["message"]
 	if !ok {
-		return fmt.Errorf("schema must have a 'message' field: %s", ref.String())
+		return fmt.Errorf("error schemas must have a 'message' field: %s", ref.String())
 	}
 
 	if len(messageField.Type) != 1 || messageField.Type[0] != "string" {
-		return fmt.Errorf("'message' field must be of type 'string': %s", ref.String())
+		return fmt.Errorf("the 'message' field in errors must be of type 'string': %s", ref.String())
 	}
 
 	// Don't allow any required fields. We need this because Wag won't know what those
@@ -163,7 +163,7 @@ func refHasMessageField(ref spec.Ref, s spec.Swagger) error {
 	// For now we do it because it makes the code simpler, but we could relax the
 	// restriction if it limits users.
 	if len(schema.Required) > 0 {
-		return fmt.Errorf("%s cannot have required fields", ref.String())
+		return fmt.Errorf("%s cannot have required fields to be used an error", ref.String())
 	}
 
 	return nil
