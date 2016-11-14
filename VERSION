@@ -1,3 +1,4 @@
-1.0.0
-- Added JS docs
-- Final polishes for 1.0 release
+1.0.1
+- Better error message
+- More documentation of additionalProperties behavior
+
