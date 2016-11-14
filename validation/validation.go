@@ -98,49 +98,49 @@ func Validate(d loads.Document) error {
 	}
 
 	if s.Swagger != "2.0" {
-		return fmt.Errorf("Unsupported Swagger version %s", s.Swagger)
+		return fmt.Errorf("unsupported Swagger version %s", s.Swagger)
 	}
 
 	if len(s.Schemes) != 1 || s.Schemes[0] != "http" {
-		return fmt.Errorf("WAG only supports the scheme 'http'")
+		return fmt.Errorf("wag only supports the scheme 'http'")
 	}
 
 	if len(s.Consumes) > 1 || (len(s.Produces) == 0 && s.Consumes[0] != "application/json") {
-		return fmt.Errorf("WAG only supports the consumes option: 'application/json'")
+		return fmt.Errorf("wag only supports the consumes option: 'application/json'")
 	}
 
 	if len(s.Produces) > 1 || (len(s.Produces) == 0 && s.Produces[0] != "application/json") {
-		return fmt.Errorf("WAG only support the consumes option: 'application/json'")
+		return fmt.Errorf("wag only support the consumes option: 'application/json'")
 	}
 
 	if s.Host != "" {
-		return fmt.Errorf("WAG does not support the host field")
+		return fmt.Errorf("wag does not support the host field")
 	}
 
 	if len(s.Parameters) != 0 {
-		return fmt.Errorf("WAG does not support global parameters definitions. Define parameters on a per request basis")
+		return fmt.Errorf("wag does not support global parameters definitions. Define parameters on a per request basis")
 	}
 
 	if len(s.SecurityDefinitions) != 0 {
-		return fmt.Errorf("WAG does not support the security definitions field")
+		return fmt.Errorf("wag does not support the security definitions field")
 	}
 
 	if len(s.Security) != 0 {
-		return fmt.Errorf("WAG does not support the security field")
+		return fmt.Errorf("wag does not support the security field")
 	}
 
 	_, ok := s.Info.Extensions.GetString("x-npm-package")
 	if !ok {
-		return fmt.Errorf("Must provide 'x-npm-package' in the 'info' section of the swagger.yml.")
+		return fmt.Errorf("must provide 'x-npm-package' in the 'info' section of the swagger.yml")
 	}
 
 	for path, pathItem := range s.Paths.Paths {
 		if pathItem.Ref.String() != "" {
-			return fmt.Errorf("WAG does not support paths with $ref fields. Define the references on " +
+			return fmt.Errorf("wag does not support paths with $ref fields. Define the references on " +
 				"a per operation basis")
 		}
 		if len(pathItem.Parameters) != 0 {
-			return fmt.Errorf("Parameters cannot be defined for an entire path. " +
+			return fmt.Errorf("parameters cannot be defined for an entire path. " +
 				"They must be defined on the individual method level.")
 		}
 		for op, opItem := range pathItemOperations(pathItem) {
