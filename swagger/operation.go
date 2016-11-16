@@ -28,17 +28,12 @@ func Interface(s *spec.Swagger, op *spec.Operation) string {
 		input = fmt.Sprintf("i *models.%sInput", capOpID)
 	}
 
-	if NoSuccessType(op) {
+	successType := SuccessType(s, op)
+	if successType == nil {
 		return fmt.Sprintf("%s(ctx context.Context, %s) error", capOpID, input)
 	}
-	successCode := successStatusCode(op)
-	successType, makePointer := OutputType(s, op, *successCode)
-	if makePointer {
-		successType = "*" + successType
-	}
-
 	return fmt.Sprintf("%s(ctx context.Context, %s) (%s, error)",
-		capOpID, input, successType)
+		capOpID, input, *successType)
 }
 
 // InterfaceComment returns the comment for the interface for the operation
@@ -75,11 +70,6 @@ var interfaceCommentTmplStr = `
 // OutputType returns the output type for a given status code of an operation and whether it
 // is a pointer in the interface.
 func OutputType(s *spec.Swagger, op *spec.Operation, statusCode int) (string, bool) {
-	// If there is no success type and this is a success status code return the empty
-	// string to indicate no type
-	if NoSuccessType(op) && statusCode < 400 {
-		return "", false
-	}
 
 	resp := op.Responses.StatusCodeResponses[statusCode]
 	schema := resp.Schema
@@ -103,14 +93,22 @@ func OutputType(s *spec.Swagger, op *spec.Operation, statusCode int) (string, bo
 	return successType, schema != nil && schema.Ref.String() != ""
 }
 
-// NoSuccessType returns true if the operation has no-success response type. This includes
-// either no 200-399 response code or a 200-399 response code without a schema.
-func NoSuccessType(op *spec.Operation) bool {
-	successCode := successStatusCode(op)
-	if successCode == nil {
-		return true
+// SuccessType returns the success type for the operation. If there is no success-type then
+// it returns nil
+func SuccessType(s *spec.Swagger, op *spec.Operation) *string {
+	for statusCode := range op.Responses.StatusCodeResponses {
+		if statusCode < 400 {
+			successType, makePointer := OutputType(s, op, statusCode)
+			if successType == "" {
+				return nil
+			}
+			if makePointer {
+				successType = "*" + successType
+			}
+			return &successType
+		}
 	}
-	return op.Responses.StatusCodeResponses[*successCode].Schema == nil
+	return nil
 }
 
 // CodeToTypeMap returns a map from return status code to its corresponding type
@@ -142,17 +140,6 @@ func TypeToCodeMap(s *spec.Swagger, op *spec.Operation) (map[string]int, error) 
 		}
 	}
 	return typeToCode, nil
-}
-
-// successStatusCode returns the success status code. If there is no success status code
-// then it returns nil.
-func successStatusCode(op *spec.Operation) *int {
-	for statusCode := range op.Responses.StatusCodeResponses {
-		if statusCode < 400 {
-			return &statusCode
-		}
-	}
-	return nil
 }
 
 // SingleSchemaedBodyParameter returns true if the operation has a single,

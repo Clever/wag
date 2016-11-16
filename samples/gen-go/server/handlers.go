@@ -115,6 +115,12 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 
 	resp, err := h.GetBooks(ctx, input)
 
+	// Success types that return an array should never return nil so let's make this easier
+	// for consumers by converting nil arrays to empty arrays
+	if resp == nil {
+		resp = []models.Book{}
+	}
+
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		if btErr, ok := err.(*errors.Error); ok {
