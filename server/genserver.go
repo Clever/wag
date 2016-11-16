@@ -286,9 +286,15 @@ func generateOperationHandler(s *spec.Swagger, op *spec.Operation) (string, erro
 
 	singleSchemaedBodyParameter, _ := swagger.SingleSchemaedBodyParameter(op)
 	singleStringPathParameter, singleStringPathParameterVarName := swagger.SingleStringPathParameter(op)
+	successType := swagger.SuccessType(s, op)
+	arraySuccessType := ""
+	if successType != nil && strings.HasPrefix(*successType, "[]") {
+		arraySuccessType = *successType
+	}
 	handlerOp := handlerOp{
 		Op:                               swagger.Capitalize(op.ID),
-		SuccessReturnType:                !swagger.NoSuccessType(op),
+		SuccessReturnType:                successType != nil,
+		ArraySuccessType:                 arraySuccessType,
 		HasParams:                        len(op.Parameters) != 0,
 		SingleSchemaedBodyParameter:      singleSchemaedBodyParameter,
 		EmptyStatusCode:                  emptyResponseCode,
@@ -318,6 +324,7 @@ func generateOperationHandler(s *spec.Swagger, op *spec.Operation) (string, erro
 type handlerOp struct {
 	Op                               string
 	SuccessReturnType                bool
+	ArraySuccessType                 string
 	HasParams                        bool
 	SingleSchemaedBodyParameter      bool
 	EmptyStatusCode                  int
@@ -344,39 +351,47 @@ func statusCodeFor{{.Op}}(obj interface{}) int {
 
 func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 {{if .HasParams}}
-{{if .SingleStringPathParameter}}
-	{{.SingleStringPathParameterVarName}}, err := new{{.Op}}Input(r)
-{{else}}
-	input, err := new{{.Op}}Input(r)
-{{end}}
-	if err != nil {
-		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError({{index .StatusCodeToType 400}}{Message: err.Error()}), http.StatusBadRequest)
-		return
-	}
+	{{if .SingleStringPathParameter}}
+		{{.SingleStringPathParameterVarName}}, err := new{{.Op}}Input(r)
+	{{else}}
+		input, err := new{{.Op}}Input(r)
+	{{end}}
+		if err != nil {
+			logger.FromContext(ctx).AddContext("error", err.Error())
+			http.Error(w, jsonMarshalNoError({{index .StatusCodeToType 400}}{Message: err.Error()}), http.StatusBadRequest)
+			return
+		}
 
-{{if .SingleStringPathParameter}}
-	err = models.Validate{{.Op}}Input({{.SingleStringPathParameterVarName}})
-{{else}}
-	err = input.Validate({{if .SingleSchemaedBodyParameter}}nil{{end}})
+	{{if .SingleStringPathParameter}}
+		err = models.Validate{{.Op}}Input({{.SingleStringPathParameterVarName}})
+	{{else}}
+		err = input.Validate({{if .SingleSchemaedBodyParameter}}nil{{end}})
+	{{end}}
+		if err != nil {
+			logger.FromContext(ctx).AddContext("error", err.Error())
+			http.Error(w, jsonMarshalNoError({{index .StatusCodeToType 400}}{Message: err.Error()}), http.StatusBadRequest)
+			return
+		}
 {{end}}
-	if err != nil {
-		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError({{index .StatusCodeToType 400}}{Message: err.Error()}), http.StatusBadRequest)
-		return
-	}
-
 {{if .SuccessReturnType}}
+	{{if .HasParams}}
 	resp, err := h.{{.Op}}(ctx, {{if .SingleStringPathParameter}}{{.SingleStringPathParameterVarName}}{{else}}input{{end}})
-{{else}}
-	err = h.{{.Op}}(ctx, {{if .SingleStringPathParameter}}{{.SingleStringPathParameterVarName}}{{else}}input{{end}})
-{{end}}
-{{else}}
-{{if .SuccessReturnType}}
+	{{else}}
 	resp, err := h.{{.Op}}(ctx)
+	{{end}}
+	{{if gt (len .ArraySuccessType) 0}}
+		// Success types that return an array should never return nil so let's make this easier
+		// for consumers by converting nil arrays to empty arrays
+		if resp == nil {
+			resp = {{.ArraySuccessType}}{}
+		}
+	{{end}}
 {{else}}
+	{{if .HasParams}}
+	err = h.{{.Op}}(ctx, {{if .SingleStringPathParameter}}{{.SingleStringPathParameterVarName}}{{else}}input{{end}})
+	{{else}}
 	err := h.{{.Op}}(ctx)
-{{end}}
+	{{end}}
 {{end}}
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())

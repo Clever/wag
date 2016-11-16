@@ -10,13 +10,12 @@ import (
 // TypeFromSchema returns the type of a Swagger schema as a string. If includeModels is true
 // then it returns models.TYPE
 func TypeFromSchema(schema *spec.Schema, includeModels bool) (string, error) {
-	// We support three types of schemas
-	// 1. An empty schema, which we represent by the empty struct
-	// 2. A schema with one element, the $ref key
-	// 3. A schema with two elements. One a type with value 'array' and another items field
+	// We support three two of schemas
+	// 1. A schema with one element, the $ref key
+	// 2. A schema with two elements. One a type with value 'array' and another items field
 	// referencing the $ref
 	if schema == nil {
-		return "struct{}", nil
+		return "", nil
 	} else if schema.Ref.String() != "" {
 		def, err := defFromRef(schema.Ref.String())
 		if err != nil {

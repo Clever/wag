@@ -245,7 +245,7 @@ func methodCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPat
 	buf.WriteString(fmt.Sprintf("\turlVals := url.Values{}\n"))
 	buf.WriteString(fmt.Sprintf("\tvar body []byte\n\n"))
 
-	buf.WriteString(fmt.Sprintf(buildRequestCode(op, method)))
+	buf.WriteString(fmt.Sprintf(buildRequestCode(s, op, method)))
 
 	buf.WriteString(fmt.Sprintf(`
 
@@ -263,7 +263,7 @@ func methodCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPat
 	resp, err := c.requestDoer.Do(client, req)
 	%s
 	defer resp.Body.Close()
-`, op.ID, errorMessage(op)))
+`, op.ID, errorMessage(s, op)))
 
 	buf.WriteString(parseResponseCode(s, op, capOpID))
 
@@ -272,7 +272,7 @@ func methodCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPat
 }
 
 // buildRequestCode adds the parameters to the URL, the body, and the headers
-func buildRequestCode(op *spec.Operation, method string) string {
+func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string) string {
 	var buf bytes.Buffer
 
 	singleStringPathParameter, singleParamName := swagger.SingleStringPathParameter(op)
@@ -315,13 +315,13 @@ func buildRequestCode(op *spec.Operation, method string) string {
 	var err error
 	body, err = json.Marshal(i)
 	%s
-`, errorMessage(op))
+`, errorMessage(s, op))
 			} else {
 				bodyMarshalCode = fmt.Sprintf(`
 	var err error
 	body, err = json.Marshal(i.%s)
 	%s
-`, swagger.StructParamName(param), errorMessage(op))
+`, swagger.StructParamName(param), errorMessage(s, op))
 			}
 
 			if param.Required {
@@ -342,7 +342,7 @@ func buildRequestCode(op *spec.Operation, method string) string {
 	client := &http.Client{Transport: c.transport}
 	req, err := http.NewRequest("%s", path, bytes.NewBuffer(body))
 	%s
-`, strings.ToUpper(method), errorMessage(op)))
+`, strings.ToUpper(method), errorMessage(s, op)))
 
 	for _, param := range op.Parameters {
 		if param.In == "header" {
@@ -359,8 +359,9 @@ func buildRequestCode(op *spec.Operation, method string) string {
 	return buf.String()
 }
 
-func errorMessage(op *spec.Operation) string {
-	str, err := templates.WriteTemplate(errMsgTemplStr, errMsgTmpl{NoSuccessType: swagger.NoSuccessType(op)})
+func errorMessage(s *spec.Swagger, op *spec.Operation) string {
+	str, err := templates.WriteTemplate(errMsgTemplStr, errMsgTmpl{
+		NoSuccessType: swagger.SuccessType(s, op) == nil})
 	if err != nil {
 		panic("internal error generating client")
 	}
@@ -408,10 +409,9 @@ func parseResponseCode(s *spec.Swagger, op *spec.Operation, capOpID string) stri
 		buf.WriteString(statusCodeDecoder)
 	}
 
-	// It would be nice if we could remove this too
-	noSuccessType := swagger.NoSuccessType(op)
+	successType := swagger.SuccessType(s, op)
 	successReturn := "nil, "
-	if noSuccessType {
+	if successType == nil {
 		successReturn = ""
 	}
 
@@ -440,7 +440,7 @@ func writeStatusCodeDecoder(s *spec.Swagger, op *spec.Operation, statusCode int)
 	return templates.WriteTemplate(codeDetectorTmplStr,
 		codeDetectorTmpl{
 			StatusCode:    statusCode,
-			NoSuccessType: swagger.NoSuccessType(op),
+			NoSuccessType: swagger.SuccessType(s, op) == nil,
 			ErrorType:     statusCode >= 400,
 			TypeName:      outputName,
 			OutputType:    outputType,
