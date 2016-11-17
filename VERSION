@@ -1,3 +1,3 @@
-1.0.2
-- Convert nil arrays to empty arrays
+1.0.3
+- Allow setting a custom client logger
 
