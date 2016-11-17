@@ -136,6 +136,7 @@ func newNilCheckInput(r *http.Request) (*models.NilCheckInput, error) {
 	_ = err
 
 	iDStr := mux.Vars(r)["id"]
+
 	if len(iDStr) == 0 {
 		return nil, errors.New("Parameter must be specified")
 	}
@@ -145,10 +146,12 @@ func newNilCheckInput(r *http.Request) (*models.NilCheckInput, error) {
 		if err != nil {
 			return nil, err
 		}
-		input.ID = iDTmp
 
+		input.ID = iDTmp
 	}
+
 	queryStr := r.URL.Query().Get("query")
+
 	if len(queryStr) != 0 {
 		var queryTmp string
 		queryTmp, err = queryStr, error(nil)
@@ -156,9 +159,10 @@ func newNilCheckInput(r *http.Request) (*models.NilCheckInput, error) {
 			return nil, err
 		}
 		input.Query = &queryTmp
-
 	}
+
 	headerStr := r.Header.Get("header")
+
 	if len(headerStr) != 0 {
 		var headerTmp string
 		headerTmp, err = headerStr, error(nil)
@@ -166,7 +170,6 @@ func newNilCheckInput(r *http.Request) (*models.NilCheckInput, error) {
 			return nil, err
 		}
 		input.Header = &headerTmp
-
 	}
 
 	data, err := ioutil.ReadAll(r.Body)

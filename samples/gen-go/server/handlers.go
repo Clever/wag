@@ -158,7 +158,9 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 	if authors, ok := r.URL.Query()["authors"]; ok {
 		input.Authors = authors
 	}
+
 	availableStr := r.URL.Query().Get("available")
+
 	if len(availableStr) == 0 {
 		// Use the default value
 		availableStr = "true"
@@ -170,9 +172,10 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 			return nil, err
 		}
 		input.Available = &availableTmp
-
 	}
+
 	stateStr := r.URL.Query().Get("state")
+
 	if len(stateStr) == 0 {
 		// Use the default value
 		stateStr = "finished"
@@ -184,9 +187,10 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 			return nil, err
 		}
 		input.State = &stateTmp
-
 	}
+
 	publishedStr := r.URL.Query().Get("published")
+
 	if len(publishedStr) != 0 {
 		var publishedTmp strfmt.Date
 		publishedTmp, err = convertDate(publishedStr)
@@ -194,9 +198,10 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 			return nil, err
 		}
 		input.Published = &publishedTmp
-
 	}
+
 	snakeCaseStr := r.URL.Query().Get("snake_case")
+
 	if len(snakeCaseStr) != 0 {
 		var snakeCaseTmp string
 		snakeCaseTmp, err = snakeCaseStr, error(nil)
@@ -204,9 +209,10 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 			return nil, err
 		}
 		input.SnakeCase = &snakeCaseTmp
-
 	}
+
 	completedStr := r.URL.Query().Get("completed")
+
 	if len(completedStr) != 0 {
 		var completedTmp strfmt.DateTime
 		completedTmp, err = convertDateTime(completedStr)
@@ -214,9 +220,10 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 			return nil, err
 		}
 		input.Completed = &completedTmp
-
 	}
+
 	maxPagesStr := r.URL.Query().Get("maxPages")
+
 	if len(maxPagesStr) == 0 {
 		// Use the default value
 		maxPagesStr = "5.005E+02"
@@ -228,9 +235,10 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 			return nil, err
 		}
 		input.MaxPages = &maxPagesTmp
-
 	}
+
 	minPagesStr := r.URL.Query().Get("min_pages")
+
 	if len(minPagesStr) == 0 {
 		// Use the default value
 		minPagesStr = "5"
@@ -242,9 +250,10 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 			return nil, err
 		}
 		input.MinPages = &minPagesTmp
-
 	}
+
 	pagesToTimeStr := r.URL.Query().Get("pagesToTime")
+
 	if len(pagesToTimeStr) != 0 {
 		var pagesToTimeTmp float32
 		pagesToTimeTmp, err = swag.ConvertFloat32(pagesToTimeStr)
@@ -252,7 +261,6 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 			return nil, err
 		}
 		input.PagesToTime = &pagesToTimeTmp
-
 	}
 
 	return &input, nil
@@ -448,6 +456,7 @@ func newGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 	_ = err
 
 	bookIDStr := mux.Vars(r)["book_id"]
+
 	if len(bookIDStr) == 0 {
 		return nil, errors.New("Parameter must be specified")
 	}
@@ -457,10 +466,12 @@ func newGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 		if err != nil {
 			return nil, err
 		}
-		input.BookID = bookIDTmp
 
+		input.BookID = bookIDTmp
 	}
+
 	authorIDStr := r.URL.Query().Get("authorID")
+
 	if len(authorIDStr) != 0 {
 		var authorIDTmp string
 		authorIDTmp, err = authorIDStr, error(nil)
@@ -468,9 +479,10 @@ func newGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 			return nil, err
 		}
 		input.AuthorID = &authorIDTmp
-
 	}
+
 	authorizationStr := r.Header.Get("authorization")
+
 	if len(authorizationStr) != 0 {
 		var authorizationTmp string
 		authorizationTmp, err = authorizationStr, error(nil)
@@ -478,9 +490,10 @@ func newGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 			return nil, err
 		}
 		input.Authorization = &authorizationTmp
-
 	}
+
 	randomBytesStr := r.URL.Query().Get("randomBytes")
+
 	if len(randomBytesStr) != 0 {
 		var randomBytesTmp strfmt.Base64
 		randomBytesTmp, err = convertBase64(randomBytesStr)
@@ -488,7 +501,6 @@ func newGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 			return nil, err
 		}
 		input.RandomBytes = &randomBytesTmp
-
 	}
 
 	return &input, nil

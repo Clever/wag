@@ -142,6 +142,7 @@ func newGetBookInput(r *http.Request) (*models.GetBookInput, error) {
 	_ = err
 
 	iDStr := mux.Vars(r)["id"]
+
 	if len(iDStr) == 0 {
 		return nil, errors.New("Parameter must be specified")
 	}
@@ -151,8 +152,8 @@ func newGetBookInput(r *http.Request) (*models.GetBookInput, error) {
 		if err != nil {
 			return nil, err
 		}
-		input.ID = iDTmp
 
+		input.ID = iDTmp
 	}
 
 	return &input, nil
