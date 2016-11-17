@@ -15,6 +15,7 @@ import (
 	discovery "github.com/Clever/discovery-go"
 	"github.com/Clever/wag/samples/gen-go/models"
 	"github.com/afex/hystrix-go/hystrix"
+	logger "gopkg.in/Clever/kayvee-go.v5/logger"
 )
 
 var _ = json.Marshal
@@ -33,6 +34,7 @@ type WagClient struct {
 	// Keep the circuit doer around so that we can turn it on / off
 	circuitDoer    *circuitBreakerDoer
 	defaultTimeout time.Duration
+	logger         *logger.Logger
 }
 
 var _ Client = (*WagClient)(nil)
@@ -44,11 +46,13 @@ func New(basePath string) *WagClient {
 	// For the short-term don't use the default retry policy since its 5 retries can 5X
 	// the traffic. Once we've enabled circuit breakers by default we can turn it on.
 	retry := retryDoer{d: tracing, retryPolicy: SingleRetryPolicy{}}
+	logger := logger.New("swagger-test-wagclient")
 	circuit := &circuitBreakerDoer{
 		d:     &retry,
 		debug: true,
 		// one circuit for each service + url pair
 		circuitName: fmt.Sprintf("swagger-test-%s", shortHash(basePath)),
+		logger:      logger,
 	}
 	circuit.init()
 	client := &WagClient{requestDoer: circuit, retryDoer: &retry, circuitDoer: circuit, defaultTimeout: 10 * time.Second,
@@ -78,6 +82,12 @@ func (c *WagClient) SetRetryPolicy(retryPolicy RetryPolicy) {
 // SetCircuitBreakerDebug puts the circuit
 func (c *WagClient) SetCircuitBreakerDebug(b bool) {
 	c.circuitDoer.debug = b
+}
+
+// SetLogger allows for setting a custom logger
+func (c *WagClient) SetLogger(logger *logger.Logger) {
+	c.logger = logger
+	c.circuitDoer.logger = logger
 }
 
 // CircuitBreakerSettings are the parameters that govern the client's circuit breaker.
