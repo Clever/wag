@@ -89,6 +89,9 @@ logger.FromContext(ctx).Info(...)
     * If the success response type doesn't have a data type then Wag generates an interface with only an error response. A nil error tells the client that the request succeeded.
     `func(...) error`
 
+
+TODO: Add some documentation about input parameters...
+
 * **Errors**.
   * Wag supports three types of errors
     * Global error response types
