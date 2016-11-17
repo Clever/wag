@@ -141,18 +141,23 @@ func newGetBookInput(r *http.Request) (*models.GetBookInput, error) {
 	var err error
 	_ = err
 
-	iDStr := mux.Vars(r)["id"]
-
-	if len(iDStr) == 0 {
-		return nil, errors.New("Parameter must be specified")
+	pathParam := mux.Vars(r)["id"]
+	var idStrs []string
+	if len(pathParam) > 0 {
+		idStrs = []string{pathParam}
 	}
-	if len(iDStr) != 0 {
+
+	if len(idStrs) == 0 {
+		return nil, errors.New("parameter must be specified")
+	}
+
+	if len(idStrs) > 0 {
+		iDStr := idStrs[0]
 		var iDTmp int64
 		iDTmp, err = swag.ConvertInt64(iDStr)
 		if err != nil {
 			return nil, err
 		}
-
 		input.ID = iDTmp
 	}
 

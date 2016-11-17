@@ -135,24 +135,30 @@ func newNilCheckInput(r *http.Request) (*models.NilCheckInput, error) {
 	var err error
 	_ = err
 
-	iDStr := mux.Vars(r)["id"]
-
-	if len(iDStr) == 0 {
-		return nil, errors.New("Parameter must be specified")
+	pathParam := mux.Vars(r)["id"]
+	var idStrs []string
+	if len(pathParam) > 0 {
+		idStrs = []string{pathParam}
 	}
-	if len(iDStr) != 0 {
+
+	if len(idStrs) == 0 {
+		return nil, errors.New("parameter must be specified")
+	}
+
+	if len(idStrs) > 0 {
+		iDStr := idStrs[0]
 		var iDTmp string
 		iDTmp, err = iDStr, error(nil)
 		if err != nil {
 			return nil, err
 		}
-
 		input.ID = iDTmp
 	}
 
-	queryStr := r.URL.Query().Get("query")
+	queryStrs := r.URL.Query()["query"]
 
-	if len(queryStr) != 0 {
+	if len(queryStrs) > 0 {
+		queryStr := queryStrs[0]
 		var queryTmp string
 		queryTmp, err = queryStr, error(nil)
 		if err != nil {
@@ -161,9 +167,10 @@ func newNilCheckInput(r *http.Request) (*models.NilCheckInput, error) {
 		input.Query = &queryTmp
 	}
 
-	headerStr := r.Header.Get("header")
+	headerStrs := r.Header["header"]
 
-	if len(headerStr) != 0 {
+	if len(headerStrs) > 0 {
+		headerStr := headerStrs[0]
 		var headerTmp string
 		headerTmp, err = headerStr, error(nil)
 		if err != nil {

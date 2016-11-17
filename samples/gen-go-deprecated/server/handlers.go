@@ -141,18 +141,19 @@ func newHealthInput(r *http.Request) (*models.HealthInput, error) {
 	var err error
 	_ = err
 
-	sectionStr := r.URL.Query().Get("section")
+	sectionStrs := r.URL.Query()["section"]
 
-	if len(sectionStr) == 0 {
-		return nil, errors.New("Parameter must be specified")
+	if len(sectionStrs) == 0 {
+		return nil, errors.New("parameter must be specified")
 	}
-	if len(sectionStr) != 0 {
+
+	if len(sectionStrs) > 0 {
+		sectionStr := sectionStrs[0]
 		var sectionTmp int64
 		sectionTmp, err = swag.ConvertInt64(sectionStr)
 		if err != nil {
 			return nil, err
 		}
-
 		input.Section = sectionTmp
 	}
 

@@ -559,26 +559,40 @@ type paramTemplate struct {
 }
 
 var paramTemplateStr = `
-	{{if eq .ParamType "query"}} {{.VarName}}Str := r.URL.Query().Get("{{.ParamName}}")
-	{{else if eq .ParamType "path"}} {{.VarName}}Str := mux.Vars(r)["{{.ParamName}}"]
-	{{else if eq .ParamType "header"}} {{.VarName}}Str := r.Header.Get("{{.ParamName}}") {{end}}
+	{{if eq .ParamType "query" -}}
+		{{.ParamName}}Strs := r.URL.Query()["{{.ParamName}}"]
+	{{- else if eq .ParamType "path" -}}
+		pathParam := mux.Vars(r)["{{.ParamName}}"]
+		var {{.ParamName}}Strs []string
+		if len(pathParam) > 0 {
+			{{.ParamName}}Strs = []string{pathParam}
+		}
+	{{- else if eq .ParamType "header" -}}
+		{{.ParamName}}Strs := r.Header["{{.ParamName}}"]
+	{{- end}}
 
-	{{if .Required}} if len({{.VarName}}Str) == 0 {
-		return nil, errors.New("Parameter must be specified")
-	} {{else if gt (len .DefaultValue) 0}} if len({{.VarName}}Str) == 0 {
-		// Use the default value
-		{{.VarName}}Str = "{{.DefaultValue}}"
-	} {{end}}
-	if len({{.VarName}}Str) != 0 {
+	{{if .Required -}}
+		if len({{.ParamName}}Strs) == 0 {
+			return nil, errors.New("parameter must be specified")
+		} 
+	{{else if gt (len .DefaultValue) 0 -}}
+		if len({{.ParamName}}Strs) == 0 {
+			{{.ParamName}}Strs = []string{"{{.DefaultValue}}"}
+		}
+	{{- end}}
+	if len({{.ParamName}}Strs) > 0 {
+		{{.VarName}}Str := {{.ParamName}}Strs[0]
 		var {{.VarName}}Tmp {{.TypeName}}
 		{{.VarName}}Tmp, err = {{.TypeCode}}
 		if err != nil {
 			return nil, err
 		}
-		{{if .PointerInStruct}} input.{{.CapParamName}} = &{{.VarName}}Tmp {{else}}
-		input.{{.CapParamName}} = {{.VarName}}Tmp {{end}}
+		{{if .PointerInStruct -}}
+			input.{{.CapParamName}} = &{{.VarName}}Tmp
+		{{- else -}}
+			input.{{.CapParamName}} = {{.VarName}}Tmp
+		{{- end}}
 	}
-
 `
 
 type bodyParamTemplate struct {
