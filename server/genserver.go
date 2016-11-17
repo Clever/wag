@@ -536,28 +536,19 @@ func generateNewInput(op *spec.Operation) (string, error) {
 			if err != nil {
 				return "", err
 			}
-
-			buf.WriteString(fmt.Sprintf("\tdata, err := ioutil.ReadAll(r.Body)\n"))
-
-			if param.Required {
-				buf.WriteString(fmt.Sprintf("\tif len(data) == 0 {\n"))
-				buf.WriteString(fmt.Sprintf("\t\treturn nil, errors.New(\"Parameter must be specified\")\n"))
-				buf.WriteString(fmt.Sprintf("\t}\n"))
-			}
-
-			buf.WriteString(fmt.Sprintf("\tif len(data) > 0 {"))
-
+			paramField := camelParamName
 			if singleSchemaedBodyParameter {
-				buf.WriteString(fmt.Sprintf("\t\tif err := json.NewDecoder(bytes.NewReader(data)).Decode(&input); err != nil {\n"))
-			} else {
-				// Initialize the pointer in the object
-				buf.WriteString(fmt.Sprintf("\t\tinput.%s = &%s{}\n", camelParamName, typeName))
-				buf.WriteString(fmt.Sprintf("\t\tif err := json.NewDecoder(bytes.NewReader(data)).Decode(input.%s); err != nil {\n", camelParamName))
+				paramField = ""
 			}
-			buf.WriteString(fmt.Sprintf("\t\t\treturn nil, err\n"))
-			buf.WriteString(fmt.Sprintf("\t\t}\n"))
-			buf.WriteString(fmt.Sprintf("\t}\n"))
-
+			str, err := templates.WriteTemplate(bodyTemplateStr, bodyTemplate{
+				Required:   param.Required,
+				ParamField: paramField,
+				TypeName:   typeName,
+			})
+			if err != nil {
+				return "", err
+			}
+			buf.WriteString(str)
 		}
 	}
 	buf.WriteString(fmt.Sprintf("\n"))
@@ -567,3 +558,26 @@ func generateNewInput(op *spec.Operation) (string, error) {
 
 	return buf.String(), nil
 }
+
+type bodyTemplate struct {
+	Required   bool
+	ParamField string
+	TypeName   string
+}
+
+var bodyTemplateStr = `
+	data, err := ioutil.ReadAll(r.Body)
+	{{if .Required}} if len(data) == 0 {
+		return nil, errors.New("Parameter must be specified")
+	}{{end}}
+
+	if len(data) > 0 { {{if eq (len .ParamField) 0}}
+		if err := json.NewDecoder(bytes.NewReader(data)).Decode(&input); err != nil {
+			return nil, err
+		}{{else}}
+		input.{{.ParamField}} = &{{.TypeName}}{}
+		if err := json.NewDecoder(bytes.NewReader(data)).Decode(input.{{.ParamField}}); err != nil {
+			return nil, err
+		}{{end}}
+	}
+`

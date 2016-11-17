@@ -168,7 +168,9 @@ func newNilCheckInput(r *http.Request) (*models.NilCheckInput, error) {
 		input.Header = &headerTmp
 
 	}
+
 	data, err := ioutil.ReadAll(r.Body)
+
 	if len(data) > 0 {
 		input.Body = &models.NilFields{}
 		if err := json.NewDecoder(bytes.NewReader(data)).Decode(input.Body); err != nil {
