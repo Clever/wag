@@ -165,6 +165,7 @@ type circuitBreakerDoer struct {
 	d           doer
 	debug       bool
 	circuitName string
+	logger      *logger.Logger
 }
 
 var circuitSSEOnce sync.Once
@@ -222,9 +223,9 @@ func (d *circuitBreakerDoer) init() {
 		if err != nil {
 			panic(err)
 		}
+
 		go http.Serve(listener, hystrixStreamHandler)
 		go func() {
-			logger := logger.New("wag")
 			logFrequency := 30 * time.Second
 			lastEventSeen := map[string]HystrixSSEEvent{}
 			lastEventLogTime := map[string]time.Time{}
@@ -258,15 +259,15 @@ func (d *circuitBreakerDoer) init() {
 					// (3) 30 seconds have passed since we logged something for the circuit
 					if !ok {
 						lastEventLogTime[e.Name] = time.Now()
-						logEvent(logger, e)
+						logEvent(d.logger, e)
 						continue
 					}
 					if lastSeen.IsCircuitBreakerOpen != e.IsCircuitBreakerOpen {
 						lastEventLogTime[e.Name] = time.Now()
-						logEvent(logger, e)
+						logEvent(d.logger, e)
 					} else if time.Now().Sub(lastEventLogTime[e.Name]) > logFrequency {
 						lastEventLogTime[e.Name] = time.Now()
-						logEvent(logger, e)
+						logEvent(d.logger, e)
 					}
 				}
 			}
