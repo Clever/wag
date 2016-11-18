@@ -55,6 +55,7 @@ Nil check tests
 | params.id | <code>string</code> |  |
 | [params.query] | <code>string</code> |  |
 | [params.header] | <code>string</code> |  |
+| [params.array] | <code>Array.&lt;string&gt;</code> |  |
 | [params.body] |  |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |

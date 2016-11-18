@@ -150,6 +150,9 @@ func (c *WagClient) NilCheck(ctx context.Context, i *models.NilCheckInput) error
 	if i.Query != nil {
 		urlVals.Add("query", *i.Query)
 	}
+	for _, v := range i.Array {
+		urlVals.Add("array", v)
+	}
 	path = path + "?" + urlVals.Encode()
 
 	if i.Body != nil {

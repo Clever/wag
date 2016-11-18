@@ -118,6 +118,7 @@ class NilTest {
    * @param {string} params.id
    * @param {string} [params.query]
    * @param {string} [params.header]
+   * @param {string[]} [params.array]
    * @param [params.body]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
@@ -149,6 +150,10 @@ class NilTest {
     const query = {};
     if (typeof params.query !== "undefined") {
       query["query"] = params.query;
+    }
+
+    if (typeof params.array !== "undefined") {
+      query["array"] = params.array;
     }
 
 

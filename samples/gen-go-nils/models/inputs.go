@@ -19,6 +19,7 @@ type NilCheckInput struct {
 	ID     string
 	Query  *string
 	Header string
+	Array  []string
 	Body   *NilFields
 }
 

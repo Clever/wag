@@ -37,6 +37,11 @@ paths:
         - name: header
           in: header
           type: string
+        - name: array
+          in: query
+          type: array
+          items:
+            type: string
         - name: body
           in: body
           schema:

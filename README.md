@@ -126,8 +126,9 @@ logger.FromContext(ctx).Info(...)
       * Cannot have defaults
     * Query parameters
       * Must be a simple or array type. If an array must be an array of strings
-      * If a simple type is not required, it will be a pointer
-      * Otherwise the type will not be a pointer
+      * If the type is 'simple' and the parameter is not required, the type will be a pointer
+      * If the type is 'array' it won't be a pointer. Query parameters can't distinguish between an empty array and an nil array so it converts both these cases to a nil array. If you need to distinguish between the two use a body parameter
+      * In other cases the parameter is not a pointer 
     * Header parameters
       * Must be simple types
       * If marked required will ensure that the input isn't the nil value. Headers cannot have pointer types since HTTP doesn't distinguish between empty and missing headers. 

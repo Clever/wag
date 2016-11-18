@@ -174,6 +174,9 @@ func newNilCheckInput(r *http.Request) (*models.NilCheckInput, error) {
 		}
 		input.Header = headerTmp
 	}
+	if array, ok := r.URL.Query()["array"]; ok {
+		input.Array = array
+	}
 
 	data, err := ioutil.ReadAll(r.Body)
 

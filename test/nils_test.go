@@ -22,6 +22,7 @@ func (c *NilsController) NilCheck(ctx context.Context, i *models.NilCheckInput) 
 	assert.Nil(c.t, i.Body)
 	assert.Equal(c.t, "", i.Header)
 	assert.Nil(c.t, i.Query)
+	assert.Nil(c.t, i.Array)
 	return nil
 }
 
@@ -44,6 +45,8 @@ func (c *EmptyController) NilCheck(ctx context.Context, i *models.NilCheckInput)
 	assert.Equal(c.t, "", i.Header)
 	require.NotNil(c.t, i.Query)
 	assert.Equal(c.t, "", *i.Query)
+	// In query params can't distinguish between an empty and nil array
+	assert.Nil(c.t, i.Array)
 	return nil
 }
 
@@ -57,7 +60,6 @@ func TestEmptyStringsAndFields(t *testing.T) {
 		Body:   &models.NilFields{ID: ""},
 		Header: "",
 		Query:  swag.String(""),
+		Array:  []string{},
 	}))
 }
-
-// TODO: add an arrays test
