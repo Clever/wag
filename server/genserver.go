@@ -477,14 +477,16 @@ func generateNewInput(op *spec.Operation) (string, error) {
 		camelParamName := swagger.StructParamName(param)
 		paramVarName := lowercase(camelParamName)
 
+		typeName, pointer, err := swagger.ParamToType(param)
+		if err != nil {
+			return "", err
+		}
+
 		if param.In != "body" {
 			if param.Type == "array" && param.In == "query" {
-				buf.WriteString(fmt.Sprintf("\tif %s, ok := r.URL.Query()[\"%s\"]; ok {\n\t\tinput.%s = %s\n\t}\n", paramVarName, param.Name, camelParamName, paramVarName))
+				buf.WriteString(fmt.Sprintf("\tif %s, ok := r.URL.Query()[\"%s\"]; ok {\n\t\tinput.%s = %s\n\t}\n",
+					paramVarName, param.Name, camelParamName, paramVarName))
 			} else {
-				typeName, err := swagger.ParamToType(param, false)
-				if err != nil {
-					return "", err
-				}
 				typeCode, err := swagger.StringToTypeCode(fmt.Sprintf("%sStr", paramVarName), param)
 				if err != nil {
 					return "", err
@@ -494,17 +496,15 @@ func generateNewInput(op *spec.Operation) (string, error) {
 					defaultVal = swagger.DefaultAsString(param)
 				}
 				str, err := templates.WriteTemplate(paramTemplateStr, paramTemplate{
-					Required:     param.Required,
-					ParamType:    param.In,
-					VarName:      paramVarName,
-					ParamName:    param.Name,
-					CapParamName: capitalize(paramVarName),
-					TypeName:     typeName,
-					TypeCode:     typeCode,
-					DefaultValue: defaultVal,
-					// TODO: the below should probably be calculated elsewhere since the logic is duplicated
-					// when generating models
-					PointerInStruct: !param.Required && param.Type != "array",
+					Required:        param.Required,
+					ParamType:       param.In,
+					VarName:         paramVarName,
+					ParamName:       param.Name,
+					CapParamName:    capitalize(paramVarName),
+					TypeName:        typeName,
+					TypeCode:        typeCode,
+					DefaultValue:    defaultVal,
+					PointerInStruct: pointer,
 				})
 				if err != nil {
 					return "", err
@@ -514,10 +514,6 @@ func generateNewInput(op *spec.Operation) (string, error) {
 		} else {
 			if param.Schema == nil {
 				return "", fmt.Errorf("body parameters must have a schema defined")
-			}
-			typeName, err := swagger.TypeFromSchema(param.Schema, true)
-			if err != nil {
-				return "", err
 			}
 			paramField := camelParamName
 			if singleSchemaedBodyParameter {
@@ -561,21 +557,26 @@ type paramTemplate struct {
 var paramTemplateStr = `
 	{{if eq .ParamType "query" -}}
 		{{.ParamName}}Strs := r.URL.Query()["{{.ParamName}}"]
+		{{if .Required -}}
+			if len({{.ParamName}}Strs) == 0 {
+				return nil, errors.New("parameter must be specified")
+			}
+		{{- end -}}
 	{{- else if eq .ParamType "path" -}}
 		pathParam := mux.Vars(r)["{{.ParamName}}"]
-		var {{.ParamName}}Strs []string
-		if len(pathParam) > 0 {
-			{{.ParamName}}Strs = []string{pathParam}
+		if len(pathParam) == 0 {
+			return nil, errors.New("parameter must be specified")
 		}
+		{{.ParamName}}Strs := []string{pathParam}
 	{{- else if eq .ParamType "header" -}}
 		{{.ParamName}}Strs := r.Header["{{.ParamName}}"]
+		{{if .Required -}}
+			if len({{.ParamName}}Strs) == 0 {
+				return nil, errors.New("parameter must be specified")
+			}
+		{{- end -}}
 	{{- end}}
-
-	{{if .Required -}}
-		if len({{.ParamName}}Strs) == 0 {
-			return nil, errors.New("parameter must be specified")
-		} 
-	{{else if gt (len .DefaultValue) 0 -}}
+	{{if gt (len .DefaultValue) 0 -}}
 		if len({{.ParamName}}Strs) == 0 {
 			{{.ParamName}}Strs = []string{"{{.DefaultValue}}"}
 		}
@@ -611,7 +612,7 @@ var bodyParamTemplateStr = `
 		if err := json.NewDecoder(bytes.NewReader(data)).Decode(&input); err != nil {
 			return nil, err
 		}{{else}}
-		input.{{.ParamField}} = &{{.TypeName}}{}
+		input.{{.ParamField}} = &models.{{.TypeName}}{}
 		if err := json.NewDecoder(bytes.NewReader(data)).Decode(input.{{.ParamField}}); err != nil {
 			return nil, err
 		}{{end}}

@@ -136,14 +136,10 @@ func newNilCheckInput(r *http.Request) (*models.NilCheckInput, error) {
 	_ = err
 
 	pathParam := mux.Vars(r)["id"]
-	var idStrs []string
-	if len(pathParam) > 0 {
-		idStrs = []string{pathParam}
-	}
-
-	if len(idStrs) == 0 {
+	if len(pathParam) == 0 {
 		return nil, errors.New("parameter must be specified")
 	}
+	idStrs := []string{pathParam}
 
 	if len(idStrs) > 0 {
 		iDStr := idStrs[0]
@@ -176,7 +172,7 @@ func newNilCheckInput(r *http.Request) (*models.NilCheckInput, error) {
 		if err != nil {
 			return nil, err
 		}
-		input.Header = &headerTmp
+		input.Header = headerTmp
 	}
 
 	data, err := ioutil.ReadAll(r.Body)

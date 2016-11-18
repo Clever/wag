@@ -43,7 +43,7 @@ func TestBasicEndToEnd(t *testing.T) {
 	assert.Equal(t, bookName, (booksOutput)[0].Name)
 
 	singleBook, err := c.GetBookByID(context.Background(), &models.GetBookByIDInput{BookID: bookID})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, bookID, singleBook.ID)
 	assert.Equal(t, bookName, singleBook.Name)
 }
@@ -172,7 +172,7 @@ func TestDefaultValue(t *testing.T) {
 	c := client.New(testServer.URL)
 
 	_, err := c.GetBooks(context.Background(), &models.GetBooksInput{})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "finished", d.lastState)
 	assert.True(t, d.lastAvailable)
 	assert.Equal(t, 500.5, d.lastMaxPages)
@@ -187,8 +187,8 @@ func TestPassInArray(t *testing.T) {
 
 	_, err := c.GetBooks(context.Background(),
 		&models.GetBooksInput{Authors: []string{"author1", "author2"}})
-	assert.NoError(t, err)
-	assert.Equal(t, 2, len(d.lastAuthors))
+	require.NoError(t, err)
+	require.Equal(t, 2, len(d.lastAuthors))
 	assert.Equal(t, "author1", d.lastAuthors[0])
 	assert.Equal(t, "author2", d.lastAuthors[1])
 }

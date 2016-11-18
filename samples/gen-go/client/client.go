@@ -146,10 +146,8 @@ func (c *WagClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]mo
 	urlVals := url.Values{}
 	var body []byte
 
-	if i.Authors != nil {
-		for _, v := range i.Authors {
-			urlVals.Add("authors", v)
-		}
+	for _, v := range i.Authors {
+		urlVals.Add("authors", v)
 	}
 	if i.Available != nil {
 		urlVals.Add("available", strconv.FormatBool(*i.Available))
@@ -342,9 +340,7 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 		return nil, err
 	}
 
-	if i.Authorization != nil {
-		req.Header.Set("authorization", *i.Authorization)
-	}
+	req.Header.Set("authorization", i.Authorization)
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "getBookByID")

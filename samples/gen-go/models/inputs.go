@@ -87,7 +87,7 @@ func (i GetBooksInput) Validate() error {
 type GetBookByIDInput struct {
 	BookID        int64
 	AuthorID      *string
-	Authorization *string
+	Authorization string
 	RandomBytes   *strfmt.Base64
 }
 
@@ -108,18 +108,18 @@ func (i GetBookByIDInput) Validate() error {
 			return err
 		}
 	}
-	if i.Authorization != nil {
-		if err := validate.MaxLength("authorization", "header", string(*i.Authorization), 24); err != nil {
+	if len(i.Authorization) > 0 {
+		if err := validate.MaxLength("authorization", "header", string(i.Authorization), 24); err != nil {
 			return err
 		}
 	}
-	if i.Authorization != nil {
-		if err := validate.MinLength("authorization", "header", string(*i.Authorization), 24); err != nil {
+	if len(i.Authorization) > 0 {
+		if err := validate.MinLength("authorization", "header", string(i.Authorization), 24); err != nil {
 			return err
 		}
 	}
-	if i.Authorization != nil {
-		if err := validate.Pattern("authorization", "header", string(*i.Authorization), "[0-9a-f]+"); err != nil {
+	if len(i.Authorization) > 0 {
+		if err := validate.Pattern("authorization", "header", string(i.Authorization), "[0-9a-f]+"); err != nil {
 			return err
 		}
 	}

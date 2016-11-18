@@ -18,7 +18,7 @@ var _ = strfmt.NewFormats
 type NilCheckInput struct {
 	ID     string
 	Query  *string
-	Header *string
+	Header string
 	Body   *NilFields
 }
 

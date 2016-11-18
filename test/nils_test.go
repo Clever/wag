@@ -20,7 +20,7 @@ type NilsController struct {
 
 func (c *NilsController) NilCheck(ctx context.Context, i *models.NilCheckInput) error {
 	assert.Nil(c.t, i.Body)
-	assert.Nil(c.t, i.Header)
+	assert.Equal(c.t, "", i.Header)
 	assert.Nil(c.t, i.Query)
 	return nil
 }
@@ -41,8 +41,7 @@ func (c *EmptyController) NilCheck(ctx context.Context, i *models.NilCheckInput)
 	require.NotNil(c.t, i.Body)
 	assert.Equal(c.t, "", i.Body.ID)
 	assert.Nil(c.t, i.Body.Optional)
-	//require.NotNil(c.t, i.Header)
-	//assert.Equal(c.t, "", *i.Header)
+	assert.Equal(c.t, "", i.Header)
 	require.NotNil(c.t, i.Query)
 	assert.Equal(c.t, "", *i.Query)
 	return nil
@@ -56,11 +55,9 @@ func TestEmptyStringsAndFields(t *testing.T) {
 	require.NoError(t, c.NilCheck(context.Background(), &models.NilCheckInput{
 		ID:     "a",
 		Body:   &models.NilFields{ID: ""},
-		Header: swag.String(""),
+		Header: "",
 		Query:  swag.String(""),
 	}))
 }
-
-// TODO: add defaults
 
 // TODO: add an arrays test

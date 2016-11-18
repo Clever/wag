@@ -170,9 +170,7 @@ func (c *WagClient) NilCheck(ctx context.Context, i *models.NilCheckInput) error
 		return err
 	}
 
-	if i.Header != nil {
-		req.Header.Set("header", *i.Header)
-	}
+	req.Header.Set("header", i.Header)
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "nilCheck")

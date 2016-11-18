@@ -102,19 +102,11 @@ func printInputStruct(g *swagger.Generator, op *spec.Operation) error {
 			return fmt.Errorf("input parameters with 'In' formData are not supported")
 		}
 
-		var typeName string
-		var err error
-		if param.In != "body" {
-			typeName, err = swagger.ParamToType(param, true)
-			if err != nil {
-				return err
-			}
-		} else {
-			typeName, err = swagger.TypeFromSchema(param.Schema, false)
-			if err != nil {
-				return err
-			}
-			// All schema types are pointers
+		typeName, pointer, err := swagger.ParamToType(param)
+		if err != nil {
+			return err
+		}
+		if pointer {
 			typeName = "*" + typeName
 		}
 
@@ -152,8 +144,16 @@ func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
 		if err != nil {
 			return err
 		}
+		_, pointer, err := swagger.ParamToType(param)
+		if err != nil {
+			return err
+		}
 		for _, validation := range validations {
-			if param.Required {
+			if param.In == "header" {
+				g.Printf("\tif len(i.%s) > 0 {\n", swagger.StructParamName(param))
+				g.Printf(errCheck(validation))
+				g.Printf("\t}\n")
+			} else if !pointer && param.Type != "array" {
 				if singleStringPathParameter {
 					// replace i.<Param> with <param>
 					validation = strings.Replace(validation,

@@ -302,7 +302,12 @@ func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string) string
 				} else {
 					queryAddCode = fmt.Sprintf("\turlVals.Add(\"%s\", %s)\n", param.Name, swagger.ParamToStringCode(param))
 				}
-				if param.Required {
+
+				_, pointer, err := swagger.ParamToType(param)
+				if err != nil {
+					panic(fmt.Sprintf("unexpected error: %s", err))
+				}
+				if !pointer {
 					buf.WriteString(fmt.Sprintf(queryAddCode))
 				} else {
 					buf.WriteString(fmt.Sprintf("\tif i.%s != nil {\n", swagger.StructParamName(param)))
@@ -334,7 +339,11 @@ func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string) string
 `, swagger.StructParamName(param), errorMessage(s, op))
 			}
 
-			if param.Required {
+			_, pointer, err := swagger.ParamToType(param)
+			if err != nil {
+				panic(fmt.Sprintf("unexpected error: %s", err))
+			}
+			if !pointer {
 				buf.WriteString(fmt.Sprintf(bodyMarshalCode))
 			} else {
 				if singleSchemaedBodyParameter {
@@ -357,7 +366,11 @@ func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string) string
 	for _, param := range op.Parameters {
 		if param.In == "header" {
 			headerAddCode := fmt.Sprintf("\treq.Header.Set(\"%s\", %s)\n", param.Name, swagger.ParamToStringCode(param))
-			if param.Required {
+			_, pointer, err := swagger.ParamToType(param)
+			if err != nil {
+				panic(fmt.Sprintf("unexpected error: %s", err))
+			}
+			if !pointer {
 				buf.WriteString(fmt.Sprintf(headerAddCode))
 			} else {
 				buf.WriteString(fmt.Sprintf("\tif i.%s != nil {\n", swagger.StructParamName(param)))

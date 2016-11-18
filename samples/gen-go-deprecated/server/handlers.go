@@ -142,7 +142,6 @@ func newHealthInput(r *http.Request) (*models.HealthInput, error) {
 	_ = err
 
 	sectionStrs := r.URL.Query()["section"]
-
 	if len(sectionStrs) == 0 {
 		return nil, errors.New("parameter must be specified")
 	}

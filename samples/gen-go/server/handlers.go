@@ -460,14 +460,10 @@ func newGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 	_ = err
 
 	pathParam := mux.Vars(r)["book_id"]
-	var book_idStrs []string
-	if len(pathParam) > 0 {
-		book_idStrs = []string{pathParam}
-	}
-
-	if len(book_idStrs) == 0 {
+	if len(pathParam) == 0 {
 		return nil, errors.New("parameter must be specified")
 	}
+	book_idStrs := []string{pathParam}
 
 	if len(book_idStrs) > 0 {
 		bookIDStr := book_idStrs[0]
@@ -500,7 +496,7 @@ func newGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 		if err != nil {
 			return nil, err
 		}
-		input.Authorization = &authorizationTmp
+		input.Authorization = authorizationTmp
 	}
 
 	randomBytesStrs := r.URL.Query()["randomBytes"]
