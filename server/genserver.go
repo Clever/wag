@@ -563,11 +563,11 @@ var paramTemplateStr = `
 			}
 		{{- end -}}
 	{{- else if eq .ParamType "path" -}}
-		pathParam := mux.Vars(r)["{{.ParamName}}"]
-		if len(pathParam) == 0 {
+		{{.ParamName}}Str := mux.Vars(r)["{{.ParamName}}"]
+		if len({{.ParamName}}Str) == 0 {
 			return nil, errors.New("parameter must be specified")
 		}
-		{{.ParamName}}Strs := []string{pathParam}
+		{{.ParamName}}Strs := []string{ {{.ParamName}}Str }
 	{{- else if eq .ParamType "header" -}}
 		{{.ParamName}}Strs := r.Header["{{.ParamName}}"]
 		{{if .Required -}}

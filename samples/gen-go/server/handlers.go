@@ -459,11 +459,11 @@ func newGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 	var err error
 	_ = err
 
-	pathParam := mux.Vars(r)["book_id"]
-	if len(pathParam) == 0 {
+	book_idStr := mux.Vars(r)["book_id"]
+	if len(book_idStr) == 0 {
 		return nil, errors.New("parameter must be specified")
 	}
-	book_idStrs := []string{pathParam}
+	book_idStrs := []string{book_idStr}
 
 	if len(book_idStrs) > 0 {
 		bookIDStr := book_idStrs[0]

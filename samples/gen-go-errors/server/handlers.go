@@ -141,11 +141,11 @@ func newGetBookInput(r *http.Request) (*models.GetBookInput, error) {
 	var err error
 	_ = err
 
-	pathParam := mux.Vars(r)["id"]
-	if len(pathParam) == 0 {
+	idStr := mux.Vars(r)["id"]
+	if len(idStr) == 0 {
 		return nil, errors.New("parameter must be specified")
 	}
-	idStrs := []string{pathParam}
+	idStrs := []string{idStr}
 
 	if len(idStrs) > 0 {
 		iDStr := idStrs[0]
