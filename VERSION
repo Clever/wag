@@ -1,3 +1,4 @@
-1.0.3
-- Allow setting a custom client logger
+1.1.0
+- Tighter controls on input parameters
+- Distinguish between the empty string parameter and no parameter
 
