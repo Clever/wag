@@ -60,9 +60,41 @@ func validateOp(path, method string, op *spec.Operation) error {
 	}
 
 	for _, param := range op.Parameters {
-		if param.In == "path" && !param.Required {
-			return fmt.Errorf("%s for %s %s is a path parameter so it must be required",
-				param.Name, method, path)
+
+		switch param.In {
+		case "path":
+			if !param.Required {
+				return fmt.Errorf("%s for %s %s is a path parameter so it must be required",
+					param.Name, method, path)
+			}
+			if param.Type == "array" || param.Type == "object" {
+				return fmt.Errorf("%s for %s %s is a path parameter so it must have a primitive type",
+					param.Name, method, path)
+			}
+		case "body":
+			if param.Default != nil {
+				return fmt.Errorf("%s for %s %s is a body parameter so it must not have a default",
+					param.Name, method, path)
+			}
+			if param.Schema == nil {
+				return fmt.Errorf("%s for %s %s is a body parameter so it must reference a schema",
+					param.Name, method, path)
+			}
+		case "query":
+			if param.Type == "object" {
+				return fmt.Errorf("%s for %s %s is a query param so it can't have the type 'object'",
+					param.Name, method, path)
+			}
+			if param.Type == "array" && param.Items.Type != "string" {
+				return fmt.Errorf("array parameters must have string sub-types")
+			}
+		case "header":
+			if param.Type == "array" || param.Type == "object" {
+				return fmt.Errorf("%s for %s %s is a path parameter so it must have a primitive type",
+					param.Name, method, path)
+			}
+		default:
+			return fmt.Errorf("unsupported param type: %s", param.In)
 		}
 
 		if param.Type == "string" && param.Format != "" {
@@ -71,10 +103,6 @@ func validateOp(path, method string, op *spec.Operation) error {
 					"Only string type parameters without a format can have additional validation.",
 					param.Name, method, path)
 			}
-		}
-
-		if param.Type == "array" && param.Items.Type != "string" {
-			return fmt.Errorf("Array parameters must have string sub-types")
 		}
 	}
 

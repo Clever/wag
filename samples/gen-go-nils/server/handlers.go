@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Clever/wag/samples/gen-go-errors/models"
+	"github.com/Clever/wag/samples/gen-go-nils/models"
 	"github.com/go-errors/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -66,42 +66,36 @@ func jsonMarshalNoError(i interface{}) string {
 	return string(bytes)
 }
 
-// statusCodeForGetBook returns the status code corresponding to the returned
+// statusCodeForNilCheck returns the status code corresponding to the returned
 // object. It returns -1 if the type doesn't correspond to anything.
-func statusCodeForGetBook(obj interface{}) int {
+func statusCodeForNilCheck(obj interface{}) int {
 
 	switch obj.(type) {
 
-	case *models.ExtendedError:
+	case *models.BadRequest:
 		return 400
 
 	case *models.InternalError:
 		return 500
 
-	case *models.NotFound:
-		return 404
-
-	case models.ExtendedError:
+	case models.BadRequest:
 		return 400
 
 	case models.InternalError:
 		return 500
-
-	case models.NotFound:
-		return 404
 
 	default:
 		return -1
 	}
 }
 
-func (h handler) GetBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func (h handler) NilCheckHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
-	input, err := newGetBookInput(r)
+	input, err := newNilCheckInput(r)
 
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.ExtendedError{Message: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.BadRequest{Message: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
@@ -109,18 +103,18 @@ func (h handler) GetBookHandler(ctx context.Context, w http.ResponseWriter, r *h
 
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.ExtendedError{Message: err.Error()}), http.StatusBadRequest)
+		http.Error(w, jsonMarshalNoError(models.BadRequest{Message: err.Error()}), http.StatusBadRequest)
 		return
 	}
 
-	err = h.GetBook(ctx, input)
+	err = h.NilCheck(ctx, input)
 
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		if btErr, ok := err.(*errors.Error); ok {
 			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
 		}
-		statusCode := statusCodeForGetBook(err)
+		statusCode := statusCodeForNilCheck(err)
 		if statusCode == -1 {
 			err = models.InternalError{Message: err.Error()}
 			statusCode = 500
@@ -134,9 +128,9 @@ func (h handler) GetBookHandler(ctx context.Context, w http.ResponseWriter, r *h
 
 }
 
-// newGetBookInput takes in an http.Request an returns the input struct.
-func newGetBookInput(r *http.Request) (*models.GetBookInput, error) {
-	var input models.GetBookInput
+// newNilCheckInput takes in an http.Request an returns the input struct.
+func newNilCheckInput(r *http.Request) (*models.NilCheckInput, error) {
+	var input models.NilCheckInput
 
 	var err error
 	_ = err
@@ -149,12 +143,48 @@ func newGetBookInput(r *http.Request) (*models.GetBookInput, error) {
 
 	if len(idStrs) > 0 {
 		iDStr := idStrs[0]
-		var iDTmp int64
-		iDTmp, err = swag.ConvertInt64(iDStr)
+		var iDTmp string
+		iDTmp, err = iDStr, error(nil)
 		if err != nil {
 			return nil, err
 		}
 		input.ID = iDTmp
+	}
+
+	queryStrs := r.URL.Query()["query"]
+
+	if len(queryStrs) > 0 {
+		queryStr := queryStrs[0]
+		var queryTmp string
+		queryTmp, err = queryStr, error(nil)
+		if err != nil {
+			return nil, err
+		}
+		input.Query = &queryTmp
+	}
+
+	headerStrs := r.Header["header"]
+
+	if len(headerStrs) > 0 {
+		headerStr := headerStrs[0]
+		var headerTmp string
+		headerTmp, err = headerStr, error(nil)
+		if err != nil {
+			return nil, err
+		}
+		input.Header = headerTmp
+	}
+	if array, ok := r.URL.Query()["array"]; ok {
+		input.Array = array
+	}
+
+	data, err := ioutil.ReadAll(r.Body)
+
+	if len(data) > 0 {
+		input.Body = &models.NilFields{}
+		if err := json.NewDecoder(bytes.NewReader(data)).Decode(input.Body); err != nil {
+			return nil, err
+		}
 	}
 
 	return &input, nil

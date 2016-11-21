@@ -477,87 +477,57 @@ func generateNewInput(op *spec.Operation) (string, error) {
 		camelParamName := swagger.StructParamName(param)
 		paramVarName := lowercase(camelParamName)
 
+		typeName, pointer, err := swagger.ParamToType(param)
+		if err != nil {
+			return "", err
+		}
+
 		if param.In != "body" {
 			if param.Type == "array" && param.In == "query" {
-				buf.WriteString(fmt.Sprintf("\tif %s, ok := r.URL.Query()[\"%s\"]; ok {\n\t\tinput.%s = %s\n\t}\n", paramVarName, param.Name, camelParamName, paramVarName))
+				buf.WriteString(fmt.Sprintf("\tif %s, ok := r.URL.Query()[\"%s\"]; ok {\n\t\tinput.%s = %s\n\t}\n",
+					paramVarName, param.Name, camelParamName, paramVarName))
 			} else {
-				extractCode := ""
-				switch param.In {
-				case "query":
-					extractCode = fmt.Sprintf("r.URL.Query().Get(\"%s\")", param.Name)
-				case "path":
-					extractCode = fmt.Sprintf("mux.Vars(r)[\"%s\"]", param.Name)
-				case "header":
-					extractCode = fmt.Sprintf("r.Header.Get(\"%s\")", param.Name)
-				}
-				buf.WriteString(fmt.Sprintf("\t%sStr := %s\n", paramVarName, extractCode))
-
-				if param.Required {
-					buf.WriteString(fmt.Sprintf("\tif len(%sStr) == 0{\n", paramVarName))
-					buf.WriteString(fmt.Sprintf("\t\treturn nil, errors.New(\"Parameter must be specified\")\n"))
-					buf.WriteString(fmt.Sprintf("\t}\n"))
-				} else if param.Default != nil {
-					buf.WriteString(fmt.Sprintf("\tif len(%sStr) == 0 {\n", paramVarName))
-					buf.WriteString(fmt.Sprintf("\t\t// Use the default value\n"))
-					buf.WriteString(fmt.Sprintf("\t\t%sStr = \"%s\"\n", paramVarName, swagger.DefaultAsString(param)))
-					buf.WriteString(fmt.Sprintf("\t}\n"))
-				}
-
-				buf.WriteString(fmt.Sprintf("\tif len(%sStr) != 0 {\n", paramVarName))
-
-				typeName, err := swagger.ParamToType(param, false)
-				if err != nil {
-					return "", err
-				}
 				typeCode, err := swagger.StringToTypeCode(fmt.Sprintf("%sStr", paramVarName), param)
 				if err != nil {
 					return "", err
 				}
-				buf.WriteString(fmt.Sprintf("\t\tvar %sTmp %s\n", paramVarName, typeName))
-				buf.WriteString(fmt.Sprintf("\t\t%sTmp, err = %s\n", paramVarName, typeCode))
-				buf.WriteString(fmt.Sprintf("\t\tif err != nil {\n"))
-				buf.WriteString(fmt.Sprintf("\t\t\treturn nil, err\n"))
-				buf.WriteString(fmt.Sprintf("\t\t}\n"))
-
-				// TODO: Factor this out...
-				if param.Required || param.Type == "array" {
-					buf.WriteString(fmt.Sprintf("\t\tinput.%s = %sTmp\n\n", camelParamName, paramVarName))
-				} else {
-					buf.WriteString(fmt.Sprintf("\t\tinput.%s = &%sTmp\n\n", camelParamName, paramVarName))
+				defaultVal := ""
+				if param.Default != nil {
+					defaultVal = swagger.DefaultAsString(param)
 				}
-
-				buf.WriteString(fmt.Sprintf("\t}\n"))
+				str, err := templates.WriteTemplate(paramTemplateStr, paramTemplate{
+					Required:        param.Required,
+					ParamType:       param.In,
+					VarName:         paramVarName,
+					ParamName:       param.Name,
+					CapParamName:    capitalize(paramVarName),
+					TypeName:        typeName,
+					TypeCode:        typeCode,
+					DefaultValue:    defaultVal,
+					PointerInStruct: pointer,
+				})
+				if err != nil {
+					return "", err
+				}
+				buf.WriteString(str)
 			}
 		} else {
 			if param.Schema == nil {
 				return "", fmt.Errorf("body parameters must have a schema defined")
 			}
-			typeName, err := swagger.TypeFromSchema(param.Schema, true)
+			paramField := camelParamName
+			if singleSchemaedBodyParameter {
+				paramField = ""
+			}
+			str, err := templates.WriteTemplate(bodyParamTemplateStr, bodyParamTemplate{
+				Required:   param.Required,
+				ParamField: paramField,
+				TypeName:   typeName,
+			})
 			if err != nil {
 				return "", err
 			}
-
-			buf.WriteString(fmt.Sprintf("\tdata, err := ioutil.ReadAll(r.Body)\n"))
-
-			if param.Required {
-				buf.WriteString(fmt.Sprintf("\tif len(data) == 0 {\n"))
-				buf.WriteString(fmt.Sprintf("\t\treturn nil, errors.New(\"Parameter must be specified\")\n"))
-				buf.WriteString(fmt.Sprintf("\t}\n"))
-			}
-
-			buf.WriteString(fmt.Sprintf("\tif len(data) > 0 {"))
-
-			if singleSchemaedBodyParameter {
-				buf.WriteString(fmt.Sprintf("\t\tif err := json.NewDecoder(bytes.NewReader(data)).Decode(&input); err != nil {\n"))
-			} else {
-				// Initialize the pointer in the object
-				buf.WriteString(fmt.Sprintf("\t\tinput.%s = &%s{}\n", camelParamName, typeName))
-				buf.WriteString(fmt.Sprintf("\t\tif err := json.NewDecoder(bytes.NewReader(data)).Decode(input.%s); err != nil {\n", camelParamName))
-			}
-			buf.WriteString(fmt.Sprintf("\t\t\treturn nil, err\n"))
-			buf.WriteString(fmt.Sprintf("\t\t}\n"))
-			buf.WriteString(fmt.Sprintf("\t}\n"))
-
+			buf.WriteString(str)
 		}
 	}
 	buf.WriteString(fmt.Sprintf("\n"))
@@ -567,3 +537,84 @@ func generateNewInput(op *spec.Operation) (string, error) {
 
 	return buf.String(), nil
 }
+
+func capitalize(str string) string {
+	return swagger.Capitalize(str)
+}
+
+type paramTemplate struct {
+	Required        bool
+	ParamType       string
+	VarName         string
+	ParamName       string
+	CapParamName    string
+	TypeName        string
+	TypeCode        string
+	DefaultValue    string
+	PointerInStruct bool
+}
+
+var paramTemplateStr = `
+	{{if eq .ParamType "query" -}}
+		{{.ParamName}}Strs := r.URL.Query()["{{.ParamName}}"]
+		{{if .Required -}}
+			if len({{.ParamName}}Strs) == 0 {
+				return nil, errors.New("parameter must be specified")
+			}
+		{{- end -}}
+	{{- else if eq .ParamType "path" -}}
+		pathParam := mux.Vars(r)["{{.ParamName}}"]
+		if len(pathParam) == 0 {
+			return nil, errors.New("parameter must be specified")
+		}
+		{{.ParamName}}Strs := []string{pathParam}
+	{{- else if eq .ParamType "header" -}}
+		{{.ParamName}}Strs := r.Header["{{.ParamName}}"]
+		{{if .Required -}}
+			if len({{.ParamName}}Strs) == 0 {
+				return nil, errors.New("parameter must be specified")
+			}
+		{{- end -}}
+	{{- end}}
+	{{if gt (len .DefaultValue) 0 -}}
+		if len({{.ParamName}}Strs) == 0 {
+			{{.ParamName}}Strs = []string{"{{.DefaultValue}}"}
+		}
+	{{- end}}
+	if len({{.ParamName}}Strs) > 0 {
+		{{.VarName}}Str := {{.ParamName}}Strs[0]
+		var {{.VarName}}Tmp {{.TypeName}}
+		{{.VarName}}Tmp, err = {{.TypeCode}}
+		if err != nil {
+			return nil, err
+		}
+		{{if .PointerInStruct -}}
+			input.{{.CapParamName}} = &{{.VarName}}Tmp
+		{{- else -}}
+			input.{{.CapParamName}} = {{.VarName}}Tmp
+		{{- end}}
+	}
+`
+
+type bodyParamTemplate struct {
+	Required   bool
+	ParamField string
+	TypeName   string
+}
+
+var bodyParamTemplateStr = `
+	data, err := ioutil.ReadAll(r.Body)
+	{{if .Required}} if len(data) == 0 {
+		return nil, errors.New("Parameter must be specified")
+	}{{end}}
+
+	if len(data) > 0 { {{if eq (len .ParamField) 0}}
+		if err := json.NewDecoder(bytes.NewReader(data)).Decode(&input); err != nil {
+			return nil, err
+		}{{else}}
+		input.{{.ParamField}} = &models.{{.TypeName}}{}
+		if err := json.NewDecoder(bytes.NewReader(data)).Decode(input.{{.ParamField}}); err != nil {
+			return nil, err
+		}{{end}}
+	}
+`

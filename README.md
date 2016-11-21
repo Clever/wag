@@ -89,6 +89,7 @@ logger.FromContext(ctx).Info(...)
     * If the success response type doesn't have a data type then Wag generates an interface with only an error response. A nil error tells the client that the request succeeded.
     `func(...) error`
 
+
 * **Errors**.
   * Wag supports three types of errors
     * Global error response types
@@ -112,6 +113,33 @@ logger.FromContext(ctx).Info(...)
    * If you receive an error from an internal function, just return the error
     directly since it should already have stacktrace information (either it is
       a wrapped external error or a `go-errors`-generated internal error).
+
+* **Input Parameters
+  * Wag supports four types of parameters
+    * Path parameters
+      * Must be required
+      * Must be a simple type (e.g. string, integer)
+      * Will not be pointers
+    * Body parameters
+      * Must reference a 'definition' schema
+      * Will be pointers
+      * Cannot have defaults
+    * Query parameters
+      * Must be a simple or array type. If an array must be an array of strings
+      * If the type is 'simple' and the parameter is not required, the type will be a pointer
+      * If the type is 'array' it won't be a pointer. Query parameters can't distinguish between an empty array and an nil array so it converts both these cases to a nil array. If you need to distinguish between the two use a body parameter
+      * In other cases the parameter is not a pointer 
+    * Header parameters
+      * Must be simple types
+      * If marked required will ensure that the input isn't the nil value. Headers cannot have pointer types since HTTP doesn't distinguish between empty and missing headers. 
+      * If it doesn't have a default value specified, the default value will be the nil value for the type
+
+  * Interface signature
+    * If one parameter is defined then Wag uses that input directly in the function definition.
+    `func F(ctx context.Context, input string) error`
+    * If more than one parameter is defined then Wag generates a input struct with all the parameters:
+    `func F(ctx context.Context, input *models.{{OperationID}}Input) error`
+      * Optional parameters that don't have defaults are pointers in the input struct so that the server can distinguish between parameters that aren't set and parameters that are set to the nil value.
 
 * **Tracing**: `wag` instruments the context object with tracing-related metadata.
   This is done via [opentracing](http://opentracing.io/).

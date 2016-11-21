@@ -24,10 +24,8 @@ import (
 // it into a string (for serialization). For example, a integer named 'Size' becomes
 // `strconv.FormatInt(i.Size, 10)`
 func ParamToStringCode(param spec.Parameter) string {
-	valToSet := fmt.Sprintf("i.%s", StructParamName(param))
-	if !param.Required && param.Type != "array" {
-		valToSet = "*" + valToSet
-	}
+
+	valToSet := accessString(param)
 	switch param.Type {
 	case "string":
 		switch param.Format {
@@ -62,9 +60,17 @@ func ParamToStringCode(param spec.Parameter) string {
 	}
 }
 
-// ParamToType converts a parameter into its Go type. If withPointer is true
-// it will make the variable a pointer if it's not required and not an array type
-func ParamToType(param spec.Parameter, withPointer bool) (string, error) {
+// ParamToType converts a parameter into its Go type. It returns the type name and a
+// bool indiciating whether it should be a pointer.
+func ParamToType(param spec.Parameter) (string, bool, error) {
+	if param.In == "body" {
+		typeName, err := TypeFromSchema(param.Schema, false)
+		if err != nil {
+			return "", false, err
+		}
+		return typeName, true, nil
+	}
+
 	var typeName string
 	switch param.Type {
 	case "string":
@@ -80,7 +86,7 @@ func ParamToType(param spec.Parameter, withPointer bool) (string, error) {
 		case "":
 			typeName = "string"
 		default:
-			return "", fmt.Errorf("unsupported string format \"%s\"", param.Format)
+			return "", false, fmt.Errorf("unsupported string format \"%s\"", param.Format)
 		}
 	case "integer":
 		if param.Format == "int32" {
@@ -98,18 +104,17 @@ func ParamToType(param spec.Parameter, withPointer bool) (string, error) {
 		}
 	case "array":
 		if param.Items.Type != "string" {
-			return "", fmt.Errorf("array parameters must have string sub-types")
+			return "", false, fmt.Errorf("array parameters must have string sub-types")
 		}
 		typeName = "[]string"
 	default:
 		// Note. We don't support 'array' or 'file' types even though they're in the
 		// Swagger spec.
-		return "", fmt.Errorf("unsupported param type: \"%s\"", param.Type)
+		return "", false, fmt.Errorf("unsupported param type: \"%s\"", param.Type)
 	}
-	if withPointer && !param.Required && param.Type != "array" {
-		typeName = "*" + typeName
-	}
-	return typeName, nil
+
+	pointer := !param.Required && param.Type != "array" && param.In != "header"
+	return typeName, pointer, nil
 }
 
 // BaseStringToTypeCode is the helper code from base string to type
@@ -269,8 +274,12 @@ func ParamToValidationCode(param spec.Parameter) ([]string, error) {
 // accessString returns a string with the access of a variable in the struct named 'i'. For example:
 // *i.Length
 func accessString(param spec.Parameter) string {
+	_, makePointer, err := ParamToType(param)
+	if err != nil {
+		panic(fmt.Sprintf("unexpected error building parameter: %s", err))
+	}
 	pointer := ""
-	if !param.Required && param.Type != "array" {
+	if makePointer {
 		pointer = "*"
 	}
 	return fmt.Sprintf("%si.%s", pointer, utils.CamelCase(param.Name, true))

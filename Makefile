@@ -35,6 +35,10 @@ generate: hardcoded/hardcoded.go $(MOCKGEN) jsdoc2md
 	./bin/wag -file samples/errors.yml -go-package $(PKG)/samples/gen-go-errors -js-path $(GOPATH)/src/$(PKG)/samples/gen-js-errors
 	(cd $(GOPATH)/src/$(PKG)/samples/gen-js-errors && jsdoc2md index.js types.js > ./README.md)
 	go generate ${PKG}/samples/gen-go-errors...
+	./bin/wag -file samples/nils.yml -go-package $(PKG)/samples/gen-go-nils -js-path $(GOPATH)/src/$(PKG)/samples/gen-js-nils
+	(cd $(GOPATH)/src/$(PKG)/samples/gen-js-nils && jsdoc2md index.js types.js > ./README.md)
+	go generate ${PKG}/samples/gen-go-nils...
+
 
 $(PKGS): golang-test-all-strict-deps
 	$(call golang-test-all-strict,$@)

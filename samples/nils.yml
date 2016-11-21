@@ -1,0 +1,75 @@
+swagger: '2.0'
+info:
+  title: nil-test
+  description: Testing Swagger Codegen
+  version: 0.1.0
+  x-npm-package: nil-test
+basePath: /v1
+schemes:
+  - http
+produces:
+  - application/json
+consumes:
+  - application/json
+responses:
+  BadRequest:
+    description: "Bad Request"
+    schema:
+      $ref: "#/definitions/BadRequest"
+  InternalError:
+    description: "Internal Error"
+    schema:
+      $ref: "#/definitions/InternalError"
+
+paths:
+  /check/{id}:
+    post:
+      operationId: nilCheck
+      description: Nil check tests
+      parameters:
+        - name: id
+          in: path
+          type: string
+          required: true
+        - name: query
+          in: query
+          type: string
+        - name: header
+          in: header
+          type: string
+        - name: array
+          in: query
+          type: array
+          items:
+            type: string
+        - name: body
+          in: body
+          schema:
+            $ref: "#/definitions/NilFields"
+      responses:
+        200:
+          description: "Success"
+
+definitions:
+  NilFields:
+    type: object
+    properties:
+      id:
+        type: string
+      optional:
+        type: string
+        x-nullable: true
+
+  BadRequest:
+    type: object
+    properties:
+      message:
+        type: string
+
+  InternalError:
+    type: object
+    properties:
+      message:
+        type: string
+
+# TODO: simpler types??? (additional properties, arrays, direct definitions...)
