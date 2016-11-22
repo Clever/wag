@@ -82,7 +82,7 @@ type clientCodeTemplate struct {
 	Methods     []string
 }
 
-var indexJSTmplStr = `const discovery = require("@clever/discovery");
+var indexJSTmplStr = `const discovery = require("clever-discovery");
 const request = require("request");
 const opentracing = require("opentracing");
 
@@ -167,7 +167,7 @@ class {{.ClassName}} {
    * @param {Object} options - Options for constructing a client object.
    * @param {string} [options.address] - URL where the server is located. Must provide
    * this or the discovery argument
-   * @param {bool} [options.discovery] - Use @clever/discovery to locate the server. Must provide
+   * @param {bool} [options.discovery] - Use clever-discovery to locate the server. Must provide
    * this or the address argument
    * @param {number} [options.timeout] - The timeout to use for all client requests,
    * in milliseconds. This can be overridden on a per-request basis.
@@ -222,7 +222,7 @@ var packageJSONTmplStr = `{
   "description": "{{.Description}}",
   "main": "index.js",
   "dependencies": {
-    "@clever/discovery": "0.0.8",
+    "clever-discovery": "0.0.8",
     "opentracing": "^0.11.1",
     "request": "^2.75.0"
   }
