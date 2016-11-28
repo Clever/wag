@@ -165,8 +165,8 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 		availableStrs = []string{"true"}
 	}
 	if len(availableStrs) > 0 {
-		availableStr := availableStrs[0]
 		var availableTmp bool
+		availableStr := availableStrs[0]
 		availableTmp, err = strconv.ParseBool(availableStr)
 		if err != nil {
 			return nil, err
@@ -180,8 +180,8 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 		stateStrs = []string{"finished"}
 	}
 	if len(stateStrs) > 0 {
-		stateStr := stateStrs[0]
 		var stateTmp string
+		stateStr := stateStrs[0]
 		stateTmp, err = stateStr, error(nil)
 		if err != nil {
 			return nil, err
@@ -192,8 +192,8 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 	publishedStrs := r.URL.Query()["published"]
 
 	if len(publishedStrs) > 0 {
-		publishedStr := publishedStrs[0]
 		var publishedTmp strfmt.Date
+		publishedStr := publishedStrs[0]
 		publishedTmp, err = convertDate(publishedStr)
 		if err != nil {
 			return nil, err
@@ -204,8 +204,8 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 	snake_caseStrs := r.URL.Query()["snake_case"]
 
 	if len(snake_caseStrs) > 0 {
-		snakeCaseStr := snake_caseStrs[0]
 		var snakeCaseTmp string
+		snakeCaseStr := snake_caseStrs[0]
 		snakeCaseTmp, err = snakeCaseStr, error(nil)
 		if err != nil {
 			return nil, err
@@ -216,8 +216,8 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 	completedStrs := r.URL.Query()["completed"]
 
 	if len(completedStrs) > 0 {
-		completedStr := completedStrs[0]
 		var completedTmp strfmt.DateTime
+		completedStr := completedStrs[0]
 		completedTmp, err = convertDateTime(completedStr)
 		if err != nil {
 			return nil, err
@@ -231,8 +231,8 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 		maxPagesStrs = []string{"5.005E+02"}
 	}
 	if len(maxPagesStrs) > 0 {
-		maxPagesStr := maxPagesStrs[0]
 		var maxPagesTmp float64
+		maxPagesStr := maxPagesStrs[0]
 		maxPagesTmp, err = swag.ConvertFloat64(maxPagesStr)
 		if err != nil {
 			return nil, err
@@ -246,8 +246,8 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 		min_pagesStrs = []string{"5"}
 	}
 	if len(min_pagesStrs) > 0 {
-		minPagesStr := min_pagesStrs[0]
 		var minPagesTmp int32
+		minPagesStr := min_pagesStrs[0]
 		minPagesTmp, err = swag.ConvertInt32(minPagesStr)
 		if err != nil {
 			return nil, err
@@ -258,8 +258,8 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 	pagesToTimeStrs := r.URL.Query()["pagesToTime"]
 
 	if len(pagesToTimeStrs) > 0 {
-		pagesToTimeStr := pagesToTimeStrs[0]
 		var pagesToTimeTmp float32
+		pagesToTimeStr := pagesToTimeStrs[0]
 		pagesToTimeTmp, err = swag.ConvertFloat32(pagesToTimeStr)
 		if err != nil {
 			return nil, err
@@ -466,8 +466,8 @@ func newGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 	book_idStrs := []string{book_idStr}
 
 	if len(book_idStrs) > 0 {
-		bookIDStr := book_idStrs[0]
 		var bookIDTmp int64
+		bookIDStr := book_idStrs[0]
 		bookIDTmp, err = swag.ConvertInt64(bookIDStr)
 		if err != nil {
 			return nil, err
@@ -478,8 +478,8 @@ func newGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 	authorIDStrs := r.URL.Query()["authorID"]
 
 	if len(authorIDStrs) > 0 {
-		authorIDStr := authorIDStrs[0]
 		var authorIDTmp string
+		authorIDStr := authorIDStrs[0]
 		authorIDTmp, err = authorIDStr, error(nil)
 		if err != nil {
 			return nil, err
@@ -487,23 +487,19 @@ func newGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 		input.AuthorID = &authorIDTmp
 	}
 
-	authorizationStrs := r.Header["authorization"]
+	authorizationStrs := r.Header.Get("authorization")
 
 	if len(authorizationStrs) > 0 {
-		authorizationStr := authorizationStrs[0]
 		var authorizationTmp string
-		authorizationTmp, err = authorizationStr, error(nil)
-		if err != nil {
-			return nil, err
-		}
+		authorizationTmp = authorizationStrs
 		input.Authorization = authorizationTmp
 	}
 
 	randomBytesStrs := r.URL.Query()["randomBytes"]
 
 	if len(randomBytesStrs) > 0 {
-		randomBytesStr := randomBytesStrs[0]
 		var randomBytesTmp strfmt.Base64
+		randomBytesStr := randomBytesStrs[0]
 		randomBytesTmp, err = convertBase64(randomBytesStr)
 		if err != nil {
 			return nil, err

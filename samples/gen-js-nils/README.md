@@ -34,7 +34,7 @@ Create a new client object.
 | --- | --- | --- | --- |
 | options | <code>Object</code> |  | Options for constructing a client object. |
 | [options.address] | <code>string</code> |  | URL where the server is located. Must provide this or the discovery argument |
-| [options.discovery] | <code>bool</code> |  | Use @clever/discovery to locate the server. Must provide this or the address argument |
+| [options.discovery] | <code>bool</code> |  | Use clever-discovery to locate the server. Must provide this or the address argument |
 | [options.timeout] | <code>number</code> |  | The timeout to use for all client requests, in milliseconds. This can be overridden on a per-request basis. |
 | [options.retryPolicy] | <code>[RetryPolicies](#module_nil-test--NilTest.RetryPolicies)</code> | <code>RetryPolicies.Single</code> | The logic to determine which requests to retry, as well as how many times to retry. |
 
