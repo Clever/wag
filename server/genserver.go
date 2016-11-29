@@ -51,8 +51,10 @@ import (
 
 	"github.com/gorilla/mux"
 	"gopkg.in/Clever/kayvee-go.v5/logger"
+	kvMiddleware "gopkg.in/Clever/kayvee-go.v5/middleware"
 	"gopkg.in/tylerb/graceful.v1"
 	"github.com/Clever/go-process-metrics/metrics"
+	"github.com/Clever/wag/middleware"
 )
 
 type contextKey struct{}
@@ -87,13 +89,33 @@ type handler struct {
 	Controller
 }
 
+func withMiddleware(serviceName string, router http.Handler, m []func(http.Handler) http.Handler) http.Handler {
+	handler := router
+
+	m = append(m, middleware.Tracing, middleware.Panic)
+	for _, fn := range m {
+		handler = fn(handler)
+	}
+	// Logging middleware comes last, i.e. will be run first.
+	// This makes it so that other middleware has access to the logger
+	// that kvMiddleware injects into the request context.
+	handler = kvMiddleware.New(handler, serviceName)
+	return handler
+}
+
+
 // New returns a Server that implements the Controller interface. It will start when "Serve" is called.
 func New(c Controller, addr string) *Server {
 	return NewWithMiddleware(c, addr, []func(http.Handler) http.Handler{})
 }
 
-// NewWithMiddleware needs a TODO comment explaining the middleware
-func NewWithMiddleware(c Controller, addr string, middleware []func(http.Handler) http.Handler) *Server {
+// NewWithMiddleware returns a Server that implemenets the Controller interface. It runs wraps
+// the handler in the middleware in the order specified in the middleware array. This means that
+// the middleware are executed in the reverse order to what is specified in the array. All middleware
+// will run after the built-in middleware (e.g. logging)
+// TODO: Should I reverse
+// It will start when "Serve" is called.
+func NewWithMiddleware(c Controller, addr string, m []func(http.Handler) http.Handler) *Server {
 	r := mux.NewRouter()
 	h := handler{Controller: c}
 
@@ -106,7 +128,7 @@ func NewWithMiddleware(c Controller, addr string, middleware []func(http.Handler
 	})
 	{{end}}
 
-	handler := withMiddleware("{{.Title}}", r, middleware)
+	handler := withMiddleware("{{.Title}}", r, m)
 	return &Server{Handler: handler, addr: addr, l: l}
 }
 `
