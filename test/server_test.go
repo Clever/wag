@@ -249,7 +249,7 @@ func TestMiddleware(t *testing.T) {
 	controller := MiddlewareTest{}
 	ordering := orderingMiddleware{}
 	s := server.NewWithMiddleware(&controller, "", []func(http.Handler) http.Handler{
-		testContextMiddleware, ordering.Second, ordering.First})
+		ordering.First, ordering.Second, testContextMiddleware})
 	testServer := httptest.NewServer(s.Handler)
 	c := client.New(testServer.URL)
 	_, err := c.GetBooks(context.Background(), &models.GetBooksInput{})
