@@ -193,24 +193,24 @@ func TestPassInArray(t *testing.T) {
 	assert.Equal(t, "author2", d.lastAuthors[1])
 }
 
-type MiddlewareContextTest struct {
+type MiddlewareTest struct {
 	foundKey string
 }
 
-func (m *MiddlewareContextTest) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, error) {
+func (m *MiddlewareTest) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, error) {
 	m.foundKey = ctx.Value(testContextKey{}).(string)
 	return []models.Book{}, nil
 }
-func (m *MiddlewareContextTest) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (*models.Book, error) {
+func (m *MiddlewareTest) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (*models.Book, error) {
 	return nil, nil
 }
-func (m *MiddlewareContextTest) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
+func (m *MiddlewareTest) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
 	return nil, nil
 }
-func (m *MiddlewareContextTest) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
+func (m *MiddlewareTest) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
 	return nil, nil
 }
-func (m *MiddlewareContextTest) HealthCheck(ctx context.Context) error {
+func (m *MiddlewareTest) HealthCheck(ctx context.Context) error {
 	return nil
 }
 
@@ -223,14 +223,44 @@ func testContextMiddleware(h http.Handler) http.Handler {
 	})
 }
 
-func TestSettingContextInMiddleware(t *testing.T) {
-	controller := MiddlewareContextTest{}
-	s := server.New(&controller, "")
-	testServer := httptest.NewServer(testContextMiddleware(s.Handler))
+type orderingMiddleware struct {
+	overallCount int
+	first        int
+	second       int
+}
+
+func (f *orderingMiddleware) First(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		f.first = f.overallCount
+		f.overallCount++
+		h.ServeHTTP(w, r)
+	})
+}
+
+func (f *orderingMiddleware) Second(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		f.second = f.overallCount
+		f.overallCount++
+		h.ServeHTTP(w, r)
+	})
+}
+
+func TestMiddleware(t *testing.T) {
+	controller := MiddlewareTest{}
+	ordering := orderingMiddleware{}
+	s := server.NewWithMiddleware(&controller, "", []func(http.Handler) http.Handler{
+		testContextMiddleware, ordering.Second, ordering.First})
+	testServer := httptest.NewServer(s.Handler)
 	c := client.New(testServer.URL)
 	_, err := c.GetBooks(context.Background(), &models.GetBooksInput{})
+
+	// Setting context
 	assert.NoError(t, err)
 	assert.Equal(t, "contextValue", controller.foundKey)
+
+	// Running in the right order
+	assert.Equal(t, 0, ordering.first)
+	assert.Equal(t, 1, ordering.second)
 }
 
 type TimeoutController struct{}
