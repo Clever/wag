@@ -11,8 +11,12 @@ import (
 	opentracing "github.com/opentracing/opentracing-go"
 )
 
-func withMiddleware(serviceName string, router http.Handler) http.Handler {
-	handler := tracingMiddleware(router)
+func withMiddleware(serviceName string, router http.Handler, middlewareFn []func(http.Handler) http.Handler) http.Handler {
+	handler := router
+	for _, fn := range middlewareFn {
+		handler = fn(handler)
+	}
+	handler = tracingMiddleware(handler)
 	handler = panicMiddleware(handler)
 	// Logging middleware comes last, i.e. will be run first.
 	// This makes it so that other middleware has access to the logger

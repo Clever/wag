@@ -89,6 +89,11 @@ type handler struct {
 
 // New returns a Server that implements the Controller interface. It will start when "Serve" is called.
 func New(c Controller, addr string) *Server {
+	return NewWithMiddleware(c, addr, []func(http.Handler) http.Handler{})
+}
+
+// NewWithMiddleware needs a TODO comment explaining the middleware
+func NewWithMiddleware(c Controller, addr string, middleware []func(http.Handler) http.Handler) *Server {
 	r := mux.NewRouter()
 	h := handler{Controller: c}
 
@@ -101,7 +106,7 @@ func New(c Controller, addr string) *Server {
 	})
 	{{end}}
 
-	handler := withMiddleware("{{.Title}}", r)
+	handler := withMiddleware("{{.Title}}", r, middleware)
 	return &Server{Handler: handler, addr: addr, l: l}
 }
 `
