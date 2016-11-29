@@ -569,7 +569,7 @@ var paramTemplateStr = `
 		}
 		{{.ParamName}}Strs := []string{ {{.ParamName}}Str }
 	{{- else if eq .ParamType "header" -}}
-		{{.ParamName}}Strs := r.Header["{{.ParamName}}"]
+		{{.ParamName}}Strs := r.Header.Get("{{.ParamName}}")
 		{{if .Required -}}
 			if len({{.ParamName}}Strs) == 0 {
 				return nil, errors.New("parameter must be specified")
@@ -582,12 +582,16 @@ var paramTemplateStr = `
 		}
 	{{- end}}
 	if len({{.ParamName}}Strs) > 0 {
-		{{.VarName}}Str := {{.ParamName}}Strs[0]
-		var {{.VarName}}Tmp {{.TypeName}}
-		{{.VarName}}Tmp, err = {{.TypeCode}}
-		if err != nil {
-			return nil, err
-		}
+			var {{.VarName}}Tmp {{.TypeName}}
+		{{if eq .ParamType "header" -}}
+			{{.VarName}}Tmp = {{.ParamName}}Strs
+		{{- else -}}
+			{{.VarName}}Str := {{.ParamName}}Strs[0]
+			{{.VarName}}Tmp, err = {{.TypeCode}}
+			if err != nil {
+				return nil, err
+			}
+		{{- end}}
 		{{if .PointerInStruct -}}
 			input.{{.CapParamName}} = &{{.VarName}}Tmp
 		{{- else -}}

@@ -147,8 +147,8 @@ func newHealthInput(r *http.Request) (*models.HealthInput, error) {
 	}
 
 	if len(sectionStrs) > 0 {
-		sectionStr := sectionStrs[0]
 		var sectionTmp int64
+		sectionStr := sectionStrs[0]
 		sectionTmp, err = swag.ConvertInt64(sectionStr)
 		if err != nil {
 			return nil, err

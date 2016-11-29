@@ -142,8 +142,8 @@ func newNilCheckInput(r *http.Request) (*models.NilCheckInput, error) {
 	idStrs := []string{idStr}
 
 	if len(idStrs) > 0 {
-		iDStr := idStrs[0]
 		var iDTmp string
+		iDStr := idStrs[0]
 		iDTmp, err = iDStr, error(nil)
 		if err != nil {
 			return nil, err
@@ -154,8 +154,8 @@ func newNilCheckInput(r *http.Request) (*models.NilCheckInput, error) {
 	queryStrs := r.URL.Query()["query"]
 
 	if len(queryStrs) > 0 {
-		queryStr := queryStrs[0]
 		var queryTmp string
+		queryStr := queryStrs[0]
 		queryTmp, err = queryStr, error(nil)
 		if err != nil {
 			return nil, err
@@ -163,15 +163,11 @@ func newNilCheckInput(r *http.Request) (*models.NilCheckInput, error) {
 		input.Query = &queryTmp
 	}
 
-	headerStrs := r.Header["header"]
+	headerStrs := r.Header.Get("header")
 
 	if len(headerStrs) > 0 {
-		headerStr := headerStrs[0]
 		var headerTmp string
-		headerTmp, err = headerStr, error(nil)
-		if err != nil {
-			return nil, err
-		}
+		headerTmp = headerStrs
 		input.Header = headerTmp
 	}
 	if array, ok := r.URL.Query()["array"]; ok {
