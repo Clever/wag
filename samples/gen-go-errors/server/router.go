@@ -81,6 +81,8 @@ func NewWithMiddleware(c Controller, addr string, m []func(http.Handler) http.Ha
 
 	r.Methods("GET").Path("/v1/books/{id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "getBook")
+		ctx := middleware.WithTracingOpName(r.Context(), "getBook")
+		r = r.WithContext(ctx)
 		h.GetBookHandler(r.Context(), w, r)
 	})
 

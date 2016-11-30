@@ -81,26 +81,36 @@ func NewWithMiddleware(c Controller, addr string, m []func(http.Handler) http.Ha
 
 	r.Methods("GET").Path("/v1/books").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "getBooks")
+		ctx := middleware.WithTracingOpName(r.Context(), "getBooks")
+		r = r.WithContext(ctx)
 		h.GetBooksHandler(r.Context(), w, r)
 	})
 
 	r.Methods("POST").Path("/v1/books").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "createBook")
+		ctx := middleware.WithTracingOpName(r.Context(), "createBook")
+		r = r.WithContext(ctx)
 		h.CreateBookHandler(r.Context(), w, r)
 	})
 
 	r.Methods("GET").Path("/v1/books/{book_id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "getBookByID")
+		ctx := middleware.WithTracingOpName(r.Context(), "getBookByID")
+		r = r.WithContext(ctx)
 		h.GetBookByIDHandler(r.Context(), w, r)
 	})
 
 	r.Methods("GET").Path("/v1/books2/{id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "getBookByID2")
+		ctx := middleware.WithTracingOpName(r.Context(), "getBookByID2")
+		r = r.WithContext(ctx)
 		h.GetBookByID2Handler(r.Context(), w, r)
 	})
 
 	r.Methods("GET").Path("/v1/health/check").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "healthCheck")
+		ctx := middleware.WithTracingOpName(r.Context(), "healthCheck")
+		r = r.WithContext(ctx)
 		h.HealthCheckHandler(r.Context(), w, r)
 	})
 

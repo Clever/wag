@@ -81,6 +81,8 @@ func NewWithMiddleware(c Controller, addr string, m []func(http.Handler) http.Ha
 
 	r.Methods("GET").Path("/v1/health").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "health")
+		ctx := middleware.WithTracingOpName(r.Context(), "health")
+		r = r.WithContext(ctx)
 		h.HealthHandler(r.Context(), w, r)
 	})
 

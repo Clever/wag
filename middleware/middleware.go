@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"runtime/debug"
@@ -37,12 +38,32 @@ func Panic(h http.Handler) http.Handler {
 	})
 }
 
+// statusResponseWriter wraps a response writer
+type statusResponseWriter struct {
+	http.ResponseWriter
+	status int
+}
+
+func (s *statusResponseWriter) WriteHeader(code int) {
+	s.status = code
+	s.ResponseWriter.WriteHeader(code)
+}
+
+type tracingOpName struct{}
+
+// WithTracingOpName adds the op name to a context for use by the tracing library
+func WithTracingOpName(ctx context.Context, opName string) context.Context {
+	return context.WithValue(ctx, tracingOpName{}, opName)
+}
+
 // Tracing creates a new span named after the URL path of the request.
 // It places this span in the request context, for use by other handlers via opentracing.SpanFromContext()
 // If a span exists in request headers, the span created by this middleware will be a child of that span.
 func Tracing(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Attempt to join a span by getting trace info from the headers.
+		// To start with use the URL as the opName since we haven't gotten to the router yet and
+		// the router knows about opNames
 		opName := r.URL.Path
 		var sp opentracing.Span
 		if sc, err := opentracing.GlobalTracer().
@@ -68,6 +89,27 @@ func Tracing(h http.Handler) http.Handler {
 			sp.LogEvent("request_finished")
 		}()
 		newCtx := opentracing.ContextWithSpan(r.Context(), sp)
+
+		srw := &statusResponseWriter{
+			status:         200,
+			ResponseWriter: w,
+		}
+
+		sp.SetTag("http.method", r.Method)
+		sp.SetTag("span.kind", "server")
+		sp.SetTag("http.url", r.URL.Path)
+
+		defer func() {
+			sp.SetTag("http.status_code", srw.status)
+			if srw.status >= 500 {
+				sp.SetTag("error", true)
+			}
+			// Now that we have the opName let's try setting it
+			opName, ok := r.Context().Value(tracingOpName{}).(string)
+			if ok {
+				sp.SetOperationName(opName)
+			}
+		}()
 
 		h.ServeHTTP(w, r.WithContext(newCtx))
 	})

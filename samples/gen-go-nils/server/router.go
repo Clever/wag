@@ -81,6 +81,8 @@ func NewWithMiddleware(c Controller, addr string, m []func(http.Handler) http.Ha
 
 	r.Methods("POST").Path("/v1/check/{id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "nilCheck")
+		ctx := middleware.WithTracingOpName(r.Context(), "nilCheck")
+		r = r.WithContext(ctx)
 		h.NilCheckHandler(r.Context(), w, r)
 	})
 
