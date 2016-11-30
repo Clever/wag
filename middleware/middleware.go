@@ -1,29 +1,17 @@
-package server
+package middleware
 
 import (
 	"fmt"
 	"net/http"
 	"runtime/debug"
 
-	"gopkg.in/Clever/kayvee-go.v5/logger"
-	kvMiddleware "gopkg.in/Clever/kayvee-go.v5/middleware"
-
 	opentracing "github.com/opentracing/opentracing-go"
+	"gopkg.in/Clever/kayvee-go.v5/logger"
 )
 
-func withMiddleware(serviceName string, router http.Handler) http.Handler {
-	handler := tracingMiddleware(router)
-	handler = panicMiddleware(handler)
-	// Logging middleware comes last, i.e. will be run first.
-	// This makes it so that other middleware has access to the logger
-	// that kvMiddleware injects into the request context.
-	handler = kvMiddleware.New(handler, serviceName)
-	return handler
-}
-
-// panicMiddleware logs any panics. For now, we're continue throwing the panic up
+// Panic logs any panics. For now, we're continue throwing the panic up
 // the stack so this may crash the process.
-func panicMiddleware(h http.Handler) http.Handler {
+func Panic(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			panicErr := recover()
@@ -49,10 +37,10 @@ func panicMiddleware(h http.Handler) http.Handler {
 	})
 }
 
-// tracingMiddleware creates a new span named after the URL path of the request.
+// Tracing creates a new span named after the URL path of the request.
 // It places this span in the request context, for use by other handlers via opentracing.SpanFromContext()
 // If a span exists in request headers, the span created by this middleware will be a child of that span.
-func tracingMiddleware(h http.Handler) http.Handler {
+func Tracing(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Attempt to join a span by getting trace info from the headers.
 		opName := r.URL.Path

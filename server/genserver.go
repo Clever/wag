@@ -51,8 +51,10 @@ import (
 
 	"github.com/gorilla/mux"
 	"gopkg.in/Clever/kayvee-go.v5/logger"
+	kvMiddleware "gopkg.in/Clever/kayvee-go.v5/middleware"
 	"gopkg.in/tylerb/graceful.v1"
 	"github.com/Clever/go-process-metrics/metrics"
+	"github.com/Clever/wag/middleware"
 )
 
 type contextKey struct{}
@@ -87,8 +89,33 @@ type handler struct {
 	Controller
 }
 
+func withMiddleware(serviceName string, router http.Handler, m []func(http.Handler) http.Handler) http.Handler {
+	handler := router
+
+	// Wrap the middleware in the opposite order specified so that when called then run
+	// in the order specified
+	for i := len(m) - 1; i >= 0; i-- {
+		handler = m[i](handler)
+	}
+	handler = middleware.Tracing(handler)
+	handler = middleware.Panic(handler)
+	// Logging middleware comes last, i.e. will be run first.
+	// This makes it so that other middleware has access to the logger
+	// that kvMiddleware injects into the request context.
+	handler = kvMiddleware.New(handler, serviceName)
+	return handler
+}
+
+
 // New returns a Server that implements the Controller interface. It will start when "Serve" is called.
 func New(c Controller, addr string) *Server {
+	return NewWithMiddleware(c, addr, []func(http.Handler) http.Handler{})
+}
+
+// NewWithMiddleware returns a Server that implemenets the Controller interface. It runs the
+// middleware after the built-in middleware (e.g. logging), but before the controller methods.
+// The middleware is executed in the order specified. The server will start when "Serve" is called.
+func NewWithMiddleware(c Controller, addr string, m []func(http.Handler) http.Handler) *Server {
 	r := mux.NewRouter()
 	h := handler{Controller: c}
 
@@ -101,7 +128,7 @@ func New(c Controller, addr string) *Server {
 	})
 	{{end}}
 
-	handler := withMiddleware("{{.Title}}", r)
+	handler := withMiddleware("{{.Title}}", r, m)
 	return &Server{Handler: handler, addr: addr, l: l}
 }
 `

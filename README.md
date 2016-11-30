@@ -67,6 +67,13 @@ To use the generated code you need to do two things:
   // Serve should not return
   log.Fatal(s.Serve())
 ```
+Or if you want to add custom middleware
+```
+  s := server.NewWithMiddleware(myController, ":8000", []func(http.Handler) http.Handler{
+    myFirstMiddlware, mySecondMiddlware})
+  // Serve should not return
+  log.Fatal(s.Serve())
+```
 
 All interface methods on the controller take in a `context.Context` object.
 This object comes with additional features for you to use in implementing your server logic:

@@ -97,12 +97,6 @@ func main() {
 		log.Fatalf("Failed generating js client %s", err)
 	}
 
-	middlewareGenerator := swagger.Generator{PackageName: *goPackageName}
-	middlewareGenerator.Write(hardcoded.MustAsset("_hardcoded/middleware.go"))
-	if err := middlewareGenerator.WriteFile("server/middleware.go"); err != nil {
-		log.Fatalf("Failed to copy middleware.go: %s", err)
-	}
-
 	doerGenerator := swagger.Generator{PackageName: *goPackageName}
 	doerGenerator.Write(hardcoded.MustAsset("_hardcoded/doer.go"))
 	if err := doerGenerator.WriteFile("client/doer.go"); err != nil {
