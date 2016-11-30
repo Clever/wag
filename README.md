@@ -69,7 +69,7 @@ To use the generated code you need to do two things:
 ```
 Or if you want to add custom middleware
 ```
-  s := server.New(myController, ":8000", []func(http.Handler) http.Handler{
+  s := server.NewWithMiddleware(myController, ":8000", []func(http.Handler) http.Handler{
     myFirstMiddlware, mySecondMiddlware})
   // Serve should not return
   log.Fatal(s.Serve())
