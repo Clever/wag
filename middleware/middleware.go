@@ -51,9 +51,16 @@ func (s *statusResponseWriter) WriteHeader(code int) {
 
 type tracingOpName struct{}
 
-// WithTracingOpName adds the op name to a context for use by the tracing library
+// WithTracingOpName adds the op name to a context for use by the tracing library. It uses
+// a pointer because it's called below in the stack and the only way to pass the info up
+// is to have it a set a pointer. Even though it doesn't change the context we still have
+// this return a context to maintain the illusion.
 func WithTracingOpName(ctx context.Context, opName string) context.Context {
-	return context.WithValue(ctx, tracingOpName{}, opName)
+	strPtr := ctx.Value(tracingOpName{}).(*string)
+	if strPtr != nil {
+		*strPtr = opName
+	}
+	return ctx
 }
 
 // Tracing creates a new span named after the URL path of the request.
@@ -89,6 +96,8 @@ func Tracing(h http.Handler) http.Handler {
 			sp.LogEvent("request_finished")
 		}()
 		newCtx := opentracing.ContextWithSpan(r.Context(), sp)
+		strPtr := ""
+		newCtx = context.WithValue(newCtx, tracingOpName{}, &strPtr)
 
 		srw := &statusResponseWriter{
 			status:         200,
@@ -105,12 +114,12 @@ func Tracing(h http.Handler) http.Handler {
 				sp.SetTag("error", true)
 			}
 			// Now that we have the opName let's try setting it
-			opName, ok := r.Context().Value(tracingOpName{}).(string)
-			if ok {
-				sp.SetOperationName(opName)
+			opName, ok := newCtx.Value(tracingOpName{}).(*string)
+			if ok && opName != nil {
+				sp.SetOperationName(*opName)
 			}
 		}()
 
-		h.ServeHTTP(w, r.WithContext(newCtx))
+		h.ServeHTTP(srw, r.WithContext(newCtx))
 	})
 }
