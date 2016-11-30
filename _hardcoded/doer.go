@@ -15,6 +15,7 @@ import (
 	"github.com/afex/hystrix-go/hystrix"
 	"github.com/donovanhide/eventsource"
 	opentracing "github.com/opentracing/opentracing-go"
+	tags "github.com/opentracing/opentracing-go/ext"
 	"golang.org/x/net/context/ctxhttp"
 	logger "gopkg.in/Clever/kayvee-go.v5/logger"
 )
@@ -49,6 +50,7 @@ func (d tracingDoer) Do(c *http.Client, r *http.Request) (*http.Response, error)
 	} else {
 		sp = opentracing.StartSpan(opName)
 	}
+	tags.SpanKind.Set(sp, tags.SpanKindRPCClientEnum)
 	if err := sp.Tracer().Inject(sp.Context(),
 		opentracing.HTTPHeaders,
 		opentracing.HTTPHeadersCarrier(r.Header)); err != nil {

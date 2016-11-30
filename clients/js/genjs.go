@@ -257,6 +257,7 @@ var methodTmplStr = `
     if (span) {
       opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
       span.logEvent("{{.Method}} {{.Path}}");
+      span.setTag("span.kind", "client")
     }
 
     const requestOptions = {
