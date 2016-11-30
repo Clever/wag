@@ -7,6 +7,7 @@ import (
 	"runtime/debug"
 
 	opentracing "github.com/opentracing/opentracing-go"
+	tags "github.com/opentracing/opentracing-go/ext"
 	"gopkg.in/Clever/kayvee-go.v5/logger"
 )
 
@@ -96,6 +97,7 @@ func Tracing(h http.Handler) http.Handler {
 			sp.LogEvent("request_finished")
 		}()
 		newCtx := opentracing.ContextWithSpan(r.Context(), sp)
+		// Use a string pointer so layers below can modify it
 		strPtr := ""
 		newCtx = context.WithValue(newCtx, tracingOpName{}, &strPtr)
 
@@ -104,14 +106,14 @@ func Tracing(h http.Handler) http.Handler {
 			ResponseWriter: w,
 		}
 
-		sp.SetTag("http.method", r.Method)
-		sp.SetTag("span.kind", "server")
-		sp.SetTag("http.url", r.URL.Path)
+		tags.HTTPMethod.Set(sp, r.Method)
+		tags.SpanKind.Set(sp, tags.SpanKindRPCServerEnum)
+		tags.HTTPUrl.Set(sp, r.URL.Path)
 
 		defer func() {
-			sp.SetTag("http.status_code", srw.status)
+			tags.HTTPStatusCode.Set(sp, uint16(srw.status))
 			if srw.status >= 500 {
-				sp.SetTag("error", true)
+				tags.Error.Set(sp, true)
 			}
 			// Now that we have the opName let's try setting it
 			opName, ok := newCtx.Value(tracingOpName{}).(*string)
