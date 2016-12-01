@@ -1,3 +1,3 @@
-1.1.3
-- Fix header param parsing
+1.2.0
+- Add support for custom middleware
 
