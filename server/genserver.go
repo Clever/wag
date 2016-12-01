@@ -514,7 +514,7 @@ func generateNewInput(op *spec.Operation) (string, error) {
 				buf.WriteString(fmt.Sprintf("\tif %s, ok := r.URL.Query()[\"%s\"]; ok {\n\t\tinput.%s = %s\n\t}\n",
 					paramVarName, param.Name, camelParamName, paramVarName))
 			} else {
-				typeCode, err := swagger.StringToTypeCode(fmt.Sprintf("%sStr", paramVarName), param)
+				typeCode, err := swagger.StringToTypeCode(fmt.Sprintf("%sStr", paramVarName), param, op)
 				if err != nil {
 					return "", err
 				}

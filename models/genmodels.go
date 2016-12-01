@@ -140,7 +140,7 @@ func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
 			g.Printf("\t}\n\n")
 		}
 
-		validations, err := swagger.ParamToValidationCode(param)
+		validations, err := swagger.ParamToValidationCode(param, op)
 		if err != nil {
 			return err
 		}

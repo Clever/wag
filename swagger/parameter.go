@@ -23,9 +23,9 @@ import (
 // ParamToStringCode returns a function that converts a Parameter into the code to convert
 // it into a string (for serialization). For example, a integer named 'Size' becomes
 // `strconv.FormatInt(i.Size, 10)`
-func ParamToStringCode(param spec.Parameter) string {
+func ParamToStringCode(param spec.Parameter, op *spec.Operation) string {
 
-	valToSet := accessString(param)
+	valToSet := accessString(param, op)
 	switch param.Type {
 	case "string":
 		switch param.Format {
@@ -159,7 +159,7 @@ func convertDate(input string) (strfmt.Date, error) {
 // StringToTypeCode returns the code to convert a string into the type. For example,
 // for an int64 it generates swag.ConvertFloat64(sizeStr). It returns an array because sometimes
 // this takes multiple lines of code
-func StringToTypeCode(strField string, param spec.Parameter) (string, error) {
+func StringToTypeCode(strField string, param spec.Parameter, op *spec.Operation) (string, error) {
 
 	switch param.Type {
 	case "integer":
@@ -201,24 +201,24 @@ func StringToTypeCode(strField string, param spec.Parameter) (string, error) {
 
 // ParamToValidationCode takes in a param and returns a list of parameter validation
 // functions, each of which have a single return value, error
-func ParamToValidationCode(param spec.Parameter) ([]string, error) {
+func ParamToValidationCode(param spec.Parameter, op *spec.Operation) ([]string, error) {
 	var validations []string
 	if param.Type == "string" {
 		if param.MaxLength != nil {
 			validations = append(validations, fmt.Sprintf("validate.MaxLength(\"%s\", \"%s\", string(%s), %d)",
-				param.Name, param.In, accessString(param), *param.MaxLength))
+				param.Name, param.In, accessString(param, op), *param.MaxLength))
 		}
 		if param.MinLength != nil {
 			validations = append(validations, fmt.Sprintf("validate.MinLength(\"%s\", \"%s\", string(%s), %d)",
-				param.Name, param.In, accessString(param), *param.MaxLength))
+				param.Name, param.In, accessString(param, op), *param.MaxLength))
 		}
 		if param.Pattern != "" {
 			validations = append(validations, fmt.Sprintf("validate.Pattern(\"%s\", \"%s\", string(%s), \"%s\")",
-				param.Name, param.In, accessString(param), param.Pattern))
+				param.Name, param.In, accessString(param, op), param.Pattern))
 		}
 		if param.Format != "" {
 			validations = append(validations, fmt.Sprintf("validate.FormatOf(\"%s\", \"%s\", \"%s\", %s, strfmt.Default)",
-				param.Name, param.In, param.Format, ParamToStringCode(param)))
+				param.Name, param.In, param.Format, ParamToStringCode(param, op)))
 		}
 		if len(param.Enum) != 0 {
 			strEnum := []string{}
@@ -226,46 +226,46 @@ func ParamToValidationCode(param spec.Parameter) ([]string, error) {
 				strEnum = append(strEnum, enum.(string))
 			}
 			validations = append(validations, fmt.Sprintf("validate.Enum(\"%s\", \"%s\", %s, %s)",
-				param.Name, param.In, accessString(param), fmt.Sprintf("[]interface{}{\"%s\"}", strings.Join(strEnum, "\",\""))))
+				param.Name, param.In, accessString(param, op), fmt.Sprintf("[]interface{}{\"%s\"}", strings.Join(strEnum, "\",\""))))
 		}
 	} else if param.Type == "integer" {
 		if param.Maximum != nil {
 			validations = append(validations, fmt.Sprintf("validate.MaximumInt(\"%s\", \"%s\", %s, int64(%d), %t)",
-				param.Name, param.In, accessString(param), int64(*param.Maximum), param.ExclusiveMaximum))
+				param.Name, param.In, accessString(param, op), int64(*param.Maximum), param.ExclusiveMaximum))
 		}
 		if param.Minimum != nil {
 			validations = append(validations, fmt.Sprintf("validate.MinimumInt(\"%s\", \"%s\", %s, int64(%d), %t)",
-				param.Name, param.In, accessString(param), int64(*param.Minimum), param.ExclusiveMinimum))
+				param.Name, param.In, accessString(param, op), int64(*param.Minimum), param.ExclusiveMinimum))
 		}
 		if param.MultipleOf != nil {
 			validations = append(validations, fmt.Sprintf("validate.MultipleOf(\"%s\", \"%s\", float64(%s), %f)",
-				param.Name, param.In, accessString(param), *param.MultipleOf))
+				param.Name, param.In, accessString(param, op), *param.MultipleOf))
 		}
 	} else if param.Type == "number" {
 		if param.Maximum != nil {
 			validations = append(validations, fmt.Sprintf("validate.Maximum(\"%s\", \"%s\",  float64(%s), %f, %t)",
-				param.Name, param.In, accessString(param), *param.Maximum, param.ExclusiveMaximum))
+				param.Name, param.In, accessString(param, op), *param.Maximum, param.ExclusiveMaximum))
 		}
 		if param.Minimum != nil {
 			validations = append(validations, fmt.Sprintf("validate.Minimum(\"%s\", \"%s\", float64(%s), %f, %t)",
-				param.Name, param.In, accessString(param), *param.Minimum, param.ExclusiveMinimum))
+				param.Name, param.In, accessString(param, op), *param.Minimum, param.ExclusiveMinimum))
 		}
 		if param.MultipleOf != nil {
 			validations = append(validations, fmt.Sprintf("validate.MultipleOf(\"%s\", \"%s\", float64(%s), %f)",
-				param.Name, param.In, accessString(param), *param.MultipleOf))
+				param.Name, param.In, accessString(param, op), *param.MultipleOf))
 		}
 	} else if param.Type == "array" {
 		if param.MaxItems != nil {
 			validations = append(validations, fmt.Sprintf("validate.MaxItems(\"%s\", \"%s\", int64(len(%s)), %d)",
-				param.Name, param.In, accessString(param), *param.MaxItems))
+				param.Name, param.In, accessString(param, op), *param.MaxItems))
 		}
 		if param.MinItems != nil {
 			validations = append(validations, fmt.Sprintf("validate.MinItems(\"%s\", \"%s\", int64(len(%s)), %d)",
-				param.Name, param.In, accessString(param), *param.MinItems))
+				param.Name, param.In, accessString(param, op), *param.MinItems))
 		}
 		if param.UniqueItems {
 			validations = append(validations, fmt.Sprintf("validate.UniqueItems(\"%s\", \"%s\", %s)",
-				param.Name, param.In, accessString(param)))
+				param.Name, param.In, accessString(param, op)))
 		}
 	}
 	return validations, nil
@@ -273,7 +273,7 @@ func ParamToValidationCode(param spec.Parameter) ([]string, error) {
 
 // accessString returns a string with the access of a variable in the struct named 'i'. For example:
 // *i.Length
-func accessString(param spec.Parameter) string {
+func accessString(param spec.Parameter, op *spec.Operation) string {
 	_, makePointer, err := ParamToType(param)
 	if err != nil {
 		panic(fmt.Sprintf("unexpected error building parameter: %s", err))
@@ -281,6 +281,11 @@ func accessString(param spec.Parameter) string {
 	pointer := ""
 	if makePointer {
 		pointer = "*"
+	}
+
+	single, _ := SingleStringPathParameter(op)
+	if single {
+		return fmt.Sprintf("%s%s", pointer, param.Name)
 	}
 	return fmt.Sprintf("%si.%s", pointer, utils.CamelCase(param.Name, true))
 }

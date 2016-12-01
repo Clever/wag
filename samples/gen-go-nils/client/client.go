@@ -147,9 +147,11 @@ func (c *WagClient) NilCheck(ctx context.Context, i *models.NilCheckInput) error
 	var body []byte
 
 	path = strings.Replace(path, "{id}", i.ID, -1)
+
 	if i.Query != nil {
 		urlVals.Add("query", *i.Query)
 	}
+
 	for _, v := range i.Array {
 		urlVals.Add("array", v)
 	}

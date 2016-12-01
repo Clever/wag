@@ -281,40 +281,59 @@ func methodCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPat
 
 }
 
+func paramToTemplate(s *spec.Swagger, param *spec.Parameter, op *spec.Operation) paramTemplate {
+
+	singleStringPathParameter, singleParamName := swagger.SingleStringPathParameter(op)
+	_, pointer, err := swagger.ParamToType(*param)
+	if err != nil {
+		panic(fmt.Sprintf("unexpected error: %s", err))
+	}
+
+	toStringCode := ""
+	if param.Type != "array" && param.In != "body" {
+		toStringCode = swagger.ParamToStringCode(*param, op)
+	}
+
+	t := paramTemplate{
+		Name:         param.Name,
+		ToStringCode: toStringCode,
+		Type:         param.Type,
+		AccessString: "i." + swagger.StructParamName(*param),
+		Pointer:      pointer,
+		ErrorMessage: errorMessage(s, op),
+	}
+	if singleStringPathParameter {
+		t.Name = op.Parameters[0].Name
+		t.ToStringCode = singleParamName
+		t.AccessString = op.Parameters[0].Name
+	}
+	return t
+}
+
 // buildRequestCode adds the parameters to the URL, the body, and the headers
 func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string) string {
 	var buf bytes.Buffer
 
-	singleStringPathParameter, singleParamName := swagger.SingleStringPathParameter(op)
-	if singleStringPathParameter {
-		buf.WriteString(fmt.Sprintf("\tpath = strings.Replace(path, \"%s\", %s, -1)\n",
-			"{"+op.Parameters[0].Name+"}", singleParamName))
-	} else {
-		for _, param := range op.Parameters {
-			if param.In == "path" {
-				// TODO: Should this be done with regex at some point?
-				buf.WriteString(fmt.Sprintf("\tpath = strings.Replace(path, \"%s\", %s, -1)\n",
-					"{"+param.Name+"}", swagger.ParamToStringCode(param)))
-			} else if param.In == "query" {
-				var queryAddCode string
-				if param.Type == "array" {
-					queryAddCode = fmt.Sprintf("\tfor _, v := range i.%s {\n\t\turlVals.Add(\"%s\", v)\n\t}\n", swagger.StructParamName(param), param.Name)
-				} else {
-					queryAddCode = fmt.Sprintf("\turlVals.Add(\"%s\", %s)\n", param.Name, swagger.ParamToStringCode(param))
-				}
+	for _, param := range op.Parameters {
 
-				_, pointer, err := swagger.ParamToType(param)
-				if err != nil {
-					panic(fmt.Sprintf("unexpected error: %s", err))
-				}
-				if !pointer {
-					buf.WriteString(fmt.Sprintf(queryAddCode))
-				} else {
-					buf.WriteString(fmt.Sprintf("\tif i.%s != nil {\n", swagger.StructParamName(param)))
-					buf.WriteString(fmt.Sprintf(queryAddCode))
-					buf.WriteString(fmt.Sprintf("\t}\n"))
-				}
+		t := paramToTemplate(s, &param, op)
+
+		if param.In == "path" {
+			pt := pathParamTemplate{
+				PathName:     "{" + t.Name + "}",
+				ToStringCode: t.ToStringCode,
 			}
+			str, err := templates.WriteTemplate(pathParamStr, pt)
+			if err != nil {
+				panic(fmt.Errorf("unexpected error: %s", err))
+			}
+			buf.WriteString(str)
+		} else if param.In == "query" {
+			str, err := templates.WriteTemplate(queryParamStr, t)
+			if err != nil {
+				panic(fmt.Errorf("unexpected error: %s", err))
+			}
+			buf.WriteString(str)
 		}
 	}
 
@@ -365,7 +384,7 @@ func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string) string
 
 	for _, param := range op.Parameters {
 		if param.In == "header" {
-			headerAddCode := fmt.Sprintf("\treq.Header.Set(\"%s\", %s)\n", param.Name, swagger.ParamToStringCode(param))
+			headerAddCode := fmt.Sprintf("\treq.Header.Set(\"%s\", %s)\n", param.Name, swagger.ParamToStringCode(param, op))
 			_, pointer, err := swagger.ParamToType(param)
 			if err != nil {
 				panic(fmt.Sprintf("unexpected error: %s", err))
@@ -381,6 +400,65 @@ func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string) string
 	}
 	return buf.String()
 }
+
+type paramTemplate struct {
+	Name         string
+	ToStringCode string
+	Type         string
+	AccessString string
+	Pointer      bool
+	ErrorMessage string
+}
+
+// pathParamTemplate is a seperate template because I couldn't find a non-annoying
+// way to encode {".Name"} in the template
+type pathParamTemplate struct {
+	PathName     string
+	ToStringCode string
+}
+
+var pathParamStr = `path = strings.Replace(path, "{{.PathName}}", {{.ToStringCode}}, -1)
+`
+
+var queryParamStr = `
+	{{if .Pointer}}
+	if {{.AccessString}} != nil {
+	{{end}}
+	{{- if eq .Type "array" -}}
+	for _, v := range {{.AccessString}} {
+		urlVals.Add("{{.Name}}", v)
+	}
+	{{- else -}}
+	urlVals.Add("{{.Name}}", {{.ToStringCode}})
+	{{- end -}}
+	{{if .Pointer}}
+	}
+	{{end}}
+`
+
+var headerParamStr = `
+	{{if .Pointer}}
+	if {{.AccessString}} != nil {
+	{{end}}
+	req.Header.Set("{{.Name}}", {{.ToStringCode}})
+	{{if .Pointer}}
+	}
+	{{end}}
+`
+
+var bodyParamStr = `
+	{{if .Pointer}}
+	if {{.AccessString}} != nil {
+	{{end}}
+	var err error
+	body, err = json.Marshal({{.AccessString}})
+	if err != nil {
+		{{.ErrorMessage}}	
+	}
+	{{if .Pointer}}
+	}
+	{{end}}
+`
 
 func errorMessage(s *spec.Swagger, op *spec.Operation) string {
 	str, err := templates.WriteTemplate(errMsgTemplStr, errMsgTmpl{
