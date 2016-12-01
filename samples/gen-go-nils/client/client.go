@@ -161,9 +161,12 @@ func (c *WagClient) NilCheck(ctx context.Context, i *models.NilCheckInput) error
 
 		var err error
 		body, err = json.Marshal(i.Body)
-
 		if err != nil {
-			return err
+
+			if err != nil {
+				return err
+			}
+
 		}
 
 	}

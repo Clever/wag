@@ -315,9 +315,7 @@ func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string) string
 	var buf bytes.Buffer
 
 	for _, param := range op.Parameters {
-
 		t := paramToTemplate(s, &param, op)
-
 		if param.In == "path" {
 			pt := pathParamTemplate{
 				PathName:     "{" + t.Name + "}",
@@ -341,38 +339,16 @@ func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string) string
 
 	for _, param := range op.Parameters {
 		if param.In == "body" {
-			singleSchemaedBodyParameter, _ := swagger.SingleSchemaedBodyParameter(op)
-			var bodyMarshalCode string
-			if singleSchemaedBodyParameter {
-				// no wrapper struct for single-input methods
-				bodyMarshalCode = fmt.Sprintf(`
-	var err error
-	body, err = json.Marshal(i)
-	%s
-`, errorMessage(s, op))
-			} else {
-				bodyMarshalCode = fmt.Sprintf(`
-	var err error
-	body, err = json.Marshal(i.%s)
-	%s
-`, swagger.StructParamName(param), errorMessage(s, op))
+			t := paramToTemplate(s, &param, op)
+			if singleParam, _ := swagger.SingleSchemaedBodyParameter(op); singleParam {
+				t.AccessString = "i"
 			}
 
-			_, pointer, err := swagger.ParamToType(param)
+			str, err := templates.WriteTemplate(bodyParamStr, t)
 			if err != nil {
-				panic(fmt.Sprintf("unexpected error: %s", err))
+				panic(fmt.Errorf("unexpected error: %s", err))
 			}
-			if !pointer {
-				buf.WriteString(fmt.Sprintf(bodyMarshalCode))
-			} else {
-				if singleSchemaedBodyParameter {
-					buf.WriteString("\tif i != nil {\n")
-				} else {
-					buf.WriteString(fmt.Sprintf("\tif i.%s != nil {\n", swagger.StructParamName(param)))
-				}
-				buf.WriteString(fmt.Sprintf(bodyMarshalCode))
-				buf.WriteString(fmt.Sprintf("\t}\n"))
-			}
+			buf.WriteString(str)
 		}
 	}
 
@@ -384,18 +360,12 @@ func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string) string
 
 	for _, param := range op.Parameters {
 		if param.In == "header" {
-			headerAddCode := fmt.Sprintf("\treq.Header.Set(\"%s\", %s)\n", param.Name, swagger.ParamToStringCode(param, op))
-			_, pointer, err := swagger.ParamToType(param)
+			t := paramToTemplate(s, &param, op)
+			str, err := templates.WriteTemplate(headerParamStr, t)
 			if err != nil {
-				panic(fmt.Sprintf("unexpected error: %s", err))
+				panic(fmt.Errorf("unexpected error: %s", err))
 			}
-			if !pointer {
-				buf.WriteString(fmt.Sprintf(headerAddCode))
-			} else {
-				buf.WriteString(fmt.Sprintf("\tif i.%s != nil {\n", swagger.StructParamName(param)))
-				buf.WriteString(fmt.Sprintf(headerAddCode))
-				buf.WriteString(fmt.Sprintf("\t}\n"))
-			}
+			buf.WriteString(str)
 		}
 	}
 	return buf.String()
@@ -421,7 +391,7 @@ var pathParamStr = `path = strings.Replace(path, "{{.PathName}}", {{.ToStringCod
 `
 
 var queryParamStr = `
-	{{if .Pointer}}
+	{{if .Pointer -}}
 	if {{.AccessString}} != nil {
 	{{end}}
 	{{- if eq .Type "array" -}}
