@@ -303,9 +303,9 @@ func paramToTemplate(s *spec.Swagger, param *spec.Parameter, op *spec.Operation)
 		ErrorMessage: errorMessage(s, op),
 	}
 	if singleStringPathParameter {
-		t.Name = op.Parameters[0].Name
+		t.Name = param.Name
 		t.ToStringCode = singleParamName
-		t.AccessString = op.Parameters[0].Name
+		t.AccessString = param.Name
 	}
 	return t
 }
