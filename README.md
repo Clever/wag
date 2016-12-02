@@ -181,6 +181,8 @@ func main() {
     * **wag**: All `wag`-generated clients take in a context object as the first argument.
       If your handler consumes a `wag`-generated client, then pass the context object to these client methods.
 
+  * By default we tag traces with `http.method`, `span.kind`, `http.url`, `http.status_code`, and `error`. For more information about what these tags mean see: https://github.com/opentracing/opentracing.io/blob/95b966bd6a6b2cf0f231260e3e1fa6206ede2151/_docs/pages/api/data-conventions.md#component-identification
+
 ### Using the Go Client
 Initialize the client with `New`
 ```
