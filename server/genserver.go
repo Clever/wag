@@ -124,6 +124,8 @@ func NewWithMiddleware(c Controller, addr string, m []func(http.Handler) http.Ha
 	{{range $index, $val := .Functions}}
 	r.Methods("{{$val.Method}}").Path("{{$val.Path}}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "{{$val.OpID}}")
+		ctx := middleware.WithTracingOpName(r.Context(), "{{$val.OpID}}")
+		r = r.WithContext(ctx)
 		h.{{$val.HandlerName}}Handler(r.Context(), w, r)
 	})
 	{{end}}

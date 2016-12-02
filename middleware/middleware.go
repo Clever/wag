@@ -1,11 +1,13 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"runtime/debug"
 
 	opentracing "github.com/opentracing/opentracing-go"
+	tags "github.com/opentracing/opentracing-go/ext"
 	"gopkg.in/Clever/kayvee-go.v5/logger"
 )
 
@@ -37,12 +39,39 @@ func Panic(h http.Handler) http.Handler {
 	})
 }
 
+// statusResponseWriter wraps a response writer
+type statusResponseWriter struct {
+	http.ResponseWriter
+	status int
+}
+
+func (s *statusResponseWriter) WriteHeader(code int) {
+	s.status = code
+	s.ResponseWriter.WriteHeader(code)
+}
+
+type tracingOpName struct{}
+
+// WithTracingOpName adds the op name to a context for use by the tracing library. It uses
+// a pointer because it's called below in the stack and the only way to pass the info up
+// is to have it a set a pointer. Even though it doesn't change the context we still have
+// this return a context to maintain the illusion.
+func WithTracingOpName(ctx context.Context, opName string) context.Context {
+	strPtr := ctx.Value(tracingOpName{}).(*string)
+	if strPtr != nil {
+		*strPtr = opName
+	}
+	return ctx
+}
+
 // Tracing creates a new span named after the URL path of the request.
 // It places this span in the request context, for use by other handlers via opentracing.SpanFromContext()
 // If a span exists in request headers, the span created by this middleware will be a child of that span.
 func Tracing(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Attempt to join a span by getting trace info from the headers.
+		// To start with use the URL as the opName since we haven't gotten to the router yet and
+		// the router knows about opNames
 		opName := r.URL.Path
 		var sp opentracing.Span
 		if sc, err := opentracing.GlobalTracer().
@@ -68,7 +97,31 @@ func Tracing(h http.Handler) http.Handler {
 			sp.LogEvent("request_finished")
 		}()
 		newCtx := opentracing.ContextWithSpan(r.Context(), sp)
+		// Use a string pointer so layers below can modify it
+		strPtr := ""
+		newCtx = context.WithValue(newCtx, tracingOpName{}, &strPtr)
 
-		h.ServeHTTP(w, r.WithContext(newCtx))
+		srw := &statusResponseWriter{
+			status:         200,
+			ResponseWriter: w,
+		}
+
+		tags.HTTPMethod.Set(sp, r.Method)
+		tags.SpanKind.Set(sp, tags.SpanKindRPCServerEnum)
+		tags.HTTPUrl.Set(sp, r.URL.Path)
+
+		defer func() {
+			tags.HTTPStatusCode.Set(sp, uint16(srw.status))
+			if srw.status >= 500 {
+				tags.Error.Set(sp, true)
+			}
+			// Now that we have the opName let's try setting it
+			opName, ok := newCtx.Value(tracingOpName{}).(*string)
+			if ok && opName != nil {
+				sp.SetOperationName(*opName)
+			}
+		}()
+
+		h.ServeHTTP(srw, r.WithContext(newCtx))
 	})
 }
