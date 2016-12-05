@@ -30,6 +30,7 @@ type GetBooksInput struct {
 // Validate returns an error if any of the GetBooksInput parameters don't satisfy the
 // requirements from the swagger yml file.
 func (i GetBooksInput) Validate() error {
+
 	if i.Authors != nil {
 		if err := validate.MaxItems("authors", "query", int64(len(i.Authors)), 2); err != nil {
 			return err
@@ -45,26 +46,31 @@ func (i GetBooksInput) Validate() error {
 			return err
 		}
 	}
+
 	if i.State != nil {
 		if err := validate.Enum("state", "query", *i.State, []interface{}{"finished", "inprogress"}); err != nil {
 			return err
 		}
 	}
+
 	if i.Published != nil {
 		if err := validate.FormatOf("published", "query", "date", (*i.Published).String(), strfmt.Default); err != nil {
 			return err
 		}
 	}
+
 	if i.SnakeCase != nil {
 		if err := validate.MaxLength("snake_case", "query", string(*i.SnakeCase), 5); err != nil {
 			return err
 		}
 	}
+
 	if i.Completed != nil {
 		if err := validate.FormatOf("completed", "query", "date-time", (*i.Completed).String(), strfmt.Default); err != nil {
 			return err
 		}
 	}
+
 	if i.MaxPages != nil {
 		if err := validate.Maximum("maxPages", "query", float64(*i.MaxPages), 1000.000000, false); err != nil {
 			return err
@@ -80,6 +86,7 @@ func (i GetBooksInput) Validate() error {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -94,6 +101,7 @@ type GetBookByIDInput struct {
 // Validate returns an error if any of the GetBookByIDInput parameters don't satisfy the
 // requirements from the swagger yml file.
 func (i GetBookByIDInput) Validate() error {
+
 	if err := validate.MaximumInt("book_id", "path", i.BookID, int64(10000000), false); err != nil {
 		return err
 	}
@@ -103,11 +111,13 @@ func (i GetBookByIDInput) Validate() error {
 	if err := validate.MultipleOf("book_id", "path", float64(i.BookID), 2.000000); err != nil {
 		return err
 	}
+
 	if i.AuthorID != nil {
 		if err := validate.FormatOf("authorID", "query", "mongo-id", *i.AuthorID, strfmt.Default); err != nil {
 			return err
 		}
 	}
+
 	if len(i.Authorization) > 0 {
 		if err := validate.MaxLength("authorization", "header", string(i.Authorization), 24); err != nil {
 			return err
@@ -123,6 +133,7 @@ func (i GetBookByIDInput) Validate() error {
 			return err
 		}
 	}
+
 	if i.RandomBytes != nil {
 		if err := validate.FormatOf("randomBytes", "query", "byte", string(*i.RandomBytes), strfmt.Default); err != nil {
 			return err
@@ -139,9 +150,11 @@ type GetBookByID2Input struct {
 // ValidateGetBookByID2Input returns an error if the input parameter doesn't
 // satisfy the requirements in the swagger yml file.
 func ValidateGetBookByID2Input(id string) error {
+
 	if err := validate.Pattern("id", "path", string(id), "^[0-9a-f]{24}$"); err != nil {
 		return err
 	}
+
 	return nil
 }
 

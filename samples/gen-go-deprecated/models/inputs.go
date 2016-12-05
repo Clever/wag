@@ -22,5 +22,6 @@ type HealthInput struct {
 // Validate returns an error if any of the HealthInput parameters don't satisfy the
 // requirements from the swagger yml file.
 func (i HealthInput) Validate() error {
+
 	return nil
 }

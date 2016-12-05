@@ -22,8 +22,10 @@ type GetBookInput struct {
 // Validate returns an error if any of the GetBookInput parameters don't satisfy the
 // requirements from the swagger yml file.
 func (i GetBookInput) Validate() error {
+
 	if err := validate.MaximumInt("id", "path", i.ID, int64(4000), false); err != nil {
 		return err
 	}
+
 	return nil
 }

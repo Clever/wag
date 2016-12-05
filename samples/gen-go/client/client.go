@@ -149,30 +149,39 @@ func (c *WagClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]mo
 	for _, v := range i.Authors {
 		urlVals.Add("authors", v)
 	}
+
 	if i.Available != nil {
 		urlVals.Add("available", strconv.FormatBool(*i.Available))
 	}
+
 	if i.State != nil {
 		urlVals.Add("state", *i.State)
 	}
+
 	if i.Published != nil {
 		urlVals.Add("published", (*i.Published).String())
 	}
+
 	if i.SnakeCase != nil {
 		urlVals.Add("snake_case", *i.SnakeCase)
 	}
+
 	if i.Completed != nil {
 		urlVals.Add("completed", (*i.Completed).String())
 	}
+
 	if i.MaxPages != nil {
 		urlVals.Add("maxPages", strconv.FormatFloat(*i.MaxPages, 'E', -1, 64))
 	}
+
 	if i.MinPages != nil {
 		urlVals.Add("min_pages", strconv.FormatInt(int64(*i.MinPages), 10))
 	}
+
 	if i.PagesToTime != nil {
 		urlVals.Add("pagesToTime", strconv.FormatFloat(float64(*i.PagesToTime), 'E', -1, 32))
 	}
+
 	path = path + "?" + urlVals.Encode()
 
 	client := &http.Client{Transport: c.transport}
@@ -325,12 +334,15 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 	var body []byte
 
 	path = strings.Replace(path, "{book_id}", strconv.FormatInt(i.BookID, 10), -1)
+
 	if i.AuthorID != nil {
 		urlVals.Add("authorID", *i.AuthorID)
 	}
+
 	if i.RandomBytes != nil {
 		urlVals.Add("randomBytes", string(*i.RandomBytes))
 	}
+
 	path = path + "?" + urlVals.Encode()
 
 	client := &http.Client{Transport: c.transport}

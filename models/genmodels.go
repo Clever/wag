@@ -11,7 +11,7 @@ import (
 
 	"github.com/Clever/go-utils/stringset"
 	"github.com/Clever/wag/swagger"
-	"github.com/Clever/wag/utils"
+	"github.com/Clever/wag/templates"
 
 	"github.com/go-swagger/go-swagger/generator"
 )
@@ -134,39 +134,28 @@ func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
 	}
 
 	for _, param := range op.Parameters {
-		if param.In == "body" {
-			g.Printf("\tif err := i.%s.Validate(nil); err != nil {\n", swagger.StructParamName(param))
-			g.Printf("\t\treturn err\n")
-			g.Printf("\t}\n\n")
-		}
-
-		validations, err := swagger.ParamToValidationCode(param)
-		if err != nil {
-			return err
-		}
 		_, pointer, err := swagger.ParamToType(param)
 		if err != nil {
 			return err
 		}
-		for _, validation := range validations {
-			if param.In == "header" {
-				g.Printf("\tif len(i.%s) > 0 {\n", swagger.StructParamName(param))
-				g.Printf(errCheck(validation))
-				g.Printf("\t}\n")
-			} else if !pointer && param.Type != "array" {
-				if singleStringPathParameter {
-					// replace i.<Param> with <param>
-					validation = strings.Replace(validation,
-						fmt.Sprintf("i.%s", utils.CamelCase(param.Name, true)),
-						paramName, -1)
-				}
-				g.Printf(errCheck(validation))
-			} else {
-				g.Printf("\tif i.%s != nil {\n", swagger.StructParamName(param))
-				g.Printf(errCheck(validation))
-				g.Printf("\t}\n")
-			}
+		validations, err := swagger.ParamToValidationCode(param, op)
+		if err != nil {
+			return err
 		}
+		t := validateTemplate{
+			Type:         param.In,
+			AccessString: "i." + swagger.StructParamName(param),
+			Pointer:      pointer || param.Type == "array",
+			Validations:  validations,
+		}
+		if single, _ := swagger.SingleStringPathParameter(op); single {
+			t.AccessString = param.Name
+		}
+		str, err := templates.WriteTemplate(validationStr, t)
+		if err != nil {
+			return err
+		}
+		g.Printf(str)
 	}
 	g.Printf("\treturn nil\n")
 	g.Printf("}\n\n")
@@ -174,14 +163,44 @@ func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
 	return nil
 }
 
-// errCheck returns an if err := ifCondition; err != nil { return err } function
-func errCheck(ifCondition string) string {
-	return fmt.Sprintf(
-		`	if err := %s; err != nil {
+type validateTemplate struct {
+	Type         string
+	AccessString string
+	Pointer      bool
+	Validations  []string
+}
+
+//
+
+var validationStr = `
+	{{if eq .Type "body" -}}
+	if err := {{.AccessString}}.Validate(nil); err != nil {
 		return err
 	}
-`, ifCondition)
-}
+	{{- end -}}
+	{{- $type := .Type -}}
+	{{- $accessString := .AccessString -}}
+	{{- $pointer := .Pointer -}}
+	{{- range $i, $validation := .Validations -}}
+		{{- if eq $type "header" -}}
+		if len({{$accessString}}) > 0 {
+			if err := {{$validation}}; err != nil {
+				return err
+			}
+		}
+		{{else -}}
+		{{- if $pointer}}
+		if {{$accessString}} != nil {
+		{{- end -}}
+		if err := {{$validation}}; err != nil {
+			return err
+		}
+		{{if $pointer -}}
+		}
+		{{- end -}}
+		{{end -}}
+	{{- end }}
+`
 
 func generateOutputs(packageName string, s spec.Swagger) error {
 	g := swagger.Generator{PackageName: packageName}

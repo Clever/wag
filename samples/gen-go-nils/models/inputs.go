@@ -26,9 +26,9 @@ type NilCheckInput struct {
 // Validate returns an error if any of the NilCheckInput parameters don't satisfy the
 // requirements from the swagger yml file.
 func (i NilCheckInput) Validate() error {
+
 	if err := i.Body.Validate(nil); err != nil {
 		return err
 	}
-
 	return nil
 }
