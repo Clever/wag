@@ -281,6 +281,10 @@ func methodCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPat
 
 }
 
+// paramToTemplate converts a spec.Parameter into the a struct with the information needed to
+// template code that uses that parameter. For example, it figures out what the access string for
+// the parameter should be (e.g. either "i.$FIELD" or just $FIELD) and whether the field should be
+// used as a pointer or not.
 func paramToTemplate(s *spec.Swagger, param *spec.Parameter, op *spec.Operation) paramTemplate {
 
 	singleStringPathParameter, singleParamName := swagger.SingleStringPathParameter(op)
@@ -302,8 +306,9 @@ func paramToTemplate(s *spec.Swagger, param *spec.Parameter, op *spec.Operation)
 		Pointer:      pointer,
 		ErrorMessage: errorMessage(s, op),
 	}
+	// If this is a single parameter then use $FIELD rather than i.$FIELD in both the toString
+	// and accessing code.
 	if singleStringPathParameter {
-		t.Name = param.Name
 		t.ToStringCode = singleParamName
 		t.AccessString = param.Name
 	}
