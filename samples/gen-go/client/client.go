@@ -257,12 +257,9 @@ func (c *WagClient) CreateBook(ctx context.Context, i *models.Book) (*models.Boo
 
 		var err error
 		body, err = json.Marshal(i)
+
 		if err != nil {
-
-			if err != nil {
-				return nil, err
-			}
-
+			return nil, err
 		}
 
 	}

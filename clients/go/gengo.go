@@ -422,9 +422,7 @@ var bodyParamStr = `
 	{{end}}
 	var err error
 	body, err = json.Marshal({{.AccessString}})
-	if err != nil {
-		{{.ErrorMessage}}	
-	}
+	{{.ErrorMessage}}	
 	{{if .Pointer}}
 	}
 	{{end}}
