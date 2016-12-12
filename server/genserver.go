@@ -638,7 +638,7 @@ type bodyParamTemplate struct {
 var bodyParamTemplateStr = `
 	data, err := ioutil.ReadAll(r.Body)
 	{{if .Required}} if len(data) == 0 {
-		return nil, errors.New("Parameter must be specified")
+		return nil, errors.New("parameter must be specified")
 	}{{end}}
 
 	if len(data) > 0 { {{if eq (len .ParamField) 0}}
