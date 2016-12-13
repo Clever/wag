@@ -252,7 +252,7 @@ To utilize the `span` option above you need to pass an opentracing span into the
 example shows you how to setup an express app to track requests and any calls made via a wag client.
 
 ```bash
-npm install --save "tracing-middleware"
+npm install --save tracing-middleware
 ```
 
 
