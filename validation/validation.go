@@ -76,7 +76,7 @@ func validateOp(path, method string, op *spec.Operation) error {
 				return fmt.Errorf("%s for %s %s is a body parameter so it must not have a default",
 					param.Name, method, path)
 			}
-			if param.Schema == nil {
+			if param.Schema == nil || param.Schema.Ref.String() == "" {
 				return fmt.Errorf("%s for %s %s is a body parameter so it must reference a schema",
 					param.Name, method, path)
 			}
