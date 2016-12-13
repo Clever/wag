@@ -16,6 +16,7 @@ import:
   subpackages:
   - gomock
 - package: github.com/gorilla/mux
+  version: 757bef944d0f21880861c2dd9c871ca543023cba
 - package: github.com/opentracing/opentracing-go
 - package: golang.org/x/net
   subpackages:
