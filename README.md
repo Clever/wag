@@ -269,7 +269,10 @@ app.use(middleware({access_token: LIGHTSTEP_ACCESS_TOKEN}));
 
 app.get("/my-url", (req, res) => {
   sampleClient.getBookById("bookID", {span: req.span}, (err, book) => {
-    // ...
+    if (book.isSpecial) {
+    	// guarantee that this trace instance will be sampled
+    	req.span.setTag("sampling.priority", 1);
+    }
   });
 });
 ```
