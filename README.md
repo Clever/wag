@@ -252,51 +252,29 @@ To utilize the `span` option above you need to pass an opentracing span into the
 example shows you how to setup an express app to track requests and any calls made via a wag client.
 
 ```bash
-npm install lightstep-tracer opentracing@0.11 --save # >=0.12 contains untested breaking changes to the API
+npm install --save tracing-middleware
 ```
 
-```javascript
-import * as SampleClientLib from 'sample-client-lib-js';
-import * as express from 'express';
-import * as Tracer from 'opentracing';
-import * as LightStep from 'lightstep-tracer';
-import * as lodash from 'lodash';
-Tracer.initGlobalTracer(LightStep.tracer({
-  access_token   : process.env.LIGHTSTEP_ACCESS_TOKEN,
-  component_name : 'repo-name',
-}));
 
-const sampleClient = new SampleClientLib({discovery: true}); // Using discovery
+```javascript
+import * as express from "express";
+import middleware from "tracing-middleware";
+import * as SampleClientLib from 'sample-client-lib-js';
 
 const app = express();
+const sampleClient = new SampleClientLib({discovery: true}); // Using discovery
 
-// Middleware to look for a span from inbound requests
-app.use((req, res, next) => {
-  const wireCtx = Tracer.extract(Tracer.FORMAT_HTTP_HEADERS, req.headers);
-  req.span = Tracer.startSpan(req.url, {childOf: wireCtx});
-  req.span.logEvent("request_received");
-
-  // include trace ID in headers so that we can debug slow requests we see in
-  // the browser by looking up the trace ID found in response headers
-  const responseHeaders = {};
-  Tracer.inject(req.span, Tracer.FORMAT_TEXT_MAP, responseHeaders);
-  lodash.forOwn(responseHeaders, (value, key) => res.setHeader(key, responseHeaders[key]));
-
-  // finalize the span when the response is completed
-  res.on("finish", () => {
-    req.span.logEvent("request_finished");
-    req.span.finish();
-  });
-
-  next();
-});
+const LIGHTSTEP_ACCESS_TOKEN = "access_token";
+app.use(middleware({access_token: LIGHTSTEP_ACCESS_TOKEN}));
 
 app.get("/my-url", (req, res) => {
   sampleClient.getBookById("bookID", {span: req.span}, (err, book) => {
-    // ...
+    if (book.isSpecial) {
+    	// guarantee that this trace instance will be sampled
+    	req.span.setTag("sampling.priority", 1);
+    }
   });
 });
-
 ```
 
 ### Custom String Validation
