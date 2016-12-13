@@ -116,21 +116,21 @@ func New(c Controller, addr string) *Server {
 // middleware after the built-in middleware (e.g. logging), but before the controller methods.
 // The middleware is executed in the order specified. The server will start when "Serve" is called.
 func NewWithMiddleware(c Controller, addr string, m []func(http.Handler) http.Handler) *Server {
-	r := mux.NewRouter()
+	router := mux.NewRouter()
 	h := handler{Controller: c}
 
 	l := logger.New("{{.Title}}")
 
 	{{range $index, $val := .Functions}}
-	r.Methods("{{$val.Method}}").Path("{{$val.Path}}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	router.Methods("{{$val.Method}}").Path("{{$val.Path}}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "{{$val.OpID}}")
+		h.{{$val.HandlerName}}Handler(r.Context(), w, r)
 		ctx := middleware.WithTracingOpName(r.Context(), "{{$val.OpID}}")
 		r = r.WithContext(ctx)
-		h.{{$val.HandlerName}}Handler(r.Context(), w, r)
 	})
 	{{end}}
 
-	handler := withMiddleware("{{.Title}}", r, m)
+	handler := withMiddleware("{{.Title}}", router, m)
 	return &Server{Handler: handler, addr: addr, l: l}
 }
 `
