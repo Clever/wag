@@ -74,46 +74,46 @@ func New(c Controller, addr string) *Server {
 // middleware after the built-in middleware (e.g. logging), but before the controller methods.
 // The middleware is executed in the order specified. The server will start when "Serve" is called.
 func NewWithMiddleware(c Controller, addr string, m []func(http.Handler) http.Handler) *Server {
-	r := mux.NewRouter()
+	router := mux.NewRouter()
 	h := handler{Controller: c}
 
 	l := logger.New("swagger-test")
 
-	r.Methods("GET").Path("/v1/books").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	router.Methods("GET").Path("/v1/books").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "getBooks")
+		h.GetBooksHandler(r.Context(), w, r)
 		ctx := middleware.WithTracingOpName(r.Context(), "getBooks")
 		r = r.WithContext(ctx)
-		h.GetBooksHandler(r.Context(), w, r)
 	})
 
-	r.Methods("POST").Path("/v1/books").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	router.Methods("POST").Path("/v1/books").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "createBook")
+		h.CreateBookHandler(r.Context(), w, r)
 		ctx := middleware.WithTracingOpName(r.Context(), "createBook")
 		r = r.WithContext(ctx)
-		h.CreateBookHandler(r.Context(), w, r)
 	})
 
-	r.Methods("GET").Path("/v1/books/{book_id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	router.Methods("GET").Path("/v1/books/{book_id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "getBookByID")
+		h.GetBookByIDHandler(r.Context(), w, r)
 		ctx := middleware.WithTracingOpName(r.Context(), "getBookByID")
 		r = r.WithContext(ctx)
-		h.GetBookByIDHandler(r.Context(), w, r)
 	})
 
-	r.Methods("GET").Path("/v1/books2/{id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	router.Methods("GET").Path("/v1/books2/{id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "getBookByID2")
+		h.GetBookByID2Handler(r.Context(), w, r)
 		ctx := middleware.WithTracingOpName(r.Context(), "getBookByID2")
 		r = r.WithContext(ctx)
-		h.GetBookByID2Handler(r.Context(), w, r)
 	})
 
-	r.Methods("GET").Path("/v1/health/check").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	router.Methods("GET").Path("/v1/health/check").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "healthCheck")
+		h.HealthCheckHandler(r.Context(), w, r)
 		ctx := middleware.WithTracingOpName(r.Context(), "healthCheck")
 		r = r.WithContext(ctx)
-		h.HealthCheckHandler(r.Context(), w, r)
 	})
 
-	handler := withMiddleware("swagger-test", r, m)
+	handler := withMiddleware("swagger-test", router, m)
 	return &Server{Handler: handler, addr: addr, l: l}
 }
