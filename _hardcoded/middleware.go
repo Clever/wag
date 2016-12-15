@@ -1,4 +1,4 @@
-package middleware
+package server
 
 import (
 	"context"
@@ -11,9 +11,9 @@ import (
 	"gopkg.in/Clever/kayvee-go.v5/logger"
 )
 
-// Panic logs any panics. For now, we're continue throwing the panic up
+// PanicMiddleware logs any panics. For now, we're continue throwing the panic up
 // the stack so this may crash the process.
-func Panic(h http.Handler) http.Handler {
+func PanicMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			panicErr := recover()
@@ -67,7 +67,7 @@ func WithTracingOpName(ctx context.Context, opName string) context.Context {
 // Tracing creates a new span named after the URL path of the request.
 // It places this span in the request context, for use by other handlers via opentracing.SpanFromContext()
 // If a span exists in request headers, the span created by this middleware will be a child of that span.
-func Tracing(h http.Handler) http.Handler {
+func TracingMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Attempt to join a span by getting trace info from the headers.
 		// To start with use the URL as the opName since we haven't gotten to the router yet and
