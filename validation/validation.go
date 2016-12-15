@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/Clever/wag/swagger"
 	swaggererrors "github.com/go-openapi/errors"
@@ -48,7 +49,7 @@ func validateOp(path, method string, op *spec.Operation) error {
 			method, path)
 	}
 
-	if err := validateResponses(op); err != nil {
+	if err := validateResponses(path, method, op); err != nil {
 		return err
 	}
 
@@ -59,14 +60,23 @@ func validateOp(path, method string, op *spec.Operation) error {
 	return nil
 }
 
-func validateResponses(op *spec.Operation) error {
+func validateResponses(path, method string, op *spec.Operation) error {
 
 	for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
 		if statusCode < 200 || statusCode > 599 {
-			return fmt.Errorf("Response map key must be an integer between 200 and 599 or "+
-				"the string 'default'. Was %d", statusCode)
+			return fmt.Errorf("response map key must be an integer between 200 and 599 or "+
+				"the string 'default'. Was %d for %s %s", statusCode, path, method)
 		}
-		_, err := swagger.TypeFromSchema(op.Responses.StatusCodeResponses[statusCode].Schema, false)
+		response := op.Responses.StatusCodeResponses[statusCode]
+		refStr := response.Ref.String()
+		if refStr != "" && strings.HasPrefix(refStr, "#/definitions") {
+			return fmt.Errorf("responses with references should nest the ref in a schema. "+
+				"responses.%d.$ref = '%s' for %s %s should be "+
+				"responses.%d.schema.$ref = '%s'",
+				statusCode, refStr, path, method, statusCode, refStr)
+		}
+
+		_, err := swagger.TypeFromSchema(response.Schema, false)
 		if err != nil {
 			return err
 		}
