@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/Clever/go-process-metrics/metrics"
-	"github.com/Clever/wag/middleware"
 	"github.com/gorilla/mux"
 	"gopkg.in/Clever/kayvee-go.v5/logger"
 	kvMiddleware "gopkg.in/Clever/kayvee-go.v5/middleware"
@@ -56,8 +55,8 @@ func withMiddleware(serviceName string, router http.Handler, m []func(http.Handl
 	for i := len(m) - 1; i >= 0; i-- {
 		handler = m[i](handler)
 	}
-	handler = middleware.Tracing(handler)
-	handler = middleware.Panic(handler)
+	handler = TracingMiddleware(handler)
+	handler = PanicMiddleware(handler)
 	// Logging middleware comes last, i.e. will be run first.
 	// This makes it so that other middleware has access to the logger
 	// that kvMiddleware injects into the request context.
@@ -82,35 +81,35 @@ func NewWithMiddleware(c Controller, addr string, m []func(http.Handler) http.Ha
 	router.Methods("GET").Path("/v1/books").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "getBooks")
 		h.GetBooksHandler(r.Context(), w, r)
-		ctx := middleware.WithTracingOpName(r.Context(), "getBooks")
+		ctx := WithTracingOpName(r.Context(), "getBooks")
 		r = r.WithContext(ctx)
 	})
 
 	router.Methods("POST").Path("/v1/books").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "createBook")
 		h.CreateBookHandler(r.Context(), w, r)
-		ctx := middleware.WithTracingOpName(r.Context(), "createBook")
+		ctx := WithTracingOpName(r.Context(), "createBook")
 		r = r.WithContext(ctx)
 	})
 
 	router.Methods("GET").Path("/v1/books/{book_id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "getBookByID")
 		h.GetBookByIDHandler(r.Context(), w, r)
-		ctx := middleware.WithTracingOpName(r.Context(), "getBookByID")
+		ctx := WithTracingOpName(r.Context(), "getBookByID")
 		r = r.WithContext(ctx)
 	})
 
 	router.Methods("GET").Path("/v1/books2/{id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "getBookByID2")
 		h.GetBookByID2Handler(r.Context(), w, r)
-		ctx := middleware.WithTracingOpName(r.Context(), "getBookByID2")
+		ctx := WithTracingOpName(r.Context(), "getBookByID2")
 		r = r.WithContext(ctx)
 	})
 
 	router.Methods("GET").Path("/v1/health/check").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "healthCheck")
 		h.HealthCheckHandler(r.Context(), w, r)
-		ctx := middleware.WithTracingOpName(r.Context(), "healthCheck")
+		ctx := WithTracingOpName(r.Context(), "healthCheck")
 		r = r.WithContext(ctx)
 	})
 

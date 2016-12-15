@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/Clever/go-process-metrics/metrics"
-	"github.com/Clever/wag/middleware"
 	"github.com/gorilla/mux"
 	"gopkg.in/Clever/kayvee-go.v5/logger"
 	kvMiddleware "gopkg.in/Clever/kayvee-go.v5/middleware"
@@ -56,8 +55,8 @@ func withMiddleware(serviceName string, router http.Handler, m []func(http.Handl
 	for i := len(m) - 1; i >= 0; i-- {
 		handler = m[i](handler)
 	}
-	handler = middleware.Tracing(handler)
-	handler = middleware.Panic(handler)
+	handler = TracingMiddleware(handler)
+	handler = PanicMiddleware(handler)
 	// Logging middleware comes last, i.e. will be run first.
 	// This makes it so that other middleware has access to the logger
 	// that kvMiddleware injects into the request context.
@@ -82,7 +81,7 @@ func NewWithMiddleware(c Controller, addr string, m []func(http.Handler) http.Ha
 	router.Methods("GET").Path("/v1/health").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "health")
 		h.HealthHandler(r.Context(), w, r)
-		ctx := middleware.WithTracingOpName(r.Context(), "health")
+		ctx := WithTracingOpName(r.Context(), "health")
 		r = r.WithContext(ctx)
 	})
 
