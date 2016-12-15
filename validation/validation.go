@@ -48,6 +48,19 @@ func validateOp(path, method string, op *spec.Operation) error {
 			method, path)
 	}
 
+	if err := validateResponses(op); err != nil {
+		return err
+	}
+
+	if err := validateParams(path, method, op); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func validateResponses(op *spec.Operation) error {
+
 	for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
 		if statusCode < 200 || statusCode > 599 {
 			return fmt.Errorf("Response map key must be an integer between 200 and 599 or "+
@@ -58,6 +71,10 @@ func validateOp(path, method string, op *spec.Operation) error {
 			return err
 		}
 	}
+	return nil
+}
+
+func validateParams(path, method string, op *spec.Operation) error {
 
 	for _, param := range op.Parameters {
 
@@ -105,7 +122,6 @@ func validateOp(path, method string, op *spec.Operation) error {
 			}
 		}
 	}
-
 	return nil
 }
 
