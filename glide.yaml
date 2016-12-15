@@ -27,6 +27,7 @@ import:
   subpackages:
   - bson
 - package: github.com/Clever/go-process-metrics
+  version: 17c3da159c36ee2bbb4198c8eeada7f68184350f
   subpackages:
   - metrics
 - package: github.com/Clever/discovery-go
