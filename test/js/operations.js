@@ -26,6 +26,17 @@ describe("operations", function() {
     });
   });
 
+  it("error on empty path param", function(done) {
+    const c = new Client({address: mockAddress});
+    const params = {
+      bookID: "",
+    };
+    c.getBookByID(params, function(err, resp) {
+      assert.equal(err.toString(), "Error: Path parameters must be non-empty")
+      done()
+    });
+  });
+
   it("return a error in failure cases", function(done) {
     const c = new Client({address: mockAddress});
     const scope = nock(mockAddress)

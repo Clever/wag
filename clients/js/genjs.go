@@ -243,10 +243,19 @@ var methodTmplStr = `
     const timeout = options.timeout || this.timeout;
     const span = options.span;
 
-    const headers = {};{{range $param := .HeaderParams}}
-    headers["{{$param.WagName}}"] = params.{{$param.JSName}};{{end}}
+    const headers = {};
+    {{- range $param := .PathParams}}
+    if (params.{{$param.JSName}} == "") {
+      cb(new Error("Path parameters must be non-empty"))
+    }
+    {{- end -}}
+    {{- range $param := .HeaderParams}}
+    headers["{{$param.WagName}}"] = params.{{$param.JSName}};
+    {{- end}}
 
-    const query = {};{{range $param := .QueryParams}}{{ if $param.Required }}
+    const query = {};
+    {{- range $param := .QueryParams -}}
+    {{- if $param.Required }}
     query["{{$param.WagName}}"] = params.{{$param.JSName}};
 {{else}}
     if (typeof params.{{$param.JSName}} !== "undefined") {
@@ -379,6 +388,7 @@ type methodTemplate struct {
 	PathCode               string
 	Path                   string
 	HeaderParams           []paramMapping
+	PathParams             []paramMapping
 	QueryParams            []paramMapping
 	BodyParam              string
 	Responses              []responseMapping
@@ -386,7 +396,7 @@ type methodTemplate struct {
 }
 
 // This function takes in a swagger path such as "/path/goes/to/{location}/and/to/{other_Location}"
-// and returns a string of javacript code such as "/path/goes/to/" + location + "/and/to/" + otherLocation
+// and returns a string of javacript code such as "/path/goes/to/" + location + "/and/to/" + otherLocation.
 func fillOutPath(path string) string {
 	paramRegex := regexp.MustCompile("({.+?})")
 	paramNameRegex := regexp.MustCompile("{(.+?)}")
@@ -442,6 +452,8 @@ func methodCode(s spec.Swagger, op *spec.Operation, method, basePath, path strin
 
 		tmplInfo.Params = append(tmplInfo.Params, param)
 		switch wagParam.In {
+		case "path":
+			tmplInfo.PathParams = append(tmplInfo.PathParams, param)
 		case "header":
 			tmplInfo.HeaderParams = append(tmplInfo.HeaderParams, param)
 		case "body": // Will only ever be a single bodyParam so we can just set here
