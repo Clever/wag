@@ -1,5 +1,5 @@
-hash: 9d9f79cbfe13f9cbabb416d372a18723960f7bc513d3993dfd05b924daf3b820
-updated: 2016-12-15T12:19:59.56219488-08:00
+hash: fd0551b46ac3509df57305c450bbc71959eb84cc12f6c5bcf15c2e34801291f7
+updated: 2016-12-20T23:06:10.347591586Z
 imports:
 - name: github.com/afex/hystrix-go
   version: 39520ddd07a9d9a071d615f7476798659f5a3b89
@@ -11,7 +11,7 @@ imports:
   version: 7b3beb6df3c42abd3509abfc3bcacc0fbfb7c877
   repo: https://github.com/asaskevich/govalidator
 - name: github.com/Clever/discovery-go
-  version: 390462cd848840ad55e92fa42f81c67c0feb7d15
+  version: fd78b9ff3291bf5e69038a9b2da73e91ca0e49c7
 - name: github.com/Clever/go-process-metrics
   version: 17c3da159c36ee2bbb4198c8eeada7f68184350f
   subpackages:
@@ -28,9 +28,9 @@ imports:
 - name: github.com/go-errors/errors
   version: a41850380601eeb43f4350f7d17c6bbd8944aaf8
 - name: github.com/go-openapi/analysis
-  version: 7222828b8ce19afee3c595aef6643b9e42150120
+  version: abc9a6171f5bf03ada39aead1aa7fd7bbd44d50f
 - name: github.com/go-openapi/errors
-  version: 4178436c9f2430cdd945c50301cfb61563b56573
+  version: d24ebc2075bad502fac3a8ae27aa6dd58e1952dc
 - name: github.com/go-openapi/inflect
   version: b1f6470ffb9c552dc105dd869f16e36ba86ba7d0
   repo: https://github.com/go-openapi/inflect
@@ -39,28 +39,37 @@ imports:
 - name: github.com/go-openapi/jsonreference
   version: 13c6e3589ad90f49bd3e3bbe2c2cb3d7a4142272
 - name: github.com/go-openapi/loads
-  version: 9168874c33ac10e241ee7767ed9f5d209c2a5ab0
+  version: 18441dfa706d924a39a030ee2c3b1d8d81917b38
   subpackages:
   - fmts
 - name: github.com/go-openapi/runtime
   version: 2faaf90bf67e0616db00094f2141f99b00a9ebc2
   repo: https://github.com/go-openapi/runtime
 - name: github.com/go-openapi/spec
-  version: 8f2b3d0e3aa15100eea0ab61dc6fa02f00f5e713
+  version: e9fab754f5629065e6b7a6100301226545d4477e
 - name: github.com/go-openapi/strfmt
-  version: d65c7fdb29eca313476e529628176fe17e58c488
+  version: dfda818c47a4ae5a1dde75ac776f34b2c95de993
 - name: github.com/go-openapi/swag
-  version: 3b6d86cd965820f968760d5d419cb4add096bdd7
+  version: 1d0bd113de87027671077d3c71eb3ac5d7dbba72
 - name: github.com/go-openapi/validate
-  version: 027696d4b54399770f1cdcc6c6daa56975f9e14e
+  version: deaf2c9013bc1a7f4c774662259a506ba874d80f
 - name: github.com/go-swagger/go-swagger
   version: dae55c0fc2df02e480114804b1d5b35a0e584c66
   subpackages:
   - generator
+- name: github.com/gogo/protobuf
+  version: 8d70fb3182befc465c4a1eac8ad4d38ff49778e2
+  subpackages:
+  - proto
 - name: github.com/golang/mock
   version: bd3c8e81be01eef76d4b503f5e687d2d1354d2d9
   subpackages:
   - gomock
+- name: github.com/golang/protobuf
+  version: 3852dcfda249c2097355a6aabb199a28d97b30df
+  subpackages:
+  - proto
+  - ptypes/timestamp
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
   repo: https://github.com/gorilla/context
@@ -81,6 +90,13 @@ imports:
 - name: github.com/kr/fs
   version: 2788f0dbd16903de03cb8186e5c7d97b69ad387b
   repo: https://github.com/kr/fs
+- name: github.com/lightstep/lightstep-tracer-go
+  version: 0d48cd619841b1e1a3cdd20cd6ac97774c0002ce
+  subpackages:
+  - collectorpb
+  - lightstep_thrift
+  - thrift_0_9_2/lib/go/thrift
+  - thrift_rpc
 - name: github.com/magiconair/properties
   version: 0723e352fa358f9322c938cc2dadda874e9151a9
   repo: https://github.com/magiconair/properties
@@ -94,8 +110,12 @@ imports:
 - name: github.com/mitchellh/mapstructure
   version: f3009df150dadf309fdee4a54ed65c124afad715
   repo: https://github.com/mitchellh/mapstructure
+- name: github.com/opentracing/basictracer-go
+  version: 1b32af207119a14b1b231d451df3ed04a72efebf
+  subpackages:
+  - wire
 - name: github.com/opentracing/opentracing-go
-  version: 902ca977fd85455c364050f985eba376b44315f0
+  version: 0c3154a3c2ce79d3271985848659870599dfb77c
   subpackages:
   - ext
   - log
@@ -158,7 +178,12 @@ imports:
   subpackages:
   - context
   - context/ctxhttp
+  - http2
+  - http2/hpack
   - idna
+  - internal/timeseries
+  - lex/httplex
+  - trace
 - name: golang.org/x/sys
   version: c200b10b5d5e122be351b67af224adc6128af5bf
   repo: https://go.googlesource.com/sys
@@ -187,6 +212,19 @@ imports:
   - go/buildutil
   - go/loader
   - imports
+- name: google.golang.org/grpc
+  version: 09aecb094ef6b9ebe49dd999f52c505beeeb402e
+  subpackages:
+  - codes
+  - credentials
+  - grpclog
+  - internal
+  - metadata
+  - naming
+  - peer
+  - stats
+  - tap
+  - transport
 - name: gopkg.in/Clever/kayvee-go.v3
   version: 056c92dcc68b40c5d6045f755197b3776f914154
   subpackages:
@@ -202,10 +240,9 @@ imports:
   - logger
   - router
 - name: gopkg.in/mgo.v2
-  version: 3f83fa5005286a7fe593b055f0d7771a7dce4655
+  version: 29cc868a5ca65f401ff318143f9408d02f4799cc
   subpackages:
   - bson
-  - internal/json
 - name: gopkg.in/tylerb/graceful.v1
   version: 50a48b6e73fcc75b45e22c05b79629a67c79e938
 - name: gopkg.in/yaml.v2
@@ -222,7 +259,7 @@ testImports:
   subpackages:
   - difflib
 - name: github.com/stretchr/testify
-  version: 976c720a22c8eb4eb6a0b4348ad85ad12491a506
+  version: d77da356e56a7428ad25149ca77381849a6a5232
   subpackages:
   - assert
   - require

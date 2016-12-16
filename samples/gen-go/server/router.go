@@ -6,10 +6,13 @@ import (
 	"log"
 	"net/http"
 	_ "net/http/pprof"
+	"os"
 	"time"
 
 	"github.com/Clever/go-process-metrics/metrics"
 	"github.com/gorilla/mux"
+	lightstep "github.com/lightstep/lightstep-tracer-go"
+	opentracing "github.com/opentracing/opentracing-go"
 	"gopkg.in/Clever/kayvee-go.v5/logger"
 	kvMiddleware "gopkg.in/Clever/kayvee-go.v5/middleware"
 	"gopkg.in/tylerb/graceful.v1"
@@ -36,6 +39,20 @@ func (s *Server) Serve() error {
 		// This should never return. Listen on the pprof port
 		log.Printf("PProf server crashed: %s", http.ListenAndServe(":6060", nil))
 	}()
+
+	if lightstepToken := os.Getenv("LIGHTSTEP_ACCESS_TOKEN"); lightstepToken != "" {
+		tags := make(map[string]interface{})
+		tags[lightstep.ComponentNameKey] = "swagger-test"
+		lightstepTracer := lightstep.NewTracer(lightstep.Options{
+			AccessToken: lightstepToken,
+			Tags:        tags,
+			UseGRPC:     true,
+		})
+		defer lightstep.FlushLightStepTracer(lightstepTracer)
+		opentracing.InitGlobalTracer(lightstepTracer)
+	} else {
+		s.l.Error("please set LIGHTSTEP_ACCESS_TOKEN to enable tracing")
+	}
 
 	s.l.Counter("server-started")
 
