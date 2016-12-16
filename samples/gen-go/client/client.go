@@ -333,7 +333,16 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 	urlVals := url.Values{}
 	var body []byte
 
-	path = strings.Replace(path, "{book_id}", strconv.FormatInt(i.BookID, 10), -1)
+	pathbook_id := strconv.FormatInt(i.BookID, 10)
+	if pathbook_id == "" {
+		err := fmt.Errorf("path parameters cannot be empty")
+
+		if err != nil {
+			return nil, err
+		}
+
+	}
+	path = strings.Replace(path, "{book_id}", pathbook_id, -1)
 
 	if i.AuthorID != nil {
 		urlVals.Add("authorID", *i.AuthorID)
@@ -431,7 +440,16 @@ func (c *WagClient) GetBookByID2(ctx context.Context, id string) (*models.Book, 
 	urlVals := url.Values{}
 	var body []byte
 
-	path = strings.Replace(path, "{id}", id, -1)
+	pathid := id
+	if pathid == "" {
+		err := fmt.Errorf("path parameters cannot be empty")
+
+		if err != nil {
+			return nil, err
+		}
+
+	}
+	path = strings.Replace(path, "{id}", pathid, -1)
 	path = path + "?" + urlVals.Encode()
 
 	client := &http.Client{Transport: c.transport}

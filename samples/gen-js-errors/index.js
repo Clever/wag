@@ -143,6 +143,9 @@ class SwaggerTest {
     const span = options.span;
 
     const headers = {};
+    if (params.id == "") {
+      cb(new Error("Path parameters must be non-empty"))
+    }
 
     const query = {};
 
