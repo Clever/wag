@@ -89,7 +89,7 @@ logger.FromContext(ctx).Info(...)
 
   You should use this logger for all logging within your controller implementation.
 
-* **Success Response Types**
+#### Success Response Types
   * Wag only supports a single 2XX response status code and no 3XX status codes.
     * If the success response type has a data type associated with it then Wag generates an interface that takes a pointer to that data type as the first argument.
     `func(...) (*SuccessType, error)`
@@ -97,7 +97,7 @@ logger.FromContext(ctx).Info(...)
     `func(...) error`
 
 
-* **Errors**.
+#### Errors
   * Wag supports three types of errors
     * Global error response types
     * Response types for a specific operation
@@ -121,7 +121,7 @@ logger.FromContext(ctx).Info(...)
     directly since it should already have stacktrace information (either it is
       a wrapped external error or a `go-errors`-generated internal error).
 
-* **Input Parameters
+#### Input Parameters
   * Wag supports four types of parameters
     * Path parameters
       * Must be required
@@ -148,7 +148,8 @@ logger.FromContext(ctx).Info(...)
     `func F(ctx context.Context, input *models.{{OperationID}}Input) error`
       * Optional parameters that don't have defaults are pointers in the input struct so that the server can distinguish between parameters that aren't set and parameters that are set to the nil value.
 
-* **Tracing**: `wag` instruments the context object with tracing-related metadata.
+#### Tracing
+  `wag` instruments the context object with tracing-related metadata.
   This is done via [opentracing](http://opentracing.io/).
   In order for it to work, you are required to do two things:
 
