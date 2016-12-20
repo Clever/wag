@@ -147,7 +147,16 @@ func (c *WagClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
 	urlVals := url.Values{}
 	var body []byte
 
-	path = strings.Replace(path, "{id}", strconv.FormatInt(i.ID, 10), -1)
+	pathid := strconv.FormatInt(i.ID, 10)
+	if pathid == "" {
+		err := fmt.Errorf("id cannot be empty because it's a path parameter")
+
+		if err != nil {
+			return err
+		}
+
+	}
+	path = strings.Replace(path, "{id}", pathid, -1)
 	path = path + "?" + urlVals.Encode()
 
 	client := &http.Client{Transport: c.transport}

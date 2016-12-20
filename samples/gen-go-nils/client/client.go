@@ -146,7 +146,16 @@ func (c *WagClient) NilCheck(ctx context.Context, i *models.NilCheckInput) error
 	urlVals := url.Values{}
 	var body []byte
 
-	path = strings.Replace(path, "{id}", i.ID, -1)
+	pathid := i.ID
+	if pathid == "" {
+		err := fmt.Errorf("id cannot be empty because it's a path parameter")
+
+		if err != nil {
+			return err
+		}
+
+	}
+	path = strings.Replace(path, "{id}", pathid, -1)
 
 	if i.Query != nil {
 		urlVals.Add("query", *i.Query)

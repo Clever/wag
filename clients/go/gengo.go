@@ -323,8 +323,10 @@ func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string) string
 		t := paramToTemplate(s, &param, op)
 		if param.In == "path" {
 			pt := pathParamTemplate{
+				Name:         param.Name,
 				PathName:     "{" + t.Name + "}",
 				ToStringCode: t.ToStringCode,
+				ErrorMessage: errorMessage(s, op),
 			}
 			str, err := templates.WriteTemplate(pathParamStr, pt)
 			if err != nil {
@@ -388,11 +390,19 @@ type paramTemplate struct {
 // pathParamTemplate is a seperate template because I couldn't find a non-annoying
 // way to encode {".Name"} in the template
 type pathParamTemplate struct {
+	Name         string
 	PathName     string
 	ToStringCode string
+	ErrorMessage string
 }
 
-var pathParamStr = `path = strings.Replace(path, "{{.PathName}}", {{.ToStringCode}}, -1)
+var pathParamStr = `
+	path{{.Name}} := {{.ToStringCode}}
+	if path{{.Name}} == "" {
+		err := fmt.Errorf("{{.Name}} cannot be empty because it's a path parameter")
+		{{- .ErrorMessage}}
+	}
+	path = strings.Replace(path, "{{.PathName}}", path{{.Name}}, -1)
 `
 
 var queryParamStr = `

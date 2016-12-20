@@ -386,6 +386,9 @@ class SwaggerTest {
     const span = options.span;
 
     const headers = {};
+    if (!params.bookID) {
+      cb(new Error("bookID must be non-empty because it's a path parameter"))
+    }
     headers["authorization"] = params.authorization;
 
     const query = {};
@@ -500,6 +503,9 @@ class SwaggerTest {
     const span = options.span;
 
     const headers = {};
+    if (!params.id) {
+      cb(new Error("id must be non-empty because it's a path parameter"))
+    }
 
     const query = {};
 
