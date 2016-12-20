@@ -399,7 +399,7 @@ type pathParamTemplate struct {
 var pathParamStr = `
 	path{{.Name}} := {{.ToStringCode}}
 	if path{{.Name}} == "" {
-		err := fmt.Errorf("path parameters cannot be empty")
+		err := fmt.Errorf("{{.Name}} cannot be empty because it's a path parameter")
 		{{- .ErrorMessage}}
 	}
 	path = strings.Replace(path, "{{.PathName}}", path{{.Name}}, -1)

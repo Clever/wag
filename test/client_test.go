@@ -148,7 +148,7 @@ func TestErrorOnMissingPathParams(t *testing.T) {
 	c := client.New("badUrl")
 	_, err := c.GetBookByID2(context.Background(), "")
 	require.Error(t, err)
-	assert.Equal(t, "path parameters cannot be empty", err.Error())
+	assert.Equal(t, "id cannot be empty because it's a path parameter", err.Error())
 }
 
 func TestNetworkErrorRetries(t *testing.T) {

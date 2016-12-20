@@ -32,7 +32,7 @@ describe("operations", function() {
       bookID: "",
     };
     c.getBookByID(params, function(err, resp) {
-      assert.equal(err.toString(), "Error: Path parameters must be non-empty")
+      assert.equal(err.toString(), "Error: bookID must be non-empty because it's a path parameter")
       done()
     });
   });

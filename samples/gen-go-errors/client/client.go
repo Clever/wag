@@ -149,7 +149,7 @@ func (c *WagClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
 
 	pathid := strconv.FormatInt(i.ID, 10)
 	if pathid == "" {
-		err := fmt.Errorf("path parameters cannot be empty")
+		err := fmt.Errorf("id cannot be empty because it's a path parameter")
 
 		if err != nil {
 			return err

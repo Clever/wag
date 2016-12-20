@@ -335,7 +335,7 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 
 	pathbook_id := strconv.FormatInt(i.BookID, 10)
 	if pathbook_id == "" {
-		err := fmt.Errorf("path parameters cannot be empty")
+		err := fmt.Errorf("book_id cannot be empty because it's a path parameter")
 
 		if err != nil {
 			return nil, err
@@ -442,7 +442,7 @@ func (c *WagClient) GetBookByID2(ctx context.Context, id string) (*models.Book, 
 
 	pathid := id
 	if pathid == "" {
-		err := fmt.Errorf("path parameters cannot be empty")
+		err := fmt.Errorf("id cannot be empty because it's a path parameter")
 
 		if err != nil {
 			return nil, err

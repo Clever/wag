@@ -148,7 +148,7 @@ func (c *WagClient) NilCheck(ctx context.Context, i *models.NilCheckInput) error
 
 	pathid := i.ID
 	if pathid == "" {
-		err := fmt.Errorf("path parameters cannot be empty")
+		err := fmt.Errorf("id cannot be empty because it's a path parameter")
 
 		if err != nil {
 			return err

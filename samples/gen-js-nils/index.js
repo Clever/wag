@@ -145,8 +145,8 @@ class NilTest {
     const span = options.span;
 
     const headers = {};
-    if (params.id == "") {
-      cb(new Error("Path parameters must be non-empty"))
+    if (!params.id) {
+      cb(new Error("id must be non-empty because it's a path parameter"))
     }
     headers["header"] = params.header;
 

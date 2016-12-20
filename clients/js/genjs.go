@@ -245,8 +245,8 @@ var methodTmplStr = `
 
     const headers = {};
     {{- range $param := .PathParams}}
-    if (params.{{$param.JSName}} == "") {
-      cb(new Error("Path parameters must be non-empty"))
+    if (!params.{{$param.JSName}}) {
+      cb(new Error("{{$param.JSName}} must be non-empty because it's a path parameter"))
     }
     {{- end -}}
     {{- range $param := .HeaderParams}}
