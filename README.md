@@ -43,9 +43,9 @@ definitions:
         type: string
 ```
 
-If your yml doesn't define a 400 or a 500 response for any of your operations, Wag will implicitly set it to the globally defined responses, models.BadRequest and models.InternalError respectively.
+For each operation, if you don't define a 400 or 500 response Wag will implicitly add a 400 response referencing #/definitions/BadRequest and/or add a 500 response referencing '#/responses/InternalError'.
 
-Also, all your 400+ responses must return a schema type with a Message field. The message field is required so that we can covert the response into Go's error type and use the message in `Error() string`. Each of the responses must also be unique so that the client and server can convert between status code and type.
+Additionally, 400+ responses must return a schema type with a Message field. The message field is required so that we can covert the response into Go's error type and use the message in `Error() string`. Each of the responses must also be unique so that the client and server can convert between status code and type.
 
 Then generate your code:
 ```
@@ -58,7 +58,7 @@ This generates four directories. You should not have to modify any of the genera
 - gen-go/client: contains the Go client library
 - gen-js: contains the javascript client library
 
-### Using the Go Server
+## Using the Go Server
 To use the generated code you need to do two things:
 - Implement the controller interface defined in `gen-go/server/interface.go`
 - Pass the controller into the Server constructor. For example:
@@ -67,7 +67,7 @@ To use the generated code you need to do two things:
   // Serve should not return
   log.Fatal(s.Serve())
 ```
-Or if you want to add custom middleware
+Or, with custom middleware:
 ```
   s := server.NewWithMiddleware(myController, ":8000", []func(http.Handler) http.Handler{
     myFirstMiddlware, mySecondMiddlware})
@@ -75,10 +75,39 @@ Or if you want to add custom middleware
   log.Fatal(s.Serve())
 ```
 
-All interface methods on the controller take in a `context.Context` object.
-This object comes with additional features for you to use in implementing your server logic:
+### Interface
 
-* **Logging**. The [kayvee middleware logger](https://godoc.org/gopkg.in/Clever/kayvee-go.v5/middleware) is automatically added to the context object.
+The server interface defined in `gen-go/server/interface.go` has one method for each operation defined in the swagger.yml. We generate the interface based on the following rules:
+
+#### Contexts
+  * The first argument to every Wag function is a `context.Context` (https://blog.golang.org/context). Contexts play a few important roles in Wag.
+    * They can be used to set request specific behavior like a retry policy in client libraries. This includes timeouts and cancellation.
+    * They are used to pass metadata, like tracing information, across API requests.
+
+  * To get these benefits pass the context object to any subsequent network requests you make.
+    Many client libraries accept the context object, e.g.:
+      * **net/http**: If you're making HTTP requests, use the [golang.org/x/net/context/ctxhttp](https://godoc.org/golang.org/x/net/context/ctxhttp) package.
+      * **wag** If your handler consumes a `wag`-generated client, then pass the context object to these client methods.
+
+  * TODO: Write about context.TODO() and context.Background()
+
+#### Response Parameters
+  * Wag only supports a single 2XX response status code and no 3XX status codes.
+    * If the success response type has a data type associated with it then Wag generates an interface that takes a pointer to that data type as the first argument.
+    `func(...) (*SuccessType, error)`
+    * If the success response type doesn't have a data type then Wag generates an interface with only an error response. A nil error tells the client that the request succeeded.
+    `func(...) error`
+
+#### Input Parameters
+  * If one parameter is defined then Wag uses that input directly in the function definition.
+  `func F(ctx context.Context, input string) error`
+  * If more than one parameter is defined then Wag generates a input struct with all the parameters:
+  `func F(ctx context.Context, input *models.{{OperationID}}Input) error`
+    * Optional parameters that don't have defaults are pointers in the input struct so that the server can distinguish between parameters that aren't set and parameters that are set to the nil value.
+
+
+### Logging
+  The [kayvee middleware logger](https://godoc.org/gopkg.in/Clever/kayvee-go.v5/middleware) is automatically added to the context object.
   It can be pulled out of the context object and used via the kayvee `FromContext` method:
 
 ```go
@@ -89,15 +118,7 @@ logger.FromContext(ctx).Info(...)
 
   You should use this logger for all logging within your controller implementation.
 
-#### Success Response Types
-  * Wag only supports a single 2XX response status code and no 3XX status codes.
-    * If the success response type has a data type associated with it then Wag generates an interface that takes a pointer to that data type as the first argument.
-    `func(...) (*SuccessType, error)`
-    * If the success response type doesn't have a data type then Wag generates an interface with only an error response. A nil error tells the client that the request succeeded.
-    `func(...) error`
-
-
-#### Errors
+### Errors
   * Wag supports three types of errors
     * Global error response types
     * Response types for a specific operation
@@ -121,7 +142,7 @@ logger.FromContext(ctx).Info(...)
     directly since it should already have stacktrace information (either it is
       a wrapped external error or a `go-errors`-generated internal error).
 
-#### Input Parameters
+### Input Parameters
   * Wag supports four types of parameters
     * Path parameters
       * Must be required
@@ -141,14 +162,8 @@ logger.FromContext(ctx).Info(...)
       * If marked required will ensure that the input isn't the nil value. Headers cannot have pointer types since HTTP doesn't distinguish between empty and missing headers. 
       * If it doesn't have a default value specified, the default value will be the nil value for the type
 
-  * Interface signature
-    * If one parameter is defined then Wag uses that input directly in the function definition.
-    `func F(ctx context.Context, input string) error`
-    * If more than one parameter is defined then Wag generates a input struct with all the parameters:
-    `func F(ctx context.Context, input *models.{{OperationID}}Input) error`
-      * Optional parameters that don't have defaults are pointers in the input struct so that the server can distinguish between parameters that aren't set and parameters that are set to the nil value.
 
-#### Tracing
+### Tracing
   `wag` instruments the context object with tracing-related metadata.
   This is done via [opentracing](http://opentracing.io/).
   In order for it to work, you are required to do two things:
@@ -175,16 +190,11 @@ func main() {
 	...
 }
 ```
-
-  * Pass the context object to any subsequent network requests you make.
-    Many client libraries accept the context object, e.g.:
-    * **net/http**: If you're making HTTP requests, use the [golang.org/x/net/context/ctxhttp](https://godoc.org/golang.org/x/net/context/ctxhttp) package.
-    * **wag**: All `wag`-generated clients take in a context object as the first argument.
-      If your handler consumes a `wag`-generated client, then pass the context object to these client methods.
+  * TODO: we trace the server request by default. Adding to clients requires extra work... Do this by passing around the context
 
   * By default we tag traces with `http.method`, `span.kind`, `http.url`, `http.status_code`, and `error`. For more information about what these tags mean see: https://github.com/opentracing/opentracing.io/blob/95b966bd6a6b2cf0f231260e3e1fa6206ede2151/_docs/pages/api/data-conventions.md#component-identification
 
-### Using the Go Client
+## Using the Go Client
 Initialize the client with `New`
 ```
 c := client.New("https://url_of_your_service:port")
@@ -199,6 +209,23 @@ if err != nil {
 ```
 
 If you're using the client from another WAG-ified service you should pass in the `ctx` object you get in your server handler. Otherwise you can use `context.Background()`
+
+### Custom String Validation
+We've added custom string validation for mongo-ids to avoid repeating: "^[0-9a-f]{24}$"` throughout the swagger.yml. To use it you have must:
+
+- Change you swagger.yml file to have the `mongo-id` format. For example:
+```
+authorID:
+        type: string
+        format: mongo-id
+```
+
+- Import `github.com/Clever/wag/swagger` and call `swagger.InitCustomFormats()` in your server code.
+
+Note that custom string validation only applies to input parameters and does not have any impact on objects defined in '#/definitions'.
+
+Right now we do not allow user-defined custom strings, but this is something we may add if there's sufficient demand.
+
 
 ### Using the Javascript Client
 You can initialize the client by either passing a url or by using [discovery](https://github.com/Clever/discovery-node).
@@ -277,22 +304,6 @@ app.get("/my-url", (req, res) => {
   });
 });
 ```
-
-### Custom String Validation
-We've added custom string validation for mongo-ids to avoid repeating: "^[0-9a-f]{24}$"` throughout the swagger.yml. To use it you have must:
-
-- Change you swagger.yml file to have the `mongo-id` format. For example:
-```
-authorID:
-        type: string
-        format: mongo-id
-```
-
-- Import `github.com/Clever/wag/swagger` and call `swagger.InitCustomFormats()` in your server code.
-
-Note that custom string validation only applies to input parameters and does not have any impact on objects defined in '#/definitions'.
-
-Right now we do not allow user-defined custom strings, but this is something we may add if there's sufficient demand.
 
 ## Tests
 ```
