@@ -236,51 +236,6 @@ var methodTmplStr = `
       options = undefined;
     }
 
-    if (!options) {
-      options = {};
-    }
-
-    const timeout = options.timeout || this.timeout;
-    const span = options.span;
-
-    const headers = {};
-    {{- range $param := .PathParams}}
-    if (!params.{{$param.JSName}}) {
-      cb(new Error("{{$param.JSName}} must be non-empty because it's a path parameter"))
-    }
-    {{- end -}}
-    {{- range $param := .HeaderParams}}
-    headers["{{$param.WagName}}"] = params.{{$param.JSName}};
-    {{- end}}
-
-    const query = {};
-    {{- range $param := .QueryParams -}}
-    {{- if $param.Required }}
-    query["{{$param.WagName}}"] = params.{{$param.JSName}};
-{{else}}
-    if (typeof params.{{$param.JSName}} !== "undefined") {
-      query["{{$param.WagName}}"] = params.{{$param.JSName}};
-    }
-{{end}}{{end}}
-
-    if (span) {
-      opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
-      span.logEvent("{{.Method}} {{.Path}}");
-      span.setTag("span.kind", "client")
-    }
-
-    const requestOptions = {
-      method: "{{.Method}}",
-      uri: this.address + "{{.PathCode}}",
-      json: true,
-      timeout,
-      headers,
-      qs: query,
-      useQuerystring: true,
-    };
-{{ if ne .BodyParam ""}}
-    requestOptions.body = params.{{.BodyParam}};
-{{ end }}
     return new Promise((resolve, reject) => {
       const rejecter = (err) => {
         reject(err);
@@ -294,6 +249,54 @@ var methodTmplStr = `
           cb(null, data);
         }
       };
+
+
+      if (!options) {
+        options = {};
+      }
+
+      const timeout = options.timeout || this.timeout;
+      const span = options.span;
+
+      const headers = {};
+      {{- range $param := .PathParams}}
+      if (!params.{{$param.JSName}}) {
+        rejecter(new Error("{{$param.JSName}} must be non-empty because it's a path parameter"));
+        return
+      }
+      {{- end -}}
+      {{- range $param := .HeaderParams}}
+      headers["{{$param.WagName}}"] = params.{{$param.JSName}};
+      {{- end}}
+
+      const query = {};
+      {{- range $param := .QueryParams -}}
+      {{- if $param.Required }}
+      query["{{$param.WagName}}"] = params.{{$param.JSName}};
+  {{else}}
+      if (typeof params.{{$param.JSName}} !== "undefined") {
+        query["{{$param.WagName}}"] = params.{{$param.JSName}};
+      }
+  {{end}}{{end}}
+
+      if (span) {
+        opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        span.logEvent("{{.Method}} {{.Path}}");
+        span.setTag("span.kind", "client")
+      }
+
+      const requestOptions = {
+        method: "{{.Method}}",
+        uri: this.address + "{{.PathCode}}",
+        json: true,
+        timeout,
+        headers,
+        qs: query,
+        useQuerystring: true,
+      };
+  {{ if ne .BodyParam ""}}
+      requestOptions.body = params.{{.BodyParam}};
+  {{ end }}
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
