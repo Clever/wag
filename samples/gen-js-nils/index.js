@@ -137,47 +137,6 @@ class NilTest {
       options = undefined;
     }
 
-    if (!options) {
-      options = {};
-    }
-
-    const timeout = options.timeout || this.timeout;
-    const span = options.span;
-
-    const headers = {};
-    if (!params.id) {
-      cb(new Error("id must be non-empty because it's a path parameter"))
-    }
-    headers["header"] = params.header;
-
-    const query = {};
-    if (typeof params.query !== "undefined") {
-      query["query"] = params.query;
-    }
-
-    if (typeof params.array !== "undefined") {
-      query["array"] = params.array;
-    }
-
-
-    if (span) {
-      opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
-      span.logEvent("POST /v1/check/{id}");
-      span.setTag("span.kind", "client")
-    }
-
-    const requestOptions = {
-      method: "POST",
-      uri: this.address + "/v1/check/" + params.id + "",
-      json: true,
-      timeout,
-      headers,
-      qs: query,
-      useQuerystring: true,
-    };
-
-    requestOptions.body = params.body;
-
     return new Promise((resolve, reject) => {
       const rejecter = (err) => {
         reject(err);
@@ -191,6 +150,50 @@ class NilTest {
           cb(null, data);
         }
       };
+
+
+      if (!options) {
+        options = {};
+      }
+
+      const timeout = options.timeout || this.timeout;
+      const span = options.span;
+
+      const headers = {};
+      if (!params.id) {
+        rejecter(new Error("id must be non-empty because it's a path parameter"));
+        return
+      }
+      headers["header"] = params.header;
+
+      const query = {};
+      if (typeof params.query !== "undefined") {
+        query["query"] = params.query;
+      }
+  
+      if (typeof params.array !== "undefined") {
+        query["array"] = params.array;
+      }
+  
+
+      if (span) {
+        opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        span.logEvent("POST /v1/check/{id}");
+        span.setTag("span.kind", "client")
+      }
+
+      const requestOptions = {
+        method: "POST",
+        uri: this.address + "/v1/check/" + params.id + "",
+        json: true,
+        timeout,
+        headers,
+        qs: query,
+        useQuerystring: true,
+      };
+  
+      requestOptions.body = params.body;
+  
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();

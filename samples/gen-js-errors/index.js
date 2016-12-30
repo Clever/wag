@@ -135,36 +135,6 @@ class SwaggerTest {
       options = undefined;
     }
 
-    if (!options) {
-      options = {};
-    }
-
-    const timeout = options.timeout || this.timeout;
-    const span = options.span;
-
-    const headers = {};
-    if (!params.id) {
-      cb(new Error("id must be non-empty because it's a path parameter"))
-    }
-
-    const query = {};
-
-    if (span) {
-      opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
-      span.logEvent("GET /v1/books/{id}");
-      span.setTag("span.kind", "client")
-    }
-
-    const requestOptions = {
-      method: "GET",
-      uri: this.address + "/v1/books/" + params.id + "",
-      json: true,
-      timeout,
-      headers,
-      qs: query,
-      useQuerystring: true,
-    };
-
     return new Promise((resolve, reject) => {
       const rejecter = (err) => {
         reject(err);
@@ -178,6 +148,39 @@ class SwaggerTest {
           cb(null, data);
         }
       };
+
+
+      if (!options) {
+        options = {};
+      }
+
+      const timeout = options.timeout || this.timeout;
+      const span = options.span;
+
+      const headers = {};
+      if (!params.id) {
+        rejecter(new Error("id must be non-empty because it's a path parameter"));
+        return
+      }
+
+      const query = {};
+
+      if (span) {
+        opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        span.logEvent("GET /v1/books/{id}");
+        span.setTag("span.kind", "client")
+      }
+
+      const requestOptions = {
+        method: "GET",
+        uri: this.address + "/v1/books/" + params.id + "",
+        json: true,
+        timeout,
+        headers,
+        qs: query,
+        useQuerystring: true,
+      };
+  
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();

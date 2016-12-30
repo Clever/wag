@@ -141,69 +141,6 @@ class SwaggerTest {
       options = undefined;
     }
 
-    if (!options) {
-      options = {};
-    }
-
-    const timeout = options.timeout || this.timeout;
-    const span = options.span;
-
-    const headers = {};
-
-    const query = {};
-    if (typeof params.authors !== "undefined") {
-      query["authors"] = params.authors;
-    }
-
-    if (typeof params.available !== "undefined") {
-      query["available"] = params.available;
-    }
-
-    if (typeof params.state !== "undefined") {
-      query["state"] = params.state;
-    }
-
-    if (typeof params.published !== "undefined") {
-      query["published"] = params.published;
-    }
-
-    if (typeof params.snakeCase !== "undefined") {
-      query["snake_case"] = params.snakeCase;
-    }
-
-    if (typeof params.completed !== "undefined") {
-      query["completed"] = params.completed;
-    }
-
-    if (typeof params.maxPages !== "undefined") {
-      query["maxPages"] = params.maxPages;
-    }
-
-    if (typeof params.minPages !== "undefined") {
-      query["min_pages"] = params.minPages;
-    }
-
-    if (typeof params.pagesToTime !== "undefined") {
-      query["pagesToTime"] = params.pagesToTime;
-    }
-
-
-    if (span) {
-      opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
-      span.logEvent("GET /v1/books");
-      span.setTag("span.kind", "client")
-    }
-
-    const requestOptions = {
-      method: "GET",
-      uri: this.address + "/v1/books",
-      json: true,
-      timeout,
-      headers,
-      qs: query,
-      useQuerystring: true,
-    };
-
     return new Promise((resolve, reject) => {
       const rejecter = (err) => {
         reject(err);
@@ -217,6 +154,71 @@ class SwaggerTest {
           cb(null, data);
         }
       };
+
+
+      if (!options) {
+        options = {};
+      }
+
+      const timeout = options.timeout || this.timeout;
+      const span = options.span;
+
+      const headers = {};
+
+      const query = {};
+      if (typeof params.authors !== "undefined") {
+        query["authors"] = params.authors;
+      }
+  
+      if (typeof params.available !== "undefined") {
+        query["available"] = params.available;
+      }
+  
+      if (typeof params.state !== "undefined") {
+        query["state"] = params.state;
+      }
+  
+      if (typeof params.published !== "undefined") {
+        query["published"] = params.published;
+      }
+  
+      if (typeof params.snakeCase !== "undefined") {
+        query["snake_case"] = params.snakeCase;
+      }
+  
+      if (typeof params.completed !== "undefined") {
+        query["completed"] = params.completed;
+      }
+  
+      if (typeof params.maxPages !== "undefined") {
+        query["maxPages"] = params.maxPages;
+      }
+  
+      if (typeof params.minPages !== "undefined") {
+        query["min_pages"] = params.minPages;
+      }
+  
+      if (typeof params.pagesToTime !== "undefined") {
+        query["pagesToTime"] = params.pagesToTime;
+      }
+  
+
+      if (span) {
+        opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        span.logEvent("GET /v1/books");
+        span.setTag("span.kind", "client")
+      }
+
+      const requestOptions = {
+        method: "GET",
+        uri: this.address + "/v1/books",
+        json: true,
+        timeout,
+        headers,
+        qs: query,
+        useQuerystring: true,
+      };
+  
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
@@ -275,35 +277,6 @@ class SwaggerTest {
       options = undefined;
     }
 
-    if (!options) {
-      options = {};
-    }
-
-    const timeout = options.timeout || this.timeout;
-    const span = options.span;
-
-    const headers = {};
-
-    const query = {};
-
-    if (span) {
-      opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
-      span.logEvent("POST /v1/books");
-      span.setTag("span.kind", "client")
-    }
-
-    const requestOptions = {
-      method: "POST",
-      uri: this.address + "/v1/books",
-      json: true,
-      timeout,
-      headers,
-      qs: query,
-      useQuerystring: true,
-    };
-
-    requestOptions.body = params.newBook;
-
     return new Promise((resolve, reject) => {
       const rejecter = (err) => {
         reject(err);
@@ -317,6 +290,37 @@ class SwaggerTest {
           cb(null, data);
         }
       };
+
+
+      if (!options) {
+        options = {};
+      }
+
+      const timeout = options.timeout || this.timeout;
+      const span = options.span;
+
+      const headers = {};
+
+      const query = {};
+
+      if (span) {
+        opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        span.logEvent("POST /v1/books");
+        span.setTag("span.kind", "client")
+      }
+
+      const requestOptions = {
+        method: "POST",
+        uri: this.address + "/v1/books",
+        json: true,
+        timeout,
+        headers,
+        qs: query,
+        useQuerystring: true,
+      };
+  
+      requestOptions.body = params.newBook;
+  
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
@@ -378,45 +382,6 @@ class SwaggerTest {
       options = undefined;
     }
 
-    if (!options) {
-      options = {};
-    }
-
-    const timeout = options.timeout || this.timeout;
-    const span = options.span;
-
-    const headers = {};
-    if (!params.bookID) {
-      cb(new Error("bookID must be non-empty because it's a path parameter"))
-    }
-    headers["authorization"] = params.authorization;
-
-    const query = {};
-    if (typeof params.authorID !== "undefined") {
-      query["authorID"] = params.authorID;
-    }
-
-    if (typeof params.randomBytes !== "undefined") {
-      query["randomBytes"] = params.randomBytes;
-    }
-
-
-    if (span) {
-      opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
-      span.logEvent("GET /v1/books/{book_id}");
-      span.setTag("span.kind", "client")
-    }
-
-    const requestOptions = {
-      method: "GET",
-      uri: this.address + "/v1/books/" + params.bookID + "",
-      json: true,
-      timeout,
-      headers,
-      qs: query,
-      useQuerystring: true,
-    };
-
     return new Promise((resolve, reject) => {
       const rejecter = (err) => {
         reject(err);
@@ -430,6 +395,48 @@ class SwaggerTest {
           cb(null, data);
         }
       };
+
+
+      if (!options) {
+        options = {};
+      }
+
+      const timeout = options.timeout || this.timeout;
+      const span = options.span;
+
+      const headers = {};
+      if (!params.bookID) {
+        rejecter(new Error("bookID must be non-empty because it's a path parameter"));
+        return
+      }
+      headers["authorization"] = params.authorization;
+
+      const query = {};
+      if (typeof params.authorID !== "undefined") {
+        query["authorID"] = params.authorID;
+      }
+  
+      if (typeof params.randomBytes !== "undefined") {
+        query["randomBytes"] = params.randomBytes;
+      }
+  
+
+      if (span) {
+        opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        span.logEvent("GET /v1/books/{book_id}");
+        span.setTag("span.kind", "client")
+      }
+
+      const requestOptions = {
+        method: "GET",
+        uri: this.address + "/v1/books/" + params.bookID + "",
+        json: true,
+        timeout,
+        headers,
+        qs: query,
+        useQuerystring: true,
+      };
+  
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
@@ -495,36 +502,6 @@ class SwaggerTest {
       options = undefined;
     }
 
-    if (!options) {
-      options = {};
-    }
-
-    const timeout = options.timeout || this.timeout;
-    const span = options.span;
-
-    const headers = {};
-    if (!params.id) {
-      cb(new Error("id must be non-empty because it's a path parameter"))
-    }
-
-    const query = {};
-
-    if (span) {
-      opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
-      span.logEvent("GET /v1/books2/{id}");
-      span.setTag("span.kind", "client")
-    }
-
-    const requestOptions = {
-      method: "GET",
-      uri: this.address + "/v1/books2/" + params.id + "",
-      json: true,
-      timeout,
-      headers,
-      qs: query,
-      useQuerystring: true,
-    };
-
     return new Promise((resolve, reject) => {
       const rejecter = (err) => {
         reject(err);
@@ -538,6 +515,39 @@ class SwaggerTest {
           cb(null, data);
         }
       };
+
+
+      if (!options) {
+        options = {};
+      }
+
+      const timeout = options.timeout || this.timeout;
+      const span = options.span;
+
+      const headers = {};
+      if (!params.id) {
+        rejecter(new Error("id must be non-empty because it's a path parameter"));
+        return
+      }
+
+      const query = {};
+
+      if (span) {
+        opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        span.logEvent("GET /v1/books2/{id}");
+        span.setTag("span.kind", "client")
+      }
+
+      const requestOptions = {
+        method: "GET",
+        uri: this.address + "/v1/books2/" + params.id + "",
+        json: true,
+        timeout,
+        headers,
+        qs: query,
+        useQuerystring: true,
+      };
+  
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
@@ -596,33 +606,6 @@ class SwaggerTest {
       options = undefined;
     }
 
-    if (!options) {
-      options = {};
-    }
-
-    const timeout = options.timeout || this.timeout;
-    const span = options.span;
-
-    const headers = {};
-
-    const query = {};
-
-    if (span) {
-      opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
-      span.logEvent("GET /v1/health/check");
-      span.setTag("span.kind", "client")
-    }
-
-    const requestOptions = {
-      method: "GET",
-      uri: this.address + "/v1/health/check",
-      json: true,
-      timeout,
-      headers,
-      qs: query,
-      useQuerystring: true,
-    };
-
     return new Promise((resolve, reject) => {
       const rejecter = (err) => {
         reject(err);
@@ -636,6 +619,35 @@ class SwaggerTest {
           cb(null, data);
         }
       };
+
+
+      if (!options) {
+        options = {};
+      }
+
+      const timeout = options.timeout || this.timeout;
+      const span = options.span;
+
+      const headers = {};
+
+      const query = {};
+
+      if (span) {
+        opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        span.logEvent("GET /v1/health/check");
+        span.setTag("span.kind", "client")
+      }
+
+      const requestOptions = {
+        method: "GET",
+        uri: this.address + "/v1/health/check",
+        json: true,
+        timeout,
+        headers,
+        qs: query,
+        useQuerystring: true,
+      };
+  
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
