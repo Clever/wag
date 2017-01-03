@@ -204,7 +204,8 @@ class SwaggerTest {
   
 
       if (span) {
-        opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        const tracer = opentracing.globalTracer();
+        tracer.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
         span.logEvent("GET /v1/books");
         span.setTag("span.kind", "client")
       }
@@ -304,7 +305,8 @@ class SwaggerTest {
       const query = {};
 
       if (span) {
-        opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        const tracer = opentracing.globalTracer();
+        tracer.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
         span.logEvent("POST /v1/books");
         span.setTag("span.kind", "client")
       }
@@ -422,7 +424,8 @@ class SwaggerTest {
   
 
       if (span) {
-        opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        const tracer = opentracing.globalTracer();
+        tracer.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
         span.logEvent("GET /v1/books/{book_id}");
         span.setTag("span.kind", "client")
       }
@@ -533,7 +536,8 @@ class SwaggerTest {
       const query = {};
 
       if (span) {
-        opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        const tracer = opentracing.globalTracer();
+        tracer.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
         span.logEvent("GET /v1/books2/{id}");
         span.setTag("span.kind", "client")
       }
@@ -633,7 +637,8 @@ class SwaggerTest {
       const query = {};
 
       if (span) {
-        opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        const tracer = opentracing.globalTracer();
+        tracer.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
         span.logEvent("GET /v1/health/check");
         span.setTag("span.kind", "client")
       }

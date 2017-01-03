@@ -177,7 +177,8 @@ class NilTest {
   
 
       if (span) {
-        opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        const tracer = opentracing.globalTracer();
+        tracer.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
         span.logEvent("POST /v1/check/{id}");
         span.setTag("span.kind", "client")
       }
