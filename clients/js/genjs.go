@@ -223,7 +223,7 @@ var packageJSONTmplStr = `{
   "main": "index.js",
   "dependencies": {
     "clever-discovery": "0.0.8",
-    "opentracing": "^0.11.1",
+    "opentracing": "^0.13.0",
     "request": "^2.75.0"
   }
 }
@@ -280,7 +280,8 @@ var methodTmplStr = `
   {{end}}{{end}}
 
       if (span) {
-        opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        const tracer = opentracing.globalTracer();
+        tracer.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
         span.logEvent("{{.Method}} {{.Path}}");
         span.setTag("span.kind", "client")
       }
