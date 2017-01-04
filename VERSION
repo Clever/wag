@@ -1,3 +1,3 @@
-1.2.6
-- Upgrade version of opentracing used in the js client to 0.13.0
+1.2.7
+- Revert version of opentracing used in the js client back to 0.11, since the lightstep tracer doesn't work with opentracing@0.13.0.
 
