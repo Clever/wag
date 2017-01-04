@@ -166,8 +166,7 @@ class SwaggerTest {
       const query = {};
 
       if (span) {
-        const tracer = opentracing.globalTracer();
-        tracer.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
         span.logEvent("GET /v1/books/{id}");
         span.setTag("span.kind", "client")
       }
