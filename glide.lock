@@ -1,5 +1,5 @@
-hash: fd0551b46ac3509df57305c450bbc71959eb84cc12f6c5bcf15c2e34801291f7
-updated: 2016-12-20T23:06:10.347591586Z
+hash: 3c6513e6191447dad36c16cc341cc0091aaaf34746a4b7178014939153346eac
+updated: 2017-01-06T01:18:57.641912632Z
 imports:
 - name: github.com/afex/hystrix-go
   version: 39520ddd07a9d9a071d615f7476798659f5a3b89
@@ -58,7 +58,7 @@ imports:
   subpackages:
   - generator
 - name: github.com/gogo/protobuf
-  version: 8d70fb3182befc465c4a1eac8ad4d38ff49778e2
+  version: a9cd0c35b97daf74d0ebf3514c5254814b2703b4
   subpackages:
   - proto
 - name: github.com/golang/mock
@@ -213,7 +213,7 @@ imports:
   - go/loader
   - imports
 - name: google.golang.org/grpc
-  version: 09aecb094ef6b9ebe49dd999f52c505beeeb402e
+  version: c8105071640ef29fce843ed96983e864bb18eb0e
   subpackages:
   - codes
   - credentials
@@ -259,7 +259,7 @@ testImports:
   subpackages:
   - difflib
 - name: github.com/stretchr/testify
-  version: d77da356e56a7428ad25149ca77381849a6a5232
+  version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
   subpackages:
   - assert
   - require
