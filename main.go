@@ -46,7 +46,7 @@ func main() {
 		log.Fatal("js-path is required")
 	}
 
-	if glideYMLFile, err := os.Open("glide.yml"); err == nil {
+	if glideYMLFile, err := os.Open("glide.yaml"); err == nil {
 		if err := validation.ValidateGlideYML(glideYMLFile); err != nil {
 			log.Fatal(err)
 		}
