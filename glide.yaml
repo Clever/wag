@@ -16,8 +16,10 @@ import:
   subpackages:
   - gomock
 - package: github.com/gorilla/mux
+  # if you change this, please update validation/glide.go
   version: 757bef944d0f21880861c2dd9c871ca543023cba
 - package: github.com/opentracing/opentracing-go
+  # if you change this, please update validation/glide.go
   version: ^1.0.0
 - package: golang.org/x/net
   subpackages:
@@ -41,3 +43,4 @@ import:
 - package: github.com/go-errors/errors
 - package: github.com/afex/hystrix-go
 - package: github.com/donovanhide/eventsource
+- package: gopkg.in/yaml.v2
