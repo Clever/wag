@@ -21,6 +21,12 @@ import:
 - package: github.com/opentracing/opentracing-go
   # if you change this, please update validation/glide.go
   version: ^1.0.0
+- package: github.com/opentracing/basictracer-go
+  # if you change this, please update validation/glide.go
+  version: 1b32af207119a14b1b231d451df3ed04a72efebf
+- package: github.com/lightstep/lightstep-tracer-go
+  # if you change this, please update validation/glide.go
+  version: 0d48cd619841b1e1a3cdd20cd6ac97774c0002ce
 - package: golang.org/x/net
   subpackages:
   - context/ctxhttp
