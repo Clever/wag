@@ -2,9 +2,9 @@
 sWAGger - Web API Generator
 
 ## Usage
-Note that WAG requires Go 1.7.
+Wag requires Go 1.7+.
 ### Generating Code
-Create a swagger.yml file with your [service definition](http://editor.swagger.io/#/). Note that WAG supports a [subset](https://github.com/Clever/wag#swagger-spec) of the Swagger spec.
+Create a swagger.yml file with your [service definition](http://editor.swagger.io/#/). Wag supports a [subset](https://github.com/Clever/wag#swagger-spec) of the Swagger spec.
 Copy the latest `wag.mk` from the [dev-handbook](https://github.com/Clever/dev-handbook/blob/master/make/wag.mk).
 Set up a `generate` target in your `Makefile` that will generate server and client code:
 
@@ -43,9 +43,7 @@ definitions:
         type: string
 ```
 
-For each operation, if you don't define a 400 or 500 response Wag will implicitly add a 400 response referencing #/definitions/BadRequest and/or add a 500 response referencing '#/responses/InternalError'.
-
-Additionally, 400+ responses must return a schema type with a Message field. The message field is required so that we can covert the response into Go's error type and use the message in `Error() string`. Each of the responses must also be unique so that the client and server can convert between status code and type.
+For more information on error definitions see the Errors section below.
 
 Then generate your code:
 ```
@@ -53,13 +51,13 @@ make generate
 ```
 
 This generates four directories. You should not have to modify any of the generated code:
-- gen-go/models: contains all the definitions in your Swagger file as well as API input / output definitions
+- gen-go/models: contains all the definitions in your Swagger file as well as the API input / output definitions
 - gen-go/server: contains the router, middleware, and handler logic
 - gen-go/client: contains the Go client library
 - gen-js: contains the javascript client library
 
-## Using the Go Server
-To use the generated code you need to do two things:
+## Implementing and Running the Server
+To implement and run the generated server you need to:
 - Implement the controller interface defined in `gen-go/server/interface.go`
 - Pass the controller into the Server constructor. For example:
 ```
@@ -79,31 +77,21 @@ Or, with custom middleware:
 
 The server interface defined in `gen-go/server/interface.go` has one method for each operation defined in the swagger.yml. We generate the interface based on the following rules:
 
-#### Contexts
-  * The first argument to every Wag function is a `context.Context` (https://blog.golang.org/context). Contexts play a few important roles in Wag.
-    * They can be used to set request specific behavior like a retry policy in client libraries. This includes timeouts and cancellation.
-    * They are used to pass metadata, like tracing information, across API requests.
-
-  * To get these benefits pass the context object to any subsequent network requests you make.
-    Many client libraries accept the context object, e.g.:
-      * **net/http**: If you're making HTTP requests, use the [golang.org/x/net/context/ctxhttp](https://godoc.org/golang.org/x/net/context/ctxhttp) package.
-      * **wag** If your handler consumes a `wag`-generated client, then pass the context object to these client methods.
-
-  * TODO: Write about context.TODO() and context.Background()
-
-#### Response Parameters
-  * Wag only supports a single 2XX response status code and no 3XX status codes.
-    * If the success response type has a data type associated with it then Wag generates an interface that takes a pointer to that data type as the first argument.
-    `func(...) (*SuccessType, error)`
-    * If the success response type doesn't have a data type then Wag generates an interface with only an error response. A nil error tells the client that the request succeeded.
-    `func(...) error`
-
 #### Input Parameters
+  * The first argument to each Wag operation is a `context.Context`. See below for more details on how Wag uses contexts.
   * If one parameter is defined then Wag uses that input directly in the function definition.
   `func F(ctx context.Context, input string) error`
   * If more than one parameter is defined then Wag generates a input struct with all the parameters:
   `func F(ctx context.Context, input *models.{{OperationID}}Input) error`
-    * Optional parameters that don't have defaults are pointers in the input struct so that the server can distinguish between parameters that aren't set and parameters that are set to the nil value.
+    * Optional parameters that don't have defaults are pointers in the input struct so that the server can distinguish between parameters that aren't set and parameters that are set to the zero value.
+
+
+#### Response Parameters
+  * Wag only supports defining a single 2XX response status code and doesn't support 3XX status codes.
+    * If the success response type has a data type associated with it then Wag generates an interface that takes a pointer to that data type as the first argument.
+    `func(...) (*SuccessType, error)`
+    * If the success response type doesn't define a data type then Wag generates an interface with only an error response. A nil error tells the client that the request succeeded.
+    `func(...) error`
 
 
 ### Logging
@@ -122,9 +110,13 @@ logger.FromContext(ctx).Info(...)
   * Wag supports three types of errors
     * Global error response types
     * Response types for a specific operation
-    * Undefined error types
+    * Unexpected errors
 
-  * Any of the three can be returned from a controller. To return a global or response specific error type use return a pointer to the model defintion for that error type. To return an undefined error type, return anything that implements the Error interface. Wag automatically converts undefined errors into the 500 error type.
+  * Any of these can be returned from a controller. To return a global or response specific error type return a pointer to the model defintion for that error type. To return an unexpected error return any Go error. Wag automatically converts errors not defined swagger yml into the default 500 response.
+
+  * All error responses defined in the swagger yml must have a `Message` field. The field is used as the return value of the `Error()` for the corresponding Go error type.
+
+  * Wag has two built-in errors: `#/definitions/BadRequest` (400) and '#/responses/InternalError' (500). Any operation that doesn't explicitly define a 400 and/or 500 response gets these automatically so Wag can use them to return validation and internal errors respectively.
 
   * Errors returned from your controller are logged by the
   autogenerated handler code, so there is no need to separately log errors
@@ -163,6 +155,21 @@ logger.FromContext(ctx).Info(...)
       * If it doesn't have a default value specified, the default value will be the nil value for the type
 
 
+### Contexts
+  * The first argument to every Wag function is a `context.Context` (https://blog.golang.org/context). Contexts play a few important roles in Wag.
+    * They can be used to set request specific behavior like a retry policy in client libraries. This includes timeouts and cancellation.
+    * They are used to pass metadata, like tracing information, across API requests.
+
+  * To get these benefits pass the context object to any subsequent network requests you make.
+    Many client libraries accept the context object, e.g.:
+      * **net/http**: If you're making HTTP requests, use the [golang.org/x/net/context/ctxhttp](https://godoc.org/golang.org/x/net/context/ctxhttp) package.
+      * **wag** If your handler consumes a `wag`-generated client, then pass the context object to these client methods.
+
+  * If you don't have a context to pass to a Wag function you have two options
+    * context.Background() - use this when this is the creator of the request chain, like a test or a top-level service.
+    * context.TODO() - use this when you haven't been passed a context from a caller yet, but you expect the caller to send you one at some point.  
+
+
 ### Tracing
   `wag` instruments the context object with tracing-related metadata.
   This is done via [opentracing](http://opentracing.io/).
@@ -190,8 +197,6 @@ func main() {
 	...
 }
 ```
-  * TODO: we trace the server request by default. Adding to clients requires extra work... Do this by passing around the context
-
   * By default we tag traces with `http.method`, `span.kind`, `http.url`, `http.status_code`, and `error`. For more information about what these tags mean see: https://github.com/opentracing/opentracing.io/blob/95b966bd6a6b2cf0f231260e3e1fa6206ede2151/_docs/pages/api/data-conventions.md#component-identification
 
 ## Using the Go Client
@@ -312,13 +317,11 @@ make test
 
 ## Swagger Spec
 
-Currently, WAG doesn't implement the entire Swagger Spec. A couple things to keep in mind:
+Currently, Wag doesn't implement the entire Swagger Spec. A couple things to keep in mind:
 - All schemas should reference type definitions in /definitions. Any schemas defined in /paths will cause an error.
-- All parameters and definitions should be defined in their specific path object instead of globally.
 - Scheme, produces, and consumers can only be defined in the top-level swagger object, not individual operations. On the top level object the scheme must be 'http', produces must be 'application/json' and consumes must be 'application/json'
 
-Below is a more comprehensive list of the features we don't support along with some custom extensions.
-
+Below is a more comprehensive list of the features we don't yet support
 
 ### Unsupported Features
 Mime Types
