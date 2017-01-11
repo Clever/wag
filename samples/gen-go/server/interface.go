@@ -11,7 +11,7 @@ import (
 // Controller defines the interface for the swagger-test service.
 type Controller interface {
 
-	// GetBooks makes a GET request to /books
+	// GetBooks handles GET requests to /books
 	// Returns a list of books
 	// 200: []models.Book
 	// 400: *models.BadRequest
@@ -19,7 +19,7 @@ type Controller interface {
 	// default: client side HTTP errors, for example: context.DeadlineExceeded.
 	GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models.Book, error)
 
-	// CreateBook makes a POST request to /books
+	// CreateBook handles POST requests to /books
 	// Creates a book
 	// 200: *models.Book
 	// 400: *models.BadRequest
@@ -27,7 +27,7 @@ type Controller interface {
 	// default: client side HTTP errors, for example: context.DeadlineExceeded.
 	CreateBook(ctx context.Context, i *models.Book) (*models.Book, error)
 
-	// GetBookByID makes a GET request to /books/{book_id}
+	// GetBookByID handles GET requests to /books/{book_id}
 	// Returns a book
 	// 200: *models.Book
 	// 400: *models.BadRequest
@@ -37,7 +37,7 @@ type Controller interface {
 	// default: client side HTTP errors, for example: context.DeadlineExceeded.
 	GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (*models.Book, error)
 
-	// GetBookByID2 makes a GET request to /books2/{id}
+	// GetBookByID2 handles GET requests to /books2/{id}
 	// Retrieve a book
 	// 200: *models.Book
 	// 400: *models.BadRequest
@@ -46,7 +46,7 @@ type Controller interface {
 	// default: client side HTTP errors, for example: context.DeadlineExceeded.
 	GetBookByID2(ctx context.Context, id string) (*models.Book, error)
 
-	// HealthCheck makes a GET request to /health/check
+	// HealthCheck handles GET requests to /health/check
 	//
 	// 200: nil
 	// 400: *models.BadRequest

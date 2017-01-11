@@ -11,7 +11,7 @@ import (
 // Controller defines the interface for the swagger-test service.
 type Controller interface {
 
-	// GetBook makes a GET request to /books/{id}
+	// GetBook handles GET requests to /books/{id}
 	//
 	// 200: nil
 	// 400: *models.ExtendedError
