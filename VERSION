@@ -1,2 +1,2 @@
-1.2.8
-- If present, check glide.yaml for the correct version of certain dependencies
+1.2.9
+- Improved server interface comment
