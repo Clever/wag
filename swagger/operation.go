@@ -36,8 +36,9 @@ func Interface(s *spec.Swagger, op *spec.Operation) string {
 		capOpID, input, *successType)
 }
 
-// InterfaceComment returns the comment for the interface for the operation
-func InterfaceComment(method, path string, s *spec.Swagger, op *spec.Operation) (string, error) {
+// InterfaceComment returns the comment for the interface for the operation. If the client
+// flag is set then it generates the client version. Otherwise it generates the server version.
+func InterfaceComment(method, path string, client bool, s *spec.Swagger, op *spec.Operation) (string, error) {
 
 	statusCodeToType := CodeToTypeMap(s, op, true)
 	for code, typ := range statusCodeToType {
@@ -49,12 +50,14 @@ func InterfaceComment(method, path string, s *spec.Swagger, op *spec.Operation) 
 		OpID             string
 		Method           string
 		Path             string
+		Client           bool
 		Description      string
 		StatusCodeToType map[int]string
 	}{
 		OpID:             Capitalize(op.ID),
 		Method:           method,
 		Path:             path,
+		Client:           client,
 		Description:      op.Description,
 		StatusCodeToType: statusCodeToType,
 	}
@@ -62,7 +65,11 @@ func InterfaceComment(method, path string, s *spec.Swagger, op *spec.Operation) 
 }
 
 var interfaceCommentTmplStr = `
+{{if .Client -}}
 // {{.OpID}} makes a {{.Method}} request to {{.Path}}
+{{- else -}}
+// {{.OpID}} handles {{.Method}} requests to {{.Path}}
+{{- end}}
 // {{.Description}} {{ range $code, $type := .StatusCodeToType }}
 // {{$code}}: {{$type}} {{end}}
 // default: client side HTTP errors, for example: context.DeadlineExceeded.`
