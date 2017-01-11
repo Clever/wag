@@ -48,3 +48,18 @@ func TestValidateRawRef(t *testing.T) {
 		"responses.200.$ref = '#/definitions/testref' for path method should be "+
 		"responses.200.schema.$ref = '#/definitions/testref'", err.Error())
 }
+
+func TestNestedTypes(t *testing.T) {
+	nestedSchema := spec.Schema{}
+	nestedSchema.Type = spec.StringOrArray([]string{"object"})
+	schema := spec.Schema{}
+	schema.Properties = make(map[string]spec.Schema)
+	schema.Properties["nested"] = nestedSchema
+
+	definitions := spec.Definitions{}
+	definitions["badNested"] = schema
+
+	err := validateDefinitions(definitions)
+	require.Error(t, err)
+	assert.Equal(t, "badNested cannot have nested object types", err.Error())
+}
