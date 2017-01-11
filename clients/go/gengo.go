@@ -228,7 +228,7 @@ func generateInterface(packageName string, s *spec.Swagger, serviceName string, 
 				continue
 			}
 
-			interfaceComment, err := swagger.InterfaceComment(method, pathKey, s, pathItemOps[method])
+			interfaceComment, err := swagger.InterfaceComment(method, pathKey, true, s, pathItemOps[method])
 			if err != nil {
 				return err
 			}
@@ -245,7 +245,7 @@ func methodCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPat
 	var buf bytes.Buffer
 	capOpID := swagger.Capitalize(op.ID)
 
-	interfaceComment, err := swagger.InterfaceComment(method, methodPath, s, op)
+	interfaceComment, err := swagger.InterfaceComment(method, methodPath, true, s, op)
 	if err != nil {
 		return "", err
 	}

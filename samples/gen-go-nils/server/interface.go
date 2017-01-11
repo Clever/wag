@@ -11,7 +11,7 @@ import (
 // Controller defines the interface for the nil-test service.
 type Controller interface {
 
-	// NilCheck makes a POST request to /check/{id}
+	// NilCheck handles POST requests to /check/{id}
 	// Nil check tests
 	// 200: nil
 	// 400: *models.BadRequest

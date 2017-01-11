@@ -218,7 +218,7 @@ func generateInterface(packageName string, s *spec.Swagger, serviceName string, 
 		path := paths.Paths[pathKey]
 		pathItemOps := swagger.PathItemOperations(path)
 		for _, method := range swagger.SortedOperationsKeys(pathItemOps) {
-			interfaceComment, err := swagger.InterfaceComment(method, pathKey, s, pathItemOps[method])
+			interfaceComment, err := swagger.InterfaceComment(method, pathKey, false, s, pathItemOps[method])
 			if err != nil {
 				return err
 			}

@@ -11,7 +11,7 @@ import (
 // Controller defines the interface for the swagger-test service.
 type Controller interface {
 
-	// Health makes a GET request to /health
+	// Health handles GET requests to /health
 	//
 	// 200: nil
 	// 400: *models.BadRequest
