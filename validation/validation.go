@@ -139,6 +139,8 @@ func validateDefinitions(definitions map[string]spec.Schema) error {
 	for name, def := range definitions {
 		for _, subDef := range def.Properties {
 			if len(subDef.Type) == 1 && subDef.Type[0] == "object" {
+				// We throw an error here because nested objects generate a compiler error in
+				// the go-swagger model code.
 				return fmt.Errorf("%s cannot have nested object types", name)
 			}
 		}
