@@ -135,6 +135,19 @@ func validateParams(path, method string, op *spec.Operation) error {
 	return nil
 }
 
+func validateDefinitions(definitions map[string]spec.Schema) error {
+	for name, def := range definitions {
+		for _, subDef := range def.Properties {
+			if len(subDef.Type) == 1 && subDef.Type[0] == "object" {
+				// We throw an error here because nested objects generate a compiler error in
+				// the go-swagger model code.
+				return fmt.Errorf("%s cannot have nested object types", name)
+			}
+		}
+	}
+	return nil
+}
+
 // Validate returns an error if the swagger file is invalid or uses fields
 // we don't support. Note that this isn't a comprehensive check for all things
 // we don't support, so this may not return an error, but the Swagger file might
@@ -204,7 +217,7 @@ func Validate(d loads.Document) error {
 		}
 	}
 
-	return nil
+	return validateDefinitions(s.Definitions)
 }
 
 func sliceContains(slice []string, key string) bool {
