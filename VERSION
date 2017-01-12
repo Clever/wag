@@ -1,2 +1,2 @@
-1.2.9
-- Improved server interface comment
+1.2.10
+- Error on nested object definitions
