@@ -187,6 +187,12 @@ definitions:
       author:
         type: string
         format: mongo-id
+      genre:
+        type: string
+        enum:
+          - scifi
+          - mystery
+          - horror
       other:
         additionalProperties:
           type: string

@@ -9,7 +9,7 @@ import:
 - package: github.com/go-openapi/swag
 - package: github.com/go-openapi/validate
 - package: github.com/go-swagger/go-swagger
-  version: dae55c0fc2df02e480114804b1d5b35a0e584c66
+  version: e6695a646f4673a8d8169ff0e50b96ea97aae483
   subpackages:
   - generator
 - package: github.com/golang/mock
