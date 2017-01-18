@@ -1,5 +1,5 @@
-hash: 04192c214d4370871c386e28b5bfce3bd4a3fae78fb9f6d659a276e02601777a
-updated: 2017-01-06T18:27:38.025158517Z
+hash: 55c8911573b36fcafa6fa1c8d4160444a39a40f223ebc9109114e382539270e0
+updated: 2017-01-18T19:42:53.87334933Z
 imports:
 - name: github.com/afex/hystrix-go
   version: 39520ddd07a9d9a071d615f7476798659f5a3b89
@@ -23,7 +23,7 @@ imports:
 - name: github.com/donovanhide/eventsource
   version: fd1de70867126402be23c306e1ce32828455d85b
 - name: github.com/fsnotify/fsnotify
-  version: bd2828f9f176e52d7222e565abb2d338d3f3c103
+  version: fd9ec7deca8bf46ecd2a795baaacf2b3a9be1197
   repo: https://github.com/fsnotify/fsnotify
 - name: github.com/go-errors/errors
   version: a41850380601eeb43f4350f7d17c6bbd8944aaf8
@@ -43,7 +43,7 @@ imports:
   subpackages:
   - fmts
 - name: github.com/go-openapi/runtime
-  version: 2faaf90bf67e0616db00094f2141f99b00a9ebc2
+  version: 12c07accf0687ab20b1e7b6293d8012ce282499c
   repo: https://github.com/go-openapi/runtime
 - name: github.com/go-openapi/spec
   version: e9fab754f5629065e6b7a6100301226545d4477e
@@ -54,11 +54,11 @@ imports:
 - name: github.com/go-openapi/validate
   version: deaf2c9013bc1a7f4c774662259a506ba874d80f
 - name: github.com/go-swagger/go-swagger
-  version: dae55c0fc2df02e480114804b1d5b35a0e584c66
+  version: e6695a646f4673a8d8169ff0e50b96ea97aae483
   subpackages:
   - generator
 - name: github.com/gogo/protobuf
-  version: a9cd0c35b97daf74d0ebf3514c5254814b2703b4
+  version: 8d70fb3182befc465c4a1eac8ad4d38ff49778e2
   subpackages:
   - proto
 - name: github.com/golang/mock
@@ -76,7 +76,7 @@ imports:
 - name: github.com/gorilla/mux
   version: 757bef944d0f21880861c2dd9c871ca543023cba
 - name: github.com/hashicorp/hcl
-  version: 99ce73d4fe576449f7a689d4fc2b2ad09a86bdaa
+  version: 3d702911d9708e8fea66cd77e04bd451ff25d3b1
   repo: https://github.com/hashicorp/hcl
   subpackages:
   - hcl/ast
@@ -87,9 +87,12 @@ imports:
   - json/parser
   - json/scanner
   - json/token
-- name: github.com/kr/fs
-  version: 2788f0dbd16903de03cb8186e5c7d97b69ad387b
-  repo: https://github.com/kr/fs
+- name: github.com/kr/pretty
+  version: cfb55aafdaf3ec08f0db22699ab822c50091b1c4
+  repo: https://github.com/kr/pretty
+- name: github.com/kr/text
+  version: 7cafcd837844e784b526369c9bce262804aebc60
+  repo: https://github.com/kr/text
 - name: github.com/lightstep/lightstep-tracer-go
   version: 0d48cd619841b1e1a3cdd20cd6ac97774c0002ce
   subpackages:
@@ -101,7 +104,7 @@ imports:
   version: 0723e352fa358f9322c938cc2dadda874e9151a9
   repo: https://github.com/magiconair/properties
 - name: github.com/mailru/easyjson
-  version: 9dc3521db3580379d6cc493938ef9d2e9782ee7b
+  version: 159cdb893c982e3d1bc6450322fedd514f9c9de3
   repo: https://github.com/mailru/easyjson
   subpackages:
   - buffer
@@ -125,12 +128,6 @@ imports:
 - name: github.com/pelletier/go-toml
   version: 45932ad32dfdd20826f5671da37a5f3ce9f26a8d
   repo: https://github.com/pelletier/go-toml
-- name: github.com/pkg/errors
-  version: 839d9e913e063e28dfd0e6c7b7512793e0a48be9
-  repo: https://github.com/pkg/errors
-- name: github.com/pkg/sftp
-  version: 4d0e916071f68db74f8a73926335f809396d6b42
-  repo: https://github.com/pkg/sftp
 - name: github.com/PuerkitoBio/purell
   version: 8a290539e2e8629dbc4e6bad948158f790ec31f4
   repo: https://github.com/PuerkitoBio/purell
@@ -138,11 +135,10 @@ imports:
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
   repo: https://github.com/PuerkitoBio/urlesc
 - name: github.com/spf13/afero
-  version: 52e4a6cfac46163658bd4f123c49b6ee7dc75f78
+  version: 06b7e5f50606ecd49148a01a6008942d9b669217
   repo: https://github.com/spf13/afero
   subpackages:
   - mem
-  - sftp
 - name: github.com/spf13/cast
   version: 2580bc98dc0e62908119e4737030cc2fdfc45e4c
   repo: https://github.com/spf13/cast
@@ -150,10 +146,10 @@ imports:
   version: 33c24e77fb80341fe7130ee7c594256ff08ccc46
   repo: https://github.com/spf13/jwalterweatherman
 - name: github.com/spf13/pflag
-  version: dabebe21bf790f782ea4c7bbd2efc430de182afd
+  version: 5ccb023bc27df288a957c5e994cd44fd19619465
   repo: https://github.com/spf13/pflag
 - name: github.com/spf13/viper
-  version: 285f1510193473600929e1183915f6220fabab94
+  version: 651d9d916abc3c3d6a91a12549495caba5edffd2
   repo: https://github.com/spf13/viper
 - name: github.com/vburenin/nsync
   version: 9a75d1c80410815ac45d65fc01ccabac9c98dd4a
@@ -162,19 +158,9 @@ imports:
 - name: github.com/xeipuuv/gojsonreference
   version: e02fc20de94c78484cd5ffb007f8af96be030a45
 - name: github.com/xeipuuv/gojsonschema
-  version: 59f99ebfe5f712a0055e321231fc3be94e4e00b2
-- name: golang.org/x/crypto
-  version: 3c0d69f1777220f1a1d2ec373cb94a282f03eb42
-  repo: https://go.googlesource.com/crypto
-  subpackages:
-  - cast5
-  - curve25519
-  - ed25519
-  - ed25519/internal/edwards25519
-  - openpgp
-  - ssh
+  version: f06f290571ce81ab347174c6f7ad2e1865af41a7
 - name: golang.org/x/net
-  version: c33d37840d93fc75251f49ab83c5fc8b2faea5e8
+  version: 0e2717dc3cc05907dc23096ef3a9086ea93f567f
   subpackages:
   - context
   - context/ctxhttp
@@ -185,12 +171,12 @@ imports:
   - lex/httplex
   - trace
 - name: golang.org/x/sys
-  version: c200b10b5d5e122be351b67af224adc6128af5bf
+  version: b699b7032584f0953262cb2788a0ca19bb494703
   repo: https://go.googlesource.com/sys
   subpackages:
   - unix
 - name: golang.org/x/text
-  version: 5a42fa2464759cbb7ee0af9de00b54d69f09a29c
+  version: a263ba8db058568bb9beba166777d9c9dbe75d68
   repo: https://go.googlesource.com/text
   subpackages:
   - cases
@@ -205,7 +191,7 @@ imports:
   - unicode/norm
   - width
 - name: golang.org/x/tools
-  version: c6efba04dd0d931bb11cd7f556285fa3c9305398
+  version: 5e2ae75eb72a62985e086eed33a5982a929e4fff
   repo: https://go.googlesource.com/tools
   subpackages:
   - go/ast/astutil
@@ -213,7 +199,7 @@ imports:
   - go/loader
   - imports
 - name: google.golang.org/grpc
-  version: c8105071640ef29fce843ed96983e864bb18eb0e
+  version: 50955793b0183f9de69bd78e2ec251cf20aab121
   subpackages:
   - codes
   - credentials
@@ -240,16 +226,17 @@ imports:
   - logger
   - router
 - name: gopkg.in/mgo.v2
-  version: 29cc868a5ca65f401ff318143f9408d02f4799cc
+  version: 3f83fa5005286a7fe593b055f0d7771a7dce4655
   subpackages:
   - bson
+  - internal/json
 - name: gopkg.in/tylerb/graceful.v1
   version: 50a48b6e73fcc75b45e22c05b79629a67c79e938
 - name: gopkg.in/yaml.v2
   version: a5b47d31c556af34a302ce5d659e6fea44d90de0
 testImports:
 - name: github.com/davecgh/go-spew
-  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
+  version: 346938d642f2ec3594ed81d874461961cd0faa76
   repo: https://github.com/davecgh/go-spew
   subpackages:
   - spew
