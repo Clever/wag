@@ -4,6 +4,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
+
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
@@ -17,6 +19,9 @@ type Book struct {
 
 	// author
 	Author string `json:"author,omitempty"`
+
+	// genre
+	Genre string `json:"genre,omitempty"`
 
 	// id
 	ID int64 `json:"id,omitempty"`
@@ -32,6 +37,11 @@ type Book struct {
 func (m *Book) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateGenre(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
 	if err := m.validateOther(formats); err != nil {
 		// prop
 		res = append(res, err)
@@ -40,6 +50,46 @@ func (m *Book) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+var bookTypeGenrePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["scifi","mystery","horror"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		bookTypeGenrePropEnum = append(bookTypeGenrePropEnum, v)
+	}
+}
+
+const (
+	BookGenreScifi   string = "scifi"
+	BookGenreMystery string = "mystery"
+	BookGenreHorror  string = "horror"
+)
+
+// prop value enum
+func (m *Book) validateGenreEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, bookTypeGenrePropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Book) validateGenre(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Genre) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateGenreEnum("genre", "body", m.Genre); err != nil {
+		return err
+	}
+
 	return nil
 }
 
