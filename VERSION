@@ -1,2 +1,2 @@
-1.2.10
-- Error on nested object definitions
+1.2.11
+- Expose string enum values in datatype definitions
