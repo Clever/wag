@@ -190,6 +190,11 @@ definitions:
       other:
         additionalProperties:
           type: string
+      otherArray:
+        additionalProperties:
+          type: array
+          items:
+            type: string
 
   Error:
     type: object
