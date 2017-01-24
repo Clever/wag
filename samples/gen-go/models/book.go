@@ -31,6 +31,9 @@ type Book struct {
 
 	// other
 	Other map[string]string `json:"other,omitempty"`
+
+	// other array
+	OtherArray map[string][]string `json:"otherArray,omitempty"`
 }
 
 // Validate validates this book
@@ -43,6 +46,11 @@ func (m *Book) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateOther(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateOtherArray(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -100,6 +108,19 @@ func (m *Book) validateOther(formats strfmt.Registry) error {
 	}
 
 	if err := validate.Required("other", "body", m.Other); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Book) validateOtherArray(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.OtherArray) { // not required
+		return nil
+	}
+
+	if err := validate.Required("otherArray", "body", m.OtherArray); err != nil {
 		return err
 	}
 
