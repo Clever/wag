@@ -15,7 +15,6 @@ compile:
   - make build
 test:
   override:
-  - ./npmrc_drone_setup.sh
   - make test
   post:
   - $HOME/ci-scripts/circleci/report-card $RC_DOCKER_USER $RC_DOCKER_PASS "$RC_DOCKER_EMAIL" $RC_GITHUB_TOKEN
