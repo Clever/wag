@@ -163,7 +163,7 @@ func generateRouter(packageName string, s spec.Swagger, paths *spec.Paths) error
 
 			template.Functions = append(template.Functions, routerFunction{
 				Method:      method,
-				Path:        s.BasePath + path,
+				Path:        s.BasePath + gorillaPathFor(op, path),
 				HandlerName: swagger.Capitalize(op.ID),
 				OpID:        op.ID,
 			})
@@ -177,6 +177,18 @@ func generateRouter(packageName string, s spec.Swagger, paths *spec.Paths) error
 	g := swagger.Generator{PackageName: packageName}
 	g.Printf(routerCode)
 	return g.WriteFile("server/router.go")
+}
+
+func gorillaPathFor(op *spec.Operation, path string) string {
+	for _, param := range op.Parameters {
+		if param.In != "path" || param.Pattern == "" {
+			continue
+		}
+		plainName := fmt.Sprintf("{%s}", param.Name)
+		nameWithRegex := fmt.Sprintf("{%s:%s}", param.Name, param.Pattern)
+		path = strings.Replace(path, plainName, nameWithRegex, 1)
+	}
+	return path
 }
 
 type interfaceTemplate struct {
