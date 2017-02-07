@@ -53,6 +53,9 @@ paths:
           minLength: 1
           maxLength: 24
           pattern: "[0-9a-f]+"
+        - name: X-Dont-Rate-Limit-Me-Bro
+          in: header
+          type: string
         - name: randomBytes
           in: query
           type: string
