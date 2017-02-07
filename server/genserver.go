@@ -9,6 +9,7 @@ import (
 
 	"github.com/Clever/wag/swagger"
 	"github.com/Clever/wag/templates"
+	"github.com/Clever/wag/utils"
 )
 
 // Generate server package for a swagger spec.
@@ -519,8 +520,8 @@ func generateNewInput(op *spec.Operation) (string, error) {
 
 	for _, param := range op.Parameters {
 
-		camelParamName := swagger.StructParamName(param)
-		paramVarName := lowercase(camelParamName)
+		structFieldName := swagger.StructParamName(param)
+		paramVarName := lowercase(utils.CamelCase(param.Name, false))
 
 		typeName, pointer, err := swagger.ParamToType(param)
 		if err != nil {
@@ -530,7 +531,7 @@ func generateNewInput(op *spec.Operation) (string, error) {
 		if param.In != "body" {
 			if param.Type == "array" && param.In == "query" {
 				buf.WriteString(fmt.Sprintf("\tif %s, ok := r.URL.Query()[\"%s\"]; ok {\n\t\tinput.%s = %s\n\t}\n",
-					paramVarName, param.Name, camelParamName, paramVarName))
+					paramVarName, param.Name, structFieldName, paramVarName))
 			} else {
 				typeCode, err := swagger.StringToTypeCode(fmt.Sprintf("%sStr", paramVarName), param, op)
 				if err != nil {
@@ -545,7 +546,7 @@ func generateNewInput(op *spec.Operation) (string, error) {
 					ParamType:       param.In,
 					VarName:         paramVarName,
 					ParamName:       param.Name,
-					CapParamName:    capitalize(paramVarName),
+					CapParamName:    structFieldName,
 					TypeName:        typeName,
 					TypeCode:        typeCode,
 					DefaultValue:    defaultVal,
@@ -560,7 +561,7 @@ func generateNewInput(op *spec.Operation) (string, error) {
 			if param.Schema == nil {
 				return "", fmt.Errorf("body parameters must have a schema defined")
 			}
-			paramField := camelParamName
+			paramField := structFieldName
 			if singleSchemaedBodyParameter {
 				paramField = ""
 			}
@@ -601,37 +602,37 @@ type paramTemplate struct {
 
 var paramTemplateStr = `
 	{{if eq .ParamType "query" -}}
-		{{.ParamName}}Strs := r.URL.Query()["{{.ParamName}}"]
+		{{.VarName}}Strs := r.URL.Query()["{{.ParamName}}"]
 		{{if .Required -}}
-			if len({{.ParamName}}Strs) == 0 {
+			if len({{.VarName}}Strs) == 0 {
 				return nil, errors.New("parameter must be specified")
 			}
 		{{- end -}}
 	{{- else if eq .ParamType "path" -}}
-		{{.ParamName}}Str := mux.Vars(r)["{{.ParamName}}"]
-		if len({{.ParamName}}Str) == 0 {
+		{{.VarName}}Str := mux.Vars(r)["{{.ParamName}}"]
+		if len({{.VarName}}Str) == 0 {
 			return nil, errors.New("parameter must be specified")
 		}
-		{{.ParamName}}Strs := []string{ {{.ParamName}}Str }
+		{{.VarName}}Strs := []string{ {{.VarName}}Str }
 	{{- else if eq .ParamType "header" -}}
-		{{.ParamName}}Strs := r.Header.Get("{{.ParamName}}")
+		{{.VarName}}Strs := r.Header.Get("{{.ParamName}}")
 		{{if .Required -}}
-			if len({{.ParamName}}Strs) == 0 {
+			if len({{.VarName}}Strs) == 0 {
 				return nil, errors.New("parameter must be specified")
 			}
 		{{- end -}}
 	{{- end}}
 	{{if gt (len .DefaultValue) 0 -}}
-		if len({{.ParamName}}Strs) == 0 {
-			{{.ParamName}}Strs = []string{"{{.DefaultValue}}"}
+		if len({{.VarName}}Strs) == 0 {
+			{{.VarName}}Strs = []string{"{{.DefaultValue}}"}
 		}
 	{{- end}}
-	if len({{.ParamName}}Strs) > 0 {
+	if len({{.VarName}}Strs) > 0 {
 			var {{.VarName}}Tmp {{.TypeName}}
 		{{if eq .ParamType "header" -}}
-			{{.VarName}}Tmp = {{.ParamName}}Strs
+			{{.VarName}}Tmp = {{.VarName}}Strs
 		{{- else -}}
-			{{.VarName}}Str := {{.ParamName}}Strs[0]
+			{{.VarName}}Str := {{.VarName}}Strs[0]
 			{{.VarName}}Tmp, err = {{.TypeCode}}
 			if err != nil {
 				return nil, err
