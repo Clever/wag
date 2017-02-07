@@ -112,6 +112,7 @@ Returns a book
 | params.bookID | <code>number</code> |  |
 | [params.authorID] | <code>string</code> |  |
 | [params.authorization] | <code>string</code> |  |
+| [params.XDontRateLimitMeBro] | <code>string</code> |  |
 | [params.randomBytes] | <code>string</code> |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |

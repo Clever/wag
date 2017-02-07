@@ -92,10 +92,11 @@ func (i GetBooksInput) Validate() error {
 
 // GetBookByIDInput holds the input parameters for a getBookByID operation.
 type GetBookByIDInput struct {
-	BookID        int64
-	AuthorID      *string
-	Authorization string
-	RandomBytes   *strfmt.Base64
+	BookID              int64
+	AuthorID            *string
+	Authorization       string
+	XDontRateLimitMeBro string
+	RandomBytes         *strfmt.Base64
 }
 
 // Validate returns an error if any of the GetBookByIDInput parameters don't satisfy the

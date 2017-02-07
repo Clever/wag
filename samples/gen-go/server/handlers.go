@@ -201,11 +201,11 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 		input.Published = &publishedTmp
 	}
 
-	snake_caseStrs := r.URL.Query()["snake_case"]
+	snakeCaseStrs := r.URL.Query()["snake_case"]
 
-	if len(snake_caseStrs) > 0 {
+	if len(snakeCaseStrs) > 0 {
 		var snakeCaseTmp string
-		snakeCaseStr := snake_caseStrs[0]
+		snakeCaseStr := snakeCaseStrs[0]
 		snakeCaseTmp, err = snakeCaseStr, error(nil)
 		if err != nil {
 			return nil, err
@@ -240,14 +240,14 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 		input.MaxPages = &maxPagesTmp
 	}
 
-	min_pagesStrs := r.URL.Query()["min_pages"]
+	minPagesStrs := r.URL.Query()["min_pages"]
 
-	if len(min_pagesStrs) == 0 {
-		min_pagesStrs = []string{"5"}
+	if len(minPagesStrs) == 0 {
+		minPagesStrs = []string{"5"}
 	}
-	if len(min_pagesStrs) > 0 {
+	if len(minPagesStrs) > 0 {
 		var minPagesTmp int32
-		minPagesStr := min_pagesStrs[0]
+		minPagesStr := minPagesStrs[0]
 		minPagesTmp, err = swag.ConvertInt32(minPagesStr)
 		if err != nil {
 			return nil, err
@@ -459,15 +459,15 @@ func newGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 	var err error
 	_ = err
 
-	book_idStr := mux.Vars(r)["book_id"]
-	if len(book_idStr) == 0 {
+	bookIDStr := mux.Vars(r)["book_id"]
+	if len(bookIDStr) == 0 {
 		return nil, errors.New("parameter must be specified")
 	}
-	book_idStrs := []string{book_idStr}
+	bookIDStrs := []string{bookIDStr}
 
-	if len(book_idStrs) > 0 {
+	if len(bookIDStrs) > 0 {
 		var bookIDTmp int64
-		bookIDStr := book_idStrs[0]
+		bookIDStr := bookIDStrs[0]
 		bookIDTmp, err = swag.ConvertInt64(bookIDStr)
 		if err != nil {
 			return nil, err
@@ -493,6 +493,14 @@ func newGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 		var authorizationTmp string
 		authorizationTmp = authorizationStrs
 		input.Authorization = authorizationTmp
+	}
+
+	xDontRateLimitMeBroStrs := r.Header.Get("X-Dont-Rate-Limit-Me-Bro")
+
+	if len(xDontRateLimitMeBroStrs) > 0 {
+		var xDontRateLimitMeBroTmp string
+		xDontRateLimitMeBroTmp = xDontRateLimitMeBroStrs
+		input.XDontRateLimitMeBro = xDontRateLimitMeBroTmp
 	}
 
 	randomBytesStrs := r.URL.Query()["randomBytes"]
