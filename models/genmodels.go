@@ -40,13 +40,13 @@ func Generate(packageName string, s spec.Swagger) error {
 	if err := generateOutputs(packageName, s); err != nil {
 		return fmt.Errorf("error generating outputs: %s", err)
 	}
-	if err := generateInputs(packageName, s.Paths); err != nil {
+	if err := generateInputs(packageName, s); err != nil {
 		return fmt.Errorf("error generating inputs: %s", err)
 	}
 	return nil
 }
 
-func generateInputs(packageName string, paths *spec.Paths) error {
+func generateInputs(packageName string, s spec.Swagger) error {
 
 	g := swagger.Generator{PackageName: packageName}
 
@@ -55,7 +55,10 @@ package models
 
 import(
 		"encoding/json"
+		"fmt"
+		"net/url"
 		"strconv"
+		"strings"
 
 		"github.com/go-openapi/validate"
 		"github.com/go-openapi/strfmt"
@@ -63,11 +66,15 @@ import(
 
 // These imports may not be used depending on the input parameters
 var _ = json.Marshal
+var _ = fmt.Sprintf
+var _ = url.QueryEscape
 var _ = strconv.FormatInt
+var _ = strings.Replace
 var _ = validate.Maximum
 var _ = strfmt.NewFormats
 `)
 
+	paths := s.Paths
 	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
 		path := paths.Paths[pathKey]
 		pathItemOps := swagger.PathItemOperations(path)
@@ -84,6 +91,9 @@ var _ = strfmt.NewFormats
 				return err
 			}
 			if err := printInputValidation(&g, op); err != nil {
+				return err
+			}
+			if err := printInputSerializer(&g, op, s.BasePath, pathKey); err != nil {
 				return err
 			}
 		}
@@ -200,6 +210,84 @@ var validationStr = `
 		{{- end -}}
 		{{end -}}
 	{{- end }}
+`
+
+func printInputSerializer(g *swagger.Generator, op *spec.Operation, basePath, methodPath string) error {
+	singleStringPathParameter, paramName := swagger.SingleStringPathParameter(op)
+	if singleStringPathParameter {
+		capOpID := swagger.Capitalize(op.ID)
+		g.Printf("// %sInputPath returns the URI path for the input.\n", capOpID)
+		g.Printf("func %sInputPath(%s string) (string, error) {\n", capOpID, paramName)
+	} else {
+		capOpID := swagger.Capitalize(op.ID)
+		g.Printf("// Path returns the URI path for the input.\n")
+		g.Printf("func (i %sInput) Path() (string, error) {\n", capOpID)
+	}
+
+	g.Printf("\tpath := \"%s\"\n", basePath+methodPath)
+	g.Printf("\turlVals := url.Values{}\n")
+
+	for _, param := range op.Parameters {
+		t := swagger.ParamToTemplate(&param, op)
+		if param.In == "path" {
+			pt := pathParamTemplate{
+				Name:         param.Name,
+				PathName:     "{" + t.Name + "}",
+				ToStringCode: t.ToStringCode,
+			}
+			str, err := templates.WriteTemplate(pathParamStr, pt)
+			if err != nil {
+				panic(fmt.Errorf("unexpected error: %s", err))
+			}
+			g.Printf(str)
+		} else if param.In == "query" {
+			str, err := templates.WriteTemplate(queryParamStr, t)
+			if err != nil {
+				panic(fmt.Errorf("unexpected error: %s", err))
+			}
+			g.Printf(str)
+		}
+	}
+
+	g.Printf("\n\treturn path + \"?\" + urlVals.Encode(), nil\n")
+	g.Printf("}\n\n")
+
+	return nil
+}
+
+// pathParamTemplate is a seperate template because I couldn't find a non-annoying
+// way to encode {".Name"} in the template
+type pathParamTemplate struct {
+	Name         string
+	PathName     string
+	ToStringCode string
+}
+
+var pathParamStr = `
+	path{{.Name}} := {{.ToStringCode}}
+	if path{{.Name}} == "" {
+		err := fmt.Errorf("{{.Name}} cannot be empty because it's a path parameter")
+		if err != nil {
+			return "", err
+		}
+	}
+	path = strings.Replace(path, "{{.PathName}}", path{{.Name}}, -1)
+`
+
+var queryParamStr = `
+	{{if .Pointer -}}
+	if {{.AccessString}} != nil {
+	{{end}}
+	{{- if eq .Type "array" -}}
+	for _, v := range {{.AccessString}} {
+		urlVals.Add("{{.Name}}", v)
+	}
+	{{- else -}}
+	urlVals.Add("{{.Name}}", {{.ToStringCode}})
+	{{- end -}}
+	{{if .Pointer}}
+	}
+	{{end}}
 `
 
 func generateOutputs(packageName string, s spec.Swagger) error {

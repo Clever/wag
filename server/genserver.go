@@ -336,12 +336,29 @@ func generateOperationHandler(s *spec.Swagger, op *spec.Operation) (string, erro
 	if successType != nil && strings.HasPrefix(*successType, "[]") {
 		arraySuccessType = *successType
 	}
+	pagingParam, hasPaging := swagger.PagingParam(op)
+	var pagingParamPointer bool
+	if hasPaging {
+		_, pagingParamPointer, err = swagger.ParamToType(pagingParam)
+		if err != nil {
+			return "", err
+		}
+	}
+	inputVarName := "input"
+	if singleStringPathParameter {
+		inputVarName = singleStringPathParameterVarName
+	}
+
 	handlerOp := handlerOp{
 		Op:                               swagger.Capitalize(op.ID),
 		SuccessReturnType:                successType != nil,
 		ArraySuccessType:                 arraySuccessType,
 		HasParams:                        len(op.Parameters) != 0,
+		InputVarName:                     inputVarName,
 		SingleSchemaedBodyParameter:      singleSchemaedBodyParameter,
+		HasPaging:                        hasPaging,
+		PagingParamField:                 swagger.StructParamName(pagingParam),
+		PagingParamPointer:               pagingParamPointer,
 		EmptyStatusCode:                  emptyResponseCode,
 		TypesToStatusCodes:               typeToCode,
 		SingleStringPathParameter:        singleStringPathParameter,
@@ -371,6 +388,10 @@ type handlerOp struct {
 	SuccessReturnType                bool
 	ArraySuccessType                 string
 	HasParams                        bool
+	InputVarName                     string
+	HasPaging                        bool
+	PagingParamField                 string
+	PagingParamPointer               bool
 	SingleSchemaedBodyParameter      bool
 	EmptyStatusCode                  int
 	TypesToStatusCodes               map[string]int
@@ -397,9 +418,9 @@ func statusCodeFor{{.Op}}(obj interface{}) int {
 func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 {{if .HasParams}}
 	{{if .SingleStringPathParameter}}
-		{{.SingleStringPathParameterVarName}}, err := new{{.Op}}Input(r)
+		{{.InputVarName}}, err := new{{.Op}}Input(r)
 	{{else}}
-		input, err := new{{.Op}}Input(r)
+		{{.InputVarName}}, err := new{{.Op}}Input(r)
 	{{end}}
 		if err != nil {
 			logger.FromContext(ctx).AddContext("error", err.Error())
@@ -420,7 +441,7 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 {{end}}
 {{if .SuccessReturnType}}
 	{{if .HasParams}}
-	resp, err := h.{{.Op}}(ctx, {{if .SingleStringPathParameter}}{{.SingleStringPathParameterVarName}}{{else}}input{{end}})
+	resp,{{if .HasPaging}} nextPageID,{{end}} err := h.{{.Op}}(ctx, {{.InputVarName}})
 	{{else}}
 	resp, err := h.{{.Op}}(ctx)
 	{{end}}
@@ -433,7 +454,7 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 	{{end}}
 {{else}}
 	{{if .HasParams}}
-	err = h.{{.Op}}(ctx, {{if .SingleStringPathParameter}}{{.SingleStringPathParameterVarName}}{{else}}input{{end}})
+	err = h.{{.Op}}(ctx, {{.InputVarName}})
 	{{else}}
 	err := h.{{.Op}}(ctx)
 	{{end}}
@@ -459,6 +480,24 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 		http.Error(w, jsonMarshalNoError({{index .StatusCodeToType 500}}{Message: err.Error()}), http.StatusInternalServerError)
 		return
 	}
+
+	{{if .HasPaging}}
+	if !swag.IsZero(nextPageID) {
+		{{if .SingleStringPathParameter}}
+		{{.InputVarName}} = nextPageID
+		w.Header().Set("X-Next-Page-Path", models.{{.Op}}InputPath({{.InputVarName}})
+		{{else}}
+		{{.InputVarName}}.{{.PagingParamField}} = {{if .PagingParamPointer}}&{{end}}nextPageID
+		path, err := {{.InputVarName}}.Path()
+		if err != nil {
+			logger.FromContext(ctx).AddContext("error", err.Error())
+			http.Error(w, jsonMarshalNoError({{index .StatusCodeToType 500}}{Message: err.Error()}), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("X-Next-Page-Path", path)
+		{{end}}
+	}
+	{{end}}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCodeFor{{.Op}}(resp))

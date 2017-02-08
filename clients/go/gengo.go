@@ -37,7 +37,6 @@ import (
 		"strings"
 		"bytes"
 		"net/http"
-		"net/url"
 		"strconv"
 		"encoding/json"
 		"strconv"
@@ -233,7 +232,7 @@ func generateInterface(packageName string, s *spec.Swagger, serviceName string, 
 				return err
 			}
 			g.Printf("\t%s\n", interfaceComment)
-			g.Printf("\t%s\n\n", swagger.Interface(s, pathItemOps[method]))
+			g.Printf("\t%s\n\n", swagger.ClientInterface(s, pathItemOps[method]))
 		}
 	}
 	g.Printf("}\n")
@@ -250,11 +249,10 @@ func methodCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPat
 		return "", err
 	}
 	buf.WriteString(interfaceComment + "\n")
-	buf.WriteString(fmt.Sprintf("func (c *WagClient) %s {\n", swagger.Interface(s, op)))
-	buf.WriteString(fmt.Sprintf("\tpath := c.basePath + \"%s\"\n", basePath+methodPath))
-	buf.WriteString(fmt.Sprintf("\turlVals := url.Values{}\n"))
-	buf.WriteString(fmt.Sprintf("\tvar body []byte\n\n"))
+	buf.WriteString(fmt.Sprintf("func (c *WagClient) %s {\n", swagger.ClientInterface(s, op)))
 
+	buf.WriteString(fmt.Sprintf("\tvar body []byte\n\n"))
+	buf.WriteString(fmt.Sprintf(buildPathCode(s, op, basePath, methodPath)))
 	buf.WriteString(fmt.Sprintf(buildRequestCode(s, op, method)))
 
 	buf.WriteString(fmt.Sprintf(`
@@ -278,41 +276,29 @@ func methodCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPat
 	buf.WriteString(parseResponseCode(s, op, capOpID))
 
 	return buf.String(), nil
-
 }
 
-// paramToTemplate converts a spec.Parameter into the a struct with the information needed to
-// template code that uses that parameter. For example, it figures out what the access string for
-// the parameter should be (e.g. either "i.$FIELD" or just $FIELD) and whether the field should be
-// used as a pointer or not.
-func paramToTemplate(s *spec.Swagger, param *spec.Parameter, op *spec.Operation) paramTemplate {
+func buildPathCode(s *spec.Swagger, op *spec.Operation, basePath, methodPath string) string {
+	var buf bytes.Buffer
+	capOpID := swagger.Capitalize(op.ID)
 
-	singleStringPathParameter, singleParamName := swagger.SingleStringPathParameter(op)
-	_, pointer, err := swagger.ParamToType(*param)
-	if err != nil {
-		panic(fmt.Sprintf("unexpected error: %s", err))
+	if singleParam, _ := swagger.SingleSchemaedBodyParameter(op); len(op.Parameters) == 0 || singleParam {
+		buf.WriteString(fmt.Sprintf("\tpath := c.basePath + \"%s\"\n", basePath+methodPath))
+	} else if singleParam, singleParamName := swagger.SingleStringPathParameter(op); singleParam {
+		buf.WriteString(fmt.Sprintf(
+			"\tpath, err := models.%sInputPath(%s)\n",
+			capOpID,
+			singleParamName,
+		))
+		buf.WriteString(errorMessage(s, op))
+		buf.WriteString(fmt.Sprintf("\tpath = c.basePath + path\n"))
+	} else {
+		buf.WriteString(fmt.Sprintf("\tpath, err := i.Path()\n"))
+		buf.WriteString(errorMessage(s, op))
+		buf.WriteString(fmt.Sprintf("\tpath = c.basePath + path\n"))
 	}
 
-	toStringCode := ""
-	if param.Type != "array" && param.In != "body" {
-		toStringCode = swagger.ParamToStringCode(*param, op)
-	}
-
-	t := paramTemplate{
-		Name:         param.Name,
-		ToStringCode: toStringCode,
-		Type:         param.Type,
-		AccessString: "i." + swagger.StructParamName(*param),
-		Pointer:      pointer,
-		ErrorMessage: errorMessage(s, op),
-	}
-	// If this is a single parameter then use $FIELD rather than i.$FIELD in both the toString
-	// and accessing code.
-	if singleStringPathParameter {
-		t.ToStringCode = singleParamName
-		t.AccessString = param.Name
-	}
-	return t
+	return buf.String()
 }
 
 // buildRequestCode adds the parameters to the URL, the body, and the headers
@@ -320,38 +306,16 @@ func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string) string
 	var buf bytes.Buffer
 
 	for _, param := range op.Parameters {
-		t := paramToTemplate(s, &param, op)
-		if param.In == "path" {
-			pt := pathParamTemplate{
-				Name:         param.Name,
-				PathName:     "{" + t.Name + "}",
-				ToStringCode: t.ToStringCode,
-				ErrorMessage: errorMessage(s, op),
-			}
-			str, err := templates.WriteTemplate(pathParamStr, pt)
-			if err != nil {
-				panic(fmt.Errorf("unexpected error: %s", err))
-			}
-			buf.WriteString(str)
-		} else if param.In == "query" {
-			str, err := templates.WriteTemplate(queryParamStr, t)
-			if err != nil {
-				panic(fmt.Errorf("unexpected error: %s", err))
-			}
-			buf.WriteString(str)
-		}
-	}
-
-	buf.WriteString(fmt.Sprintf("\tpath = path + \"?\" + urlVals.Encode()\n\n"))
-
-	for _, param := range op.Parameters {
 		if param.In == "body" {
-			t := paramToTemplate(s, &param, op)
+			t := swagger.ParamToTemplate(&param, op)
 			if singleParam, _ := swagger.SingleSchemaedBodyParameter(op); singleParam {
 				t.AccessString = "i"
 			}
-
-			str, err := templates.WriteTemplate(bodyParamStr, t)
+			bodyTemplate := bodyParamTemplate{
+				ParamTemplate: t,
+				ErrorMessage:  errorMessage(s, op),
+			}
+			str, err := templates.WriteTemplate(bodyParamStr, bodyTemplate)
 			if err != nil {
 				panic(fmt.Errorf("unexpected error: %s", err))
 			}
@@ -367,7 +331,7 @@ func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string) string
 
 	for _, param := range op.Parameters {
 		if param.In == "header" {
-			t := paramToTemplate(s, &param, op)
+			t := swagger.ParamToTemplate(&param, op)
 			str, err := templates.WriteTemplate(headerParamStr, t)
 			if err != nil {
 				panic(fmt.Errorf("unexpected error: %s", err))
@@ -378,49 +342,6 @@ func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string) string
 	return buf.String()
 }
 
-type paramTemplate struct {
-	Name         string
-	ToStringCode string
-	Type         string
-	AccessString string
-	Pointer      bool
-	ErrorMessage string
-}
-
-// pathParamTemplate is a seperate template because I couldn't find a non-annoying
-// way to encode {".Name"} in the template
-type pathParamTemplate struct {
-	Name         string
-	PathName     string
-	ToStringCode string
-	ErrorMessage string
-}
-
-var pathParamStr = `
-	path{{.Name}} := {{.ToStringCode}}
-	if path{{.Name}} == "" {
-		err := fmt.Errorf("{{.Name}} cannot be empty because it's a path parameter")
-		{{- .ErrorMessage}}
-	}
-	path = strings.Replace(path, "{{.PathName}}", path{{.Name}}, -1)
-`
-
-var queryParamStr = `
-	{{if .Pointer -}}
-	if {{.AccessString}} != nil {
-	{{end}}
-	{{- if eq .Type "array" -}}
-	for _, v := range {{.AccessString}} {
-		urlVals.Add("{{.Name}}", v)
-	}
-	{{- else -}}
-	urlVals.Add("{{.Name}}", {{.ToStringCode}})
-	{{- end -}}
-	{{if .Pointer}}
-	}
-	{{end}}
-`
-
 var headerParamStr = `
 	{{if .Pointer}}
 	if {{.AccessString}} != nil {
@@ -430,6 +351,11 @@ var headerParamStr = `
 	}
 	{{end}}
 `
+
+type bodyParamTemplate struct {
+	swagger.ParamTemplate
+	ErrorMessage string
+}
 
 var bodyParamStr = `
 	{{if .Pointer}}
