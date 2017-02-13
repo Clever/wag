@@ -1,2 +1,2 @@
-1.2.11
-- Expose string enum values in datatype definitions
+1.2.12
+- Fix operation parameters that have dashes in their names
