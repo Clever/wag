@@ -142,13 +142,13 @@ func newNilCheckInput(r *http.Request) (*models.NilCheckInput, error) {
 	idStrs := []string{idStr}
 
 	if len(idStrs) > 0 {
-		var iDTmp string
-		iDStr := idStrs[0]
-		iDTmp, err = iDStr, error(nil)
+		var idTmp string
+		idStr := idStrs[0]
+		idTmp, err = idStr, error(nil)
 		if err != nil {
 			return nil, err
 		}
-		input.ID = iDTmp
+		input.ID = idTmp
 	}
 
 	queryStrs := r.URL.Query()["query"]

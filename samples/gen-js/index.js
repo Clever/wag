@@ -362,6 +362,7 @@ class SwaggerTest {
    * @param {number} params.bookID
    * @param {string} [params.authorID]
    * @param {string} [params.authorization]
+   * @param {string} [params.XDontRateLimitMeBro]
    * @param {string} [params.randomBytes]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
@@ -410,6 +411,7 @@ class SwaggerTest {
         return
       }
       headers["authorization"] = params.authorization;
+      headers["X-Dont-Rate-Limit-Me-Bro"] = params.XDontRateLimitMeBro;
 
       const query = {};
       if (typeof params.authorID !== "undefined") {

@@ -363,6 +363,8 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 
 	req.Header.Set("authorization", i.Authorization)
 
+	req.Header.Set("X-Dont-Rate-Limit-Me-Bro", i.XDontRateLimitMeBro)
+
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "getBookByID")
 	req = req.WithContext(ctx)

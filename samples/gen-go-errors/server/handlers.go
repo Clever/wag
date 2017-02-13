@@ -148,13 +148,13 @@ func newGetBookInput(r *http.Request) (*models.GetBookInput, error) {
 	idStrs := []string{idStr}
 
 	if len(idStrs) > 0 {
-		var iDTmp int64
-		iDStr := idStrs[0]
-		iDTmp, err = swag.ConvertInt64(iDStr)
+		var idTmp int64
+		idStr := idStrs[0]
+		idTmp, err = swag.ConvertInt64(idStr)
 		if err != nil {
 			return nil, err
 		}
-		input.ID = iDTmp
+		input.ID = idTmp
 	}
 
 	return &input, nil
