@@ -15,12 +15,12 @@ type ControllerImpl struct {
 }
 
 // GetBooks returns a list of books.
-func (c *ControllerImpl) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, error) {
+func (c *ControllerImpl) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, int64, error) {
 	var bookList []models.Book
 	for _, book := range c.books {
 		bookList = append(bookList, *book)
 	}
-	return bookList, nil
+	return bookList, int64(0), nil
 }
 
 // GetBookByID returns a book by ID.

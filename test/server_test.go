@@ -144,13 +144,13 @@ type LastCallServer struct {
 	lastAuthors   []string
 }
 
-func (d *LastCallServer) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, error) {
+func (d *LastCallServer) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, int64, error) {
 	d.lastState = *input.State
 	d.lastAvailable = *input.Available
 	d.lastMaxPages = *input.MaxPages
 	d.lastMinPages = *input.MinPages
 	d.lastAuthors = input.Authors
-	return []models.Book{}, nil
+	return []models.Book{}, int64(0), nil
 }
 func (d *LastCallServer) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (*models.Book, error) {
 	return nil, nil
@@ -197,9 +197,9 @@ type MiddlewareTest struct {
 	foundKey string
 }
 
-func (m *MiddlewareTest) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, error) {
+func (m *MiddlewareTest) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, int64, error) {
 	m.foundKey = ctx.Value(testContextKey{}).(string)
-	return []models.Book{}, nil
+	return []models.Book{}, int64(0), nil
 }
 func (m *MiddlewareTest) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (*models.Book, error) {
 	return nil, nil
@@ -265,13 +265,13 @@ func TestMiddleware(t *testing.T) {
 
 type TimeoutController struct{}
 
-func (m *TimeoutController) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, error) {
+func (m *TimeoutController) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, int64, error) {
 	var books []models.Book
 	for i := 0; i < 1000; i++ {
 		books = append(books, models.Book{Name: "testing"})
 	}
 	time.Sleep(100 * time.Millisecond)
-	return books, nil
+	return books, int64(0), nil
 }
 func (m *TimeoutController) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (*models.Book, error) {
 	return nil, nil
