@@ -48,7 +48,9 @@ func (c *ClientContextTest) CreateBook(ctx context.Context, input *models.Book) 
 	}
 	return &models.Book{}, nil
 }
-
+func (c *ClientContextTest) GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (*models.AuthorsResponse, string, error) {
+	return nil, "", nil
+}
 func (c *ClientContextTest) HealthCheck(ctx context.Context) error {
 	return nil
 }
@@ -81,7 +83,9 @@ func (c *ClientCircuitTest) CreateBook(ctx context.Context, input *models.Book) 
 	}
 	return &models.Book{}, nil
 }
-
+func (c *ClientCircuitTest) GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (*models.AuthorsResponse, string, error) {
+	return nil, "", nil
+}
 func (c *ClientCircuitTest) HealthCheck(ctx context.Context) error {
 	if c.down {
 		return errors.New("fail")
@@ -258,4 +262,163 @@ func TestCircuitBreaker(t *testing.T) {
 			t.Fatal("circuit should have closed by now")
 		}
 	}
+}
+
+func TestIterator(t *testing.T) {
+	// we have 2 pages and 3 books so that we have to request a new page midway
+	// through and we need to loop through more than one item on a single page
+	s, controller := setupServer()
+	controller.pageSize = 2
+	c := client.New(s.URL)
+
+	book1ID := int64(1)
+	book1Name := "First"
+	book2ID := int64(2)
+	book2Name := "Second"
+	book3ID := int64(3)
+	book3Name := "Third"
+	_, err := c.CreateBook(context.Background(), &models.Book{
+		ID: book1ID, Name: book1Name,
+	})
+	require.NoError(t, err)
+	_, err = c.CreateBook(context.Background(), &models.Book{
+		ID: book2ID, Name: book2Name,
+	})
+	require.NoError(t, err)
+	_, err = c.CreateBook(context.Background(), &models.Book{
+		ID: book3ID, Name: book3Name,
+	})
+	require.NoError(t, err)
+
+	iter, err := c.NewGetBooksIter(context.Background(), &models.GetBooksInput{})
+	require.NoError(t, err)
+
+	var book models.Book
+
+	// normally iter.Next would be called in a loop but it's easier to do it this
+	// way for testing
+	ok := iter.Next(&book)
+	require.True(t, ok)
+	assert.Equal(t, book1ID, book.ID)
+	assert.Equal(t, book1Name, book.Name)
+
+	ok = iter.Next(&book)
+	require.True(t, ok)
+	assert.Equal(t, book2ID, book.ID)
+	assert.Equal(t, book2Name, book.Name)
+
+	ok = iter.Next(&book)
+	require.True(t, ok)
+	assert.Equal(t, book3ID, book.ID)
+	assert.Equal(t, book3Name, book.Name)
+
+	ok = iter.Next(&book)
+	assert.False(t, ok)
+	assert.NoError(t, iter.Err())
+}
+
+// TestIteratorWithResourcePath makes sure the client works when
+// x-paging.resourcePath is specified
+func TestIteratorWithResourcePath(t *testing.T) {
+	s, controller := setupServer()
+	controller.authors = []*models.Author{
+		&models.Author{
+			ID:   "abc",
+			Name: "Joe",
+		},
+		&models.Author{
+			ID:   "def",
+			Name: "Jenny",
+		},
+	}
+	c := client.New(s.URL)
+
+	iter, err := c.NewGetAuthorsIter(context.Background(), &models.GetAuthorsInput{})
+	require.NoError(t, err)
+
+	var author models.Author
+
+	// normally iter.Next would be called in a loop but it's easier to do it this
+	// way for testing
+	ok := iter.Next(&author)
+	require.True(t, ok)
+	assert.Equal(t, "abc", author.ID)
+	assert.Equal(t, "Joe", author.Name)
+
+	ok = iter.Next(&author)
+	require.True(t, ok)
+	assert.Equal(t, "def", author.ID)
+	assert.Equal(t, "Jenny", author.Name)
+
+	ok = iter.Next(&author)
+	assert.False(t, ok)
+	assert.NoError(t, iter.Err())
+}
+
+type IterFailTest struct {
+	sampleController *ControllerImpl
+	fail             bool
+}
+
+func (c *IterFailTest) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, int64, error) {
+	if c.fail {
+		return nil, int64(0), errors.New("fail")
+	}
+	return c.sampleController.GetBooks(ctx, input)
+}
+func (c *IterFailTest) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (*models.Book, error) {
+	return c.sampleController.GetBookByID(ctx, input)
+}
+func (c *IterFailTest) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
+	return c.sampleController.GetBookByID2(ctx, id)
+}
+func (c *IterFailTest) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
+	return c.sampleController.CreateBook(ctx, input)
+}
+func (c *IterFailTest) GetAuthors(ctx context.Context, input *models.GetAuthorsInput) (*models.AuthorsResponse, string, error) {
+	return c.sampleController.GetAuthors(ctx, input)
+}
+func (c *IterFailTest) HealthCheck(ctx context.Context) error {
+	return nil
+}
+
+func TestIteratorFail(t *testing.T) {
+	controller := IterFailTest{sampleController: &ControllerImpl{pageSize: 1}}
+	s := server.New(&controller, "")
+	testServer := httptest.NewServer(s.Handler)
+	defer testServer.Close()
+	c := client.New(testServer.URL)
+
+	book1ID := int64(1)
+	book1Name := "Test"
+	book2ID := int64(2)
+	book2Name := "Second"
+	_, err := c.CreateBook(context.Background(), &models.Book{
+		ID: book1ID, Name: book1Name,
+	})
+	require.NoError(t, err)
+	_, err = c.CreateBook(context.Background(), &models.Book{
+		ID: book2ID, Name: book2Name,
+	})
+	require.NoError(t, err)
+
+	iter, err := c.NewGetBooksIter(context.Background(), &models.GetBooksInput{})
+	require.NoError(t, err)
+
+	var book models.Book
+
+	// normally iter.Next would be called in a loop but it's easier to do it this
+	// way for testing
+	ok := iter.Next(&book)
+	require.True(t, ok)
+	assert.Equal(t, book1ID, book.ID)
+	assert.Equal(t, book1Name, book.Name)
+
+	controller.fail = true
+
+	ok = iter.Next(&book)
+	assert.False(t, ok)
+	require.Error(t, iter.Err())
+	assert.IsType(t, &models.InternalError{}, iter.Err())
+	assert.Equal(t, "fail", iter.Err().Error())
 }

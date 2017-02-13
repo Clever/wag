@@ -13,6 +13,7 @@ import (
 type ControllerImpl struct {
 	books    []*models.Book
 	pageSize int
+	authors  []*models.Author
 }
 
 // GetBooks returns a list of books.
@@ -78,6 +79,16 @@ func (c *ControllerImpl) CreateBook(ctx context.Context, input *models.Book) (*m
 	}
 	c.books[input.ID] = input
 	return input, nil
+}
+
+// GetAuthors gets authors.
+func (c *ControllerImpl) GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (*models.AuthorsResponse, string, error) {
+	return &models.AuthorsResponse{
+		AuthorSet: &models.AuthorSet{
+			RandomProp: int64(3),
+			Results:    models.AuthorArray(c.authors),
+		},
+	}, "", nil
 }
 
 // HealthCheck returns nil always.
