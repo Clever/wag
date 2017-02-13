@@ -1,3 +1,4 @@
+const async = require("async");
 const discovery = require("clever-discovery");
 const request = require("request");
 const opentracing = require("opentracing");
@@ -171,7 +172,7 @@ class SwaggerTest {
       if (span) {
         opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
         span.logEvent("GET /v1/authors");
-        span.setTag("span.kind", "client")
+        span.setTag("span.kind", "client");
       }
 
       const requestOptions = {
@@ -187,6 +188,7 @@ class SwaggerTest {
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
+  
       let retries = 0;
       (function requestOnce() {
         request(requestOptions, (err, response, body) => {
@@ -200,23 +202,183 @@ class SwaggerTest {
             rejecter(err);
             return;
           }
+
+          let e;
           switch (response.statusCode) {
             case 200:
               resolver(body);
               break;
+            
             case 400:
-              rejecter(new Errors.BadRequest(body || {}));
-              break;
+              e = new Errors.BadRequest(body || {});
+              rejecter(e);
+              return;
+            
             case 500:
-              rejecter(new Errors.InternalError(body || {}));
-              break;
+              e = new Errors.InternalError(body || {});
+              rejecter(e);
+              return;
+            
             default:
-              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
+              e = new Error("Recieved unexpected statusCode " + response.statusCode);
+              rejecter(e);
+              return;
           }
-          return;
         });
       }());
     });
+  }
+
+
+  /**
+   * Gets authors
+   * @param {Object} params
+   * @param {string} [params.name]
+   * @param {string} [params.startingAfter]
+   * @param {object} [options]
+   * @param {number} [options.timeout] - A request specific timeout
+   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
+   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {function} [cb]
+   * @returns {Object} iter
+   * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
+   * @returns {function} iter.forEach - takes in a function, applies it to each resource
+   */
+  getAuthorsIter(params, options, cb) {
+    if (!cb && typeof options === "function") {
+      cb = options;
+      options = undefined;
+    }
+
+    const it = (f, saveResults) => new Promise((resolve, reject) => {
+      const rejecter = (err) => {
+        reject(err);
+        if (cb) {
+          cb(err);
+        }
+      };
+      const resolver = (data) => {
+        resolve(data);
+        if (cb) {
+          cb(null, data);
+        }
+      };
+
+
+      if (!options) {
+        options = {};
+      }
+
+      const timeout = options.timeout || this.timeout;
+      const span = options.span;
+
+      const headers = {};
+
+      const query = {};
+      if (typeof params.name !== "undefined") {
+        query["name"] = params.name;
+      }
+  
+      if (typeof params.startingAfter !== "undefined") {
+        query["startingAfter"] = params.startingAfter;
+      }
+  
+
+      if (span) {
+        opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        span.logEvent("GET /v1/authors");
+        span.setTag("span.kind", "client");
+      }
+
+      const requestOptions = {
+        method: "GET",
+        uri: this.address + "/v1/authors",
+        json: true,
+        timeout,
+        headers,
+        qs: query,
+        useQuerystring: true,
+      };
+  
+
+      const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
+      const backoffs = retryPolicy.backoffs();
+  
+      let results = [];
+      async.whilst(
+        () => requestOptions.uri !== "",
+        cbW => {
+      const address = this.address;
+      let retries = 0;
+      (function requestOnce() {
+        request(requestOptions, (err, response, body) => {
+          if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
+            const backoff = backoffs[retries];
+            retries += 1;
+            setTimeout(requestOnce, backoff);
+            return;
+          }
+          if (err) {
+            rejecter(err);
+            cbW(err);
+            return;
+          }
+
+          let e;
+          switch (response.statusCode) {
+            case 200:
+              if (saveResults) {
+                results = results.concat(body.authorSet.results.map(f));
+              } else {
+                body.authorSet.results.forEach(f);
+              }
+              break;
+            
+            case 400:
+              e = new Errors.BadRequest(body || {});
+              rejecter(e);
+              cbW(e);
+              return;
+            
+            case 500:
+              e = new Errors.InternalError(body || {});
+              rejecter(e);
+              cbW(e);
+              return;
+            
+            default:
+              e = new Error("Recieved unexpected statusCode " + response.statusCode);
+              rejecter(e);
+              cbW(e);
+              return;
+          }
+
+          requestOptions.qs = null;
+          requestOptions.useQuerystring = false;
+          requestOptions.uri = "";
+          if (response.headers["x-next-page-path"]) {
+            requestOptions.uri = address + response.headers["x-next-page-path"];
+          }
+          cbW();
+        });
+      }());
+        },
+        err => {
+          if (!err) {
+            if (saveResults) {
+              resolver(results);
+            } else {
+              resolver();
+            }
+          }
+        }
+      );
+    });
+
+	return {
+      map: f => it(f, true),
+      forEach: f => it(f, false),
+	};
   }
 
   /**
@@ -318,7 +480,7 @@ class SwaggerTest {
       if (span) {
         opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
         span.logEvent("GET /v1/books");
-        span.setTag("span.kind", "client")
+        span.setTag("span.kind", "client");
       }
 
       const requestOptions = {
@@ -334,6 +496,7 @@ class SwaggerTest {
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
+  
       let retries = 0;
       (function requestOnce() {
         request(requestOptions, (err, response, body) => {
@@ -347,23 +510,223 @@ class SwaggerTest {
             rejecter(err);
             return;
           }
+
+          let e;
           switch (response.statusCode) {
             case 200:
               resolver(body);
               break;
+            
             case 400:
-              rejecter(new Errors.BadRequest(body || {}));
-              break;
+              e = new Errors.BadRequest(body || {});
+              rejecter(e);
+              return;
+            
             case 500:
-              rejecter(new Errors.InternalError(body || {}));
-              break;
+              e = new Errors.InternalError(body || {});
+              rejecter(e);
+              return;
+            
             default:
-              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
+              e = new Error("Recieved unexpected statusCode " + response.statusCode);
+              rejecter(e);
+              return;
           }
-          return;
         });
       }());
     });
+  }
+
+
+  /**
+   * Returns a list of books
+   * @param {Object} params
+   * @param {string[]} [params.authors] - A list of authors. Must specify at least one and at most two
+   * @param {boolean} [params.available=true]
+   * @param {string} [params.state=finished]
+   * @param {string} [params.published]
+   * @param {string} [params.snakeCase]
+   * @param {string} [params.completed]
+   * @param {number} [params.maxPages=500.5]
+   * @param {number} [params.minPages=5]
+   * @param {number} [params.pagesToTime]
+   * @param {number} [params.startingAfter]
+   * @param {object} [options]
+   * @param {number} [options.timeout] - A request specific timeout
+   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
+   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {function} [cb]
+   * @returns {Object} iter
+   * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
+   * @returns {function} iter.forEach - takes in a function, applies it to each resource
+   */
+  getBooksIter(params, options, cb) {
+    if (!cb && typeof options === "function") {
+      cb = options;
+      options = undefined;
+    }
+
+    const it = (f, saveResults) => new Promise((resolve, reject) => {
+      const rejecter = (err) => {
+        reject(err);
+        if (cb) {
+          cb(err);
+        }
+      };
+      const resolver = (data) => {
+        resolve(data);
+        if (cb) {
+          cb(null, data);
+        }
+      };
+
+
+      if (!options) {
+        options = {};
+      }
+
+      const timeout = options.timeout || this.timeout;
+      const span = options.span;
+
+      const headers = {};
+
+      const query = {};
+      if (typeof params.authors !== "undefined") {
+        query["authors"] = params.authors;
+      }
+  
+      if (typeof params.available !== "undefined") {
+        query["available"] = params.available;
+      }
+  
+      if (typeof params.state !== "undefined") {
+        query["state"] = params.state;
+      }
+  
+      if (typeof params.published !== "undefined") {
+        query["published"] = params.published;
+      }
+  
+      if (typeof params.snakeCase !== "undefined") {
+        query["snake_case"] = params.snakeCase;
+      }
+  
+      if (typeof params.completed !== "undefined") {
+        query["completed"] = params.completed;
+      }
+  
+      if (typeof params.maxPages !== "undefined") {
+        query["maxPages"] = params.maxPages;
+      }
+  
+      if (typeof params.minPages !== "undefined") {
+        query["min_pages"] = params.minPages;
+      }
+  
+      if (typeof params.pagesToTime !== "undefined") {
+        query["pagesToTime"] = params.pagesToTime;
+      }
+  
+      if (typeof params.startingAfter !== "undefined") {
+        query["startingAfter"] = params.startingAfter;
+      }
+  
+
+      if (span) {
+        opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        span.logEvent("GET /v1/books");
+        span.setTag("span.kind", "client");
+      }
+
+      const requestOptions = {
+        method: "GET",
+        uri: this.address + "/v1/books",
+        json: true,
+        timeout,
+        headers,
+        qs: query,
+        useQuerystring: true,
+      };
+  
+
+      const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
+      const backoffs = retryPolicy.backoffs();
+  
+      let results = [];
+      async.whilst(
+        () => requestOptions.uri !== "",
+        cbW => {
+      const address = this.address;
+      let retries = 0;
+      (function requestOnce() {
+        request(requestOptions, (err, response, body) => {
+          if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
+            const backoff = backoffs[retries];
+            retries += 1;
+            setTimeout(requestOnce, backoff);
+            return;
+          }
+          if (err) {
+            rejecter(err);
+            cbW(err);
+            return;
+          }
+
+          let e;
+          switch (response.statusCode) {
+            case 200:
+              if (saveResults) {
+                results = results.concat(body.map(f));
+              } else {
+                body.forEach(f);
+              }
+              break;
+            
+            case 400:
+              e = new Errors.BadRequest(body || {});
+              rejecter(e);
+              cbW(e);
+              return;
+            
+            case 500:
+              e = new Errors.InternalError(body || {});
+              rejecter(e);
+              cbW(e);
+              return;
+            
+            default:
+              e = new Error("Recieved unexpected statusCode " + response.statusCode);
+              rejecter(e);
+              cbW(e);
+              return;
+          }
+
+          requestOptions.qs = null;
+          requestOptions.useQuerystring = false;
+          requestOptions.uri = "";
+          if (response.headers["x-next-page-path"]) {
+            requestOptions.uri = address + response.headers["x-next-page-path"];
+          }
+          cbW();
+        });
+      }());
+        },
+        err => {
+          if (!err) {
+            if (saveResults) {
+              resolver(results);
+            } else {
+              resolver();
+            }
+          }
+        }
+      );
+    });
+
+	return {
+      map: f => it(f, true),
+      forEach: f => it(f, false),
+	};
   }
 
   /**
@@ -418,7 +781,7 @@ class SwaggerTest {
       if (span) {
         opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
         span.logEvent("POST /v1/books");
-        span.setTag("span.kind", "client")
+        span.setTag("span.kind", "client");
       }
 
       const requestOptions = {
@@ -436,6 +799,7 @@ class SwaggerTest {
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
+  
       let retries = 0;
       (function requestOnce() {
         request(requestOptions, (err, response, body) => {
@@ -449,20 +813,28 @@ class SwaggerTest {
             rejecter(err);
             return;
           }
+
+          let e;
           switch (response.statusCode) {
             case 200:
               resolver(body);
               break;
+            
             case 400:
-              rejecter(new Errors.BadRequest(body || {}));
-              break;
+              e = new Errors.BadRequest(body || {});
+              rejecter(e);
+              return;
+            
             case 500:
-              rejecter(new Errors.InternalError(body || {}));
-              break;
+              e = new Errors.InternalError(body || {});
+              rejecter(e);
+              return;
+            
             default:
-              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
+              e = new Error("Recieved unexpected statusCode " + response.statusCode);
+              rejecter(e);
+              return;
           }
-          return;
         });
       }());
     });
@@ -519,7 +891,7 @@ class SwaggerTest {
       const headers = {};
       if (!params.bookID) {
         rejecter(new Error("bookID must be non-empty because it's a path parameter"));
-        return
+        return;
       }
       headers["authorization"] = params.authorization;
 
@@ -536,7 +908,7 @@ class SwaggerTest {
       if (span) {
         opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
         span.logEvent("GET /v1/books/{book_id}");
-        span.setTag("span.kind", "client")
+        span.setTag("span.kind", "client");
       }
 
       const requestOptions = {
@@ -552,6 +924,7 @@ class SwaggerTest {
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
+  
       let retries = 0;
       (function requestOnce() {
         request(requestOptions, (err, response, body) => {
@@ -565,26 +938,38 @@ class SwaggerTest {
             rejecter(err);
             return;
           }
+
+          let e;
           switch (response.statusCode) {
             case 200:
               resolver(body);
               break;
+            
             case 400:
-              rejecter(new Errors.BadRequest(body || {}));
-              break;
+              e = new Errors.BadRequest(body || {});
+              rejecter(e);
+              return;
+            
             case 401:
-              rejecter(new Errors.Unathorized(body || {}));
-              break;
+              e = new Errors.Unathorized(body || {});
+              rejecter(e);
+              return;
+            
             case 404:
-              rejecter(new Errors.Error(body || {}));
-              break;
+              e = new Errors.Error(body || {});
+              rejecter(e);
+              return;
+            
             case 500:
-              rejecter(new Errors.InternalError(body || {}));
-              break;
+              e = new Errors.InternalError(body || {});
+              rejecter(e);
+              return;
+            
             default:
-              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
+              e = new Error("Recieved unexpected statusCode " + response.statusCode);
+              rejecter(e);
+              return;
           }
-          return;
         });
       }());
     });
@@ -639,7 +1024,7 @@ class SwaggerTest {
       const headers = {};
       if (!params.id) {
         rejecter(new Error("id must be non-empty because it's a path parameter"));
-        return
+        return;
       }
 
       const query = {};
@@ -647,7 +1032,7 @@ class SwaggerTest {
       if (span) {
         opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
         span.logEvent("GET /v1/books2/{id}");
-        span.setTag("span.kind", "client")
+        span.setTag("span.kind", "client");
       }
 
       const requestOptions = {
@@ -663,6 +1048,7 @@ class SwaggerTest {
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
+  
       let retries = 0;
       (function requestOnce() {
         request(requestOptions, (err, response, body) => {
@@ -676,23 +1062,33 @@ class SwaggerTest {
             rejecter(err);
             return;
           }
+
+          let e;
           switch (response.statusCode) {
             case 200:
               resolver(body);
               break;
+            
             case 400:
-              rejecter(new Errors.BadRequest(body || {}));
-              break;
+              e = new Errors.BadRequest(body || {});
+              rejecter(e);
+              return;
+            
             case 404:
-              rejecter(new Errors.Error(body || {}));
-              break;
+              e = new Errors.Error(body || {});
+              rejecter(e);
+              return;
+            
             case 500:
-              rejecter(new Errors.InternalError(body || {}));
-              break;
+              e = new Errors.InternalError(body || {});
+              rejecter(e);
+              return;
+            
             default:
-              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
+              e = new Error("Recieved unexpected statusCode " + response.statusCode);
+              rejecter(e);
+              return;
           }
-          return;
         });
       }());
     });
@@ -747,7 +1143,7 @@ class SwaggerTest {
       if (span) {
         opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
         span.logEvent("GET /v1/health/check");
-        span.setTag("span.kind", "client")
+        span.setTag("span.kind", "client");
       }
 
       const requestOptions = {
@@ -763,6 +1159,7 @@ class SwaggerTest {
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
+  
       let retries = 0;
       (function requestOnce() {
         request(requestOptions, (err, response, body) => {
@@ -776,20 +1173,28 @@ class SwaggerTest {
             rejecter(err);
             return;
           }
+
+          let e;
           switch (response.statusCode) {
             case 200:
               resolver();
               break;
+            
             case 400:
-              rejecter(new Errors.BadRequest(body || {}));
-              break;
+              e = new Errors.BadRequest(body || {});
+              rejecter(e);
+              return;
+            
             case 500:
-              rejecter(new Errors.InternalError(body || {}));
-              break;
+              e = new Errors.InternalError(body || {});
+              rejecter(e);
+              return;
+            
             default:
-              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
+              e = new Error("Recieved unexpected statusCode " + response.statusCode);
+              rejecter(e);
+              return;
           }
-          return;
         });
       }());
     });

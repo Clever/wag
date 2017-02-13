@@ -1,3 +1,4 @@
+const async = require("async");
 const discovery = require("clever-discovery");
 const request = require("request");
 const opentracing = require("opentracing");

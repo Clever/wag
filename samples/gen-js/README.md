@@ -9,7 +9,9 @@ swagger-test client library.
         * [new SwaggerTest(options)](#new_module_swagger-test--SwaggerTest_new)
         * _instance_
             * [.getAuthors(params, [options], [cb])](#module_swagger-test--SwaggerTest+getAuthors) ⇒ <code>Promise</code>
+            * [.getAuthorsIter(params, [options], [cb])](#module_swagger-test--SwaggerTest+getAuthorsIter) ⇒ <code>Object</code> &#124; <code>function</code> &#124; <code>function</code>
             * [.getBooks(params, [options], [cb])](#module_swagger-test--SwaggerTest+getBooks) ⇒ <code>Promise</code>
+            * [.getBooksIter(params, [options], [cb])](#module_swagger-test--SwaggerTest+getBooksIter) ⇒ <code>Object</code> &#124; <code>function</code> &#124; <code>function</code>
             * [.createBook(newBook, [options], [cb])](#module_swagger-test--SwaggerTest+createBook) ⇒ <code>Promise</code>
             * [.getBookByID(params, [options], [cb])](#module_swagger-test--SwaggerTest+getBookByID) ⇒ <code>Promise</code>
             * [.getBookByID2(id, [options], [cb])](#module_swagger-test--SwaggerTest+getBookByID2) ⇒ <code>Promise</code>
@@ -67,6 +69,25 @@ Gets authors
 | [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
+<a name="module_swagger-test--SwaggerTest+getAuthorsIter"></a>
+
+#### swaggerTest.getAuthorsIter(params, [options], [cb]) ⇒ <code>Object</code> &#124; <code>function</code> &#124; <code>function</code>
+Gets authors
+
+**Kind**: instance method of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
+**Returns**: <code>Object</code> - iter<code>function</code> - iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array<code>function</code> - iter.forEach - takes in a function, applies it to each resource  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| params | <code>Object</code> |  |
+| [params.name] | <code>string</code> |  |
+| [params.startingAfter] | <code>string</code> |  |
+| [options] | <code>object</code> |  |
+| [options.timeout] | <code>number</code> | A request specific timeout |
+| [options.span] | <code>[Span](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html)</code> | An OpenTracing span - For example from the parent request |
+| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | A request specific retryPolicy |
+| [cb] | <code>function</code> |  |
+
 <a name="module_swagger-test--SwaggerTest+getBooks"></a>
 
 #### swaggerTest.getBooks(params, [options], [cb]) ⇒ <code>Promise</code>
@@ -77,6 +98,33 @@ Returns a list of books
 **Reject**: <code>[BadRequest](#module_swagger-test--SwaggerTest.Errors.BadRequest)</code>  
 **Reject**: <code>[InternalError](#module_swagger-test--SwaggerTest.Errors.InternalError)</code>  
 **Reject**: <code>Error</code>  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| params | <code>Object</code> |  |  |
+| [params.authors] | <code>Array.&lt;string&gt;</code> |  | A list of authors. Must specify at least one and at most two |
+| [params.available] | <code>boolean</code> | <code>true</code> |  |
+| [params.state] | <code>string</code> | <code>&quot;finished&quot;</code> |  |
+| [params.published] | <code>string</code> |  |  |
+| [params.snakeCase] | <code>string</code> |  |  |
+| [params.completed] | <code>string</code> |  |  |
+| [params.maxPages] | <code>number</code> | <code>500.5</code> |  |
+| [params.minPages] | <code>number</code> | <code>5</code> |  |
+| [params.pagesToTime] | <code>number</code> |  |  |
+| [params.startingAfter] | <code>number</code> |  |  |
+| [options] | <code>object</code> |  |  |
+| [options.timeout] | <code>number</code> |  | A request specific timeout |
+| [options.span] | <code>[Span](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html)</code> |  | An OpenTracing span - For example from the parent request |
+| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> |  | A request specific retryPolicy |
+| [cb] | <code>function</code> |  |  |
+
+<a name="module_swagger-test--SwaggerTest+getBooksIter"></a>
+
+#### swaggerTest.getBooksIter(params, [options], [cb]) ⇒ <code>Object</code> &#124; <code>function</code> &#124; <code>function</code>
+Returns a list of books
+
+**Kind**: instance method of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
+**Returns**: <code>Object</code> - iter<code>function</code> - iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array<code>function</code> - iter.forEach - takes in a function, applies it to each resource  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |

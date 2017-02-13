@@ -1,3 +1,4 @@
+const async = require("async");
 const discovery = require("clever-discovery");
 const request = require("request");
 const opentracing = require("opentracing");
@@ -160,7 +161,7 @@ class SwaggerTest {
       const headers = {};
       if (!params.id) {
         rejecter(new Error("id must be non-empty because it's a path parameter"));
-        return
+        return;
       }
 
       const query = {};
@@ -168,7 +169,7 @@ class SwaggerTest {
       if (span) {
         opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
         span.logEvent("GET /v1/books/{id}");
-        span.setTag("span.kind", "client")
+        span.setTag("span.kind", "client");
       }
 
       const requestOptions = {
@@ -184,6 +185,7 @@ class SwaggerTest {
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
+  
       let retries = 0;
       (function requestOnce() {
         request(requestOptions, (err, response, body) => {
@@ -197,23 +199,33 @@ class SwaggerTest {
             rejecter(err);
             return;
           }
+
+          let e;
           switch (response.statusCode) {
             case 200:
               resolver();
               break;
+            
             case 400:
-              rejecter(new Errors.ExtendedError(body || {}));
-              break;
+              e = new Errors.ExtendedError(body || {});
+              rejecter(e);
+              return;
+            
             case 404:
-              rejecter(new Errors.NotFound(body || {}));
-              break;
+              e = new Errors.NotFound(body || {});
+              rejecter(e);
+              return;
+            
             case 500:
-              rejecter(new Errors.InternalError(body || {}));
-              break;
+              e = new Errors.InternalError(body || {});
+              rejecter(e);
+              return;
+            
             default:
-              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
+              e = new Error("Recieved unexpected statusCode " + response.statusCode);
+              rejecter(e);
+              return;
           }
-          return;
         });
       }());
     });
