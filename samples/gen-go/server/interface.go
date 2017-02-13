@@ -17,7 +17,7 @@ type Controller interface {
 	// 400: *models.BadRequest
 	// 500: *models.InternalError
 	// default: client side HTTP errors, for example: context.DeadlineExceeded.
-	GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models.Book, error)
+	GetBooks(ctx context.Context, i *models.GetBooksInput) (resp []models.Book, nextPage int64, err error)
 
 	// CreateBook handles POST requests to /books
 	// Creates a book

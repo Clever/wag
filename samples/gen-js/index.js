@@ -124,6 +124,7 @@ class SwaggerTest {
    * @param {number} [params.maxPages=500.5]
    * @param {number} [params.minPages=5]
    * @param {number} [params.pagesToTime]
+   * @param {number} [params.startingAfter]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
    * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
@@ -200,6 +201,10 @@ class SwaggerTest {
   
       if (typeof params.pagesToTime !== "undefined") {
         query["pagesToTime"] = params.pagesToTime;
+      }
+  
+      if (typeof params.startingAfter !== "undefined") {
+        query["startingAfter"] = params.startingAfter;
       }
   
 

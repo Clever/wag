@@ -2,7 +2,10 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
+	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
@@ -10,21 +13,25 @@ import (
 
 // These imports may not be used depending on the input parameters
 var _ = json.Marshal
+var _ = fmt.Sprintf
+var _ = url.QueryEscape
 var _ = strconv.FormatInt
+var _ = strings.Replace
 var _ = validate.Maximum
 var _ = strfmt.NewFormats
 
 // GetBooksInput holds the input parameters for a getBooks operation.
 type GetBooksInput struct {
-	Authors     []string
-	Available   *bool
-	State       *string
-	Published   *strfmt.Date
-	SnakeCase   *string
-	Completed   *strfmt.DateTime
-	MaxPages    *float64
-	MinPages    *int32
-	PagesToTime *float32
+	Authors       []string
+	Available     *bool
+	State         *string
+	Published     *strfmt.Date
+	SnakeCase     *string
+	Completed     *strfmt.DateTime
+	MaxPages      *float64
+	MinPages      *int32
+	PagesToTime   *float32
+	StartingAfter *int64
 }
 
 // Validate returns an error if any of the GetBooksInput parameters don't satisfy the
@@ -90,6 +97,54 @@ func (i GetBooksInput) Validate() error {
 	return nil
 }
 
+// Path returns the URI path for the input.
+func (i GetBooksInput) Path() (string, error) {
+	path := "/v1/books"
+	urlVals := url.Values{}
+
+	for _, v := range i.Authors {
+		urlVals.Add("authors", v)
+	}
+
+	if i.Available != nil {
+		urlVals.Add("available", strconv.FormatBool(*i.Available))
+	}
+
+	if i.State != nil {
+		urlVals.Add("state", *i.State)
+	}
+
+	if i.Published != nil {
+		urlVals.Add("published", (*i.Published).String())
+	}
+
+	if i.SnakeCase != nil {
+		urlVals.Add("snake_case", *i.SnakeCase)
+	}
+
+	if i.Completed != nil {
+		urlVals.Add("completed", (*i.Completed).String())
+	}
+
+	if i.MaxPages != nil {
+		urlVals.Add("maxPages", strconv.FormatFloat(*i.MaxPages, 'E', -1, 64))
+	}
+
+	if i.MinPages != nil {
+		urlVals.Add("min_pages", strconv.FormatInt(int64(*i.MinPages), 10))
+	}
+
+	if i.PagesToTime != nil {
+		urlVals.Add("pagesToTime", strconv.FormatFloat(float64(*i.PagesToTime), 'E', -1, 32))
+	}
+
+	if i.StartingAfter != nil {
+		urlVals.Add("startingAfter", strconv.FormatInt(*i.StartingAfter, 10))
+	}
+
+	return path + "?" + urlVals.Encode(), nil
+}
+
 // GetBookByIDInput holds the input parameters for a getBookByID operation.
 type GetBookByIDInput struct {
 	BookID        int64
@@ -142,6 +197,31 @@ func (i GetBookByIDInput) Validate() error {
 	return nil
 }
 
+// Path returns the URI path for the input.
+func (i GetBookByIDInput) Path() (string, error) {
+	path := "/v1/books/{book_id}"
+	urlVals := url.Values{}
+
+	pathbook_id := strconv.FormatInt(i.BookID, 10)
+	if pathbook_id == "" {
+		err := fmt.Errorf("book_id cannot be empty because it's a path parameter")
+		if err != nil {
+			return "", err
+		}
+	}
+	path = strings.Replace(path, "{book_id}", pathbook_id, -1)
+
+	if i.AuthorID != nil {
+		urlVals.Add("authorID", *i.AuthorID)
+	}
+
+	if i.RandomBytes != nil {
+		urlVals.Add("randomBytes", string(*i.RandomBytes))
+	}
+
+	return path + "?" + urlVals.Encode(), nil
+}
+
 // GetBookByID2Input holds the input parameters for a getBookByID2 operation.
 type GetBookByID2Input struct {
 	ID string
@@ -158,6 +238,23 @@ func ValidateGetBookByID2Input(id string) error {
 	return nil
 }
 
+// GetBookByID2InputPath returns the URI path for the input.
+func GetBookByID2InputPath(id string) (string, error) {
+	path := "/v1/books2/{id}"
+	urlVals := url.Values{}
+
+	pathid := id
+	if pathid == "" {
+		err := fmt.Errorf("id cannot be empty because it's a path parameter")
+		if err != nil {
+			return "", err
+		}
+	}
+	path = strings.Replace(path, "{id}", pathid, -1)
+
+	return path + "?" + urlVals.Encode(), nil
+}
+
 // HealthCheckInput holds the input parameters for a healthCheck operation.
 type HealthCheckInput struct {
 }
@@ -166,4 +263,12 @@ type HealthCheckInput struct {
 // requirements from the swagger yml file.
 func (i HealthCheckInput) Validate() error {
 	return nil
+}
+
+// Path returns the URI path for the input.
+func (i HealthCheckInput) Path() (string, error) {
+	path := "/v1/health/check"
+	urlVals := url.Values{}
+
+	return path + "?" + urlVals.Encode(), nil
 }
