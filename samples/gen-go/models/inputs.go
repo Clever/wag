@@ -20,6 +20,35 @@ var _ = strings.Replace
 var _ = validate.Maximum
 var _ = strfmt.NewFormats
 
+// GetAuthorsInput holds the input parameters for a getAuthors operation.
+type GetAuthorsInput struct {
+	Name          *string
+	StartingAfter *string
+}
+
+// Validate returns an error if any of the GetAuthorsInput parameters don't satisfy the
+// requirements from the swagger yml file.
+func (i GetAuthorsInput) Validate() error {
+
+	return nil
+}
+
+// Path returns the URI path for the input.
+func (i GetAuthorsInput) Path() (string, error) {
+	path := "/v1/authors"
+	urlVals := url.Values{}
+
+	if i.Name != nil {
+		urlVals.Add("name", *i.Name)
+	}
+
+	if i.StartingAfter != nil {
+		urlVals.Add("startingAfter", *i.StartingAfter)
+	}
+
+	return path + "?" + urlVals.Encode(), nil
+}
+
 // GetBooksInput holds the input parameters for a getBooks operation.
 type GetBooksInput struct {
 	Authors       []string

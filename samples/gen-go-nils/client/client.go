@@ -162,7 +162,6 @@ func (c *WagClient) NilCheck(ctx context.Context, i *models.NilCheckInput) error
 
 	}
 
-	client := &http.Client{Transport: c.transport}
 	req, err := http.NewRequest("POST", path, bytes.NewBuffer(body))
 
 	if err != nil {
@@ -170,6 +169,12 @@ func (c *WagClient) NilCheck(ctx context.Context, i *models.NilCheckInput) error
 	}
 
 	req.Header.Set("header", i.Header)
+
+	return c.doNilCheckRequest(ctx, req)
+}
+
+func (c *WagClient) doNilCheckRequest(ctx context.Context, req *http.Request) error {
+	client := &http.Client{Transport: c.transport}
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "nilCheck")
@@ -183,11 +188,9 @@ func (c *WagClient) NilCheck(ctx context.Context, i *models.NilCheckInput) error
 		req = req.WithContext(ctx)
 	}
 	resp, err := c.requestDoer.Do(client, req)
-
 	if err != nil {
 		return err
 	}
-
 	defer resp.Body.Close()
 	switch resp.StatusCode {
 

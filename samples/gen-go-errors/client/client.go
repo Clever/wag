@@ -152,12 +152,17 @@ func (c *WagClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
 
 	path = c.basePath + path
 
-	client := &http.Client{Transport: c.transport}
 	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
 
 	if err != nil {
 		return err
 	}
+
+	return c.doGetBookRequest(ctx, req)
+}
+
+func (c *WagClient) doGetBookRequest(ctx context.Context, req *http.Request) error {
+	client := &http.Client{Transport: c.transport}
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "getBook")
@@ -171,11 +176,9 @@ func (c *WagClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
 		req = req.WithContext(ctx)
 	}
 	resp, err := c.requestDoer.Do(client, req)
-
 	if err != nil {
 		return err
 	}
-
 	defer resp.Body.Close()
 	switch resp.StatusCode {
 

@@ -8,6 +8,7 @@ swagger-test client library.
     * [SwaggerTest](#exp_module_swagger-test--SwaggerTest) ⏏
         * [new SwaggerTest(options)](#new_module_swagger-test--SwaggerTest_new)
         * _instance_
+            * [.getAuthors(params, [options], [cb])](#module_swagger-test--SwaggerTest+getAuthors) ⇒ <code>Promise</code>
             * [.getBooks(params, [options], [cb])](#module_swagger-test--SwaggerTest+getBooks) ⇒ <code>Promise</code>
             * [.createBook(newBook, [options], [cb])](#module_swagger-test--SwaggerTest+createBook) ⇒ <code>Promise</code>
             * [.getBookByID(params, [options], [cb])](#module_swagger-test--SwaggerTest+getBookByID) ⇒ <code>Promise</code>
@@ -43,6 +44,28 @@ Create a new client object.
 | [options.discovery] | <code>bool</code> |  | Use clever-discovery to locate the server. Must provide this or the address argument |
 | [options.timeout] | <code>number</code> |  | The timeout to use for all client requests, in milliseconds. This can be overridden on a per-request basis. |
 | [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | <code>RetryPolicies.Single</code> | The logic to determine which requests to retry, as well as how many times to retry. |
+
+<a name="module_swagger-test--SwaggerTest+getAuthors"></a>
+
+#### swaggerTest.getAuthors(params, [options], [cb]) ⇒ <code>Promise</code>
+Gets authors
+
+**Kind**: instance method of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
+**Fulfill**: <code>Object</code>  
+**Reject**: <code>[BadRequest](#module_swagger-test--SwaggerTest.Errors.BadRequest)</code>  
+**Reject**: <code>[InternalError](#module_swagger-test--SwaggerTest.Errors.InternalError)</code>  
+**Reject**: <code>Error</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| params | <code>Object</code> |  |
+| [params.name] | <code>string</code> |  |
+| [params.startingAfter] | <code>string</code> |  |
+| [options] | <code>object</code> |  |
+| [options.timeout] | <code>number</code> | A request specific timeout |
+| [options.span] | <code>[Span](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html)</code> | An OpenTracing span - For example from the parent request |
+| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | A request specific retryPolicy |
+| [cb] | <code>function</code> |  |
 
 <a name="module_swagger-test--SwaggerTest+getBooks"></a>
 
