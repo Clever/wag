@@ -10,14 +10,16 @@ import (
 )
 
 func TestValidateOpID(t *testing.T) {
+	s := spec.Swagger{}
 	op := spec.Operation{}
 	op.ID = "with spaces"
-	err := validateOp("/books", "GET", &op)
+	err := validateOp(&s, "/books", "GET", &op)
 	assert.Error(t, err)
 	assert.Equal(t, "The operationId for GET /books must be alphanumeric and start with a letter", err.Error())
 }
 
 func TestValidatePathParams(t *testing.T) {
+	s := spec.Swagger{}
 	op := spec.Operation{}
 	op.ID = "op"
 	param := spec.Parameter{}
@@ -26,7 +28,7 @@ func TestValidatePathParams(t *testing.T) {
 	param.Required = false
 	op.Parameters = []spec.Parameter{param}
 	op.Responses = &spec.Responses{}
-	err := validateOp("/books", "GET", &op)
+	err := validateOp(&s, "/books", "GET", &op)
 	assert.Error(t, err)
 	assert.Equal(t, "paramName for GET /books is a path parameter so it must be required", err.Error())
 }
