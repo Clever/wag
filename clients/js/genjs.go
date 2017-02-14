@@ -323,17 +323,21 @@ var methodTmplStr = `
             return;
           }
           if (err) {
-            rejecter(err);{{if .IterMethod}}
-            cbW(err);{{end}}
+            {{- if not .IterMethod}}
+            rejecter(err);
+            {{- else}}
+            cbW(err);
+            {{- end}}
             return;
           }
 
-          let e;
           switch (response.statusCode) {
             {{ range $response := .Responses }}case {{ $response.StatusCode }}:{{if $response.IsError }}
-              e = new Errors.{{ $response.Name }}(body || {});
-              rejecter(e);{{if $.IterMethod}}
-              cbW(e);{{end}}
+              {{- if not $.IterMethod}}
+              rejecter(new Errors.{{ $response.Name }}(body || {}));
+              {{- else}}
+              cbW(new Errors.{{ $response.Name }}(body || {}));
+              {{- end}}
               return;
             {{else}}{{if $response.IsNoData}}
               resolver();
@@ -351,9 +355,11 @@ var methodTmplStr = `
               break;
             {{end}}{{end}}
             {{end}}default:
-              e = new Error("Recieved unexpected statusCode " + response.statusCode);
-              rejecter(e);{{if .IterMethod}}
-              cbW(e);{{end}}
+              {{- if not .IterMethod}}
+              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
+              {{- else}}
+              cbW(new Error("Recieved unexpected statusCode " + response.statusCode));
+              {{- end}}
               return;
           }
 
@@ -373,12 +379,14 @@ var methodTmplStr = `
       {{- if .IterMethod}}
         },
         err => {
-          if (!err) {
-            if (saveResults) {
-              resolver(results);
-            } else {
-              resolver();
-            }
+          if (err) {
+            rejecter(err);
+            return;
+          }
+          if (saveResults) {
+            resolver(results);
+          } else {
+            resolver();
           }
         }
       );
