@@ -233,14 +233,14 @@ var packageJSONTmplStr = `{
 
 var methodTmplStr = `
   {{.MethodDefinition}}
+    {{if .IterMethod -}}
+    const it = (f, saveResults, cb) => new Promise((resolve, reject) => {
+    {{- else -}}
     if (!cb && typeof options === "function") {
       cb = options;
       options = undefined;
     }
 
-    {{if .IterMethod -}}
-    const it = (f, saveResults) => new Promise((resolve, reject) => {
-    {{- else -}}
     return new Promise((resolve, reject) => {
     {{- end}}
       const rejecter = (err) => {
@@ -388,9 +388,9 @@ var methodTmplStr = `
     {{- if .IterMethod}}
 
     return {
-      map: f => it(f, true),
-      toArray: () => it(x => x, true),
-      forEach: f => it(f, false),
+      map: (f, cb) => it(f, true, cb),
+      toArray: cb => it(x => x, true, cb),
+      forEach: (f, cb) => it(f, false, cb),
     };
     {{- end}}
   }
@@ -403,17 +403,19 @@ var singleParamMethodDefinitionTemplateString = `/**{{if .Description}}
    * @param {number} [options.timeout] - A request specific timeout
    * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
    * @param {module:{{.ServiceName}}.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
-   * @param {function} [cb]{{if .IterMethod}}
+   {{- if .IterMethod}}
    * @returns {Object} iter
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
    * @returns {function} iter.toArray - returns a promise to the resources as an array
-   * @returns {function} iter.forEach - takes in a function, applies it to each resource{{else}}
+   * @returns {function} iter.forEach - takes in a function, applies it to each resource
+   {{- else}}
+   * @param {function} [cb]
    * @returns {Promise}
    * @fulfill{{if .JSDocSuccessReturnType}} {{.JSDocSuccessReturnType}}{{else}} {*}{{end}}{{$ServiceName := .ServiceName}}{{range $response := .Responses}}{{if $response.IsError}}
    * @reject {module:{{$ServiceName}}.Errors.{{$response.Name}}}{{end}}{{end}}
    * @reject {Error}{{end}}
    */
-  {{.MethodName}}({{range $param := .Params}}{{$param.JSName}}, {{end}}options, cb) {
+  {{.MethodName}}({{range $param := .Params}}{{$param.JSName}}, {{end}}options{{if not .IterMethod}}, cb{{end}}) {
     const params = {};{{range $param := .Params}}
     params["{{$param.JSName}}"] = {{$param.JSName}};{{end}}
 `
@@ -426,17 +428,19 @@ var pluralParamMethodDefinitionTemplateString = `/**{{if .Description}}
    * @param {number} [options.timeout] - A request specific timeout
    * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
    * @param {module:{{.ServiceName}}.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
-   * @param {function} [cb]{{if .IterMethod}}
+   {{- if .IterMethod}}
    * @returns {Object} iter
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
    * @returns {function} iter.toArray - returns a promise to the resources as an array
-   * @returns {function} iter.forEach - takes in a function, applies it to each resource{{else}}
+   * @returns {function} iter.forEach - takes in a function, applies it to each resource
+   {{- else}}
+   * @param {function} [cb]
    * @returns {Promise}
    * @fulfill{{if .JSDocSuccessReturnType}} {{.JSDocSuccessReturnType}}{{else}} {*}{{end}}{{$ServiceName := .ServiceName}}{{range $response := .Responses}}{{if $response.IsError}}
    * @reject {module:{{$ServiceName}}.Errors.{{$response.Name}}}{{end}}{{end}}
    * @reject {Error}{{end}}
    */
-  {{.MethodName}}(params, options, cb) {`
+  {{.MethodName}}(params, options{{if not .IterMethod}}, cb{{end}}) {`
 
 type paramMapping struct {
 	JSName      string
