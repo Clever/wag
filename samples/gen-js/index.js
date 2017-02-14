@@ -239,19 +239,13 @@ class SwaggerTest {
    * @param {number} [options.timeout] - A request specific timeout
    * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
-   * @param {function} [cb]
    * @returns {Object} iter
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
    * @returns {function} iter.toArray - returns a promise to the resources as an array
    * @returns {function} iter.forEach - takes in a function, applies it to each resource
    */
-  getAuthorsIter(params, options, cb) {
-    if (!cb && typeof options === "function") {
-      cb = options;
-      options = undefined;
-    }
-
-    const it = (f, saveResults) => new Promise((resolve, reject) => {
+  getAuthorsIter(params, options) {
+    const it = (f, saveResults, cb) => new Promise((resolve, reject) => {
       const rejecter = (err) => {
         reject(err);
         if (cb) {
@@ -377,9 +371,9 @@ class SwaggerTest {
     });
 
     return {
-      map: f => it(f, true),
-      toArray: () => it(x => x, true),
-      forEach: f => it(f, false),
+      map: (f, cb) => it(f, true, cb),
+      toArray: cb => it(x => x, true, cb),
+      forEach: (f, cb) => it(f, false, cb),
     };
   }
 
@@ -557,19 +551,13 @@ class SwaggerTest {
    * @param {number} [options.timeout] - A request specific timeout
    * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
-   * @param {function} [cb]
    * @returns {Object} iter
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
    * @returns {function} iter.toArray - returns a promise to the resources as an array
    * @returns {function} iter.forEach - takes in a function, applies it to each resource
    */
-  getBooksIter(params, options, cb) {
-    if (!cb && typeof options === "function") {
-      cb = options;
-      options = undefined;
-    }
-
-    const it = (f, saveResults) => new Promise((resolve, reject) => {
+  getBooksIter(params, options) {
+    const it = (f, saveResults, cb) => new Promise((resolve, reject) => {
       const rejecter = (err) => {
         reject(err);
         if (cb) {
@@ -727,9 +715,9 @@ class SwaggerTest {
     });
 
     return {
-      map: f => it(f, true),
-      toArray: () => it(x => x, true),
-      forEach: f => it(f, false),
+      map: (f, cb) => it(f, true, cb),
+      toArray: cb => it(x => x, true, cb),
+      forEach: (f, cb) => it(f, false, cb),
     };
   }
 
