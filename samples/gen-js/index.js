@@ -203,25 +203,21 @@ class SwaggerTest {
             return;
           }
 
-          let e;
           switch (response.statusCode) {
             case 200:
               resolver(body);
               break;
             
             case 400:
-              e = new Errors.BadRequest(body || {});
-              rejecter(e);
+              rejecter(new Errors.BadRequest(body || {}));
               return;
             
             case 500:
-              e = new Errors.InternalError(body || {});
-              rejecter(e);
+              rejecter(new Errors.InternalError(body || {}));
               return;
             
             default:
-              e = new Error("Recieved unexpected statusCode " + response.statusCode);
-              rejecter(e);
+              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
               return;
           }
         });
@@ -281,7 +277,6 @@ class SwaggerTest {
 
       if (span) {
         opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
-        span.logEvent("GET /v1/authors");
         span.setTag("span.kind", "client");
       }
 
@@ -303,6 +298,9 @@ class SwaggerTest {
       async.whilst(
         () => requestOptions.uri !== "",
         cbW => {
+      if (span) {
+        span.logEvent("GET /v1/authors");
+      }
       const address = this.address;
       let retries = 0;
       (function requestOnce() {
@@ -314,12 +312,10 @@ class SwaggerTest {
             return;
           }
           if (err) {
-            rejecter(err);
             cbW(err);
             return;
           }
 
-          let e;
           switch (response.statusCode) {
             case 200:
               if (saveResults) {
@@ -330,21 +326,15 @@ class SwaggerTest {
               break;
             
             case 400:
-              e = new Errors.BadRequest(body || {});
-              rejecter(e);
-              cbW(e);
+              cbW(new Errors.BadRequest(body || {}));
               return;
             
             case 500:
-              e = new Errors.InternalError(body || {});
-              rejecter(e);
-              cbW(e);
+              cbW(new Errors.InternalError(body || {}));
               return;
             
             default:
-              e = new Error("Recieved unexpected statusCode " + response.statusCode);
-              rejecter(e);
-              cbW(e);
+              cbW(new Error("Recieved unexpected statusCode " + response.statusCode));
               return;
           }
 
@@ -359,12 +349,14 @@ class SwaggerTest {
       }());
         },
         err => {
-          if (!err) {
-            if (saveResults) {
-              resolver(results);
-            } else {
-              resolver();
-            }
+          if (err) {
+            rejecter(err);
+            return;
+          }
+          if (saveResults) {
+            resolver(results);
+          } else {
+            resolver();
           }
         }
       );
@@ -507,25 +499,21 @@ class SwaggerTest {
             return;
           }
 
-          let e;
           switch (response.statusCode) {
             case 200:
               resolver(body);
               break;
             
             case 400:
-              e = new Errors.BadRequest(body || {});
-              rejecter(e);
+              rejecter(new Errors.BadRequest(body || {}));
               return;
             
             case 500:
-              e = new Errors.InternalError(body || {});
-              rejecter(e);
+              rejecter(new Errors.InternalError(body || {}));
               return;
             
             default:
-              e = new Error("Recieved unexpected statusCode " + response.statusCode);
-              rejecter(e);
+              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
               return;
           }
         });
@@ -625,7 +613,6 @@ class SwaggerTest {
 
       if (span) {
         opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
-        span.logEvent("GET /v1/books");
         span.setTag("span.kind", "client");
       }
 
@@ -647,6 +634,9 @@ class SwaggerTest {
       async.whilst(
         () => requestOptions.uri !== "",
         cbW => {
+      if (span) {
+        span.logEvent("GET /v1/books");
+      }
       const address = this.address;
       let retries = 0;
       (function requestOnce() {
@@ -658,12 +648,10 @@ class SwaggerTest {
             return;
           }
           if (err) {
-            rejecter(err);
             cbW(err);
             return;
           }
 
-          let e;
           switch (response.statusCode) {
             case 200:
               if (saveResults) {
@@ -674,21 +662,15 @@ class SwaggerTest {
               break;
             
             case 400:
-              e = new Errors.BadRequest(body || {});
-              rejecter(e);
-              cbW(e);
+              cbW(new Errors.BadRequest(body || {}));
               return;
             
             case 500:
-              e = new Errors.InternalError(body || {});
-              rejecter(e);
-              cbW(e);
+              cbW(new Errors.InternalError(body || {}));
               return;
             
             default:
-              e = new Error("Recieved unexpected statusCode " + response.statusCode);
-              rejecter(e);
-              cbW(e);
+              cbW(new Error("Recieved unexpected statusCode " + response.statusCode));
               return;
           }
 
@@ -703,12 +685,14 @@ class SwaggerTest {
       }());
         },
         err => {
-          if (!err) {
-            if (saveResults) {
-              resolver(results);
-            } else {
-              resolver();
-            }
+          if (err) {
+            rejecter(err);
+            return;
+          }
+          if (saveResults) {
+            resolver(results);
+          } else {
+            resolver();
           }
         }
       );
@@ -806,25 +790,21 @@ class SwaggerTest {
             return;
           }
 
-          let e;
           switch (response.statusCode) {
             case 200:
               resolver(body);
               break;
             
             case 400:
-              e = new Errors.BadRequest(body || {});
-              rejecter(e);
+              rejecter(new Errors.BadRequest(body || {}));
               return;
             
             case 500:
-              e = new Errors.InternalError(body || {});
-              rejecter(e);
+              rejecter(new Errors.InternalError(body || {}));
               return;
             
             default:
-              e = new Error("Recieved unexpected statusCode " + response.statusCode);
-              rejecter(e);
+              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
               return;
           }
         });
@@ -931,35 +911,29 @@ class SwaggerTest {
             return;
           }
 
-          let e;
           switch (response.statusCode) {
             case 200:
               resolver(body);
               break;
             
             case 400:
-              e = new Errors.BadRequest(body || {});
-              rejecter(e);
+              rejecter(new Errors.BadRequest(body || {}));
               return;
             
             case 401:
-              e = new Errors.Unathorized(body || {});
-              rejecter(e);
+              rejecter(new Errors.Unathorized(body || {}));
               return;
             
             case 404:
-              e = new Errors.Error(body || {});
-              rejecter(e);
+              rejecter(new Errors.Error(body || {}));
               return;
             
             case 500:
-              e = new Errors.InternalError(body || {});
-              rejecter(e);
+              rejecter(new Errors.InternalError(body || {}));
               return;
             
             default:
-              e = new Error("Recieved unexpected statusCode " + response.statusCode);
-              rejecter(e);
+              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
               return;
           }
         });
@@ -1055,30 +1029,25 @@ class SwaggerTest {
             return;
           }
 
-          let e;
           switch (response.statusCode) {
             case 200:
               resolver(body);
               break;
             
             case 400:
-              e = new Errors.BadRequest(body || {});
-              rejecter(e);
+              rejecter(new Errors.BadRequest(body || {}));
               return;
             
             case 404:
-              e = new Errors.Error(body || {});
-              rejecter(e);
+              rejecter(new Errors.Error(body || {}));
               return;
             
             case 500:
-              e = new Errors.InternalError(body || {});
-              rejecter(e);
+              rejecter(new Errors.InternalError(body || {}));
               return;
             
             default:
-              e = new Error("Recieved unexpected statusCode " + response.statusCode);
-              rejecter(e);
+              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
               return;
           }
         });
@@ -1166,25 +1135,21 @@ class SwaggerTest {
             return;
           }
 
-          let e;
           switch (response.statusCode) {
             case 200:
               resolver();
               break;
             
             case 400:
-              e = new Errors.BadRequest(body || {});
-              rejecter(e);
+              rejecter(new Errors.BadRequest(body || {}));
               return;
             
             case 500:
-              e = new Errors.InternalError(body || {});
-              rejecter(e);
+              rejecter(new Errors.InternalError(body || {}));
               return;
             
             default:
-              e = new Error("Recieved unexpected statusCode " + response.statusCode);
-              rejecter(e);
+              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
               return;
           }
         });

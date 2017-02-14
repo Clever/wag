@@ -213,25 +213,21 @@ class NilTest {
             return;
           }
 
-          let e;
           switch (response.statusCode) {
             case 200:
               resolver();
               break;
             
             case 400:
-              e = new Errors.BadRequest(body || {});
-              rejecter(e);
+              rejecter(new Errors.BadRequest(body || {}));
               return;
             
             case 500:
-              e = new Errors.InternalError(body || {});
-              rejecter(e);
+              rejecter(new Errors.InternalError(body || {}));
               return;
             
             default:
-              e = new Error("Recieved unexpected statusCode " + response.statusCode);
-              rejecter(e);
+              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
               return;
           }
         });
