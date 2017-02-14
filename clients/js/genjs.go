@@ -287,7 +287,9 @@ var methodTmplStr = `
 
       if (span) {
         opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        {{- if not .IterMethod}}
         span.logEvent("{{.Method}} {{.Path}}");
+        {{- end}}
         span.setTag("span.kind", "client");
       }
 
@@ -311,6 +313,9 @@ var methodTmplStr = `
       async.whilst(
         () => requestOptions.uri !== "",
         cbW => {
+      if (span) {
+        span.logEvent("{{.Method}} {{.Path}}");
+      }
       const address = this.address;
   {{- end}}
       let retries = 0;
