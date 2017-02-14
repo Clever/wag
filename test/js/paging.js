@@ -1,5 +1,6 @@
 const assert = require("assert");
 const nock = require("nock");
+const util = require("util");
 
 const Client = require("swagger-test");
 
@@ -85,5 +86,30 @@ describe("paging", function() {
       return;
     }
     assert.fail(null, null, "expected error");
+  });
+
+  it("iterators handle callbacks", done => {
+    const c = new Client({address: mockAddress});
+    const scopeFirst = nock(mockAddress)
+      .get("/v1/books")
+      .reply(
+        200,
+        [{id: 1, name: "first"}, {id: 2, name: "second"}],
+        {"X-Next-Page-Path": "/v1/books?startingAfter=2"}
+      );
+    const scopeSecond = nock(mockAddress)
+      .get("/v1/books")
+      .query({startingAfter: "2"})
+      .reply(200, [{id: 3, name: "third"}]);
+    c.getBooksIter({}, {}).toArray((err, books) => {
+      assert(!err, "unexpected error: " + util.inspect(err));
+      assert.deepEqual(
+        books,
+        [{id: 1, name: "first"}, {id: 2, name: "second"}, {id: 3, name: "third"}],
+      );
+      assert(scopeFirst.isDone());
+      assert(scopeSecond.isDone());
+      done();
+    });
   });
 });
