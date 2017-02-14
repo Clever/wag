@@ -9,9 +9,9 @@ swagger-test client library.
         * [new SwaggerTest(options)](#new_module_swagger-test--SwaggerTest_new)
         * _instance_
             * [.getAuthors(params, [options], [cb])](#module_swagger-test--SwaggerTest+getAuthors) ⇒ <code>Promise</code>
-            * [.getAuthorsIter(params, [options], [cb])](#module_swagger-test--SwaggerTest+getAuthorsIter) ⇒ <code>Object</code> &#124; <code>function</code> &#124; <code>function</code>
+            * [.getAuthorsIter(params, [options], [cb])](#module_swagger-test--SwaggerTest+getAuthorsIter) ⇒ <code>Object</code> &#124; <code>function</code> &#124; <code>function</code> &#124; <code>function</code>
             * [.getBooks(params, [options], [cb])](#module_swagger-test--SwaggerTest+getBooks) ⇒ <code>Promise</code>
-            * [.getBooksIter(params, [options], [cb])](#module_swagger-test--SwaggerTest+getBooksIter) ⇒ <code>Object</code> &#124; <code>function</code> &#124; <code>function</code>
+            * [.getBooksIter(params, [options], [cb])](#module_swagger-test--SwaggerTest+getBooksIter) ⇒ <code>Object</code> &#124; <code>function</code> &#124; <code>function</code> &#124; <code>function</code>
             * [.createBook(newBook, [options], [cb])](#module_swagger-test--SwaggerTest+createBook) ⇒ <code>Promise</code>
             * [.getBookByID(params, [options], [cb])](#module_swagger-test--SwaggerTest+getBookByID) ⇒ <code>Promise</code>
             * [.getBookByID2(id, [options], [cb])](#module_swagger-test--SwaggerTest+getBookByID2) ⇒ <code>Promise</code>
@@ -71,11 +71,11 @@ Gets authors
 
 <a name="module_swagger-test--SwaggerTest+getAuthorsIter"></a>
 
-#### swaggerTest.getAuthorsIter(params, [options], [cb]) ⇒ <code>Object</code> &#124; <code>function</code> &#124; <code>function</code>
+#### swaggerTest.getAuthorsIter(params, [options], [cb]) ⇒ <code>Object</code> &#124; <code>function</code> &#124; <code>function</code> &#124; <code>function</code>
 Gets authors
 
 **Kind**: instance method of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
-**Returns**: <code>Object</code> - iter<code>function</code> - iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array<code>function</code> - iter.forEach - takes in a function, applies it to each resource  
+**Returns**: <code>Object</code> - iter<code>function</code> - iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array<code>function</code> - iter.toArray - returns a promise to the resources as an array<code>function</code> - iter.forEach - takes in a function, applies it to each resource  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -120,11 +120,11 @@ Returns a list of books
 
 <a name="module_swagger-test--SwaggerTest+getBooksIter"></a>
 
-#### swaggerTest.getBooksIter(params, [options], [cb]) ⇒ <code>Object</code> &#124; <code>function</code> &#124; <code>function</code>
+#### swaggerTest.getBooksIter(params, [options], [cb]) ⇒ <code>Object</code> &#124; <code>function</code> &#124; <code>function</code> &#124; <code>function</code>
 Returns a list of books
 
 **Kind**: instance method of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
-**Returns**: <code>Object</code> - iter<code>function</code> - iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array<code>function</code> - iter.forEach - takes in a function, applies it to each resource  
+**Returns**: <code>Object</code> - iter<code>function</code> - iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array<code>function</code> - iter.toArray - returns a promise to the resources as an array<code>function</code> - iter.forEach - takes in a function, applies it to each resource  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |

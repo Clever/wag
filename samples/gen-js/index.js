@@ -242,6 +242,7 @@ class SwaggerTest {
    * @param {function} [cb]
    * @returns {Object} iter
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
+   * @returns {function} iter.toArray - returns a promise to the resources as an array
    * @returns {function} iter.forEach - takes in a function, applies it to each resource
    */
   getAuthorsIter(params, options, cb) {
@@ -375,10 +376,11 @@ class SwaggerTest {
       );
     });
 
-	return {
+    return {
       map: f => it(f, true),
+      toArray: () => it(x => x, true),
       forEach: f => it(f, false),
-	};
+    };
   }
 
   /**
@@ -558,6 +560,7 @@ class SwaggerTest {
    * @param {function} [cb]
    * @returns {Object} iter
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
+   * @returns {function} iter.toArray - returns a promise to the resources as an array
    * @returns {function} iter.forEach - takes in a function, applies it to each resource
    */
   getBooksIter(params, options, cb) {
@@ -723,10 +726,11 @@ class SwaggerTest {
       );
     });
 
-	return {
+    return {
       map: f => it(f, true),
+      toArray: () => it(x => x, true),
       forEach: f => it(f, false),
-	};
+    };
   }
 
   /**
