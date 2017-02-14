@@ -385,13 +385,14 @@ var methodTmplStr = `
       {{- end}}
     });
 
-	{{- if .IterMethod}}
+    {{- if .IterMethod}}
 
-	return {
+    return {
       map: f => it(f, true),
+      toArray: () => it(x => x, true),
       forEach: f => it(f, false),
-	};
-	{{- end}}
+    };
+    {{- end}}
   }
 `
 
@@ -405,6 +406,7 @@ var singleParamMethodDefinitionTemplateString = `/**{{if .Description}}
    * @param {function} [cb]{{if .IterMethod}}
    * @returns {Object} iter
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
+   * @returns {function} iter.toArray - returns a promise to the resources as an array
    * @returns {function} iter.forEach - takes in a function, applies it to each resource{{else}}
    * @returns {Promise}
    * @fulfill{{if .JSDocSuccessReturnType}} {{.JSDocSuccessReturnType}}{{else}} {*}{{end}}{{$ServiceName := .ServiceName}}{{range $response := .Responses}}{{if $response.IsError}}
@@ -427,6 +429,7 @@ var pluralParamMethodDefinitionTemplateString = `/**{{if .Description}}
    * @param {function} [cb]{{if .IterMethod}}
    * @returns {Object} iter
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
+   * @returns {function} iter.toArray - returns a promise to the resources as an array
    * @returns {function} iter.forEach - takes in a function, applies it to each resource{{else}}
    * @returns {Promise}
    * @fulfill{{if .JSDocSuccessReturnType}} {{.JSDocSuccessReturnType}}{{else}} {*}{{end}}{{$ServiceName := .ServiceName}}{{range $response := .Responses}}{{if $response.IsError}}
