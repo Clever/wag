@@ -1,8 +1,8 @@
-const assert = require("assert");
-const nock = require("nock");
-const util = require("util");
+import * as assert from "assert";
+import * as nock from "nock";
+import * as util from "util";
 
-const Client = require("swagger-test");
+import * as Client from "swagger-test";
 
 const mockAddress = "http://localhost:8000";
 
@@ -85,7 +85,7 @@ describe("paging", function() {
       assert(scopeSecond.isDone());
       return;
     }
-    assert.fail(null, null, "expected error");
+    assert.fail(null, null, "expected error", null);
   });
 
   it("iterators handle callbacks", done => {
