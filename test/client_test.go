@@ -422,3 +422,62 @@ func TestIteratorFail(t *testing.T) {
 	assert.IsType(t, &models.InternalError{}, iter.Err())
 	assert.Equal(t, "fail", iter.Err().Error())
 }
+
+type IterHeadersTest struct {
+	sampleController *ControllerImpl
+	t                *testing.T
+}
+
+func (c *IterHeadersTest) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, int64, error) {
+	assert.Equal(c.t, "x-let-me-in-bro", input.Authorization)
+	return c.sampleController.GetBooks(ctx, input)
+}
+func (c *IterHeadersTest) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (*models.Book, error) {
+	return c.sampleController.GetBookByID(ctx, input)
+}
+func (c *IterHeadersTest) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
+	return c.sampleController.GetBookByID2(ctx, id)
+}
+func (c *IterHeadersTest) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
+	return c.sampleController.CreateBook(ctx, input)
+}
+func (c *IterHeadersTest) GetAuthors(ctx context.Context, input *models.GetAuthorsInput) (*models.AuthorsResponse, string, error) {
+	return c.sampleController.GetAuthors(ctx, input)
+}
+func (c *IterHeadersTest) HealthCheck(ctx context.Context) error {
+	return nil
+}
+
+func TestIteratorHeaders(t *testing.T) {
+	controller := IterHeadersTest{sampleController: &ControllerImpl{pageSize: 1}, t: t}
+	s := server.New(&controller, "")
+	testServer := httptest.NewServer(s.Handler)
+	defer testServer.Close()
+	c := client.New(testServer.URL)
+
+	book1ID := int64(1)
+	book1Name := "Test"
+	book2ID := int64(2)
+	book2Name := "Second"
+	_, err := c.CreateBook(context.Background(), &models.Book{
+		ID: book1ID, Name: book1Name,
+	})
+	require.NoError(t, err)
+	_, err = c.CreateBook(context.Background(), &models.Book{
+		ID: book2ID, Name: book2Name,
+	})
+	require.NoError(t, err)
+
+	iter, err := c.NewGetBooksIter(context.Background(), &models.GetBooksInput{
+		Authorization: "x-let-me-in-bro",
+	})
+	require.NoError(t, err)
+
+	count := 0
+	var book models.Book
+	for iter.Next(&book) {
+		count++
+	}
+	assert.NoError(t, iter.Err())
+	assert.Equal(t, 2, count)
+}
