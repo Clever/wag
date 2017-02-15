@@ -403,6 +403,14 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 		input.PagesToTime = &pagesToTimeTmp
 	}
 
+	authorizationStrs := r.Header.Get("authorization")
+
+	if len(authorizationStrs) > 0 {
+		var authorizationTmp string
+		authorizationTmp = authorizationStrs
+		input.Authorization = authorizationTmp
+	}
+
 	startingAfterStrs := r.URL.Query()["startingAfter"]
 
 	if len(startingAfterStrs) > 0 {

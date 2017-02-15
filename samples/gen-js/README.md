@@ -90,6 +90,7 @@ Returns a list of books
 | [params.maxPages] | <code>number</code> | <code>500.5</code> |  |
 | [params.minPages] | <code>number</code> | <code>5</code> |  |
 | [params.pagesToTime] | <code>number</code> |  |  |
+| [params.authorization] | <code>string</code> |  |  |
 | [params.startingAfter] | <code>number</code> |  |  |
 | [options] | <code>object</code> |  |  |
 | [options.timeout] | <code>number</code> |  | A request specific timeout |

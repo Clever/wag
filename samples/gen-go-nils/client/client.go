@@ -141,8 +141,9 @@ func (c *WagClient) SetTimeout(timeout time.Duration) {
 // 500: *models.InternalError
 // default: client side HTTP errors, for example: context.DeadlineExceeded.
 func (c *WagClient) NilCheck(ctx context.Context, i *models.NilCheckInput) error {
-	var body []byte
+	headers := make(map[string]string)
 
+	var body []byte
 	path, err := i.Path()
 
 	if err != nil {
@@ -150,6 +151,8 @@ func (c *WagClient) NilCheck(ctx context.Context, i *models.NilCheckInput) error
 	}
 
 	path = c.basePath + path
+
+	headers["header"] = i.Header
 
 	if i.Body != nil {
 
@@ -168,13 +171,15 @@ func (c *WagClient) NilCheck(ctx context.Context, i *models.NilCheckInput) error
 		return err
 	}
 
-	req.Header.Set("header", i.Header)
-
-	return c.doNilCheckRequest(ctx, req)
+	return c.doNilCheckRequest(ctx, req, headers)
 }
 
-func (c *WagClient) doNilCheckRequest(ctx context.Context, req *http.Request) error {
+func (c *WagClient) doNilCheckRequest(ctx context.Context, req *http.Request, headers map[string]string) error {
 	client := &http.Client{Transport: c.transport}
+
+	for field, value := range headers {
+		req.Header.Set(field, value)
+	}
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "nilCheck")

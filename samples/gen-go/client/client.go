@@ -141,8 +141,9 @@ func (c *WagClient) SetTimeout(timeout time.Duration) {
 // 500: *models.InternalError
 // default: client side HTTP errors, for example: context.DeadlineExceeded.
 func (c *WagClient) GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (*models.AuthorsResponse, error) {
-	var body []byte
+	headers := make(map[string]string)
 
+	var body []byte
 	path, err := i.Path()
 
 	if err != nil {
@@ -157,7 +158,7 @@ func (c *WagClient) GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (
 		return nil, err
 	}
 
-	resp, _, err := c.doGetAuthorsRequest(ctx, req)
+	resp, _, err := c.doGetAuthorsRequest(ctx, req, headers)
 	return resp, err
 }
 
@@ -168,6 +169,7 @@ type getAuthorsIterImpl struct {
 	index        int
 	err          error
 	nextURL      string
+	headers      map[string]string
 }
 
 func (c *WagClient) NewGetAuthorsIter(ctx context.Context, i *models.GetAuthorsInput) (GetAuthorsIter, error) {
@@ -179,13 +181,14 @@ func (c *WagClient) NewGetAuthorsIter(ctx context.Context, i *models.GetAuthorsI
 
 	path = c.basePath + path
 
-	// TODO: header parameters
+	headers := make(map[string]string)
 
 	return &getAuthorsIterImpl{
 		c:            c,
 		ctx:          ctx,
 		lastResponse: []*models.Author{},
 		nextURL:      path,
+		headers:      headers,
 	}, nil
 }
 
@@ -197,7 +200,7 @@ func (i *getAuthorsIterImpl) refresh() error {
 		return err
 	}
 
-	resp, nextPage, err := i.c.doGetAuthorsRequest(i.ctx, req)
+	resp, nextPage, err := i.c.doGetAuthorsRequest(i.ctx, req, i.headers)
 	if err != nil {
 		i.err = err
 		return err
@@ -234,8 +237,12 @@ func (i *getAuthorsIterImpl) Err() error {
 	return i.err
 }
 
-func (c *WagClient) doGetAuthorsRequest(ctx context.Context, req *http.Request) (*models.AuthorsResponse, string, error) {
+func (c *WagClient) doGetAuthorsRequest(ctx context.Context, req *http.Request, headers map[string]string) (*models.AuthorsResponse, string, error) {
 	client := &http.Client{Transport: c.transport}
+
+	for field, value := range headers {
+		req.Header.Set(field, value)
+	}
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "getAuthors")
@@ -292,8 +299,9 @@ func (c *WagClient) doGetAuthorsRequest(ctx context.Context, req *http.Request) 
 // 500: *models.InternalError
 // default: client side HTTP errors, for example: context.DeadlineExceeded.
 func (c *WagClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models.Book, error) {
-	var body []byte
+	headers := make(map[string]string)
 
+	var body []byte
 	path, err := i.Path()
 
 	if err != nil {
@@ -302,13 +310,15 @@ func (c *WagClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]mo
 
 	path = c.basePath + path
 
+	headers["authorization"] = i.Authorization
+
 	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
 
 	if err != nil {
 		return nil, err
 	}
 
-	resp, _, err := c.doGetBooksRequest(ctx, req)
+	resp, _, err := c.doGetBooksRequest(ctx, req, headers)
 	return resp, err
 }
 
@@ -319,6 +329,7 @@ type getBooksIterImpl struct {
 	index        int
 	err          error
 	nextURL      string
+	headers      map[string]string
 }
 
 func (c *WagClient) NewGetBooksIter(ctx context.Context, i *models.GetBooksInput) (GetBooksIter, error) {
@@ -330,13 +341,16 @@ func (c *WagClient) NewGetBooksIter(ctx context.Context, i *models.GetBooksInput
 
 	path = c.basePath + path
 
-	// TODO: header parameters
+	headers := make(map[string]string)
+
+	headers["authorization"] = i.Authorization
 
 	return &getBooksIterImpl{
 		c:            c,
 		ctx:          ctx,
 		lastResponse: []models.Book{},
 		nextURL:      path,
+		headers:      headers,
 	}, nil
 }
 
@@ -348,7 +362,7 @@ func (i *getBooksIterImpl) refresh() error {
 		return err
 	}
 
-	resp, nextPage, err := i.c.doGetBooksRequest(i.ctx, req)
+	resp, nextPage, err := i.c.doGetBooksRequest(i.ctx, req, i.headers)
 	if err != nil {
 		i.err = err
 		return err
@@ -385,8 +399,12 @@ func (i *getBooksIterImpl) Err() error {
 	return i.err
 }
 
-func (c *WagClient) doGetBooksRequest(ctx context.Context, req *http.Request) ([]models.Book, string, error) {
+func (c *WagClient) doGetBooksRequest(ctx context.Context, req *http.Request, headers map[string]string) ([]models.Book, string, error) {
 	client := &http.Client{Transport: c.transport}
+
+	for field, value := range headers {
+		req.Header.Set(field, value)
+	}
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "getBooks")
@@ -443,8 +461,9 @@ func (c *WagClient) doGetBooksRequest(ctx context.Context, req *http.Request) ([
 // 500: *models.InternalError
 // default: client side HTTP errors, for example: context.DeadlineExceeded.
 func (c *WagClient) CreateBook(ctx context.Context, i *models.Book) (*models.Book, error) {
-	var body []byte
+	headers := make(map[string]string)
 
+	var body []byte
 	path := c.basePath + "/v1/books"
 
 	if i != nil {
@@ -464,11 +483,15 @@ func (c *WagClient) CreateBook(ctx context.Context, i *models.Book) (*models.Boo
 		return nil, err
 	}
 
-	return c.doCreateBookRequest(ctx, req)
+	return c.doCreateBookRequest(ctx, req, headers)
 }
 
-func (c *WagClient) doCreateBookRequest(ctx context.Context, req *http.Request) (*models.Book, error) {
+func (c *WagClient) doCreateBookRequest(ctx context.Context, req *http.Request, headers map[string]string) (*models.Book, error) {
 	client := &http.Client{Transport: c.transport}
+
+	for field, value := range headers {
+		req.Header.Set(field, value)
+	}
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "createBook")
@@ -527,8 +550,9 @@ func (c *WagClient) doCreateBookRequest(ctx context.Context, req *http.Request) 
 // 500: *models.InternalError
 // default: client side HTTP errors, for example: context.DeadlineExceeded.
 func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (*models.Book, error) {
-	var body []byte
+	headers := make(map[string]string)
 
+	var body []byte
 	path, err := i.Path()
 
 	if err != nil {
@@ -537,19 +561,23 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 
 	path = c.basePath + path
 
+	headers["authorization"] = i.Authorization
+
 	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
 
 	if err != nil {
 		return nil, err
 	}
 
-	req.Header.Set("authorization", i.Authorization)
-
-	return c.doGetBookByIDRequest(ctx, req)
+	return c.doGetBookByIDRequest(ctx, req, headers)
 }
 
-func (c *WagClient) doGetBookByIDRequest(ctx context.Context, req *http.Request) (*models.Book, error) {
+func (c *WagClient) doGetBookByIDRequest(ctx context.Context, req *http.Request, headers map[string]string) (*models.Book, error) {
 	client := &http.Client{Transport: c.transport}
+
+	for field, value := range headers {
+		req.Header.Set(field, value)
+	}
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "getBookByID")
@@ -623,8 +651,9 @@ func (c *WagClient) doGetBookByIDRequest(ctx context.Context, req *http.Request)
 // 500: *models.InternalError
 // default: client side HTTP errors, for example: context.DeadlineExceeded.
 func (c *WagClient) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
-	var body []byte
+	headers := make(map[string]string)
 
+	var body []byte
 	path, err := models.GetBookByID2InputPath(id)
 
 	if err != nil {
@@ -639,11 +668,15 @@ func (c *WagClient) GetBookByID2(ctx context.Context, id string) (*models.Book, 
 		return nil, err
 	}
 
-	return c.doGetBookByID2Request(ctx, req)
+	return c.doGetBookByID2Request(ctx, req, headers)
 }
 
-func (c *WagClient) doGetBookByID2Request(ctx context.Context, req *http.Request) (*models.Book, error) {
+func (c *WagClient) doGetBookByID2Request(ctx context.Context, req *http.Request, headers map[string]string) (*models.Book, error) {
 	client := &http.Client{Transport: c.transport}
+
+	for field, value := range headers {
+		req.Header.Set(field, value)
+	}
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "getBookByID2")
@@ -708,8 +741,9 @@ func (c *WagClient) doGetBookByID2Request(ctx context.Context, req *http.Request
 // 500: *models.InternalError
 // default: client side HTTP errors, for example: context.DeadlineExceeded.
 func (c *WagClient) HealthCheck(ctx context.Context) error {
-	var body []byte
+	headers := make(map[string]string)
 
+	var body []byte
 	path := c.basePath + "/v1/health/check"
 
 	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
@@ -718,11 +752,15 @@ func (c *WagClient) HealthCheck(ctx context.Context) error {
 		return err
 	}
 
-	return c.doHealthCheckRequest(ctx, req)
+	return c.doHealthCheckRequest(ctx, req, headers)
 }
 
-func (c *WagClient) doHealthCheckRequest(ctx context.Context, req *http.Request) error {
+func (c *WagClient) doHealthCheckRequest(ctx context.Context, req *http.Request, headers map[string]string) error {
 	client := &http.Client{Transport: c.transport}
+
+	for field, value := range headers {
+		req.Header.Set(field, value)
+	}
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "healthCheck")

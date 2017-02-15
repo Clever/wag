@@ -231,6 +231,7 @@ class SwaggerTest {
    * @param {number} [params.maxPages=500.5]
    * @param {number} [params.minPages=5]
    * @param {number} [params.pagesToTime]
+   * @param {string} [params.authorization]
    * @param {number} [params.startingAfter]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
@@ -272,6 +273,7 @@ class SwaggerTest {
       const span = options.span;
 
       const headers = {};
+      headers["authorization"] = params.authorization;
 
       const query = {};
       if (typeof params.authors !== "undefined") {

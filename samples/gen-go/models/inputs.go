@@ -60,6 +60,7 @@ type GetBooksInput struct {
 	MaxPages      *float64
 	MinPages      *int32
 	PagesToTime   *float32
+	Authorization string
 	StartingAfter *int64
 }
 
