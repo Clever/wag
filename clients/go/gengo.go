@@ -216,6 +216,18 @@ func generateInterface(packageName string, s *spec.Swagger, serviceName string, 
 	g.Printf("package client\n\n")
 	g.Printf(swagger.ImportStatements([]string{"context", packageName + "/models"}))
 	g.Printf("//go:generate $GOPATH/bin/mockgen -source=$GOFILE -destination=mock_client.go -package=client\n\n")
+
+	if err := generateClientInterface(s, &g, serviceName, paths); err != nil {
+		return err
+	}
+	if err := generateIteratorTypes(s, &g, paths); err != nil {
+		return err
+	}
+
+	return g.WriteFile("client/interface.go")
+}
+
+func generateClientInterface(s *spec.Swagger, g *swagger.Generator, serviceName string, paths *spec.Paths) error {
 	g.Printf("// Client defines the methods available to clients of the %s service.\n", serviceName)
 	g.Printf("type Client interface {\n\n")
 
@@ -241,7 +253,10 @@ func generateInterface(packageName string, s *spec.Swagger, serviceName string, 
 		}
 	}
 	g.Printf("}\n\n")
+	return nil
+}
 
+func generateIteratorTypes(s *spec.Swagger, g *swagger.Generator, paths *spec.Paths) error {
 	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
 		path := paths.Paths[pathKey]
 		pathItemOps := swagger.PathItemOperations(path)
@@ -258,6 +273,7 @@ func generateInterface(packageName string, s *spec.Swagger, serviceName string, 
 					return err
 				}
 
+				g.Printf("// %sIter defines the methods available on %s iterators.\n", capOpID, capOpID)
 				g.Printf("type %sIter interface {\n", capOpID)
 				g.Printf("\tNext(*%s) bool\n", resourceType)
 				g.Printf("\tErr() error\n")
@@ -265,8 +281,7 @@ func generateInterface(packageName string, s *spec.Swagger, serviceName string, 
 			}
 		}
 	}
-
-	return g.WriteFile("client/interface.go")
+	return nil
 }
 
 func operationCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPath string) (string, error) {
@@ -506,6 +521,19 @@ type statusCodeReturn struct {
 	makePointer bool
 }
 
+// buildSuccessReturn builds the zero values of the success portion of an op's
+// return (so that an error can be appended).
+func buildSuccessReturn(s *spec.Swagger, op *spec.Operation) string {
+	ret := ""
+	if successType := swagger.SuccessType(s, op); successType != nil {
+		ret = ret + "nil, "
+	}
+	if _, hasPaging := swagger.PagingParam(op); hasPaging {
+		ret = ret + "\"\", "
+	}
+	return ret
+}
+
 // parseResponseCode generates the code for handling the http response.
 // In the client code we want to return a different object depending on the status code, so
 // let's generate code that switches on the status code and returns the right object in each
@@ -524,13 +552,7 @@ func parseResponseCode(s *spec.Swagger, op *spec.Operation, capOpID string) stri
 		buf.WriteString(statusCodeDecoder)
 	}
 
-	successReturn := ""
-	if successType := swagger.SuccessType(s, op); successType != nil {
-		successReturn = successReturn + "nil, "
-	}
-	if _, hasPaging := swagger.PagingParam(op); hasPaging {
-		successReturn = successReturn + "\"\", "
-	}
+	successReturn := buildSuccessReturn(s, op)
 
 	// TODO: at some point should encapsulate this behind an interface on the operation
 	errorType, _ := swagger.OutputType(s, op, 500)
@@ -554,20 +576,12 @@ func writeStatusCodeDecoder(s *spec.Swagger, op *spec.Operation, statusCode int)
 		outputType = "&output"
 	}
 
-	successReturn := ""
-	if successType := swagger.SuccessType(s, op); successType != nil {
-		successReturn = successReturn + "nil, "
-	}
 	_, hasPaging := swagger.PagingParam(op)
-	if hasPaging {
-		successReturn = successReturn + "\"\", "
-	}
-
 	return templates.WriteTemplate(codeDetectorTmplStr,
 		codeDetectorTmpl{
 			StatusCode:    statusCode,
 			NoSuccessType: swagger.SuccessType(s, op) == nil,
-			SuccessReturn: successReturn,
+			SuccessReturn: buildSuccessReturn(s, op),
 			HasPaging:     hasPaging,
 			ErrorType:     statusCode >= 400,
 			TypeName:      outputName,
@@ -633,9 +647,9 @@ func iterCode(s *spec.Swagger, op *spec.Operation, basePath, methodPath string) 
 		responseType = fmt.Sprintf("[]%s", resourceType)
 	}
 
-	accessString := ""
+	resourceAccessString := ""
 	for _, pathComponent := range swagger.PagingResourcePath(op) {
-		accessString = accessString + "." + utils.CamelCase(pathComponent, true)
+		resourceAccessString = resourceAccessString + "." + utils.CamelCase(pathComponent, true)
 	}
 
 	return templates.WriteTemplate(
@@ -648,7 +662,7 @@ func iterCode(s *spec.Swagger, op *spec.Operation, basePath, methodPath string) 
 			BuildHeadersCode:     buildHeadersCode(s, op),
 			ResponseType:         responseType,
 			ResourceType:         resourceType,
-			ResponseAccessString: accessString,
+			ResponseAccessString: resourceAccessString,
 			PointerArray:         needsPointer,
 		},
 	)
