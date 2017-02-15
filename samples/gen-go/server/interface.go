@@ -12,12 +12,13 @@ import (
 type Controller interface {
 
 	// GetBooks handles GET requests to /books
+	// Returns response object and the ID of the next page
 	// Returns a list of books
 	// 200: []models.Book
 	// 400: *models.BadRequest
 	// 500: *models.InternalError
 	// default: client side HTTP errors, for example: context.DeadlineExceeded.
-	GetBooks(ctx context.Context, i *models.GetBooksInput) (resp []models.Book, nextPage int64, err error)
+	GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models.Book, int64, error)
 
 	// CreateBook handles POST requests to /books
 	// Creates a book
