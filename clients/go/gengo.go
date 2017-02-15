@@ -677,6 +677,8 @@ type {{.OpID}}IterImpl struct {
 	headers      map[string]string
 }
 
+// New{{.OpID}}Iter constructs an iterator that makes calls to {{.OpID}} for
+// each page.
 func (c *WagClient) New{{.CapOpID}}Iter(ctx context.Context, {{.Input}}) ({{.CapOpID}}Iter, error) {
 	{{.BuildPathCode}}
 
@@ -716,6 +718,9 @@ func (i *{{.OpID}}IterImpl) refresh() error {
 	return nil
 }
 
+// Next retrieves the next resource from the iterator and assigns it to the
+// provided pointer, fetching a new page if necessary. Returns true if it
+// successfully retrieves a new resource.
 func (i *{{.OpID}}IterImpl) Next(v *{{.ResourceType}}) bool {
 	if i.err != nil {
 		return false
@@ -733,6 +738,7 @@ func (i *{{.OpID}}IterImpl) Next(v *{{.ResourceType}}) bool {
 	return i.Next(v)
 }
 
+// Err returns an error if one occurred when .Next was called.
 func (i *{{.OpID}}IterImpl) Err() error {
 	return i.err
 }
