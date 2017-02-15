@@ -92,7 +92,6 @@ func statusCodeForNilCheck(obj interface{}) int {
 func (h handler) NilCheckHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	input, err := newNilCheckInput(r)
-
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.BadRequest{Message: err.Error()}), http.StatusBadRequest)

@@ -98,7 +98,6 @@ func statusCodeForHealth(obj interface{}) int {
 func (h handler) HealthHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	input, err := newHealthInput(r)
-
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.BadRequest{Message: err.Error()}), http.StatusBadRequest)
