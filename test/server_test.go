@@ -73,7 +73,7 @@ func TestNextPageHeader(t *testing.T) {
 	require.NoError(t, err)
 
 	// Now that there is a second page, X-Next-Page-Path should be set
-	resp, err = http.Get(fmt.Sprintf("%s/v1/books", s.URL))
+	resp, err = http.Get(fmt.Sprintf("%s/v1/books?available=false", s.URL))
 	assert.NoError(t, err)
 	resp.Body.Close()
 
@@ -81,6 +81,7 @@ func TestNextPageHeader(t *testing.T) {
 	nextPath := resp.Header.Get("X-Next-Page-Path")
 	assert.True(t, strings.HasPrefix(nextPath, "/v1/books?"))
 	assert.True(t, strings.Contains(nextPath, "startingAfter=1"))
+	assert.True(t, strings.Contains(nextPath, "available=false"))
 }
 
 func TestNilArray(t *testing.T) {
