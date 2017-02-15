@@ -479,19 +479,14 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 
 	{{if .HasPaging}}
 		if !swag.IsZero(nextPageID) {
-			{{if .SingleStringPathParameter}}
-				{{.InputVarName}} = nextPageID
-				w.Header().Set("X-Next-Page-Path", models.{{.Op}}InputPath({{.InputVarName}})
-			{{else}}
-				{{.InputVarName}}.{{.PagingParamField}} = {{if .PagingParamPointer}}&{{end}}nextPageID
-				path, err := {{.InputVarName}}.Path()
-				if err != nil {
-					logger.FromContext(ctx).AddContext("error", err.Error())
-					http.Error(w, jsonMarshalNoError({{index .StatusCodeToType 500}}{Message: err.Error()}), http.StatusInternalServerError)
-					return
-				}
-				w.Header().Set("X-Next-Page-Path", path)
-			{{end}}
+			{{.InputVarName}}.{{.PagingParamField}} = {{if .PagingParamPointer}}&{{end}}nextPageID
+			path, err := {{.InputVarName}}.Path()
+			if err != nil {
+				logger.FromContext(ctx).AddContext("error", err.Error())
+				http.Error(w, jsonMarshalNoError({{index .StatusCodeToType 500}}{Message: err.Error()}), http.StatusInternalServerError)
+				return
+			}
+			w.Header().Set("X-Next-Page-Path", path)
 		}
 	{{end}}
 
