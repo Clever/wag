@@ -300,20 +300,22 @@ func methodCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPat
 	buf.WriteString(interfaceComment + "\n")
 	buf.WriteString(fmt.Sprintf("func (c *WagClient) %s {\n", swagger.ClientInterface(s, op)))
 
-	buf.WriteString(fmt.Sprintf("\tvar body []byte\n\n"))
-	buf.WriteString(fmt.Sprintf(buildPathCode(s, op, basePath, methodPath)))
+	buf.WriteString(fmt.Sprintf("\theaders := make(map[string]string)\n\n"))
+	buf.WriteString(fmt.Sprintf("\tvar body []byte\n"))
 
+	buf.WriteString(fmt.Sprintf(buildPathCode(s, op, basePath, methodPath)))
+	buf.WriteString(fmt.Sprintf(buildHeadersCode(s, op)))
 	buf.WriteString(fmt.Sprintf(buildRequestCode(s, op, method)))
 
 	if _, hasPaging := swagger.PagingParam(op); !hasPaging {
 		buf.WriteString(fmt.Sprintf(`
-	return c.do%sRequest(ctx, req)
+	return c.do%sRequest(ctx, req, headers)
 }
 
 `, capOpID))
 	} else {
 		buf.WriteString(fmt.Sprintf(`
-	resp, _, err := c.do%sRequest(ctx, req)
+	resp, _, err := c.do%sRequest(ctx, req, headers)
 	return resp, err
 }
 
@@ -344,8 +346,12 @@ func methodDoerCode(s *spec.Swagger, op *spec.Operation) string {
 	}
 
 	buf.WriteString(fmt.Sprintf(`
-func (c *WagClient) do%sRequest(ctx context.Context, req *http.Request) %s {
+func (c *WagClient) do%sRequest(ctx context.Context, req *http.Request, headers map[string]string) %s {
 	client := &http.Client{Transport: c.transport}
+
+	for field, value := range headers {
+		req.Header.Set(field, value)
+	}
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "%s")
@@ -393,7 +399,7 @@ func buildPathCode(s *spec.Swagger, op *spec.Operation, basePath, methodPath str
 	return buf.String()
 }
 
-// buildRequestCode adds the parameters to the URL, the body, and the headers
+// buildRequestCode adds the body and makes the request
 func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string) string {
 	var buf bytes.Buffer
 
@@ -420,6 +426,13 @@ func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string) string
 	%s
 `, strings.ToUpper(method), errorMessage(s, op)))
 
+	return buf.String()
+}
+
+// buildHeadersCode adds the parameters to the header
+func buildHeadersCode(s *spec.Swagger, op *spec.Operation) string {
+	var buf bytes.Buffer
+
 	for _, param := range op.Parameters {
 		if param.In == "header" {
 			t := swagger.ParamToTemplate(&param, op)
@@ -430,6 +443,7 @@ func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string) string
 			buf.WriteString(str)
 		}
 	}
+
 	return buf.String()
 }
 
@@ -437,7 +451,7 @@ var headerParamStr = `
 	{{if .Pointer}}
 	if {{.AccessString}} != nil {
 	{{end}}
-	req.Header.Set("{{.Name}}", {{.ToStringCode}})
+	headers["{{.Name}}"] = {{.ToStringCode}}
 	{{if .Pointer}}
 	}
 	{{end}}
@@ -631,6 +645,7 @@ func iterCode(s *spec.Swagger, op *spec.Operation, basePath, methodPath string) 
 			CapOpID:              capOpID,
 			Input:                swagger.OperationInput(op),
 			BuildPathCode:        buildPathCode(s, op, basePath, methodPath),
+			BuildHeadersCode:     buildHeadersCode(s, op),
 			ResponseType:         responseType,
 			ResourceType:         resourceType,
 			ResponseAccessString: accessString,
@@ -644,6 +659,7 @@ type iterTmpl struct {
 	CapOpID              string
 	Input                string
 	BuildPathCode        string
+	BuildHeadersCode     string
 	ResponseType         string
 	ResourceType         string
 	ResponseAccessString string
@@ -658,18 +674,21 @@ type {{.OpID}}IterImpl struct {
 	index        int
 	err          error
 	nextURL      string
+	headers      map[string]string
 }
 
 func (c *WagClient) New{{.CapOpID}}Iter(ctx context.Context, {{.Input}}) ({{.CapOpID}}Iter, error) {
 	{{.BuildPathCode}}
 
-	// TODO: header parameters
+	headers := make(map[string]string)
+	{{.BuildHeadersCode}}
 
 	return &{{.OpID}}IterImpl{
 		c:            c,
 		ctx:          ctx,
 		lastResponse: {{.ResponseType}}{},
 		nextURL:      path,
+		headers:      headers,
 	}, nil
 }
 
@@ -681,7 +700,7 @@ func (i *{{.OpID}}IterImpl) refresh() error {
 		return err
 	}
 
-	resp, nextPage, err := i.c.do{{.CapOpID}}Request(i.ctx, req)
+	resp, nextPage, err := i.c.do{{.CapOpID}}Request(i.ctx, req, i.headers)
 	if err != nil {
 		i.err = err
 		return err

@@ -149,6 +149,9 @@ paths:
           in: query
           type: number
           format: float
+        - name: authorization
+          in: header
+          type: string
         - name: startingAfter
           in: query
           type: integer
