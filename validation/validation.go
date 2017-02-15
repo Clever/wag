@@ -154,6 +154,11 @@ func validatePaging(s *spec.Swagger, path, method string, op *spec.Operation) er
 			"paging on GET endpoints", method, path)
 	}
 
+	if singleString, _ := swagger.SingleStringPathParameter(op); singleString {
+		return fmt.Errorf("%s %s cannot use x-paging. WAG doesn't support "+
+			"paging on endpoints with a single string path parameter", method, path)
+	}
+
 	pagingParamName, ok := pagingConfig["pageParameter"].(string)
 	if !ok {
 		return fmt.Errorf("%s %s has invalid x-paging section. x-paging must include "+
