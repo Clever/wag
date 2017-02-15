@@ -38,32 +38,24 @@ func opInterface(s *spec.Swagger, op *spec.Operation, includePaging bool) string
 		input = fmt.Sprintf("i *models.%sInput", capOpID)
 	}
 
-	includeNames := false
 	returnTypes := []string{}
-	returnTypesWithNames := []string{}
 	if successType := SuccessType(s, op); successType != nil {
 		returnTypes = append(returnTypes, *successType)
-		returnTypesWithNames = append(returnTypesWithNames, fmt.Sprintf("resp %s", *successType))
 	}
 	if pagingParam, ok := PagingParam(op); includePaging && ok {
 		pagingParamType, _, err := ParamToType(pagingParam)
 		if err != nil {
 			panic(fmt.Errorf("could not convert paging parameter to type for %s: %s", op.ID, err))
 		}
-		includeNames = true
 		returnTypes = append(returnTypes, pagingParamType)
-		returnTypesWithNames = append(returnTypesWithNames, fmt.Sprintf("nextPage %s", pagingParamType))
 	}
 	returnTypes = append(returnTypes, "error")
-	returnTypesWithNames = append(returnTypesWithNames, "err error")
 
 	var output string
 	if len(returnTypes) == 1 {
 		output = returnTypes[0]
-	} else if !includeNames {
-		output = fmt.Sprintf("(%s)", strings.Join(returnTypes, ", "))
 	} else {
-		output = fmt.Sprintf("(%s)", strings.Join(returnTypesWithNames, ", "))
+		output = fmt.Sprintf("(%s)", strings.Join(returnTypes, ", "))
 	}
 
 	return fmt.Sprintf("%s(ctx context.Context, %s) %s", capOpID, input, output)
@@ -79,11 +71,13 @@ func InterfaceComment(method, path string, client bool, s *spec.Swagger, op *spe
 			statusCodeToType[code] = "nil"
 		}
 	}
+	_, hasPaging := PagingParam(op)
 	tmpl := struct {
 		OpID             string
 		Method           string
 		Path             string
 		Client           bool
+		HasPaging        bool
 		Description      string
 		StatusCodeToType map[int]string
 	}{
@@ -91,6 +85,7 @@ func InterfaceComment(method, path string, client bool, s *spec.Swagger, op *spe
 		Method:           method,
 		Path:             path,
 		Client:           client,
+		HasPaging:        hasPaging,
 		Description:      op.Description,
 		StatusCodeToType: statusCodeToType,
 	}
@@ -102,6 +97,9 @@ var interfaceCommentTmplStr = `
 // {{.OpID}} makes a {{.Method}} request to {{.Path}}
 {{- else -}}
 // {{.OpID}} handles {{.Method}} requests to {{.Path}}
+{{- if .HasPaging}}
+// Returns response object and the ID of the next page
+{{- end}}
 {{- end}}
 // {{.Description}} {{ range $code, $type := .StatusCodeToType }}
 // {{$code}}: {{$type}} {{end}}
