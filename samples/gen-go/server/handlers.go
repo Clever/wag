@@ -142,7 +142,6 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 	}
 
 	if !swag.IsZero(nextPageID) {
-
 		input.StartingAfter = &nextPageID
 		path, err := input.Path()
 		if err != nil {
@@ -151,7 +150,6 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 			return
 		}
 		w.Header().Set("X-Next-Page-Path", path)
-
 	}
 
 	w.Header().Set("Content-Type", "application/json")
