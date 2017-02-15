@@ -11,7 +11,8 @@ import (
 
 // ControllerImpl implements the test server controller interface.
 type ControllerImpl struct {
-	books    []*models.Book
+	books    map[int64]*models.Book
+	maxID    int64
 	pageSize int
 }
 
@@ -19,17 +20,19 @@ type ControllerImpl struct {
 func (c *ControllerImpl) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, int64, error) {
 	var bookList []models.Book
 
-	begin := 0
+	var nextPage int64 // default to no next page
+
+	idx := int64(0)
 	if input.StartingAfter != nil {
-		begin = int(*input.StartingAfter) + 1
+		idx = *input.StartingAfter + 1
 	}
 
-	nextPage := int64(0) // default to no next page
-	for idx, book := range c.books[begin:] {
-		if book != nil {
+	// loop through all indices to get predictable ordering
+	for ; idx <= c.maxID; idx++ {
+		if book, ok := c.books[idx]; ok {
 			bookList = append(bookList, *book)
 			if len(bookList) == c.pageSize {
-				nextPage = int64(idx)
+				nextPage = idx
 				break
 			}
 		}
@@ -44,11 +47,8 @@ func (c *ControllerImpl) GetBookByID(ctx context.Context, input *models.GetBookB
 		return nil, models.BadRequest{Message: "My 400 failure"}
 	}
 
-	if int(input.BookID) >= len(c.books) {
-		return nil, models.Error{}
-	}
-	book := c.books[input.BookID]
-	if book == nil {
+	book, ok := c.books[input.BookID]
+	if !ok {
 		return nil, models.Error{}
 	}
 	return book, nil
@@ -60,11 +60,9 @@ func (c *ControllerImpl) GetBookByID2(ctx context.Context, id string) (*models.B
 	if err != nil {
 		return nil, err
 	}
-	if i >= len(c.books) {
-		return nil, models.Error{}
-	}
-	book := c.books[i]
-	if book == nil {
+
+	book, ok := c.books[int64(i)]
+	if !ok {
 		return nil, models.Error{}
 	}
 	return book, nil
@@ -72,9 +70,8 @@ func (c *ControllerImpl) GetBookByID2(ctx context.Context, id string) (*models.B
 
 // CreateBook creates a book.
 func (c *ControllerImpl) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
-	if int(input.ID) >= len(c.books) {
-		extension := make([]*models.Book, int(input.ID)-len(c.books)+1)
-		c.books = append(c.books, extension...)
+	if input.ID > c.maxID {
+		c.maxID = input.ID
 	}
 	c.books[input.ID] = input
 	return input, nil
@@ -86,7 +83,7 @@ func (c *ControllerImpl) HealthCheck(ctx context.Context) error {
 }
 
 func setupServer() (*httptest.Server, *ControllerImpl) {
-	controller := ControllerImpl{pageSize: 100}
+	controller := ControllerImpl{books: make(map[int64]*models.Book), pageSize: 100}
 
 	s := server.New(&controller, ":8080")
 
