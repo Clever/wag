@@ -67,11 +67,13 @@ type Client interface {
 	HealthCheck(ctx context.Context) error
 }
 
+// GetAuthorsIter defines the methods available on GetAuthors iterators.
 type GetAuthorsIter interface {
 	Next(*models.Author) bool
 	Err() error
 }
 
+// GetBooksIter defines the methods available on GetBooks iterators.
 type GetBooksIter interface {
 	Next(*models.Book) bool
 	Err() error

@@ -172,6 +172,8 @@ type getAuthorsIterImpl struct {
 	headers      map[string]string
 }
 
+// NewgetAuthorsIter constructs an iterator that makes calls to getAuthors for
+// each page.
 func (c *WagClient) NewGetAuthorsIter(ctx context.Context, i *models.GetAuthorsInput) (GetAuthorsIter, error) {
 	path, err := i.Path()
 
@@ -216,6 +218,9 @@ func (i *getAuthorsIterImpl) refresh() error {
 	return nil
 }
 
+// Next retrieves the next resource from the iterator and assigns it to the
+// provided pointer, fetching a new page if necessary. Returns true if it
+// successfully retrieves a new resource.
 func (i *getAuthorsIterImpl) Next(v *models.Author) bool {
 	if i.err != nil {
 		return false
@@ -233,6 +238,7 @@ func (i *getAuthorsIterImpl) Next(v *models.Author) bool {
 	return i.Next(v)
 }
 
+// Err returns an error if one occurred when .Next was called.
 func (i *getAuthorsIterImpl) Err() error {
 	return i.err
 }
@@ -332,6 +338,8 @@ type getBooksIterImpl struct {
 	headers      map[string]string
 }
 
+// NewgetBooksIter constructs an iterator that makes calls to getBooks for
+// each page.
 func (c *WagClient) NewGetBooksIter(ctx context.Context, i *models.GetBooksInput) (GetBooksIter, error) {
 	path, err := i.Path()
 
@@ -378,6 +386,9 @@ func (i *getBooksIterImpl) refresh() error {
 	return nil
 }
 
+// Next retrieves the next resource from the iterator and assigns it to the
+// provided pointer, fetching a new page if necessary. Returns true if it
+// successfully retrieves a new resource.
 func (i *getBooksIterImpl) Next(v *models.Book) bool {
 	if i.err != nil {
 		return false
@@ -395,6 +406,7 @@ func (i *getBooksIterImpl) Next(v *models.Book) bool {
 	return i.Next(v)
 }
 
+// Err returns an error if one occurred when .Next was called.
 func (i *getBooksIterImpl) Err() error {
 	return i.err
 }
