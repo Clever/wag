@@ -159,16 +159,17 @@ func PagingParam(op *spec.Operation) (spec.Parameter, bool) {
 	if !ok {
 		return spec.Parameter{}, false
 	}
-	pagingParamName, ok := pagingConfig["pageParameter"].(string)
+	paramName, ok := pagingConfig["pageParameter"].(string)
 	if !ok {
-		return spec.Parameter{}, false
+		panic(fmt.Errorf("x-paging does not include pageParameter for op %s", op.ID))
 	}
 	for _, p := range op.Parameters {
-		if p.Name == pagingParamName {
+		if p.Name == paramName {
 			return p, true
 		}
 	}
-	return spec.Parameter{}, false
+	panic(fmt.Errorf("x-paging.pageParameter specifies nonexistent parameter %s for op %s",
+		paramName, op.ID))
 }
 
 // CodeToTypeMap returns a map from return status code to its corresponding type
