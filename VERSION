@@ -1,2 +1,2 @@
-1.2.12
-- Fix operation parameters that have dashes in their names
+1.3.0
+- Add automatic paging support.
