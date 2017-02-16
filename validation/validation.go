@@ -18,7 +18,7 @@ import (
 var alphaNumRegex = regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9]*$")
 
 // Validate checks if the swagger operation has any fields we don't support
-func validateOp(path, method string, op *spec.Operation) error {
+func validateOp(s *spec.Swagger, path, method string, op *spec.Operation) error {
 	if len(op.Consumes) != 0 {
 		return fmt.Errorf("%s %s cannot have a consumes field. WAG does not support the consumes field "+
 			"on operations", method, path)
@@ -43,7 +43,7 @@ func validateOp(path, method string, op *spec.Operation) error {
 
 	if !alphaNumRegex.MatchString(op.ID) {
 		// We need this because we build function / struct names with the operationID.
-		// We could strip out the special characters, but it seems clearly to just enforce
+		// We could strip out the special characters, but it seems clearer to just enforce
 		// this.
 		return fmt.Errorf("The operationId for %s %s must be alphanumeric and start with a letter",
 			method, path)
@@ -54,6 +54,10 @@ func validateOp(path, method string, op *spec.Operation) error {
 	}
 
 	if err := validateParams(path, method, op); err != nil {
+		return err
+	}
+
+	if err := validatePaging(s, path, method, op); err != nil {
 		return err
 	}
 
@@ -120,6 +124,10 @@ func validateParams(path, method string, op *spec.Operation) error {
 				return fmt.Errorf("%s for %s %s is a path parameter so it must have a primitive type",
 					param.Name, method, path)
 			}
+			if strings.ToLower(param.Name) == "x-next-page-path" {
+				return fmt.Errorf("%s %s uses reserved header parameter name X-Next-Page-Path",
+					method, path)
+			}
 		default:
 			return fmt.Errorf("unsupported param type: %s", param.In)
 		}
@@ -132,6 +140,57 @@ func validateParams(path, method string, op *spec.Operation) error {
 			}
 		}
 	}
+	return nil
+}
+
+func validatePaging(s *spec.Swagger, path, method string, op *spec.Operation) error {
+	pagingConfig, ok := op.Extensions["x-paging"].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+
+	if strings.ToUpper(method) != "GET" {
+		return fmt.Errorf("%s %s cannot use x-paging. WAG only supports "+
+			"paging on GET endpoints", method, path)
+	}
+
+	if singleString, _ := swagger.SingleStringPathParameter(op); singleString {
+		return fmt.Errorf("%s %s cannot use x-paging. WAG doesn't support "+
+			"paging on endpoints with a single string path parameter", method, path)
+	}
+
+	pagingParamName, ok := pagingConfig["pageParameter"].(string)
+	if !ok {
+		return fmt.Errorf("%s %s has invalid x-paging section. x-paging must include "+
+			"a `pageParameter` field of type string set to the name of the parameter"+
+			"that specifies the page ID for this operation", method, path)
+	}
+
+	var pagingParam *spec.Parameter
+	for _, p := range op.Parameters {
+		if p.Name == pagingParamName {
+			pagingParam = &p
+			break
+		}
+	}
+	if pagingParam == nil {
+		return fmt.Errorf("%s %s has invalid x-paging.pageParameter. Parameter '%s' does not exist",
+			method, path, pagingParamName)
+	}
+
+	if resourcePathIntf, ok := pagingConfig["resourcePath"]; ok {
+		_, isString := resourcePathIntf.(string)
+		if !isString {
+			return fmt.Errorf("%s %s has invalid x-paging.resourcePath. Field must be a string or undefined",
+				method, path)
+		}
+	}
+
+	if _, _, err := swagger.PagingResourceType(s, op); err != nil {
+		return fmt.Errorf("%s %s has invalid paging resource (defaults to successful return type): %s",
+			method, path, err.Error())
+	}
+
 	return nil
 }
 
@@ -211,7 +270,7 @@ func Validate(d loads.Document) error {
 				"They must be defined on the individual method level.")
 		}
 		for op, opItem := range pathItemOperations(pathItem) {
-			if err := validateOp(path, op, opItem); err != nil {
+			if err := validateOp(s, path, op, opItem); err != nil {
 				return err
 			}
 		}
