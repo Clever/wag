@@ -30,6 +30,28 @@ func (_m *MockClient) EXPECT() *_MockClientRecorder {
 	return _m.recorder
 }
 
+func (_m *MockClient) GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (*models.AuthorsResponse, error) {
+	ret := _m.ctrl.Call(_m, "GetAuthors", ctx, i)
+	ret0, _ := ret[0].(*models.AuthorsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockClientRecorder) GetAuthors(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetAuthors", arg0, arg1)
+}
+
+func (_m *MockClient) NewGetAuthorsIter(ctx context.Context, i *models.GetAuthorsInput) (GetAuthorsIter, error) {
+	ret := _m.ctrl.Call(_m, "NewGetAuthorsIter", ctx, i)
+	ret0, _ := ret[0].(GetAuthorsIter)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockClientRecorder) NewGetAuthorsIter(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "NewGetAuthorsIter", arg0, arg1)
+}
+
 func (_m *MockClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models.Book, error) {
 	ret := _m.ctrl.Call(_m, "GetBooks", ctx, i)
 	ret0, _ := ret[0].([]models.Book)
@@ -39,6 +61,17 @@ func (_m *MockClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]
 
 func (_mr *_MockClientRecorder) GetBooks(arg0, arg1 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetBooks", arg0, arg1)
+}
+
+func (_m *MockClient) NewGetBooksIter(ctx context.Context, i *models.GetBooksInput) (GetBooksIter, error) {
+	ret := _m.ctrl.Call(_m, "NewGetBooksIter", ctx, i)
+	ret0, _ := ret[0].(GetBooksIter)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockClientRecorder) NewGetBooksIter(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "NewGetBooksIter", arg0, arg1)
 }
 
 func (_m *MockClient) CreateBook(ctx context.Context, i *models.Book) (*models.Book, error) {
@@ -82,4 +115,86 @@ func (_m *MockClient) HealthCheck(ctx context.Context) error {
 
 func (_mr *_MockClientRecorder) HealthCheck(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "HealthCheck", arg0)
+}
+
+// Mock of GetAuthorsIter interface
+type MockGetAuthorsIter struct {
+	ctrl     *gomock.Controller
+	recorder *_MockGetAuthorsIterRecorder
+}
+
+// Recorder for MockGetAuthorsIter (not exported)
+type _MockGetAuthorsIterRecorder struct {
+	mock *MockGetAuthorsIter
+}
+
+func NewMockGetAuthorsIter(ctrl *gomock.Controller) *MockGetAuthorsIter {
+	mock := &MockGetAuthorsIter{ctrl: ctrl}
+	mock.recorder = &_MockGetAuthorsIterRecorder{mock}
+	return mock
+}
+
+func (_m *MockGetAuthorsIter) EXPECT() *_MockGetAuthorsIterRecorder {
+	return _m.recorder
+}
+
+func (_m *MockGetAuthorsIter) Next(_param0 *models.Author) bool {
+	ret := _m.ctrl.Call(_m, "Next", _param0)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+func (_mr *_MockGetAuthorsIterRecorder) Next(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "Next", arg0)
+}
+
+func (_m *MockGetAuthorsIter) Err() error {
+	ret := _m.ctrl.Call(_m, "Err")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+func (_mr *_MockGetAuthorsIterRecorder) Err() *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "Err")
+}
+
+// Mock of GetBooksIter interface
+type MockGetBooksIter struct {
+	ctrl     *gomock.Controller
+	recorder *_MockGetBooksIterRecorder
+}
+
+// Recorder for MockGetBooksIter (not exported)
+type _MockGetBooksIterRecorder struct {
+	mock *MockGetBooksIter
+}
+
+func NewMockGetBooksIter(ctrl *gomock.Controller) *MockGetBooksIter {
+	mock := &MockGetBooksIter{ctrl: ctrl}
+	mock.recorder = &_MockGetBooksIterRecorder{mock}
+	return mock
+}
+
+func (_m *MockGetBooksIter) EXPECT() *_MockGetBooksIterRecorder {
+	return _m.recorder
+}
+
+func (_m *MockGetBooksIter) Next(_param0 *models.Book) bool {
+	ret := _m.ctrl.Call(_m, "Next", _param0)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+func (_mr *_MockGetBooksIterRecorder) Next(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "Next", arg0)
+}
+
+func (_m *MockGetBooksIter) Err() error {
+	ret := _m.ctrl.Call(_m, "Err")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+func (_mr *_MockGetBooksIterRecorder) Err() *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "Err")
 }

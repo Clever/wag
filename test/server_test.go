@@ -197,6 +197,9 @@ func (d *LastCallServer) GetBookByID2(ctx context.Context, id string) (*models.B
 func (d *LastCallServer) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
 	return nil, nil
 }
+func (d *LastCallServer) GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (*models.AuthorsResponse, string, error) {
+	return nil, "", nil
+}
 func (d *LastCallServer) HealthCheck(ctx context.Context) error {
 	return nil
 }
@@ -245,6 +248,9 @@ func (m *MiddlewareTest) GetBookByID2(ctx context.Context, id string) (*models.B
 }
 func (m *MiddlewareTest) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
 	return nil, nil
+}
+func (m *MiddlewareTest) GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (*models.AuthorsResponse, string, error) {
+	return nil, "", nil
 }
 func (m *MiddlewareTest) HealthCheck(ctx context.Context) error {
 	return nil
@@ -317,6 +323,9 @@ func (m *TimeoutController) GetBookByID2(ctx context.Context, id string) (*model
 }
 func (m *TimeoutController) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
 	return nil, nil
+}
+func (m *TimeoutController) GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (*models.AuthorsResponse, string, error) {
+	return nil, "", nil
 }
 func (m *TimeoutController) HealthCheck(ctx context.Context) error {
 	return nil

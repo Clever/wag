@@ -11,6 +11,14 @@ import (
 // Controller defines the interface for the swagger-test service.
 type Controller interface {
 
+	// GetAuthors handles GET requests to /authors
+	// Gets authors
+	// 200: *models.AuthorsResponse
+	// 400: *models.BadRequest
+	// 500: *models.InternalError
+	// default: client side HTTP errors, for example: context.DeadlineExceeded.
+	GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (resp *models.AuthorsResponse, nextPage string, err error)
+
 	// GetBooks handles GET requests to /books
 	// Returns response object and the ID of the next page
 	// Returns a list of books

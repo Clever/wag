@@ -9,6 +9,7 @@ import (
 
 	"github.com/Clever/wag/swagger"
 	"github.com/Clever/wag/templates"
+	"github.com/Clever/wag/utils"
 )
 
 // Generate generates a client
@@ -26,7 +27,7 @@ type clientCodeTemplate struct {
 	PackageName          string
 	ServiceName          string
 	FormattedServiceName string
-	Methods              []string
+	Operations           []string
 }
 
 var clientCodeTemplateStr = `
@@ -167,8 +168,8 @@ func (c *WagClient) SetTimeout(timeout time.Duration){
 	c.defaultTimeout = timeout
 }
 
-{{range $methodCode := .Methods}}
-	{{$methodCode}}
+{{range $operationCode := .Operations}}
+	{{$operationCode}}
 {{end}}
 
 func shortHash(s string) string {
@@ -192,11 +193,11 @@ func generateClient(packageName string, s spec.Swagger) error {
 			if op.Deprecated {
 				continue
 			}
-			method, err := methodCode(&s, op, s.BasePath, method, path)
+			code, err := operationCode(&s, op, s.BasePath, method, path)
 			if err != nil {
 				return err
 			}
-			codeTemplate.Methods = append(codeTemplate.Methods, method)
+			codeTemplate.Operations = append(codeTemplate.Operations, code)
 		}
 	}
 
@@ -215,6 +216,18 @@ func generateInterface(packageName string, s *spec.Swagger, serviceName string, 
 	g.Printf("package client\n\n")
 	g.Printf(swagger.ImportStatements([]string{"context", packageName + "/models"}))
 	g.Printf("//go:generate $GOPATH/bin/mockgen -source=$GOFILE -destination=mock_client.go -package=client\n\n")
+
+	if err := generateClientInterface(s, &g, serviceName, paths); err != nil {
+		return err
+	}
+	if err := generateIteratorTypes(s, &g, paths); err != nil {
+		return err
+	}
+
+	return g.WriteFile("client/interface.go")
+}
+
+func generateClientInterface(s *spec.Swagger, g *swagger.Generator, serviceName string, paths *spec.Paths) error {
 	g.Printf("// Client defines the methods available to clients of the %s service.\n", serviceName)
 	g.Printf("type Client interface {\n\n")
 
@@ -233,11 +246,62 @@ func generateInterface(packageName string, s *spec.Swagger, serviceName string, 
 			}
 			g.Printf("\t%s\n", interfaceComment)
 			g.Printf("\t%s\n\n", swagger.ClientInterface(s, pathItemOps[method]))
+			_, hasPaging := swagger.PagingParam(pathItemOps[method])
+			if hasPaging {
+				g.Printf("\t%s\n\n", swagger.ClientIterInterface(s, pathItemOps[method]))
+			}
 		}
 	}
-	g.Printf("}\n")
+	g.Printf("}\n\n")
+	return nil
+}
 
-	return g.WriteFile("client/interface.go")
+func generateIteratorTypes(s *spec.Swagger, g *swagger.Generator, paths *spec.Paths) error {
+	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
+		path := paths.Paths[pathKey]
+		pathItemOps := swagger.PathItemOperations(path)
+		for _, method := range swagger.SortedOperationsKeys(pathItemOps) {
+			op := pathItemOps[method]
+			if op.Deprecated {
+				continue
+			}
+			_, hasPaging := swagger.PagingParam(pathItemOps[method])
+			if hasPaging {
+				capOpID := swagger.Capitalize(op.ID)
+				resourceType, _, err := swagger.PagingResourceType(s, op)
+				if err != nil {
+					return err
+				}
+
+				g.Printf("// %sIter defines the methods available on %s iterators.\n", capOpID, capOpID)
+				g.Printf("type %sIter interface {\n", capOpID)
+				g.Printf("\tNext(*%s) bool\n", resourceType)
+				g.Printf("\tErr() error\n")
+				g.Printf("}\n\n")
+			}
+		}
+	}
+	return nil
+}
+
+func operationCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPath string) (string, error) {
+	var buf bytes.Buffer
+
+	method, err := methodCode(s, op, basePath, method, methodPath)
+	if err != nil {
+		return "", err
+	}
+
+	buf.WriteString(method)
+	if _, hasPaging := swagger.PagingParam(op); hasPaging {
+		iter, err := iterCode(s, op, basePath, methodPath)
+		if err != nil {
+			return "", err
+		}
+		buf.WriteString(iter)
+	}
+	buf.WriteString(fmt.Sprintf(methodDoerCode(s, op)))
+	return buf.String(), nil
 }
 
 func methodCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPath string) (string, error) {
@@ -251,11 +315,58 @@ func methodCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPat
 	buf.WriteString(interfaceComment + "\n")
 	buf.WriteString(fmt.Sprintf("func (c *WagClient) %s {\n", swagger.ClientInterface(s, op)))
 
-	buf.WriteString(fmt.Sprintf("\tvar body []byte\n\n"))
+	buf.WriteString(fmt.Sprintf("\theaders := make(map[string]string)\n\n"))
+	buf.WriteString(fmt.Sprintf("\tvar body []byte\n"))
+
 	buf.WriteString(fmt.Sprintf(buildPathCode(s, op, basePath, methodPath)))
+	buf.WriteString(fmt.Sprintf(buildHeadersCode(s, op)))
 	buf.WriteString(fmt.Sprintf(buildRequestCode(s, op, method)))
 
+	if _, hasPaging := swagger.PagingParam(op); !hasPaging {
+		buf.WriteString(fmt.Sprintf(`
+	return c.do%sRequest(ctx, req, headers)
+}
+
+`, capOpID))
+	} else {
+		buf.WriteString(fmt.Sprintf(`
+	resp, _, err := c.do%sRequest(ctx, req, headers)
+	return resp, err
+}
+
+`, capOpID))
+	}
+
+	return buf.String(), nil
+}
+
+func methodDoerCode(s *spec.Swagger, op *spec.Operation) string {
+	var buf bytes.Buffer
+	capOpID := swagger.Capitalize(op.ID)
+
+	errReturn := ""
+	returnType := ""
+	if successType := swagger.SuccessType(s, op); successType != nil {
+		errReturn += "nil, "
+		returnType += *successType + ", "
+	}
+	if _, hasPaging := swagger.PagingParam(op); hasPaging {
+		errReturn += "\"\", "
+		returnType += "string, "
+	}
+	returnType += "error"
+
+	if len(returnType) != len("error") {
+		returnType = "(" + returnType + ")"
+	}
+
 	buf.WriteString(fmt.Sprintf(`
+func (c *WagClient) do%sRequest(ctx context.Context, req *http.Request, headers map[string]string) %s {
+	client := &http.Client{Transport: c.transport}
+
+	for field, value := range headers {
+		req.Header.Set(field, value)
+	}
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "%s")
@@ -269,13 +380,15 @@ func methodCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPat
 	    req = req.WithContext(ctx)
 	}
 	resp, err := c.requestDoer.Do(client, req)
-	%s
+	if err != nil {
+		return %serr
+	}
 	defer resp.Body.Close()
-`, op.ID, errorMessage(s, op)))
+`, capOpID, returnType, op.ID, errReturn))
 
 	buf.WriteString(parseResponseCode(s, op, capOpID))
 
-	return buf.String(), nil
+	return buf.String()
 }
 
 func buildPathCode(s *spec.Swagger, op *spec.Operation, basePath, methodPath string) string {
@@ -301,7 +414,7 @@ func buildPathCode(s *spec.Swagger, op *spec.Operation, basePath, methodPath str
 	return buf.String()
 }
 
-// buildRequestCode adds the parameters to the URL, the body, and the headers
+// buildRequestCode adds the body and makes the request
 func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string) string {
 	var buf bytes.Buffer
 
@@ -324,10 +437,16 @@ func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string) string
 	}
 
 	buf.WriteString(fmt.Sprintf(`
-	client := &http.Client{Transport: c.transport}
 	req, err := http.NewRequest("%s", path, bytes.NewBuffer(body))
 	%s
 `, strings.ToUpper(method), errorMessage(s, op)))
+
+	return buf.String()
+}
+
+// buildHeadersCode adds the parameters to the header
+func buildHeadersCode(s *spec.Swagger, op *spec.Operation) string {
+	var buf bytes.Buffer
 
 	for _, param := range op.Parameters {
 		if param.In == "header" {
@@ -339,6 +458,7 @@ func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string) string
 			buf.WriteString(str)
 		}
 	}
+
 	return buf.String()
 }
 
@@ -346,7 +466,7 @@ var headerParamStr = `
 	{{if .Pointer}}
 	if {{.AccessString}} != nil {
 	{{end}}
-	req.Header.Set("{{.Name}}", {{.ToStringCode}})
+	headers["{{.Name}}"] = {{.ToStringCode}}
 	{{if .Pointer}}
 	}
 	{{end}}
@@ -401,6 +521,19 @@ type statusCodeReturn struct {
 	makePointer bool
 }
 
+// buildSuccessReturn builds the zero values of the success portion of an op's
+// return (so that an error can be appended).
+func buildSuccessReturn(s *spec.Swagger, op *spec.Operation) string {
+	ret := ""
+	if successType := swagger.SuccessType(s, op); successType != nil {
+		ret = ret + "nil, "
+	}
+	if _, hasPaging := swagger.PagingParam(op); hasPaging {
+		ret = ret + "\"\", "
+	}
+	return ret
+}
+
 // parseResponseCode generates the code for handling the http response.
 // In the client code we want to return a different object depending on the status code, so
 // let's generate code that switches on the status code and returns the right object in each
@@ -419,11 +552,7 @@ func parseResponseCode(s *spec.Swagger, op *spec.Operation, capOpID string) stri
 		buf.WriteString(statusCodeDecoder)
 	}
 
-	successType := swagger.SuccessType(s, op)
-	successReturn := "nil, "
-	if successType == nil {
-		successReturn = ""
-	}
+	successReturn := buildSuccessReturn(s, op)
 
 	// TODO: at some point should encapsulate this behind an interface on the operation
 	errorType, _ := swagger.OutputType(s, op, 500)
@@ -447,10 +576,13 @@ func writeStatusCodeDecoder(s *spec.Swagger, op *spec.Operation, statusCode int)
 		outputType = "&output"
 	}
 
+	_, hasPaging := swagger.PagingParam(op)
 	return templates.WriteTemplate(codeDetectorTmplStr,
 		codeDetectorTmpl{
 			StatusCode:    statusCode,
 			NoSuccessType: swagger.SuccessType(s, op) == nil,
+			SuccessReturn: buildSuccessReturn(s, op),
+			HasPaging:     hasPaging,
 			ErrorType:     statusCode >= 400,
 			TypeName:      outputName,
 			OutputType:    outputType,
@@ -460,6 +592,8 @@ func writeStatusCodeDecoder(s *spec.Swagger, op *spec.Operation, statusCode int)
 type codeDetectorTmpl struct {
 	StatusCode    int
 	NoSuccessType bool
+	SuccessReturn string
+	HasPaging     bool
 	ErrorType     bool
 	TypeName      string
 	OutputType    string
@@ -472,25 +606,154 @@ var codeDetectorTmplStr = `
 		{{if .ErrorType}}
 		var output {{.TypeName}}
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return err
+			return {{.SuccessReturn}}err
 		}
-		return {{.OutputType}}
+		return {{.SuccessReturn}}{{.OutputType}}
 		{{else}}
-		return nil
+		return {{.SuccessReturn}}nil
 		{{end}}
 	{{else}}
 		{{if .ErrorType}}
 		var output {{.TypeName}}
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, err
+			return {{.SuccessReturn}}err
 		}
-		return nil, {{.OutputType}}
+		return {{.SuccessReturn}}{{.OutputType}}
 		{{else}}
 		var output {{.TypeName}}
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return nil, err
+			return {{.SuccessReturn}}err
 		}
+		{{if .HasPaging}}
+		return {{.OutputType}}, resp.Header.Get("X-Next-Page-Path"), nil
+		{{else}}
 		return {{.OutputType}}, nil
 		{{end}}
+		{{end}}
 	{{end}}
+`
+
+func iterCode(s *spec.Swagger, op *spec.Operation, basePath, methodPath string) (string, error) {
+	capOpID := swagger.Capitalize(op.ID)
+	resourceType, needsPointer, err := swagger.PagingResourceType(s, op)
+	if err != nil {
+		return "", err
+	}
+
+	var responseType string
+	if needsPointer {
+		responseType = fmt.Sprintf("[]*%s", resourceType)
+	} else {
+		responseType = fmt.Sprintf("[]%s", resourceType)
+	}
+
+	resourceAccessString := ""
+	for _, pathComponent := range swagger.PagingResourcePath(op) {
+		resourceAccessString = resourceAccessString + "." + utils.CamelCase(pathComponent, true)
+	}
+
+	return templates.WriteTemplate(
+		iterTmplStr,
+		iterTmpl{
+			OpID:                 op.ID,
+			CapOpID:              capOpID,
+			Input:                swagger.OperationInput(op),
+			BuildPathCode:        buildPathCode(s, op, basePath, methodPath),
+			BuildHeadersCode:     buildHeadersCode(s, op),
+			ResponseType:         responseType,
+			ResourceType:         resourceType,
+			ResponseAccessString: resourceAccessString,
+			PointerArray:         needsPointer,
+		},
+	)
+}
+
+type iterTmpl struct {
+	OpID                 string
+	CapOpID              string
+	Input                string
+	BuildPathCode        string
+	BuildHeadersCode     string
+	ResponseType         string
+	ResourceType         string
+	ResponseAccessString string
+	PointerArray         bool
+}
+
+var iterTmplStr = `
+type {{.OpID}}IterImpl struct {
+	c            *WagClient
+	ctx          context.Context
+	lastResponse {{.ResponseType}}
+	index        int
+	err          error
+	nextURL      string
+	headers      map[string]string
+}
+
+// New{{.OpID}}Iter constructs an iterator that makes calls to {{.OpID}} for
+// each page.
+func (c *WagClient) New{{.CapOpID}}Iter(ctx context.Context, {{.Input}}) ({{.CapOpID}}Iter, error) {
+	{{.BuildPathCode}}
+
+	headers := make(map[string]string)
+	{{.BuildHeadersCode}}
+
+	return &{{.OpID}}IterImpl{
+		c:            c,
+		ctx:          ctx,
+		lastResponse: {{.ResponseType}}{},
+		nextURL:      path,
+		headers:      headers,
+	}, nil
+}
+
+func (i *{{.OpID}}IterImpl) refresh() error {
+	req, err := http.NewRequest("GET", i.nextURL, nil)
+
+	if err != nil {
+		i.err = err
+		return err
+	}
+
+	resp, nextPage, err := i.c.do{{.CapOpID}}Request(i.ctx, req, i.headers)
+	if err != nil {
+		i.err = err
+		return err
+	}
+
+	i.lastResponse = resp{{.ResponseAccessString}}
+	i.index = 0
+	if nextPage != "" {
+		i.nextURL = i.c.basePath + nextPage
+	} else {
+		i.nextURL = ""
+	}
+	return nil
+}
+
+// Next retrieves the next resource from the iterator and assigns it to the
+// provided pointer, fetching a new page if necessary. Returns true if it
+// successfully retrieves a new resource.
+func (i *{{.OpID}}IterImpl) Next(v *{{.ResourceType}}) bool {
+	if i.err != nil {
+		return false
+	} else if i.index < len(i.lastResponse) {
+		*v = {{if .PointerArray}}*{{end}}i.lastResponse[i.index]
+		i.index++
+		return true
+	} else if i.nextURL == "" {
+		return false
+	}
+
+	if err := i.refresh(); err != nil {
+		return false
+	}
+	return i.Next(v)
+}
+
+// Err returns an error if one occurred when .Next was called.
+func (i *{{.OpID}}IterImpl) Err() error {
+	return i.err
+}
 `

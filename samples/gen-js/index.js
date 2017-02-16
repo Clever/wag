@@ -113,6 +113,113 @@ class SwaggerTest {
   }
 
   /**
+   * Gets authors
+   * @param {Object} params
+   * @param {string} [params.name]
+   * @param {string} [params.startingAfter]
+   * @param {object} [options]
+   * @param {number} [options.timeout] - A request specific timeout
+   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
+   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {function} [cb]
+   * @returns {Promise}
+   * @fulfill {Object}
+   * @reject {module:swagger-test.Errors.BadRequest}
+   * @reject {module:swagger-test.Errors.InternalError}
+   * @reject {Error}
+   */
+  getAuthors(params, options, cb) {
+    if (!cb && typeof options === "function") {
+      cb = options;
+      options = undefined;
+    }
+
+    return new Promise((resolve, reject) => {
+      const rejecter = (err) => {
+        reject(err);
+        if (cb) {
+          cb(err);
+        }
+      };
+      const resolver = (data) => {
+        resolve(data);
+        if (cb) {
+          cb(null, data);
+        }
+      };
+
+
+      if (!options) {
+        options = {};
+      }
+
+      const timeout = options.timeout || this.timeout;
+      const span = options.span;
+
+      const headers = {};
+
+      const query = {};
+      if (typeof params.name !== "undefined") {
+        query["name"] = params.name;
+      }
+  
+      if (typeof params.startingAfter !== "undefined") {
+        query["startingAfter"] = params.startingAfter;
+      }
+  
+
+      if (span) {
+        opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        span.logEvent("GET /v1/authors");
+        span.setTag("span.kind", "client")
+      }
+
+      const requestOptions = {
+        method: "GET",
+        uri: this.address + "/v1/authors",
+        json: true,
+        timeout,
+        headers,
+        qs: query,
+        useQuerystring: true,
+      };
+  
+
+      const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
+      const backoffs = retryPolicy.backoffs();
+      let retries = 0;
+      (function requestOnce() {
+        request(requestOptions, (err, response, body) => {
+          if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
+            const backoff = backoffs[retries];
+            retries += 1;
+            setTimeout(requestOnce, backoff);
+            return;
+          }
+          if (err) {
+            rejecter(err);
+            return;
+          }
+          switch (response.statusCode) {
+            case 200:
+              resolver(body);
+              break;
+            case 400:
+              rejecter(new Errors.BadRequest(body || {}));
+              break;
+            case 500:
+              rejecter(new Errors.InternalError(body || {}));
+              break;
+            default:
+              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
+          }
+          return;
+        });
+      }());
+    });
+  }
+
+  /**
    * Returns a list of books
    * @param {Object} params
    * @param {string[]} [params.authors] - A list of authors. Must specify at least one and at most two
@@ -124,6 +231,7 @@ class SwaggerTest {
    * @param {number} [params.maxPages=500.5]
    * @param {number} [params.minPages=5]
    * @param {number} [params.pagesToTime]
+   * @param {string} [params.authorization]
    * @param {number} [params.startingAfter]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
@@ -165,6 +273,7 @@ class SwaggerTest {
       const span = options.span;
 
       const headers = {};
+      headers["authorization"] = params.authorization;
 
       const query = {};
       if (typeof params.authors !== "undefined") {

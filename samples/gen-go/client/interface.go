@@ -11,6 +11,16 @@ import (
 // Client defines the methods available to clients of the swagger-test service.
 type Client interface {
 
+	// GetAuthors makes a GET request to /authors
+	// Gets authors
+	// 200: *models.AuthorsResponse
+	// 400: *models.BadRequest
+	// 500: *models.InternalError
+	// default: client side HTTP errors, for example: context.DeadlineExceeded.
+	GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (*models.AuthorsResponse, error)
+
+	NewGetAuthorsIter(ctx context.Context, i *models.GetAuthorsInput) (GetAuthorsIter, error)
+
 	// GetBooks makes a GET request to /books
 	// Returns a list of books
 	// 200: []models.Book
@@ -18,6 +28,8 @@ type Client interface {
 	// 500: *models.InternalError
 	// default: client side HTTP errors, for example: context.DeadlineExceeded.
 	GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models.Book, error)
+
+	NewGetBooksIter(ctx context.Context, i *models.GetBooksInput) (GetBooksIter, error)
 
 	// CreateBook makes a POST request to /books
 	// Creates a book
@@ -53,4 +65,16 @@ type Client interface {
 	// 500: *models.InternalError
 	// default: client side HTTP errors, for example: context.DeadlineExceeded.
 	HealthCheck(ctx context.Context) error
+}
+
+// GetAuthorsIter defines the methods available on GetAuthors iterators.
+type GetAuthorsIter interface {
+	Next(*models.Author) bool
+	Err() error
+}
+
+// GetBooksIter defines the methods available on GetBooks iterators.
+type GetBooksIter interface {
+	Next(*models.Book) bool
+	Err() error
 }

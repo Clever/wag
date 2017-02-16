@@ -152,6 +152,9 @@ paths:
           in: query
           type: number
           format: float
+        - name: authorization
+          in: header
+          type: string
         - name: startingAfter
           in: query
           type: integer
@@ -184,6 +187,26 @@ paths:
           schema:
             $ref: "#/definitions/Error"
 
+  /authors:
+    get:
+      operationId: getAuthors
+      description: Gets authors
+      x-paging:
+        pageParameter: startingAfter
+        resourcePath: authorSet.results
+      parameters:
+        - name: name
+          in: query
+          type: string
+        - name: startingAfter
+          in: query
+          type: string
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/AuthorsResponse"
+
 definitions:
   Book:
     type: object
@@ -209,6 +232,41 @@ definitions:
           type: array
           items:
             type: string
+
+  Author:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+
+  AuthorsResponse:
+    type: object
+    properties:
+      authorSet:
+        $ref: "#/definitions/AuthorSet"
+      metadata:
+        $ref: "#/definitions/AuthorsResponseMetadata"
+
+  AuthorSet:
+    type: object
+    properties:
+      randomProp:
+        type: integer
+      results:
+        $ref: "#/definitions/AuthorArray"
+
+  AuthorArray:
+    type: array
+    items:
+      $ref: "#/definitions/Author"
+
+  AuthorsResponseMetadata:
+    type: object
+    properties:
+      count:
+        type: integer
 
   Error:
     type: object

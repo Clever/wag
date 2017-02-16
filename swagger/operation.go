@@ -19,16 +19,28 @@ func ClientInterface(s *spec.Swagger, op *spec.Operation) string {
 	return opInterface(s, op, false)
 }
 
-// generateInterface returns the interface for an operation
-func opInterface(s *spec.Swagger, op *spec.Operation, includePaging bool) string {
+// ClientIterInterface returns the client-facing interface for the iterator
+// builder of an operation
+func ClientIterInterface(s *spec.Swagger, op *spec.Operation) string {
 	capOpID := Capitalize(op.ID)
+	input := OperationInput(op)
+	return fmt.Sprintf(
+		"New%sIter(ctx context.Context, %s) (%sIter, error)",
+		capOpID,
+		input,
+		capOpID,
+	)
+}
 
+// OperationInput returns the input to an operation
+func OperationInput(op *spec.Operation) string {
 	// Don't add the input parameter argument unless there are some arguments.
 	// If a method has a single input parameter, and it's a schema, make the
 	// generated type for that schema the input of the method.
 	// If a method has a single input parameter, and it's a simple type (string, TODO: int),
 	// make that the input of the method.
 	// If a method has multiple input parameters, wrap them in a struct.
+	capOpID := Capitalize(op.ID)
 	input := ""
 	if singleSchemaedBodyParameter, opModel := SingleSchemaedBodyParameter(op); singleSchemaedBodyParameter {
 		input = fmt.Sprintf("i *models.%s", opModel)
@@ -37,6 +49,14 @@ func opInterface(s *spec.Swagger, op *spec.Operation, includePaging bool) string
 	} else if len(op.Parameters) > 0 {
 		input = fmt.Sprintf("i *models.%sInput", capOpID)
 	}
+	return input
+}
+
+// generateInterface returns the interface for an operation
+func opInterface(s *spec.Swagger, op *spec.Operation, includePaging bool) string {
+	capOpID := Capitalize(op.ID)
+
+	input := OperationInput(op)
 
 	returnTypes := []string{}
 	if successType := SuccessType(s, op); successType != nil {
@@ -105,24 +125,28 @@ var interfaceCommentTmplStr = `
 // {{$code}}: {{$type}} {{end}}
 // default: client side HTTP errors, for example: context.DeadlineExceeded.`
 
+func outputSchema(s *spec.Swagger, op *spec.Operation, statusCode int) *spec.Schema {
+	resp := op.Responses.StatusCodeResponses[statusCode]
+	if !strings.HasPrefix(resp.Ref.String(), "#/responses") {
+		return resp.Schema
+	}
+
+	// Follow the pointer to the response and then to the schema
+	refObj, _, err := resp.Ref.GetPointer().Get(s)
+	if err != nil {
+		panic("bad response schema reference")
+	}
+	r, ok := refObj.(spec.Response)
+	if !ok {
+		panic("bad response schema reference")
+	}
+	return r.Schema
+}
+
 // OutputType returns the output type for a given status code of an operation and whether it
 // is a pointer in the interface.
 func OutputType(s *spec.Swagger, op *spec.Operation, statusCode int) (string, bool) {
-
-	resp := op.Responses.StatusCodeResponses[statusCode]
-	schema := resp.Schema
-	if strings.HasPrefix(resp.Ref.String(), "#/responses") {
-		// Follow the pointer to the response and then to the schema
-		refObj, _, err := resp.Ref.GetPointer().Get(s)
-		if err != nil {
-			panic("bad response schema reference")
-		}
-		r, ok := refObj.(spec.Response)
-		if !ok {
-			panic("bad response schema reference")
-		}
-		schema = r.Schema
-	}
+	schema := outputSchema(s, op, statusCode)
 
 	successType, err := TypeFromSchema(schema, true)
 	if err != nil {
@@ -168,6 +192,80 @@ func PagingParam(op *spec.Operation) (spec.Parameter, bool) {
 	}
 	panic(fmt.Errorf("x-paging.pageParameter specifies nonexistent parameter %s for op %s",
 		paramName, op.ID))
+}
+
+// PagingResourcePath returns the path to the array to page over for a
+// paging-enabled endpoint (specified by x-paging.resourcePath). Panics if
+// paging is not enabled.
+func PagingResourcePath(op *spec.Operation) []string {
+	pagingConfig, ok := op.Extensions["x-paging"].(map[string]interface{})
+	if !ok {
+		panic(fmt.Errorf("no paging for operation %s", op.ID))
+	}
+	resourcePath, ok := pagingConfig["resourcePath"].(string)
+	if !ok {
+		return []string{}
+	}
+	return strings.Split(resourcePath, ".")
+}
+
+// resolveSchema dereferences the $ref in this schema, if there is one
+func resolveSchema(s *spec.Swagger, schema *spec.Schema) *spec.Schema {
+	if schema.Ref.String() == "" {
+		return schema
+	}
+	refObj, _, err := schema.Ref.GetPointer().Get(s)
+	if err != nil {
+		panic(fmt.Errorf("bad schema reference %s", schema.Ref.String()))
+	}
+	r, ok := refObj.(spec.Schema)
+	if !ok {
+		panic(fmt.Errorf("bad schema reference %s", schema.Ref.String()))
+	}
+	return &r
+}
+
+// PagingResourceType returns the type of the items of the array set to page
+// over for this operation and whether the array should consist of pointers to
+// that type. Panics if paging is not enabled.
+func PagingResourceType(s *spec.Swagger, op *spec.Operation) (string, bool, error) {
+	var schema *spec.Schema
+	for statusCode := range op.Responses.StatusCodeResponses {
+		if statusCode < 400 {
+			schema = outputSchema(s, op, statusCode)
+			break
+		}
+	}
+	if schema == nil {
+		return "", false, fmt.Errorf("operation has no success type")
+	}
+
+	path := PagingResourcePath(op)
+	for idx, pathComponent := range path {
+		schema = resolveSchema(s, schema)
+		nextSchema, ok := schema.Properties[pathComponent]
+		if !ok {
+			return "", false, fmt.Errorf("could not resolve x-paging.resourcePath: "+
+				"%s has no field %s", strings.Join(path[:idx], "."), pathComponent)
+		}
+		schema = &nextSchema
+	}
+	schema = resolveSchema(s, schema)
+
+	if len(schema.Type) != 1 || schema.Type[0] != "array" {
+		return "", false, fmt.Errorf("paging resource type is not an array")
+	}
+	items := schema.Items
+	if items == nil || items.Schema == nil {
+		return "", false, fmt.Errorf("type of paging resource type has invalid `items`")
+	}
+	schema = items.Schema
+
+	resourceType, err := TypeFromSchema(schema, true)
+	if err != nil {
+		return "", false, fmt.Errorf("could not convert paging resource to type: %s", err)
+	}
+	return resourceType, len(path) > 0, nil
 }
 
 // CodeToTypeMap returns a map from return status code to its corresponding type
