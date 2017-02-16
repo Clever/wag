@@ -98,7 +98,6 @@ func statusCodeForGetAuthors(obj interface{}) int {
 func (h handler) GetAuthorsHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	input, err := newGetAuthorsInput(r)
-
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.BadRequest{Message: err.Error()}), http.StatusBadRequest)
@@ -137,7 +136,6 @@ func (h handler) GetAuthorsHandler(ctx context.Context, w http.ResponseWriter, r
 	}
 
 	if !swag.IsZero(nextPageID) {
-
 		input.StartingAfter = &nextPageID
 		path, err := input.Path()
 		if err != nil {
@@ -146,7 +144,6 @@ func (h handler) GetAuthorsHandler(ctx context.Context, w http.ResponseWriter, r
 			return
 		}
 		w.Header().Set("X-Next-Page-Path", path)
-
 	}
 
 	w.Header().Set("Content-Type", "application/json")

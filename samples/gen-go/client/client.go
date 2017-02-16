@@ -575,6 +575,8 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 
 	headers["authorization"] = i.Authorization
 
+	headers["X-Dont-Rate-Limit-Me-Bro"] = i.XDontRateLimitMeBro
+
 	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
 
 	if err != nil {
@@ -590,8 +592,6 @@ func (c *WagClient) doGetBookByIDRequest(ctx context.Context, req *http.Request,
 	for field, value := range headers {
 		req.Header.Set(field, value)
 	}
-
-	req.Header.Set("X-Dont-Rate-Limit-Me-Bro", i.XDontRateLimitMeBro)
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "getBookByID")

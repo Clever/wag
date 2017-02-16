@@ -383,7 +383,10 @@ func (c *IterFailTest) HealthCheck(ctx context.Context) error {
 }
 
 func TestIteratorFail(t *testing.T) {
-	controller := IterFailTest{sampleController: &ControllerImpl{pageSize: 1}}
+	controller := IterFailTest{sampleController: &ControllerImpl{
+		books:    make(map[int64]*models.Book),
+		pageSize: 1,
+	}}
 	s := server.New(&controller, "")
 	testServer := httptest.NewServer(s.Handler)
 	defer testServer.Close()
@@ -449,7 +452,10 @@ func (c *IterHeadersTest) HealthCheck(ctx context.Context) error {
 }
 
 func TestIteratorHeaders(t *testing.T) {
-	controller := IterHeadersTest{sampleController: &ControllerImpl{pageSize: 1}, t: t}
+	controller := IterHeadersTest{
+		t:                t,
+		sampleController: &ControllerImpl{pageSize: 1, books: make(map[int64]*models.Book)},
+	}
 	s := server.New(&controller, "")
 	testServer := httptest.NewServer(s.Handler)
 	defer testServer.Close()
