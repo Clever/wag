@@ -98,7 +98,6 @@ func statusCodeForGetBooks(obj interface{}) int {
 func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	input, err := newGetBooksInput(r)
-
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.BadRequest{Message: err.Error()}), http.StatusBadRequest)
@@ -113,7 +112,7 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 		return
 	}
 
-	resp, err := h.GetBooks(ctx, input)
+	resp, nextPageID, err := h.GetBooks(ctx, input)
 
 	// Success types that return an array should never return nil so let's make this easier
 	// for consumers by converting nil arrays to empty arrays
@@ -140,6 +139,17 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.InternalError{Message: err.Error()}), http.StatusInternalServerError)
 		return
+	}
+
+	if !swag.IsZero(nextPageID) {
+		input.StartingAfter = &nextPageID
+		path, err := input.Path()
+		if err != nil {
+			logger.FromContext(ctx).AddContext("error", err.Error())
+			http.Error(w, jsonMarshalNoError(models.InternalError{Message: err.Error()}), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("X-Next-Page-Path", path)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -267,6 +277,18 @@ func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 		input.PagesToTime = &pagesToTimeTmp
 	}
 
+	startingAfterStrs := r.URL.Query()["startingAfter"]
+
+	if len(startingAfterStrs) > 0 {
+		var startingAfterTmp int64
+		startingAfterStr := startingAfterStrs[0]
+		startingAfterTmp, err = swag.ConvertInt64(startingAfterStr)
+		if err != nil {
+			return nil, err
+		}
+		input.StartingAfter = &startingAfterTmp
+	}
+
 	return &input, nil
 }
 
@@ -302,7 +324,6 @@ func statusCodeForCreateBook(obj interface{}) int {
 func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	input, err := newCreateBookInput(r)
-
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.BadRequest{Message: err.Error()}), http.StatusBadRequest)
@@ -408,7 +429,6 @@ func statusCodeForGetBookByID(obj interface{}) int {
 func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	input, err := newGetBookByIDInput(r)
-
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.BadRequest{Message: err.Error()}), http.StatusBadRequest)
@@ -556,7 +576,6 @@ func statusCodeForGetBookByID2(obj interface{}) int {
 func (h handler) GetBookByID2Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	id, err := newGetBookByID2Input(r)
-
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.BadRequest{Message: err.Error()}), http.StatusBadRequest)

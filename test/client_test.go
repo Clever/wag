@@ -27,13 +27,13 @@ type ClientContextTest struct {
 	postCount     int
 }
 
-func (c *ClientContextTest) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, error) {
+func (c *ClientContextTest) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, int64, error) {
 	c.getCount++
 	c.getTimes = append(c.getTimes, time.Now())
 	if c.getCount <= c.getErrorCount {
-		return nil, fmt.Errorf("Error count: %d", c.getCount)
+		return nil, int64(0), fmt.Errorf("Error count: %d", c.getCount)
 	}
-	return []models.Book{}, nil
+	return []models.Book{}, int64(0), nil
 }
 func (c *ClientContextTest) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (*models.Book, error) {
 	return nil, nil
@@ -57,11 +57,11 @@ type ClientCircuitTest struct {
 	down bool
 }
 
-func (c *ClientCircuitTest) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, error) {
+func (c *ClientCircuitTest) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, int64, error) {
 	if c.down {
-		return nil, errors.New("fail")
+		return nil, int64(0), errors.New("fail")
 	}
-	return []models.Book{}, nil
+	return []models.Book{}, int64(0), nil
 }
 func (c *ClientCircuitTest) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (*models.Book, error) {
 	if c.down {

@@ -9,8 +9,18 @@ import (
 	"github.com/go-openapi/spec"
 )
 
-// Interface returns the interface for an operation
+// Interface returns the interface for the server-side handler of an operation
 func Interface(s *spec.Swagger, op *spec.Operation) string {
+	return opInterface(s, op, true)
+}
+
+// ClientInterface returns the client-facing interface for an operation
+func ClientInterface(s *spec.Swagger, op *spec.Operation) string {
+	return opInterface(s, op, false)
+}
+
+// generateInterface returns the interface for an operation
+func opInterface(s *spec.Swagger, op *spec.Operation, includePaging bool) string {
 	capOpID := Capitalize(op.ID)
 
 	// Don't add the input parameter argument unless there are some arguments.
@@ -28,12 +38,27 @@ func Interface(s *spec.Swagger, op *spec.Operation) string {
 		input = fmt.Sprintf("i *models.%sInput", capOpID)
 	}
 
-	successType := SuccessType(s, op)
-	if successType == nil {
-		return fmt.Sprintf("%s(ctx context.Context, %s) error", capOpID, input)
+	returnTypes := []string{}
+	if successType := SuccessType(s, op); successType != nil {
+		returnTypes = append(returnTypes, *successType)
 	}
-	return fmt.Sprintf("%s(ctx context.Context, %s) (%s, error)",
-		capOpID, input, *successType)
+	if pagingParam, ok := PagingParam(op); includePaging && ok {
+		pagingParamType, _, err := ParamToType(pagingParam)
+		if err != nil {
+			panic(fmt.Errorf("could not convert paging parameter to type for %s: %s", op.ID, err))
+		}
+		returnTypes = append(returnTypes, pagingParamType)
+	}
+	returnTypes = append(returnTypes, "error")
+
+	var output string
+	if len(returnTypes) == 1 {
+		output = returnTypes[0]
+	} else {
+		output = fmt.Sprintf("(%s)", strings.Join(returnTypes, ", "))
+	}
+
+	return fmt.Sprintf("%s(ctx context.Context, %s) %s", capOpID, input, output)
 }
 
 // InterfaceComment returns the comment for the interface for the operation. If the client
@@ -46,11 +71,13 @@ func InterfaceComment(method, path string, client bool, s *spec.Swagger, op *spe
 			statusCodeToType[code] = "nil"
 		}
 	}
+	_, hasPaging := PagingParam(op)
 	tmpl := struct {
 		OpID             string
 		Method           string
 		Path             string
 		Client           bool
+		HasPaging        bool
 		Description      string
 		StatusCodeToType map[int]string
 	}{
@@ -58,6 +85,7 @@ func InterfaceComment(method, path string, client bool, s *spec.Swagger, op *spe
 		Method:           method,
 		Path:             path,
 		Client:           client,
+		HasPaging:        hasPaging,
 		Description:      op.Description,
 		StatusCodeToType: statusCodeToType,
 	}
@@ -69,6 +97,9 @@ var interfaceCommentTmplStr = `
 // {{.OpID}} makes a {{.Method}} request to {{.Path}}
 {{- else -}}
 // {{.OpID}} handles {{.Method}} requests to {{.Path}}
+{{- if .HasPaging}}
+// Returns response object and the ID of the next page
+{{- end}}
 {{- end}}
 // {{.Description}} {{ range $code, $type := .StatusCodeToType }}
 // {{$code}}: {{$type}} {{end}}
@@ -116,6 +147,27 @@ func SuccessType(s *spec.Swagger, op *spec.Operation) *string {
 		}
 	}
 	return nil
+}
+
+// PagingParam returns the parameter that specifies the page ID for this
+// operation, if paging is configured. If paging is not configured, the second
+// return value is `false`.
+func PagingParam(op *spec.Operation) (spec.Parameter, bool) {
+	pagingConfig, ok := op.Extensions["x-paging"].(map[string]interface{})
+	if !ok {
+		return spec.Parameter{}, false
+	}
+	paramName, ok := pagingConfig["pageParameter"].(string)
+	if !ok {
+		panic(fmt.Errorf("x-paging does not include pageParameter for op %s", op.ID))
+	}
+	for _, p := range op.Parameters {
+		if p.Name == paramName {
+			return p, true
+		}
+	}
+	panic(fmt.Errorf("x-paging.pageParameter specifies nonexistent parameter %s for op %s",
+		paramName, op.ID))
 }
 
 // CodeToTypeMap returns a map from return status code to its corresponding type

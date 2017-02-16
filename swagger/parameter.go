@@ -312,3 +312,46 @@ func DefaultAsString(param spec.Parameter) string {
 		panic(fmt.Errorf("unknown param type: %T", param))
 	}
 }
+
+// ParamTemplate includes information needed by template code to use a
+// parameter.
+type ParamTemplate struct {
+	Name         string
+	ToStringCode string
+	Type         string
+	AccessString string
+	Pointer      bool
+}
+
+// ParamToTemplate converts a spec.Parameter into the a struct with the information needed to
+// template code that uses that parameter. For example, it figures out what the access string for
+// the parameter should be (e.g. either "i.$FIELD" or just $FIELD) and whether the field should be
+// used as a pointer or not.
+func ParamToTemplate(param *spec.Parameter, op *spec.Operation) ParamTemplate {
+
+	singleStringPathParameter, singleParamName := SingleStringPathParameter(op)
+	_, pointer, err := ParamToType(*param)
+	if err != nil {
+		panic(fmt.Sprintf("unexpected error: %s", err))
+	}
+
+	toStringCode := ""
+	if param.Type != "array" && param.In != "body" {
+		toStringCode = ParamToStringCode(*param, op)
+	}
+
+	t := ParamTemplate{
+		Name:         param.Name,
+		ToStringCode: toStringCode,
+		Type:         param.Type,
+		AccessString: "i." + StructParamName(*param),
+		Pointer:      pointer,
+	}
+	// If this is a single parameter then use $FIELD rather than i.$FIELD in both the toString
+	// and accessing code.
+	if singleStringPathParameter {
+		t.ToStringCode = singleParamName
+		t.AccessString = param.Name
+	}
+	return t
+}

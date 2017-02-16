@@ -2,7 +2,10 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
+	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
@@ -10,7 +13,10 @@ import (
 
 // These imports may not be used depending on the input parameters
 var _ = json.Marshal
+var _ = fmt.Sprintf
+var _ = url.QueryEscape
 var _ = strconv.FormatInt
+var _ = strings.Replace
 var _ = validate.Maximum
 var _ = strfmt.NewFormats
 
@@ -24,4 +30,14 @@ type HealthInput struct {
 func (i HealthInput) Validate() error {
 
 	return nil
+}
+
+// Path returns the URI path for the input.
+func (i HealthInput) Path() (string, error) {
+	path := "/v1/health"
+	urlVals := url.Values{}
+
+	urlVals.Add("section", strconv.FormatInt(i.Section, 10))
+
+	return path + "?" + urlVals.Encode(), nil
 }

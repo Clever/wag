@@ -98,6 +98,8 @@ paths:
     get:
       operationId: getBooks
       description: Returns a list of books
+      x-paging:
+        pageParameter: startingAfter
       parameters:
         - name: authors
           in: query
@@ -150,6 +152,9 @@ paths:
           in: query
           type: number
           format: float
+        - name: startingAfter
+          in: query
+          type: integer
       responses:
         200:
           description: "Success"

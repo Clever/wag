@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -142,47 +141,15 @@ func (c *WagClient) SetTimeout(timeout time.Duration) {
 // 500: *models.InternalError
 // default: client side HTTP errors, for example: context.DeadlineExceeded.
 func (c *WagClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models.Book, error) {
-	path := c.basePath + "/v1/books"
-	urlVals := url.Values{}
 	var body []byte
 
-	for _, v := range i.Authors {
-		urlVals.Add("authors", v)
+	path, err := i.Path()
+
+	if err != nil {
+		return nil, err
 	}
 
-	if i.Available != nil {
-		urlVals.Add("available", strconv.FormatBool(*i.Available))
-	}
-
-	if i.State != nil {
-		urlVals.Add("state", *i.State)
-	}
-
-	if i.Published != nil {
-		urlVals.Add("published", (*i.Published).String())
-	}
-
-	if i.SnakeCase != nil {
-		urlVals.Add("snake_case", *i.SnakeCase)
-	}
-
-	if i.Completed != nil {
-		urlVals.Add("completed", (*i.Completed).String())
-	}
-
-	if i.MaxPages != nil {
-		urlVals.Add("maxPages", strconv.FormatFloat(*i.MaxPages, 'E', -1, 64))
-	}
-
-	if i.MinPages != nil {
-		urlVals.Add("min_pages", strconv.FormatInt(int64(*i.MinPages), 10))
-	}
-
-	if i.PagesToTime != nil {
-		urlVals.Add("pagesToTime", strconv.FormatFloat(float64(*i.PagesToTime), 'E', -1, 32))
-	}
-
-	path = path + "?" + urlVals.Encode()
+	path = c.basePath + path
 
 	client := &http.Client{Transport: c.transport}
 	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
@@ -247,11 +214,9 @@ func (c *WagClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]mo
 // 500: *models.InternalError
 // default: client side HTTP errors, for example: context.DeadlineExceeded.
 func (c *WagClient) CreateBook(ctx context.Context, i *models.Book) (*models.Book, error) {
-	path := c.basePath + "/v1/books"
-	urlVals := url.Values{}
 	var body []byte
 
-	path = path + "?" + urlVals.Encode()
+	path := c.basePath + "/v1/books"
 
 	if i != nil {
 
@@ -329,30 +294,15 @@ func (c *WagClient) CreateBook(ctx context.Context, i *models.Book) (*models.Boo
 // 500: *models.InternalError
 // default: client side HTTP errors, for example: context.DeadlineExceeded.
 func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (*models.Book, error) {
-	path := c.basePath + "/v1/books/{book_id}"
-	urlVals := url.Values{}
 	var body []byte
 
-	pathbook_id := strconv.FormatInt(i.BookID, 10)
-	if pathbook_id == "" {
-		err := fmt.Errorf("book_id cannot be empty because it's a path parameter")
+	path, err := i.Path()
 
-		if err != nil {
-			return nil, err
-		}
-
-	}
-	path = strings.Replace(path, "{book_id}", pathbook_id, -1)
-
-	if i.AuthorID != nil {
-		urlVals.Add("authorID", *i.AuthorID)
+	if err != nil {
+		return nil, err
 	}
 
-	if i.RandomBytes != nil {
-		urlVals.Add("randomBytes", string(*i.RandomBytes))
-	}
-
-	path = path + "?" + urlVals.Encode()
+	path = c.basePath + path
 
 	client := &http.Client{Transport: c.transport}
 	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
@@ -438,21 +388,15 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 // 500: *models.InternalError
 // default: client side HTTP errors, for example: context.DeadlineExceeded.
 func (c *WagClient) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
-	path := c.basePath + "/v1/books2/{id}"
-	urlVals := url.Values{}
 	var body []byte
 
-	pathid := id
-	if pathid == "" {
-		err := fmt.Errorf("id cannot be empty because it's a path parameter")
+	path, err := models.GetBookByID2InputPath(id)
 
-		if err != nil {
-			return nil, err
-		}
-
+	if err != nil {
+		return nil, err
 	}
-	path = strings.Replace(path, "{id}", pathid, -1)
-	path = path + "?" + urlVals.Encode()
+
+	path = c.basePath + path
 
 	client := &http.Client{Transport: c.transport}
 	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
@@ -525,11 +469,9 @@ func (c *WagClient) GetBookByID2(ctx context.Context, id string) (*models.Book, 
 // 500: *models.InternalError
 // default: client side HTTP errors, for example: context.DeadlineExceeded.
 func (c *WagClient) HealthCheck(ctx context.Context) error {
-	path := c.basePath + "/v1/health/check"
-	urlVals := url.Values{}
 	var body []byte
 
-	path = path + "?" + urlVals.Encode()
+	path := c.basePath + "/v1/health/check"
 
 	client := &http.Client{Transport: c.transport}
 	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))

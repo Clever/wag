@@ -11,16 +11,34 @@ import (
 
 // ControllerImpl implements the test server controller interface.
 type ControllerImpl struct {
-	books map[int64]*models.Book
+	books    map[int64]*models.Book
+	maxID    int64
+	pageSize int
 }
 
 // GetBooks returns a list of books.
-func (c *ControllerImpl) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, error) {
+func (c *ControllerImpl) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, int64, error) {
 	var bookList []models.Book
-	for _, book := range c.books {
-		bookList = append(bookList, *book)
+
+	var nextPage int64 // default to no next page
+
+	idx := int64(0)
+	if input.StartingAfter != nil {
+		idx = *input.StartingAfter + 1
 	}
-	return bookList, nil
+
+	// loop through all indices to get predictable ordering
+	for ; idx <= c.maxID; idx++ {
+		if book, ok := c.books[idx]; ok {
+			bookList = append(bookList, *book)
+			if len(bookList) == c.pageSize {
+				nextPage = idx
+				break
+			}
+		}
+	}
+
+	return bookList, nextPage, nil
 }
 
 // GetBookByID returns a book by ID.
@@ -42,6 +60,7 @@ func (c *ControllerImpl) GetBookByID2(ctx context.Context, id string) (*models.B
 	if err != nil {
 		return nil, err
 	}
+
 	book, ok := c.books[int64(i)]
 	if !ok {
 		return nil, models.Error{}
@@ -51,6 +70,9 @@ func (c *ControllerImpl) GetBookByID2(ctx context.Context, id string) (*models.B
 
 // CreateBook creates a book.
 func (c *ControllerImpl) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
+	if input.ID > c.maxID {
+		c.maxID = input.ID
+	}
 	c.books[input.ID] = input
 	return input, nil
 }
@@ -60,10 +82,10 @@ func (c *ControllerImpl) HealthCheck(ctx context.Context) error {
 	return nil
 }
 
-func setupServer() *httptest.Server {
-	controller := ControllerImpl{books: make(map[int64]*models.Book)}
+func setupServer() (*httptest.Server, *ControllerImpl) {
+	controller := ControllerImpl{books: make(map[int64]*models.Book), pageSize: 100}
 
 	s := server.New(&controller, ":8080")
 
-	return httptest.NewServer(s.Handler)
+	return httptest.NewServer(s.Handler), &controller
 }

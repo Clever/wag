@@ -98,7 +98,6 @@ func statusCodeForGetBook(obj interface{}) int {
 func (h handler) GetBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	input, err := newGetBookInput(r)
-
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.ExtendedError{Message: err.Error()}), http.StatusBadRequest)

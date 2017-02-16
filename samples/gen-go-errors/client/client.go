@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -143,21 +142,15 @@ func (c *WagClient) SetTimeout(timeout time.Duration) {
 // 500: *models.InternalError
 // default: client side HTTP errors, for example: context.DeadlineExceeded.
 func (c *WagClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
-	path := c.basePath + "/v1/books/{id}"
-	urlVals := url.Values{}
 	var body []byte
 
-	pathid := strconv.FormatInt(i.ID, 10)
-	if pathid == "" {
-		err := fmt.Errorf("id cannot be empty because it's a path parameter")
+	path, err := i.Path()
 
-		if err != nil {
-			return err
-		}
-
+	if err != nil {
+		return err
 	}
-	path = strings.Replace(path, "{id}", pathid, -1)
-	path = path + "?" + urlVals.Encode()
+
+	path = c.basePath + path
 
 	client := &http.Client{Transport: c.transport}
 	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
