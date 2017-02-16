@@ -1,3 +1,4 @@
+const async = require("async");
 const discovery = require("clever-discovery");
 const request = require("request");
 const opentracing = require("opentracing");
@@ -162,7 +163,7 @@ class NilTest {
       const headers = {};
       if (!params.id) {
         rejecter(new Error("id must be non-empty because it's a path parameter"));
-        return
+        return;
       }
       headers["header"] = params.header;
 
@@ -179,7 +180,7 @@ class NilTest {
       if (span) {
         opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
         span.logEvent("POST /v1/check/{id}");
-        span.setTag("span.kind", "client")
+        span.setTag("span.kind", "client");
       }
 
       const requestOptions = {
@@ -197,6 +198,7 @@ class NilTest {
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
+  
       let retries = 0;
       (function requestOnce() {
         request(requestOptions, (err, response, body) => {
@@ -210,20 +212,24 @@ class NilTest {
             rejecter(err);
             return;
           }
+
           switch (response.statusCode) {
             case 200:
               resolver();
               break;
+            
             case 400:
               rejecter(new Errors.BadRequest(body || {}));
-              break;
+              return;
+            
             case 500:
               rejecter(new Errors.InternalError(body || {}));
-              break;
+              return;
+            
             default:
               rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
+              return;
           }
-          return;
         });
       }());
     });

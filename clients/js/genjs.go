@@ -82,7 +82,8 @@ type clientCodeTemplate struct {
 	Methods     []string
 }
 
-var indexJSTmplStr = `const discovery = require("clever-discovery");
+var indexJSTmplStr = `const async = require("async");
+const discovery = require("clever-discovery");
 const request = require("request");
 const opentracing = require("opentracing");
 
@@ -222,6 +223,7 @@ var packageJSONTmplStr = `{
   "description": "{{.Description}}",
   "main": "index.js",
   "dependencies": {
+    "async": "^2.1.4",
     "clever-discovery": "0.0.8",
     "opentracing": "^0.11.1",
     "request": "^2.75.0"
@@ -231,12 +233,16 @@ var packageJSONTmplStr = `{
 
 var methodTmplStr = `
   {{.MethodDefinition}}
+    {{if .IterMethod -}}
+    const it = (f, saveResults, cb) => new Promise((resolve, reject) => {
+    {{- else -}}
     if (!cb && typeof options === "function") {
       cb = options;
       options = undefined;
     }
 
     return new Promise((resolve, reject) => {
+    {{- end}}
       const rejecter = (err) => {
         reject(err);
         if (cb) {
@@ -262,7 +268,7 @@ var methodTmplStr = `
       {{- range $param := .PathParams}}
       if (!params.{{$param.JSName}}) {
         rejecter(new Error("{{$param.JSName}} must be non-empty because it's a path parameter"));
-        return
+        return;
       }
       {{- end -}}
       {{- range $param := .HeaderParams}}
@@ -281,8 +287,10 @@ var methodTmplStr = `
 
       if (span) {
         opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        {{- if not .IterMethod}}
         span.logEvent("{{.Method}} {{.Path}}");
-        span.setTag("span.kind", "client")
+        {{- end}}
+        span.setTag("span.kind", "client");
       }
 
       const requestOptions = {
@@ -300,6 +308,16 @@ var methodTmplStr = `
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
+  {{if .IterMethod}}
+      let results = [];
+      async.whilst(
+        () => requestOptions.uri !== "",
+        cbW => {
+      if (span) {
+        span.logEvent("{{.Method}} {{.Path}}");
+      }
+      const address = this.address;
+  {{- end}}
       let retries = 0;
       (function requestOnce() {
         request(requestOptions, (err, response, body) => {
@@ -310,24 +328,84 @@ var methodTmplStr = `
             return;
           }
           if (err) {
+            {{- if not .IterMethod}}
+            rejecter(err);
+            {{- else}}
+            cbW(err);
+            {{- end}}
+            return;
+          }
+
+          switch (response.statusCode) {
+            {{ range $response := .Responses }}case {{ $response.StatusCode }}:{{if $response.IsError }}
+              {{- if not $.IterMethod}}
+              rejecter(new Errors.{{ $response.Name }}(body || {}));
+              {{- else}}
+              cbW(new Errors.{{ $response.Name }}(body || {}));
+              {{- end}}
+              return;
+            {{else}}{{if $response.IsNoData}}
+              resolver();
+              break;
+            {{else}}
+              {{if $.IterMethod -}}
+              if (saveResults) {
+                results = results.concat(body{{$.IterResourceAccessString}}.map(f));
+              } else {
+                body{{$.IterResourceAccessString}}.forEach(f);
+              }
+              {{- else -}}
+              resolver(body);
+              {{- end}}
+              break;
+            {{end}}{{end}}
+            {{end}}default:
+              {{- if not .IterMethod}}
+              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
+              {{- else}}
+              cbW(new Error("Recieved unexpected statusCode " + response.statusCode));
+              {{- end}}
+              return;
+          }
+
+          {{- if .IterMethod}}
+
+          requestOptions.qs = null;
+          requestOptions.useQuerystring = false;
+          requestOptions.uri = "";
+          if (response.headers["x-next-page-path"]) {
+            requestOptions.uri = address + response.headers["x-next-page-path"];
+          }
+          cbW();
+          {{- end}}
+        });
+      }());
+
+      {{- if .IterMethod}}
+        },
+        err => {
+          if (err) {
             rejecter(err);
             return;
           }
-          switch (response.statusCode) {
-            {{ range $response := .Responses }}case {{ $response.StatusCode }}:{{if $response.IsError }}
-              rejecter(new Errors.{{ $response.Name }}(body || {}));
-            {{else}}{{if $response.IsNoData}}
-              resolver();
-            {{else}}
-              resolver(body);
-            {{end}}{{end}}  break;
-            {{end}}default:
-              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
+          if (saveResults) {
+            resolver(results);
+          } else {
+            resolver();
           }
-          return;
-        });
-      }());
+        }
+      );
+      {{- end}}
     });
+
+    {{- if .IterMethod}}
+
+    return {
+      map: (f, cb) => it(f, true, cb),
+      toArray: cb => it(x => x, true, cb),
+      forEach: (f, cb) => it(f, false, cb),
+    };
+    {{- end}}
   }
 `
 
@@ -338,13 +416,19 @@ var singleParamMethodDefinitionTemplateString = `/**{{if .Description}}
    * @param {number} [options.timeout] - A request specific timeout
    * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
    * @param {module:{{.ServiceName}}.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   {{- if .IterMethod}}
+   * @returns {Object} iter
+   * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
+   * @returns {function} iter.toArray - returns a promise to the resources as an array
+   * @returns {function} iter.forEach - takes in a function, applies it to each resource
+   {{- else}}
    * @param {function} [cb]
    * @returns {Promise}
    * @fulfill{{if .JSDocSuccessReturnType}} {{.JSDocSuccessReturnType}}{{else}} {*}{{end}}{{$ServiceName := .ServiceName}}{{range $response := .Responses}}{{if $response.IsError}}
    * @reject {module:{{$ServiceName}}.Errors.{{$response.Name}}}{{end}}{{end}}
-   * @reject {Error}
+   * @reject {Error}{{end}}
    */
-  {{.MethodName}}({{range $param := .Params}}{{$param.JSName}}, {{end}}options, cb) {
+  {{.MethodName}}({{range $param := .Params}}{{$param.JSName}}, {{end}}options{{if not .IterMethod}}, cb{{end}}) {
     const params = {};{{range $param := .Params}}
     params["{{$param.JSName}}"] = {{$param.JSName}};{{end}}
 `
@@ -357,13 +441,19 @@ var pluralParamMethodDefinitionTemplateString = `/**{{if .Description}}
    * @param {number} [options.timeout] - A request specific timeout
    * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
    * @param {module:{{.ServiceName}}.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   {{- if .IterMethod}}
+   * @returns {Object} iter
+   * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
+   * @returns {function} iter.toArray - returns a promise to the resources as an array
+   * @returns {function} iter.forEach - takes in a function, applies it to each resource
+   {{- else}}
    * @param {function} [cb]
    * @returns {Promise}
    * @fulfill{{if .JSDocSuccessReturnType}} {{.JSDocSuccessReturnType}}{{else}} {*}{{end}}{{$ServiceName := .ServiceName}}{{range $response := .Responses}}{{if $response.IsError}}
    * @reject {module:{{$ServiceName}}.Errors.{{$response.Name}}}{{end}}{{end}}
-   * @reject {Error}
+   * @reject {Error}{{end}}
    */
-  {{.MethodName}}(params, options, cb) {`
+  {{.MethodName}}(params, options{{if not .IterMethod}}, cb{{end}}) {`
 
 type paramMapping struct {
 	JSName      string
@@ -382,20 +472,22 @@ type responseMapping struct {
 }
 
 type methodTemplate struct {
-	ServiceName            string
-	MethodName             string
-	Description            string
-	MethodDefinition       string
-	Params                 []paramMapping
-	Method                 string
-	PathCode               string
-	Path                   string
-	HeaderParams           []paramMapping
-	PathParams             []paramMapping
-	QueryParams            []paramMapping
-	BodyParam              string
-	Responses              []responseMapping
-	JSDocSuccessReturnType string
+	ServiceName              string
+	MethodName               string
+	IterMethod               bool
+	IterResourceAccessString string
+	Description              string
+	MethodDefinition         string
+	Params                   []paramMapping
+	Method                   string
+	PathCode                 string
+	Path                     string
+	HeaderParams             []paramMapping
+	PathParams               []paramMapping
+	QueryParams              []paramMapping
+	BodyParam                string
+	Responses                []responseMapping
+	JSDocSuccessReturnType   string
 }
 
 // This function takes in a swagger path such as "/path/goes/to/{location}/and/to/{other_Location}"
@@ -466,6 +558,39 @@ func methodCode(s spec.Swagger, op *spec.Operation, method, basePath, path strin
 		}
 	}
 
+	if err := fillMethodDefinition(op, &tmplInfo); err != nil {
+		return "", err
+	}
+
+	res, err := templates.WriteTemplate(methodTmplStr, tmplInfo)
+	if err != nil {
+		return "", err
+	}
+
+	if _, hasPaging := swagger.PagingParam(op); hasPaging {
+		tmplInfo.IterMethod = true
+		tmplInfo.MethodName += "Iter"
+
+		if err := fillMethodDefinition(op, &tmplInfo); err != nil {
+			return "", err
+		}
+
+		resourcePath := swagger.PagingResourcePath(op)
+		if len(resourcePath) > 0 {
+			tmplInfo.IterResourceAccessString = "." + strings.Join(resourcePath, ".")
+		}
+
+		iterMethodCode, err := templates.WriteTemplate(methodTmplStr, tmplInfo)
+		if err != nil {
+			return "", err
+		}
+		res += "\n" + iterMethodCode
+	}
+
+	return res, nil
+}
+
+func fillMethodDefinition(op *spec.Operation, tmplInfo *methodTemplate) error {
 	var err error
 	var methodDefinition string
 	if len(op.Parameters) <= 1 {
@@ -474,10 +599,10 @@ func methodCode(s spec.Swagger, op *spec.Operation, method, basePath, path strin
 		methodDefinition, err = templates.WriteTemplate(pluralParamMethodDefinitionTemplateString, tmplInfo)
 	}
 	if err != nil {
-		return "", err
+		return err
 	}
 	tmplInfo.MethodDefinition = methodDefinition
-	return templates.WriteTemplate(methodTmplStr, tmplInfo)
+	return err
 }
 
 // paramToJSDocType returns the JSDoc type to assign a parameter.
