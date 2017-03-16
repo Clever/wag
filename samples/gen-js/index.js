@@ -217,7 +217,7 @@ class SwaggerTest {
               return;
             
             default:
-              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
+              rejecter(new Error("Received unexpected statusCode " + response.statusCode));
               return;
           }
         });
@@ -334,7 +334,7 @@ class SwaggerTest {
               return;
             
             default:
-              cbW(new Error("Recieved unexpected statusCode " + response.statusCode));
+              cbW(new Error("Received unexpected statusCode " + response.statusCode));
               return;
           }
 
@@ -515,7 +515,7 @@ class SwaggerTest {
               return;
             
             default:
-              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
+              rejecter(new Error("Received unexpected statusCode " + response.statusCode));
               return;
           }
         });
@@ -674,7 +674,7 @@ class SwaggerTest {
               return;
             
             default:
-              cbW(new Error("Recieved unexpected statusCode " + response.statusCode));
+              cbW(new Error("Received unexpected statusCode " + response.statusCode));
               return;
           }
 
@@ -808,7 +808,7 @@ class SwaggerTest {
               return;
             
             default:
-              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
+              rejecter(new Error("Received unexpected statusCode " + response.statusCode));
               return;
           }
         });
@@ -939,7 +939,7 @@ class SwaggerTest {
               return;
             
             default:
-              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
+              rejecter(new Error("Received unexpected statusCode " + response.statusCode));
               return;
           }
         });
@@ -1053,7 +1053,7 @@ class SwaggerTest {
               return;
             
             default:
-              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
+              rejecter(new Error("Received unexpected statusCode " + response.statusCode));
               return;
           }
         });
@@ -1155,7 +1155,7 @@ class SwaggerTest {
               return;
             
             default:
-              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
+              rejecter(new Error("Received unexpected statusCode " + response.statusCode));
               return;
           }
         });

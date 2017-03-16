@@ -227,7 +227,7 @@ class NilTest {
               return;
             
             default:
-              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
+              rejecter(new Error("Received unexpected statusCode " + response.statusCode));
               return;
           }
         });
