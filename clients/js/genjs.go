@@ -361,9 +361,9 @@ var methodTmplStr = `
             {{end}}{{end}}
             {{end}}default:
               {{- if not .IterMethod}}
-              rejecter(new Error("Recieved unexpected statusCode " + response.statusCode));
+              rejecter(new Error("Received unexpected statusCode " + response.statusCode));
               {{- else}}
-              cbW(new Error("Recieved unexpected statusCode " + response.statusCode));
+              cbW(new Error("Received unexpected statusCode " + response.statusCode));
               {{- end}}
               return;
           }
