@@ -1,5 +1,5 @@
-hash: d8d94c643644cbe48efc1b564434a01224d561916a3fcd1e9a0d0809ec725f1d
-updated: 2017-03-27T20:20:25.146459493Z
+hash: 06b9ebf476a253e590f88845d5ac10d482df86785db733943249d7ca839eb76c
+updated: 2017-03-27T21:28:48.123152408Z
 imports:
 - name: github.com/afex/hystrix-go
   version: 39520ddd07a9d9a071d615f7476798659f5a3b89
@@ -87,6 +87,8 @@ imports:
   - json/parser
   - json/scanner
   - json/token
+- name: github.com/kardianos/osext
+  version: 9b883c5eb462dd5cb1b0a7a104fe86bc6b9bd391
 - name: github.com/kr/pretty
   version: cfb55aafdaf3ec08f0db22699ab822c50091b1c4
   repo: https://github.com/kr/pretty
@@ -219,11 +221,11 @@ imports:
   version: 865aa5e4bbe8e274c69accd53f0b1e2ecc484cd8
   subpackages:
   - logger
-  - middleware
 - name: gopkg.in/Clever/kayvee-go.v6
   version: 096364e316a52652d3493be702d8105d8d01db84
   subpackages:
   - logger
+  - middleware
   - router
 - name: gopkg.in/mgo.v2
   version: 3f83fa5005286a7fe593b055f0d7771a7dce4655
