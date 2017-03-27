@@ -108,6 +108,15 @@ logger.FromContext(ctx).Info(...)
 
   You should use this logger for all logging within your controller implementation.
 
+#### Application Log Routing
+
+`wag` is already set up for log routing if you so wish. To set up [application log routing](https://clever.atlassian.net/wiki/display/ENG/Application+Log+Routing) in your service, add your `kvconfig.yml` file to the same directory as your service executable. e.g. in your Dockerfile:
+
+```
+COPY kvconfig.yml /usr/bin/kvconfig.yml
+COPY bin/my-wag-service /usr/bin/my-wag-service
+```
+
 ### Errors
   * Wag supports three types of errors
     * Global error response types
