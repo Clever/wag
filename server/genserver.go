@@ -50,6 +50,7 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"time"
+	"path"
 
 	"github.com/gorilla/mux"
 	lightstep "github.com/lightstep/lightstep-tracer-go"
@@ -58,6 +59,7 @@ import (
 	kvMiddleware "gopkg.in/Clever/kayvee-go.v6/middleware"
 	"gopkg.in/tylerb/graceful.v1"
 	"github.com/Clever/go-process-metrics/metrics"
+	"github.com/kardianos/osext"
 )
 
 type contextKey struct{}
@@ -81,6 +83,14 @@ func (s *Server) Serve() error {
 		// This should never return. Listen on the pprof port
 		log.Printf("PProf server crashed: %%s", http.ListenAndServe(":6060", nil))
 	}()
+
+	dir, err := osext.ExecutableFolder()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := logger.SetGlobalRouting(path.Join(dir, "kvconfig.yml")); err != nil {
+		s.l.Info("please provide a kvconfig.yml file to enable app log routing")
+	}
 
 	if lightstepToken := os.Getenv("LIGHTSTEP_ACCESS_TOKEN"); lightstepToken != "" {
 		tags := make(map[string]interface{})
