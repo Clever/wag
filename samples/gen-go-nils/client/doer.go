@@ -17,7 +17,7 @@ import (
 	opentracing "github.com/opentracing/opentracing-go"
 	tags "github.com/opentracing/opentracing-go/ext"
 	"golang.org/x/net/context/ctxhttp"
-	logger "gopkg.in/Clever/kayvee-go.v5/logger"
+	logger "gopkg.in/Clever/kayvee-go.v6/logger"
 )
 
 // doer is an interface for "doing" http requests possibly with wrapping
@@ -167,7 +167,7 @@ type circuitBreakerDoer struct {
 	d           doer
 	debug       bool
 	circuitName string
-	logger      *logger.Logger
+	logger      logger.KayveeLogger
 }
 
 var circuitSSEOnce sync.Once
@@ -192,7 +192,7 @@ type HystrixSSEEvent struct {
 	LatencyTotalMean                int    `json:"latencyTotal_mean"`
 }
 
-func logEvent(l *logger.Logger, e HystrixSSEEvent) {
+func logEvent(l logger.KayveeLogger, e HystrixSSEEvent) {
 	l.InfoD(e.Name, map[string]interface{}{
 		"requestCount":                    e.RequestCount,
 		"errorCount":                      e.ErrorCount,

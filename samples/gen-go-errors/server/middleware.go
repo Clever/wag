@@ -8,7 +8,7 @@ import (
 
 	opentracing "github.com/opentracing/opentracing-go"
 	tags "github.com/opentracing/opentracing-go/ext"
-	"gopkg.in/Clever/kayvee-go.v5/logger"
+	"gopkg.in/Clever/kayvee-go.v6/logger"
 )
 
 // PanicMiddleware logs any panics. For now, we're continue throwing the panic up

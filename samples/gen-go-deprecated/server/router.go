@@ -13,8 +13,8 @@ import (
 	"github.com/gorilla/mux"
 	lightstep "github.com/lightstep/lightstep-tracer-go"
 	opentracing "github.com/opentracing/opentracing-go"
-	"gopkg.in/Clever/kayvee-go.v5/logger"
-	kvMiddleware "gopkg.in/Clever/kayvee-go.v5/middleware"
+	"gopkg.in/Clever/kayvee-go.v6/logger"
+	kvMiddleware "gopkg.in/Clever/kayvee-go.v6/middleware"
 	"gopkg.in/tylerb/graceful.v1"
 )
 
@@ -25,7 +25,7 @@ type Server struct {
 	// Handler should generally not be changed. It exposed to make testing easier.
 	Handler http.Handler
 	addr    string
-	l       *logger.Logger
+	l       logger.KayveeLogger
 }
 
 // Serve starts the server. It will return if an error occurs.

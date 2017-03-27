@@ -14,7 +14,7 @@ import (
 	discovery "github.com/Clever/discovery-go"
 	"github.com/Clever/wag/samples/gen-go-nils/models"
 	"github.com/afex/hystrix-go/hystrix"
-	logger "gopkg.in/Clever/kayvee-go.v5/logger"
+	logger "gopkg.in/Clever/kayvee-go.v6/logger"
 )
 
 var _ = json.Marshal
@@ -33,7 +33,7 @@ type WagClient struct {
 	// Keep the circuit doer around so that we can turn it on / off
 	circuitDoer    *circuitBreakerDoer
 	defaultTimeout time.Duration
-	logger         *logger.Logger
+	logger         logger.KayveeLogger
 }
 
 var _ Client = (*WagClient)(nil)
