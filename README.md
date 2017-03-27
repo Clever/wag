@@ -385,3 +385,11 @@ Security Objects
 
 Response:
   - Headers
+
+## Development
+
+The following directories and files are generated and should not be manually edited:
+- samples/gen-*/*
+- hardcoded/hardcoded.go
+
+Once you've made your changes, run `make test` and check that the generated code looks ok, then check in those changes.
