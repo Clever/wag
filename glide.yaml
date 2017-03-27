@@ -40,8 +40,8 @@ import:
   subpackages:
   - metrics
 - package: github.com/Clever/discovery-go
-- package: gopkg.in/Clever/kayvee-go.v5
-  version: ^5.0.0
+- package: gopkg.in/Clever/kayvee-go.v6
+  version: ^6.0.0
 - package: github.com/Clever/go-utils
   version: abc2536
   subpackages:
