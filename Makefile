@@ -60,8 +60,8 @@ install_deps: $(GOPATH)/bin/glide
 
 release: hardcoded/hardcoded.go
 	GOOS=linux GOARCH=amd64 go build -ldflags="-s -w -X main.version=$(VERSION)" -o="$@/$(EXECUTABLE)"
-	tar -C $@ -zcvf "$@/$(EXECUTABLE)-v$(VERSION)-linux-amd64.tar.gz" $(EXECUTABLE)
+	tar -C $@ -zcvf "$@/$(EXECUTABLE)-$(VERSION)-linux-amd64.tar.gz" $(EXECUTABLE)
 	@rm "$@/$(EXECUTABLE)"
 	GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w -X main.version=$(VERSION)" -o="$@/$(EXECUTABLE)"
-	tar -C $@ -zcvf "$@/$(EXECUTABLE)-v$(VERSION)-darwin-amd64.tar.gz" $(EXECUTABLE)
+	tar -C $@ -zcvf "$@/$(EXECUTABLE)-$(VERSION)-darwin-amd64.tar.gz" $(EXECUTABLE)
 	@rm "$@/$(EXECUTABLE)"
