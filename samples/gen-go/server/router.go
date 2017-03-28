@@ -7,14 +7,16 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+	"path"
 	"time"
 
 	"github.com/Clever/go-process-metrics/metrics"
 	"github.com/gorilla/mux"
+	"github.com/kardianos/osext"
 	lightstep "github.com/lightstep/lightstep-tracer-go"
 	opentracing "github.com/opentracing/opentracing-go"
-	"gopkg.in/Clever/kayvee-go.v5/logger"
-	kvMiddleware "gopkg.in/Clever/kayvee-go.v5/middleware"
+	"gopkg.in/Clever/kayvee-go.v6/logger"
+	kvMiddleware "gopkg.in/Clever/kayvee-go.v6/middleware"
 	"gopkg.in/tylerb/graceful.v1"
 )
 
@@ -25,7 +27,7 @@ type Server struct {
 	// Handler should generally not be changed. It exposed to make testing easier.
 	Handler http.Handler
 	addr    string
-	l       *logger.Logger
+	l       logger.KayveeLogger
 }
 
 // Serve starts the server. It will return if an error occurs.
@@ -39,6 +41,14 @@ func (s *Server) Serve() error {
 		// This should never return. Listen on the pprof port
 		log.Printf("PProf server crashed: %s", http.ListenAndServe(":6060", nil))
 	}()
+
+	dir, err := osext.ExecutableFolder()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := logger.SetGlobalRouting(path.Join(dir, "kvconfig.yml")); err != nil {
+		s.l.Info("please provide a kvconfig.yml file to enable app log routing")
+	}
 
 	if lightstepToken := os.Getenv("LIGHTSTEP_ACCESS_TOKEN"); lightstepToken != "" {
 		tags := make(map[string]interface{})

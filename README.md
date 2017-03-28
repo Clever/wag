@@ -97,16 +97,27 @@ The server interface defined in `gen-go/server/interface.go` has one method for 
 
 
 ### Logging
-  The [kayvee middleware logger](https://godoc.org/gopkg.in/Clever/kayvee-go.v5/middleware) is automatically added to the context object.
+  The [kayvee middleware logger](https://godoc.org/gopkg.in/Clever/kayvee-go.v6/middleware) is automatically added to the context object.
   It can be pulled out of the context object and used via the kayvee `FromContext` method:
 
 ```go
-import "gopkg.in/Clever/kayvee-go.v5/logger"
+import "gopkg.in/Clever/kayvee-go.v6/logger"
 ...
 logger.FromContext(ctx).Info(...)
 ```
 
   You should use this logger for all logging within your controller implementation.
+
+#### Application Log Routing
+
+**Note**: This is an internal Clever feature. Ignore this if you are using `wag` outside of Clever (also, hi!)
+
+`wag` is already set up for log routing if you so wish. To set up [application log routing](https://clever.atlassian.net/wiki/display/ENG/Application+Log+Routing) in your service, add your `kvconfig.yml` file to the same directory as your service executable. e.g. in your Dockerfile:
+
+```
+COPY kvconfig.yml /usr/bin/kvconfig.yml
+COPY bin/my-wag-service /usr/bin/my-wag-service
+```
 
 ### Errors
   * Wag supports three types of errors
@@ -385,3 +396,11 @@ Security Objects
 
 Response:
   - Headers
+
+## Development
+
+The following directories and files are generated and should not be manually edited:
+- samples/gen-&ast;/&ast;
+- hardcoded/hardcoded.go
+
+Once you've made your changes, run `make test` and check that the generated code looks ok, then check in those changes.
