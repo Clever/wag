@@ -110,6 +110,8 @@ logger.FromContext(ctx).Info(...)
 
 #### Application Log Routing
 
+**Note**: This is an internal Clever feature. Ignore this if you are using `wag` outside of Clever (also, hi!)
+
 `wag` is already set up for log routing if you so wish. To set up [application log routing](https://clever.atlassian.net/wiki/display/ENG/Application+Log+Routing) in your service, add your `kvconfig.yml` file to the same directory as your service executable. e.g. in your Dockerfile:
 
 ```
