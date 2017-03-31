@@ -276,7 +276,7 @@ var _ = ioutil.ReadAll
 {{.BaseStringToTypeCode}}
 
 func jsonMarshalNoError(i interface{}) string {
-	bytes, err := json.MarshalIndent(i, "", "\t")
+	bytes, err := json.Marshal(i)
 	if err != nil {
 		// This should never happen
 		return ""
@@ -481,7 +481,7 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 	}
 
 {{if .SuccessReturnType}}
-	respBytes, err := json.MarshalIndent(resp, "", "\t")
+	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError({{index .StatusCodeToType 500}}{Message: err.Error()}), http.StatusInternalServerError)
