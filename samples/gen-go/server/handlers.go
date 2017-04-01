@@ -58,7 +58,7 @@ func convertDate(input string) (strfmt.Date, error) {
 }
 
 func jsonMarshalNoError(i interface{}) string {
-	bytes, err := json.Marshal(i)
+	bytes, err := json.MarshalIndent(i, "", "\t")
 	if err != nil {
 		// This should never happen
 		return ""
@@ -128,7 +128,7 @@ func (h handler) GetAuthorsHandler(ctx context.Context, w http.ResponseWriter, r
 		return
 	}
 
-	respBytes, err := json.Marshal(resp)
+	respBytes, err := json.MarshalIndent(resp, "", "\t")
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.InternalError{Message: err.Error()}), http.StatusInternalServerError)
@@ -254,7 +254,7 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 		return
 	}
 
-	respBytes, err := json.Marshal(resp)
+	respBytes, err := json.MarshalIndent(resp, "", "\t")
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.InternalError{Message: err.Error()}), http.StatusInternalServerError)
@@ -482,7 +482,7 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 		return
 	}
 
-	respBytes, err := json.Marshal(resp)
+	respBytes, err := json.MarshalIndent(resp, "", "\t")
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.InternalError{Message: err.Error()}), http.StatusInternalServerError)
@@ -587,7 +587,7 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 		return
 	}
 
-	respBytes, err := json.Marshal(resp)
+	respBytes, err := json.MarshalIndent(resp, "", "\t")
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.InternalError{Message: err.Error()}), http.StatusInternalServerError)
@@ -734,7 +734,7 @@ func (h handler) GetBookByID2Handler(ctx context.Context, w http.ResponseWriter,
 		return
 	}
 
-	respBytes, err := json.Marshal(resp)
+	respBytes, err := json.MarshalIndent(resp, "", "\t")
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.InternalError{Message: err.Error()}), http.StatusInternalServerError)
