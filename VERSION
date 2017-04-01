@@ -1,2 +1,2 @@
-v1.4.1
-- Fix releases
+v1.4.2
+- pretty-print JSON responses
