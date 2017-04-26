@@ -187,6 +187,24 @@ paths:
           schema:
             $ref: "#/definitions/Error"
 
+    put:
+      operationId: putBook
+      description: Puts a book
+      parameters:
+        - name: newBook
+          in: body
+          schema:
+            $ref: "#/definitions/Book"
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/Book"
+        default:
+          description: "Error"
+          schema:
+            $ref: "#/definitions/Error"
+
   /authors:
     get:
       operationId: getAuthors

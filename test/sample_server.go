@@ -78,6 +78,15 @@ func (c *ControllerImpl) CreateBook(ctx context.Context, input *models.Book) (*m
 	return input, nil
 }
 
+// PutBook creates a book.
+func (c *ControllerImpl) PutBook(ctx context.Context, input *models.Book) (*models.Book, error) {
+	if input.ID > c.maxID {
+		c.maxID = input.ID
+	}
+	c.books[input.ID] = input
+	return input, nil
+}
+
 // GetAuthors gets authors.
 func (c *ControllerImpl) GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (*models.AuthorsResponse, string, error) {
 	return &models.AuthorsResponse{
