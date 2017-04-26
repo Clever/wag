@@ -817,6 +817,113 @@ class SwaggerTest {
   }
 
   /**
+   * Puts a book
+   * @param newBook
+   * @param {object} [options]
+   * @param {number} [options.timeout] - A request specific timeout
+   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
+   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {function} [cb]
+   * @returns {Promise}
+   * @fulfill {Object}
+   * @reject {module:swagger-test.Errors.BadRequest}
+   * @reject {module:swagger-test.Errors.InternalError}
+   * @reject {Error}
+   */
+  putBook(newBook, options, cb) {
+    const params = {};
+    params["newBook"] = newBook;
+
+    if (!cb && typeof options === "function") {
+      cb = options;
+      options = undefined;
+    }
+
+    return new Promise((resolve, reject) => {
+      const rejecter = (err) => {
+        reject(err);
+        if (cb) {
+          cb(err);
+        }
+      };
+      const resolver = (data) => {
+        resolve(data);
+        if (cb) {
+          cb(null, data);
+        }
+      };
+
+
+      if (!options) {
+        options = {};
+      }
+
+      const timeout = options.timeout || this.timeout;
+      const span = options.span;
+
+      const headers = {};
+
+      const query = {};
+
+      if (span) {
+        opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        span.logEvent("PUT /v1/books");
+        span.setTag("span.kind", "client");
+      }
+
+      const requestOptions = {
+        method: "PUT",
+        uri: this.address + "/v1/books",
+        json: true,
+        timeout,
+        headers,
+        qs: query,
+        useQuerystring: true,
+      };
+  
+      requestOptions.body = params.newBook;
+  
+
+      const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
+      const backoffs = retryPolicy.backoffs();
+  
+      let retries = 0;
+      (function requestOnce() {
+        request(requestOptions, (err, response, body) => {
+          if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
+            const backoff = backoffs[retries];
+            retries += 1;
+            setTimeout(requestOnce, backoff);
+            return;
+          }
+          if (err) {
+            rejecter(err);
+            return;
+          }
+
+          switch (response.statusCode) {
+            case 200:
+              resolver(body);
+              break;
+            
+            case 400:
+              rejecter(new Errors.BadRequest(body || {}));
+              return;
+            
+            case 500:
+              rejecter(new Errors.InternalError(body || {}));
+              return;
+            
+            default:
+              rejecter(new Error("Received unexpected statusCode " + response.statusCode));
+              return;
+          }
+        });
+      }());
+    });
+  }
+
+  /**
    * Returns a book
    * @param {Object} params
    * @param {number} params.bookID

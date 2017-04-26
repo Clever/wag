@@ -513,6 +513,99 @@ func newCreateBookInput(r *http.Request) (*models.Book, error) {
 	return &input, nil
 }
 
+// statusCodeForPutBook returns the status code corresponding to the returned
+// object. It returns -1 if the type doesn't correspond to anything.
+func statusCodeForPutBook(obj interface{}) int {
+
+	switch obj.(type) {
+
+	case *models.BadRequest:
+		return 400
+
+	case *models.Book:
+		return 200
+
+	case *models.InternalError:
+		return 500
+
+	case models.BadRequest:
+		return 400
+
+	case models.Book:
+		return 200
+
+	case models.InternalError:
+		return 500
+
+	default:
+		return -1
+	}
+}
+
+func (h handler) PutBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+
+	input, err := newPutBookInput(r)
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		http.Error(w, jsonMarshalNoError(models.BadRequest{Message: err.Error()}), http.StatusBadRequest)
+		return
+	}
+
+	err = input.Validate(nil)
+
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		http.Error(w, jsonMarshalNoError(models.BadRequest{Message: err.Error()}), http.StatusBadRequest)
+		return
+	}
+
+	resp, err := h.PutBook(ctx, input)
+
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		if btErr, ok := err.(*errors.Error); ok {
+			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
+		}
+		statusCode := statusCodeForPutBook(err)
+		if statusCode == -1 {
+			err = models.InternalError{Message: err.Error()}
+			statusCode = 500
+		}
+		http.Error(w, jsonMarshalNoError(err), statusCode)
+		return
+	}
+
+	respBytes, err := json.MarshalIndent(resp, "", "\t")
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		http.Error(w, jsonMarshalNoError(models.InternalError{Message: err.Error()}), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCodeForPutBook(resp))
+	w.Write(respBytes)
+
+}
+
+// newPutBookInput takes in an http.Request an returns the input struct.
+func newPutBookInput(r *http.Request) (*models.Book, error) {
+	var input models.Book
+
+	var err error
+	_ = err
+
+	data, err := ioutil.ReadAll(r.Body)
+
+	if len(data) > 0 {
+		if err := json.NewDecoder(bytes.NewReader(data)).Decode(&input); err != nil {
+			return nil, err
+		}
+	}
+
+	return &input, nil
+}
+
 // statusCodeForGetBookByID returns the status code corresponding to the returned
 // object. It returns -1 if the type doesn't correspond to anything.
 func statusCodeForGetBookByID(obj interface{}) int {

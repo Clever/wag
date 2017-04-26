@@ -39,6 +39,14 @@ type Client interface {
 	// default: client side HTTP errors, for example: context.DeadlineExceeded.
 	CreateBook(ctx context.Context, i *models.Book) (*models.Book, error)
 
+	// PutBook makes a PUT request to /books
+	// Puts a book
+	// 200: *models.Book
+	// 400: *models.BadRequest
+	// 500: *models.InternalError
+	// default: client side HTTP errors, for example: context.DeadlineExceeded.
+	PutBook(ctx context.Context, i *models.Book) (*models.Book, error)
+
 	// GetBookByID makes a GET request to /books/{book_id}
 	// Returns a book
 	// 200: *models.Book
