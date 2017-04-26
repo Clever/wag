@@ -47,7 +47,7 @@ func (c *ClientContextTest) PutBook(ctx context.Context, input *models.Book) (*m
 	if c.putCount == 1 {
 		return nil, fmt.Errorf("Error count: %d", c.putCount)
 	}
-	return &models.Book{}, nil
+	return input, nil
 }
 func (c *ClientContextTest) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
 	c.postCount++
@@ -159,6 +159,18 @@ func TestNonGetRetries(t *testing.T) {
 	_, err := c.CreateBook(context.Background(), &models.Book{})
 	assert.Error(t, err)
 	assert.Equal(t, 1, controller.postCount)
+}
+
+func TestPutRetries(t *testing.T) {
+	controller := ClientContextTest{}
+	s := server.New(&controller, "")
+	testServer := httptest.NewServer(s.Handler)
+	defer testServer.Close()
+	c := client.New(testServer.URL)
+	returnedBook, err := c.PutBook(context.Background(), &models.Book{Name: "test"})
+	require.NoError(t, err)
+	assert.Equal(t, 2, controller.putCount)
+	assert.Equal(t, "test", returnedBook.Name)
 }
 
 func TestErrorOnMissingPathParams(t *testing.T) {
