@@ -1,2 +1,2 @@
-v1.4.2
-- pretty-print JSON responses
+v1.4.3
+- handle put retries correctly
