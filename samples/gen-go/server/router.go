@@ -126,6 +126,13 @@ func NewWithMiddleware(c Controller, addr string, m []func(http.Handler) http.Ha
 		r = r.WithContext(ctx)
 	})
 
+	router.Methods("PUT").Path("/v1/books").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger.FromContext(r.Context()).AddContext("op", "putBook")
+		h.PutBookHandler(r.Context(), w, r)
+		ctx := WithTracingOpName(r.Context(), "putBook")
+		r = r.WithContext(ctx)
+	})
+
 	router.Methods("GET").Path("/v1/books/{book_id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "getBookByID")
 		h.GetBookByIDHandler(r.Context(), w, r)

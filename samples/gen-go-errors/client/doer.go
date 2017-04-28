@@ -1,10 +1,12 @@
 package client
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net"
@@ -148,7 +150,24 @@ func (d *retryDoer) Do(c *http.Client, r *http.Request) (*http.Response, error) 
 	backoffs := retryPolicy.Backoffs()
 	var resp *http.Response
 	var err error
+
+	// Save the request body in case we have to retry. Otherwise we will have already read
+	// the buffer on retry and the request will fail. See
+	// http://stackoverflow.com/questions/23070876/reading-body-of-http-request-without-modifying-request-state
+	var buf []byte
+	if r.Body != nil {
+		var err error
+		buf, err = ioutil.ReadAll(r.Body)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	for retries := 0; true; retries++ {
+		if r.Body != nil {
+			rdr := ioutil.NopCloser(bytes.NewBuffer(buf))
+			r.Body = rdr
+		}
 		resp, err = d.d.Do(c, r)
 		if retries == len(backoffs) || !retryPolicy.Retry(r, resp, err) {
 			break

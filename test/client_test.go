@@ -25,6 +25,7 @@ type ClientContextTest struct {
 	getTimes      []time.Time
 	getErrorCount int
 	postCount     int
+	putCount      int
 }
 
 func (c *ClientContextTest) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, int64, error) {
@@ -40,6 +41,13 @@ func (c *ClientContextTest) GetBookByID(ctx context.Context, input *models.GetBo
 }
 func (c *ClientContextTest) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
 	return nil, nil
+}
+func (c *ClientContextTest) PutBook(ctx context.Context, input *models.Book) (*models.Book, error) {
+	c.putCount++
+	if c.putCount == 1 {
+		return nil, fmt.Errorf("Error count: %d", c.putCount)
+	}
+	return input, nil
 }
 func (c *ClientContextTest) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
 	c.postCount++
@@ -78,6 +86,12 @@ func (c *ClientCircuitTest) GetBookByID2(ctx context.Context, id string) (*model
 	return nil, nil
 }
 func (c *ClientCircuitTest) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
+	if c.down {
+		return nil, errors.New("fail")
+	}
+	return &models.Book{}, nil
+}
+func (c *ClientCircuitTest) PutBook(ctx context.Context, input *models.Book) (*models.Book, error) {
 	if c.down {
 		return nil, errors.New("fail")
 	}
@@ -145,6 +159,18 @@ func TestNonGetRetries(t *testing.T) {
 	_, err := c.CreateBook(context.Background(), &models.Book{})
 	assert.Error(t, err)
 	assert.Equal(t, 1, controller.postCount)
+}
+
+func TestPutRetries(t *testing.T) {
+	controller := ClientContextTest{}
+	s := server.New(&controller, "")
+	testServer := httptest.NewServer(s.Handler)
+	defer testServer.Close()
+	c := client.New(testServer.URL)
+	returnedBook, err := c.PutBook(context.Background(), &models.Book{Name: "test"})
+	require.NoError(t, err)
+	assert.Equal(t, 2, controller.putCount)
+	assert.Equal(t, "test", returnedBook.Name)
 }
 
 func TestErrorOnMissingPathParams(t *testing.T) {
@@ -375,6 +401,9 @@ func (c *IterFailTest) GetBookByID2(ctx context.Context, id string) (*models.Boo
 func (c *IterFailTest) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
 	return c.sampleController.CreateBook(ctx, input)
 }
+func (c *IterFailTest) PutBook(ctx context.Context, input *models.Book) (*models.Book, error) {
+	return c.sampleController.CreateBook(ctx, input)
+}
 func (c *IterFailTest) GetAuthors(ctx context.Context, input *models.GetAuthorsInput) (*models.AuthorsResponse, string, error) {
 	return c.sampleController.GetAuthors(ctx, input)
 }
@@ -442,6 +471,9 @@ func (c *IterHeadersTest) GetBookByID2(ctx context.Context, id string) (*models.
 	return c.sampleController.GetBookByID2(ctx, id)
 }
 func (c *IterHeadersTest) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
+	return c.sampleController.CreateBook(ctx, input)
+}
+func (c *IterHeadersTest) PutBook(ctx context.Context, input *models.Book) (*models.Book, error) {
 	return c.sampleController.CreateBook(ctx, input)
 }
 func (c *IterHeadersTest) GetAuthors(ctx context.Context, input *models.GetAuthorsInput) (*models.AuthorsResponse, string, error) {
