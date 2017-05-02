@@ -15,6 +15,8 @@ import (
 	"github.com/Clever/wag/samples/gen-go/client"
 	"github.com/Clever/wag/samples/gen-go/models"
 	"github.com/Clever/wag/samples/gen-go/server"
+	kayvee "gopkg.in/Clever/kayvee-go.v6/logger"
+
 	"github.com/afex/hystrix-go/hystrix"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -492,6 +494,9 @@ func TestIteratorHeaders(t *testing.T) {
 	testServer := httptest.NewServer(s.Handler)
 	defer testServer.Close()
 	c := client.New(testServer.URL)
+
+	t.Log("Ensure client.SetLogger works")
+	c.SetLogger(kayvee.New("test-custom-logger"))
 
 	book1ID := int64(1)
 	book1Name := "Test"
