@@ -84,7 +84,7 @@ func (c *WagClient) SetCircuitBreakerDebug(b bool) {
 }
 
 // SetLogger allows for setting a custom logger
-func (c *WagClient) SetLogger(logger *logger.Logger) {
+func (c *WagClient) SetLogger(logger logger.KayveeLogger) {
 	c.logger = logger
 	c.circuitDoer.logger = logger
 }
