@@ -1,2 +1,2 @@
-v1.4.3
-- handle put retries correctly
+v1.4.4
+- client.SetLogger accepts the `KayveeLogger` interface
