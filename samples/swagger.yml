@@ -286,6 +286,14 @@ definitions:
       count:
         type: integer
 
+  AnyOfTest:
+    type: object
+    properties:
+      poly:
+        anyOf:
+        - type: string
+        - type: number
+
   Error:
     type: object
     properties:
