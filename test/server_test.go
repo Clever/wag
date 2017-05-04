@@ -203,6 +203,9 @@ func (d *LastCallServer) PutBook(ctx context.Context, input *models.Book) (*mode
 func (d *LastCallServer) GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (*models.AuthorsResponse, string, error) {
 	return nil, "", nil
 }
+func (d *LastCallServer) GetAuthorsWithPut(ctx context.Context, i *models.GetAuthorsWithPutInput) (*models.AuthorsResponse, string, error) {
+	return nil, "", nil
+}
 func (d *LastCallServer) HealthCheck(ctx context.Context) error {
 	return nil
 }
@@ -256,6 +259,9 @@ func (m *MiddlewareTest) PutBook(ctx context.Context, input *models.Book) (*mode
 	return nil, nil
 }
 func (m *MiddlewareTest) GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (*models.AuthorsResponse, string, error) {
+	return nil, "", nil
+}
+func (m *MiddlewareTest) GetAuthorsWithPut(ctx context.Context, i *models.GetAuthorsWithPutInput) (*models.AuthorsResponse, string, error) {
 	return nil, "", nil
 }
 func (m *MiddlewareTest) HealthCheck(ctx context.Context) error {
@@ -334,6 +340,9 @@ func (m *TimeoutController) PutBook(ctx context.Context, input *models.Book) (*m
 	return nil, nil
 }
 func (m *TimeoutController) GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (*models.AuthorsResponse, string, error) {
+	return nil, "", nil
+}
+func (m *TimeoutController) GetAuthorsWithPut(ctx context.Context, i *models.GetAuthorsWithPutInput) (*models.AuthorsResponse, string, error) {
 	return nil, "", nil
 }
 func (m *TimeoutController) HealthCheck(ctx context.Context) error {

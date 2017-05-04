@@ -61,6 +61,9 @@ func (c *ClientContextTest) CreateBook(ctx context.Context, input *models.Book) 
 func (c *ClientContextTest) GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (*models.AuthorsResponse, string, error) {
 	return nil, "", nil
 }
+func (c *ClientContextTest) GetAuthorsWithPut(ctx context.Context, i *models.GetAuthorsWithPutInput) (*models.AuthorsResponse, string, error) {
+	return nil, "", nil
+}
 func (c *ClientContextTest) HealthCheck(ctx context.Context) error {
 	return nil
 }
@@ -102,11 +105,96 @@ func (c *ClientCircuitTest) PutBook(ctx context.Context, input *models.Book) (*m
 func (c *ClientCircuitTest) GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (*models.AuthorsResponse, string, error) {
 	return nil, "", nil
 }
+func (c *ClientCircuitTest) GetAuthorsWithPut(ctx context.Context, i *models.GetAuthorsWithPutInput) (*models.AuthorsResponse, string, error) {
+	return nil, "", nil
+}
 func (c *ClientCircuitTest) HealthCheck(ctx context.Context) error {
 	if c.down {
 		return errors.New("fail")
 	}
 	return nil
+}
+
+type ClientPutPagingTest struct {
+	pageToReturn        string
+	t                   *testing.T
+	expectedRequestBody *models.Book
+	timesPutCalled      int
+}
+
+func (c *ClientPutPagingTest) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, int64, error) {
+	return nil, int64(0), nil
+}
+func (c *ClientPutPagingTest) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (*models.Book, error) {
+	return nil, nil
+}
+func (c *ClientPutPagingTest) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
+	return nil, nil
+}
+func (c *ClientPutPagingTest) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
+	return nil, nil
+}
+func (c *ClientPutPagingTest) PutBook(ctx context.Context, input *models.Book) (*models.Book, error) {
+	return nil, nil
+}
+func (c *ClientPutPagingTest) GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (*models.AuthorsResponse, string, error) {
+	return nil, "", nil
+}
+func (c *ClientPutPagingTest) GetAuthorsWithPut(ctx context.Context, i *models.GetAuthorsWithPutInput) (*models.AuthorsResponse, string, error) {
+	assert.Equal(c.t, c.expectedRequestBody, i.FavoriteBooks)
+	c.timesPutCalled++
+	return &models.AuthorsResponse{
+		AuthorSet: &models.AuthorSet{
+			Results: models.AuthorArray{
+				&models.Author{
+					ID:   "123",
+					Name: "Mary Shelley",
+				},
+			},
+		},
+	}, c.pageToReturn, nil
+}
+func (c *ClientPutPagingTest) HealthCheck(ctx context.Context) error {
+	return nil
+}
+
+func TestPutIterator(t *testing.T) {
+	controller := ClientPutPagingTest{"", t, nil, 0}
+	s := server.New(&controller, "")
+	testServer := httptest.NewServer(s.Handler)
+	defer testServer.Close()
+	hystrix.Flush()
+	c := client.New(testServer.URL)
+
+	requestBody := &models.Book{
+		ID:   int64(123),
+		Name: "Lord of the Flies",
+	}
+
+	controller.expectedRequestBody = requestBody
+
+	iter, err := c.NewGetAuthorsWithPutIter(context.Background(), &models.GetAuthorsWithPutInput{
+		FavoriteBooks: requestBody,
+	})
+	require.NoError(t, err)
+
+	var author models.Author
+
+	// Normally iter.Next would be called in a loop but it's easier to do it this
+	// way for testing.
+	// Additional assertions on the request body happen in the mock handler.
+	controller.pageToReturn = "nextID"
+	ok := iter.Next(&author)
+	require.True(t, ok)
+
+	controller.pageToReturn = ""
+	ok = iter.Next(&author)
+	require.True(t, ok)
+
+	ok = iter.Next(&author)
+	assert.False(t, ok)
+	assert.NoError(t, iter.Err())
+	assert.Equal(t, 2, controller.timesPutCalled)
 }
 
 func TestExponentialClientRetries(t *testing.T) {
@@ -409,6 +497,9 @@ func (c *IterFailTest) PutBook(ctx context.Context, input *models.Book) (*models
 func (c *IterFailTest) GetAuthors(ctx context.Context, input *models.GetAuthorsInput) (*models.AuthorsResponse, string, error) {
 	return c.sampleController.GetAuthors(ctx, input)
 }
+func (c *IterFailTest) GetAuthorsWithPut(ctx context.Context, i *models.GetAuthorsWithPutInput) (*models.AuthorsResponse, string, error) {
+	return nil, "", nil
+}
 func (c *IterFailTest) HealthCheck(ctx context.Context) error {
 	return nil
 }
@@ -480,6 +571,9 @@ func (c *IterHeadersTest) PutBook(ctx context.Context, input *models.Book) (*mod
 }
 func (c *IterHeadersTest) GetAuthors(ctx context.Context, input *models.GetAuthorsInput) (*models.AuthorsResponse, string, error) {
 	return c.sampleController.GetAuthors(ctx, input)
+}
+func (c *IterHeadersTest) GetAuthorsWithPut(ctx context.Context, i *models.GetAuthorsWithPutInput) (*models.AuthorsResponse, string, error) {
+	return nil, "", nil
 }
 func (c *IterHeadersTest) HealthCheck(ctx context.Context) error {
 	return nil

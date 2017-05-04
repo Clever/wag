@@ -224,6 +224,28 @@ paths:
           description: "Success"
           schema:
             $ref: "#/definitions/AuthorsResponse"
+    put:
+      operationId: getAuthorsWithPut
+      description: Gets authors, but needs to use the body so it's a PUT
+      x-paging:
+        pageParameter: startingAfter
+        resourcePath: authorSet.results
+      parameters:
+        - name: name
+          in: query
+          type: string
+        - name: startingAfter
+          in: query
+          type: string
+        - name: favoriteBooks
+          in: body
+          schema:
+            $ref: "#/definitions/Book"
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/AuthorsResponse"
 
 definitions:
   Book:
