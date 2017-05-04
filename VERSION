@@ -1,2 +1,2 @@
-v1.4.4
-- client.SetLogger accepts the `KayveeLogger` interface
+v1.5.0
+- PUT endpoints now support paging
