@@ -150,7 +150,8 @@ func validatePaging(s *spec.Swagger, path, method string, op *spec.Operation) er
 	}
 
 	upperMethod := strings.ToUpper(method)
-	// Not a technical limitation, but semantic
+	// Technically we could support paging for other methods as well, but in most cases it doesn't
+	// make sense (for example, on DELETEs)
 	if upperMethod != "GET" && upperMethod != "PUT" {
 		return fmt.Errorf("%s %s cannot use x-paging. WAG only supports "+
 			"paging on GET endpoints", method, path)
