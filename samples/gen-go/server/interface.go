@@ -20,6 +20,15 @@ type Controller interface {
 	// default: client side HTTP errors, for example: context.DeadlineExceeded.
 	GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (*models.AuthorsResponse, string, error)
 
+	// GetAuthorsWithPut handles PUT requests to /authors
+	// Returns response object and the ID of the next page
+	// Gets authors, but needs to use the body so it's a PUT
+	// 200: *models.AuthorsResponse
+	// 400: *models.BadRequest
+	// 500: *models.InternalError
+	// default: client side HTTP errors, for example: context.DeadlineExceeded.
+	GetAuthorsWithPut(ctx context.Context, i *models.GetAuthorsWithPutInput) (*models.AuthorsResponse, string, error)
+
 	// GetBooks handles GET requests to /books
 	// Returns response object and the ID of the next page
 	// Returns a list of books

@@ -370,6 +370,268 @@ class SwaggerTest {
   }
 
   /**
+   * Gets authors, but needs to use the body so it's a PUT
+   * @param {Object} params
+   * @param {string} [params.name]
+   * @param {string} [params.startingAfter]
+   * @param [params.favoriteBooks]
+   * @param {object} [options]
+   * @param {number} [options.timeout] - A request specific timeout
+   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
+   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {function} [cb]
+   * @returns {Promise}
+   * @fulfill {Object}
+   * @reject {module:swagger-test.Errors.BadRequest}
+   * @reject {module:swagger-test.Errors.InternalError}
+   * @reject {Error}
+   */
+  getAuthorsWithPut(params, options, cb) {
+    if (!cb && typeof options === "function") {
+      cb = options;
+      options = undefined;
+    }
+
+    return new Promise((resolve, reject) => {
+      const rejecter = (err) => {
+        reject(err);
+        if (cb) {
+          cb(err);
+        }
+      };
+      const resolver = (data) => {
+        resolve(data);
+        if (cb) {
+          cb(null, data);
+        }
+      };
+
+
+      if (!options) {
+        options = {};
+      }
+
+      const timeout = options.timeout || this.timeout;
+      const span = options.span;
+
+      const headers = {};
+
+      const query = {};
+      if (typeof params.name !== "undefined") {
+        query["name"] = params.name;
+      }
+  
+      if (typeof params.startingAfter !== "undefined") {
+        query["startingAfter"] = params.startingAfter;
+      }
+  
+
+      if (span) {
+        opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        span.logEvent("PUT /v1/authors");
+        span.setTag("span.kind", "client");
+      }
+
+      const requestOptions = {
+        method: "PUT",
+        uri: this.address + "/v1/authors",
+        json: true,
+        timeout,
+        headers,
+        qs: query,
+        useQuerystring: true,
+      };
+  
+      requestOptions.body = params.favoriteBooks;
+  
+
+      const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
+      const backoffs = retryPolicy.backoffs();
+  
+      let retries = 0;
+      (function requestOnce() {
+        request(requestOptions, (err, response, body) => {
+          if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
+            const backoff = backoffs[retries];
+            retries += 1;
+            setTimeout(requestOnce, backoff);
+            return;
+          }
+          if (err) {
+            rejecter(err);
+            return;
+          }
+
+          switch (response.statusCode) {
+            case 200:
+              resolver(body);
+              break;
+            
+            case 400:
+              rejecter(new Errors.BadRequest(body || {}));
+              return;
+            
+            case 500:
+              rejecter(new Errors.InternalError(body || {}));
+              return;
+            
+            default:
+              rejecter(new Error("Received unexpected statusCode " + response.statusCode));
+              return;
+          }
+        });
+      }());
+    });
+  }
+
+
+  /**
+   * Gets authors, but needs to use the body so it's a PUT
+   * @param {Object} params
+   * @param {string} [params.name]
+   * @param {string} [params.startingAfter]
+   * @param [params.favoriteBooks]
+   * @param {object} [options]
+   * @param {number} [options.timeout] - A request specific timeout
+   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
+   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @returns {Object} iter
+   * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
+   * @returns {function} iter.toArray - returns a promise to the resources as an array
+   * @returns {function} iter.forEach - takes in a function, applies it to each resource
+   */
+  getAuthorsWithPutIter(params, options) {
+    const it = (f, saveResults, cb) => new Promise((resolve, reject) => {
+      const rejecter = (err) => {
+        reject(err);
+        if (cb) {
+          cb(err);
+        }
+      };
+      const resolver = (data) => {
+        resolve(data);
+        if (cb) {
+          cb(null, data);
+        }
+      };
+
+
+      if (!options) {
+        options = {};
+      }
+
+      const timeout = options.timeout || this.timeout;
+      const span = options.span;
+
+      const headers = {};
+
+      const query = {};
+      if (typeof params.name !== "undefined") {
+        query["name"] = params.name;
+      }
+  
+      if (typeof params.startingAfter !== "undefined") {
+        query["startingAfter"] = params.startingAfter;
+      }
+  
+
+      if (span) {
+        opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        span.setTag("span.kind", "client");
+      }
+
+      const requestOptions = {
+        method: "PUT",
+        uri: this.address + "/v1/authors",
+        json: true,
+        timeout,
+        headers,
+        qs: query,
+        useQuerystring: true,
+      };
+  
+      requestOptions.body = params.favoriteBooks;
+  
+
+      const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
+      const backoffs = retryPolicy.backoffs();
+  
+      let results = [];
+      async.whilst(
+        () => requestOptions.uri !== "",
+        cbW => {
+      if (span) {
+        span.logEvent("PUT /v1/authors");
+      }
+      const address = this.address;
+      let retries = 0;
+      (function requestOnce() {
+        request(requestOptions, (err, response, body) => {
+          if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
+            const backoff = backoffs[retries];
+            retries += 1;
+            setTimeout(requestOnce, backoff);
+            return;
+          }
+          if (err) {
+            cbW(err);
+            return;
+          }
+
+          switch (response.statusCode) {
+            case 200:
+              if (saveResults) {
+                results = results.concat(body.authorSet.results.map(f));
+              } else {
+                body.authorSet.results.forEach(f);
+              }
+              break;
+            
+            case 400:
+              cbW(new Errors.BadRequest(body || {}));
+              return;
+            
+            case 500:
+              cbW(new Errors.InternalError(body || {}));
+              return;
+            
+            default:
+              cbW(new Error("Received unexpected statusCode " + response.statusCode));
+              return;
+          }
+
+          requestOptions.qs = null;
+          requestOptions.useQuerystring = false;
+          requestOptions.uri = "";
+          if (response.headers["x-next-page-path"]) {
+            requestOptions.uri = address + response.headers["x-next-page-path"];
+          }
+          cbW();
+        });
+      }());
+        },
+        err => {
+          if (err) {
+            rejecter(err);
+            return;
+          }
+          if (saveResults) {
+            resolver(results);
+          } else {
+            resolver();
+          }
+        }
+      );
+    });
+
+    return {
+      map: (f, cb) => it(f, true, cb),
+      toArray: cb => it(x => x, true, cb),
+      forEach: (f, cb) => it(f, false, cb),
+    };
+  }
+
+  /**
    * Returns a list of books
    * @param {Object} params
    * @param {string[]} [params.authors] - A list of authors. Must specify at least one and at most two

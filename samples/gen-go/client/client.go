@@ -170,6 +170,7 @@ type getAuthorsIterImpl struct {
 	err          error
 	nextURL      string
 	headers      map[string]string
+	body         []byte
 }
 
 // NewgetAuthorsIter constructs an iterator that makes calls to getAuthors for
@@ -185,17 +186,20 @@ func (c *WagClient) NewGetAuthorsIter(ctx context.Context, i *models.GetAuthorsI
 
 	headers := make(map[string]string)
 
+	var body []byte
+
 	return &getAuthorsIterImpl{
 		c:            c,
 		ctx:          ctx,
 		lastResponse: []*models.Author{},
 		nextURL:      path,
 		headers:      headers,
+		body:         body,
 	}, nil
 }
 
 func (i *getAuthorsIterImpl) refresh() error {
-	req, err := http.NewRequest("GET", i.nextURL, nil)
+	req, err := http.NewRequest("GET", i.nextURL, bytes.NewBuffer(i.body))
 
 	if err != nil {
 		i.err = err
@@ -298,6 +302,196 @@ func (c *WagClient) doGetAuthorsRequest(ctx context.Context, req *http.Request, 
 	}
 }
 
+// GetAuthorsWithPut makes a PUT request to /authors
+// Gets authors, but needs to use the body so it's a PUT
+// 200: *models.AuthorsResponse
+// 400: *models.BadRequest
+// 500: *models.InternalError
+// default: client side HTTP errors, for example: context.DeadlineExceeded.
+func (c *WagClient) GetAuthorsWithPut(ctx context.Context, i *models.GetAuthorsWithPutInput) (*models.AuthorsResponse, error) {
+	headers := make(map[string]string)
+
+	var body []byte
+	path, err := i.Path()
+
+	if err != nil {
+		return nil, err
+	}
+
+	path = c.basePath + path
+
+	if i.FavoriteBooks != nil {
+
+		var err error
+		body, err = json.Marshal(i.FavoriteBooks)
+
+		if err != nil {
+			return nil, err
+		}
+
+	}
+
+	req, err := http.NewRequest("PUT", path, bytes.NewBuffer(body))
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp, _, err := c.doGetAuthorsWithPutRequest(ctx, req, headers)
+	return resp, err
+}
+
+type getAuthorsWithPutIterImpl struct {
+	c            *WagClient
+	ctx          context.Context
+	lastResponse []*models.Author
+	index        int
+	err          error
+	nextURL      string
+	headers      map[string]string
+	body         []byte
+}
+
+// NewgetAuthorsWithPutIter constructs an iterator that makes calls to getAuthorsWithPut for
+// each page.
+func (c *WagClient) NewGetAuthorsWithPutIter(ctx context.Context, i *models.GetAuthorsWithPutInput) (GetAuthorsWithPutIter, error) {
+	path, err := i.Path()
+
+	if err != nil {
+		return nil, err
+	}
+
+	path = c.basePath + path
+
+	headers := make(map[string]string)
+
+	var body []byte
+
+	if i.FavoriteBooks != nil {
+
+		var err error
+		body, err = json.Marshal(i.FavoriteBooks)
+
+		if err != nil {
+			return nil, err
+		}
+
+	}
+
+	return &getAuthorsWithPutIterImpl{
+		c:            c,
+		ctx:          ctx,
+		lastResponse: []*models.Author{},
+		nextURL:      path,
+		headers:      headers,
+		body:         body,
+	}, nil
+}
+
+func (i *getAuthorsWithPutIterImpl) refresh() error {
+	req, err := http.NewRequest("PUT", i.nextURL, bytes.NewBuffer(i.body))
+
+	if err != nil {
+		i.err = err
+		return err
+	}
+
+	resp, nextPage, err := i.c.doGetAuthorsWithPutRequest(i.ctx, req, i.headers)
+	if err != nil {
+		i.err = err
+		return err
+	}
+
+	i.lastResponse = resp.AuthorSet.Results
+	i.index = 0
+	if nextPage != "" {
+		i.nextURL = i.c.basePath + nextPage
+	} else {
+		i.nextURL = ""
+	}
+	return nil
+}
+
+// Next retrieves the next resource from the iterator and assigns it to the
+// provided pointer, fetching a new page if necessary. Returns true if it
+// successfully retrieves a new resource.
+func (i *getAuthorsWithPutIterImpl) Next(v *models.Author) bool {
+	if i.err != nil {
+		return false
+	} else if i.index < len(i.lastResponse) {
+		*v = *i.lastResponse[i.index]
+		i.index++
+		return true
+	} else if i.nextURL == "" {
+		return false
+	}
+
+	if err := i.refresh(); err != nil {
+		return false
+	}
+	return i.Next(v)
+}
+
+// Err returns an error if one occurred when .Next was called.
+func (i *getAuthorsWithPutIterImpl) Err() error {
+	return i.err
+}
+
+func (c *WagClient) doGetAuthorsWithPutRequest(ctx context.Context, req *http.Request, headers map[string]string) (*models.AuthorsResponse, string, error) {
+	client := &http.Client{Transport: c.transport}
+
+	for field, value := range headers {
+		req.Header.Set(field, value)
+	}
+
+	// Add the opname for doers like tracing
+	ctx = context.WithValue(ctx, opNameCtx{}, "getAuthorsWithPut")
+	req = req.WithContext(ctx)
+	// Don't add the timeout in a "doer" because we don't want to call "defer.cancel()"
+	// until we've finished all the processing of the request object. Otherwise we'll cancel
+	// our own request before we've finished it.
+	if c.defaultTimeout != 0 {
+		ctx, cancel := context.WithTimeout(req.Context(), c.defaultTimeout)
+		defer cancel()
+		req = req.WithContext(ctx)
+	}
+	resp, err := c.requestDoer.Do(client, req)
+	if err != nil {
+		return nil, "", err
+	}
+	defer resp.Body.Close()
+	switch resp.StatusCode {
+
+	case 200:
+
+		var output models.AuthorsResponse
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, "", err
+		}
+
+		return &output, resp.Header.Get("X-Next-Page-Path"), nil
+
+	case 400:
+
+		var output models.BadRequest
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, "", err
+		}
+		return nil, "", &output
+
+	case 500:
+
+		var output models.InternalError
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, "", err
+		}
+		return nil, "", &output
+
+	default:
+		return nil, "", &models.InternalError{Message: "Unknown response"}
+	}
+}
+
 // GetBooks makes a GET request to /books
 // Returns a list of books
 // 200: []models.Book
@@ -336,6 +530,7 @@ type getBooksIterImpl struct {
 	err          error
 	nextURL      string
 	headers      map[string]string
+	body         []byte
 }
 
 // NewgetBooksIter constructs an iterator that makes calls to getBooks for
@@ -353,17 +548,20 @@ func (c *WagClient) NewGetBooksIter(ctx context.Context, i *models.GetBooksInput
 
 	headers["authorization"] = i.Authorization
 
+	var body []byte
+
 	return &getBooksIterImpl{
 		c:            c,
 		ctx:          ctx,
 		lastResponse: []models.Book{},
 		nextURL:      path,
 		headers:      headers,
+		body:         body,
 	}, nil
 }
 
 func (i *getBooksIterImpl) refresh() error {
-	req, err := http.NewRequest("GET", i.nextURL, nil)
+	req, err := http.NewRequest("GET", i.nextURL, bytes.NewBuffer(i.body))
 
 	if err != nil {
 		i.err = err

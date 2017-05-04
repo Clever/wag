@@ -49,6 +49,39 @@ func (i GetAuthorsInput) Path() (string, error) {
 	return path + "?" + urlVals.Encode(), nil
 }
 
+// GetAuthorsWithPutInput holds the input parameters for a getAuthorsWithPut operation.
+type GetAuthorsWithPutInput struct {
+	Name          *string
+	StartingAfter *string
+	FavoriteBooks *Book
+}
+
+// Validate returns an error if any of the GetAuthorsWithPutInput parameters don't satisfy the
+// requirements from the swagger yml file.
+func (i GetAuthorsWithPutInput) Validate() error {
+
+	if err := i.FavoriteBooks.Validate(nil); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Path returns the URI path for the input.
+func (i GetAuthorsWithPutInput) Path() (string, error) {
+	path := "/v1/authors"
+	urlVals := url.Values{}
+
+	if i.Name != nil {
+		urlVals.Add("name", *i.Name)
+	}
+
+	if i.StartingAfter != nil {
+		urlVals.Add("startingAfter", *i.StartingAfter)
+	}
+
+	return path + "?" + urlVals.Encode(), nil
+}
+
 // GetBooksInput holds the input parameters for a getBooks operation.
 type GetBooksInput struct {
 	Authors       []string

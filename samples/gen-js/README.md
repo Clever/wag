@@ -10,6 +10,8 @@ swagger-test client library.
         * _instance_
             * [.getAuthors(params, [options], [cb])](#module_swagger-test--SwaggerTest+getAuthors) ⇒ <code>Promise</code>
             * [.getAuthorsIter(params, [options])](#module_swagger-test--SwaggerTest+getAuthorsIter) ⇒ <code>Object</code> &#124; <code>function</code> &#124; <code>function</code> &#124; <code>function</code>
+            * [.getAuthorsWithPut(params, [options], [cb])](#module_swagger-test--SwaggerTest+getAuthorsWithPut) ⇒ <code>Promise</code>
+            * [.getAuthorsWithPutIter(params, [options])](#module_swagger-test--SwaggerTest+getAuthorsWithPutIter) ⇒ <code>Object</code> &#124; <code>function</code> &#124; <code>function</code> &#124; <code>function</code>
             * [.getBooks(params, [options], [cb])](#module_swagger-test--SwaggerTest+getBooks) ⇒ <code>Promise</code>
             * [.getBooksIter(params, [options])](#module_swagger-test--SwaggerTest+getBooksIter) ⇒ <code>Object</code> &#124; <code>function</code> &#124; <code>function</code> &#124; <code>function</code>
             * [.createBook(newBook, [options], [cb])](#module_swagger-test--SwaggerTest+createBook) ⇒ <code>Promise</code>
@@ -83,6 +85,48 @@ Gets authors
 | params | <code>Object</code> |  |
 | [params.name] | <code>string</code> |  |
 | [params.startingAfter] | <code>string</code> |  |
+| [options] | <code>object</code> |  |
+| [options.timeout] | <code>number</code> | A request specific timeout |
+| [options.span] | <code>[Span](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html)</code> | An OpenTracing span - For example from the parent request |
+| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | A request specific retryPolicy |
+
+<a name="module_swagger-test--SwaggerTest+getAuthorsWithPut"></a>
+
+#### swaggerTest.getAuthorsWithPut(params, [options], [cb]) ⇒ <code>Promise</code>
+Gets authors, but needs to use the body so it's a PUT
+
+**Kind**: instance method of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
+**Fulfill**: <code>Object</code>  
+**Reject**: <code>[BadRequest](#module_swagger-test--SwaggerTest.Errors.BadRequest)</code>  
+**Reject**: <code>[InternalError](#module_swagger-test--SwaggerTest.Errors.InternalError)</code>  
+**Reject**: <code>Error</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| params | <code>Object</code> |  |
+| [params.name] | <code>string</code> |  |
+| [params.startingAfter] | <code>string</code> |  |
+| [params.favoriteBooks] |  |  |
+| [options] | <code>object</code> |  |
+| [options.timeout] | <code>number</code> | A request specific timeout |
+| [options.span] | <code>[Span](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html)</code> | An OpenTracing span - For example from the parent request |
+| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | A request specific retryPolicy |
+| [cb] | <code>function</code> |  |
+
+<a name="module_swagger-test--SwaggerTest+getAuthorsWithPutIter"></a>
+
+#### swaggerTest.getAuthorsWithPutIter(params, [options]) ⇒ <code>Object</code> &#124; <code>function</code> &#124; <code>function</code> &#124; <code>function</code>
+Gets authors, but needs to use the body so it's a PUT
+
+**Kind**: instance method of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
+**Returns**: <code>Object</code> - iter<code>function</code> - iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array<code>function</code> - iter.toArray - returns a promise to the resources as an array<code>function</code> - iter.forEach - takes in a function, applies it to each resource  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| params | <code>Object</code> |  |
+| [params.name] | <code>string</code> |  |
+| [params.startingAfter] | <code>string</code> |  |
+| [params.favoriteBooks] |  |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
 | [options.span] | <code>[Span](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html)</code> | An OpenTracing span - For example from the parent request |
