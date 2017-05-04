@@ -97,6 +97,18 @@ func (c *ControllerImpl) GetAuthors(ctx context.Context, i *models.GetAuthorsInp
 	}, "", nil
 }
 
+// GetAuthorsWithPut gets authors with a PUT (because it needs a body).
+func (c *ControllerImpl) GetAuthorsWithPut(ctx context.Context, i *models.GetAuthorsWithPutInput) (
+	*models.AuthorsResponse, string, error,
+) {
+	return &models.AuthorsResponse{
+		AuthorSet: &models.AuthorSet{
+			RandomProp: int64(3),
+			Results:    models.AuthorArray(c.authors),
+		},
+	}, "", nil
+}
+
 // HealthCheck returns nil always.
 func (c *ControllerImpl) HealthCheck(ctx context.Context) error {
 	return nil

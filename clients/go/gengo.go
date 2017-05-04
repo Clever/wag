@@ -287,14 +287,14 @@ func generateIteratorTypes(s *spec.Swagger, g *swagger.Generator, paths *spec.Pa
 func operationCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPath string) (string, error) {
 	var buf bytes.Buffer
 
-	method, err := methodCode(s, op, basePath, method, methodPath)
+	generatedMethodCodeString, err := methodCode(s, op, basePath, method, methodPath)
 	if err != nil {
 		return "", err
 	}
 
-	buf.WriteString(method)
+	buf.WriteString(generatedMethodCodeString)
 	if _, hasPaging := swagger.PagingParam(op); hasPaging {
-		iter, err := iterCode(s, op, basePath, methodPath)
+		iter, err := iterCode(s, op, basePath, methodPath, method)
 		if err != nil {
 			return "", err
 		}
@@ -414,10 +414,7 @@ func buildPathCode(s *spec.Swagger, op *spec.Operation, basePath, methodPath str
 	return buf.String()
 }
 
-// buildRequestCode adds the body and makes the request
-func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string) string {
-	var buf bytes.Buffer
-
+func buildBodyCode(s *spec.Swagger, op *spec.Operation, method string) string {
 	for _, param := range op.Parameters {
 		if param.In == "body" {
 			t := swagger.ParamToTemplate(&param, op)
@@ -432,9 +429,16 @@ func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string) string
 			if err != nil {
 				panic(fmt.Errorf("unexpected error: %s", err))
 			}
-			buf.WriteString(str)
+			return str
 		}
 	}
+	return ""
+}
+
+// buildRequestCode adds the body and makes the request
+func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string) string {
+	var buf bytes.Buffer
+	buf.WriteString(buildBodyCode(s, op, method))
 
 	buf.WriteString(fmt.Sprintf(`
 	req, err := http.NewRequest("%s", path, bytes.NewBuffer(body))
@@ -633,7 +637,7 @@ var codeDetectorTmplStr = `
 	{{end}}
 `
 
-func iterCode(s *spec.Swagger, op *spec.Operation, basePath, methodPath string) (string, error) {
+func iterCode(s *spec.Swagger, op *spec.Operation, basePath, methodPath, method string) (string, error) {
 	capOpID := swagger.Capitalize(op.ID)
 	resourceType, needsPointer, err := swagger.PagingResourceType(s, op)
 	if err != nil {
@@ -660,6 +664,8 @@ func iterCode(s *spec.Swagger, op *spec.Operation, basePath, methodPath string) 
 			Input:                swagger.OperationInput(op),
 			BuildPathCode:        buildPathCode(s, op, basePath, methodPath),
 			BuildHeadersCode:     buildHeadersCode(s, op),
+			BuildBodyCode:        buildBodyCode(s, op, method),
+			Method:               method,
 			ResponseType:         responseType,
 			ResourceType:         resourceType,
 			ResponseAccessString: resourceAccessString,
@@ -674,6 +680,8 @@ type iterTmpl struct {
 	Input                string
 	BuildPathCode        string
 	BuildHeadersCode     string
+	BuildBodyCode        string
+	Method               string
 	ResponseType         string
 	ResourceType         string
 	ResponseAccessString string
@@ -689,6 +697,7 @@ type {{.OpID}}IterImpl struct {
 	err          error
 	nextURL      string
 	headers      map[string]string
+	body         []byte
 }
 
 // New{{.OpID}}Iter constructs an iterator that makes calls to {{.OpID}} for
@@ -699,17 +708,21 @@ func (c *WagClient) New{{.CapOpID}}Iter(ctx context.Context, {{.Input}}) ({{.Cap
 	headers := make(map[string]string)
 	{{.BuildHeadersCode}}
 
+	var body []byte
+	{{.BuildBodyCode}}
+
 	return &{{.OpID}}IterImpl{
 		c:            c,
 		ctx:          ctx,
 		lastResponse: {{.ResponseType}}{},
 		nextURL:      path,
 		headers:      headers,
+		body:         body,
 	}, nil
 }
 
 func (i *{{.OpID}}IterImpl) refresh() error {
-	req, err := http.NewRequest("GET", i.nextURL, nil)
+	req, err := http.NewRequest("{{.Method}}", i.nextURL, bytes.NewBuffer(i.body))
 
 	if err != nil {
 		i.err = err

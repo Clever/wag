@@ -52,6 +52,28 @@ func (_mr *_MockClientRecorder) NewGetAuthorsIter(arg0, arg1 interface{}) *gomoc
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "NewGetAuthorsIter", arg0, arg1)
 }
 
+func (_m *MockClient) GetAuthorsWithPut(ctx context.Context, i *models.GetAuthorsWithPutInput) (*models.AuthorsResponse, error) {
+	ret := _m.ctrl.Call(_m, "GetAuthorsWithPut", ctx, i)
+	ret0, _ := ret[0].(*models.AuthorsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockClientRecorder) GetAuthorsWithPut(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetAuthorsWithPut", arg0, arg1)
+}
+
+func (_m *MockClient) NewGetAuthorsWithPutIter(ctx context.Context, i *models.GetAuthorsWithPutInput) (GetAuthorsWithPutIter, error) {
+	ret := _m.ctrl.Call(_m, "NewGetAuthorsWithPutIter", ctx, i)
+	ret0, _ := ret[0].(GetAuthorsWithPutIter)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockClientRecorder) NewGetAuthorsWithPutIter(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "NewGetAuthorsWithPutIter", arg0, arg1)
+}
+
 func (_m *MockClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models.Book, error) {
 	ret := _m.ctrl.Call(_m, "GetBooks", ctx, i)
 	ret0, _ := ret[0].([]models.Book)
@@ -166,6 +188,47 @@ func (_m *MockGetAuthorsIter) Err() error {
 }
 
 func (_mr *_MockGetAuthorsIterRecorder) Err() *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "Err")
+}
+
+// Mock of GetAuthorsWithPutIter interface
+type MockGetAuthorsWithPutIter struct {
+	ctrl     *gomock.Controller
+	recorder *_MockGetAuthorsWithPutIterRecorder
+}
+
+// Recorder for MockGetAuthorsWithPutIter (not exported)
+type _MockGetAuthorsWithPutIterRecorder struct {
+	mock *MockGetAuthorsWithPutIter
+}
+
+func NewMockGetAuthorsWithPutIter(ctrl *gomock.Controller) *MockGetAuthorsWithPutIter {
+	mock := &MockGetAuthorsWithPutIter{ctrl: ctrl}
+	mock.recorder = &_MockGetAuthorsWithPutIterRecorder{mock}
+	return mock
+}
+
+func (_m *MockGetAuthorsWithPutIter) EXPECT() *_MockGetAuthorsWithPutIterRecorder {
+	return _m.recorder
+}
+
+func (_m *MockGetAuthorsWithPutIter) Next(_param0 *models.Author) bool {
+	ret := _m.ctrl.Call(_m, "Next", _param0)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+func (_mr *_MockGetAuthorsWithPutIterRecorder) Next(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "Next", arg0)
+}
+
+func (_m *MockGetAuthorsWithPutIter) Err() error {
+	ret := _m.ctrl.Call(_m, "Err")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+func (_mr *_MockGetAuthorsWithPutIterRecorder) Err() *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "Err")
 }
 

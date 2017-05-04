@@ -186,6 +186,135 @@ func newGetAuthorsInput(r *http.Request) (*models.GetAuthorsInput, error) {
 	return &input, nil
 }
 
+// statusCodeForGetAuthorsWithPut returns the status code corresponding to the returned
+// object. It returns -1 if the type doesn't correspond to anything.
+func statusCodeForGetAuthorsWithPut(obj interface{}) int {
+
+	switch obj.(type) {
+
+	case *models.AuthorsResponse:
+		return 200
+
+	case *models.BadRequest:
+		return 400
+
+	case *models.InternalError:
+		return 500
+
+	case models.AuthorsResponse:
+		return 200
+
+	case models.BadRequest:
+		return 400
+
+	case models.InternalError:
+		return 500
+
+	default:
+		return -1
+	}
+}
+
+func (h handler) GetAuthorsWithPutHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+
+	input, err := newGetAuthorsWithPutInput(r)
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		http.Error(w, jsonMarshalNoError(models.BadRequest{Message: err.Error()}), http.StatusBadRequest)
+		return
+	}
+
+	err = input.Validate()
+
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		http.Error(w, jsonMarshalNoError(models.BadRequest{Message: err.Error()}), http.StatusBadRequest)
+		return
+	}
+
+	resp, nextPageID, err := h.GetAuthorsWithPut(ctx, input)
+
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		if btErr, ok := err.(*errors.Error); ok {
+			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
+		}
+		statusCode := statusCodeForGetAuthorsWithPut(err)
+		if statusCode == -1 {
+			err = models.InternalError{Message: err.Error()}
+			statusCode = 500
+		}
+		http.Error(w, jsonMarshalNoError(err), statusCode)
+		return
+	}
+
+	respBytes, err := json.MarshalIndent(resp, "", "\t")
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		http.Error(w, jsonMarshalNoError(models.InternalError{Message: err.Error()}), http.StatusInternalServerError)
+		return
+	}
+
+	if !swag.IsZero(nextPageID) {
+		input.StartingAfter = &nextPageID
+		path, err := input.Path()
+		if err != nil {
+			logger.FromContext(ctx).AddContext("error", err.Error())
+			http.Error(w, jsonMarshalNoError(models.InternalError{Message: err.Error()}), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("X-Next-Page-Path", path)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCodeForGetAuthorsWithPut(resp))
+	w.Write(respBytes)
+
+}
+
+// newGetAuthorsWithPutInput takes in an http.Request an returns the input struct.
+func newGetAuthorsWithPutInput(r *http.Request) (*models.GetAuthorsWithPutInput, error) {
+	var input models.GetAuthorsWithPutInput
+
+	var err error
+	_ = err
+
+	nameStrs := r.URL.Query()["name"]
+
+	if len(nameStrs) > 0 {
+		var nameTmp string
+		nameStr := nameStrs[0]
+		nameTmp, err = nameStr, error(nil)
+		if err != nil {
+			return nil, err
+		}
+		input.Name = &nameTmp
+	}
+
+	startingAfterStrs := r.URL.Query()["startingAfter"]
+
+	if len(startingAfterStrs) > 0 {
+		var startingAfterTmp string
+		startingAfterStr := startingAfterStrs[0]
+		startingAfterTmp, err = startingAfterStr, error(nil)
+		if err != nil {
+			return nil, err
+		}
+		input.StartingAfter = &startingAfterTmp
+	}
+
+	data, err := ioutil.ReadAll(r.Body)
+
+	if len(data) > 0 {
+		input.FavoriteBooks = &models.Book{}
+		if err := json.NewDecoder(bytes.NewReader(data)).Decode(input.FavoriteBooks); err != nil {
+			return nil, err
+		}
+	}
+
+	return &input, nil
+}
+
 // statusCodeForGetBooks returns the status code corresponding to the returned
 // object. It returns -1 if the type doesn't correspond to anything.
 func statusCodeForGetBooks(obj interface{}) int {

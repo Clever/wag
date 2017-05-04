@@ -21,6 +21,16 @@ type Client interface {
 
 	NewGetAuthorsIter(ctx context.Context, i *models.GetAuthorsInput) (GetAuthorsIter, error)
 
+	// GetAuthorsWithPut makes a PUT request to /authors
+	// Gets authors, but needs to use the body so it's a PUT
+	// 200: *models.AuthorsResponse
+	// 400: *models.BadRequest
+	// 500: *models.InternalError
+	// default: client side HTTP errors, for example: context.DeadlineExceeded.
+	GetAuthorsWithPut(ctx context.Context, i *models.GetAuthorsWithPutInput) (*models.AuthorsResponse, error)
+
+	NewGetAuthorsWithPutIter(ctx context.Context, i *models.GetAuthorsWithPutInput) (GetAuthorsWithPutIter, error)
+
 	// GetBooks makes a GET request to /books
 	// Returns a list of books
 	// 200: []models.Book
@@ -77,6 +87,12 @@ type Client interface {
 
 // GetAuthorsIter defines the methods available on GetAuthors iterators.
 type GetAuthorsIter interface {
+	Next(*models.Author) bool
+	Err() error
+}
+
+// GetAuthorsWithPutIter defines the methods available on GetAuthorsWithPut iterators.
+type GetAuthorsWithPutIter interface {
 	Next(*models.Author) bool
 	Err() error
 }
