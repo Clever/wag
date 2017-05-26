@@ -6,7 +6,7 @@ PKGS := $(shell go list ./... | grep -v /vendor | grep -v /samples/gen* | grep -
 VERSION := $(shell head -n 1 VERSION)
 EXECUTABLE := wag
 
-$(eval $(call golang-version-check,1.7))
+$(eval $(call golang-version-check,1.8))
 
 MOCKGEN := $(GOPATH)/bin/mockgen
 .PHONY: $(MOCKGEN)
