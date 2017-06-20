@@ -30,7 +30,7 @@ type Book struct {
 	Name string `json:"name,omitempty"`
 
 	// other
-	Other map[string]interface{} `json:"other,omitempty"`
+	Other map[string]string `json:"other,omitempty"`
 
 	// other array
 	OtherArray map[string][]string `json:"otherArray,omitempty"`
@@ -41,6 +41,11 @@ func (m *Book) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateGenre(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateOther(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -90,6 +95,19 @@ func (m *Book) validateGenre(formats strfmt.Registry) error {
 
 	// value enum
 	if err := m.validateGenreEnum("genre", "body", m.Genre); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Book) validateOther(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Other) { // not required
+		return nil
+	}
+
+	if err := validate.Required("other", "body", m.Other); err != nil {
 		return err
 	}
 

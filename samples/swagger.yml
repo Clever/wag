@@ -266,7 +266,7 @@ definitions:
           - horror
       other:
         additionalProperties:
-          type: object
+          type: string
       otherArray:
         additionalProperties:
           type: array
