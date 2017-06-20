@@ -266,7 +266,7 @@ definitions:
           - horror
       other:
         additionalProperties:
-          type: string
+          type: object
       otherArray:
         additionalProperties:
           type: array
@@ -334,3 +334,6 @@ definitions:
     properties:
       message:
         type: string
+
+  RawInterface:
+    type: object

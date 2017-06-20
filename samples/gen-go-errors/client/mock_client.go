@@ -9,33 +9,37 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// Mock of Client interface
+// MockClient is a mock of Client interface
 type MockClient struct {
 	ctrl     *gomock.Controller
-	recorder *_MockClientRecorder
+	recorder *MockClientMockRecorder
 }
 
-// Recorder for MockClient (not exported)
-type _MockClientRecorder struct {
+// MockClientMockRecorder is the mock recorder for MockClient
+type MockClientMockRecorder struct {
 	mock *MockClient
 }
 
+// NewMockClient creates a new mock instance
 func NewMockClient(ctrl *gomock.Controller) *MockClient {
 	mock := &MockClient{ctrl: ctrl}
-	mock.recorder = &_MockClientRecorder{mock}
+	mock.recorder = &MockClientMockRecorder{mock}
 	return mock
 }
 
-func (_m *MockClient) EXPECT() *_MockClientRecorder {
+// EXPECT returns an object that allows the caller to indicate expected use
+func (_m *MockClient) EXPECT() *MockClientMockRecorder {
 	return _m.recorder
 }
 
+// GetBook mocks base method
 func (_m *MockClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
 	ret := _m.ctrl.Call(_m, "GetBook", ctx, i)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-func (_mr *_MockClientRecorder) GetBook(arg0, arg1 interface{}) *gomock.Call {
+// GetBook indicates an expected call of GetBook
+func (_mr *MockClientMockRecorder) GetBook(arg0, arg1 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetBook", arg0, arg1)
 }

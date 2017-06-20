@@ -9,33 +9,37 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// Mock of Controller interface
+// MockController is a mock of Controller interface
 type MockController struct {
 	ctrl     *gomock.Controller
-	recorder *_MockControllerRecorder
+	recorder *MockControllerMockRecorder
 }
 
-// Recorder for MockController (not exported)
-type _MockControllerRecorder struct {
+// MockControllerMockRecorder is the mock recorder for MockController
+type MockControllerMockRecorder struct {
 	mock *MockController
 }
 
+// NewMockController creates a new mock instance
 func NewMockController(ctrl *gomock.Controller) *MockController {
 	mock := &MockController{ctrl: ctrl}
-	mock.recorder = &_MockControllerRecorder{mock}
+	mock.recorder = &MockControllerMockRecorder{mock}
 	return mock
 }
 
-func (_m *MockController) EXPECT() *_MockControllerRecorder {
+// EXPECT returns an object that allows the caller to indicate expected use
+func (_m *MockController) EXPECT() *MockControllerMockRecorder {
 	return _m.recorder
 }
 
+// Health mocks base method
 func (_m *MockController) Health(ctx context.Context, i *models.HealthInput) error {
 	ret := _m.ctrl.Call(_m, "Health", ctx, i)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-func (_mr *_MockControllerRecorder) Health(arg0, arg1 interface{}) *gomock.Call {
+// Health indicates an expected call of Health
+func (_mr *MockControllerMockRecorder) Health(arg0, arg1 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "Health", arg0, arg1)
 }
