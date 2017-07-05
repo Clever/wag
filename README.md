@@ -268,11 +268,11 @@ Note that custom string validation only applies to input parameters and does not
 Right now we do not allow user-defined custom strings, but this is something we may add if there's sufficient demand.
 
 
-### Using the Javascript Client
+## Using the Javascript Client
 You can initialize the client by either passing a url or by using [discovery](https://github.com/Clever/discovery-node).
 
 ```javascript
-import * as SampleClientLib from 'sample-client-lib-js';
+import * as SampleClientLib from '@clever/sample-client-lib-js';
 
 const sampleClient = new SampleClientLib({address: "https://url_of_your_service:port"}); // Explicit url
 // OR
