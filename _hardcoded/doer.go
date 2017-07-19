@@ -212,7 +212,9 @@ type HystrixSSEEvent struct {
 }
 
 func logEvent(l logger.KayveeLogger, e HystrixSSEEvent) {
-	l.InfoD(e.Name, map[string]interface{}{
+	l.InfoD("hystrix-sse-event", map[string]interface{}{
+		"type":                            e.Type,
+		"name":                            e.Name,
 		"requestCount":                    e.RequestCount,
 		"errorCount":                      e.ErrorCount,
 		"errorPercentage":                 e.ErrorPercentage,
