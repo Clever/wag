@@ -381,10 +381,15 @@ func (c *WagClient) do%sRequest(ctx context.Context, req *http.Request, headers 
 	}
 	resp, err := c.requestDoer.Do(client, req)
 	if err != nil {
+		c.logger.ErrorD("client-request-finished", map[string]string{
+		  "service": "%s",
+		  "message": err,
+		  "status_code": resp.StatusCode,
+		})
 		return %serr
 	}
 	defer resp.Body.Close()
-`, capOpID, returnType, op.ID, errReturn))
+`, capOpID, returnType, op.ID, s.Info.InfoProps.Title, errReturn))
 
 	buf.WriteString(parseResponseCode(s, op, capOpID))
 

@@ -267,6 +267,11 @@ func (c *WagClient) doGetAuthorsRequest(ctx context.Context, req *http.Request, 
 	}
 	resp, err := c.requestDoer.Do(client, req)
 	if err != nil {
+		c.logger.ErrorD("client-request-finished", map[string]string{
+			"service":     "swagger-test",
+			"message":     err,
+			"status_code": resp.StatusCode,
+		})
 		return nil, "", err
 	}
 	defer resp.Body.Close()
@@ -457,6 +462,11 @@ func (c *WagClient) doGetAuthorsWithPutRequest(ctx context.Context, req *http.Re
 	}
 	resp, err := c.requestDoer.Do(client, req)
 	if err != nil {
+		c.logger.ErrorD("client-request-finished", map[string]string{
+			"service":     "swagger-test",
+			"message":     err,
+			"status_code": resp.StatusCode,
+		})
 		return nil, "", err
 	}
 	defer resp.Body.Close()
@@ -629,6 +639,11 @@ func (c *WagClient) doGetBooksRequest(ctx context.Context, req *http.Request, he
 	}
 	resp, err := c.requestDoer.Do(client, req)
 	if err != nil {
+		c.logger.ErrorD("client-request-finished", map[string]string{
+			"service":     "swagger-test",
+			"message":     err,
+			"status_code": resp.StatusCode,
+		})
 		return nil, "", err
 	}
 	defer resp.Body.Close()
@@ -716,6 +731,11 @@ func (c *WagClient) doCreateBookRequest(ctx context.Context, req *http.Request, 
 	}
 	resp, err := c.requestDoer.Do(client, req)
 	if err != nil {
+		c.logger.ErrorD("client-request-finished", map[string]string{
+			"service":     "swagger-test",
+			"message":     err,
+			"status_code": resp.StatusCode,
+		})
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -803,6 +823,11 @@ func (c *WagClient) doPutBookRequest(ctx context.Context, req *http.Request, hea
 	}
 	resp, err := c.requestDoer.Do(client, req)
 	if err != nil {
+		c.logger.ErrorD("client-request-finished", map[string]string{
+			"service":     "swagger-test",
+			"message":     err,
+			"status_code": resp.StatusCode,
+		})
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -891,6 +916,11 @@ func (c *WagClient) doGetBookByIDRequest(ctx context.Context, req *http.Request,
 	}
 	resp, err := c.requestDoer.Do(client, req)
 	if err != nil {
+		c.logger.ErrorD("client-request-finished", map[string]string{
+			"service":     "swagger-test",
+			"message":     err,
+			"status_code": resp.StatusCode,
+		})
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -990,6 +1020,11 @@ func (c *WagClient) doGetBookByID2Request(ctx context.Context, req *http.Request
 	}
 	resp, err := c.requestDoer.Do(client, req)
 	if err != nil {
+		c.logger.ErrorD("client-request-finished", map[string]string{
+			"service":     "swagger-test",
+			"message":     err,
+			"status_code": resp.StatusCode,
+		})
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -1074,6 +1109,11 @@ func (c *WagClient) doHealthCheckRequest(ctx context.Context, req *http.Request,
 	}
 	resp, err := c.requestDoer.Do(client, req)
 	if err != nil {
+		c.logger.ErrorD("client-request-finished", map[string]string{
+			"service":     "swagger-test",
+			"message":     err,
+			"status_code": resp.StatusCode,
+		})
 		return err
 	}
 	defer resp.Body.Close()

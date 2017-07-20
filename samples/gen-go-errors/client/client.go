@@ -182,6 +182,11 @@ func (c *WagClient) doGetBookRequest(ctx context.Context, req *http.Request, hea
 	}
 	resp, err := c.requestDoer.Do(client, req)
 	if err != nil {
+		c.logger.ErrorD("client-request-finished", map[string]string{
+			"service":     "swagger-test",
+			"message":     err,
+			"status_code": resp.StatusCode,
+		})
 		return err
 	}
 	defer resp.Body.Close()

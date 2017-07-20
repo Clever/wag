@@ -194,6 +194,11 @@ func (c *WagClient) doNilCheckRequest(ctx context.Context, req *http.Request, he
 	}
 	resp, err := c.requestDoer.Do(client, req)
 	if err != nil {
+		c.logger.ErrorD("client-request-finished", map[string]string{
+			"service":     "nil-test",
+			"message":     err,
+			"status_code": resp.StatusCode,
+		})
 		return err
 	}
 	defer resp.Body.Close()
