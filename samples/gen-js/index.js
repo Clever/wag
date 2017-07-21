@@ -1,5 +1,6 @@
 const async = require("async");
 const discovery = require("clever-discovery");
+const kayvee = require("kayvee");
 const request = require("request");
 const opentracing = require("opentracing");
 
@@ -90,6 +91,8 @@ class SwaggerTest {
    * in milliseconds. This can be overridden on a per-request basis.
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy=RetryPolicies.Single] - The logic to
    * determine which requests to retry, as well as how many times to retry.
+   * @param {module:kayvee.Logger} [options.logger=logger.New("swagger-test-wagclient")] - The Kayvee 
+   * logger to use in the client.
    */
   constructor(options) {
     options = options || {};
@@ -111,6 +114,11 @@ class SwaggerTest {
     if (options.retryPolicy) {
       this.retryPolicy = options.retryPolicy;
     }
+	if (options.logger) {
+	  this.logger = options.logger;
+	} else {
+	  this.logger =  new kayvee.logger("swagger-test-wagclient");
+	}
   }
 
   /**
@@ -298,6 +306,11 @@ class SwaggerTest {
       async.whilst(
         () => requestOptions.uri !== "",
         cbW => {
+	  this.logger.errorD("client-request-finished", {
+		"backend": "swagger-test",
+		"message": arguments.length > 0 ? arguments[0] : "",
+		"status_code": 0
+	  });
       if (span) {
         span.logEvent("GET /v1/authors");
       }
@@ -560,6 +573,11 @@ class SwaggerTest {
       async.whilst(
         () => requestOptions.uri !== "",
         cbW => {
+	  this.logger.errorD("client-request-finished", {
+		"backend": "swagger-test",
+		"message": arguments.length > 0 ? arguments[0] : "",
+		"status_code": 0
+	  });
       if (span) {
         span.logEvent("PUT /v1/authors");
       }
@@ -900,6 +918,11 @@ class SwaggerTest {
       async.whilst(
         () => requestOptions.uri !== "",
         cbW => {
+	  this.logger.errorD("client-request-finished", {
+		"backend": "swagger-test",
+		"message": arguments.length > 0 ? arguments[0] : "",
+		"status_code": 0
+	  });
       if (span) {
         span.logEvent("GET /v1/books");
       }

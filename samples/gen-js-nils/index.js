@@ -1,5 +1,6 @@
 const async = require("async");
 const discovery = require("clever-discovery");
+const kayvee = require("kayvee");
 const request = require("request");
 const opentracing = require("opentracing");
 
@@ -90,6 +91,8 @@ class NilTest {
    * in milliseconds. This can be overridden on a per-request basis.
    * @param {module:nil-test.RetryPolicies} [options.retryPolicy=RetryPolicies.Single] - The logic to
    * determine which requests to retry, as well as how many times to retry.
+   * @param {module:kayvee.Logger} [options.logger=logger.New("nil-test-wagclient")] - The Kayvee 
+   * logger to use in the client.
    */
   constructor(options) {
     options = options || {};
@@ -111,6 +114,11 @@ class NilTest {
     if (options.retryPolicy) {
       this.retryPolicy = options.retryPolicy;
     }
+	if (options.logger) {
+	  this.logger = options.logger;
+	} else {
+	  this.logger =  new kayvee.logger("nil-test-wagclient");
+	}
   }
 
   /**

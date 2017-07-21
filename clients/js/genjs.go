@@ -84,6 +84,7 @@ type clientCodeTemplate struct {
 
 var indexJSTmplStr = `const async = require("async");
 const discovery = require("clever-discovery");
+const kayvee = require("kayvee");
 const request = require("request");
 const opentracing = require("opentracing");
 
@@ -174,6 +175,8 @@ class {{.ClassName}} {
    * in milliseconds. This can be overridden on a per-request basis.
    * @param {module:{{.ServiceName}}.RetryPolicies} [options.retryPolicy=RetryPolicies.Single] - The logic to
    * determine which requests to retry, as well as how many times to retry.
+   * @param {module:kayvee.Logger} [options.logger=logger.New("{{.ServiceName}}-wagclient")] - The Kayvee 
+   * logger to use in the client.
    */
   constructor(options) {
     options = options || {};
@@ -195,6 +198,11 @@ class {{.ClassName}} {
     if (options.retryPolicy) {
       this.retryPolicy = options.retryPolicy;
     }
+	if (options.logger) {
+	  this.logger = options.logger;
+	} else {
+	  this.logger =  new kayvee.logger("{{.ServiceName}}-wagclient");
+	}
   }
 {{range $methodCode := .Methods}}{{$methodCode}}{{end}}};
 
@@ -226,7 +234,8 @@ var packageJSONTmplStr = `{
     "async": "^2.1.4",
     "clever-discovery": "0.0.8",
     "opentracing": "^0.11.1",
-    "request": "^2.75.0"
+    "request": "^2.75.0",
+	"kayvee": "^3.8.2"
   }
 }
 `
@@ -313,6 +322,11 @@ var methodTmplStr = `
       async.whilst(
         () => requestOptions.uri !== "",
         cbW => {
+	  this.logger.errorD("client-request-finished", {
+		"backend": "{{.ServiceName}}",
+		"message": arguments.length > 0 ? arguments[0] : "",
+		"status_code": 0
+	  });
       if (span) {
         span.logEvent("{{.Method}} {{.Path}}");
       }
