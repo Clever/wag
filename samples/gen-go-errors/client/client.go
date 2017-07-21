@@ -54,8 +54,15 @@ func New(basePath string) *WagClient {
 		logger:      logger,
 	}
 	circuit.init()
-	client := &WagClient{requestDoer: circuit, retryDoer: &retry, circuitDoer: circuit, defaultTimeout: 10 * time.Second,
-		transport: &http.Transport{}, basePath: basePath}
+	client := &WagClient{
+		requestDoer:    circuit,
+		retryDoer:      &retry,
+		circuitDoer:    circuit,
+		defaultTimeout: 10 * time.Second,
+		transport:      &http.Transport{},
+		basePath:       basePath,
+		logger:         logger,
+	}
 	client.SetCircuitBreakerSettings(DefaultCircuitBreakerSettings)
 	return client
 }
@@ -181,12 +188,23 @@ func (c *WagClient) doGetBookRequest(ctx context.Context, req *http.Request, hea
 		req = req.WithContext(ctx)
 	}
 	resp, err := c.requestDoer.Do(client, req)
+	retCode := 0
+	if resp != nil {
+		retCode = resp.StatusCode
+	}
+
+	// log all client failures and non-successful HT
+	logData := logger.M{
+		"service":     "swagger-test",
+		"status_code": retCode,
+	}
+	if err == nil && retCode > 399 {
+		logData["message"] = resp.Status
+		c.logger.ErrorD("client-request-finished", logData)
+	}
 	if err != nil {
-		c.logger.ErrorD("client-request-finished", map[string]string{
-			"service":     "swagger-test",
-			"message":     err,
-			"status_code": resp.StatusCode,
-		})
+		logData["message"] = err.Error()
+		c.logger.ErrorD("client-request-finished", logData)
 		return err
 	}
 	defer resp.Body.Close()
