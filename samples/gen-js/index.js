@@ -69,6 +69,27 @@ const noRetryPolicy = {
 };
 
 /**
+ * Request status log is used to 
+ * to output the status of a request returned 
+ * by the client.
+ */
+function responseLog(logger, response, err) {
+  response = response || { } 
+  logData = {
+	"backend": "swagger-test",
+	"request": (response.method || "") + " " + (response.url || ""),
+    "message": err || (response.statusMessage || ""),
+    "status_code": response.statusCode || 0,
+  }
+
+  if (err) {
+    logger.errorD("client-request-finished", logData);
+  } else {
+    logger.infoD("client-request-finished", logData);
+  }
+}
+
+/**
  * swagger-test client library.
  * @module swagger-test
  * @typicalname SwaggerTest
@@ -114,11 +135,11 @@ class SwaggerTest {
     if (options.retryPolicy) {
       this.retryPolicy = options.retryPolicy;
     }
-	if (options.logger) {
-	  this.logger = options.logger;
-	} else {
-	  this.logger =  new kayvee.logger("swagger-test-wagclient");
-	}
+    if (options.logger) {
+      this.logger = options.logger;
+    } else {
+      this.logger =  new kayvee.logger("swagger-test-wagclient");
+    }
   }
 
   /**
@@ -196,6 +217,7 @@ class SwaggerTest {
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
+      const logger = this.logger;
   
       let retries = 0;
       (function requestOnce() {
@@ -207,6 +229,7 @@ class SwaggerTest {
             return;
           }
           if (err) {
+            responseLog(logger, response, err)
             rejecter(err);
             return;
           }
@@ -217,15 +240,21 @@ class SwaggerTest {
               break;
             
             case 400:
-              rejecter(new Errors.BadRequest(body || {}));
+              var err = new Errors.BadRequest(body || {});
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
             
             case 500:
-              rejecter(new Errors.InternalError(body || {}));
+              var err = new Errors.InternalError(body || {});
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
             
             default:
-              rejecter(new Error("Received unexpected statusCode " + response.statusCode));
+              var err = new Error("Received unexpected statusCode " + response.statusCode);
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
           }
         });
@@ -301,19 +330,15 @@ class SwaggerTest {
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
+      const logger = this.logger;
   
       let results = [];
       async.whilst(
         () => requestOptions.uri !== "",
         cbW => {
-	  this.logger.errorD("client-request-finished", {
-		"backend": "swagger-test",
-		"message": arguments.length > 0 ? arguments[0] : "",
-		"status_code": 0
-	  });
-      if (span) {
-        span.logEvent("GET /v1/authors");
-      }
+          if (span) {
+            span.logEvent("GET /v1/authors");
+          }
       const address = this.address;
       let retries = 0;
       (function requestOnce() {
@@ -325,6 +350,7 @@ class SwaggerTest {
             return;
           }
           if (err) {
+            responseLog(logger, response, err)
             cbW(err);
             return;
           }
@@ -339,15 +365,21 @@ class SwaggerTest {
               break;
             
             case 400:
-              cbW(new Errors.BadRequest(body || {}));
+              var err = new Errors.BadRequest(body || {});
+              responseLog(logger, response, err);
+              cbW(err);
               return;
             
             case 500:
-              cbW(new Errors.InternalError(body || {}));
+              var err = new Errors.InternalError(body || {});
+              responseLog(logger, response, err);
+              cbW(err);
               return;
             
             default:
-              cbW(new Error("Received unexpected statusCode " + response.statusCode));
+              var err = new Error("Received unexpected statusCode " + response.statusCode);
+              responseLog(logger, response, err);
+              cbW(err);
               return;
           }
 
@@ -460,6 +492,7 @@ class SwaggerTest {
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
+      const logger = this.logger;
   
       let retries = 0;
       (function requestOnce() {
@@ -471,6 +504,7 @@ class SwaggerTest {
             return;
           }
           if (err) {
+            responseLog(logger, response, err)
             rejecter(err);
             return;
           }
@@ -481,15 +515,21 @@ class SwaggerTest {
               break;
             
             case 400:
-              rejecter(new Errors.BadRequest(body || {}));
+              var err = new Errors.BadRequest(body || {});
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
             
             case 500:
-              rejecter(new Errors.InternalError(body || {}));
+              var err = new Errors.InternalError(body || {});
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
             
             default:
-              rejecter(new Error("Received unexpected statusCode " + response.statusCode));
+              var err = new Error("Received unexpected statusCode " + response.statusCode);
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
           }
         });
@@ -568,19 +608,15 @@ class SwaggerTest {
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
+      const logger = this.logger;
   
       let results = [];
       async.whilst(
         () => requestOptions.uri !== "",
         cbW => {
-	  this.logger.errorD("client-request-finished", {
-		"backend": "swagger-test",
-		"message": arguments.length > 0 ? arguments[0] : "",
-		"status_code": 0
-	  });
-      if (span) {
-        span.logEvent("PUT /v1/authors");
-      }
+          if (span) {
+            span.logEvent("PUT /v1/authors");
+          }
       const address = this.address;
       let retries = 0;
       (function requestOnce() {
@@ -592,6 +628,7 @@ class SwaggerTest {
             return;
           }
           if (err) {
+            responseLog(logger, response, err)
             cbW(err);
             return;
           }
@@ -606,15 +643,21 @@ class SwaggerTest {
               break;
             
             case 400:
-              cbW(new Errors.BadRequest(body || {}));
+              var err = new Errors.BadRequest(body || {});
+              responseLog(logger, response, err);
+              cbW(err);
               return;
             
             case 500:
-              cbW(new Errors.InternalError(body || {}));
+              var err = new Errors.InternalError(body || {});
+              responseLog(logger, response, err);
+              cbW(err);
               return;
             
             default:
-              cbW(new Error("Received unexpected statusCode " + response.statusCode));
+              var err = new Error("Received unexpected statusCode " + response.statusCode);
+              responseLog(logger, response, err);
+              cbW(err);
               return;
           }
 
@@ -766,6 +809,7 @@ class SwaggerTest {
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
+      const logger = this.logger;
   
       let retries = 0;
       (function requestOnce() {
@@ -777,6 +821,7 @@ class SwaggerTest {
             return;
           }
           if (err) {
+            responseLog(logger, response, err)
             rejecter(err);
             return;
           }
@@ -787,15 +832,21 @@ class SwaggerTest {
               break;
             
             case 400:
-              rejecter(new Errors.BadRequest(body || {}));
+              var err = new Errors.BadRequest(body || {});
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
             
             case 500:
-              rejecter(new Errors.InternalError(body || {}));
+              var err = new Errors.InternalError(body || {});
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
             
             default:
-              rejecter(new Error("Received unexpected statusCode " + response.statusCode));
+              var err = new Error("Received unexpected statusCode " + response.statusCode);
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
           }
         });
@@ -913,19 +964,15 @@ class SwaggerTest {
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
+      const logger = this.logger;
   
       let results = [];
       async.whilst(
         () => requestOptions.uri !== "",
         cbW => {
-	  this.logger.errorD("client-request-finished", {
-		"backend": "swagger-test",
-		"message": arguments.length > 0 ? arguments[0] : "",
-		"status_code": 0
-	  });
-      if (span) {
-        span.logEvent("GET /v1/books");
-      }
+          if (span) {
+            span.logEvent("GET /v1/books");
+          }
       const address = this.address;
       let retries = 0;
       (function requestOnce() {
@@ -937,6 +984,7 @@ class SwaggerTest {
             return;
           }
           if (err) {
+            responseLog(logger, response, err)
             cbW(err);
             return;
           }
@@ -951,15 +999,21 @@ class SwaggerTest {
               break;
             
             case 400:
-              cbW(new Errors.BadRequest(body || {}));
+              var err = new Errors.BadRequest(body || {});
+              responseLog(logger, response, err);
+              cbW(err);
               return;
             
             case 500:
-              cbW(new Errors.InternalError(body || {}));
+              var err = new Errors.InternalError(body || {});
+              responseLog(logger, response, err);
+              cbW(err);
               return;
             
             default:
-              cbW(new Error("Received unexpected statusCode " + response.statusCode));
+              var err = new Error("Received unexpected statusCode " + response.statusCode);
+              responseLog(logger, response, err);
+              cbW(err);
               return;
           }
 
@@ -1064,6 +1118,7 @@ class SwaggerTest {
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
+      const logger = this.logger;
   
       let retries = 0;
       (function requestOnce() {
@@ -1075,6 +1130,7 @@ class SwaggerTest {
             return;
           }
           if (err) {
+            responseLog(logger, response, err)
             rejecter(err);
             return;
           }
@@ -1085,15 +1141,21 @@ class SwaggerTest {
               break;
             
             case 400:
-              rejecter(new Errors.BadRequest(body || {}));
+              var err = new Errors.BadRequest(body || {});
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
             
             case 500:
-              rejecter(new Errors.InternalError(body || {}));
+              var err = new Errors.InternalError(body || {});
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
             
             default:
-              rejecter(new Error("Received unexpected statusCode " + response.statusCode));
+              var err = new Error("Received unexpected statusCode " + response.statusCode);
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
           }
         });
@@ -1171,6 +1233,7 @@ class SwaggerTest {
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
+      const logger = this.logger;
   
       let retries = 0;
       (function requestOnce() {
@@ -1182,6 +1245,7 @@ class SwaggerTest {
             return;
           }
           if (err) {
+            responseLog(logger, response, err)
             rejecter(err);
             return;
           }
@@ -1192,15 +1256,21 @@ class SwaggerTest {
               break;
             
             case 400:
-              rejecter(new Errors.BadRequest(body || {}));
+              var err = new Errors.BadRequest(body || {});
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
             
             case 500:
-              rejecter(new Errors.InternalError(body || {}));
+              var err = new Errors.InternalError(body || {});
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
             
             default:
-              rejecter(new Error("Received unexpected statusCode " + response.statusCode));
+              var err = new Error("Received unexpected statusCode " + response.statusCode);
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
           }
         });
@@ -1294,6 +1364,7 @@ class SwaggerTest {
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
+      const logger = this.logger;
   
       let retries = 0;
       (function requestOnce() {
@@ -1305,6 +1376,7 @@ class SwaggerTest {
             return;
           }
           if (err) {
+            responseLog(logger, response, err)
             rejecter(err);
             return;
           }
@@ -1315,23 +1387,33 @@ class SwaggerTest {
               break;
             
             case 400:
-              rejecter(new Errors.BadRequest(body || {}));
+              var err = new Errors.BadRequest(body || {});
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
             
             case 401:
-              rejecter(new Errors.Unathorized(body || {}));
+              var err = new Errors.Unathorized(body || {});
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
             
             case 404:
-              rejecter(new Errors.Error(body || {}));
+              var err = new Errors.Error(body || {});
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
             
             case 500:
-              rejecter(new Errors.InternalError(body || {}));
+              var err = new Errors.InternalError(body || {});
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
             
             default:
-              rejecter(new Error("Received unexpected statusCode " + response.statusCode));
+              var err = new Error("Received unexpected statusCode " + response.statusCode);
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
           }
         });
@@ -1412,6 +1494,7 @@ class SwaggerTest {
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
+      const logger = this.logger;
   
       let retries = 0;
       (function requestOnce() {
@@ -1423,6 +1506,7 @@ class SwaggerTest {
             return;
           }
           if (err) {
+            responseLog(logger, response, err)
             rejecter(err);
             return;
           }
@@ -1433,19 +1517,27 @@ class SwaggerTest {
               break;
             
             case 400:
-              rejecter(new Errors.BadRequest(body || {}));
+              var err = new Errors.BadRequest(body || {});
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
             
             case 404:
-              rejecter(new Errors.Error(body || {}));
+              var err = new Errors.Error(body || {});
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
             
             case 500:
-              rejecter(new Errors.InternalError(body || {}));
+              var err = new Errors.InternalError(body || {});
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
             
             default:
-              rejecter(new Error("Received unexpected statusCode " + response.statusCode));
+              var err = new Error("Received unexpected statusCode " + response.statusCode);
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
           }
         });
@@ -1518,6 +1610,7 @@ class SwaggerTest {
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
+      const logger = this.logger;
   
       let retries = 0;
       (function requestOnce() {
@@ -1529,6 +1622,7 @@ class SwaggerTest {
             return;
           }
           if (err) {
+            responseLog(logger, response, err)
             rejecter(err);
             return;
           }
@@ -1539,15 +1633,21 @@ class SwaggerTest {
               break;
             
             case 400:
-              rejecter(new Errors.BadRequest(body || {}));
+              var err = new Errors.BadRequest(body || {});
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
             
             case 500:
-              rejecter(new Errors.InternalError(body || {}));
+              var err = new Errors.InternalError(body || {});
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
             
             default:
-              rejecter(new Error("Received unexpected statusCode " + response.statusCode));
+              var err = new Error("Received unexpected statusCode " + response.statusCode);
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
           }
         });

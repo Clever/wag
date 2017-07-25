@@ -69,6 +69,27 @@ const noRetryPolicy = {
 };
 
 /**
+ * Request status log is used to 
+ * to output the status of a request returned 
+ * by the client.
+ */
+function responseLog(logger, response, err) {
+  response = response || { } 
+  logData = {
+	"backend": "nil-test",
+	"request": (response.method || "") + " " + (response.url || ""),
+    "message": err || (response.statusMessage || ""),
+    "status_code": response.statusCode || 0,
+  }
+
+  if (err) {
+    logger.errorD("client-request-finished", logData);
+  } else {
+    logger.infoD("client-request-finished", logData);
+  }
+}
+
+/**
  * nil-test client library.
  * @module nil-test
  * @typicalname NilTest
@@ -114,11 +135,11 @@ class NilTest {
     if (options.retryPolicy) {
       this.retryPolicy = options.retryPolicy;
     }
-	if (options.logger) {
-	  this.logger = options.logger;
-	} else {
-	  this.logger =  new kayvee.logger("nil-test-wagclient");
-	}
+    if (options.logger) {
+      this.logger = options.logger;
+    } else {
+      this.logger =  new kayvee.logger("nil-test-wagclient");
+    }
   }
 
   /**
@@ -206,6 +227,7 @@ class NilTest {
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
+      const logger = this.logger;
   
       let retries = 0;
       (function requestOnce() {
@@ -217,6 +239,7 @@ class NilTest {
             return;
           }
           if (err) {
+            responseLog(logger, response, err)
             rejecter(err);
             return;
           }
@@ -227,15 +250,21 @@ class NilTest {
               break;
             
             case 400:
-              rejecter(new Errors.BadRequest(body || {}));
+              var err = new Errors.BadRequest(body || {});
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
             
             case 500:
-              rejecter(new Errors.InternalError(body || {}));
+              var err = new Errors.InternalError(body || {});
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
             
             default:
-              rejecter(new Error("Received unexpected statusCode " + response.statusCode));
+              var err = new Error("Received unexpected statusCode " + response.statusCode);
+              responseLog(logger, response, err);
+              rejecter(err);
               return;
           }
         });

@@ -1,3 +1,21 @@
+## Modules
+
+<dl>
+<dt><a href="#module_nil-test">nil-test</a></dt>
+<dd><p>nil-test client library.</p>
+</dd>
+</dl>
+
+## Functions
+
+<dl>
+<dt><a href="#responseLog">responseLog()</a></dt>
+<dd><p>Request status log is used to 
+to output the status of a request returned 
+by the client.</p>
+</dd>
+</dl>
+
 <a name="module_nil-test"></a>
 
 ## nil-test
@@ -131,3 +149,11 @@ InternalError
 | --- | --- |
 | message | <code>string</code> | 
 
+<a name="responseLog"></a>
+
+## responseLog()
+Request status log is used to 
+to output the status of a request returned 
+by the client.
+
+**Kind**: global function  

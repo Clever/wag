@@ -69,6 +69,27 @@ const noRetryPolicy = {
 };
 
 /**
+ * Request status log is used to 
+ * to output the status of a request returned 
+ * by the client.
+ */
+function responseLog(logger, response, err) {
+  response = response || { } 
+  logData = {
+	"backend": "swagger-test",
+	"request": (response.method || "") + " " + (response.url || ""),
+    "message": err || (response.statusMessage || ""),
+    "status_code": response.statusCode || 0,
+  }
+
+  if (err) {
+    logger.errorD("client-request-finished", logData);
+  } else {
+    logger.infoD("client-request-finished", logData);
+  }
+}
+
+/**
  * swagger-test client library.
  * @module swagger-test
  * @typicalname SwaggerTest
@@ -114,11 +135,11 @@ class SwaggerTest {
     if (options.retryPolicy) {
       this.retryPolicy = options.retryPolicy;
     }
-	if (options.logger) {
-	  this.logger = options.logger;
-	} else {
-	  this.logger =  new kayvee.logger("swagger-test-wagclient");
-	}
+    if (options.logger) {
+      this.logger = options.logger;
+    } else {
+      this.logger =  new kayvee.logger("swagger-test-wagclient");
+    }
   }
 };
 

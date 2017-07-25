@@ -153,6 +153,27 @@ const noRetryPolicy = {
 };
 
 /**
+ * Request status log is used to 
+ * to output the status of a request returned 
+ * by the client.
+ */
+function responseLog(logger, response, err) {
+  response = response || { } 
+  logData = {
+	"backend": "{{.ServiceName}}",
+	"request": (response.method || "") + " " + (response.url || ""),
+    "message": err || (response.statusMessage || ""),
+    "status_code": response.statusCode || 0,
+  }
+
+  if (err) {
+    logger.errorD("client-request-finished", logData);
+  } else {
+    logger.infoD("client-request-finished", logData);
+  }
+}
+
+/**
  * {{.ServiceName}} client library.
  * @module {{.ServiceName}}
  * @typicalname {{.ClassName}}
@@ -198,11 +219,11 @@ class {{.ClassName}} {
     if (options.retryPolicy) {
       this.retryPolicy = options.retryPolicy;
     }
-	if (options.logger) {
-	  this.logger = options.logger;
-	} else {
-	  this.logger =  new kayvee.logger("{{.ServiceName}}-wagclient");
-	}
+    if (options.logger) {
+      this.logger = options.logger;
+    } else {
+      this.logger =  new kayvee.logger("{{.ServiceName}}-wagclient");
+    }
   }
 {{range $methodCode := .Methods}}{{$methodCode}}{{end}}};
 
@@ -317,18 +338,14 @@ var methodTmplStr = `
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
+      const logger = this.logger;
   {{if .IterMethod}}
       let results = [];
       async.whilst(
         () => requestOptions.uri !== "",
         cbW => {
-	  this.logger.errorD("client-request-finished", {
-		"backend": "{{.ServiceName}}",
-		"message": arguments.length > 0 ? arguments[0] : "",
-		"status_code": 0
-	  });
-      if (span) {
-        span.logEvent("{{.Method}} {{.Path}}");
+	  if (span) {
+		span.logEvent("{{.Method}} {{.Path}}");
       }
       const address = this.address;
   {{- end}}
@@ -342,6 +359,7 @@ var methodTmplStr = `
             return;
           }
           if (err) {
+            responseLog(logger, response, err)
             {{- if not .IterMethod}}
             rejecter(err);
             {{- else}}
@@ -352,10 +370,12 @@ var methodTmplStr = `
 
           switch (response.statusCode) {
             {{ range $response := .Responses }}case {{ $response.StatusCode }}:{{if $response.IsError }}
+              var err = new Errors.{{ $response.Name }}(body || {});
+              responseLog(logger, response, err);
               {{- if not $.IterMethod}}
-              rejecter(new Errors.{{ $response.Name }}(body || {}));
+              rejecter(err);
               {{- else}}
-              cbW(new Errors.{{ $response.Name }}(body || {}));
+              cbW(err);
               {{- end}}
               return;
             {{else}}{{if $response.IsNoData}}
@@ -374,10 +394,12 @@ var methodTmplStr = `
               break;
             {{end}}{{end}}
             {{end}}default:
+              var err = new Error("Received unexpected statusCode " + response.statusCode);
+              responseLog(logger, response, err);
               {{- if not .IterMethod}}
-              rejecter(new Error("Received unexpected statusCode " + response.statusCode));
+              rejecter(err);
               {{- else}}
-              cbW(new Error("Received unexpected statusCode " + response.statusCode));
+              cbW(err);
               {{- end}}
               return;
           }
