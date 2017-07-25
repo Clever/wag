@@ -87,6 +87,8 @@ const discovery = require("clever-discovery");
 const kayvee = require("kayvee");
 const request = require("request");
 const opentracing = require("opentracing");
+const {commandFactory} = require("hystrixjs");
+const RollingNumberEvent = require("hystrixjs/lib/metrics/RollingNumberEvent");
 
 /**
  * @external Span
@@ -176,6 +178,21 @@ function responseLog(logger, req, res, err) {
 }
 
 /**
+ * Default circuit breaker options.
+ * @alias module:{{.ServiceName}}.DefaultCircuitOptions
+ */
+const defaultCircuitOptions = {
+  debug:                  true,
+  requestVolumeThreshold: 20,
+  maxConcurrentRequests:  100,
+  requestVolumeThreshold: 20,
+  sleepWindow:            5000,
+  errorPercentThreshold:  90,
+  logIntervalMs:          30000,
+  logger: () => { /* TODO remove this and use kayvee logger from mohit's PR */ },
+};
+
+/**
  * {{.ServiceName}} client library.
  * @module {{.ServiceName}}
  * @typicalname {{.ClassName}}
@@ -200,6 +217,17 @@ class {{.ClassName}} {
    * determine which requests to retry, as well as how many times to retry.
    * @param {module:kayvee.Logger} [options.logger=logger.New("{{.ServiceName}}-wagclient")] - The Kayvee 
    * logger to use in the client.
+   * @param {Object} [options.circuit] - Options for constructing the client's circuit breaker.
+   * @param {bool} [options.circuit.debug] - When set to true will not circuit break. Default: true.
+   * @param {number} [options.circuit.maxConcurrentRequests] - the maximum number of concurrent requests
+   * the client can make at the same time. Default: 100.
+   * @param {number} [options.circuit.requestVolumeThreshold] - The minimum number of requests needed
+   * before a circuit can be tripped due to health. Default: 20.
+   * @param {number} [options.circuit.sleepWindow] - how long, in milliseconds, to wait after a circuit opens
+   * before testing for recovery. Default: 5000.
+   * @param {number} [options.circuit.errorPercentThreshold] - the threshold to place on the rolling error
+   * rate. Once the error rate exceeds this percentage, the circuit opens.
+   * Default: 90.
    */
   constructor(options) {
     options = options || {};
@@ -226,6 +254,45 @@ class {{.ClassName}} {
     } else {
       this.logger =  new kayvee.logger("{{.ServiceName}}-wagclient");
     }
+
+    const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
+    this._hystrixCommand = commandFactory.getOrCreate("{{.ServiceName}}").
+      circuitBreakerForceClosed(circuitOptions.debug).
+      requestVolumeRejectionThreshold(circuitOptions.maxConcurrentRequests).
+      circuitBreakerRequestVolumeThreshold(circuitOptions.requestVolumeThreshold).
+      circuitBreakerSleepWindowInMilliseconds(circuitOptions.sleepWindow).
+      circuitBreakerErrorThresholdPercentage(circuitOptions.errorPercentThreshold).
+      timeout(0).
+      statisticalWindowLength(10000).
+      statisticalWindowNumberOfBuckets(10).
+      run(this._hystrixCommandRun).
+      context(this).
+      build();
+
+    setInterval(() => this._logCircuitState(circuitOptions.logger), circuitOptions.logIntervalMs);
+  }
+
+  _hystrixCommandRun(method, args) {
+    return method.apply(this, args);
+  }
+
+  _logCircuitState(logger) {
+    // code below heavily borrows from hystrix's internal HystrixSSEStream.js logic
+    const metrics = this._hystrixCommand.metrics;
+    const healthCounts = metrics.getHealthCounts()
+    const circuitBreaker = this._hystrixCommand.circuitBreaker;
+    logger({
+      "requestCount":                    healthCounts.totalCount,
+      "errorCount":                      healthCounts.errorCount,
+      "errorPercentage":                 healthCounts.errorPercentage,
+      "isCircuitBreakerOpen":            circuitBreaker.isOpen(),
+      "rollingCountFailure":             metrics.getRollingCount(RollingNumberEvent.FAILURE),
+      "rollingCountShortCircuited":      metrics.getRollingCount(RollingNumberEvent.SHORT_CIRCUITED),
+      "rollingCountSuccess":             metrics.getRollingCount(RollingNumberEvent.SUCCESS),
+      "rollingCountTimeout":             metrics.getRollingCount(RollingNumberEvent.TIMEOUT),
+      "currentConcurrentExecutionCount": metrics.getCurrentExecutionCount(),
+      "latencyTotalMean":                metrics.getExecutionTime("mean") || 0,
+    });
   }
 {{range $methodCode := .Methods}}{{$methodCode}}{{end}}};
 
@@ -246,6 +313,8 @@ module.exports.RetryPolicies = {
  * @alias module:{{.ServiceName}}.Errors
  */
 module.exports.Errors = Errors;
+
+module.exports.DefaultCircuitOptions = defaultCircuitOptions;
 `
 
 var packageJSONTmplStr = `{
@@ -258,7 +327,9 @@ var packageJSONTmplStr = `{
     "clever-discovery": "0.0.8",
     "opentracing": "^0.11.1",
     "request": "^2.75.0",
-	"kayvee": "^3.8.2"
+    "kayvee": "^3.8.2",
+    "hystrixjs": "^0.2.0",
+    "rxjs": "^5.4.1"
   }
 }
 `
@@ -439,9 +510,9 @@ var methodTmplStr = `
     {{- if .IterMethod}}
 
     return {
-      map: (f, cb) => it(f, true, cb),
-      toArray: cb => it(x => x, true, cb),
-      forEach: (f, cb) => it(f, false, cb),
+      map: (f, cb) => this._hystrixCommand.execute(it, [f, true, cb]),
+      toArray: cb => this._hystrixCommand.execute(it, [x => x, true, cb]),
+      forEach: (f, cb) => this._hystrixCommand.execute(it, [f, false, cb]),
     };
     {{- end}}
   }
@@ -466,7 +537,14 @@ var singleParamMethodDefinitionTemplateString = `/**{{if .Description}}
    * @reject {module:{{$ServiceName}}.Errors.{{$response.Name}}}{{end}}{{end}}
    * @reject {Error}{{end}}
    */
-  {{.MethodName}}({{range $param := .Params}}{{$param.JSName}}, {{end}}options{{if not .IterMethod}}, cb{{end}}) {
+  {{- if .IterMethod}}
+  {{.MethodName}}({{range $param := .Params}}{{$param.JSName}}, {{end}}options) {
+  {{- else}}
+  {{.MethodName}}({{range $param := .Params}}{{$param.JSName}}, {{end}}options, cb) {
+    return this._hystrixCommand.execute(this._{{.MethodName}}, arguments);
+  }
+  _{{.MethodName}}({{range $param := .Params}}{{$param.JSName}}, {{end}}options, cb) {
+  {{- end}}
     const params = {};{{range $param := .Params}}
     params["{{$param.JSName}}"] = {{$param.JSName}};{{end}}
 `
@@ -491,7 +569,14 @@ var pluralParamMethodDefinitionTemplateString = `/**{{if .Description}}
    * @reject {module:{{$ServiceName}}.Errors.{{$response.Name}}}{{end}}{{end}}
    * @reject {Error}{{end}}
    */
-  {{.MethodName}}(params, options{{if not .IterMethod}}, cb{{end}}) {`
+  {{- if .IterMethod}}
+  {{.MethodName}}(params, options) {
+  {{- else}}
+  {{.MethodName}}(params, options, cb) {
+    return this._hystrixCommand.execute(this._{{.MethodName}}, arguments);
+  }
+  _{{.MethodName}}(params, options, cb) {
+  {{- end}}`
 
 type paramMapping struct {
 	JSName      string
