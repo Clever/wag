@@ -3,6 +3,8 @@ const discovery = require("clever-discovery");
 const kayvee = require("kayvee");
 const request = require("request");
 const opentracing = require("opentracing");
+const {commandFactory} = require("hystrixjs");
+const RollingNumberEvent = require("hystrixjs/lib/metrics/RollingNumberEvent");
 
 /**
  * @external Span
@@ -92,6 +94,20 @@ function responseLog(logger, req, res, err) {
 }
 
 /**
+ * Default circuit breaker options.
+ * @alias module:swagger-test.DefaultCircuitOptions
+ */
+const defaultCircuitOptions = {
+  forceClosed:            true,
+  requestVolumeThreshold: 20,
+  maxConcurrentRequests:  100,
+  requestVolumeThreshold: 20,
+  sleepWindow:            5000,
+  errorPercentThreshold:  90,
+  logIntervalMs:          30000
+};
+
+/**
  * swagger-test client library.
  * @module swagger-test
  * @typicalname SwaggerTest
@@ -116,6 +132,17 @@ class SwaggerTest {
    * determine which requests to retry, as well as how many times to retry.
    * @param {module:kayvee.Logger} [options.logger=logger.New("swagger-test-wagclient")] - The Kayvee 
    * logger to use in the client.
+   * @param {Object} [options.circuit] - Options for constructing the client's circuit breaker.
+   * @param {bool} [options.circuit.forceClosed] - When set to true the circuit will always be closed. Default: true.
+   * @param {number} [options.circuit.maxConcurrentRequests] - the maximum number of concurrent requests
+   * the client can make at the same time. Default: 100.
+   * @param {number} [options.circuit.requestVolumeThreshold] - The minimum number of requests needed
+   * before a circuit can be tripped due to health. Default: 20.
+   * @param {number} [options.circuit.sleepWindow] - how long, in milliseconds, to wait after a circuit opens
+   * before testing for recovery. Default: 5000.
+   * @param {number} [options.circuit.errorPercentThreshold] - the threshold to place on the rolling error
+   * rate. Once the error rate exceeds this percentage, the circuit opens.
+   * Default: 90.
    */
   constructor(options) {
     options = options || {};
@@ -142,6 +169,54 @@ class SwaggerTest {
     } else {
       this.logger =  new kayvee.logger("swagger-test-wagclient");
     }
+
+    const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
+    this._hystrixCommand = commandFactory.getOrCreate("swagger-test").
+      errorHandler(this._hystrixCommandErrorHandler).
+      circuitBreakerForceClosed(circuitOptions.forceClosed).
+      requestVolumeRejectionThreshold(circuitOptions.maxConcurrentRequests).
+      circuitBreakerRequestVolumeThreshold(circuitOptions.requestVolumeThreshold).
+      circuitBreakerSleepWindowInMilliseconds(circuitOptions.sleepWindow).
+      circuitBreakerErrorThresholdPercentage(circuitOptions.errorPercentThreshold).
+      timeout(0).
+      statisticalWindowLength(10000).
+      statisticalWindowNumberOfBuckets(10).
+      run(this._hystrixCommandRun).
+      context(this).
+      build();
+
+    setInterval(() => this._logCircuitState(), circuitOptions.logIntervalMs);
+  }
+
+  _hystrixCommandErrorHandler(err) {
+    // to avoid counting 4XXs as errors, only count an error if it comes from the request library
+    if (err._fromRequest === true) {
+      return err;
+    }
+    return false;
+  }
+
+  _hystrixCommandRun(method, args) {
+    return method.apply(this, args);
+  }
+
+  _logCircuitState(logger) {
+    // code below heavily borrows from hystrix's internal HystrixSSEStream.js logic
+    const metrics = this._hystrixCommand.metrics;
+    const healthCounts = metrics.getHealthCounts()
+    const circuitBreaker = this._hystrixCommand.circuitBreaker;
+    this.logger.infoD("swagger-test", {
+      "requestCount":                    healthCounts.totalCount,
+      "errorCount":                      healthCounts.errorCount,
+      "errorPercentage":                 healthCounts.errorPercentage,
+      "isCircuitBreakerOpen":            circuitBreaker.isOpen(),
+      "rollingCountFailure":             metrics.getRollingCount(RollingNumberEvent.FAILURE),
+      "rollingCountShortCircuited":      metrics.getRollingCount(RollingNumberEvent.SHORT_CIRCUITED),
+      "rollingCountSuccess":             metrics.getRollingCount(RollingNumberEvent.SUCCESS),
+      "rollingCountTimeout":             metrics.getRollingCount(RollingNumberEvent.TIMEOUT),
+      "currentConcurrentExecutionCount": metrics.getCurrentExecutionCount(),
+      "latencyTotalMean":                metrics.getExecutionTime("mean") || 0,
+    });
   }
 
   /**
@@ -161,6 +236,9 @@ class SwaggerTest {
    * @reject {Error}
    */
   getAuthors(params, options, cb) {
+    return this._hystrixCommand.execute(this._getAuthors, arguments);
+  }
+  _getAuthors(params, options, cb) {
     if (!cb && typeof options === "function") {
       cb = options;
       options = undefined;
@@ -231,6 +309,7 @@ class SwaggerTest {
             return;
           }
           if (err) {
+            err._fromRequest = true;
             responseLog(logger, requestOptions, response, err)
             rejecter(err);
             return;
@@ -352,6 +431,7 @@ class SwaggerTest {
             return;
           }
           if (err) {
+            err._fromRequest = true;
             responseLog(logger, requestOptions, response, err)
             cbW(err);
             return;
@@ -410,9 +490,9 @@ class SwaggerTest {
     });
 
     return {
-      map: (f, cb) => it(f, true, cb),
-      toArray: cb => it(x => x, true, cb),
-      forEach: (f, cb) => it(f, false, cb),
+      map: (f, cb) => this._hystrixCommand.execute(it, [f, true, cb]),
+      toArray: cb => this._hystrixCommand.execute(it, [x => x, true, cb]),
+      forEach: (f, cb) => this._hystrixCommand.execute(it, [f, false, cb]),
     };
   }
 
@@ -434,6 +514,9 @@ class SwaggerTest {
    * @reject {Error}
    */
   getAuthorsWithPut(params, options, cb) {
+    return this._hystrixCommand.execute(this._getAuthorsWithPut, arguments);
+  }
+  _getAuthorsWithPut(params, options, cb) {
     if (!cb && typeof options === "function") {
       cb = options;
       options = undefined;
@@ -506,6 +589,7 @@ class SwaggerTest {
             return;
           }
           if (err) {
+            err._fromRequest = true;
             responseLog(logger, requestOptions, response, err)
             rejecter(err);
             return;
@@ -630,6 +714,7 @@ class SwaggerTest {
             return;
           }
           if (err) {
+            err._fromRequest = true;
             responseLog(logger, requestOptions, response, err)
             cbW(err);
             return;
@@ -688,9 +773,9 @@ class SwaggerTest {
     });
 
     return {
-      map: (f, cb) => it(f, true, cb),
-      toArray: cb => it(x => x, true, cb),
-      forEach: (f, cb) => it(f, false, cb),
+      map: (f, cb) => this._hystrixCommand.execute(it, [f, true, cb]),
+      toArray: cb => this._hystrixCommand.execute(it, [x => x, true, cb]),
+      forEach: (f, cb) => this._hystrixCommand.execute(it, [f, false, cb]),
     };
   }
 
@@ -720,6 +805,9 @@ class SwaggerTest {
    * @reject {Error}
    */
   getBooks(params, options, cb) {
+    return this._hystrixCommand.execute(this._getBooks, arguments);
+  }
+  _getBooks(params, options, cb) {
     if (!cb && typeof options === "function") {
       cb = options;
       options = undefined;
@@ -823,6 +911,7 @@ class SwaggerTest {
             return;
           }
           if (err) {
+            err._fromRequest = true;
             responseLog(logger, requestOptions, response, err)
             rejecter(err);
             return;
@@ -986,6 +1075,7 @@ class SwaggerTest {
             return;
           }
           if (err) {
+            err._fromRequest = true;
             responseLog(logger, requestOptions, response, err)
             cbW(err);
             return;
@@ -1044,9 +1134,9 @@ class SwaggerTest {
     });
 
     return {
-      map: (f, cb) => it(f, true, cb),
-      toArray: cb => it(x => x, true, cb),
-      forEach: (f, cb) => it(f, false, cb),
+      map: (f, cb) => this._hystrixCommand.execute(it, [f, true, cb]),
+      toArray: cb => this._hystrixCommand.execute(it, [x => x, true, cb]),
+      forEach: (f, cb) => this._hystrixCommand.execute(it, [f, false, cb]),
     };
   }
 
@@ -1065,6 +1155,9 @@ class SwaggerTest {
    * @reject {Error}
    */
   createBook(newBook, options, cb) {
+    return this._hystrixCommand.execute(this._createBook, arguments);
+  }
+  _createBook(newBook, options, cb) {
     const params = {};
     params["newBook"] = newBook;
 
@@ -1132,6 +1225,7 @@ class SwaggerTest {
             return;
           }
           if (err) {
+            err._fromRequest = true;
             responseLog(logger, requestOptions, response, err)
             rejecter(err);
             return;
@@ -1180,6 +1274,9 @@ class SwaggerTest {
    * @reject {Error}
    */
   putBook(newBook, options, cb) {
+    return this._hystrixCommand.execute(this._putBook, arguments);
+  }
+  _putBook(newBook, options, cb) {
     const params = {};
     params["newBook"] = newBook;
 
@@ -1247,6 +1344,7 @@ class SwaggerTest {
             return;
           }
           if (err) {
+            err._fromRequest = true;
             responseLog(logger, requestOptions, response, err)
             rejecter(err);
             return;
@@ -1302,6 +1400,9 @@ class SwaggerTest {
    * @reject {Error}
    */
   getBookByID(params, options, cb) {
+    return this._hystrixCommand.execute(this._getBookByID, arguments);
+  }
+  _getBookByID(params, options, cb) {
     if (!cb && typeof options === "function") {
       cb = options;
       options = undefined;
@@ -1378,6 +1479,7 @@ class SwaggerTest {
             return;
           }
           if (err) {
+            err._fromRequest = true;
             responseLog(logger, requestOptions, response, err)
             rejecter(err);
             return;
@@ -1439,6 +1541,9 @@ class SwaggerTest {
    * @reject {Error}
    */
   getBookByID2(id, options, cb) {
+    return this._hystrixCommand.execute(this._getBookByID2, arguments);
+  }
+  _getBookByID2(id, options, cb) {
     const params = {};
     params["id"] = id;
 
@@ -1508,6 +1613,7 @@ class SwaggerTest {
             return;
           }
           if (err) {
+            err._fromRequest = true;
             responseLog(logger, requestOptions, response, err)
             rejecter(err);
             return;
@@ -1560,6 +1666,9 @@ class SwaggerTest {
    * @reject {Error}
    */
   healthCheck(options, cb) {
+    return this._hystrixCommand.execute(this._healthCheck, arguments);
+  }
+  _healthCheck(options, cb) {
     const params = {};
 
     if (!cb && typeof options === "function") {
@@ -1624,6 +1733,7 @@ class SwaggerTest {
             return;
           }
           if (err) {
+            err._fromRequest = true;
             responseLog(logger, requestOptions, response, err)
             rejecter(err);
             return;
@@ -1675,3 +1785,5 @@ module.exports.RetryPolicies = {
  * @alias module:swagger-test.Errors
  */
 module.exports.Errors = Errors;
+
+module.exports.DefaultCircuitOptions = defaultCircuitOptions;

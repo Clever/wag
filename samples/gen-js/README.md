@@ -47,6 +47,7 @@ swagger-test client library.
                 * [.InternalError](#module_swagger-test--SwaggerTest.Errors.InternalError) ⇐ <code>Error</code>
                 * [.Unathorized](#module_swagger-test--SwaggerTest.Errors.Unathorized) ⇐ <code>Error</code>
                 * [.Error](#module_swagger-test--SwaggerTest.Errors.Error) ⇐ <code>Error</code>
+            * [.DefaultCircuitOptions](#module_swagger-test--SwaggerTest.DefaultCircuitOptions)
 
 <a name="exp_module_swagger-test--SwaggerTest"></a>
 
@@ -68,6 +69,12 @@ Create a new client object.
 | [options.timeout] | <code>number</code> |  | The timeout to use for all client requests, in milliseconds. This can be overridden on a per-request basis. |
 | [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | <code>RetryPolicies.Single</code> | The logic to determine which requests to retry, as well as how many times to retry. |
 | [options.logger] | <code>module:kayvee.Logger</code> | <code>logger.New(&quot;swagger-test-wagclient&quot;)</code> | The Kayvee  logger to use in the client. |
+| [options.circuit] | <code>Object</code> |  | Options for constructing the client's circuit breaker. |
+| [options.circuit.forceClosed] | <code>bool</code> |  | When set to true the circuit will always be closed. Default: true. |
+| [options.circuit.maxConcurrentRequests] | <code>number</code> |  | the maximum number of concurrent requests the client can make at the same time. Default: 100. |
+| [options.circuit.requestVolumeThreshold] | <code>number</code> |  | The minimum number of requests needed before a circuit can be tripped due to health. Default: 20. |
+| [options.circuit.sleepWindow] | <code>number</code> |  | how long, in milliseconds, to wait after a circuit opens before testing for recovery. Default: 5000. |
+| [options.circuit.errorPercentThreshold] | <code>number</code> |  | the threshold to place on the rolling error rate. Once the error rate exceeds this percentage, the circuit opens. Default: 90. |
 
 <a name="module_swagger-test--SwaggerTest+getAuthors"></a>
 
@@ -410,6 +417,12 @@ Error
 | code | <code>number</code> | 
 | message | <code>string</code> | 
 
+<a name="module_swagger-test--SwaggerTest.DefaultCircuitOptions"></a>
+
+#### SwaggerTest.DefaultCircuitOptions
+Default circuit breaker options.
+
+**Kind**: static constant of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
 <a name="responseLog"></a>
 
 ## responseLog()

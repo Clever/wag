@@ -17,7 +17,6 @@ $(GOPATH)/src/github.com/golang/mock:
 $(MOCKGEN): $(GOPATH)/src/github.com/golang/mock
 	go build -o $(GOPATH)/bin/mockgen github.com/golang/mock/mockgen
 
-
 build: hardcoded/hardcoded.go
 	go build -o bin/wag
 

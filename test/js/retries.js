@@ -5,9 +5,18 @@ const util = require("util");
 const Client = require("swagger-test");
 const {RetryPolicies} = Client;
 
+const {commandFactory,metricsFactory,circuitFactory} = require("hystrixjs");
+
 const mockAddress = "http://localhost:8000";
 
 describe("retries", function() {
+  beforeEach(() => {
+    metricsFactory.resetCache();
+    circuitFactory.resetCache();
+    commandFactory.resetCache();
+    nock.cleanAll();
+  });
+
   it("performs exponential retries when set backoff by default", function(done) {
     const client = new Client({
       address: mockAddress,
