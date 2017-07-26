@@ -182,7 +182,7 @@ function responseLog(logger, req, res, err) {
  * @alias module:{{.ServiceName}}.DefaultCircuitOptions
  */
 const defaultCircuitOptions = {
-  debug:                  true,
+  forceClosed:            true,
   requestVolumeThreshold: 20,
   maxConcurrentRequests:  100,
   requestVolumeThreshold: 20,
@@ -217,7 +217,7 @@ class {{.ClassName}} {
    * @param {module:kayvee.Logger} [options.logger=logger.New("{{.ServiceName}}-wagclient")] - The Kayvee 
    * logger to use in the client.
    * @param {Object} [options.circuit] - Options for constructing the client's circuit breaker.
-   * @param {bool} [options.circuit.debug] - When set to true will not circuit break. Default: true.
+   * @param {bool} [options.circuit.forceClosed] - When set to true the circuit will always be closed. Default: true.
    * @param {number} [options.circuit.maxConcurrentRequests] - the maximum number of concurrent requests
    * the client can make at the same time. Default: 100.
    * @param {number} [options.circuit.requestVolumeThreshold] - The minimum number of requests needed
@@ -257,7 +257,7 @@ class {{.ClassName}} {
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
     this._hystrixCommand = commandFactory.getOrCreate("{{.ServiceName}}").
       errorHandler(this._hystrixCommandErrorHandler).
-      circuitBreakerForceClosed(circuitOptions.debug).
+      circuitBreakerForceClosed(circuitOptions.forceClosed).
       requestVolumeRejectionThreshold(circuitOptions.maxConcurrentRequests).
       circuitBreakerRequestVolumeThreshold(circuitOptions.requestVolumeThreshold).
       circuitBreakerSleepWindowInMilliseconds(circuitOptions.sleepWindow).

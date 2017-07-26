@@ -24,7 +24,7 @@ describe("circuit", function() {
     const c = new Client({
       address: mockAddress,
       circuit: {
-        debug: false,
+        forceClosed: false,
         requestVolumeThreshold: 20,
         sleepWindow: 500,
       },
@@ -82,11 +82,11 @@ describe("circuit", function() {
     }
   });
 
-  it("doesn't do anything if debug is set to true", async () => {
+  it("doesn't do anything if forceClosed is set to true", async () => {
     const c = new Client({
       address: mockAddress,
       circuit: {
-        debug: true,
+        forceClosed: true,
         requestVolumeThreshold: 20
       },
     });
@@ -119,7 +119,7 @@ describe("circuit", function() {
         },
       },
       circuit: {
-        debug: true,
+        forceClosed: true,
         requestVolumeThreshold: 20,
         logIntervalMs: 1000,
       },
@@ -156,7 +156,7 @@ describe("circuit", function() {
         },
       },
       circuit: {
-        debug: true,
+        forceClosed: true,
         requestVolumeThreshold: 20,
         logIntervalMs: 1000,
       },
