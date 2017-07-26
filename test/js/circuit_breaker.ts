@@ -108,17 +108,20 @@ describe("circuit", function() {
     let loggerCalls = 0;
     const c = new Client({
       address: mockAddress,
-      circuit: {
-        debug: true,
-        requestVolumeThreshold: 20,
-        logIntervalMs: 1000,
-        logger: (data) => {
+      logger: {
+        errorD: (title, data) => {},
+        infoD: (title, data) => {
           loggerCalls++;
           if (loggerCalls == 1) {
             assert.equal(data.errorCount, 20, "expected log to show 20 errors");
             assert.equal(data.errorPercentage, 100, "expected error percent to be 100");
           }
         },
+      },
+      circuit: {
+        debug: true,
+        requestVolumeThreshold: 20,
+        logIntervalMs: 1000,
       },
     });
     for (let i = 0; i < 20; i++) {
@@ -142,17 +145,20 @@ describe("circuit", function() {
     const c = new Client({
       address: mockAddress,
       retryPolicy: RetryPolicies.None,
-      circuit: {
-        debug: true,
-        requestVolumeThreshold: 20,
-        logIntervalMs: 1000,
-        logger: (data) => {
+      logger: {
+        errorD: (title, data) => {},
+        infoD: (title, data) => {
           loggerCalls++;
           if (loggerCalls == 1) {
             assert.equal(data.errorCount, 0, "expected log to show 0 errors");
             assert.equal(data.errorPercentage, 0, "expected error percent to be 0");
           }
         },
+      },
+      circuit: {
+        debug: true,
+        requestVolumeThreshold: 20,
+        logIntervalMs: 1000,
       },
     });
     for (let i = 0; i < 20; i++) {

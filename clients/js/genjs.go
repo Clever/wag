@@ -188,8 +188,7 @@ const defaultCircuitOptions = {
   requestVolumeThreshold: 20,
   sleepWindow:            5000,
   errorPercentThreshold:  90,
-  logIntervalMs:          30000,
-  logger: () => { /* TODO remove this and use kayvee logger from mohit's PR */ },
+  logIntervalMs:          30000
 };
 
 /**
@@ -270,7 +269,7 @@ class {{.ClassName}} {
       context(this).
       build();
 
-    setInterval(() => this._logCircuitState(circuitOptions.logger), circuitOptions.logIntervalMs);
+    setInterval(() => this._logCircuitState(), circuitOptions.logIntervalMs);
   }
 
   _hystrixCommandErrorHandler(err) {
@@ -290,7 +289,7 @@ class {{.ClassName}} {
     const metrics = this._hystrixCommand.metrics;
     const healthCounts = metrics.getHealthCounts()
     const circuitBreaker = this._hystrixCommand.circuitBreaker;
-    logger({
+    this.logger.infoD("{{.ServiceName}}", {
       "requestCount":                    healthCounts.totalCount,
       "errorCount":                      healthCounts.errorCount,
       "errorPercentage":                 healthCounts.errorPercentage,
