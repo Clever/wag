@@ -195,7 +195,9 @@ func (c *WagClient) doGetBookRequest(ctx context.Context, req *http.Request, hea
 
 	// log all client failures and non-successful HT
 	logData := logger.M{
-		"service":     "swagger-test",
+		"backend":     "swagger-test",
+		"method":      req.Method,
+		"uri":         req.URL,
 		"status_code": retCode,
 	}
 	if err == nil && retCode > 399 {

@@ -153,18 +153,20 @@ const noRetryPolicy = {
 };
 
 /**
- * Request status log is used to 
- * to output the status of a request returned 
+ * Request status log is used to
+ * to output the status of a request returned
  * by the client.
  */
-function responseLog(logger, response, err) {
-  response = response || { } 
-  logData = {
+function responseLog(logger, req, res, err) {
+  var res = res || { };
+  var req = req || { };
+  var logData = {
 	"backend": "{{.ServiceName}}",
-	"request": (response.method || "") + " " + (response.url || ""),
-    "message": err || (response.statusMessage || ""),
-    "status_code": response.statusCode || 0,
-  }
+	"method": req.method || "",
+	"uri": req.uri || "",
+    "message": err || (res.statusMessage || ""),
+    "status_code": res.statusCode || 0,
+  };
 
   if (err) {
     logger.errorD("client-request-finished", logData);
@@ -344,9 +346,9 @@ var methodTmplStr = `
       async.whilst(
         () => requestOptions.uri !== "",
         cbW => {
-	  if (span) {
-		span.logEvent("{{.Method}} {{.Path}}");
-      }
+          if (span) {
+            span.logEvent("{{.Method}} {{.Path}}");
+          }
       const address = this.address;
   {{- end}}
       let retries = 0;
@@ -359,7 +361,7 @@ var methodTmplStr = `
             return;
           }
           if (err) {
-            responseLog(logger, response, err)
+            responseLog(logger, requestOptions, response, err)
             {{- if not .IterMethod}}
             rejecter(err);
             {{- else}}
@@ -371,7 +373,7 @@ var methodTmplStr = `
           switch (response.statusCode) {
             {{ range $response := .Responses }}case {{ $response.StatusCode }}:{{if $response.IsError }}
               var err = new Errors.{{ $response.Name }}(body || {});
-              responseLog(logger, response, err);
+              responseLog(logger, requestOptions, response, err);
               {{- if not $.IterMethod}}
               rejecter(err);
               {{- else}}
@@ -395,7 +397,7 @@ var methodTmplStr = `
             {{end}}{{end}}
             {{end}}default:
               var err = new Error("Received unexpected statusCode " + response.statusCode);
-              responseLog(logger, response, err);
+              responseLog(logger, requestOptions, response, err);
               {{- if not .IterMethod}}
               rejecter(err);
               {{- else}}

@@ -69,18 +69,20 @@ const noRetryPolicy = {
 };
 
 /**
- * Request status log is used to 
- * to output the status of a request returned 
+ * Request status log is used to
+ * to output the status of a request returned
  * by the client.
  */
-function responseLog(logger, response, err) {
-  response = response || { } 
-  logData = {
+function responseLog(logger, req, res, err) {
+  var res = res || { };
+  var req = req || { };
+  var logData = {
 	"backend": "nil-test",
-	"request": (response.method || "") + " " + (response.url || ""),
-    "message": err || (response.statusMessage || ""),
-    "status_code": response.statusCode || 0,
-  }
+	"method": req.method || "",
+	"uri": req.uri || "",
+    "message": err || (res.statusMessage || ""),
+    "status_code": res.statusCode || 0,
+  };
 
   if (err) {
     logger.errorD("client-request-finished", logData);
@@ -239,7 +241,7 @@ class NilTest {
             return;
           }
           if (err) {
-            responseLog(logger, response, err)
+            responseLog(logger, requestOptions, response, err)
             rejecter(err);
             return;
           }
@@ -251,19 +253,19 @@ class NilTest {
             
             case 400:
               var err = new Errors.BadRequest(body || {});
-              responseLog(logger, response, err);
+              responseLog(logger, requestOptions, response, err);
               rejecter(err);
               return;
             
             case 500:
               var err = new Errors.InternalError(body || {});
-              responseLog(logger, response, err);
+              responseLog(logger, requestOptions, response, err);
               rejecter(err);
               return;
             
             default:
               var err = new Error("Received unexpected statusCode " + response.statusCode);
-              responseLog(logger, response, err);
+              responseLog(logger, requestOptions, response, err);
               rejecter(err);
               return;
           }

@@ -10,8 +10,8 @@
 
 <dl>
 <dt><a href="#responseLog">responseLog()</a></dt>
-<dd><p>Request status log is used to 
-to output the status of a request returned 
+<dd><p>Request status log is used to
+to output the status of a request returned
 by the client.</p>
 </dd>
 </dl>
@@ -139,8 +139,8 @@ InternalError
 <a name="responseLog"></a>
 
 ## responseLog()
-Request status log is used to 
-to output the status of a request returned 
+Request status log is used to
+to output the status of a request returned
 by the client.
 
 **Kind**: global function  

@@ -207,7 +207,9 @@ func (c *WagClient) doNilCheckRequest(ctx context.Context, req *http.Request, he
 
 	// log all client failures and non-successful HT
 	logData := logger.M{
-		"service":     "nil-test",
+		"backend":     "nil-test",
+		"method":      req.Method,
+		"uri":         req.URL,
 		"status_code": retCode,
 	}
 	if err == nil && retCode > 399 {

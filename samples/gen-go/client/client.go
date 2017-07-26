@@ -280,7 +280,9 @@ func (c *WagClient) doGetAuthorsRequest(ctx context.Context, req *http.Request, 
 
 	// log all client failures and non-successful HT
 	logData := logger.M{
-		"service":     "swagger-test",
+		"backend":     "swagger-test",
+		"method":      req.Method,
+		"uri":         req.URL,
 		"status_code": retCode,
 	}
 	if err == nil && retCode > 399 {
@@ -486,7 +488,9 @@ func (c *WagClient) doGetAuthorsWithPutRequest(ctx context.Context, req *http.Re
 
 	// log all client failures and non-successful HT
 	logData := logger.M{
-		"service":     "swagger-test",
+		"backend":     "swagger-test",
+		"method":      req.Method,
+		"uri":         req.URL,
 		"status_code": retCode,
 	}
 	if err == nil && retCode > 399 {
@@ -674,7 +678,9 @@ func (c *WagClient) doGetBooksRequest(ctx context.Context, req *http.Request, he
 
 	// log all client failures and non-successful HT
 	logData := logger.M{
-		"service":     "swagger-test",
+		"backend":     "swagger-test",
+		"method":      req.Method,
+		"uri":         req.URL,
 		"status_code": retCode,
 	}
 	if err == nil && retCode > 399 {
@@ -777,7 +783,9 @@ func (c *WagClient) doCreateBookRequest(ctx context.Context, req *http.Request, 
 
 	// log all client failures and non-successful HT
 	logData := logger.M{
-		"service":     "swagger-test",
+		"backend":     "swagger-test",
+		"method":      req.Method,
+		"uri":         req.URL,
 		"status_code": retCode,
 	}
 	if err == nil && retCode > 399 {
@@ -880,7 +888,9 @@ func (c *WagClient) doPutBookRequest(ctx context.Context, req *http.Request, hea
 
 	// log all client failures and non-successful HT
 	logData := logger.M{
-		"service":     "swagger-test",
+		"backend":     "swagger-test",
+		"method":      req.Method,
+		"uri":         req.URL,
 		"status_code": retCode,
 	}
 	if err == nil && retCode > 399 {
@@ -984,7 +994,9 @@ func (c *WagClient) doGetBookByIDRequest(ctx context.Context, req *http.Request,
 
 	// log all client failures and non-successful HT
 	logData := logger.M{
-		"service":     "swagger-test",
+		"backend":     "swagger-test",
+		"method":      req.Method,
+		"uri":         req.URL,
 		"status_code": retCode,
 	}
 	if err == nil && retCode > 399 {
@@ -1099,7 +1111,9 @@ func (c *WagClient) doGetBookByID2Request(ctx context.Context, req *http.Request
 
 	// log all client failures and non-successful HT
 	logData := logger.M{
-		"service":     "swagger-test",
+		"backend":     "swagger-test",
+		"method":      req.Method,
+		"uri":         req.URL,
 		"status_code": retCode,
 	}
 	if err == nil && retCode > 399 {
@@ -1199,7 +1213,9 @@ func (c *WagClient) doHealthCheckRequest(ctx context.Context, req *http.Request,
 
 	// log all client failures and non-successful HT
 	logData := logger.M{
-		"service":     "swagger-test",
+		"backend":     "swagger-test",
+		"method":      req.Method,
+		"uri":         req.URL,
 		"status_code": retCode,
 	}
 	if err == nil && retCode > 399 {

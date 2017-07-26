@@ -69,18 +69,20 @@ const noRetryPolicy = {
 };
 
 /**
- * Request status log is used to 
- * to output the status of a request returned 
+ * Request status log is used to
+ * to output the status of a request returned
  * by the client.
  */
-function responseLog(logger, response, err) {
-  response = response || { } 
-  logData = {
+function responseLog(logger, req, res, err) {
+  var res = res || { };
+  var req = req || { };
+  var logData = {
 	"backend": "swagger-test",
-	"request": (response.method || "") + " " + (response.url || ""),
-    "message": err || (response.statusMessage || ""),
-    "status_code": response.statusCode || 0,
-  }
+	"method": req.method || "",
+	"uri": req.uri || "",
+    "message": err || (res.statusMessage || ""),
+    "status_code": res.statusCode || 0,
+  };
 
   if (err) {
     logger.errorD("client-request-finished", logData);
