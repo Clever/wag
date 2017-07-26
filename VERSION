@@ -1,2 +1,2 @@
-v1.5.1
-- Client side kayvee logging for errors
+v1.5.2
+- Client-side circuit breaking for generated JS clients.
