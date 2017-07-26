@@ -9,9 +9,14 @@ EXECUTABLE := wag
 $(eval $(call golang-version-check,1.8))
 
 MOCKGEN := $(GOPATH)/bin/mockgen
-.PHONY: $(MOCKGEN)
-$(MOCKGEN):
-	go get -u github.com/golang/mock/mockgen
+MOCKGEN_VERSION = dbe9dea30dbc5b4b6d54c9ecf9a3b8f9b8e6556c
+$(GOPATH)/src/github.com/golang/mock:
+	git clone https://github.com/golang/mock.git $(GOPATH)/src/github.com/golang/mock
+	cd $(GOPATH)/src/github.com/golang/mock && git reset --hard $(MOCKGEN_VERSION)
+
+$(MOCKGEN): $(GOPATH)/src/github.com/golang/mock
+	go build -o $(GOPATH)/bin/mockgen github.com/golang/mock/mockgen
+
 
 build: hardcoded/hardcoded.go
 	go build -o bin/wag

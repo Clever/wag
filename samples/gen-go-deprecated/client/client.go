@@ -54,8 +54,15 @@ func New(basePath string) *WagClient {
 		logger:      logger,
 	}
 	circuit.init()
-	client := &WagClient{requestDoer: circuit, retryDoer: &retry, circuitDoer: circuit, defaultTimeout: 10 * time.Second,
-		transport: &http.Transport{}, basePath: basePath}
+	client := &WagClient{
+		requestDoer:    circuit,
+		retryDoer:      &retry,
+		circuitDoer:    circuit,
+		defaultTimeout: 10 * time.Second,
+		transport:      &http.Transport{},
+		basePath:       basePath,
+		logger:         logger,
+	}
 	client.SetCircuitBreakerSettings(DefaultCircuitBreakerSettings)
 	return client
 }

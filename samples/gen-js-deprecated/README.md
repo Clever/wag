@@ -1,3 +1,21 @@
+## Modules
+
+<dl>
+<dt><a href="#module_swagger-test">swagger-test</a></dt>
+<dd><p>swagger-test client library.</p>
+</dd>
+</dl>
+
+## Functions
+
+<dl>
+<dt><a href="#responseLog">responseLog()</a></dt>
+<dd><p>Request status log is used to
+to output the status of a request returned
+by the client.</p>
+</dd>
+</dl>
+
 <a name="module_swagger-test"></a>
 
 ## swagger-test
@@ -35,6 +53,7 @@ Create a new client object.
 | [options.discovery] | <code>bool</code> |  | Use clever-discovery to locate the server. Must provide this or the address argument |
 | [options.timeout] | <code>number</code> |  | The timeout to use for all client requests, in milliseconds. This can be overridden on a per-request basis. |
 | [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | <code>RetryPolicies.Single</code> | The logic to determine which requests to retry, as well as how many times to retry. |
+| [options.logger] | <code>module:kayvee.Logger</code> | <code>logger.New(&quot;swagger-test-wagclient&quot;)</code> | The Kayvee  logger to use in the client. |
 
 <a name="module_swagger-test--SwaggerTest.RetryPolicies"></a>
 
@@ -117,3 +136,11 @@ InternalError
 | --- | --- |
 | message | <code>string</code> | 
 
+<a name="responseLog"></a>
+
+## responseLog()
+Request status log is used to
+to output the status of a request returned
+by the client.
+
+**Kind**: global function  

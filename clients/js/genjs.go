@@ -84,6 +84,7 @@ type clientCodeTemplate struct {
 
 var indexJSTmplStr = `const async = require("async");
 const discovery = require("clever-discovery");
+const kayvee = require("kayvee");
 const request = require("request");
 const opentracing = require("opentracing");
 
@@ -152,6 +153,29 @@ const noRetryPolicy = {
 };
 
 /**
+ * Request status log is used to
+ * to output the status of a request returned
+ * by the client.
+ */
+function responseLog(logger, req, res, err) {
+  var res = res || { };
+  var req = req || { };
+  var logData = {
+	"backend": "{{.ServiceName}}",
+	"method": req.method || "",
+	"uri": req.uri || "",
+    "message": err || (res.statusMessage || ""),
+    "status_code": res.statusCode || 0,
+  };
+
+  if (err) {
+    logger.errorD("client-request-finished", logData);
+  } else {
+    logger.infoD("client-request-finished", logData);
+  }
+}
+
+/**
  * {{.ServiceName}} client library.
  * @module {{.ServiceName}}
  * @typicalname {{.ClassName}}
@@ -174,6 +198,8 @@ class {{.ClassName}} {
    * in milliseconds. This can be overridden on a per-request basis.
    * @param {module:{{.ServiceName}}.RetryPolicies} [options.retryPolicy=RetryPolicies.Single] - The logic to
    * determine which requests to retry, as well as how many times to retry.
+   * @param {module:kayvee.Logger} [options.logger=logger.New("{{.ServiceName}}-wagclient")] - The Kayvee 
+   * logger to use in the client.
    */
   constructor(options) {
     options = options || {};
@@ -194,6 +220,11 @@ class {{.ClassName}} {
     }
     if (options.retryPolicy) {
       this.retryPolicy = options.retryPolicy;
+    }
+    if (options.logger) {
+      this.logger = options.logger;
+    } else {
+      this.logger =  new kayvee.logger("{{.ServiceName}}-wagclient");
     }
   }
 {{range $methodCode := .Methods}}{{$methodCode}}{{end}}};
@@ -226,7 +257,8 @@ var packageJSONTmplStr = `{
     "async": "^2.1.4",
     "clever-discovery": "0.0.8",
     "opentracing": "^0.11.1",
-    "request": "^2.75.0"
+    "request": "^2.75.0",
+	"kayvee": "^3.8.2"
   }
 }
 `
@@ -308,14 +340,15 @@ var methodTmplStr = `
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
+      const logger = this.logger;
   {{if .IterMethod}}
       let results = [];
       async.whilst(
         () => requestOptions.uri !== "",
         cbW => {
-      if (span) {
-        span.logEvent("{{.Method}} {{.Path}}");
-      }
+          if (span) {
+            span.logEvent("{{.Method}} {{.Path}}");
+          }
       const address = this.address;
   {{- end}}
       let retries = 0;
@@ -328,6 +361,7 @@ var methodTmplStr = `
             return;
           }
           if (err) {
+            responseLog(logger, requestOptions, response, err)
             {{- if not .IterMethod}}
             rejecter(err);
             {{- else}}
@@ -338,10 +372,12 @@ var methodTmplStr = `
 
           switch (response.statusCode) {
             {{ range $response := .Responses }}case {{ $response.StatusCode }}:{{if $response.IsError }}
+              var err = new Errors.{{ $response.Name }}(body || {});
+              responseLog(logger, requestOptions, response, err);
               {{- if not $.IterMethod}}
-              rejecter(new Errors.{{ $response.Name }}(body || {}));
+              rejecter(err);
               {{- else}}
-              cbW(new Errors.{{ $response.Name }}(body || {}));
+              cbW(err);
               {{- end}}
               return;
             {{else}}{{if $response.IsNoData}}
@@ -360,10 +396,12 @@ var methodTmplStr = `
               break;
             {{end}}{{end}}
             {{end}}default:
+              var err = new Error("Received unexpected statusCode " + response.statusCode);
+              responseLog(logger, requestOptions, response, err);
               {{- if not .IterMethod}}
-              rejecter(new Error("Received unexpected statusCode " + response.statusCode));
+              rejecter(err);
               {{- else}}
-              cbW(new Error("Received unexpected statusCode " + response.statusCode));
+              cbW(err);
               {{- end}}
               return;
           }

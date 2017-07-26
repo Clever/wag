@@ -54,8 +54,15 @@ func New(basePath string) *WagClient {
 		logger:      logger,
 	}
 	circuit.init()
-	client := &WagClient{requestDoer: circuit, retryDoer: &retry, circuitDoer: circuit, defaultTimeout: 10 * time.Second,
-		transport: &http.Transport{}, basePath: basePath}
+	client := &WagClient{
+		requestDoer:    circuit,
+		retryDoer:      &retry,
+		circuitDoer:    circuit,
+		defaultTimeout: 10 * time.Second,
+		transport:      &http.Transport{},
+		basePath:       basePath,
+		logger:         logger,
+	}
 	client.SetCircuitBreakerSettings(DefaultCircuitBreakerSettings)
 	return client
 }
@@ -266,7 +273,25 @@ func (c *WagClient) doGetAuthorsRequest(ctx context.Context, req *http.Request, 
 		req = req.WithContext(ctx)
 	}
 	resp, err := c.requestDoer.Do(client, req)
+	retCode := 0
+	if resp != nil {
+		retCode = resp.StatusCode
+	}
+
+	// log all client failures and non-successful HT
+	logData := logger.M{
+		"backend":     "swagger-test",
+		"method":      req.Method,
+		"uri":         req.URL,
+		"status_code": retCode,
+	}
+	if err == nil && retCode > 399 {
+		logData["message"] = resp.Status
+		c.logger.ErrorD("client-request-finished", logData)
+	}
 	if err != nil {
+		logData["message"] = err.Error()
+		c.logger.ErrorD("client-request-finished", logData)
 		return nil, "", err
 	}
 	defer resp.Body.Close()
@@ -456,7 +481,25 @@ func (c *WagClient) doGetAuthorsWithPutRequest(ctx context.Context, req *http.Re
 		req = req.WithContext(ctx)
 	}
 	resp, err := c.requestDoer.Do(client, req)
+	retCode := 0
+	if resp != nil {
+		retCode = resp.StatusCode
+	}
+
+	// log all client failures and non-successful HT
+	logData := logger.M{
+		"backend":     "swagger-test",
+		"method":      req.Method,
+		"uri":         req.URL,
+		"status_code": retCode,
+	}
+	if err == nil && retCode > 399 {
+		logData["message"] = resp.Status
+		c.logger.ErrorD("client-request-finished", logData)
+	}
 	if err != nil {
+		logData["message"] = err.Error()
+		c.logger.ErrorD("client-request-finished", logData)
 		return nil, "", err
 	}
 	defer resp.Body.Close()
@@ -628,7 +671,25 @@ func (c *WagClient) doGetBooksRequest(ctx context.Context, req *http.Request, he
 		req = req.WithContext(ctx)
 	}
 	resp, err := c.requestDoer.Do(client, req)
+	retCode := 0
+	if resp != nil {
+		retCode = resp.StatusCode
+	}
+
+	// log all client failures and non-successful HT
+	logData := logger.M{
+		"backend":     "swagger-test",
+		"method":      req.Method,
+		"uri":         req.URL,
+		"status_code": retCode,
+	}
+	if err == nil && retCode > 399 {
+		logData["message"] = resp.Status
+		c.logger.ErrorD("client-request-finished", logData)
+	}
 	if err != nil {
+		logData["message"] = err.Error()
+		c.logger.ErrorD("client-request-finished", logData)
 		return nil, "", err
 	}
 	defer resp.Body.Close()
@@ -715,7 +776,25 @@ func (c *WagClient) doCreateBookRequest(ctx context.Context, req *http.Request, 
 		req = req.WithContext(ctx)
 	}
 	resp, err := c.requestDoer.Do(client, req)
+	retCode := 0
+	if resp != nil {
+		retCode = resp.StatusCode
+	}
+
+	// log all client failures and non-successful HT
+	logData := logger.M{
+		"backend":     "swagger-test",
+		"method":      req.Method,
+		"uri":         req.URL,
+		"status_code": retCode,
+	}
+	if err == nil && retCode > 399 {
+		logData["message"] = resp.Status
+		c.logger.ErrorD("client-request-finished", logData)
+	}
 	if err != nil {
+		logData["message"] = err.Error()
+		c.logger.ErrorD("client-request-finished", logData)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -802,7 +881,25 @@ func (c *WagClient) doPutBookRequest(ctx context.Context, req *http.Request, hea
 		req = req.WithContext(ctx)
 	}
 	resp, err := c.requestDoer.Do(client, req)
+	retCode := 0
+	if resp != nil {
+		retCode = resp.StatusCode
+	}
+
+	// log all client failures and non-successful HT
+	logData := logger.M{
+		"backend":     "swagger-test",
+		"method":      req.Method,
+		"uri":         req.URL,
+		"status_code": retCode,
+	}
+	if err == nil && retCode > 399 {
+		logData["message"] = resp.Status
+		c.logger.ErrorD("client-request-finished", logData)
+	}
 	if err != nil {
+		logData["message"] = err.Error()
+		c.logger.ErrorD("client-request-finished", logData)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -890,7 +987,25 @@ func (c *WagClient) doGetBookByIDRequest(ctx context.Context, req *http.Request,
 		req = req.WithContext(ctx)
 	}
 	resp, err := c.requestDoer.Do(client, req)
+	retCode := 0
+	if resp != nil {
+		retCode = resp.StatusCode
+	}
+
+	// log all client failures and non-successful HT
+	logData := logger.M{
+		"backend":     "swagger-test",
+		"method":      req.Method,
+		"uri":         req.URL,
+		"status_code": retCode,
+	}
+	if err == nil && retCode > 399 {
+		logData["message"] = resp.Status
+		c.logger.ErrorD("client-request-finished", logData)
+	}
 	if err != nil {
+		logData["message"] = err.Error()
+		c.logger.ErrorD("client-request-finished", logData)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -989,7 +1104,25 @@ func (c *WagClient) doGetBookByID2Request(ctx context.Context, req *http.Request
 		req = req.WithContext(ctx)
 	}
 	resp, err := c.requestDoer.Do(client, req)
+	retCode := 0
+	if resp != nil {
+		retCode = resp.StatusCode
+	}
+
+	// log all client failures and non-successful HT
+	logData := logger.M{
+		"backend":     "swagger-test",
+		"method":      req.Method,
+		"uri":         req.URL,
+		"status_code": retCode,
+	}
+	if err == nil && retCode > 399 {
+		logData["message"] = resp.Status
+		c.logger.ErrorD("client-request-finished", logData)
+	}
 	if err != nil {
+		logData["message"] = err.Error()
+		c.logger.ErrorD("client-request-finished", logData)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -1073,7 +1206,25 @@ func (c *WagClient) doHealthCheckRequest(ctx context.Context, req *http.Request,
 		req = req.WithContext(ctx)
 	}
 	resp, err := c.requestDoer.Do(client, req)
+	retCode := 0
+	if resp != nil {
+		retCode = resp.StatusCode
+	}
+
+	// log all client failures and non-successful HT
+	logData := logger.M{
+		"backend":     "swagger-test",
+		"method":      req.Method,
+		"uri":         req.URL,
+		"status_code": retCode,
+	}
+	if err == nil && retCode > 399 {
+		logData["message"] = resp.Status
+		c.logger.ErrorD("client-request-finished", logData)
+	}
 	if err != nil {
+		logData["message"] = err.Error()
+		c.logger.ErrorD("client-request-finished", logData)
 		return err
 	}
 	defer resp.Body.Close()

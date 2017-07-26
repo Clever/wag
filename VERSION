@@ -1,2 +1,2 @@
-v1.5.0
-- PUT endpoints now support paging
+v1.5.1
+- Client side kayvee logging for errors

@@ -1,5 +1,6 @@
 const async = require("async");
 const discovery = require("clever-discovery");
+const kayvee = require("kayvee");
 const request = require("request");
 const opentracing = require("opentracing");
 
@@ -68,6 +69,29 @@ const noRetryPolicy = {
 };
 
 /**
+ * Request status log is used to
+ * to output the status of a request returned
+ * by the client.
+ */
+function responseLog(logger, req, res, err) {
+  var res = res || { };
+  var req = req || { };
+  var logData = {
+	"backend": "nil-test",
+	"method": req.method || "",
+	"uri": req.uri || "",
+    "message": err || (res.statusMessage || ""),
+    "status_code": res.statusCode || 0,
+  };
+
+  if (err) {
+    logger.errorD("client-request-finished", logData);
+  } else {
+    logger.infoD("client-request-finished", logData);
+  }
+}
+
+/**
  * nil-test client library.
  * @module nil-test
  * @typicalname NilTest
@@ -90,6 +114,8 @@ class NilTest {
    * in milliseconds. This can be overridden on a per-request basis.
    * @param {module:nil-test.RetryPolicies} [options.retryPolicy=RetryPolicies.Single] - The logic to
    * determine which requests to retry, as well as how many times to retry.
+   * @param {module:kayvee.Logger} [options.logger=logger.New("nil-test-wagclient")] - The Kayvee 
+   * logger to use in the client.
    */
   constructor(options) {
     options = options || {};
@@ -110,6 +136,11 @@ class NilTest {
     }
     if (options.retryPolicy) {
       this.retryPolicy = options.retryPolicy;
+    }
+    if (options.logger) {
+      this.logger = options.logger;
+    } else {
+      this.logger =  new kayvee.logger("nil-test-wagclient");
     }
   }
 
@@ -198,6 +229,7 @@ class NilTest {
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
+      const logger = this.logger;
   
       let retries = 0;
       (function requestOnce() {
@@ -209,6 +241,7 @@ class NilTest {
             return;
           }
           if (err) {
+            responseLog(logger, requestOptions, response, err)
             rejecter(err);
             return;
           }
@@ -219,15 +252,21 @@ class NilTest {
               break;
             
             case 400:
-              rejecter(new Errors.BadRequest(body || {}));
+              var err = new Errors.BadRequest(body || {});
+              responseLog(logger, requestOptions, response, err);
+              rejecter(err);
               return;
             
             case 500:
-              rejecter(new Errors.InternalError(body || {}));
+              var err = new Errors.InternalError(body || {});
+              responseLog(logger, requestOptions, response, err);
+              rejecter(err);
               return;
             
             default:
-              rejecter(new Error("Received unexpected statusCode " + response.statusCode));
+              var err = new Error("Received unexpected statusCode " + response.statusCode);
+              responseLog(logger, requestOptions, response, err);
+              rejecter(err);
               return;
           }
         });
