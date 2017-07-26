@@ -2,6 +2,7 @@ const assert = require("assert");
 const nock = require("nock");
 
 const Client = require("swagger-test");
+const {RetryPolicies} = Client;
 
 const mockAddress = "http://localhost:8000";
 
@@ -129,6 +130,40 @@ describe("circuit", function() {
         throw new Error("got resp, should have gotten error");
       } catch (err) {
         assert.equal(err.message, "something awful happened");
+      }
+      assert(scope.isDone(), "nock scope should be done");
+    }
+    await sleep(1500);
+    assert.equal(loggerCalls, 1);
+  });
+
+  it("does not consider 4XXs errors", async () => {
+    let loggerCalls = 0;
+    const c = new Client({
+      address: mockAddress,
+      retryPolicy: RetryPolicies.None,
+      circuit: {
+        debug: true,
+        requestVolumeThreshold: 20,
+        logIntervalMs: 1000,
+        logger: (data) => {
+          loggerCalls++;
+          if (loggerCalls == 1) {
+            assert.equal(data.errorCount, 0, "expected log to show 0 errors");
+            assert.equal(data.errorPercentage, 0, "expected error percent to be 0");
+          }
+        },
+      },
+    });
+    for (let i = 0; i < 20; i++) {
+      const scope = nock(mockAddress).
+        get("/v1/books/12345").
+        reply(404, `{"message":"Not found"}`);
+      try {
+        const resp = await c.getBookByID({bookID: 12345});
+        throw new Error("got resp, should have gotten error");
+      } catch (err) {
+        assert.equal(err.message, "Not found");
       }
       assert(scope.isDone(), "nock scope should be done");
     }

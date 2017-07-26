@@ -257,6 +257,7 @@ class {{.ClassName}} {
 
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
     this._hystrixCommand = commandFactory.getOrCreate("{{.ServiceName}}").
+      errorHandler(this._hystrixCommandErrorHandler).
       circuitBreakerForceClosed(circuitOptions.debug).
       requestVolumeRejectionThreshold(circuitOptions.maxConcurrentRequests).
       circuitBreakerRequestVolumeThreshold(circuitOptions.requestVolumeThreshold).
@@ -270,6 +271,14 @@ class {{.ClassName}} {
       build();
 
     setInterval(() => this._logCircuitState(circuitOptions.logger), circuitOptions.logIntervalMs);
+  }
+
+  _hystrixCommandErrorHandler(err) {
+    // to avoid counting 4XXs as errors, only count an error if it comes from the request library
+    if (err._fromRequest === true) {
+      return err;
+    }
+    return false;
   }
 
   _hystrixCommandRun(method, args) {
@@ -432,6 +441,7 @@ var methodTmplStr = `
             return;
           }
           if (err) {
+            err._fromRequest = true;
             responseLog(logger, requestOptions, response, err)
             {{- if not .IterMethod}}
             rejecter(err);
