@@ -3,6 +3,8 @@ const discovery = require("clever-discovery");
 const kayvee = require("kayvee");
 const request = require("request");
 const opentracing = require("opentracing");
+const {commandFactory} = require("hystrixjs");
+const RollingNumberEvent = require("hystrixjs/lib/metrics/RollingNumberEvent");
 
 /**
  * @external Span
@@ -92,6 +94,20 @@ function responseLog(logger, req, res, err) {
 }
 
 /**
+ * Default circuit breaker options.
+ * @alias module:nil-test.DefaultCircuitOptions
+ */
+const defaultCircuitOptions = {
+  forceClosed:            true,
+  requestVolumeThreshold: 20,
+  maxConcurrentRequests:  100,
+  requestVolumeThreshold: 20,
+  sleepWindow:            5000,
+  errorPercentThreshold:  90,
+  logIntervalMs:          30000
+};
+
+/**
  * nil-test client library.
  * @module nil-test
  * @typicalname NilTest
@@ -116,6 +132,17 @@ class NilTest {
    * determine which requests to retry, as well as how many times to retry.
    * @param {module:kayvee.Logger} [options.logger=logger.New("nil-test-wagclient")] - The Kayvee 
    * logger to use in the client.
+   * @param {Object} [options.circuit] - Options for constructing the client's circuit breaker.
+   * @param {bool} [options.circuit.forceClosed] - When set to true the circuit will always be closed. Default: true.
+   * @param {number} [options.circuit.maxConcurrentRequests] - the maximum number of concurrent requests
+   * the client can make at the same time. Default: 100.
+   * @param {number} [options.circuit.requestVolumeThreshold] - The minimum number of requests needed
+   * before a circuit can be tripped due to health. Default: 20.
+   * @param {number} [options.circuit.sleepWindow] - how long, in milliseconds, to wait after a circuit opens
+   * before testing for recovery. Default: 5000.
+   * @param {number} [options.circuit.errorPercentThreshold] - the threshold to place on the rolling error
+   * rate. Once the error rate exceeds this percentage, the circuit opens.
+   * Default: 90.
    */
   constructor(options) {
     options = options || {};
@@ -142,6 +169,54 @@ class NilTest {
     } else {
       this.logger =  new kayvee.logger("nil-test-wagclient");
     }
+
+    const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
+    this._hystrixCommand = commandFactory.getOrCreate("nil-test").
+      errorHandler(this._hystrixCommandErrorHandler).
+      circuitBreakerForceClosed(circuitOptions.forceClosed).
+      requestVolumeRejectionThreshold(circuitOptions.maxConcurrentRequests).
+      circuitBreakerRequestVolumeThreshold(circuitOptions.requestVolumeThreshold).
+      circuitBreakerSleepWindowInMilliseconds(circuitOptions.sleepWindow).
+      circuitBreakerErrorThresholdPercentage(circuitOptions.errorPercentThreshold).
+      timeout(0).
+      statisticalWindowLength(10000).
+      statisticalWindowNumberOfBuckets(10).
+      run(this._hystrixCommandRun).
+      context(this).
+      build();
+
+    setInterval(() => this._logCircuitState(), circuitOptions.logIntervalMs);
+  }
+
+  _hystrixCommandErrorHandler(err) {
+    // to avoid counting 4XXs as errors, only count an error if it comes from the request library
+    if (err._fromRequest === true) {
+      return err;
+    }
+    return false;
+  }
+
+  _hystrixCommandRun(method, args) {
+    return method.apply(this, args);
+  }
+
+  _logCircuitState(logger) {
+    // code below heavily borrows from hystrix's internal HystrixSSEStream.js logic
+    const metrics = this._hystrixCommand.metrics;
+    const healthCounts = metrics.getHealthCounts()
+    const circuitBreaker = this._hystrixCommand.circuitBreaker;
+    this.logger.infoD("nil-test", {
+      "requestCount":                    healthCounts.totalCount,
+      "errorCount":                      healthCounts.errorCount,
+      "errorPercentage":                 healthCounts.errorPercentage,
+      "isCircuitBreakerOpen":            circuitBreaker.isOpen(),
+      "rollingCountFailure":             metrics.getRollingCount(RollingNumberEvent.FAILURE),
+      "rollingCountShortCircuited":      metrics.getRollingCount(RollingNumberEvent.SHORT_CIRCUITED),
+      "rollingCountSuccess":             metrics.getRollingCount(RollingNumberEvent.SUCCESS),
+      "rollingCountTimeout":             metrics.getRollingCount(RollingNumberEvent.TIMEOUT),
+      "currentConcurrentExecutionCount": metrics.getCurrentExecutionCount(),
+      "latencyTotalMean":                metrics.getExecutionTime("mean") || 0,
+    });
   }
 
   /**
@@ -164,6 +239,9 @@ class NilTest {
    * @reject {Error}
    */
   nilCheck(params, options, cb) {
+    return this._hystrixCommand.execute(this._nilCheck, arguments);
+  }
+  _nilCheck(params, options, cb) {
     if (!cb && typeof options === "function") {
       cb = options;
       options = undefined;
@@ -241,6 +319,7 @@ class NilTest {
             return;
           }
           if (err) {
+            err._fromRequest = true;
             responseLog(logger, requestOptions, response, err)
             rejecter(err);
             return;
@@ -292,3 +371,5 @@ module.exports.RetryPolicies = {
  * @alias module:nil-test.Errors
  */
 module.exports.Errors = Errors;
+
+module.exports.DefaultCircuitOptions = defaultCircuitOptions;
