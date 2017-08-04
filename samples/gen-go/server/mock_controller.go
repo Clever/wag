@@ -7,6 +7,7 @@ import (
 	context "context"
 	models "github.com/Clever/wag/samples/gen-go/models"
 	gomock "github.com/golang/mock/gomock"
+	reflect "reflect"
 )
 
 // MockController is a mock of Controller interface
@@ -43,7 +44,7 @@ func (_m *MockController) GetAuthors(ctx context.Context, i *models.GetAuthorsIn
 
 // GetAuthors indicates an expected call of GetAuthors
 func (_mr *MockControllerMockRecorder) GetAuthors(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetAuthors", arg0, arg1)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetAuthors", reflect.TypeOf((*MockController)(nil).GetAuthors), arg0, arg1)
 }
 
 // GetAuthorsWithPut mocks base method
@@ -57,7 +58,7 @@ func (_m *MockController) GetAuthorsWithPut(ctx context.Context, i *models.GetAu
 
 // GetAuthorsWithPut indicates an expected call of GetAuthorsWithPut
 func (_mr *MockControllerMockRecorder) GetAuthorsWithPut(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetAuthorsWithPut", arg0, arg1)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetAuthorsWithPut", reflect.TypeOf((*MockController)(nil).GetAuthorsWithPut), arg0, arg1)
 }
 
 // GetBooks mocks base method
@@ -71,7 +72,7 @@ func (_m *MockController) GetBooks(ctx context.Context, i *models.GetBooksInput)
 
 // GetBooks indicates an expected call of GetBooks
 func (_mr *MockControllerMockRecorder) GetBooks(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetBooks", arg0, arg1)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetBooks", reflect.TypeOf((*MockController)(nil).GetBooks), arg0, arg1)
 }
 
 // CreateBook mocks base method
@@ -84,7 +85,7 @@ func (_m *MockController) CreateBook(ctx context.Context, i *models.Book) (*mode
 
 // CreateBook indicates an expected call of CreateBook
 func (_mr *MockControllerMockRecorder) CreateBook(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreateBook", arg0, arg1)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "CreateBook", reflect.TypeOf((*MockController)(nil).CreateBook), arg0, arg1)
 }
 
 // PutBook mocks base method
@@ -97,7 +98,7 @@ func (_m *MockController) PutBook(ctx context.Context, i *models.Book) (*models.
 
 // PutBook indicates an expected call of PutBook
 func (_mr *MockControllerMockRecorder) PutBook(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "PutBook", arg0, arg1)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "PutBook", reflect.TypeOf((*MockController)(nil).PutBook), arg0, arg1)
 }
 
 // GetBookByID mocks base method
@@ -110,7 +111,7 @@ func (_m *MockController) GetBookByID(ctx context.Context, i *models.GetBookByID
 
 // GetBookByID indicates an expected call of GetBookByID
 func (_mr *MockControllerMockRecorder) GetBookByID(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetBookByID", arg0, arg1)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetBookByID", reflect.TypeOf((*MockController)(nil).GetBookByID), arg0, arg1)
 }
 
 // GetBookByID2 mocks base method
@@ -123,7 +124,7 @@ func (_m *MockController) GetBookByID2(ctx context.Context, id string) (*models.
 
 // GetBookByID2 indicates an expected call of GetBookByID2
 func (_mr *MockControllerMockRecorder) GetBookByID2(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetBookByID2", arg0, arg1)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetBookByID2", reflect.TypeOf((*MockController)(nil).GetBookByID2), arg0, arg1)
 }
 
 // HealthCheck mocks base method
@@ -135,5 +136,5 @@ func (_m *MockController) HealthCheck(ctx context.Context) error {
 
 // HealthCheck indicates an expected call of HealthCheck
 func (_mr *MockControllerMockRecorder) HealthCheck(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "HealthCheck", arg0)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "HealthCheck", reflect.TypeOf((*MockController)(nil).HealthCheck), arg0)
 }

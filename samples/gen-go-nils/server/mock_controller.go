@@ -7,6 +7,7 @@ import (
 	context "context"
 	models "github.com/Clever/wag/samples/gen-go-nils/models"
 	gomock "github.com/golang/mock/gomock"
+	reflect "reflect"
 )
 
 // MockController is a mock of Controller interface
@@ -41,5 +42,5 @@ func (_m *MockController) NilCheck(ctx context.Context, i *models.NilCheckInput)
 
 // NilCheck indicates an expected call of NilCheck
 func (_mr *MockControllerMockRecorder) NilCheck(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "NilCheck", arg0, arg1)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "NilCheck", reflect.TypeOf((*MockController)(nil).NilCheck), arg0, arg1)
 }

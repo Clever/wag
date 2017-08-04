@@ -1,5 +1,5 @@
-hash: 06b9ebf476a253e590f88845d5ac10d482df86785db733943249d7ca839eb76c
-updated: 2017-03-27T21:28:48.123152408Z
+hash: cf30750ed3dd4c4b53c19122c89c10f2897410f4b3fda90351d1f70ee32814b3
+updated: 2017-08-04T14:42:48.985007166Z
 imports:
 - name: github.com/afex/hystrix-go
   version: 39520ddd07a9d9a071d615f7476798659f5a3b89
@@ -11,7 +11,7 @@ imports:
   version: 7b3beb6df3c42abd3509abfc3bcacc0fbfb7c877
   repo: https://github.com/asaskevich/govalidator
 - name: github.com/Clever/discovery-go
-  version: fd78b9ff3291bf5e69038a9b2da73e91ca0e49c7
+  version: b2114f3bdf1c55f030cf6d6d457478ccb18b9e9c
 - name: github.com/Clever/go-process-metrics
   version: 17c3da159c36ee2bbb4198c8eeada7f68184350f
   subpackages:
@@ -26,47 +26,47 @@ imports:
   version: fd9ec7deca8bf46ecd2a795baaacf2b3a9be1197
   repo: https://github.com/fsnotify/fsnotify
 - name: github.com/go-errors/errors
-  version: a41850380601eeb43f4350f7d17c6bbd8944aaf8
+  version: 8fa88b06e5974e97fbf9899a7f86a344bfd1f105
 - name: github.com/go-openapi/analysis
-  version: abc9a6171f5bf03ada39aead1aa7fd7bbd44d50f
+  version: 5a8fe2138f95138797c306c07e65e759c55f898f
 - name: github.com/go-openapi/errors
-  version: d24ebc2075bad502fac3a8ae27aa6dd58e1952dc
+  version: b6a74a9df33099a5a952e7d1dbfe93dfa6b7a076
 - name: github.com/go-openapi/inflect
   version: b1f6470ffb9c552dc105dd869f16e36ba86ba7d0
   repo: https://github.com/go-openapi/inflect
 - name: github.com/go-openapi/jsonpointer
-  version: 46af16f9f7b149af66e5d1bd010e3574dc06de98
+  version: f5133566e18f23f2085d953998fd72959b698623
 - name: github.com/go-openapi/jsonreference
-  version: 13c6e3589ad90f49bd3e3bbe2c2cb3d7a4142272
+  version: 44d0c05f81b60f99eeb8c188b8983ec82e5d872f
 - name: github.com/go-openapi/loads
-  version: 18441dfa706d924a39a030ee2c3b1d8d81917b38
+  version: 1713bb237996758885e6c3cee6ed7981644abf41
   subpackages:
   - fmts
 - name: github.com/go-openapi/runtime
   version: 12c07accf0687ab20b1e7b6293d8012ce282499c
   repo: https://github.com/go-openapi/runtime
 - name: github.com/go-openapi/spec
-  version: e9fab754f5629065e6b7a6100301226545d4477e
+  version: 1f40fcb077ed32379da3eeb494f76fb2285e31b8
 - name: github.com/go-openapi/strfmt
-  version: dfda818c47a4ae5a1dde75ac776f34b2c95de993
+  version: f827e8cf30538b3983710c9fb4dd76ea04e3c8e0
 - name: github.com/go-openapi/swag
-  version: 1d0bd113de87027671077d3c71eb3ac5d7dbba72
+  version: 617a8d12ee0e06e17b3fc95af7a14dd0f514e636
 - name: github.com/go-openapi/validate
-  version: deaf2c9013bc1a7f4c774662259a506ba874d80f
+  version: f9db1b89d08ead629cde1e6cab275c329fe89bed
 - name: github.com/go-swagger/go-swagger
   version: e6695a646f4673a8d8169ff0e50b96ea97aae483
   subpackages:
   - generator
 - name: github.com/gogo/protobuf
-  version: 8d70fb3182befc465c4a1eac8ad4d38ff49778e2
+  version: 100ba4e885062801d56799d78530b73b178a78f3
   subpackages:
   - proto
 - name: github.com/golang/mock
-  version: bd3c8e81be01eef76d4b503f5e687d2d1354d2d9
+  version: 13f360950a79f5864a972c786a10a50e44b69541
   subpackages:
   - gomock
 - name: github.com/golang/protobuf
-  version: 3852dcfda249c2097355a6aabb199a28d97b30df
+  version: c9c7427a2a70d2eb3bafa0ab2dc163e45f143317
   subpackages:
   - proto
   - ptypes/timestamp
@@ -105,13 +105,6 @@ imports:
 - name: github.com/magiconair/properties
   version: 0723e352fa358f9322c938cc2dadda874e9151a9
   repo: https://github.com/magiconair/properties
-- name: github.com/mailru/easyjson
-  version: 159cdb893c982e3d1bc6450322fedd514f9c9de3
-  repo: https://github.com/mailru/easyjson
-  subpackages:
-  - buffer
-  - jlexer
-  - jwriter
 - name: github.com/mitchellh/mapstructure
   version: f3009df150dadf309fdee4a54ed65c124afad715
   repo: https://github.com/mitchellh/mapstructure
@@ -120,7 +113,7 @@ imports:
   subpackages:
   - wire
 - name: github.com/opentracing/opentracing-go
-  version: 6edb48674bd9467b8e91fda004f2bd7202d60ce4
+  version: 1949ddbfd147afd4d964a9f00b24eb291e0e7c38
   subpackages:
   - ext
   - log
@@ -156,11 +149,11 @@ imports:
 - name: github.com/vburenin/nsync
   version: 9a75d1c80410815ac45d65fc01ccabac9c98dd4a
 - name: github.com/xeipuuv/gojsonpointer
-  version: e0fe6f68307607d540ed8eac07a342c33fa1b54a
+  version: 6fe8760cad3569743d51ddbb243b26f8456742dc
 - name: github.com/xeipuuv/gojsonreference
   version: e02fc20de94c78484cd5ffb007f8af96be030a45
 - name: github.com/xeipuuv/gojsonschema
-  version: f06f290571ce81ab347174c6f7ad2e1865af41a7
+  version: ff0417f4272e480246b4507459b3f6ae721a87ac
 - name: golang.org/x/net
   version: 0e2717dc3cc05907dc23096ef3a9086ea93f567f
   subpackages:
@@ -201,12 +194,13 @@ imports:
   - go/loader
   - imports
 - name: google.golang.org/grpc
-  version: 50955793b0183f9de69bd78e2ec251cf20aab121
+  version: c5a5dbc5005d9153f67df476a7b561c07b22dbc2
   subpackages:
   - codes
   - credentials
   - grpclog
   - internal
+  - keepalive
   - metadata
   - naming
   - peer
@@ -215,10 +209,6 @@ imports:
   - transport
 - name: gopkg.in/Clever/kayvee-go.v3
   version: 056c92dcc68b40c5d6045f755197b3776f914154
-  subpackages:
-  - logger
-- name: gopkg.in/Clever/kayvee-go.v5
-  version: 865aa5e4bbe8e274c69accd53f0b1e2ecc484cd8
   subpackages:
   - logger
 - name: gopkg.in/Clever/kayvee-go.v6
@@ -233,9 +223,9 @@ imports:
   - bson
   - internal/json
 - name: gopkg.in/tylerb/graceful.v1
-  version: 50a48b6e73fcc75b45e22c05b79629a67c79e938
+  version: 4654dfbb6ad53cb5e27f37d99b02e16c1872fbbb
 - name: gopkg.in/yaml.v2
-  version: a5b47d31c556af34a302ce5d659e6fea44d90de0
+  version: a3f3340b5840cee44f372bddb5880fcbc419b46a
 testImports:
 - name: github.com/davecgh/go-spew
   version: 346938d642f2ec3594ed81d874461961cd0faa76

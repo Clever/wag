@@ -7,6 +7,7 @@ import (
 	context "context"
 	models "github.com/Clever/wag/samples/gen-go-deprecated/models"
 	gomock "github.com/golang/mock/gomock"
+	reflect "reflect"
 )
 
 // MockController is a mock of Controller interface
@@ -41,5 +42,5 @@ func (_m *MockController) Health(ctx context.Context, i *models.HealthInput) err
 
 // Health indicates an expected call of Health
 func (_mr *MockControllerMockRecorder) Health(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "Health", arg0, arg1)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "Health", reflect.TypeOf((*MockController)(nil).Health), arg0, arg1)
 }

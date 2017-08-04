@@ -13,6 +13,8 @@ import:
   subpackages:
   - generator
 - package: github.com/golang/mock
+  # if you change this, please update validation/glide.go
+  version: 13f360950a79f5864a972c786a10a50e44b69541
   subpackages:
   - gomock
 - package: github.com/gorilla/mux

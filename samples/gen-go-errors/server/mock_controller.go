@@ -7,6 +7,7 @@ import (
 	context "context"
 	models "github.com/Clever/wag/samples/gen-go-errors/models"
 	gomock "github.com/golang/mock/gomock"
+	reflect "reflect"
 )
 
 // MockController is a mock of Controller interface
@@ -41,5 +42,5 @@ func (_m *MockController) GetBook(ctx context.Context, i *models.GetBookInput) e
 
 // GetBook indicates an expected call of GetBook
 func (_mr *MockControllerMockRecorder) GetBook(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetBook", arg0, arg1)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetBook", reflect.TypeOf((*MockController)(nil).GetBook), arg0, arg1)
 }
