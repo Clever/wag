@@ -17,7 +17,7 @@ $(GOPATH)/src/github.com/golang/mock:
 .PHONY: $(MOCKGEN) # always build it to ensure version is correct
 $(MOCKGEN): $(GOPATH)/src/github.com/golang/mock
 	cd $(GOPATH)/src/github.com/golang/mock && git reset --hard $(MOCKGEN_VERSION)
-	rm $(MOCKGEN)
+	rm -f $(MOCKGEN)
 	go build -o $(MOCKGEN) github.com/golang/mock/mockgen
 
 build: hardcoded/hardcoded.go
