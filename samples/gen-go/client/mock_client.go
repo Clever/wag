@@ -7,6 +7,7 @@ import (
 	context "context"
 	models "github.com/Clever/wag/samples/gen-go/models"
 	gomock "github.com/golang/mock/gomock"
+	reflect "reflect"
 )
 
 // MockClient is a mock of Client interface
@@ -42,7 +43,7 @@ func (_m *MockClient) GetAuthors(ctx context.Context, i *models.GetAuthorsInput)
 
 // GetAuthors indicates an expected call of GetAuthors
 func (_mr *MockClientMockRecorder) GetAuthors(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetAuthors", arg0, arg1)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetAuthors", reflect.TypeOf((*MockClient)(nil).GetAuthors), arg0, arg1)
 }
 
 // NewGetAuthorsIter mocks base method
@@ -55,7 +56,7 @@ func (_m *MockClient) NewGetAuthorsIter(ctx context.Context, i *models.GetAuthor
 
 // NewGetAuthorsIter indicates an expected call of NewGetAuthorsIter
 func (_mr *MockClientMockRecorder) NewGetAuthorsIter(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "NewGetAuthorsIter", arg0, arg1)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "NewGetAuthorsIter", reflect.TypeOf((*MockClient)(nil).NewGetAuthorsIter), arg0, arg1)
 }
 
 // GetAuthorsWithPut mocks base method
@@ -68,7 +69,7 @@ func (_m *MockClient) GetAuthorsWithPut(ctx context.Context, i *models.GetAuthor
 
 // GetAuthorsWithPut indicates an expected call of GetAuthorsWithPut
 func (_mr *MockClientMockRecorder) GetAuthorsWithPut(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetAuthorsWithPut", arg0, arg1)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetAuthorsWithPut", reflect.TypeOf((*MockClient)(nil).GetAuthorsWithPut), arg0, arg1)
 }
 
 // NewGetAuthorsWithPutIter mocks base method
@@ -81,7 +82,7 @@ func (_m *MockClient) NewGetAuthorsWithPutIter(ctx context.Context, i *models.Ge
 
 // NewGetAuthorsWithPutIter indicates an expected call of NewGetAuthorsWithPutIter
 func (_mr *MockClientMockRecorder) NewGetAuthorsWithPutIter(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "NewGetAuthorsWithPutIter", arg0, arg1)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "NewGetAuthorsWithPutIter", reflect.TypeOf((*MockClient)(nil).NewGetAuthorsWithPutIter), arg0, arg1)
 }
 
 // GetBooks mocks base method
@@ -94,7 +95,7 @@ func (_m *MockClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]
 
 // GetBooks indicates an expected call of GetBooks
 func (_mr *MockClientMockRecorder) GetBooks(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetBooks", arg0, arg1)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetBooks", reflect.TypeOf((*MockClient)(nil).GetBooks), arg0, arg1)
 }
 
 // NewGetBooksIter mocks base method
@@ -107,7 +108,7 @@ func (_m *MockClient) NewGetBooksIter(ctx context.Context, i *models.GetBooksInp
 
 // NewGetBooksIter indicates an expected call of NewGetBooksIter
 func (_mr *MockClientMockRecorder) NewGetBooksIter(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "NewGetBooksIter", arg0, arg1)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "NewGetBooksIter", reflect.TypeOf((*MockClient)(nil).NewGetBooksIter), arg0, arg1)
 }
 
 // CreateBook mocks base method
@@ -120,7 +121,7 @@ func (_m *MockClient) CreateBook(ctx context.Context, i *models.Book) (*models.B
 
 // CreateBook indicates an expected call of CreateBook
 func (_mr *MockClientMockRecorder) CreateBook(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreateBook", arg0, arg1)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "CreateBook", reflect.TypeOf((*MockClient)(nil).CreateBook), arg0, arg1)
 }
 
 // PutBook mocks base method
@@ -133,7 +134,7 @@ func (_m *MockClient) PutBook(ctx context.Context, i *models.Book) (*models.Book
 
 // PutBook indicates an expected call of PutBook
 func (_mr *MockClientMockRecorder) PutBook(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "PutBook", arg0, arg1)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "PutBook", reflect.TypeOf((*MockClient)(nil).PutBook), arg0, arg1)
 }
 
 // GetBookByID mocks base method
@@ -146,7 +147,7 @@ func (_m *MockClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInpu
 
 // GetBookByID indicates an expected call of GetBookByID
 func (_mr *MockClientMockRecorder) GetBookByID(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetBookByID", arg0, arg1)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetBookByID", reflect.TypeOf((*MockClient)(nil).GetBookByID), arg0, arg1)
 }
 
 // GetBookByID2 mocks base method
@@ -159,7 +160,7 @@ func (_m *MockClient) GetBookByID2(ctx context.Context, id string) (*models.Book
 
 // GetBookByID2 indicates an expected call of GetBookByID2
 func (_mr *MockClientMockRecorder) GetBookByID2(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetBookByID2", arg0, arg1)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetBookByID2", reflect.TypeOf((*MockClient)(nil).GetBookByID2), arg0, arg1)
 }
 
 // HealthCheck mocks base method
@@ -171,7 +172,7 @@ func (_m *MockClient) HealthCheck(ctx context.Context) error {
 
 // HealthCheck indicates an expected call of HealthCheck
 func (_mr *MockClientMockRecorder) HealthCheck(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "HealthCheck", arg0)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "HealthCheck", reflect.TypeOf((*MockClient)(nil).HealthCheck), arg0)
 }
 
 // MockGetAuthorsIter is a mock of GetAuthorsIter interface
@@ -206,7 +207,7 @@ func (_m *MockGetAuthorsIter) Next(_param0 *models.Author) bool {
 
 // Next indicates an expected call of Next
 func (_mr *MockGetAuthorsIterMockRecorder) Next(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "Next", arg0)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "Next", reflect.TypeOf((*MockGetAuthorsIter)(nil).Next), arg0)
 }
 
 // Err mocks base method
@@ -218,7 +219,7 @@ func (_m *MockGetAuthorsIter) Err() error {
 
 // Err indicates an expected call of Err
 func (_mr *MockGetAuthorsIterMockRecorder) Err() *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "Err")
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "Err", reflect.TypeOf((*MockGetAuthorsIter)(nil).Err))
 }
 
 // MockGetAuthorsWithPutIter is a mock of GetAuthorsWithPutIter interface
@@ -253,7 +254,7 @@ func (_m *MockGetAuthorsWithPutIter) Next(_param0 *models.Author) bool {
 
 // Next indicates an expected call of Next
 func (_mr *MockGetAuthorsWithPutIterMockRecorder) Next(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "Next", arg0)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "Next", reflect.TypeOf((*MockGetAuthorsWithPutIter)(nil).Next), arg0)
 }
 
 // Err mocks base method
@@ -265,7 +266,7 @@ func (_m *MockGetAuthorsWithPutIter) Err() error {
 
 // Err indicates an expected call of Err
 func (_mr *MockGetAuthorsWithPutIterMockRecorder) Err() *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "Err")
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "Err", reflect.TypeOf((*MockGetAuthorsWithPutIter)(nil).Err))
 }
 
 // MockGetBooksIter is a mock of GetBooksIter interface
@@ -300,7 +301,7 @@ func (_m *MockGetBooksIter) Next(_param0 *models.Book) bool {
 
 // Next indicates an expected call of Next
 func (_mr *MockGetBooksIterMockRecorder) Next(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "Next", arg0)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "Next", reflect.TypeOf((*MockGetBooksIter)(nil).Next), arg0)
 }
 
 // Err mocks base method
@@ -312,5 +313,5 @@ func (_m *MockGetBooksIter) Err() error {
 
 // Err indicates an expected call of Err
 func (_mr *MockGetBooksIterMockRecorder) Err() *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "Err")
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "Err", reflect.TypeOf((*MockGetBooksIter)(nil).Err))
 }

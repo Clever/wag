@@ -25,6 +25,8 @@ var glideYMLTests = []GlideYMLTest{
   version: 1b32af207119a14b1b231d451df3ed04a72efebf
 - package: github.com/gorilla/mux
   version: 757bef944d0f21880861c2dd9c871ca543023cba
+- package: github.com/golang/mock
+  version: 13f360950a79f5864a972c786a10a50e44b69541
 `,
 		Error: nil,
 	},
