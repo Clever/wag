@@ -9,13 +9,16 @@ EXECUTABLE := wag
 $(eval $(call golang-version-check,1.8))
 
 MOCKGEN := $(GOPATH)/bin/mockgen
-MOCKGEN_VERSION = dbe9dea30dbc5b4b6d54c9ecf9a3b8f9b8e6556c
+# keep this in sync with glide.yaml and validation/glide.go
+MOCKGEN_VERSION = 13f360950a79f5864a972c786a10a50e44b69541
 $(GOPATH)/src/github.com/golang/mock:
 	git clone https://github.com/golang/mock.git $(GOPATH)/src/github.com/golang/mock
-	cd $(GOPATH)/src/github.com/golang/mock && git reset --hard $(MOCKGEN_VERSION)
 
+.PHONY: $(MOCKGEN) # always build it to ensure version is correct
 $(MOCKGEN): $(GOPATH)/src/github.com/golang/mock
-	go build -o $(GOPATH)/bin/mockgen github.com/golang/mock/mockgen
+	cd $(GOPATH)/src/github.com/golang/mock && git reset --hard $(MOCKGEN_VERSION)
+	rm $(MOCKGEN)
+	go build -o $(MOCKGEN) github.com/golang/mock/mockgen
 
 build: hardcoded/hardcoded.go
 	go build -o bin/wag
