@@ -37,6 +37,10 @@ var requirements = []Import{
 		Package: "github.com/gorilla/mux",
 		Version: "757bef944d0f21880861c2dd9c871ca543023cba",
 	},
+	{
+		Package: "github.com/golang/mock",
+		Version: "13f360950a79f5864a972c786a10a50e44b69541",
+	},
 }
 
 // ValidateGlideYML looks at a user's glide.yml and makes sure certain dependencies
