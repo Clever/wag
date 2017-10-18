@@ -57,11 +57,7 @@ func validateOp(s *spec.Swagger, path, method string, op *spec.Operation) error 
 		return err
 	}
 
-	if err := validatePaging(s, path, method, op); err != nil {
-		return err
-	}
-
-	return nil
+	return validatePaging(s, path, method, op)
 }
 
 func validateResponses(path, method string, op *spec.Operation) error {

@@ -17,10 +17,7 @@ func Generate(packageName string, s spec.Swagger) error {
 	if err := generateClient(packageName, s); err != nil {
 		return err
 	}
-	if err := generateInterface(packageName, &s, s.Info.InfoProps.Title, s.Paths); err != nil {
-		return err
-	}
-	return nil
+	return generateInterface(packageName, &s, s.Info.InfoProps.Title, s.Paths)
 }
 
 type clientCodeTemplate struct {

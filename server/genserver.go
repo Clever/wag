@@ -21,10 +21,7 @@ func Generate(packageName string, s spec.Swagger) error {
 	if err := generateInterface(packageName, &s, s.Info.InfoProps.Title, s.Paths); err != nil {
 		return err
 	}
-	if err := generateHandlers(packageName, &s, s.Paths); err != nil {
-		return err
-	}
-	return nil
+	return generateHandlers(packageName, &s, s.Paths)
 }
 
 type routerFunction struct {
