@@ -1,2 +1,2 @@
-v1.5.2
-- Client-side circuit breaking for generated JS clients.
+v1.5.3
+- Update to latest go-swagger
