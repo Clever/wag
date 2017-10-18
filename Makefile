@@ -8,18 +8,6 @@ EXECUTABLE := wag
 
 $(eval $(call golang-version-check,1.8))
 
-MOCKGEN := $(GOPATH)/bin/mockgen
-# keep this in sync with glide.yaml and validation/glide.go
-MOCKGEN_VERSION = 13f360950a79f5864a972c786a10a50e44b69541
-$(GOPATH)/src/github.com/golang/mock:
-	git clone https://github.com/golang/mock.git $(GOPATH)/src/github.com/golang/mock
-
-.PHONY: $(MOCKGEN) # always build it to ensure version is correct
-$(MOCKGEN): $(GOPATH)/src/github.com/golang/mock
-	cd $(GOPATH)/src/github.com/golang/mock && git reset --hard $(MOCKGEN_VERSION)
-	rm -f $(MOCKGEN)
-	go build -o $(MOCKGEN) github.com/golang/mock/mockgen
-
 build: hardcoded/hardcoded.go
 	go build -o bin/wag
 
@@ -32,7 +20,7 @@ jsdoc2md:
 	hash npm 2>/dev/null || (echo "Could not run npm, please install node" && false)
 	hash jsdoc2md 2>/dev/null || npm install -g jsdoc-to-markdown@^2.0.0
 
-generate: hardcoded/hardcoded.go $(MOCKGEN) jsdoc2md
+generate: hardcoded/hardcoded.go jsdoc2md
 	./bin/wag -file samples/swagger.yml -go-package $(PKG)/samples/gen-go -js-path $(GOPATH)/src/$(PKG)/samples/gen-js
 	(cd $(GOPATH)/src/$(PKG)/samples/gen-js && jsdoc2md index.js types.js > ./README.md)
 	go generate $(PKG)/samples/gen-go...
@@ -64,6 +52,7 @@ $(GOPATH)/bin/glide:
 
 install_deps: $(GOPATH)/bin/glide
 	$(GOPATH)/bin/glide install -v
+	go build -o $(GOPATH)/bin/mockgen ./vendor/github.com/golang/mock/mockgen
 
 release: hardcoded/hardcoded.go
 	GOOS=linux GOARCH=amd64 go build -ldflags="-s -w -X main.version=$(VERSION)" -o="$@/$(EXECUTABLE)"
