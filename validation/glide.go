@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"strings"
 
 	"gopkg.in/yaml.v2"
 )
@@ -16,6 +17,17 @@ type GlideYML struct {
 // Import contained within a glide.yml.
 type Import struct {
 	Package string `yaml:"package"`
+	Version string `yaml:"version"`
+}
+
+// GlideLock unmarshals the parts of a glide.lock file we care about.
+type GlideLock struct {
+	Imports []LockedVersion `yaml:"imports"`
+}
+
+// LockedVersion contained within a glide.lock.
+type LockedVersion struct {
+	Name    string `yaml:"name"`
 	Version string `yaml:"version"`
 }
 
@@ -43,34 +55,117 @@ var requirements = []Import{
 	},
 }
 
-// ValidateGlideYML looks at a user's glide.yml and makes sure certain dependencies
+// ValidateGlideYAML looks at a user's glide.yml and makes sure certain dependencies
 // that wag requires are present and locked to the correct version.
-func ValidateGlideYML(glideYMLFile io.Reader) error {
+func ValidateGlideYAML(glideYMLFile io.Reader) error {
 	var glideYML GlideYML
 	bs, err := ioutil.ReadAll(glideYMLFile)
 	if err != nil {
-		return fmt.Errorf("error reading glide.yml: %s", err)
+		return fmt.Errorf("error reading glide.yaml: %s", err)
 	}
 	if err = yaml.Unmarshal(bs, &glideYML); err != nil {
 		return fmt.Errorf("error unmarshalling yaml: %s", err)
 	}
 
+	pdes := &ListOfPeerDependencyError{}
 	for _, req := range requirements {
 		if err := validateImports(glideYML.Imports, req); err != nil {
-			return err
+			pdes.Errors = append(pdes.Errors, err)
 		}
 	}
 
-	return nil
+	if len(pdes.Errors) > 0 {
+		return pdes
+	}
 
+	return nil
 }
 
-func validateImports(imports []Import, requiredImport Import) error {
+// ValidateGlideLock looks at a user's glide.yml and makes sure certain dependencies
+// that wag requires are present and locked to the correct version.
+func ValidateGlideLock(glideLockFile io.Reader) error {
+	var glideLock GlideLock
+	bs, err := ioutil.ReadAll(glideLockFile)
+	if err != nil {
+		return fmt.Errorf("error reading glide.lock: %s", err)
+	}
+	if err = yaml.Unmarshal(bs, &glideLock); err != nil {
+		return fmt.Errorf("error unmarshalling yaml in glide.lock: %s", err)
+	}
+
+	pdes := &ListOfPeerDependencyError{}
+	for _, req := range requirements {
+		if err := validateLockedVersion(glideLock.Imports, req); err != nil {
+			pdes.Errors = append(pdes.Errors, err)
+		}
+	}
+
+	if len(pdes.Errors) > 0 {
+		return pdes
+	}
+
+	return nil
+}
+
+// PeerDependencyError occurs when glide.yml and/or glide.lock dont have the
+// required dependency versions for wag
+type PeerDependencyError struct {
+	Package string
+	Version string
+	File    string
+}
+
+func (e *PeerDependencyError) Error() string {
+	return fmt.Sprintf("Error: wag peer dependency not met. \n"+
+		"Version %s of %s must be set in glide.yaml and glide.lock.\n"+
+		"Please ensure your glide.yaml file includes\n\n"+
+		"```\n"+
+		"- package: %s\n"+
+		"  version: %s\n"+
+		"```\n\n"+
+		"then run `glide up`.", e.Version, e.Package, e.Package, e.Version)
+}
+
+// ListOfPeerDependencyError is a list of PeerDependency errors
+type ListOfPeerDependencyError struct {
+	Errors []*PeerDependencyError
+}
+
+func (e *ListOfPeerDependencyError) Error() string {
+	unmetVersions := ""
+	packageVersions := ""
+	for _, e := range e.Errors {
+		unmetVersions += fmt.Sprintf("* version %s of %s not found in %s\n", e.Version, e.Package, e.File)
+		packageVersions += fmt.Sprintf("- package: %s\n  version: %s\n", e.Package, e.Version)
+	}
+
+	return fmt.Sprint("Error: wag peer dependencies not met. \n\n" +
+		unmetVersions +
+		"\nPlease ensure your glide.yaml file includes\n\n" +
+		"```\n" +
+		packageVersions +
+		"```\n\n" +
+		"then run `glide up`.")
+}
+
+func validateImports(imports []Import, requiredImport Import) *PeerDependencyError {
 	for _, i := range imports {
 		if i.Package == requiredImport.Package &&
 			i.Version == requiredImport.Version {
 			return nil
 		}
 	}
-	return fmt.Errorf("wag requires version %s of %s. Please update your glide.yml and run `glide up`", requiredImport.Version, requiredImport.Package)
+	return &PeerDependencyError{Package: requiredImport.Package, Version: requiredImport.Version, File: "glide.yaml"}
+}
+
+func validateLockedVersion(versions []LockedVersion, requiredImport Import) *PeerDependencyError {
+	for _, v := range versions {
+		// If we've specified locking to a semantic version like "^1.0.0", we can't easily determine
+		// if the locked version satisfies that. We accept any version as long as the package is present.
+		if (v.Name == requiredImport.Package && strings.HasPrefix(requiredImport.Version, "^")) ||
+			(v.Name == requiredImport.Package && v.Version == requiredImport.Version) {
+			return nil
+		}
+	}
+	return &PeerDependencyError{Package: requiredImport.Package, Version: requiredImport.Version, File: "glide.lock"}
 }
