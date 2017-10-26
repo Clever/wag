@@ -1,2 +1,2 @@
-v1.5.3
-- Update to latest go-swagger
+v1.5.4
+- Improve glide.yaml and glide.lock validation and error message
