@@ -41,10 +41,14 @@ var glideYAMLTests = []GlideTest{
   version: 1b32af207119a14b1b231d451df3ed04a72efebf
 - package: github.com/gorilla/mux
   version: 757bef944d0f21880861c2dd9c871ca543023cba
-- name: github.com/golang/mock
+- package: github.com/golang/mock
   version: 13f360950a79f5864a972c786a10a50e44b69541
 `,
-		Error: &PeerDependencyError{Package: "github.com/lightstep/lightstep-tracer-go", Version: "0d48cd619841b1e1a3cdd20cd6ac97774c0002ce", File: "glide.yaml"},
+		Error: &ListOfPeerDependencyError{
+			Errors: []*PeerDependencyError{
+				&PeerDependencyError{Package: "github.com/lightstep/lightstep-tracer-go", Version: "0d48cd619841b1e1a3cdd20cd6ac97774c0002ce", File: "glide.yaml"},
+			},
+		},
 	},
 	{
 		Title: "Error if an item is missing altogether from glide.yaml (opentracing-go)",
@@ -58,7 +62,11 @@ var glideYAMLTests = []GlideTest{
 - package: github.com/golang/mock
   version: 13f360950a79f5864a972c786a10a50e44b69541
 `,
-		Error: &PeerDependencyError{Package: "github.com/opentracing/opentracing-go", Version: "^1.0.0", File: "glide.yaml"},
+		Error: &ListOfPeerDependencyError{
+			Errors: []*PeerDependencyError{
+				&PeerDependencyError{Package: "github.com/opentracing/opentracing-go", Version: "^1.0.0", File: "glide.yaml"},
+			},
+		},
 	},
 }
 
@@ -115,7 +123,11 @@ imports:
 - name: github.com/golang/mock
   version: 13f360950a79f5864a972c786a10a50e44b69541
 `,
-		Error: &PeerDependencyError{Package: "github.com/lightstep/lightstep-tracer-go", Version: "0d48cd619841b1e1a3cdd20cd6ac97774c0002ce", File: "glide.lock"},
+		Error: &ListOfPeerDependencyError{
+			Errors: []*PeerDependencyError{
+				&PeerDependencyError{Package: "github.com/lightstep/lightstep-tracer-go", Version: "0d48cd619841b1e1a3cdd20cd6ac97774c0002ce", File: "glide.lock"},
+			},
+		},
 	},
 	{
 		Title: "Error if an item is missing altogether from glide.lock (opentracing-go)",
@@ -131,20 +143,25 @@ imports:
 - name: github.com/golang/mock
   version: 13f360950a79f5864a972c786a10a50e44b69541
 `,
-		Error: &PeerDependencyError{Package: "github.com/opentracing/opentracing-go", Version: "^1.0.0", File: "glide.lock"},
+		Error: &ListOfPeerDependencyError{
+			Errors: []*PeerDependencyError{
+				&PeerDependencyError{Package: "github.com/opentracing/opentracing-go", Version: "^1.0.0", File: "glide.lock"},
+			},
+		},
 	},
 }
 
-func TestValidateglideYAML(t *testing.T) {
+func TestValidateGlideYAML(t *testing.T) {
 	for _, test := range glideYAMLTests {
-		t.Log(test.Title)
-		err := ValidateGlideYAML(strings.NewReader(test.Input))
-		if test.Error != nil {
-			assert.Error(t, err)
-			assert.Equal(t, test.Error, err)
-		} else {
-			assert.NoError(t, err)
-		}
+		t.Run(test.Title, func(t *testing.T) {
+			err := ValidateGlideYAML(strings.NewReader(test.Input))
+			if test.Error != nil {
+				assert.Error(t, err)
+				assert.Equal(t, test.Error, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
 	}
 }
 
