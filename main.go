@@ -52,7 +52,7 @@ func main() {
 	if err == nil {
 		defer glideYAMLFile.Close()
 		if err = validation.ValidateGlideYAML(glideYAMLFile); err != nil {
-			log.Fatal(err.Error())
+			log.Fatal(err)
 		}
 	}
 
@@ -60,7 +60,7 @@ func main() {
 	if err == nil {
 		defer glideLockFile.Close()
 		if err = validation.ValidateGlideLock(glideLockFile); err != nil {
-			log.Fatal(err.Error())
+			log.Fatal(err)
 		}
 	}
 

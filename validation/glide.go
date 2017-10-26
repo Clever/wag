@@ -67,10 +67,15 @@ func ValidateGlideYAML(glideYMLFile io.Reader) error {
 		return fmt.Errorf("error unmarshalling yaml: %s", err)
 	}
 
+	pdes := &ListOfPeerDependencyError{}
 	for _, req := range requirements {
 		if err := validateImports(glideYML.Imports, req); err != nil {
-			return err
+			pdes.Errors = append(pdes.Errors, err)
 		}
+	}
+
+	if len(pdes.Errors) > 0 {
+		return pdes
 	}
 
 	return nil
@@ -88,10 +93,15 @@ func ValidateGlideLock(glideLockFile io.Reader) error {
 		return fmt.Errorf("error unmarshalling yaml in glide.lock: %s", err)
 	}
 
+	pdes := &ListOfPeerDependencyError{}
 	for _, req := range requirements {
 		if err := validateLockedVersion(glideLock.Imports, req); err != nil {
-			return err
+			pdes.Errors = append(pdes.Errors, err)
 		}
+	}
+
+	if len(pdes.Errors) > 0 {
+		return pdes
 	}
 
 	return nil
@@ -116,7 +126,29 @@ func (e *PeerDependencyError) Error() string {
 		"then run `glide up`.", e.Version, e.Package, e.Package, e.Version)
 }
 
-func validateImports(imports []Import, requiredImport Import) error {
+// ListOfPeerDependencyError is a list of PeerDependency errors
+type ListOfPeerDependencyError struct {
+	Errors []*PeerDependencyError
+}
+
+func (e *ListOfPeerDependencyError) Error() string {
+	unmetVersions := ""
+	packageVersions := ""
+	for _, e := range e.Errors {
+		unmetVersions += fmt.Sprintf("* version %s of %s not found in %s\n", e.Version, e.Package, e.File)
+		packageVersions += fmt.Sprintf("- package: %s\n  version: %s\n", e.Package, e.Version)
+	}
+
+	return fmt.Sprint("Error: wag peer dependencies not met. \n\n" +
+		unmetVersions +
+		"\nPlease ensure your glide.yaml file includes\n\n" +
+		"```\n" +
+		packageVersions +
+		"```\n\n" +
+		"then run `glide up`.")
+}
+
+func validateImports(imports []Import, requiredImport Import) *PeerDependencyError {
 	for _, i := range imports {
 		if i.Package == requiredImport.Package &&
 			i.Version == requiredImport.Version {
@@ -126,7 +158,7 @@ func validateImports(imports []Import, requiredImport Import) error {
 	return &PeerDependencyError{Package: requiredImport.Package, Version: requiredImport.Version, File: "glide.yaml"}
 }
 
-func validateLockedVersion(versions []LockedVersion, requiredImport Import) error {
+func validateLockedVersion(versions []LockedVersion, requiredImport Import) *PeerDependencyError {
 	for _, v := range versions {
 		// If we've specified locking to a semantic version like "^1.0.0", we can't easily determine
 		// if the locked version satisfies that. We accept any version as long as the package is present.
