@@ -6,7 +6,7 @@ PKGS := $(shell go list ./... | grep -v /vendor | grep -v /samples/gen* | grep -
 VERSION := $(shell head -n 1 VERSION)
 EXECUTABLE := wag
 
-$(eval $(call golang-version-check,1.8))
+$(eval $(call golang-version-check,1.9))
 
 build: hardcoded/hardcoded.go
 	go build -o bin/wag
@@ -50,10 +50,6 @@ hardcoded/hardcoded.go: $(GOPATH)/bin/go-bindata _hardcoded/*
 $(GOPATH)/bin/glide:
 	@go get -u github.com/Masterminds/glide
 
-install_deps: $(GOPATH)/bin/glide
-	$(GOPATH)/bin/glide install -v
-	go build -o $(GOPATH)/bin/mockgen ./vendor/github.com/golang/mock/mockgen
-
 release: hardcoded/hardcoded.go
 	GOOS=linux GOARCH=amd64 go build -ldflags="-s -w -X main.version=$(VERSION)" -o="$@/$(EXECUTABLE)"
 	tar -C $@ -zcvf "$@/$(EXECUTABLE)-$(VERSION)-linux-amd64.tar.gz" $(EXECUTABLE)
@@ -61,3 +57,7 @@ release: hardcoded/hardcoded.go
 	GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w -X main.version=$(VERSION)" -o="$@/$(EXECUTABLE)"
 	tar -C $@ -zcvf "$@/$(EXECUTABLE)-$(VERSION)-darwin-amd64.tar.gz" $(EXECUTABLE)
 	@rm "$@/$(EXECUTABLE)"
+
+install_deps: golang-dep-vendor-deps
+	$(call golang-dep-vendor)
+	go build -o $(GOPATH)/bin/mockgen ./vendor/github.com/golang/mock/mockgen
