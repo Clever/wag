@@ -50,8 +50,6 @@ hardcoded/hardcoded.go: $(GOPATH)/bin/go-bindata _hardcoded/*
 $(GOPATH)/bin/glide:
 	@go get -u github.com/Masterminds/glide
 
-	go build -o $(GOPATH)/bin/mockgen ./vendor/github.com/golang/mock/mockgen
-
 release: hardcoded/hardcoded.go
 	GOOS=linux GOARCH=amd64 go build -ldflags="-s -w -X main.version=$(VERSION)" -o="$@/$(EXECUTABLE)"
 	tar -C $@ -zcvf "$@/$(EXECUTABLE)-$(VERSION)-linux-amd64.tar.gz" $(EXECUTABLE)
@@ -60,6 +58,6 @@ release: hardcoded/hardcoded.go
 	tar -C $@ -zcvf "$@/$(EXECUTABLE)-$(VERSION)-darwin-amd64.tar.gz" $(EXECUTABLE)
 	@rm "$@/$(EXECUTABLE)"
 
-
 install_deps: golang-dep-vendor-deps
 	$(call golang-dep-vendor)
+	go build -o $(GOPATH)/bin/mockgen ./vendor/github.com/golang/mock/mockgen
