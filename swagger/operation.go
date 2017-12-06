@@ -209,6 +209,24 @@ func PagingResourcePath(op *spec.Operation) []string {
 	return strings.Split(resourcePath, ".")
 }
 
+// CacheConfig is the parsed `x-caching` configuration in swagger.yml.
+type CacheConfig struct {
+	MaxAge int
+}
+
+// CachingConfig returns if caching is configured.
+func CachingConfig(op *spec.Operation) (*CacheConfig, bool) {
+	config, ok := op.Extensions["x-caching"].(map[string]interface{})
+	if !ok {
+		return nil, false
+	}
+	maxAge, ok := config["max-age"].(float64) // number values get parsed into float
+	if !ok {
+		panic(fmt.Errorf("x-caching for op %s requires a max-age: %#v", op.ID, config))
+	}
+	return &CacheConfig{MaxAge: int(maxAge)}, true
+}
+
 // resolveSchema dereferences the $ref in this schema, if there is one
 func resolveSchema(s *spec.Swagger, schema *spec.Schema) *spec.Schema {
 	if schema.Ref.String() == "" {

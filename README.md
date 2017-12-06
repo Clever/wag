@@ -161,10 +161,10 @@ COPY bin/my-wag-service /usr/bin/my-wag-service
       * Must be a simple or array type. If an array must be an array of strings
       * If the type is 'simple' and the parameter is not required, the type will be a pointer
       * If the type is 'array' it won't be a pointer. Query parameters can't distinguish between an empty array and an nil array so it converts both these cases to a nil array. If you need to distinguish between the two use a body parameter
-      * In other cases the parameter is not a pointer 
+      * In other cases the parameter is not a pointer
     * Header parameters
       * Must be simple types
-      * If marked required will ensure that the input isn't the nil value. Headers cannot have pointer types since HTTP doesn't distinguish between empty and missing headers. 
+      * If marked required will ensure that the input isn't the nil value. Headers cannot have pointer types since HTTP doesn't distinguish between empty and missing headers.
       * If it doesn't have a default value specified, the default value will be the nil value for the type
 
 ### Paging
@@ -191,6 +191,20 @@ COPY bin/my-wag-service /usr/bin/my-wag-service
     that exposes `map`, `forEach`, and `toArray` functions to iterate over the
     results, again requesting new pages as needed.
 
+### Caching
+  * Wag can add `max-age` cache-control headers on respones if you use the `x-caching`
+    configuration:
+    ```
+  /bookscached/{id}:
+    get:
+      operationId: getBookByIDCached
+      x-caching:
+        max-age: 3600
+    ```
+  * Wag clients have a `SetCache` method to enable caching of responses. `SetCache`
+    takes a single argument, which is an interface that defines a mechanism for storing
+    cached response data.
+
 ### Contexts
   * The first argument to every Wag function is a `context.Context` (https://blog.golang.org/context). Contexts play a few important roles in Wag.
     * They can be used to set request specific behavior like a retry policy in client libraries. This includes timeouts and cancellation.
@@ -203,7 +217,7 @@ COPY bin/my-wag-service /usr/bin/my-wag-service
 
   * If you don't have a context to pass to a Wag function you have two options
     * context.Background() - use this when this is the creator of the request chain, like a test or a top-level service.
-    * context.TODO() - use this when you haven't been passed a context from a caller yet, but you expect the caller to send you one at some point.  
+    * context.TODO() - use this when you haven't been passed a context from a caller yet, but you expect the caller to send you one at some point.
 
 
 ### Tracing

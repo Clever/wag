@@ -14,6 +14,7 @@ import (
 	discovery "github.com/Clever/discovery-go"
 	"github.com/Clever/wag/samples/gen-go-deprecated/models"
 	"github.com/afex/hystrix-go/hystrix"
+	"github.com/gregjones/httpcache"
 	logger "gopkg.in/Clever/kayvee-go.v6/logger"
 )
 
@@ -26,7 +27,7 @@ var _ = bytes.Compare
 type WagClient struct {
 	basePath    string
 	requestDoer doer
-	transport   *http.Transport
+	transport   http.RoundTripper
 	timeout     time.Duration
 	// Keep the retry doer around so that we can set the number of retries
 	retryDoer *retryDoer
@@ -78,6 +79,11 @@ func NewFromDiscovery() (*WagClient, error) {
 		}
 	}
 	return New(url), nil
+}
+
+// SetCache enables caching.
+func (c *WagClient) SetCache(cache httpcache.Cache) {
+	c.transport = httpcache.NewTransport(cache)
 }
 
 // SetRetryPolicy sets a the given retry policy for all requests.

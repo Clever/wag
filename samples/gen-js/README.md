@@ -36,6 +36,7 @@ swagger-test client library.
             * [.putBook(newBook, [options], [cb])](#module_swagger-test--SwaggerTest+putBook) ⇒ <code>Promise</code>
             * [.getBookByID(params, [options], [cb])](#module_swagger-test--SwaggerTest+getBookByID) ⇒ <code>Promise</code>
             * [.getBookByID2(id, [options], [cb])](#module_swagger-test--SwaggerTest+getBookByID2) ⇒ <code>Promise</code>
+            * [.getBookByIDCached(id, [options], [cb])](#module_swagger-test--SwaggerTest+getBookByIDCached) ⇒ <code>Promise</code>
             * [.healthCheck([options], [cb])](#module_swagger-test--SwaggerTest+healthCheck) ⇒ <code>Promise</code>
         * _static_
             * [.RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)
@@ -286,6 +287,27 @@ Returns a book
 <a name="module_swagger-test--SwaggerTest+getBookByID2"></a>
 
 #### swaggerTest.getBookByID2(id, [options], [cb]) ⇒ <code>Promise</code>
+Retrieve a book
+
+**Kind**: instance method of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
+**Fulfill**: <code>Object</code>  
+**Reject**: <code>[BadRequest](#module_swagger-test--SwaggerTest.Errors.BadRequest)</code>  
+**Reject**: <code>[Error](#module_swagger-test--SwaggerTest.Errors.Error)</code>  
+**Reject**: <code>[InternalError](#module_swagger-test--SwaggerTest.Errors.InternalError)</code>  
+**Reject**: <code>Error</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| id | <code>string</code> |  |
+| [options] | <code>object</code> |  |
+| [options.timeout] | <code>number</code> | A request specific timeout |
+| [options.span] | <code>[Span](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html)</code> | An OpenTracing span - For example from the parent request |
+| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | A request specific retryPolicy |
+| [cb] | <code>function</code> |  |
+
+<a name="module_swagger-test--SwaggerTest+getBookByIDCached"></a>
+
+#### swaggerTest.getBookByIDCached(id, [options], [cb]) ⇒ <code>Promise</code>
 Retrieve a book
 
 **Kind**: instance method of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  

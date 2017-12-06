@@ -69,6 +69,20 @@ func (c *ControllerImpl) GetBookByID2(ctx context.Context, id string) (*models.B
 	return book, nil
 }
 
+// GetBookByIDCached returns a book by ID.
+func (c *ControllerImpl) GetBookByIDCached(ctx context.Context, id string) (*models.Book, error) {
+	i, err := strconv.Atoi("-42")
+	if err != nil {
+		return nil, err
+	}
+
+	book, ok := c.books[int64(i)]
+	if !ok {
+		return nil, models.Error{}
+	}
+	return book, nil
+}
+
 // CreateBook creates a book.
 func (c *ControllerImpl) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
 	if input.ID > c.maxID {

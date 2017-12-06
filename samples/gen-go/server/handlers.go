@@ -147,7 +147,8 @@ func (h handler) GetAuthorsHandler(ctx context.Context, w http.ResponseWriter, r
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCodeForGetAuthors(resp))
+	statusCode := statusCodeForGetAuthors(resp)
+	w.WriteHeader(statusCode)
 	w.Write(respBytes)
 
 }
@@ -267,7 +268,8 @@ func (h handler) GetAuthorsWithPutHandler(ctx context.Context, w http.ResponseWr
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCodeForGetAuthorsWithPut(resp))
+	statusCode := statusCodeForGetAuthorsWithPut(resp)
+	w.WriteHeader(statusCode)
 	w.Write(respBytes)
 
 }
@@ -402,7 +404,8 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCodeForGetBooks(resp))
+	statusCode := statusCodeForGetBooks(resp)
+	w.WriteHeader(statusCode)
 	w.Write(respBytes)
 
 }
@@ -619,7 +622,8 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCodeForCreateBook(resp))
+	statusCode := statusCodeForCreateBook(resp)
+	w.WriteHeader(statusCode)
 	w.Write(respBytes)
 
 }
@@ -712,7 +716,8 @@ func (h handler) PutBookHandler(ctx context.Context, w http.ResponseWriter, r *h
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCodeForPutBook(resp))
+	statusCode := statusCodeForPutBook(resp)
+	w.WriteHeader(statusCode)
 	w.Write(respBytes)
 
 }
@@ -817,7 +822,8 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCodeForGetBookByID(resp))
+	statusCode := statusCodeForGetBookByID(resp)
+	w.WriteHeader(statusCode)
 	w.Write(respBytes)
 
 }
@@ -964,7 +970,8 @@ func (h handler) GetBookByID2Handler(ctx context.Context, w http.ResponseWriter,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCodeForGetBookByID2(resp))
+	statusCode := statusCodeForGetBookByID2(resp)
+	w.WriteHeader(statusCode)
 	w.Write(respBytes)
 
 }
@@ -972,6 +979,101 @@ func (h handler) GetBookByID2Handler(ctx context.Context, w http.ResponseWriter,
 // newGetBookByID2Input takes in an http.Request an returns the id parameter
 // that it contains. It returns an error if the request doesn't contain the parameter.
 func newGetBookByID2Input(r *http.Request) (string, error) {
+	id := mux.Vars(r)["id"]
+	if len(id) == 0 {
+		return "", errors.New("Parameter id must be specified")
+	}
+	return id, nil
+}
+
+// statusCodeForGetBookByIDCached returns the status code corresponding to the returned
+// object. It returns -1 if the type doesn't correspond to anything.
+func statusCodeForGetBookByIDCached(obj interface{}) int {
+
+	switch obj.(type) {
+
+	case *models.BadRequest:
+		return 400
+
+	case *models.Book:
+		return 200
+
+	case *models.Error:
+		return 404
+
+	case *models.InternalError:
+		return 500
+
+	case models.BadRequest:
+		return 400
+
+	case models.Book:
+		return 200
+
+	case models.Error:
+		return 404
+
+	case models.InternalError:
+		return 500
+
+	default:
+		return -1
+	}
+}
+
+func (h handler) GetBookByIDCachedHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+
+	id, err := newGetBookByIDCachedInput(r)
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		http.Error(w, jsonMarshalNoError(models.BadRequest{Message: err.Error()}), http.StatusBadRequest)
+		return
+	}
+
+	err = models.ValidateGetBookByIDCachedInput(id)
+
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		http.Error(w, jsonMarshalNoError(models.BadRequest{Message: err.Error()}), http.StatusBadRequest)
+		return
+	}
+
+	resp, err := h.GetBookByIDCached(ctx, id)
+
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		if btErr, ok := err.(*errors.Error); ok {
+			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
+		}
+		statusCode := statusCodeForGetBookByIDCached(err)
+		if statusCode == -1 {
+			err = models.InternalError{Message: err.Error()}
+			statusCode = 500
+		}
+		http.Error(w, jsonMarshalNoError(err), statusCode)
+		return
+	}
+
+	respBytes, err := json.MarshalIndent(resp, "", "\t")
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		http.Error(w, jsonMarshalNoError(models.InternalError{Message: err.Error()}), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	statusCode := statusCodeForGetBookByIDCached(resp)
+	if statusCode < 500 {
+		w.Header().Add("Cache-Control", "max-age=3")
+	}
+	w.WriteHeader(statusCode)
+	w.Write(respBytes)
+
+}
+
+// newGetBookByIDCachedInput takes in an http.Request an returns the id parameter
+// that it contains. It returns an error if the request doesn't contain the parameter.
+func newGetBookByIDCachedInput(r *http.Request) (string, error) {
 	id := mux.Vars(r)["id"]
 	if len(id) == 0 {
 		return "", errors.New("Parameter id must be specified")
