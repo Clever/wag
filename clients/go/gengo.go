@@ -38,6 +38,7 @@ import (
 		"strconv"
 		"encoding/json"
 		"strconv"
+		"sync/atomic"
 		"time"
 		"fmt"
 		"crypto/md5"
@@ -112,9 +113,45 @@ func NewFromDiscovery() (*WagClient, error) {
 	return New(url), nil
 }
 
+func newCacheHitCounter(cache httpcache.Cache, basePath string, l logger.KayveeLogger) *cacheHitCounter {
+	chc := &cacheHitCounter{Cache: cache, basePath: basePath}
+	go chc.log(l)
+	return chc
+}
+
+type cacheHitCounter struct {
+	httpcache.Cache
+	hits     int64
+	misses   int64
+	basePath string
+}
+
+func (c *cacheHitCounter) log(l logger.KayveeLogger) {
+	ticker := time.NewTicker(time.Second * 30)
+	for _ = range ticker.C {
+		hits := atomic.LoadInt64(&c.hits)
+		misses := atomic.LoadInt64(&c.misses)
+		l.InfoD("wag-cache-stats", map[string]interface{}{
+			"hits":   hits,
+			"misses": misses,
+			"url":    c.basePath,
+		})
+	}
+}
+
+func (c *cacheHitCounter) Get(key string) ([]byte, bool) {
+	resp, ok := c.Cache.Get(key)
+	if ok {
+		atomic.AddInt64(&c.hits, 1)
+	} else {
+		atomic.AddInt64(&c.misses, 1)
+	}
+	return resp, ok
+}
+
 // SetCache enables caching.
 func (c *WagClient) SetCache(cache httpcache.Cache) {
-	c.transport = httpcache.NewTransport(cache)
+	c.transport = httpcache.NewTransport(newCacheHitCounter(cache, c.basePath, c.logger))
 }
 
 // SetRetryPolicy sets a the given retry policy for all requests.
