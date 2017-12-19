@@ -319,6 +319,39 @@ func GetBookByID2InputPath(id string) (string, error) {
 	return path + "?" + urlVals.Encode(), nil
 }
 
+// GetBookByIDCachedInput holds the input parameters for a getBookByIDCached operation.
+type GetBookByIDCachedInput struct {
+	ID string
+}
+
+// ValidateGetBookByIDCachedInput returns an error if the input parameter doesn't
+// satisfy the requirements in the swagger yml file.
+func ValidateGetBookByIDCachedInput(id string) error {
+
+	if err := validate.Pattern("id", "path", string(id), "^[0-9a-f]{24}$"); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// GetBookByIDCachedInputPath returns the URI path for the input.
+func GetBookByIDCachedInputPath(id string) (string, error) {
+	path := "/v1/bookscached/{id}"
+	urlVals := url.Values{}
+
+	pathid := id
+	if pathid == "" {
+		err := fmt.Errorf("id cannot be empty because it's a path parameter")
+		if err != nil {
+			return "", err
+		}
+	}
+	path = strings.Replace(path, "{id}", pathid, -1)
+
+	return path + "?" + urlVals.Encode(), nil
+}
+
 // HealthCheckInput holds the input parameters for a healthCheck operation.
 type HealthCheckInput struct {
 }

@@ -163,6 +163,19 @@ func (_mr *MockClientMockRecorder) GetBookByID2(arg0, arg1 interface{}) *gomock.
 	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetBookByID2", reflect.TypeOf((*MockClient)(nil).GetBookByID2), arg0, arg1)
 }
 
+// GetBookByIDCached mocks base method
+func (_m *MockClient) GetBookByIDCached(ctx context.Context, id string) (*models.Book, error) {
+	ret := _m.ctrl.Call(_m, "GetBookByIDCached", ctx, id)
+	ret0, _ := ret[0].(*models.Book)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetBookByIDCached indicates an expected call of GetBookByIDCached
+func (_mr *MockClientMockRecorder) GetBookByIDCached(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetBookByIDCached", reflect.TypeOf((*MockClient)(nil).GetBookByIDCached), arg0, arg1)
+}
+
 // HealthCheck mocks base method
 func (_m *MockClient) HealthCheck(ctx context.Context) error {
 	ret := _m.ctrl.Call(_m, "HealthCheck", ctx)

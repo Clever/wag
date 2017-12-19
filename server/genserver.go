@@ -352,6 +352,11 @@ func generateOperationHandler(s *spec.Swagger, op *spec.Operation) (string, erro
 			return "", err
 		}
 	}
+	cacheConfig, hasCaching := swagger.CachingConfig(op)
+	var cachingMaxAge int
+	if cacheConfig != nil {
+		cachingMaxAge = cacheConfig.MaxAge
+	}
 	inputVarName := "input"
 	if singleStringPathParameter {
 		inputVarName = singleStringPathParameterVarName
@@ -367,6 +372,8 @@ func generateOperationHandler(s *spec.Swagger, op *spec.Operation) (string, erro
 		HasPaging:                        hasPaging,
 		PagingParamField:                 swagger.StructParamName(pagingParam),
 		PagingParamPointer:               pagingParamPointer,
+		HasCaching:                       hasCaching,
+		CachingMaxAge:                    cachingMaxAge,
 		EmptyStatusCode:                  emptyResponseCode,
 		TypesToStatusCodes:               typeToCode,
 		SingleStringPathParameter:        singleStringPathParameter,
@@ -400,6 +407,8 @@ type handlerOp struct {
 	HasPaging                        bool
 	PagingParamField                 string
 	PagingParamPointer               bool
+	HasCaching                       bool
+	CachingMaxAge                    int
 	SingleSchemaedBodyParameter      bool
 	EmptyStatusCode                  int
 	TypesToStatusCodes               map[string]int
@@ -499,7 +508,13 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 	{{end}}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCodeFor{{.Op}}(resp))
+    statusCode := statusCodeFor{{.Op}}(resp)
+	{{- if .HasCaching }}
+	if statusCode < 500 {
+		w.Header().Add("Cache-Control", "max-age={{.CachingMaxAge}}")
+	}
+	{{- end }}
+	w.WriteHeader(statusCode)
 	w.Write(respBytes)
 {{else}}
 	w.WriteHeader({{.EmptyStatusCode}})

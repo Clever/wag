@@ -9,11 +9,13 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	discovery "github.com/Clever/discovery-go"
 	"github.com/Clever/wag/samples/gen-go/models"
 	"github.com/afex/hystrix-go/hystrix"
+	"github.com/gregjones/httpcache"
 	logger "gopkg.in/Clever/kayvee-go.v6/logger"
 )
 
@@ -26,7 +28,7 @@ var _ = bytes.Compare
 type WagClient struct {
 	basePath    string
 	requestDoer doer
-	transport   *http.Transport
+	transport   http.RoundTripper
 	timeout     time.Duration
 	// Keep the retry doer around so that we can set the number of retries
 	retryDoer *retryDoer
@@ -78,6 +80,47 @@ func NewFromDiscovery() (*WagClient, error) {
 		}
 	}
 	return New(url), nil
+}
+
+func newCacheHitCounter(cache httpcache.Cache, basePath string, l logger.KayveeLogger) *cacheHitCounter {
+	chc := &cacheHitCounter{Cache: cache, basePath: basePath}
+	go chc.log(l)
+	return chc
+}
+
+type cacheHitCounter struct {
+	httpcache.Cache
+	hits     int64
+	misses   int64
+	basePath string
+}
+
+func (c *cacheHitCounter) log(l logger.KayveeLogger) {
+	ticker := time.NewTicker(time.Second * 30)
+	for _ = range ticker.C {
+		hits := atomic.LoadInt64(&c.hits)
+		misses := atomic.LoadInt64(&c.misses)
+		l.InfoD("wag-cache-stats", map[string]interface{}{
+			"hits":   hits,
+			"misses": misses,
+			"url":    c.basePath,
+		})
+	}
+}
+
+func (c *cacheHitCounter) Get(key string) ([]byte, bool) {
+	resp, ok := c.Cache.Get(key)
+	if ok {
+		atomic.AddInt64(&c.hits, 1)
+	} else {
+		atomic.AddInt64(&c.misses, 1)
+	}
+	return resp, ok
+}
+
+// SetCache enables caching.
+func (c *WagClient) SetCache(cache httpcache.Cache) {
+	c.transport = httpcache.NewTransport(newCacheHitCounter(cache, c.basePath, c.logger))
 }
 
 // SetRetryPolicy sets a the given retry policy for all requests.
@@ -1094,6 +1137,115 @@ func (c *WagClient) doGetBookByID2Request(ctx context.Context, req *http.Request
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "getBookByID2")
+	req = req.WithContext(ctx)
+	// Don't add the timeout in a "doer" because we don't want to call "defer.cancel()"
+	// until we've finished all the processing of the request object. Otherwise we'll cancel
+	// our own request before we've finished it.
+	if c.defaultTimeout != 0 {
+		ctx, cancel := context.WithTimeout(req.Context(), c.defaultTimeout)
+		defer cancel()
+		req = req.WithContext(ctx)
+	}
+	resp, err := c.requestDoer.Do(client, req)
+	retCode := 0
+	if resp != nil {
+		retCode = resp.StatusCode
+	}
+
+	// log all client failures and non-successful HT
+	logData := logger.M{
+		"backend":     "swagger-test",
+		"method":      req.Method,
+		"uri":         req.URL,
+		"status_code": retCode,
+	}
+	if err == nil && retCode > 399 {
+		logData["message"] = resp.Status
+		c.logger.ErrorD("client-request-finished", logData)
+	}
+	if err != nil {
+		logData["message"] = err.Error()
+		c.logger.ErrorD("client-request-finished", logData)
+		return nil, err
+	}
+	defer resp.Body.Close()
+	switch resp.StatusCode {
+
+	case 200:
+
+		var output models.Book
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, err
+		}
+
+		return &output, nil
+
+	case 400:
+
+		var output models.BadRequest
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, err
+		}
+		return nil, &output
+
+	case 404:
+
+		var output models.Error
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, err
+		}
+		return nil, &output
+
+	case 500:
+
+		var output models.InternalError
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, err
+		}
+		return nil, &output
+
+	default:
+		return nil, &models.InternalError{Message: "Unknown response"}
+	}
+}
+
+// GetBookByIDCached makes a GET request to /bookscached/{id}
+// Retrieve a book
+// 200: *models.Book
+// 400: *models.BadRequest
+// 404: *models.Error
+// 500: *models.InternalError
+// default: client side HTTP errors, for example: context.DeadlineExceeded.
+func (c *WagClient) GetBookByIDCached(ctx context.Context, id string) (*models.Book, error) {
+	headers := make(map[string]string)
+
+	var body []byte
+	path, err := models.GetBookByIDCachedInputPath(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	path = c.basePath + path
+
+	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return c.doGetBookByIDCachedRequest(ctx, req, headers)
+}
+
+func (c *WagClient) doGetBookByIDCachedRequest(ctx context.Context, req *http.Request, headers map[string]string) (*models.Book, error) {
+	client := &http.Client{Transport: c.transport}
+
+	for field, value := range headers {
+		req.Header.Set(field, value)
+	}
+
+	// Add the opname for doers like tracing
+	ctx = context.WithValue(ctx, opNameCtx{}, "getBookByIDCached")
 	req = req.WithContext(ctx)
 	// Don't add the timeout in a "doer" because we don't want to call "defer.cancel()"
 	// until we've finished all the processing of the request object. Otherwise we'll cancel

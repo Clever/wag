@@ -94,6 +94,28 @@ paths:
           schema:
             $ref: "#/definitions/Error"
 
+  /bookscached/{id}:
+    get:
+      operationId: getBookByIDCached
+      description: Retrieve a book
+      x-caching:
+        max-age: 3
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+          pattern: "^[0-9a-f]{24}$"
+      responses:
+        200:
+          description: OK response
+          schema:
+            $ref: '#/definitions/Book'
+        404:
+          description: Book not found
+          schema:
+            $ref: "#/definitions/Error"
+
   /books:
     get:
       operationId: getBooks

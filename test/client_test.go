@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"net/http/httptrace"
 	"os"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -15,6 +16,7 @@ import (
 	"github.com/Clever/wag/samples/gen-go/client"
 	"github.com/Clever/wag/samples/gen-go/models"
 	"github.com/Clever/wag/samples/gen-go/server"
+	"github.com/gregjones/httpcache"
 	kayvee "gopkg.in/Clever/kayvee-go.v6/logger"
 
 	"github.com/afex/hystrix-go/hystrix"
@@ -23,11 +25,12 @@ import (
 )
 
 type ClientContextTest struct {
-	getCount      int
-	getTimes      []time.Time
-	getErrorCount int
-	postCount     int
-	putCount      int
+	getCount       int
+	getTimes       []time.Time
+	getErrorCount  int
+	postCount      int
+	putCount       int
+	getCachedCount int
 }
 
 func (c *ClientContextTest) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, int64, error) {
@@ -43,6 +46,14 @@ func (c *ClientContextTest) GetBookByID(ctx context.Context, input *models.GetBo
 }
 func (c *ClientContextTest) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
 	return nil, nil
+}
+func (c *ClientContextTest) GetBookByIDCached(ctx context.Context, id string) (*models.Book, error) {
+	c.getCachedCount++
+	idint, _ := strconv.Atoi(id)
+	return &models.Book{
+		ID:   int64(idint),
+		Name: id,
+	}, nil
 }
 func (c *ClientContextTest) PutBook(ctx context.Context, input *models.Book) (*models.Book, error) {
 	c.putCount++
@@ -90,6 +101,9 @@ func (c *ClientCircuitTest) GetBookByID2(ctx context.Context, id string) (*model
 	}
 	return nil, nil
 }
+func (c *ClientCircuitTest) GetBookByIDCached(ctx context.Context, id string) (*models.Book, error) {
+	return nil, nil
+}
 func (c *ClientCircuitTest) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
 	if c.down {
 		return nil, errors.New("fail")
@@ -129,6 +143,9 @@ func (c *ClientPutPagingTest) GetBookByID(ctx context.Context, input *models.Get
 	return nil, nil
 }
 func (c *ClientPutPagingTest) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
+	return nil, nil
+}
+func (c *ClientPutPagingTest) GetBookByIDCached(ctx context.Context, id string) (*models.Book, error) {
 	return nil, nil
 }
 func (c *ClientPutPagingTest) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
@@ -314,6 +331,29 @@ func TestNewWithDiscovery(t *testing.T) {
 	assert.Equal(t, 3, controller.getCount)
 }
 
+func TestCaching(t *testing.T) {
+	controller := ClientContextTest{getErrorCount: 2}
+	s := server.New(&controller, "")
+	testServer := httptest.NewServer(s.Handler)
+	defer testServer.Close()
+	c := client.New(testServer.URL)
+	c.SetCache(httpcache.NewMemoryCache())
+	for i := 0; i < 10; i++ {
+		_, err := c.GetBookByIDCached(context.Background(), "5a284538a6fdf1407d822611")
+		require.NoError(t, err)
+	}
+	require.Equal(t, controller.getCachedCount, 1, "only one request should go through, the rest should be cached")
+	time.Sleep(3*time.Second + 100*time.Millisecond)
+
+	// one more request should go through after max-time expires
+	for i := 0; i < 10; i++ {
+		_, err := c.GetBookByIDCached(context.Background(), "5a284538a6fdf1407d822611")
+		require.NoError(t, err)
+	}
+	require.Equal(t, controller.getCachedCount, 2, "expected a second request to go through")
+
+}
+
 func TestCircuitBreaker(t *testing.T) {
 	controller := ClientCircuitTest{}
 	s := server.New(&controller, "")
@@ -488,6 +528,9 @@ func (c *IterFailTest) GetBookByID(ctx context.Context, input *models.GetBookByI
 func (c *IterFailTest) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
 	return c.sampleController.GetBookByID2(ctx, id)
 }
+func (c *IterFailTest) GetBookByIDCached(ctx context.Context, id string) (*models.Book, error) {
+	return c.sampleController.GetBookByIDCached(ctx, id)
+}
 func (c *IterFailTest) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
 	return c.sampleController.CreateBook(ctx, input)
 }
@@ -562,6 +605,9 @@ func (c *IterHeadersTest) GetBookByID(ctx context.Context, input *models.GetBook
 }
 func (c *IterHeadersTest) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
 	return c.sampleController.GetBookByID2(ctx, id)
+}
+func (c *IterHeadersTest) GetBookByIDCached(ctx context.Context, id string) (*models.Book, error) {
+	return c.sampleController.GetBookByIDCached(ctx, id)
 }
 func (c *IterHeadersTest) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
 	return c.sampleController.CreateBook(ctx, input)

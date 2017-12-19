@@ -76,6 +76,15 @@ type Client interface {
 	// default: client side HTTP errors, for example: context.DeadlineExceeded.
 	GetBookByID2(ctx context.Context, id string) (*models.Book, error)
 
+	// GetBookByIDCached makes a GET request to /bookscached/{id}
+	// Retrieve a book
+	// 200: *models.Book
+	// 400: *models.BadRequest
+	// 404: *models.Error
+	// 500: *models.InternalError
+	// default: client side HTTP errors, for example: context.DeadlineExceeded.
+	GetBookByIDCached(ctx context.Context, id string) (*models.Book, error)
+
 	// HealthCheck makes a GET request to /health/check
 	//
 	// 200: nil

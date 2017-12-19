@@ -194,6 +194,9 @@ func (d *LastCallServer) GetBookByID(ctx context.Context, input *models.GetBookB
 func (d *LastCallServer) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
 	return nil, nil
 }
+func (d *LastCallServer) GetBookByIDCached(ctx context.Context, id string) (*models.Book, error) {
+	return nil, nil
+}
 func (d *LastCallServer) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
 	return nil, nil
 }
@@ -250,6 +253,9 @@ func (m *MiddlewareTest) GetBookByID(ctx context.Context, input *models.GetBookB
 	return nil, nil
 }
 func (m *MiddlewareTest) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
+	return nil, nil
+}
+func (m *MiddlewareTest) GetBookByIDCached(ctx context.Context, id string) (*models.Book, error) {
 	return nil, nil
 }
 func (m *MiddlewareTest) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
@@ -331,6 +337,9 @@ func (m *TimeoutController) GetBookByID(ctx context.Context, input *models.GetBo
 	return nil, nil
 }
 func (m *TimeoutController) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
+	return nil, nil
+}
+func (m *TimeoutController) GetBookByIDCached(ctx context.Context, id string) (*models.Book, error) {
 	return nil, nil
 }
 func (m *TimeoutController) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
