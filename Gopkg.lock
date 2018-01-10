@@ -19,12 +19,6 @@
   revision = "abc25366fa8ee785c21141bd9d6b71efd7c5a619"
 
 [[projects]]
-  name = "github.com/Clever/wag"
-  packages = ["clients/go","clients/js","hardcoded","models","samples/gen-go-deprecated/models","samples/gen-go-deprecated/server","samples/gen-go-errors/client","samples/gen-go-errors/models","samples/gen-go-errors/server","samples/gen-go-nils/client","samples/gen-go-nils/models","samples/gen-go-nils/server","samples/gen-go/client","samples/gen-go/models","samples/gen-go/server","server","swagger","templates","utils","validation"]
-  revision = "acf712c9ad02e6abe657d2c8c71d34119a23dac8"
-  version = "v1.5.4"
-
-[[projects]]
   branch = "master"
   name = "github.com/PuerkitoBio/purell"
   packages = ["."]
@@ -344,6 +338,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2d148074da62c2316f8084fc2c0e16c862ad29dbf2ceabc98d906cc981bec159"
+  inputs-digest = "ac34b9749719007b08cc287a48587efbbf1dad062c6ed27e19ab4e779d0ff790"
   solver-name = "gps-cdcl"
   solver-version = 1
