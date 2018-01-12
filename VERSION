@@ -1,2 +1,2 @@
-v1.5.4
-- Improve glide.yaml and glide.lock validation and error message
+v1.5.5
+- Log more frequently to match metrics rolling window
