@@ -136,7 +136,7 @@ func newNilCheckInput(r *http.Request) (*models.NilCheckInput, error) {
 
 	idStr := mux.Vars(r)["id"]
 	if len(idStr) == 0 {
-		return nil, errors.New("parameter must be specified")
+		return nil, errors.New("path parameter 'id' must be specified")
 	}
 	idStrs := []string{idStr}
 
