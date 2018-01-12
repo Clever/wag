@@ -177,6 +177,7 @@ paths:
           in: body
           schema:
             $ref: "#/definitions/Book"
+          required: true
       responses:
         200:
           description: "Success"
