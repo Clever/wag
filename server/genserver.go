@@ -642,20 +642,20 @@ var paramTemplateStr = `
 		{{.VarName}}Strs := r.URL.Query()["{{.ParamName}}"]
 		{{if .Required -}}
 			if len({{.VarName}}Strs) == 0 {
-				return nil, errors.New("parameter must be specified")
+				return nil, errors.New("query parameter '{{.ParamName}}' must be specified")
 			}
 		{{- end -}}
 	{{- else if eq .ParamType "path" -}}
 		{{.VarName}}Str := mux.Vars(r)["{{.ParamName}}"]
 		if len({{.VarName}}Str) == 0 {
-			return nil, errors.New("parameter must be specified")
+			return nil, errors.New("path parameter '{{.ParamName}}' must be specified")
 		}
 		{{.VarName}}Strs := []string{ {{.VarName}}Str }
 	{{- else if eq .ParamType "header" -}}
 		{{.VarName}}Strs := r.Header.Get("{{.ParamName}}")
 		{{if .Required -}}
 			if len({{.VarName}}Strs) == 0 {
-				return nil, errors.New("parameter must be specified")
+				return nil, errors.New("request header '{{.ParamName}}' must be specified")
 			}
 		{{- end -}}
 	{{- end}}
@@ -692,7 +692,7 @@ type bodyParamTemplate struct {
 var bodyParamTemplateStr = `
 	data, err := ioutil.ReadAll(r.Body)
 	{{if .Required}} if len(data) == 0 {
-		return nil, errors.New("parameter must be specified")
+		return nil, errors.New("request body is required, but was empty")
 	}{{end}}
 
 	if len(data) > 0 { {{if eq (len .ParamField) 0}}
