@@ -632,6 +632,9 @@ func newCreateBookInput(r *http.Request) (*models.Book, error) {
 	_ = err
 
 	data, err := ioutil.ReadAll(r.Body)
+	if len(data) == 0 {
+		return nil, errors.New("request body is required, but was empty")
+	}
 
 	if len(data) > 0 {
 		if err := json.NewDecoder(bytes.NewReader(data)).Decode(&input); err != nil {
