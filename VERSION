@@ -1,2 +1,3 @@
-v1.5.5
-- Log more frequently to match metrics rolling window
+v1.6.0
+- Added default 5 second timeout for Node
+- Reduce default timeout for Go from 10 to 5 seconds
