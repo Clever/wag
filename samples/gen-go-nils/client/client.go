@@ -59,7 +59,7 @@ func New(basePath string) *WagClient {
 		requestDoer:    circuit,
 		retryDoer:      &retry,
 		circuitDoer:    circuit,
-		defaultTimeout: 10 * time.Second,
+		defaultTimeout: 5 * time.Second,
 		transport:      &http.Transport{},
 		basePath:       basePath,
 		logger:         logger,
