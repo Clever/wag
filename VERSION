@@ -1,3 +1,2 @@
-v1.6.0
-- Added default 5 second timeout for Node
-- Reduce default timeout for Go from 10 to 5 seconds
+v1.6.1
+- Fixed bug with x-omitempty
