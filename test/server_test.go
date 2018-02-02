@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"testing"
@@ -373,4 +374,12 @@ func TestTimeout(t *testing.T) {
 	_, err = c.GetBooks(context.Background(), &models.GetBooksInput{})
 	require.Error(t, err)
 	assert.IsType(t, context.DeadlineExceeded, err)
+}
+
+func TestOmitEmpty(t *testing.T) {
+	m, _ := json.Marshal(models.OmitEmpty{
+		ArrayFieldNotOmitted: nil,
+		ArrayFieldOmitted:    nil,
+	})
+	require.Equal(t, `{"arrayFieldNotOmitted":null}`, string(m))
 }
