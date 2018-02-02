@@ -6,7 +6,7 @@ PKGS := $(shell go list ./... | grep -v /vendor | grep -v /samples/gen* | grep -
 VERSION := $(shell head -n 1 VERSION)
 EXECUTABLE := wag
 
-#$(eval $(call golang-version-check,1.9))
+$(eval $(call golang-version-check,1.9))
 
 build: hardcoded/hardcoded.go
 	go build -o bin/wag
