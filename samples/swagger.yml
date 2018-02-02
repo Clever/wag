@@ -335,3 +335,16 @@ definitions:
     properties:
       message:
         type: string
+
+  OmitEmpty:
+    type: object
+    properties:
+      arrayFieldNotOmitted:
+        type: array
+        items:
+          type: string
+      arrayFieldOmitted:
+        x-omitempty: true
+        type: array
+        items:
+          type: string
