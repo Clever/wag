@@ -1,0 +1,222 @@
+{{- $modelName := pascalize .XDBConfig.SchemaName }}
+{{- $xdbConfig := .XDBConfig }}
+package dynamodb
+
+import (
+	"context"
+	"fmt"
+
+	"{{ .PackageName }}/models"
+	"{{ .PackageName }}/server/db"
+	"github.com/aws/aws-sdk-go/aws"
+        {{- if not $xdbConfig.AllowOverwrites }}
+	"github.com/aws/aws-sdk-go/aws/awserr"
+        {{- end }}
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	{{- if primaryKeyUsesDateTime $xdbConfig }}
+	"github.com/go-openapi/strfmt"
+        {{- end }}
+)
+
+// {{ $modelName }}Table represents the user-configurable properties of the {{ $modelName }} table.
+type {{ $modelName }}Table struct {
+	DynamoDBAPI        dynamodbiface.DynamoDBAPI
+	Prefix             string
+	ReadCapacityUnits  int64
+	WriteCapacityUnits int64
+}
+
+// ddb{{ $modelName }}PrimaryKey represents the primary key of a {{ $modelName }} in DynamoDB.
+type ddb{{ $modelName }}PrimaryKey struct {
+	{{- /* loop over primary key attributes and add them as fields in the struct */}}
+	{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+	{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
+	{{ pascalize $pk.AttributeName }} {{ goType $pkAttrSchema }} `dynamodbav:"{{ $pk.AttributeName }}"`
+	{{- end -}}
+}
+
+// ddb{{ $modelName }} represents a {{ $modelName }} as stored in DynamoDB.
+type ddb{{ $modelName }} struct {
+	ddb{{ $modelName }}PrimaryKey
+	{{ $modelName }} models.{{ $modelName }} `dynamodbav:"{{ dasherize $modelName }}"`
+}
+
+func (t {{ $modelName }}Table) name() string {
+	return fmt.Sprintf("%%s-{{ dasherize $modelName }}s", t.Prefix)
+}
+
+func (t {{ $modelName }}Table) create(ctx context.Context) error {
+	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
+		AttributeDefinitions: []*dynamodb.AttributeDefinition{
+                        {{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+                        {{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
+                        {{- $pkAttrSchemaType := index $pkAttrSchema.Type 0 }}
+                        {{- if eq $pkAttrSchemaType "string" }}
+			{
+				AttributeName: aws.String("{{- $pk.AttributeName }}"),
+				AttributeType: aws.String(dynamodb.ScalarAttributeTypeS),
+			},
+                        {{- else if eq $pkAttrSchemaType "integer" }}
+			{
+				AttributeName: aws.String("{{- $pk.AttributeName }}"),
+				AttributeType: aws.String(dynamodb.ScalarAttributeTypeN),
+			},
+                        {{- end -}}
+                        {{- end }}
+		},
+		KeySchema: []*dynamodb.KeySchemaElement{
+                        {{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+                        {{- if eq $pk.KeyType "HASH" }}
+			{
+				AttributeName: aws.String("{{- $pk.AttributeName }}"),
+				KeyType:       aws.String(dynamodb.KeyTypeHash),
+			},
+                        {{- else if eq $pk.KeyType "RANGE" }}
+			{
+				AttributeName: aws.String("{{- $pk.AttributeName }}"),
+				KeyType:       aws.String(dynamodb.KeyTypeRange),
+			},
+                        {{- end -}}
+                        {{- end }}
+		},
+		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+			ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
+			WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
+		},
+		TableName: aws.String(t.name()),
+	}); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (t {{ $modelName }}Table) save{{ $modelName }}(ctx context.Context, m models.{{ $modelName }}) error {
+	data, err := encode{{ $modelName }}(m)
+	if err != nil {
+		return err
+	}
+        {{- if $xdbConfig.AllowOverwrites }}
+	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
+		TableName: aws.String(t.name()),
+		Item:      data,
+	})
+	return err
+        {{- else }}
+	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
+		TableName: aws.String(t.name()),
+		Item:      data,
+		ExpressionAttributeNames: map[string]*string{
+			{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+			"#{{ upper $pk.AttributeName }}": aws.String("{{ $pk.AttributeName }}"),
+			{{- end }}
+		},
+		ConditionExpression: aws.String("
+                	{{- range $i, $pk := $xdbConfig.DynamoDB.KeySchema -}}
+                	{{- if ne $i 0 }} AND {{ end -}}
+                	attribute_not_exists(#{{ upper $pk.AttributeName }})
+                	{{- end -}}
+                        "),
+	})
+	if err != nil {
+		if awsErr, ok := err.(awserr.Error); ok {
+			if awsErr.Code() == dynamodb.ErrCodeConditionalCheckFailedException {
+				return db.Err{{ $modelName }}AlreadyExists{
+					{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+					{{ pascalize $pk.AttributeName }}: m.{{ pascalize $pk.AttributeName }},
+					{{- end }}
+				}
+			}
+		}
+		return err
+	}
+	return nil
+        {{- end }}
+}
+
+func (t {{ $modelName }}Table) get{{ $modelName }}(ctx context.Context,
+	{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+	{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
+	{{- $pkAttrSchemaGoType := goType $pkAttrSchema }}
+	{{- $pk.AttributeName }} {{ $pkAttrSchemaGoType }},
+	{{- end -}}
+) (*models.{{ $modelName }}, error) {
+	key, err := dynamodbattribute.MarshalMap(ddb{{ $modelName }}PrimaryKey{
+		{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+		{{ pascalize $pk.AttributeName }}: {{ camelize $pk.AttributeName }},
+		{{- end }}
+	})
+	if err != nil {
+		return nil, err
+	}
+	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
+		Key:       key,
+		TableName: aws.String(t.name()),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(res.Item) == 0 {
+		return nil, db.Err{{ $modelName }}NotFound{
+		{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+		{{ pascalize $pk.AttributeName }}: {{ camelize $pk.AttributeName }},
+		{{- end }}
+		}
+	}
+
+	var m models.{{ $modelName }}
+	if err := decode{{ $modelName }}(res.Item, &m); err != nil {
+		return nil, err
+	}
+
+	return &m, nil
+}
+
+func (t {{ $modelName }}Table) delete{{ $modelName }}(ctx context.Context,
+	{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+	{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
+	{{- $pkAttrSchemaGoType := goType $pkAttrSchema }}
+	{{- $pk.AttributeName }} {{ $pkAttrSchemaGoType }},
+	{{- end -}}
+) error {
+	key, err := dynamodbattribute.MarshalMap(ddb{{ $modelName }}PrimaryKey{
+		{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+		{{ pascalize $pk.AttributeName }}: {{ camelize $pk.AttributeName }},
+		{{- end }}
+	})
+	if err != nil {
+		return err
+	}
+	_, err = t.DynamoDBAPI.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
+		Key:       key,
+		TableName: aws.String(t.name()),
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// encode{{ $modelName }} encodes a {{ $modelName }} as a DynamoDB map of attribute values.
+func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]*dynamodb.AttributeValue, error) {
+	return dynamodbattribute.MarshalMap(ddb{{ $modelName }}{
+		ddb{{ $modelName }}PrimaryKey: ddb{{ $modelName }}PrimaryKey{
+		{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+		{{ pascalize $pk.AttributeName }}: m.{{ pascalize $pk.AttributeName }},
+		{{- end }}
+		},
+		{{ $modelName }}: m,
+	})
+}
+
+// decode{{ $modelName }} translates a {{ $modelName }} stored in DynamoDB to a {{ $modelName }} struct.
+func decode{{ $modelName }}(m map[string]*dynamodb.AttributeValue, out *models.{{ $modelName }}) error {
+	var ddb{{ $modelName }} ddb{{ $modelName }}
+	if err := dynamodbattribute.UnmarshalMap(m, &ddb{{ $modelName }}); err != nil {
+		return err
+	}
+	*out = ddb{{ $modelName }}.{{ $modelName }}
+	return nil
+}

@@ -1,0 +1,142 @@
+package dynamodb
+
+import (
+	"context"
+	"errors"
+
+	"{{ .PackageName }}/models"
+	"{{ .PackageName }}/server/db"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	{{- if anyPrimaryKeyUsesDateTime .XDBConfigs }}
+	"github.com/go-openapi/strfmt"
+        {{- end -}}
+)
+
+// Config is used to create a new DB struct.
+type Config struct {
+	// DynamoDBAPI is used to communicate with DynamoDB. It is required.
+	// It can be overriden on a table-by-table basis.
+	DynamoDBAPI dynamodbiface.DynamoDBAPI
+
+	// DefaultPrefix configures a prefix on all table names. It is required.
+	// It can be overriden on a table-by-table basis.
+	DefaultPrefix string
+
+	// DefaultWriteCapacityUnits configures a default write capacity when creating tables. It defaults to 1.
+	// It can be overriden on a table-by-table basis.
+	DefaultWriteCapacityUnits int64
+
+	// DefaultReadCapacityUnits configures a default read capacity when creating tables. It defaults to 1.
+	// It can be overriden on a table-by-table basis.
+	DefaultReadCapacityUnits int64
+
+	{{- range $xdbConfig := .XDBConfigs }}
+	{{- $modelName := pascalize $xdbConfig.SchemaName }}
+	// {{ $modelName }}Table configuration.
+	{{ $modelName }}Table {{ $modelName }}Table
+	{{- end }}
+}
+
+// New creates a new DB object.
+func New(config Config) (*DB, error) {
+	if config.DynamoDBAPI == nil {
+		return nil, errors.New("must specify DynamoDBAPI")
+	}
+	if config.DefaultPrefix == "" {
+		return nil, errors.New("must specify DefaultPrefix")
+	}
+
+	if config.DefaultWriteCapacityUnits == 0 {
+		config.DefaultWriteCapacityUnits = 1
+	}
+	if config.DefaultReadCapacityUnits == 0 {
+		config.DefaultReadCapacityUnits = 1
+	}
+
+	{{- range $xdbConfig := .XDBConfigs }}
+	{{- $modelName := pascalize $xdbConfig.SchemaName }}
+	{{- $modelNameCamel := camelize $modelName }}
+	// configure {{ $modelName }} table
+	{{ $modelNameCamel }}Table := config.{{ $modelName }}Table
+	if {{ $modelNameCamel }}Table.DynamoDBAPI == nil {
+		{{ $modelNameCamel }}Table.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if {{ $modelNameCamel }}Table.Prefix == "" {
+		{{ $modelNameCamel }}Table.Prefix = config.DefaultPrefix
+	}
+	if {{ $modelNameCamel }}Table.ReadCapacityUnits == 0 {
+		{{ $modelNameCamel }}Table.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if {{ $modelNameCamel }}Table.WriteCapacityUnits == 0 {
+		{{ $modelNameCamel }}Table.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
+	{{- end }}
+
+	return &DB{
+		{{- range $xdbConfig := .XDBConfigs }}
+		{{- $modelName := pascalize $xdbConfig.SchemaName }}
+		{{- $modelNameCamel := camelize $modelName }}
+		{{ $modelNameCamel }}Table: {{ $modelNameCamel }}Table,
+		{{- end }}
+	}, nil
+}
+
+// DB implements the database interface using DynamoDB to store data.
+type DB struct {
+	{{- range $xdbConfig := .XDBConfigs }}
+	{{- $modelName := pascalize $xdbConfig.SchemaName }}
+	{{- $modelNameCamel := camelize $modelName }}
+	{{ $modelNameCamel }}Table {{ $modelName }}Table
+	{{- end }}
+}
+
+var _ db.Interface = DB{}
+
+// CreateTables creates all tables.
+func (d DB) CreateTables(ctx context.Context) error {
+	{{- range $xdbConfig := .XDBConfigs }}
+	{{- $modelName := pascalize $xdbConfig.SchemaName }}
+	{{- $modelNameCamel := camelize $modelName }}
+	if err := d.{{ $modelNameCamel }}Table.create(ctx); err != nil {
+		return err
+	}
+	{{- end }}
+	return nil
+}
+
+{{- range $xdbConfig := .XDBConfigs }}
+{{- $modelName := pascalize $xdbConfig.SchemaName }}
+{{- $modelNameCamel := camelize $modelName }}
+// Save{{ $modelName }} saves a {{ $modelName }} to the database.
+func (d DB) Save{{ $modelName }}(ctx context.Context, m models.{{ $modelName }}) error {
+	return d.{{ $modelNameCamel }}Table.save{{ $modelName }}(ctx, m)
+}
+
+// Get{{ $modelName }} retrieves a {{ $modelName }} from the database.
+func (d DB) Get{{ $modelName }}(ctx context.Context, 
+	{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+	{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
+	{{- $pk.AttributeName }} {{ goType $pkAttrSchema }},
+	{{- end -}}
+) (*models.{{ $modelName }}, error) {
+	return d.{{ $modelNameCamel }}Table.get{{ $modelName }}(ctx,
+		{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+		{{- $pk.AttributeName }},
+		{{- end -}}
+)
+}
+
+// Delete{{ $modelName }} deletes a {{ $modelName }} from the database.
+func (d DB) Delete{{ $modelName }}(ctx context.Context, 
+	{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+	{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
+	{{- $pk.AttributeName }} {{ goType $pkAttrSchema }},
+	{{- end -}}
+) error {
+	return d.{{ $modelNameCamel }}Table.delete{{ $modelName }}(ctx,
+		{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+		{{- $pk.AttributeName }},
+		{{- end -}}
+    )
+}
+{{- end }}

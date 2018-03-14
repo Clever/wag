@@ -1,0 +1,96 @@
+package tests
+
+import (
+	"context"
+	"testing"
+	{{- if anyPrimaryKeyUsesDateTime .XDBConfigs }}
+	"time"
+        {{- end }}
+
+	"{{ .PackageName }}/models"
+	"{{ .PackageName }}/server/db"
+	"github.com/stretchr/testify/require"
+	{{- if anyPrimaryKeyUsesDateTime .XDBConfigs }}
+	"github.com/go-openapi/strfmt"
+        {{- end }}
+)
+
+func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
+	{{- range $xdbConfig := .XDBConfigs }}
+	{{- $modelName := pascalize $xdbConfig.SchemaName }}
+	t.Run("Get{{ $modelName }}", Get{{ $modelName }}(dbFactory(), t))
+	t.Run("Save{{ $modelName }}", Save{{ $modelName }}(dbFactory(), t))
+	t.Run("Delete{{ $modelName }}", Delete{{ $modelName }}(dbFactory(), t))
+        {{- end }}
+}
+
+{{- range $xdbConfig := .XDBConfigs }}
+{{- $modelName := pascalize $xdbConfig.SchemaName }}
+func Get{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+       		ctx := context.Background()
+		m := models.{{ $modelName }}{
+			{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+			{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
+			{{ pascalize $pk.AttributeName }}: {{ exampleValue1 $pkAttrSchema }},
+			{{- end }}
+		}
+		require.Nil(t, s.Save{{ $modelName }}(ctx, m))
+		m2, err := s.Get{{ $modelName }}(ctx, {{ range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}m.{{ pascalize $pk.AttributeName }},{{ end }})
+		require.Nil(t, err)
+		{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+		{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
+                {{- $pkAttrSchemaGoType := goType $pkAttrSchema }}
+                {{- if eq $pkAttrSchemaGoType "strfmt.DateTime" }}
+		require.Equal(t, m.{{ pascalize $pk.AttributeName }}.String(), m2.{{ pascalize $pk.AttributeName }}.String())
+                {{- else }}
+		require.Equal(t, m.{{ pascalize $pk.AttributeName }}, m2.{{ pascalize $pk.AttributeName }})
+		{{- end }}
+		{{- end }}
+
+		_, err = s.Get{{ $modelName }}(ctx,
+			{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema -}}
+			{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName -}}
+			{{- exampleValue2 $pkAttrSchema -}},
+			{{- end -}}
+                )
+                require.NotNil(t, err)
+		require.IsType(t, err, db.Err{{ $modelName }}NotFound{})
+	}
+}
+
+func Save{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.{{ $modelName }}{
+			{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+			{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
+			{{ pascalize $pk.AttributeName }}: {{ exampleValue1 $pkAttrSchema }},
+			{{- end }}
+		}
+		require.Nil(t, s.Save{{ $modelName }}(ctx, m))
+                {{- if not $xdbConfig.AllowOverwrites }}
+		require.Equal(t, db.Err{{ $modelName }}AlreadyExists{
+			{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+			{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
+			{{ pascalize $pk.AttributeName }}: {{ exampleValue1 $pkAttrSchema }},
+			{{- end }}
+                }, s.Save{{ $modelName }}(ctx, m))
+                {{- end }}
+	}
+}
+
+func Delete{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.{{ $modelName }}{
+			{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+			{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
+			{{ pascalize $pk.AttributeName }}: {{ exampleValue1 $pkAttrSchema }},
+			{{- end }}
+		}
+		require.Nil(t, s.Save{{ $modelName }}(ctx, m))
+		require.Nil(t, s.Delete{{ $modelName }}(ctx, {{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}m.{{ pascalize $pk.AttributeName }},{{- end -}}))
+	}
+}
+{{- end }}

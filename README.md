@@ -161,10 +161,10 @@ COPY bin/my-wag-service /usr/bin/my-wag-service
       * Must be a simple or array type. If an array must be an array of strings
       * If the type is 'simple' and the parameter is not required, the type will be a pointer
       * If the type is 'array' it won't be a pointer. Query parameters can't distinguish between an empty array and an nil array so it converts both these cases to a nil array. If you need to distinguish between the two use a body parameter
-      * In other cases the parameter is not a pointer 
+      * In other cases the parameter is not a pointer
     * Header parameters
       * Must be simple types
-      * If marked required will ensure that the input isn't the nil value. Headers cannot have pointer types since HTTP doesn't distinguish between empty and missing headers. 
+      * If marked required will ensure that the input isn't the nil value. Headers cannot have pointer types since HTTP doesn't distinguish between empty and missing headers.
       * If it doesn't have a default value specified, the default value will be the nil value for the type
 
 ### Paging
@@ -203,7 +203,35 @@ COPY bin/my-wag-service /usr/bin/my-wag-service
 
   * If you don't have a context to pass to a Wag function you have two options
     * context.Background() - use this when this is the creator of the request chain, like a test or a top-level service.
-    * context.TODO() - use this when you haven't been passed a context from a caller yet, but you expect the caller to send you one at some point.  
+    * context.TODO() - use this when you haven't been passed a context from a caller yet, but you expect the caller to send you one at some point.
+
+
+### DynamoDB Codegen
+
+  * Wag can auto-generate server code to save models to DynamoDB if you specify the `x-db` extension on a schema:
+  ```yaml
+definitions:
+  Thing:
+    x-db:
+      AllowOverwrites: false
+      DynamoDB:
+        KeySchema:
+          - AttributeName: name
+            KeyType: HASH
+          - AttributeName: version
+            KeyType: RANGE
+    type: object
+    properties:
+      name:
+        type: string
+      version:
+        type: integer
+  ```
+  The above will generate a `db` package with code to load/persist `Thing` objects from/to DynamoDB.
+  * `AllowOverwrites` specifies whether the auto-generated `Save` method should succeed if the object already exists.
+  * `DynamoDB` specifies the configuration for a DyanmoDB table for the schema.
+     It follows the format of the [`AWS::DynamoDB::Table`](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-dynamodb-table.html) CloudFormation resource.
+     Currently it supports a subset of the configuration allowed there.
 
 
 ### Tracing

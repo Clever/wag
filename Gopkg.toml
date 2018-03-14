@@ -1,4 +1,4 @@
-required = ["github.com/jteeuwen/go-bindata/go-bindata", "github.com/golang/mock/mockgen"]
+required = ["github.com/tmthrgd/go-bindata", "github.com/golang/mock/mockgen"]
 [[constraint]]
   name = "github.com/Clever/discovery-go"
   branch = "master"
@@ -60,7 +60,7 @@ required = ["github.com/jteeuwen/go-bindata/go-bindata", "github.com/golang/mock
   branch = "master"
 
 [[constraint]]
-  name = "github.com/jteeuwen/go-bindata"
+  name = "github.com/tmthrgd/go-bindata"
   branch = "master"
 
 [[constraint]]
@@ -102,3 +102,7 @@ required = ["github.com/jteeuwen/go-bindata/go-bindata", "github.com/golang/mock
 [[constraint]]
   name = "gopkg.in/yaml.v2"
   branch = "v2"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/awslabs/goformation"
