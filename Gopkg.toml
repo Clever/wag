@@ -1,83 +1,79 @@
-
-# Gopkg.toml example
-#
-# Refer to https://github.com/golang/dep/blob/master/docs/Gopkg.toml.md
-# for detailed Gopkg.toml documentation.
-#
-# required = ["github.com/user/thing/cmd/thing"]
-# ignored = ["github.com/user/project/pkgX", "bitbucket.org/user/project/pkgA/pkgY"]
-#
-# [[constraint]]
-#   name = "github.com/user/project"
-#   version = "1.0.0"
-#
-# [[constraint]]
-#   name = "github.com/user/project2"
-#   branch = "dev"
-#   source = "github.com/myfork/project2"
-#
-# [[override]]
-#  name = "github.com/x/y"
-#  version = "2.4.0"
-
-
+required = ["github.com/jteeuwen/go-bindata/go-bindata", "github.com/golang/mock/mockgen"]
 [[constraint]]
   name = "github.com/Clever/discovery-go"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/Clever/go-process-metrics"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/Clever/go-utils"
-
-[[constraint]]
-  name = "github.com/Clever/wag"
-  version = "1.5.4"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/afex/hystrix-go"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/donovanhide/eventsource"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/go-errors/errors"
+  version = "1.0.0"
 
 [[constraint]]
   name = "github.com/go-openapi/errors"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/go-openapi/jsonreference"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/go-openapi/loads"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/go-openapi/spec"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/go-openapi/strfmt"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/go-openapi/swag"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/go-openapi/validate"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/go-swagger/go-swagger"
+  version = "0.13.0"
 
 [[constraint]]
   name = "github.com/golang/mock"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/jteeuwen/go-bindata"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/gorilla/mux"
+  version = "1.6.1"
 
 [[constraint]]
   name = "github.com/kardianos/osext"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/lightstep/lightstep-tracer-go"
+  version = "0.15.2"
 
 [[constraint]]
   name = "github.com/opentracing/opentracing-go"
@@ -85,9 +81,11 @@
 
 [[constraint]]
   name = "github.com/stretchr/testify"
+  version = "1.2.1"
 
 [[constraint]]
   name = "golang.org/x/net"
+  branch = "master"
 
 [[constraint]]
   name = "gopkg.in/Clever/kayvee-go.v6"
@@ -95,9 +93,12 @@
 
 [[constraint]]
   name = "gopkg.in/mgo.v2"
+  branch = "v2"
 
 [[constraint]]
   name = "gopkg.in/tylerb/graceful.v1"
+  version = "1.0.0"
 
 [[constraint]]
   name = "gopkg.in/yaml.v2"
+  branch = "v2"

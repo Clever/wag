@@ -1,6 +1,5 @@
 include golang.mk
 .DEFAULT_GOAL := test # override default goal set in library makefile
-.PHONY: test build release
 PKG := github.com/Clever/wag
 PKGS := $(shell go list ./... | grep -v /vendor | grep -v /samples/gen* | grep -v /hardcoded)
 VERSION := $(shell head -n 1 VERSION)
@@ -8,7 +7,9 @@ EXECUTABLE := wag
 
 $(eval $(call golang-version-check,1.9))
 
-build: hardcoded/hardcoded.go
+.PHONY: test build release js-tests jsdoc2md go-generate generate $(PKGS) install_deps
+
+build: go-generate
 	go build -o bin/wag
 
 test: build generate $(PKGS) js-tests
@@ -20,7 +21,10 @@ jsdoc2md:
 	hash npm 2>/dev/null || (echo "Could not run npm, please install node" && false)
 	hash jsdoc2md 2>/dev/null || npm install -g jsdoc-to-markdown@^2.0.0
 
-generate: hardcoded/hardcoded.go jsdoc2md
+go-generate:
+	go generate ./hardcoded/
+
+generate: jsdoc2md
 	./bin/wag -file samples/swagger.yml -go-package $(PKG)/samples/gen-go -js-path $(GOPATH)/src/$(PKG)/samples/gen-js
 	(cd $(GOPATH)/src/$(PKG)/samples/gen-js && jsdoc2md index.js types.js > ./README.md)
 	go generate $(PKG)/samples/gen-go...
@@ -38,19 +42,7 @@ generate: hardcoded/hardcoded.go jsdoc2md
 $(PKGS): golang-test-all-strict-deps
 	$(call golang-test-all-strict,$@)
 
-$(GOPATH)/bin/go-bindata:
-	go get -u github.com/jteeuwen/go-bindata/...
-
-hardcoded/hardcoded.go: $(GOPATH)/bin/go-bindata _hardcoded/*
-	$(GOPATH)/bin/go-bindata -pkg hardcoded -o hardcoded/hardcoded.go _hardcoded/
-	# gofmt doesn't like what go-bindata creates
-	gofmt -w hardcoded/hardcoded.go
-
-.PHONY: $(GOPATH)/bin/glide
-$(GOPATH)/bin/glide:
-	@go get -u github.com/Masterminds/glide
-
-release: hardcoded/hardcoded.go
+release:
 	GOOS=linux GOARCH=amd64 go build -ldflags="-s -w -X main.version=$(VERSION)" -o="$@/$(EXECUTABLE)"
 	tar -C $@ -zcvf "$@/$(EXECUTABLE)-$(VERSION)-linux-amd64.tar.gz" $(EXECUTABLE)
 	@rm "$@/$(EXECUTABLE)"
@@ -60,4 +52,9 @@ release: hardcoded/hardcoded.go
 
 install_deps: golang-dep-vendor-deps
 	$(call golang-dep-vendor)
-	go build -o $(GOPATH)/bin/mockgen ./vendor/github.com/golang/mock/mockgen
+	go build -o bin/go-bindata ./vendor/github.com/jteeuwen/go-bindata/go-bindata
+	go build -o bin/mockgen    ./vendor/github.com/golang/mock/mockgen
+	# cp to gopath/bin in order to avoid breaking go:generate directives that use $(GOPATH)/bin/mockgen
+	# TODO: change these directives to bin/mockgen, release as major version, deal with breakage
+	mkdir -p $(GOPATH)/bin
+	cp bin/mockgen $(GOPATH)/bin/mockgen
