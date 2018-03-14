@@ -351,7 +351,7 @@ func TestCircuitBreaker(t *testing.T) {
 	// we should see an attempt go through after two seconds (this is the
 	// sleep window configured above).
 	circuitOpened := time.Now()
-	for _ = range time.Tick(100 * time.Millisecond) {
+	for range time.Tick(100 * time.Millisecond) {
 		_, err := c.CreateBook(ctx, &models.Book{})
 		assert.Error(t, err)
 		if connAttempts == 2 {
@@ -367,7 +367,7 @@ func TestCircuitBreaker(t *testing.T) {
 	// bring the server back up, and we should see successes after another
 	// two seconds, for a total of 4 seconds.
 	controller.down = false
-	for _ = range time.Tick(100 * time.Millisecond) {
+	for range time.Tick(100 * time.Millisecond) {
 		_, err := c.CreateBook(ctx, &models.Book{})
 		if err == nil {
 			assert.WithinDuration(t, time.Now(), circuitOpened,
