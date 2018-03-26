@@ -1,0 +1,152 @@
+package server
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
+	"strconv"
+
+	"github.com/Clever/wag/samples/gen-go-blog/models"
+	"github.com/go-errors/errors"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+	"github.com/gorilla/mux"
+	"gopkg.in/Clever/kayvee-go.v6/logger"
+)
+
+var _ = strconv.ParseInt
+var _ = strfmt.Default
+var _ = swag.ConvertInt32
+var _ = errors.New
+var _ = mux.Vars
+var _ = bytes.Compare
+var _ = ioutil.ReadAll
+
+var formats = strfmt.Default
+var _ = formats
+
+// convertBase64 takes in a string and returns a strfmt.Base64 if the input
+// is valid base64 and an error otherwise.
+func convertBase64(input string) (strfmt.Base64, error) {
+	temp, err := formats.Parse("byte", input)
+	if err != nil {
+		return strfmt.Base64{}, err
+	}
+	return *temp.(*strfmt.Base64), nil
+}
+
+// convertDateTime takes in a string and returns a strfmt.DateTime if the input
+// is a valid DateTime and an error otherwise.
+func convertDateTime(input string) (strfmt.DateTime, error) {
+	temp, err := formats.Parse("date-time", input)
+	if err != nil {
+		return strfmt.DateTime{}, err
+	}
+	return *temp.(*strfmt.DateTime), nil
+}
+
+// convertDate takes in a string and returns a strfmt.Date if the input
+// is a valid Date and an error otherwise.
+func convertDate(input string) (strfmt.Date, error) {
+	temp, err := formats.Parse("date", input)
+	if err != nil {
+		return strfmt.Date{}, err
+	}
+	return *temp.(*strfmt.Date), nil
+}
+
+func jsonMarshalNoError(i interface{}) string {
+	bytes, err := json.MarshalIndent(i, "", "\t")
+	if err != nil {
+		// This should never happen
+		return ""
+	}
+	return string(bytes)
+}
+
+// statusCodeForGetSectionsForStudent returns the status code corresponding to the returned
+// object. It returns -1 if the type doesn't correspond to anything.
+func statusCodeForGetSectionsForStudent(obj interface{}) int {
+
+	switch obj.(type) {
+
+	case *models.BadRequest:
+		return 400
+
+	case *models.InternalError:
+		return 500
+
+	case *models.Section:
+		return 200
+
+	case models.BadRequest:
+		return 400
+
+	case models.InternalError:
+		return 500
+
+	case models.Section:
+		return 200
+
+	default:
+		return -1
+	}
+}
+
+func (h handler) GetSectionsForStudentHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+
+	studentID, err := newGetSectionsForStudentInput(r)
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		http.Error(w, jsonMarshalNoError(models.BadRequest{Message: err.Error()}), http.StatusBadRequest)
+		return
+	}
+
+	err = models.ValidateGetSectionsForStudentInput(studentID)
+
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		http.Error(w, jsonMarshalNoError(models.BadRequest{Message: err.Error()}), http.StatusBadRequest)
+		return
+	}
+
+	resp, err := h.GetSectionsForStudent(ctx, studentID)
+
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		if btErr, ok := err.(*errors.Error); ok {
+			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
+		}
+		statusCode := statusCodeForGetSectionsForStudent(err)
+		if statusCode == -1 {
+			err = models.InternalError{Message: err.Error()}
+			statusCode = 500
+		}
+		http.Error(w, jsonMarshalNoError(err), statusCode)
+		return
+	}
+
+	respBytes, err := json.MarshalIndent(resp, "", "\t")
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		http.Error(w, jsonMarshalNoError(models.InternalError{Message: err.Error()}), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCodeForGetSectionsForStudent(resp))
+	w.Write(respBytes)
+
+}
+
+// newGetSectionsForStudentInput takes in an http.Request an returns the student_id parameter
+// that it contains. It returns an error if the request doesn't contain the parameter.
+func newGetSectionsForStudentInput(r *http.Request) (string, error) {
+	studentID := mux.Vars(r)["student_id"]
+	if len(studentID) == 0 {
+		return "", errors.New("Parameter student_id must be specified")
+	}
+	return studentID, nil
+}

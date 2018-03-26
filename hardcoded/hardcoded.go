@@ -84,7 +84,7 @@ func _hardcodedDoerGo() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "../_hardcoded/doer.go", size: 10896, mode: os.FileMode(436), modTime: time.Unix(1517006734, 0)}
+	info := bindataFileInfo{name: "../_hardcoded/doer.go", size: 10896, mode: os.FileMode(420), modTime: time.Unix(1515722742, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -104,7 +104,7 @@ func _hardcodedMiddlewareGo() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "../_hardcoded/middleware.go", size: 3827, mode: os.FileMode(436), modTime: time.Unix(1500483437, 0)}
+	info := bindataFileInfo{name: "../_hardcoded/middleware.go", size: 3827, mode: os.FileMode(420), modTime: time.Unix(1493241193, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
