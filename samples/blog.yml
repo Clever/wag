@@ -1,0 +1,61 @@
+swagger: '2.0'
+info:
+  title: blog
+  description: Example for Blog
+  version: 0.1.0
+  x-npm-package: blog-example
+basePath: /v1
+schemes:
+  - http
+produces:
+  - application/json
+consumes:
+  - application/json
+responses:
+  BadRequest:
+    description: "Bad Request"
+    schema:
+      $ref: "#/definitions/BadRequest"
+  InternalError:
+    description: "Internal Error"
+    schema:
+      $ref: "#/definitions/InternalError"
+
+paths:
+  /students/{student_id}/sections:
+    post:
+      operationId: getSectionsForStudent
+      description: Gets the sections for the specified student
+      parameters:
+        - name: student_id
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/Section"
+
+definitions:
+  Section:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      period:
+        type: string
+
+  BadRequest:
+    type: object
+    properties:
+      message:
+        type: string
+
+  InternalError:
+    type: object
+    properties:
+      message:
+        type: string

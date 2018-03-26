@@ -37,6 +37,9 @@ generate: jsdoc2md
 	./bin/wag -file samples/nils.yml -go-package $(PKG)/samples/gen-go-nils -js-path $(GOPATH)/src/$(PKG)/samples/gen-js-nils
 	(cd $(GOPATH)/src/$(PKG)/samples/gen-js-nils && jsdoc2md index.js types.js > ./README.md)
 	go generate ${PKG}/samples/gen-go-nils...
+	./bin/wag -file samples/blog.yml -go-package $(PKG)/samples/gen-go-blog -js-path $(GOPATH)/src/$(PKG)/samples/gen-js-blog
+	(cd $(GOPATH)/src/$(PKG)/samples/gen-js-blog && jsdoc2md index.js types.js > ./README.md)
+	go generate ${PKG}/samples/gen-go-nils...
 
 
 $(PKGS): golang-test-all-strict-deps
