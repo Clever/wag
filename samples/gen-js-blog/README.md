@@ -70,7 +70,7 @@ Create a new client object.
 Gets the sections for the specified student
 
 **Kind**: instance method of <code>[Blog](#exp_module_blog--Blog)</code>  
-**Fulfill**: <code>Object</code>  
+**Fulfill**: <code>Object[]</code>  
 **Reject**: <code>[BadRequest](#module_blog--Blog.Errors.BadRequest)</code>  
 **Reject**: <code>[InternalError](#module_blog--Blog.Errors.InternalError)</code>  
 **Reject**: <code>Error</code>  

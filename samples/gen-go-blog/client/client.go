@@ -142,13 +142,13 @@ func (c *WagClient) SetTimeout(timeout time.Duration) {
 	c.defaultTimeout = timeout
 }
 
-// GetSectionsForStudent makes a POST request to /students/{student_id}/sections
+// GetSectionsForStudent makes a GET request to /students/{student_id}/sections
 // Gets the sections for the specified student
-// 200: *models.Section
+// 200: []models.Section
 // 400: *models.BadRequest
 // 500: *models.InternalError
 // default: client side HTTP errors, for example: context.DeadlineExceeded.
-func (c *WagClient) GetSectionsForStudent(ctx context.Context, studentID string) (*models.Section, error) {
+func (c *WagClient) GetSectionsForStudent(ctx context.Context, studentID string) ([]models.Section, error) {
 	headers := make(map[string]string)
 
 	var body []byte
@@ -160,7 +160,7 @@ func (c *WagClient) GetSectionsForStudent(ctx context.Context, studentID string)
 
 	path = c.basePath + path
 
-	req, err := http.NewRequest("POST", path, bytes.NewBuffer(body))
+	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
 
 	if err != nil {
 		return nil, err
@@ -169,7 +169,7 @@ func (c *WagClient) GetSectionsForStudent(ctx context.Context, studentID string)
 	return c.doGetSectionsForStudentRequest(ctx, req, headers)
 }
 
-func (c *WagClient) doGetSectionsForStudentRequest(ctx context.Context, req *http.Request, headers map[string]string) (*models.Section, error) {
+func (c *WagClient) doGetSectionsForStudentRequest(ctx context.Context, req *http.Request, headers map[string]string) ([]models.Section, error) {
 	client := &http.Client{Transport: c.transport}
 
 	for field, value := range headers {
@@ -214,12 +214,12 @@ func (c *WagClient) doGetSectionsForStudentRequest(ctx context.Context, req *htt
 
 	case 200:
 
-		var output models.Section
+		var output []models.Section
 		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 			return nil, err
 		}
 
-		return &output, nil
+		return output, nil
 
 	case 400:
 

@@ -230,7 +230,7 @@ class Blog {
    * @param {module:blog.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
-   * @fulfill {Object}
+   * @fulfill {Object[]}
    * @reject {module:blog.Errors.BadRequest}
    * @reject {module:blog.Errors.InternalError}
    * @reject {Error}
@@ -279,13 +279,13 @@ class Blog {
 
       if (span) {
         opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
-        span.logEvent("POST /v1/students/{student_id}/sections");
+        span.logEvent("GET /students/{student_id}/sections");
         span.setTag("span.kind", "client");
       }
 
       const requestOptions = {
-        method: "POST",
-        uri: this.address + "/v1/students/" + params.studentID + "/sections",
+        method: "GET",
+        uri: this.address + "/students/" + params.studentID + "/sections",
         json: true,
         timeout,
         headers,

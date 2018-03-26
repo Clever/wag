@@ -34,7 +34,7 @@ func ValidateGetSectionsForStudentInput(studentID string) error {
 
 // GetSectionsForStudentInputPath returns the URI path for the input.
 func GetSectionsForStudentInputPath(studentID string) (string, error) {
-	path := "/v1/students/{student_id}/sections"
+	path := "/students/{student_id}/sections"
 	urlVals := url.Values{}
 
 	pathstudent_id := studentID
