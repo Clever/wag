@@ -72,13 +72,16 @@ func statusCodeForGetSectionsForStudent(obj interface{}) int {
 
 	switch obj.(type) {
 
+	case *[]models.Section:
+		return 200
+
 	case *models.BadRequest:
 		return 400
 
 	case *models.InternalError:
 		return 500
 
-	case *models.Section:
+	case []models.Section:
 		return 200
 
 	case models.BadRequest:
@@ -86,9 +89,6 @@ func statusCodeForGetSectionsForStudent(obj interface{}) int {
 
 	case models.InternalError:
 		return 500
-
-	case models.Section:
-		return 200
 
 	default:
 		return -1
@@ -113,6 +113,12 @@ func (h handler) GetSectionsForStudentHandler(ctx context.Context, w http.Respon
 	}
 
 	resp, err := h.GetSectionsForStudent(ctx, studentID)
+
+	// Success types that return an array should never return nil so let's make this easier
+	// for consumers by converting nil arrays to empty arrays
+	if resp == nil {
+		resp = []models.Section{}
+	}
 
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())

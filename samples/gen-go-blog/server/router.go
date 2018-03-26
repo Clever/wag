@@ -105,7 +105,7 @@ func NewWithMiddleware(c Controller, addr string, m []func(http.Handler) http.Ha
 
 	l := logger.New("blog")
 
-	router.Methods("POST").Path("/v1/students/{student_id}/sections").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	router.Methods("GET").Path("/students/{student_id}/sections").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "getSectionsForStudent")
 		h.GetSectionsForStudentHandler(r.Context(), w, r)
 		ctx := WithTracingOpName(r.Context(), "getSectionsForStudent")
