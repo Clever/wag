@@ -1,2 +1,2 @@
-v1.6.1
-- Fixed bug with x-omitempty
+v1.7.0
+- Added basic db codegen
