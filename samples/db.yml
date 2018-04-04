@@ -1,0 +1,113 @@
+swagger: '2.0'
+info:
+  title: swagger-test
+  description: Testing Swagger Codegen
+  version: 0.1.0
+  x-npm-package: swagger-test
+basePath: /v1
+schemes:
+  - http
+produces:
+  - application/json
+consumes:
+  - application/json
+responses:
+  BadRequest:
+    description: "Bad Request"
+    schema:
+      $ref: "#/definitions/BadRequest"
+  InternalError:
+    description: "Internal Error"
+    schema:
+      $ref: "#/definitions/InternalError"
+paths:
+  /health/check:
+    get:
+      operationId: healthCheck
+      tags:
+        - Infra
+      responses:
+        200:
+          description: OK response
+
+definitions:
+  BadRequest:
+    type: object
+    properties:
+      message:
+        type: string
+  InternalError:
+    type: object
+    properties:
+      message:
+        type: string
+
+  Thing:
+    x-db:
+      AllowOverwrites: false
+      DynamoDB:
+        KeySchema:
+          - AttributeName: name
+            KeyType: HASH
+          - AttributeName: version
+            KeyType: RANGE
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      version:
+        type: integer
+      createdAt:
+        type: string
+        format: date-time
+      category:
+        $ref: '#/definitions/Category'
+      nestedObject:
+        $ref: '#/definitions/Object'
+
+  Category:
+    type: string
+    enum:
+      - "a"
+      - "b"
+
+  Object:
+    type: object
+    properties:
+      foo:
+        type: string
+      bar:
+        type: string
+
+  SimpleThing:
+    x-db:
+      AllowOverwrites: false
+      DynamoDB:
+        KeySchema:
+          - AttributeName: name
+            KeyType: HASH
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+
+  ThingWithDateRange:
+    x-db:
+      AllowOverwrites: true
+      DynamoDB:
+        KeySchema:
+          - AttributeName: name
+            KeyType: HASH
+          - AttributeName: date
+            KeyType: RANGE
+    type: object
+    properties:
+      name:
+        type: string
+      date:
+        type: string
+        format: date-time

@@ -6,6 +6,7 @@ import (
 	"go/format"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -34,20 +35,33 @@ func (g *Generator) WriteFile(path string) error {
 	if len(path) == 0 || path[0] == '/' {
 		return fmt.Errorf("path must be relative")
 	}
-	fileBytes, err := format.Source(g.buf.Bytes())
-	if err != nil {
-		// This will error if the code isn't valid so let's write it out so we can debug
-		f, createErr := os.Create("badcode.txt")
-		if createErr != nil {
-			return createErr
-		}
-		if _, writeErr := f.Write(g.buf.Bytes()); writeErr != nil {
-			return writeErr
-		}
+	fileBytes := g.buf.Bytes()
+	if strings.HasSuffix(path, ".go") {
+		formattedFileBytes, err := format.Source(fileBytes)
+		if err != nil {
+			// This will error if the code isn't valid so let's write it out so we can debug
+			f, createErr := os.Create("badcode.txt")
+			if createErr != nil {
+				return createErr
+			}
+			if _, writeErr := f.Write(g.buf.Bytes()); writeErr != nil {
+				return writeErr
+			}
 
-		return fmt.Errorf("INTERNAL ERROR: %s. The invalid code was written to badcode.txt", err)
+			return fmt.Errorf("INTERNAL ERROR: %s. The invalid code was written to badcode.txt", err)
+		}
+		fileBytes = formattedFileBytes
 	}
-	return ioutil.WriteFile(os.Getenv("GOPATH")+"/src/"+g.PackageName+"/"+path, fileBytes, 0644)
+	absPath := filepath.Join(os.Getenv("GOPATH"), "src", g.PackageName, path)
+	dir := filepath.Dir(absPath)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+	fileMode := os.FileMode(0644)
+	if strings.HasSuffix(path, ".sh") {
+		fileMode = os.FileMode(0755) // chmod +x
+	}
+	return ioutil.WriteFile(absPath, fileBytes, fileMode)
 }
 
 // ImportStatements takes a list of import strings and converts them to a formatted imports

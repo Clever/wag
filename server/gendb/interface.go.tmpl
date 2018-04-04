@@ -1,0 +1,72 @@
+package db
+
+import (
+	"context"
+	"fmt"
+
+	"{{ .PackageName }}/models"
+	{{- if anyPrimaryKeyUsesDateTime .XDBConfigs }}
+	"github.com/go-openapi/strfmt"
+        {{- end -}}
+)
+
+//go:generate $GOPATH/bin/mockgen -source=$GOFILE -destination=mock_db.go -package=db
+
+// Interface for interacting with the {{.ServiceName}} database.
+type Interface interface {
+    {{- range $xdbConfig := .XDBConfigs }}
+    {{- $modelName := pascalize $xdbConfig.SchemaName }}
+    // Save{{ $modelName }} saves a {{ $modelName }} to the database.
+    Save{{ $modelName }}(ctx context.Context, m models.{{ $modelName }}) error
+    // Get{{ $modelName }} retrieves a {{ $modelName }} from the database.
+    Get{{ $modelName }}(ctx context.Context,
+      {{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+      {{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
+      {{- $pk.AttributeName }} {{ goType $pkAttrSchema }},
+      {{- end -}}
+    ) (*models.{{ $modelName }}, error)
+    // Delete{{ $modelName }} deletes a {{ $modelName }} from the database.
+    Delete{{ $modelName }}(ctx context.Context,
+      {{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+      {{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
+      {{- $pk.AttributeName }} {{ goType $pkAttrSchema }},
+      {{- end -}}
+    ) error
+
+    {{ end }}
+}
+
+{{- range $xdbConfig := .XDBConfigs }}
+{{- $modelName := pascalize $xdbConfig.SchemaName }}
+// Err{{ $modelName}}NotFound is returned when the database fails to find a {{ $modelName}}.
+type Err{{ $modelName}}NotFound struct {
+	{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+	{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
+	{{ pascalize $pk.AttributeName }} {{ goType $pkAttrSchema }}
+	{{- end }}
+}
+
+var _ error = Err{{ $modelName}}NotFound{}
+
+// Error returns a description of the error.
+func (e Err{{ $modelName}}NotFound) Error() string {
+	return fmt.Sprintf("could not find {{ $modelName}}: %%v", e)
+}
+
+{{- if not $xdbConfig.AllowOverwrites }}
+// Err{{ $modelName }}AlreadyExists is returned when trying to overwrite a {{ $modelName }}.
+type Err{{ $modelName }}AlreadyExists struct {
+	{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+	{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
+	{{ pascalize $pk.AttributeName }} {{ goType $pkAttrSchema }}
+	{{- end }}
+}
+
+var _ error = Err{{ $modelName }}AlreadyExists{}
+
+// Error returns a description of the error.
+func (e Err{{ $modelName }}AlreadyExists) Error() string {
+	return fmt.Sprintf("{{ $modelName }} already exists: %%v", e)
+}
+{{- end }}
+{{- end }}

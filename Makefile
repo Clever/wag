@@ -23,24 +23,27 @@ jsdoc2md:
 
 go-generate:
 	go generate ./hardcoded/
+	go generate ./server/gendb/
 
 generate: jsdoc2md
 	./bin/wag -file samples/swagger.yml -go-package $(PKG)/samples/gen-go -js-path $(GOPATH)/src/$(PKG)/samples/gen-js
-	(cd $(GOPATH)/src/$(PKG)/samples/gen-js && jsdoc2md index.js types.js > ./README.md)
+	cd $(GOPATH)/src/$(PKG)/samples/gen-js && jsdoc2md index.js types.js > ./README.md
 	go generate $(PKG)/samples/gen-go...
 	./bin/wag -file samples/deprecated.yml -go-package $(PKG)/samples/gen-go-deprecated -js-path $(GOPATH)/src/$(PKG)/samples/gen-js-deprecated
-	(cd $(GOPATH)/src/$(PKG)/samples/gen-js-deprecated && jsdoc2md index.js types.js > ./README.md)
+	cd $(GOPATH)/src/$(PKG)/samples/gen-js-deprecated && jsdoc2md index.js types.js > ./README.md
 	go generate ${PKG}/samples/gen-go-deprecated...
 	./bin/wag -file samples/errors.yml -go-package $(PKG)/samples/gen-go-errors -js-path $(GOPATH)/src/$(PKG)/samples/gen-js-errors
-	(cd $(GOPATH)/src/$(PKG)/samples/gen-js-errors && jsdoc2md index.js types.js > ./README.md)
+	cd $(GOPATH)/src/$(PKG)/samples/gen-js-errors && jsdoc2md index.js types.js > ./README.md
 	go generate ${PKG}/samples/gen-go-errors...
 	./bin/wag -file samples/nils.yml -go-package $(PKG)/samples/gen-go-nils -js-path $(GOPATH)/src/$(PKG)/samples/gen-js-nils
-	(cd $(GOPATH)/src/$(PKG)/samples/gen-js-nils && jsdoc2md index.js types.js > ./README.md)
+	cd $(GOPATH)/src/$(PKG)/samples/gen-js-nils && jsdoc2md index.js types.js > ./README.md
 	go generate ${PKG}/samples/gen-go-nils...
 	./bin/wag -file samples/blog.yml -go-package $(PKG)/samples/gen-go-blog -js-path $(GOPATH)/src/$(PKG)/samples/gen-js-blog
-	(cd $(GOPATH)/src/$(PKG)/samples/gen-js-blog && jsdoc2md index.js types.js > ./README.md)
+	cd $(GOPATH)/src/$(PKG)/samples/gen-js-blog && jsdoc2md index.js types.js > ./README.md
 	go generate ${PKG}/samples/gen-go-nils...
-
+	./bin/wag -file samples/db.yml -go-package $(PKG)/samples/gen-go-db -js-path $(GOPATH)/src/$(PKG)/samples/gen-js-db
+	cd $(GOPATH)/src/$(PKG)/samples/gen-js-db && jsdoc2md index.js types.js > ./README.md
+	go generate ${PKG}/samples/gen-go-db...
 
 $(PKGS): golang-test-all-strict-deps
 	$(call golang-test-all-strict,$@)
@@ -55,7 +58,7 @@ release:
 
 install_deps: golang-dep-vendor-deps
 	$(call golang-dep-vendor)
-	go build -o bin/go-bindata ./vendor/github.com/jteeuwen/go-bindata/go-bindata
+	go build -o bin/go-bindata ./vendor/github.com/tmthrgd/go-bindata/go-bindata
 	go build -o bin/mockgen    ./vendor/github.com/golang/mock/mockgen
 	# cp to gopath/bin in order to avoid breaking go:generate directives that use $(GOPATH)/bin/mockgen
 	# TODO: change these directives to bin/mockgen, release as major version, deal with breakage
