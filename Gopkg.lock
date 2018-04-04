@@ -39,7 +39,7 @@
     "hystrix/metric_collector",
     "hystrix/rolling"
   ]
-  revision = "27fae8d30f1a3cbcab6618d2ee55a4cb43064376"
+  revision = "4847ceb883b532d9310b7508aaffc78f6f1796db"
 
 [[projects]]
   name = "github.com/asaskevich/govalidator"
@@ -379,7 +379,8 @@
   name = "github.com/tmthrgd/go-bindata"
   packages = [
     ".",
-    "internal/identifier"
+    "internal/identifier",
+    "restore"
   ]
   revision = "40f4993ede74f673cfe96bed75ef8513a389a00a"
 
@@ -527,6 +528,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9f0a45bdbbdb613dc462997d39a33be953cc4d14f09db06efea67fb77a7c1348"
+  inputs-digest = "ff57fe4c1fe7f0dc67ba632d02b2febd170494c3996b35e7d9ffae034f32103f"
   solver-name = "gps-cdcl"
   solver-version = 1
