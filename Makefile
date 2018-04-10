@@ -4,6 +4,7 @@ PKG := github.com/Clever/wag
 PKGS := $(shell go list ./... | grep -v /vendor | grep -v /samples/gen* | grep -v /hardcoded)
 VERSION := $(shell head -n 1 VERSION)
 EXECUTABLE := wag
+PKGS := $(PKGS) $(PKG)/samples/gen-go-db/server/db/dynamodb
 
 $(eval $(call golang-version-check,1.9))
 

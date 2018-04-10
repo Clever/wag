@@ -1,14 +1,13 @@
 package dynamodb
 
 import (
-	"bytes"
+	"bufio"
 	"context"
 	"io"
 	"os"
 	"os/exec"
 	"strings"
 	"testing"
-	"time"
 
 	"{{ .PackageName }}/server/db"
 	"{{ .PackageName }}/server/db/tests"
@@ -23,16 +22,19 @@ func TestDynamoDBStore(t *testing.T) {
 	testCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	cmd := exec.CommandContext(testCtx, "./dynamodb-local.sh")
-	var ddbLocalOutput bytes.Buffer
-	cmd.Stdout = io.MultiWriter(os.Stdout, &ddbLocalOutput)
-	cmd.Stderr = io.MultiWriter(os.Stderr, &ddbLocalOutput)
+	ddbLocalOutputReader, ddbLocalOutputWriter := io.Pipe()
+	cmd.Stdout = io.MultiWriter(os.Stdout, ddbLocalOutputWriter)
+	cmd.Stderr = io.MultiWriter(os.Stderr, ddbLocalOutputWriter)
 	if err := cmd.Start(); err != nil {
 		t.Fatal(err)
 	}
 
 	// wait for dynamodb local to output the correct startup log
-	for !strings.Contains(ddbLocalOutput.String(), "Initializing DynamoDB Local with the following configuration") {
-		time.Sleep(1 * time.Second)
+	scanner := bufio.NewScanner(ddbLocalOutputReader)
+	for scanner.Scan() {
+		if strings.Contains(scanner.Text(), "Initializing DynamoDB Local with the following configuration") {
+			break
+		}
 	}
 
 	dynamoDBAPI := dynamodb.New(session.Must(session.NewSessionWithOptions(session.Options{
