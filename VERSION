@@ -1,2 +1,2 @@
-v1.7.0
-- Added basic db codegen
+v1.7.1
+- Fix bug with underscores in db codegen
