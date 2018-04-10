@@ -32,6 +32,13 @@ type Interface interface {
 	GetThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) (*models.ThingWithDateRange, error)
 	// DeleteThingWithDateRange deletes a ThingWithDateRange from the database.
 	DeleteThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) error
+
+	// SaveThingWithUnderscores saves a ThingWithUnderscores to the database.
+	SaveThingWithUnderscores(ctx context.Context, m models.ThingWithUnderscores) error
+	// GetThingWithUnderscores retrieves a ThingWithUnderscores from the database.
+	GetThingWithUnderscores(ctx context.Context, idApp string) (*models.ThingWithUnderscores, error)
+	// DeleteThingWithUnderscores deletes a ThingWithUnderscores from the database.
+	DeleteThingWithUnderscores(ctx context.Context, idApp string) error
 }
 
 // ErrSimpleThingNotFound is returned when the database fails to find a SimpleThing.
@@ -95,4 +102,16 @@ var _ error = ErrThingWithDateRangeNotFound{}
 // Error returns a description of the error.
 func (e ErrThingWithDateRangeNotFound) Error() string {
 	return fmt.Sprintf("could not find ThingWithDateRange: %v", e)
+}
+
+// ErrThingWithUnderscoresNotFound is returned when the database fails to find a ThingWithUnderscores.
+type ErrThingWithUnderscoresNotFound struct {
+	IDApp string
+}
+
+var _ error = ErrThingWithUnderscoresNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithUnderscoresNotFound) Error() string {
+	return fmt.Sprintf("could not find ThingWithUnderscores: %v", e)
 }
