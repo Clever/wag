@@ -1,2 +1,2 @@
-v1.7.1
-- Fix bug with underscores in db codegen
+v1.7.2
+- Fix data race in auto-generated dynamodb tests
