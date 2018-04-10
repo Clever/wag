@@ -145,3 +145,40 @@ func (m *MockInterface) DeleteThingWithDateRange(ctx context.Context, name strin
 func (mr *MockInterfaceMockRecorder) DeleteThingWithDateRange(ctx, name, date interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithDateRange", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithDateRange), ctx, name, date)
 }
+
+// SaveThingWithUnderscores mocks base method
+func (m_2 *MockInterface) SaveThingWithUnderscores(ctx context.Context, m models.ThingWithUnderscores) error {
+	ret := m_2.ctrl.Call(m_2, "SaveThingWithUnderscores", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveThingWithUnderscores indicates an expected call of SaveThingWithUnderscores
+func (mr *MockInterfaceMockRecorder) SaveThingWithUnderscores(ctx, m interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithUnderscores", reflect.TypeOf((*MockInterface)(nil).SaveThingWithUnderscores), ctx, m)
+}
+
+// GetThingWithUnderscores mocks base method
+func (m *MockInterface) GetThingWithUnderscores(ctx context.Context, idApp string) (*models.ThingWithUnderscores, error) {
+	ret := m.ctrl.Call(m, "GetThingWithUnderscores", ctx, idApp)
+	ret0, _ := ret[0].(*models.ThingWithUnderscores)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingWithUnderscores indicates an expected call of GetThingWithUnderscores
+func (mr *MockInterfaceMockRecorder) GetThingWithUnderscores(ctx, idApp interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithUnderscores", reflect.TypeOf((*MockInterface)(nil).GetThingWithUnderscores), ctx, idApp)
+}
+
+// DeleteThingWithUnderscores mocks base method
+func (m *MockInterface) DeleteThingWithUnderscores(ctx context.Context, idApp string) error {
+	ret := m.ctrl.Call(m, "DeleteThingWithUnderscores", ctx, idApp)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteThingWithUnderscores indicates an expected call of DeleteThingWithUnderscores
+func (mr *MockInterfaceMockRecorder) DeleteThingWithUnderscores(ctx, idApp interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithUnderscores", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithUnderscores), ctx, idApp)
+}

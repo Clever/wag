@@ -33,6 +33,8 @@ type Config struct {
 	ThingTable ThingTable
 	// ThingWithDateRangeTable configuration.
 	ThingWithDateRangeTable ThingWithDateRangeTable
+	// ThingWithUnderscoresTable configuration.
+	ThingWithUnderscoresTable ThingWithUnderscoresTable
 }
 
 // New creates a new DB object.
@@ -92,19 +94,35 @@ func New(config Config) (*DB, error) {
 	if thingWithDateRangeTable.WriteCapacityUnits == 0 {
 		thingWithDateRangeTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	// configure ThingWithUnderscores table
+	thingWithUnderscoresTable := config.ThingWithUnderscoresTable
+	if thingWithUnderscoresTable.DynamoDBAPI == nil {
+		thingWithUnderscoresTable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if thingWithUnderscoresTable.Prefix == "" {
+		thingWithUnderscoresTable.Prefix = config.DefaultPrefix
+	}
+	if thingWithUnderscoresTable.ReadCapacityUnits == 0 {
+		thingWithUnderscoresTable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if thingWithUnderscoresTable.WriteCapacityUnits == 0 {
+		thingWithUnderscoresTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
 
 	return &DB{
-		simpleThingTable:        simpleThingTable,
-		thingTable:              thingTable,
-		thingWithDateRangeTable: thingWithDateRangeTable,
+		simpleThingTable:          simpleThingTable,
+		thingTable:                thingTable,
+		thingWithDateRangeTable:   thingWithDateRangeTable,
+		thingWithUnderscoresTable: thingWithUnderscoresTable,
 	}, nil
 }
 
 // DB implements the database interface using DynamoDB to store data.
 type DB struct {
-	simpleThingTable        SimpleThingTable
-	thingTable              ThingTable
-	thingWithDateRangeTable ThingWithDateRangeTable
+	simpleThingTable          SimpleThingTable
+	thingTable                ThingTable
+	thingWithDateRangeTable   ThingWithDateRangeTable
+	thingWithUnderscoresTable ThingWithUnderscoresTable
 }
 
 var _ db.Interface = DB{}
@@ -118,6 +136,9 @@ func (d DB) CreateTables(ctx context.Context) error {
 		return err
 	}
 	if err := d.thingWithDateRangeTable.create(ctx); err != nil {
+		return err
+	}
+	if err := d.thingWithUnderscoresTable.create(ctx); err != nil {
 		return err
 	}
 	return nil
@@ -166,4 +187,19 @@ func (d DB) GetThingWithDateRange(ctx context.Context, name string, date strfmt.
 // DeleteThingWithDateRange deletes a ThingWithDateRange from the database.
 func (d DB) DeleteThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) error {
 	return d.thingWithDateRangeTable.deleteThingWithDateRange(ctx, name, date)
+}
+
+// SaveThingWithUnderscores saves a ThingWithUnderscores to the database.
+func (d DB) SaveThingWithUnderscores(ctx context.Context, m models.ThingWithUnderscores) error {
+	return d.thingWithUnderscoresTable.saveThingWithUnderscores(ctx, m)
+}
+
+// GetThingWithUnderscores retrieves a ThingWithUnderscores from the database.
+func (d DB) GetThingWithUnderscores(ctx context.Context, idApp string) (*models.ThingWithUnderscores, error) {
+	return d.thingWithUnderscoresTable.getThingWithUnderscores(ctx, idApp)
+}
+
+// DeleteThingWithUnderscores deletes a ThingWithUnderscores from the database.
+func (d DB) DeleteThingWithUnderscores(ctx context.Context, idApp string) error {
+	return d.thingWithUnderscoresTable.deleteThingWithUnderscores(ctx, idApp)
 }

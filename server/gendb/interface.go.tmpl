@@ -22,14 +22,14 @@ type Interface interface {
     Get{{ $modelName }}(ctx context.Context,
       {{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
       {{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
-      {{- $pk.AttributeName }} {{ goType $pkAttrSchema }},
+      {{- camelize $pk.AttributeName }} {{ goType $pkAttrSchema }},
       {{- end -}}
     ) (*models.{{ $modelName }}, error)
     // Delete{{ $modelName }} deletes a {{ $modelName }} from the database.
     Delete{{ $modelName }}(ctx context.Context,
       {{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
       {{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
-      {{- $pk.AttributeName }} {{ goType $pkAttrSchema }},
+      {{- camelize $pk.AttributeName }} {{ goType $pkAttrSchema }},
       {{- end -}}
     ) error
 

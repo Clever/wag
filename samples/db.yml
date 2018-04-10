@@ -111,3 +111,15 @@ definitions:
       date:
         type: string
         format: date-time
+
+  ThingWithUnderscores:
+    x-db:
+      AllowOverwrites: true
+      DynamoDB:
+        KeySchema:
+          - AttributeName: id_app
+            KeyType: HASH
+    type: object
+    properties:
+      id_app:
+        type: string

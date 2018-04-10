@@ -139,7 +139,7 @@ func (t {{ $modelName }}Table) get{{ $modelName }}(ctx context.Context,
 	{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
 	{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
 	{{- $pkAttrSchemaGoType := goType $pkAttrSchema }}
-	{{- $pk.AttributeName }} {{ $pkAttrSchemaGoType }},
+	{{- camelize $pk.AttributeName }} {{ $pkAttrSchemaGoType }},
 	{{- end -}}
 ) (*models.{{ $modelName }}, error) {
 	key, err := dynamodbattribute.MarshalMap(ddb{{ $modelName }}PrimaryKey{
@@ -178,7 +178,7 @@ func (t {{ $modelName }}Table) delete{{ $modelName }}(ctx context.Context,
 	{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
 	{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
 	{{- $pkAttrSchemaGoType := goType $pkAttrSchema }}
-	{{- $pk.AttributeName }} {{ $pkAttrSchemaGoType }},
+	{{- camelize $pk.AttributeName }} {{ $pkAttrSchemaGoType }},
 	{{- end -}}
 ) error {
 	key, err := dynamodbattribute.MarshalMap(ddb{{ $modelName }}PrimaryKey{

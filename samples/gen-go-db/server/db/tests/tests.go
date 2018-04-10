@@ -21,6 +21,9 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingWithDateRange", GetThingWithDateRange(dbFactory(), t))
 	t.Run("SaveThingWithDateRange", SaveThingWithDateRange(dbFactory(), t))
 	t.Run("DeleteThingWithDateRange", DeleteThingWithDateRange(dbFactory(), t))
+	t.Run("GetThingWithUnderscores", GetThingWithUnderscores(dbFactory(), t))
+	t.Run("SaveThingWithUnderscores", SaveThingWithUnderscores(dbFactory(), t))
+	t.Run("DeleteThingWithUnderscores", DeleteThingWithUnderscores(dbFactory(), t))
 }
 func GetSimpleThing(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
@@ -146,5 +149,42 @@ func DeleteThingWithDateRange(s db.Interface, t *testing.T) func(t *testing.T) {
 		}
 		require.Nil(t, s.SaveThingWithDateRange(ctx, m))
 		require.Nil(t, s.DeleteThingWithDateRange(ctx, m.Name, m.Date))
+	}
+}
+func GetThingWithUnderscores(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithUnderscores{
+			IDApp: "string1",
+		}
+		require.Nil(t, s.SaveThingWithUnderscores(ctx, m))
+		m2, err := s.GetThingWithUnderscores(ctx, m.IDApp)
+		require.Nil(t, err)
+		require.Equal(t, m.IDApp, m2.IDApp)
+
+		_, err = s.GetThingWithUnderscores(ctx, "string2")
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrThingWithUnderscoresNotFound{})
+	}
+}
+
+func SaveThingWithUnderscores(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithUnderscores{
+			IDApp: "string1",
+		}
+		require.Nil(t, s.SaveThingWithUnderscores(ctx, m))
+	}
+}
+
+func DeleteThingWithUnderscores(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithUnderscores{
+			IDApp: "string1",
+		}
+		require.Nil(t, s.SaveThingWithUnderscores(ctx, m))
+		require.Nil(t, s.DeleteThingWithUnderscores(ctx, m.IDApp))
 	}
 }
