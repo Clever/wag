@@ -81,7 +81,7 @@ func (e ErrSimpleThingAlreadyExists) Error() string {
 // GetThingsByNameAndVersionInput is the query input to GetThingsByNameAndVersion.
 type GetThingsByNameAndVersionInput struct {
 	Name                  string
-	VersionStartingAfter  *int64
+	VersionStartingAt     *int64
 	Descending            bool
 	DisableConsistentRead bool
 }
@@ -115,7 +115,7 @@ func (e ErrThingAlreadyExists) Error() string {
 // GetThingWithDateRangesByNameAndDateInput is the query input to GetThingWithDateRangesByNameAndDate.
 type GetThingWithDateRangesByNameAndDateInput struct {
 	Name                  string
-	DateStartingAfter     *strfmt.DateTime
+	DateStartingAt        *strfmt.DateTime
 	Descending            bool
 	DisableConsistentRead bool
 }

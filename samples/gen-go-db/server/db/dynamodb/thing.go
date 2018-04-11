@@ -143,12 +143,12 @@ func (t ThingTable) getThingsByNameAndVersion(ctx context.Context, input db.GetT
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
 	}
-	if input.VersionStartingAfter == nil {
+	if input.VersionStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
 	} else {
 		queryInput.ExpressionAttributeNames["#VERSION"] = aws.String("version")
 		queryInput.ExpressionAttributeValues[":version"] = &dynamodb.AttributeValue{
-			N: aws.String(fmt.Sprintf("%d", *input.VersionStartingAfter)),
+			N: aws.String(fmt.Sprintf("%d", *input.VersionStartingAt)),
 		}
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #VERSION >= :version")
 	}

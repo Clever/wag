@@ -178,7 +178,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
 					ctx: context.Background(),
 					input: db.Get{{ $modelName }}sBy{{ $indexName }}Input{
 						{{ pascalize $hashKey.AttributeName }}:                 {{ exampleValue $hashKeySchema 1 }},
-						{{ pascalize $rangeKey.AttributeName }}StartingAfter: db.{{ exampleValuePtr $rangeKeySchema 2 }},
+						{{ pascalize $rangeKey.AttributeName }}StartingAt: db.{{ exampleValuePtr $rangeKeySchema 2 }},
 					},
 				},
 				output: get{{ $modelName }}sBy{{ $indexName }}Output{

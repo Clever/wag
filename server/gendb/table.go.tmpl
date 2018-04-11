@@ -201,7 +201,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $indexName }}(ctx context
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
 	}
-	if input.{{ pascalize $rangeKey.AttributeName }}StartingAfter == nil {
+	if input.{{ pascalize $rangeKey.AttributeName }}StartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#{{ upper $hashKey.AttributeName }} = :{{ camelize $hashKey.AttributeName }}")
 	} else {
 		queryInput.ExpressionAttributeNames["#{{ upper $rangeKey.AttributeName }}"] = aws.String("{{ camelize $rangeKey.AttributeName }}")
@@ -210,11 +210,11 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $indexName }}(ctx context
                        	{{- $rangeKeyAttrSchemaType := index $rangeKeyAttrSchema.Type 0 }}
                        	{{- $rangeKeyAttrGoType := goType $rangeKeyAttrSchema }}
                        	{{- if eq $rangeKeyAttrGoType "strfmt.DateTime" }}
-			S: aws.String(time.Time(*input.{{ pascalize $rangeKey.AttributeName }}StartingAfter).Format(time.RFC3339)), // dynamodb attributevalue only supports RFC3339 resolution
+			S: aws.String(time.Time(*input.{{ pascalize $rangeKey.AttributeName }}StartingAt).Format(time.RFC3339)), // dynamodb attributevalue only supports RFC3339 resolution
                        	{{- else if eq $rangeKeyAttrSchemaType "string" }}
-			S: aws.String(*input.{{ pascalize $rangeKey.AttributeName }}StartingAfter),
+			S: aws.String(*input.{{ pascalize $rangeKey.AttributeName }}StartingAt),
                        	{{- else if eq $rangeKeyAttrSchemaType "integer" }}
-			N: aws.String(fmt.Sprintf("%%d", *input.{{ pascalize $rangeKey.AttributeName }}StartingAfter)),
+			N: aws.String(fmt.Sprintf("%%d", *input.{{ pascalize $rangeKey.AttributeName }}StartingAt)),
                         {{- end }}
 		}
 		queryInput.KeyConditionExpression = aws.String("#{{ upper $hashKey.AttributeName }} = :{{ camelize $hashKey.AttributeName }} AND #{{ upper $rangeKey.AttributeName }} >= :{{ camelize $rangeKey.AttributeName }}")

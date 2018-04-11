@@ -128,12 +128,12 @@ func (t ThingWithDateRangeTable) getThingWithDateRangesByNameAndDate(ctx context
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
 	}
-	if input.DateStartingAfter == nil {
+	if input.DateStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
 	} else {
 		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
 		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
-			S: aws.String(time.Time(*input.DateStartingAfter).Format(time.RFC3339)), // dynamodb attributevalue only supports RFC3339 resolution
+			S: aws.String(time.Time(*input.DateStartingAt).Format(time.RFC3339)), // dynamodb attributevalue only supports RFC3339 resolution
 		}
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #DATE >= :date")
 	}

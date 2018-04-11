@@ -194,8 +194,8 @@ func GetThingsByNameAndVersion(d db.Interface, t *testing.T) func(t *testing.T) 
 				input: getThingsByNameAndVersionInput{
 					ctx: context.Background(),
 					input: db.GetThingsByNameAndVersionInput{
-						Name:                 "string1",
-						VersionStartingAfter: db.Int64(2),
+						Name:              "string1",
+						VersionStartingAt: db.Int64(2),
 					},
 				},
 				output: getThingsByNameAndVersionOutput{
@@ -363,8 +363,8 @@ func GetThingWithDateRangesByNameAndDate(d db.Interface, t *testing.T) func(t *t
 				input: getThingWithDateRangesByNameAndDateInput{
 					ctx: context.Background(),
 					input: db.GetThingWithDateRangesByNameAndDateInput{
-						Name:              "string1",
-						DateStartingAfter: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+						Name:           "string1",
+						DateStartingAt: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 					},
 				},
 				output: getThingWithDateRangesByNameAndDateOutput{
