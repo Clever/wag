@@ -97,6 +97,19 @@ func (mr *MockInterfaceMockRecorder) GetThing(ctx, name, version interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThing", reflect.TypeOf((*MockInterface)(nil).GetThing), ctx, name, version)
 }
 
+// GetThingsByNameAndVersion mocks base method
+func (m *MockInterface) GetThingsByNameAndVersion(ctx context.Context, input GetThingsByNameAndVersionInput) ([]models.Thing, error) {
+	ret := m.ctrl.Call(m, "GetThingsByNameAndVersion", ctx, input)
+	ret0, _ := ret[0].([]models.Thing)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingsByNameAndVersion indicates an expected call of GetThingsByNameAndVersion
+func (mr *MockInterfaceMockRecorder) GetThingsByNameAndVersion(ctx, input interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingsByNameAndVersion", reflect.TypeOf((*MockInterface)(nil).GetThingsByNameAndVersion), ctx, input)
+}
+
 // DeleteThing mocks base method
 func (m *MockInterface) DeleteThing(ctx context.Context, name string, version int64) error {
 	ret := m.ctrl.Call(m, "DeleteThing", ctx, name, version)
@@ -132,6 +145,19 @@ func (m *MockInterface) GetThingWithDateRange(ctx context.Context, name string, 
 // GetThingWithDateRange indicates an expected call of GetThingWithDateRange
 func (mr *MockInterfaceMockRecorder) GetThingWithDateRange(ctx, name, date interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithDateRange", reflect.TypeOf((*MockInterface)(nil).GetThingWithDateRange), ctx, name, date)
+}
+
+// GetThingWithDateRangesByNameAndDate mocks base method
+func (m *MockInterface) GetThingWithDateRangesByNameAndDate(ctx context.Context, input GetThingWithDateRangesByNameAndDateInput) ([]models.ThingWithDateRange, error) {
+	ret := m.ctrl.Call(m, "GetThingWithDateRangesByNameAndDate", ctx, input)
+	ret0, _ := ret[0].([]models.ThingWithDateRange)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingWithDateRangesByNameAndDate indicates an expected call of GetThingWithDateRangesByNameAndDate
+func (mr *MockInterfaceMockRecorder) GetThingWithDateRangesByNameAndDate(ctx, input interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithDateRangesByNameAndDate", reflect.TypeOf((*MockInterface)(nil).GetThingWithDateRangesByNameAndDate), ctx, input)
 }
 
 // DeleteThingWithDateRange mocks base method

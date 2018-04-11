@@ -15,16 +15,30 @@ import (
         {{- end }}
 )
 
+{{ if anyPrimaryKeyUsesDateTime .XDBConfigs }}
+func mustTime(s string) strfmt.DateTime {
+	t, err := time.Parse(time.RFC3339, s)
+	if err != nil {
+		panic(err)
+	}
+	return strfmt.DateTime(t)
+}
+{{- end }}
+
 func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	{{- range $xdbConfig := .XDBConfigs }}
 	{{- $modelName := pascalize $xdbConfig.SchemaName }}
 	t.Run("Get{{ $modelName }}", Get{{ $modelName }}(dbFactory(), t))
+	{{- if indexHasRangeKey $xdbConfig.DynamoDB.KeySchema }}
+	{{- $indexName := indexName $xdbConfig.DynamoDB.KeySchema }}
+	t.Run("Get{{ $modelName }}sBy{{ $indexName }}", Get{{ $modelName }}sBy{{ $indexName }}(dbFactory(), t))
+	{{- end }}
 	t.Run("Save{{ $modelName }}", Save{{ $modelName }}(dbFactory(), t))
 	t.Run("Delete{{ $modelName }}", Delete{{ $modelName }}(dbFactory(), t))
         {{- end }}
 }
 
-{{- range $xdbConfig := .XDBConfigs }}
+{{ range $xdbConfig := .XDBConfigs }}
 {{- $modelName := pascalize $xdbConfig.SchemaName }}
 func Get{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
@@ -32,7 +46,7 @@ func Get{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
 		m := models.{{ $modelName }}{
 			{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
 			{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
-			{{ pascalize $pk.AttributeName }}: {{ exampleValue1 $pkAttrSchema }},
+			{{ pascalize $pk.AttributeName }}: {{ exampleValue $pkAttrSchema 1 }},
 			{{- end }}
 		}
 		require.Nil(t, s.Save{{ $modelName }}(ctx, m))
@@ -51,7 +65,7 @@ func Get{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
 		_, err = s.Get{{ $modelName }}(ctx,
 			{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema -}}
 			{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName -}}
-			{{- exampleValue2 $pkAttrSchema -}},
+			{{- exampleValue $pkAttrSchema 2 -}},
 			{{- end -}}
                 )
                 require.NotNil(t, err)
@@ -59,13 +73,143 @@ func Get{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
 	}
 }
 
+{{- if indexHasRangeKey $xdbConfig.DynamoDB.KeySchema }}
+{{- $indexName := indexName $xdbConfig.DynamoDB.KeySchema }}
+{{- $hashKey := index $xdbConfig.DynamoDB.KeySchema 0 }}
+{{- $hashKeySchema := index $xdbConfig.Schema.Properties $hashKey.AttributeName }}
+{{- $rangeKey := index $xdbConfig.DynamoDB.KeySchema 1 }}
+{{- $rangeKeySchema := index $xdbConfig.Schema.Properties $rangeKey.AttributeName }}
+type get{{ $modelName }}sBy{{ $indexName }}Input struct {
+	ctx   context.Context
+	input db.Get{{ $modelName }}sBy{{ $indexName }}Input
+}
+type get{{ $modelName }}sBy{{ $indexName }}Output struct {
+	{{ camelize $modelName }}s []models.{{ $modelName }}
+	err    error
+}
+type get{{ $modelName }}sBy{{ $indexName }}Test struct {
+	{{ camelize $hashKey.AttributeName }}   string
+	d      db.Interface
+	input  get{{ $modelName }}sBy{{ $indexName }}Input
+	output get{{ $modelName }}sBy{{ $indexName }}Output
+}
+
+func (g get{{ $modelName }}sBy{{ $indexName }}Test) run(t *testing.T) {
+	{{ camelize $modelName }}s, err := g.d.Get{{ $modelName }}sBy{{ $indexName }}(g.input.ctx, g.input.input)
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.{{ camelize $modelName }}s, {{ camelize $modelName }}s)
+}
+
+func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.Save{{ $modelName }}(ctx, models.{{ $modelName }}{
+			{{ pascalize $hashKey.AttributeName }}:    {{ exampleValue $hashKeySchema 1 }},
+			{{ pascalize $rangeKey.AttributeName }}: {{ exampleValue $rangeKeySchema 1 }},
+		}))
+		require.Nil(t, d.Save{{ $modelName }}(ctx, models.{{ $modelName }}{
+			{{ pascalize $hashKey.AttributeName }}:    {{ exampleValue $hashKeySchema 1 }},
+			{{ pascalize $rangeKey.AttributeName }}: {{ exampleValue $rangeKeySchema 2 }},
+		}))
+		require.Nil(t, d.Save{{ $modelName }}(ctx, models.{{ $modelName }}{
+			{{ pascalize $hashKey.AttributeName }}:    {{ exampleValue $hashKeySchema 1 }},
+			{{ pascalize $rangeKey.AttributeName }}: {{ exampleValue $rangeKeySchema 3 }},
+		}))
+		tests := []get{{ $modelName }}sBy{{ $indexName }}Test{
+			{
+				name: "basic",
+				d:    d,
+				input: get{{ $modelName }}sBy{{ $indexName }}Input{
+					ctx: context.Background(),
+					input: db.Get{{ $modelName }}sBy{{ $indexName }}Input{
+						{{ pascalize $hashKey.AttributeName }}: {{ exampleValue $hashKeySchema 1 }},
+					},
+				},
+				output: get{{ $modelName }}sBy{{ $indexName }}Output{
+					{{ camelize $modelName }}s: []models.{{ $modelName }}{
+						models.{{ $modelName }}{
+							{{ pascalize $hashKey.AttributeName }}:    {{ exampleValue $hashKeySchema 1 }},
+							{{ pascalize $rangeKey.AttributeName }}: {{ exampleValue $rangeKeySchema 1 }},
+						},
+						models.{{ $modelName }}{
+							{{ pascalize $hashKey.AttributeName }}:    {{ exampleValue $hashKeySchema 1 }},
+							{{ pascalize $rangeKey.AttributeName }}: {{ exampleValue $rangeKeySchema 2 }},
+						},
+						models.{{ $modelName }}{
+							{{ pascalize $hashKey.AttributeName }}:    {{ exampleValue $hashKeySchema 1 }},
+							{{ pascalize $rangeKey.AttributeName }}: {{ exampleValue $rangeKeySchema 3 }},
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				name: "descending",
+				d:    d,
+				input: get{{ $modelName }}sBy{{ $indexName }}Input{
+					ctx: context.Background(),
+					input: db.Get{{ $modelName }}sBy{{ $indexName }}Input{
+						{{ pascalize $hashKey.AttributeName }}:       {{ exampleValue $hashKeySchema 1 }},
+						Descending: true,
+					},
+				},
+				output: get{{ $modelName }}sBy{{ $indexName }}Output{
+					{{ camelize $modelName }}s: []models.{{ $modelName }}{
+						models.{{ $modelName }}{
+							{{ pascalize $hashKey.AttributeName }}:    {{ exampleValue $hashKeySchema 1 }},
+							{{ pascalize $rangeKey.AttributeName }}: {{ exampleValue $rangeKeySchema 3 }},
+						},
+						models.{{ $modelName }}{
+							{{ pascalize $hashKey.AttributeName }}:    {{ exampleValue $hashKeySchema 1 }},
+							{{ pascalize $rangeKey.AttributeName }}: {{ exampleValue $rangeKeySchema 2 }},
+						},
+						models.{{ $modelName }}{
+							{{ pascalize $hashKey.AttributeName }}:    {{ exampleValue $hashKeySchema 1 }},
+							{{ pascalize $rangeKey.AttributeName }}: {{ exampleValue $rangeKeySchema 1 }},
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				name: "starting after",
+				d:    d,
+				input: get{{ $modelName }}sBy{{ $indexName }}Input{
+					ctx: context.Background(),
+					input: db.Get{{ $modelName }}sBy{{ $indexName }}Input{
+						{{ pascalize $hashKey.AttributeName }}:                 {{ exampleValue $hashKeySchema 1 }},
+						{{ pascalize $rangeKey.AttributeName }}StartingAfter: db.{{ exampleValuePtr $rangeKeySchema 2 }},
+					},
+				},
+				output: get{{ $modelName }}sBy{{ $indexName }}Output{
+					{{ camelize $modelName }}s: []models.{{ $modelName }}{
+						models.{{ $modelName }}{
+							{{ pascalize $hashKey.AttributeName }}:    {{ exampleValue $hashKeySchema 1 }},
+							{{ pascalize $rangeKey.AttributeName }}: {{ exampleValue $rangeKeySchema 2 }},
+						},
+						models.{{ $modelName }}{
+							{{ pascalize $hashKey.AttributeName }}:    {{ exampleValue $hashKeySchema 1 }},
+							{{ pascalize $rangeKey.AttributeName }}: {{ exampleValue $rangeKeySchema 3 }},
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.name, test.run)
+		}
+	}
+}
+{{- end }}
+
 func Save{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m := models.{{ $modelName }}{
 			{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
 			{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
-			{{ pascalize $pk.AttributeName }}: {{ exampleValue1 $pkAttrSchema }},
+			{{ pascalize $pk.AttributeName }}: {{ exampleValue $pkAttrSchema 1 }},
 			{{- end }}
 		}
 		require.Nil(t, s.Save{{ $modelName }}(ctx, m))
@@ -73,7 +217,7 @@ func Save{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
 		require.Equal(t, db.Err{{ $modelName }}AlreadyExists{
 			{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
 			{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
-			{{ pascalize $pk.AttributeName }}: {{ exampleValue1 $pkAttrSchema }},
+			{{ pascalize $pk.AttributeName }}: {{ exampleValue $pkAttrSchema 1 }},
 			{{- end }}
                 }, s.Save{{ $modelName }}(ctx, m))
                 {{- end }}
@@ -86,11 +230,11 @@ func Delete{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
 		m := models.{{ $modelName }}{
 			{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
 			{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
-			{{ pascalize $pk.AttributeName }}: {{ exampleValue1 $pkAttrSchema }},
+			{{ pascalize $pk.AttributeName }}: {{ exampleValue $pkAttrSchema 1 }},
 			{{- end }}
 		}
 		require.Nil(t, s.Save{{ $modelName }}(ctx, m))
 		require.Nil(t, s.Delete{{ $modelName }}(ctx, {{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}m.{{ pascalize $pk.AttributeName }},{{- end -}}))
 	}
 }
-{{- end }}
+{{ end }}

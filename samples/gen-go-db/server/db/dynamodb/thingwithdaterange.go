@@ -3,6 +3,7 @@ package dynamodb
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/Clever/wag/samples/gen-go-db/models"
 	"github.com/Clever/wag/samples/gen-go-db/server/db"
@@ -113,6 +114,41 @@ func (t ThingWithDateRangeTable) getThingWithDateRange(ctx context.Context, name
 	return &m, nil
 }
 
+func (t ThingWithDateRangeTable) getThingWithDateRangesByNameAndDate(ctx context.Context, input db.GetThingWithDateRangesByNameAndDateInput) ([]models.ThingWithDateRange, error) {
+	queryInput := &dynamodb.QueryInput{
+		TableName: aws.String(t.name()),
+		ExpressionAttributeNames: map[string]*string{
+			"#NAME": aws.String("name"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":name": &dynamodb.AttributeValue{
+				S: aws.String(input.Name),
+			},
+		},
+		ScanIndexForward: aws.Bool(!input.Descending),
+		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
+	}
+	if input.DateStartingAfter == nil {
+		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
+	} else {
+		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
+		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
+			S: aws.String(time.Time(*input.DateStartingAfter).Format(time.RFC3339)), // dynamodb attributevalue only supports RFC3339 resolution
+		}
+		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #DATE >= :date")
+	}
+
+	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	if err != nil {
+		return nil, err
+	}
+	if len(queryOutput.Items) == 0 {
+		return []models.ThingWithDateRange{}, nil
+	}
+
+	return decodeThingWithDateRanges(queryOutput.Items)
+}
+
 func (t ThingWithDateRangeTable) deleteThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) error {
 	key, err := dynamodbattribute.MarshalMap(ddbThingWithDateRangePrimaryKey{
 		Name: name,
@@ -150,4 +186,17 @@ func decodeThingWithDateRange(m map[string]*dynamodb.AttributeValue, out *models
 	}
 	*out = ddbThingWithDateRange.ThingWithDateRange
 	return nil
+}
+
+// decodeThingWithDateRanges translates a list of ThingWithDateRanges stored in DynamoDB to a slice of ThingWithDateRange structs.
+func decodeThingWithDateRanges(ms []map[string]*dynamodb.AttributeValue) ([]models.ThingWithDateRange, error) {
+	thingWithDateRanges := make([]models.ThingWithDateRange, len(ms))
+	for i, m := range ms {
+		var thingWithDateRange models.ThingWithDateRange
+		if err := decodeThingWithDateRange(m, &thingWithDateRange); err != nil {
+			return nil, err
+		}
+		thingWithDateRanges[i] = thingWithDateRange
+	}
+	return thingWithDateRanges, nil
 }

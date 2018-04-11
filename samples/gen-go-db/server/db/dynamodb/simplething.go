@@ -152,3 +152,16 @@ func decodeSimpleThing(m map[string]*dynamodb.AttributeValue, out *models.Simple
 	*out = ddbSimpleThing.SimpleThing
 	return nil
 }
+
+// decodeSimpleThings translates a list of SimpleThings stored in DynamoDB to a slice of SimpleThing structs.
+func decodeSimpleThings(ms []map[string]*dynamodb.AttributeValue) ([]models.SimpleThing, error) {
+	simpleThings := make([]models.SimpleThing, len(ms))
+	for i, m := range ms {
+		var simpleThing models.SimpleThing
+		if err := decodeSimpleThing(m, &simpleThing); err != nil {
+			return nil, err
+		}
+		simpleThings[i] = simpleThing
+	}
+	return simpleThings, nil
+}

@@ -25,6 +25,11 @@ type Interface interface {
       {{- camelize $pk.AttributeName }} {{ goType $pkAttrSchema }},
       {{- end -}}
     ) (*models.{{ $modelName }}, error)
+    {{- if indexHasRangeKey $xdbConfig.DynamoDB.KeySchema }}
+    {{- $indexName := indexName $xdbConfig.DynamoDB.KeySchema }}
+    // Get{{ $modelName }}sBy{{ $indexName }} retrieves a list of {{ $modelName }}s from the database.
+    Get{{ $modelName }}sBy{{ $indexName }}(ctx context.Context, input Get{{ $modelName }}sBy{{ $indexName }}Input) ([]models.{{ $modelName }}, error)
+    {{- end }}
     // Delete{{ $modelName }} deletes a {{ $modelName }} from the database.
     Delete{{ $modelName }}(ctx context.Context,
       {{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
@@ -36,8 +41,34 @@ type Interface interface {
     {{ end }}
 }
 
+// Int64 returns a pointer to the int64 value passed in.
+func Int64(i int64) *int64 { return &i }
+
+// String returns a pointer to the string value passed in.
+func String(s string) *string { return &s }
+
+{{- if anyPrimaryKeyUsesDateTime .XDBConfigs }}
+// DateTime returns a pointer to the strfmt.DateTime value passed in.
+func DateTime(d strfmt.DateTime) *strfmt.DateTime { return &d }
+{{- end }}
+
 {{- range $xdbConfig := .XDBConfigs }}
 {{- $modelName := pascalize $xdbConfig.SchemaName }}
+{{- $indexName := indexName $xdbConfig.DynamoDB.KeySchema }}
+{{- $hashKey := index $xdbConfig.DynamoDB.KeySchema 0 }}
+{{- $hashKeySchema := index $xdbConfig.Schema.Properties $hashKey.AttributeName }}
+{{- if indexHasRangeKey $xdbConfig.DynamoDB.KeySchema }}
+{{- $rangeKey := index $xdbConfig.DynamoDB.KeySchema 1 }}
+{{- $rangeKeySchema := index $xdbConfig.Schema.Properties $rangeKey.AttributeName }}
+// Get{{ $modelName }}sBy{{ $indexName }}Input is the query input to Get{{ $modelName }}sBy{{ $indexName }}.
+type Get{{ $modelName }}sBy{{ $indexName }}Input struct {
+	{{ pascalize $hashKey.AttributeName }} {{ goType $hashKeySchema }}
+        {{ pascalize $rangeKey.AttributeName }}StartingAfter *{{ goType $rangeKeySchema }}
+        Descending bool
+        DisableConsistentRead bool
+}
+{{- end }}
+
 // Err{{ $modelName}}NotFound is returned when the database fails to find a {{ $modelName}}.
 type Err{{ $modelName}}NotFound struct {
 	{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}

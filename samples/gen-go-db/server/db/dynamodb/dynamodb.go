@@ -169,6 +169,11 @@ func (d DB) GetThing(ctx context.Context, name string, version int64) (*models.T
 	return d.thingTable.getThing(ctx, name, version)
 }
 
+// GetThingsByNameAndVersion retrieves a list of Things from the database.
+func (d DB) GetThingsByNameAndVersion(ctx context.Context, input db.GetThingsByNameAndVersionInput) ([]models.Thing, error) {
+	return d.thingTable.getThingsByNameAndVersion(ctx, input)
+}
+
 // DeleteThing deletes a Thing from the database.
 func (d DB) DeleteThing(ctx context.Context, name string, version int64) error {
 	return d.thingTable.deleteThing(ctx, name, version)
@@ -182,6 +187,11 @@ func (d DB) SaveThingWithDateRange(ctx context.Context, m models.ThingWithDateRa
 // GetThingWithDateRange retrieves a ThingWithDateRange from the database.
 func (d DB) GetThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) (*models.ThingWithDateRange, error) {
 	return d.thingWithDateRangeTable.getThingWithDateRange(ctx, name, date)
+}
+
+// GetThingWithDateRangesByNameAndDate retrieves a list of ThingWithDateRanges from the database.
+func (d DB) GetThingWithDateRangesByNameAndDate(ctx context.Context, input db.GetThingWithDateRangesByNameAndDateInput) ([]models.ThingWithDateRange, error) {
+	return d.thingWithDateRangeTable.getThingWithDateRangesByNameAndDate(ctx, input)
 }
 
 // DeleteThingWithDateRange deletes a ThingWithDateRange from the database.

@@ -5,6 +5,9 @@ package dynamodb
 import (
 	"context"
 	"fmt"
+	{{- if primaryKeyUsesDateTime $xdbConfig }}
+	"time"
+        {{- end }}
 
 	"{{ .PackageName }}/models"
 	"{{ .PackageName }}/server/db"
@@ -174,6 +177,61 @@ func (t {{ $modelName }}Table) get{{ $modelName }}(ctx context.Context,
 	return &m, nil
 }
 
+{{ if indexHasRangeKey $xdbConfig.DynamoDB.KeySchema }}
+{{- $indexName := indexName $xdbConfig.DynamoDB.KeySchema }}
+{{- $hashKey := index $xdbConfig.DynamoDB.KeySchema 0 }}
+{{- $rangeKey := index $xdbConfig.DynamoDB.KeySchema 1 }}
+func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $indexName }}(ctx context.Context, input db.Get{{ $modelName }}sBy{{ $indexName }}Input) ([]models.{{ $modelName }}, error) {
+	queryInput := &dynamodb.QueryInput{
+		TableName: aws.String(t.name()),
+		ExpressionAttributeNames: map[string]*string{
+			"#{{ upper $hashKey.AttributeName }}": aws.String("{{ $hashKey.AttributeName }}"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":{{ camelize $hashKey.AttributeName }}": &dynamodb.AttributeValue{
+                        	{{- $hashKeyAttrSchema := index $xdbConfig.Schema.Properties $hashKey.AttributeName }}
+                        	{{- $hashKeyAttrSchemaType := index $hashKeyAttrSchema.Type 0 }}
+                        	{{- if eq $hashKeyAttrSchemaType "string" }}
+				S: aws.String(input.{{ pascalize $hashKey.AttributeName }}),
+                        	{{- else if eq $hashKeyAttrSchemaType "integer" }}
+				N: aws.String(fmt.Sprintf("%d", input.{{ pascalize $hashKey.AttributeName }})),
+	                        {{- end }}
+			},
+		},
+		ScanIndexForward: aws.Bool(!input.Descending),
+		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
+	}
+	if input.{{ pascalize $rangeKey.AttributeName }}StartingAfter == nil {
+		queryInput.KeyConditionExpression = aws.String("#{{ upper $hashKey.AttributeName }} = :{{ camelize $hashKey.AttributeName }}")
+	} else {
+		queryInput.ExpressionAttributeNames["#{{ upper $rangeKey.AttributeName }}"] = aws.String("{{ camelize $rangeKey.AttributeName }}")
+		queryInput.ExpressionAttributeValues[":{{ camelize $rangeKey.AttributeName }}"] = &dynamodb.AttributeValue{
+                       	{{- $rangeKeyAttrSchema := index $xdbConfig.Schema.Properties $rangeKey.AttributeName }}
+                       	{{- $rangeKeyAttrSchemaType := index $rangeKeyAttrSchema.Type 0 }}
+                       	{{- $rangeKeyAttrGoType := goType $rangeKeyAttrSchema }}
+                       	{{- if eq $rangeKeyAttrGoType "strfmt.DateTime" }}
+			S: aws.String(time.Time(*input.{{ pascalize $rangeKey.AttributeName }}StartingAfter).Format(time.RFC3339)), // dynamodb attributevalue only supports RFC3339 resolution
+                       	{{- else if eq $rangeKeyAttrSchemaType "string" }}
+			S: aws.String(*input.{{ pascalize $rangeKey.AttributeName }}StartingAfter),
+                       	{{- else if eq $rangeKeyAttrSchemaType "integer" }}
+			N: aws.String(fmt.Sprintf("%%d", *input.{{ pascalize $rangeKey.AttributeName }}StartingAfter)),
+                        {{- end }}
+		}
+		queryInput.KeyConditionExpression = aws.String("#{{ upper $hashKey.AttributeName }} = :{{ camelize $hashKey.AttributeName }} AND #{{ upper $rangeKey.AttributeName }} >= :{{ camelize $rangeKey.AttributeName }}")
+	}
+
+	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	if err != nil {
+		return nil, err
+	}
+	if len(queryOutput.Items) == 0 {
+		return []models.{{ $modelName }}{}, nil
+	}
+
+	return decode{{ $modelName }}s(queryOutput.Items)
+}
+{{- end }}
+
 func (t {{ $modelName }}Table) delete{{ $modelName }}(ctx context.Context,
 	{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
 	{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
@@ -219,4 +277,17 @@ func decode{{ $modelName }}(m map[string]*dynamodb.AttributeValue, out *models.{
 	}
 	*out = ddb{{ $modelName }}.{{ $modelName }}
 	return nil
+}
+
+// decode{{ $modelName }}s translates a list of {{ $modelName }}s stored in DynamoDB to a slice of {{ $modelName }} structs.
+func decode{{ $modelName }}s(ms []map[string]*dynamodb.AttributeValue) ([]models.{{ $modelName }}, error) {
+	{{ camelize $modelName }}s := make([]models.{{ $modelName }}, len(ms))
+	for i, m := range ms {
+		var {{ camelize $modelName }} models.{{ $modelName }}
+		if err := decode{{ $modelName }}(m, &{{ camelize $modelName }}); err != nil {
+			return nil, err
+		}
+		{{ camelize $modelName }}s[i] = {{ camelize $modelName }}
+	}
+	return {{ camelize $modelName }}s, nil
 }

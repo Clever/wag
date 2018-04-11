@@ -129,6 +129,41 @@ func (t ThingTable) getThing(ctx context.Context, name string, version int64) (*
 	return &m, nil
 }
 
+func (t ThingTable) getThingsByNameAndVersion(ctx context.Context, input db.GetThingsByNameAndVersionInput) ([]models.Thing, error) {
+	queryInput := &dynamodb.QueryInput{
+		TableName: aws.String(t.name()),
+		ExpressionAttributeNames: map[string]*string{
+			"#NAME": aws.String("name"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":name": &dynamodb.AttributeValue{
+				S: aws.String(input.Name),
+			},
+		},
+		ScanIndexForward: aws.Bool(!input.Descending),
+		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
+	}
+	if input.VersionStartingAfter == nil {
+		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
+	} else {
+		queryInput.ExpressionAttributeNames["#VERSION"] = aws.String("version")
+		queryInput.ExpressionAttributeValues[":version"] = &dynamodb.AttributeValue{
+			N: aws.String(fmt.Sprintf("%d", *input.VersionStartingAfter)),
+		}
+		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #VERSION >= :version")
+	}
+
+	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	if err != nil {
+		return nil, err
+	}
+	if len(queryOutput.Items) == 0 {
+		return []models.Thing{}, nil
+	}
+
+	return decodeThings(queryOutput.Items)
+}
+
 func (t ThingTable) deleteThing(ctx context.Context, name string, version int64) error {
 	key, err := dynamodbattribute.MarshalMap(ddbThingPrimaryKey{
 		Name:    name,
@@ -166,4 +201,17 @@ func decodeThing(m map[string]*dynamodb.AttributeValue, out *models.Thing) error
 	}
 	*out = ddbThing.Thing
 	return nil
+}
+
+// decodeThings translates a list of Things stored in DynamoDB to a slice of Thing structs.
+func decodeThings(ms []map[string]*dynamodb.AttributeValue) ([]models.Thing, error) {
+	things := make([]models.Thing, len(ms))
+	for i, m := range ms {
+		var thing models.Thing
+		if err := decodeThing(m, &thing); err != nil {
+			return nil, err
+		}
+		things[i] = thing
+	}
+	return things, nil
 }

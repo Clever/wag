@@ -23,6 +23,8 @@ type Interface interface {
 	SaveThing(ctx context.Context, m models.Thing) error
 	// GetThing retrieves a Thing from the database.
 	GetThing(ctx context.Context, name string, version int64) (*models.Thing, error)
+	// GetThingsByNameAndVersion retrieves a list of Things from the database.
+	GetThingsByNameAndVersion(ctx context.Context, input GetThingsByNameAndVersionInput) ([]models.Thing, error)
 	// DeleteThing deletes a Thing from the database.
 	DeleteThing(ctx context.Context, name string, version int64) error
 
@@ -30,6 +32,8 @@ type Interface interface {
 	SaveThingWithDateRange(ctx context.Context, m models.ThingWithDateRange) error
 	// GetThingWithDateRange retrieves a ThingWithDateRange from the database.
 	GetThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) (*models.ThingWithDateRange, error)
+	// GetThingWithDateRangesByNameAndDate retrieves a list of ThingWithDateRanges from the database.
+	GetThingWithDateRangesByNameAndDate(ctx context.Context, input GetThingWithDateRangesByNameAndDateInput) ([]models.ThingWithDateRange, error)
 	// DeleteThingWithDateRange deletes a ThingWithDateRange from the database.
 	DeleteThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) error
 
@@ -40,6 +44,15 @@ type Interface interface {
 	// DeleteThingWithUnderscores deletes a ThingWithUnderscores from the database.
 	DeleteThingWithUnderscores(ctx context.Context, idApp string) error
 }
+
+// Int64 returns a pointer to the int64 value passed in.
+func Int64(i int64) *int64 { return &i }
+
+// String returns a pointer to the string value passed in.
+func String(s string) *string { return &s }
+
+// DateTime returns a pointer to the strfmt.DateTime value passed in.
+func DateTime(d strfmt.DateTime) *strfmt.DateTime { return &d }
 
 // ErrSimpleThingNotFound is returned when the database fails to find a SimpleThing.
 type ErrSimpleThingNotFound struct {
@@ -63,6 +76,14 @@ var _ error = ErrSimpleThingAlreadyExists{}
 // Error returns a description of the error.
 func (e ErrSimpleThingAlreadyExists) Error() string {
 	return fmt.Sprintf("SimpleThing already exists: %v", e)
+}
+
+// GetThingsByNameAndVersionInput is the query input to GetThingsByNameAndVersion.
+type GetThingsByNameAndVersionInput struct {
+	Name                  string
+	VersionStartingAfter  *int64
+	Descending            bool
+	DisableConsistentRead bool
 }
 
 // ErrThingNotFound is returned when the database fails to find a Thing.
@@ -89,6 +110,14 @@ var _ error = ErrThingAlreadyExists{}
 // Error returns a description of the error.
 func (e ErrThingAlreadyExists) Error() string {
 	return fmt.Sprintf("Thing already exists: %v", e)
+}
+
+// GetThingWithDateRangesByNameAndDateInput is the query input to GetThingWithDateRangesByNameAndDate.
+type GetThingWithDateRangesByNameAndDateInput struct {
+	Name                  string
+	DateStartingAfter     *strfmt.DateTime
+	Descending            bool
+	DisableConsistentRead bool
 }
 
 // ErrThingWithDateRangeNotFound is returned when the database fails to find a ThingWithDateRange.

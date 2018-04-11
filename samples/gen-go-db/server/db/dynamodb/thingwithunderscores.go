@@ -137,3 +137,16 @@ func decodeThingWithUnderscores(m map[string]*dynamodb.AttributeValue, out *mode
 	*out = ddbThingWithUnderscores.ThingWithUnderscores
 	return nil
 }
+
+// decodeThingWithUnderscoress translates a list of ThingWithUnderscoress stored in DynamoDB to a slice of ThingWithUnderscores structs.
+func decodeThingWithUnderscoress(ms []map[string]*dynamodb.AttributeValue) ([]models.ThingWithUnderscores, error) {
+	thingWithUnderscoress := make([]models.ThingWithUnderscores, len(ms))
+	for i, m := range ms {
+		var thingWithUnderscores models.ThingWithUnderscores
+		if err := decodeThingWithUnderscores(m, &thingWithUnderscores); err != nil {
+			return nil, err
+		}
+		thingWithUnderscoress[i] = thingWithUnderscores
+	}
+	return thingWithUnderscoress, nil
+}
