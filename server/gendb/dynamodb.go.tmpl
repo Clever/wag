@@ -126,6 +126,14 @@ func (d DB) Get{{ $modelName }}(ctx context.Context,
 )
 }
 
+{{- if indexHasRangeKey $xdbConfig.DynamoDB.KeySchema }}
+{{- $indexName := indexName $xdbConfig.DynamoDB.KeySchema }}
+// Get{{ $modelName }}sBy{{ $indexName }} retrieves a list of {{ $modelName }}s from the database.
+func (d DB) Get{{ $modelName }}sBy{{ $indexName }}(ctx context.Context, input db.Get{{ $modelName }}sBy{{ $indexName }}Input) ([]models.{{ $modelName }}, error) {
+	return d.{{ $modelNameCamel }}Table.get{{ $modelName }}sBy{{ $indexName }}(ctx, input)
+}
+{{- end }}
+
 // Delete{{ $modelName }} deletes a {{ $modelName }} from the database.
 func (d DB) Delete{{ $modelName }}(ctx context.Context, 
 	{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}

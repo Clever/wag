@@ -84,6 +84,22 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		}
 		return false
 	},
+	"indexHasRangeKey": func(index []cloudformation.AWSDynamoDBTable_KeySchema) bool {
+		return len(index) == 2 && index[1].KeyType == "RANGE"
+	},
+	"indexName": func(index []cloudformation.AWSDynamoDBTable_KeySchema) string {
+		pascalize := generator.FuncMap["pascalize"].(func(string) string)
+		if len(index) == 1 {
+			return pascalize(index[0].AttributeName)
+		} else if len(index) == 2 {
+			return fmt.Sprintf("%sAnd%s",
+				pascalize(index[0].AttributeName),
+				pascalize(index[1].AttributeName),
+			)
+		} else {
+			return ""
+		}
+	},
 	"goType": func(propertySchema spec.Schema) string {
 		if propertySchema.Format == "date-time" {
 			return "strfmt.DateTime"
@@ -96,26 +112,26 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		}
 		return "unknownType"
 	},
-	"exampleValue1": func(propertySchema spec.Schema) string {
+	"exampleValue": func(propertySchema spec.Schema, i int) string {
 		if propertySchema.Format == "date-time" {
-			return "strfmt.DateTime(time.Unix(1522279646, 0))"
+			return fmt.Sprintf(`mustTime("2018-03-11T15:04:0%d+07:00")`, i)
 		} else if len(propertySchema.Type) > 0 {
 			if propertySchema.Type[0] == "string" {
-				return `"string1"`
+				return fmt.Sprintf(`"string%d"`, i)
 			} else if propertySchema.Type[0] == "integer" {
-				return "1"
+				return fmt.Sprintf("%d", i)
 			}
 		}
 		return "unknownType"
 	},
-	"exampleValue2": func(propertySchema spec.Schema) string {
+	"exampleValuePtr": func(propertySchema spec.Schema, i int) string {
 		if propertySchema.Format == "date-time" {
-			return "strfmt.DateTime(time.Unix(2522279646, 0))"
+			return fmt.Sprintf(`DateTime(mustTime("2018-03-11T15:04:0%d+07:00"))`, i)
 		} else if len(propertySchema.Type) > 0 {
 			if propertySchema.Type[0] == "string" {
-				return `"string2"`
+				return fmt.Sprintf(`String("string%d")`, i)
 			} else if propertySchema.Type[0] == "integer" {
-				return "2"
+				return fmt.Sprintf("Int64(%d)", i)
 			}
 		}
 		return "unknownType"
