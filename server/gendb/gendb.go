@@ -64,7 +64,7 @@ func DecodeConfig(schemaName string, schema spec.Schema) (*XDBConfig, error) {
 	return config, nil
 }
 
-var primaryKeyUsesDateTime = func(config XDBConfig) bool {
+var tableUsesDateTime = func(config XDBConfig) bool {
 	for _, ks := range config.DynamoDB.KeySchema {
 		if config.Schema.Properties[ks.AttributeName].Format == "date-time" {
 			return true
@@ -75,10 +75,10 @@ var primaryKeyUsesDateTime = func(config XDBConfig) bool {
 
 // funcMap contains useful functiosn to use in templates
 var funcMap = template.FuncMap(map[string]interface{}{
-	"primaryKeyUsesDateTime": primaryKeyUsesDateTime,
-	"anyPrimaryKeyUsesDateTime": func(configs []XDBConfig) bool {
+	"tableUsesDateTime": tableUsesDateTime,
+	"anyTableUsesDateTime": func(configs []XDBConfig) bool {
 		for _, config := range configs {
-			if primaryKeyUsesDateTime(config) {
+			if tableUsesDateTime(config) {
 				return true
 			}
 		}

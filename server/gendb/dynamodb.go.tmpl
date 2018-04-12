@@ -7,7 +7,7 @@ import (
 	"{{ .PackageName }}/models"
 	"{{ .PackageName }}/server/db"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
-	{{- if anyPrimaryKeyUsesDateTime .XDBConfigs }}
+	{{- if anyTableUsesDateTime .XDBConfigs }}
 	"github.com/go-openapi/strfmt"
         {{- end -}}
 )

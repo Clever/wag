@@ -5,7 +5,7 @@ package dynamodb
 import (
 	"context"
 	"fmt"
-	{{- if primaryKeyUsesDateTime $xdbConfig }}
+	{{- if tableUsesDateTime $xdbConfig }}
 	"time"
         {{- end }}
 
@@ -18,7 +18,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
-	{{- if primaryKeyUsesDateTime $xdbConfig }}
+	{{- if tableUsesDateTime $xdbConfig }}
 	"github.com/go-openapi/strfmt"
         {{- end }}
 )

@@ -3,19 +3,19 @@ package tests
 import (
 	"context"
 	"testing"
-	{{- if anyPrimaryKeyUsesDateTime .XDBConfigs }}
+	{{- if anyTableUsesDateTime .XDBConfigs }}
 	"time"
         {{- end }}
 
 	"{{ .PackageName }}/models"
 	"{{ .PackageName }}/server/db"
 	"github.com/stretchr/testify/require"
-	{{- if anyPrimaryKeyUsesDateTime .XDBConfigs }}
+	{{- if anyTableUsesDateTime .XDBConfigs }}
 	"github.com/go-openapi/strfmt"
         {{- end }}
 )
 
-{{ if anyPrimaryKeyUsesDateTime .XDBConfigs }}
+{{ if anyTableUsesDateTime .XDBConfigs }}
 func mustTime(s string) strfmt.DateTime {
 	t, err := time.Parse(time.RFC3339, s)
 	if err != nil {
