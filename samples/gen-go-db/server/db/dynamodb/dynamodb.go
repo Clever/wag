@@ -179,6 +179,16 @@ func (d DB) DeleteThing(ctx context.Context, name string, version int64) error {
 	return d.thingTable.deleteThing(ctx, name, version)
 }
 
+// GetThingByID retrieves a Thing from the database.
+func (d DB) GetThingByID(ctx context.Context, id string) (*models.Thing, error) {
+	return d.thingTable.getThingByID(ctx, id)
+}
+
+// GetThingsByNameAndCreatedAt retrieves a list of Things from the database.
+func (d DB) GetThingsByNameAndCreatedAt(ctx context.Context, input db.GetThingsByNameAndCreatedAtInput) ([]models.Thing, error) {
+	return d.thingTable.getThingsByNameAndCreatedAt(ctx, input)
+}
+
 // SaveThingWithDateRange saves a ThingWithDateRange to the database.
 func (d DB) SaveThingWithDateRange(ctx context.Context, m models.ThingWithDateRange) error {
 	return d.thingWithDateRangeTable.saveThingWithDateRange(ctx, m)

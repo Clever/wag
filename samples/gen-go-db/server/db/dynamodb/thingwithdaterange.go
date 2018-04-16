@@ -30,8 +30,7 @@ type ddbThingWithDateRangePrimaryKey struct {
 
 // ddbThingWithDateRange represents a ThingWithDateRange as stored in DynamoDB.
 type ddbThingWithDateRange struct {
-	ddbThingWithDateRangePrimaryKey
-	ThingWithDateRange models.ThingWithDateRange `dynamodbav:"thing-with-date-range"`
+	models.ThingWithDateRange
 }
 
 func (t ThingWithDateRangeTable) name() string {
@@ -42,11 +41,11 @@ func (t ThingWithDateRangeTable) create(ctx context.Context) error {
 	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
 			{
-				AttributeName: aws.String("name"),
+				AttributeName: aws.String("date"),
 				AttributeType: aws.String(dynamodb.ScalarAttributeTypeS),
 			},
 			{
-				AttributeName: aws.String("date"),
+				AttributeName: aws.String("name"),
 				AttributeType: aws.String(dynamodb.ScalarAttributeTypeS),
 			},
 		},
@@ -170,10 +169,6 @@ func (t ThingWithDateRangeTable) deleteThingWithDateRange(ctx context.Context, n
 // encodeThingWithDateRange encodes a ThingWithDateRange as a DynamoDB map of attribute values.
 func encodeThingWithDateRange(m models.ThingWithDateRange) (map[string]*dynamodb.AttributeValue, error) {
 	return dynamodbattribute.MarshalMap(ddbThingWithDateRange{
-		ddbThingWithDateRangePrimaryKey: ddbThingWithDateRangePrimaryKey{
-			Name: m.Name,
-			Date: m.Date,
-		},
 		ThingWithDateRange: m,
 	})
 }

@@ -3,6 +3,7 @@ package dynamodb
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/Clever/wag/samples/gen-go-db/models"
 	"github.com/Clever/wag/samples/gen-go-db/server/db"
@@ -11,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/go-openapi/strfmt"
 )
 
 // ThingTable represents the user-configurable properties of the Thing table.
@@ -27,10 +29,20 @@ type ddbThingPrimaryKey struct {
 	Version int64  `dynamodbav:"version"`
 }
 
+// ddbThingGSIThingID represents the thingID GSI.
+type ddbThingGSIThingID struct {
+	ID string `dynamodbav:"id"`
+}
+
+// ddbThingGSINameCreatedAt represents the name-createdAt GSI.
+type ddbThingGSINameCreatedAt struct {
+	Name      string          `dynamodbav:"name"`
+	CreatedAt strfmt.DateTime `dynamodbav:"createdAt"`
+}
+
 // ddbThing represents a Thing as stored in DynamoDB.
 type ddbThing struct {
-	ddbThingPrimaryKey
-	Thing models.Thing `dynamodbav:"thing"`
+	models.Thing
 }
 
 func (t ThingTable) name() string {
@@ -40,6 +52,14 @@ func (t ThingTable) name() string {
 func (t ThingTable) create(ctx context.Context) error {
 	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
+			{
+				AttributeName: aws.String("createdAt"),
+				AttributeType: aws.String(dynamodb.ScalarAttributeTypeS),
+			},
+			{
+				AttributeName: aws.String("id"),
+				AttributeType: aws.String(dynamodb.ScalarAttributeTypeS),
+			},
 			{
 				AttributeName: aws.String("name"),
 				AttributeType: aws.String(dynamodb.ScalarAttributeTypeS),
@@ -57,6 +77,44 @@ func (t ThingTable) create(ctx context.Context) error {
 			{
 				AttributeName: aws.String("version"),
 				KeyType:       aws.String(dynamodb.KeyTypeRange),
+			},
+		},
+		GlobalSecondaryIndexes: []*dynamodb.GlobalSecondaryIndex{
+			{
+				IndexName: aws.String("thingID"),
+				Projection: &dynamodb.Projection{
+					ProjectionType: aws.String("ALL"),
+				},
+				KeySchema: []*dynamodb.KeySchemaElement{
+					{
+						AttributeName: aws.String("id"),
+						KeyType:       aws.String(dynamodb.KeyTypeHash),
+					},
+				},
+				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
+					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
+				},
+			},
+			{
+				IndexName: aws.String("name-createdAt"),
+				Projection: &dynamodb.Projection{
+					ProjectionType: aws.String("ALL"),
+				},
+				KeySchema: []*dynamodb.KeySchemaElement{
+					{
+						AttributeName: aws.String("name"),
+						KeyType:       aws.String(dynamodb.KeyTypeHash),
+					},
+					{
+						AttributeName: aws.String("createdAt"),
+						KeyType:       aws.String(dynamodb.KeyTypeRange),
+					},
+				},
+				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
+					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
+				},
 			},
 		},
 		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
@@ -182,13 +240,74 @@ func (t ThingTable) deleteThing(ctx context.Context, name string, version int64)
 	return nil
 }
 
+func (t ThingTable) getThingByID(ctx context.Context, id string) (*models.Thing, error) {
+	queryInput := &dynamodb.QueryInput{
+		TableName: aws.String(t.name()),
+		IndexName: aws.String("thingID"),
+		ExpressionAttributeNames: map[string]*string{
+			"#ID": aws.String("id"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":id": &dynamodb.AttributeValue{
+				S: aws.String(id),
+			},
+		},
+		KeyConditionExpression: aws.String("#ID = :id"),
+	}
+
+	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	if err != nil {
+		return nil, err
+	}
+	if len(queryOutput.Items) == 0 {
+		return nil, db.ErrThingByIDNotFound{ID: id}
+	}
+
+	var thing models.Thing
+	if err := decodeThing(queryOutput.Items[0], &thing); err != nil {
+		return nil, err
+	}
+	return &thing, nil
+}
+
+func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.GetThingsByNameAndCreatedAtInput) ([]models.Thing, error) {
+	queryInput := &dynamodb.QueryInput{
+		TableName: aws.String(t.name()),
+		IndexName: aws.String("name-createdAt"),
+		ExpressionAttributeNames: map[string]*string{
+			"#NAME": aws.String("name"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":name": &dynamodb.AttributeValue{
+				S: aws.String(input.Name),
+			},
+		},
+		ScanIndexForward: aws.Bool(!input.Descending),
+	}
+	if input.CreatedAtStartingAt == nil {
+		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
+	} else {
+		queryInput.ExpressionAttributeNames["#CREATEDAT"] = aws.String("createdAt")
+		queryInput.ExpressionAttributeValues[":createdAt"] = &dynamodb.AttributeValue{
+			S: aws.String(time.Time(*input.CreatedAtStartingAt).Format(time.RFC3339)), // dynamodb attributevalue only supports RFC3339 resolution
+		}
+		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #CREATEDAT >= :createdAt")
+	}
+
+	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	if err != nil {
+		return nil, err
+	}
+	if len(queryOutput.Items) == 0 {
+		return []models.Thing{}, nil
+	}
+
+	return decodeThings(queryOutput.Items)
+}
+
 // encodeThing encodes a Thing as a DynamoDB map of attribute values.
 func encodeThing(m models.Thing) (map[string]*dynamodb.AttributeValue, error) {
 	return dynamodbattribute.MarshalMap(ddbThing{
-		ddbThingPrimaryKey: ddbThingPrimaryKey{
-			Name:    m.Name,
-			Version: m.Version,
-		},
 		Thing: m,
 	})
 }

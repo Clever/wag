@@ -27,6 +27,10 @@ type Interface interface {
 	GetThingsByNameAndVersion(ctx context.Context, input GetThingsByNameAndVersionInput) ([]models.Thing, error)
 	// DeleteThing deletes a Thing from the database.
 	DeleteThing(ctx context.Context, name string, version int64) error
+	// GetThingByID retrieves a Thing from the database.
+	GetThingByID(ctx context.Context, id string) (*models.Thing, error)
+	// GetThingsByNameAndCreatedAt retrieves a list of Things from the database.
+	GetThingsByNameAndCreatedAt(ctx context.Context, input GetThingsByNameAndCreatedAtInput) ([]models.Thing, error)
 
 	// SaveThingWithDateRange saves a ThingWithDateRange to the database.
 	SaveThingWithDateRange(ctx context.Context, m models.ThingWithDateRange) error
@@ -96,6 +100,38 @@ var _ error = ErrThingNotFound{}
 
 // Error returns a description of the error.
 func (e ErrThingNotFound) Error() string {
+	return fmt.Sprintf("could not find Thing: %v", e)
+}
+
+// ErrThingByIDNotFound is returned when the database fails to find a Thing.
+type ErrThingByIDNotFound struct {
+	ID string
+}
+
+var _ error = ErrThingByIDNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingByIDNotFound) Error() string {
+	return fmt.Sprintf("could not find Thing: %v", e)
+}
+
+// GetThingsByNameAndCreatedAtInput is the query input to GetThingsByNameAndCreatedAt.
+type GetThingsByNameAndCreatedAtInput struct {
+	Name                string
+	CreatedAtStartingAt *strfmt.DateTime
+	Descending          bool
+}
+
+// ErrThingByNameAndCreatedAtNotFound is returned when the database fails to find a Thing.
+type ErrThingByNameAndCreatedAtNotFound struct {
+	Name      string
+	CreatedAt strfmt.DateTime
+}
+
+var _ error = ErrThingByNameAndCreatedAtNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingByNameAndCreatedAtNotFound) Error() string {
 	return fmt.Sprintf("could not find Thing: %v", e)
 }
 

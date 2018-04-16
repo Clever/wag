@@ -122,6 +122,32 @@ func (mr *MockInterfaceMockRecorder) DeleteThing(ctx, name, version interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThing", reflect.TypeOf((*MockInterface)(nil).DeleteThing), ctx, name, version)
 }
 
+// GetThingByID mocks base method
+func (m *MockInterface) GetThingByID(ctx context.Context, id string) (*models.Thing, error) {
+	ret := m.ctrl.Call(m, "GetThingByID", ctx, id)
+	ret0, _ := ret[0].(*models.Thing)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingByID indicates an expected call of GetThingByID
+func (mr *MockInterfaceMockRecorder) GetThingByID(ctx, id interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingByID", reflect.TypeOf((*MockInterface)(nil).GetThingByID), ctx, id)
+}
+
+// GetThingsByNameAndCreatedAt mocks base method
+func (m *MockInterface) GetThingsByNameAndCreatedAt(ctx context.Context, input GetThingsByNameAndCreatedAtInput) ([]models.Thing, error) {
+	ret := m.ctrl.Call(m, "GetThingsByNameAndCreatedAt", ctx, input)
+	ret0, _ := ret[0].([]models.Thing)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingsByNameAndCreatedAt indicates an expected call of GetThingsByNameAndCreatedAt
+func (mr *MockInterfaceMockRecorder) GetThingsByNameAndCreatedAt(ctx, input interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingsByNameAndCreatedAt", reflect.TypeOf((*MockInterface)(nil).GetThingsByNameAndCreatedAt), ctx, input)
+}
+
 // SaveThingWithDateRange mocks base method
 func (m_2 *MockInterface) SaveThingWithDateRange(ctx context.Context, m models.ThingWithDateRange) error {
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithDateRange", ctx, m)

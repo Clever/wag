@@ -8,9 +8,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/awslabs/goformation/cloudformation"
-
 	"github.com/Clever/wag/swagger"
+	"github.com/awslabs/goformation/cloudformation"
 	"github.com/go-openapi/spec"
 	"github.com/go-swagger/go-swagger/generator"
 )
@@ -38,7 +37,8 @@ type XDBConfig struct {
 // - GlobalSecondaryIndexes
 // - TableName (if you want something other than pascalized model name)
 type AWSDynamoDBTable struct {
-	KeySchema []cloudformation.AWSDynamoDBTable_KeySchema `json:"KeySchema,omitempty"`
+	KeySchema              []cloudformation.AWSDynamoDBTable_KeySchema            `json:"KeySchema,omitempty"`
+	GlobalSecondaryIndexes []cloudformation.AWSDynamoDBTable_GlobalSecondaryIndex `json:"GlobalSecondaryIndexes,omitempty"`
 }
 
 // DecodeConfig extracts a db configuration from the schema definition, if one exists.
@@ -64,8 +64,12 @@ func DecodeConfig(schemaName string, schema spec.Schema) (*XDBConfig, error) {
 	return config, nil
 }
 
-var primaryKeyUsesDateTime = func(config XDBConfig) bool {
-	for _, ks := range config.DynamoDB.KeySchema {
+var tableUsesDateTime = func(config XDBConfig) bool {
+	keySchemas := config.DynamoDB.KeySchema
+	for _, gsi := range config.DynamoDB.GlobalSecondaryIndexes {
+		keySchemas = append(keySchemas, gsi.KeySchema...)
+	}
+	for _, ks := range keySchemas {
 		if config.Schema.Properties[ks.AttributeName].Format == "date-time" {
 			return true
 		}
@@ -75,10 +79,10 @@ var primaryKeyUsesDateTime = func(config XDBConfig) bool {
 
 // funcMap contains useful functiosn to use in templates
 var funcMap = template.FuncMap(map[string]interface{}{
-	"primaryKeyUsesDateTime": primaryKeyUsesDateTime,
-	"anyPrimaryKeyUsesDateTime": func(configs []XDBConfig) bool {
+	"tableUsesDateTime": tableUsesDateTime,
+	"anyTableUsesDateTime": func(configs []XDBConfig) bool {
 		for _, config := range configs {
-			if primaryKeyUsesDateTime(config) {
+			if tableUsesDateTime(config) {
 				return true
 			}
 		}
@@ -86,6 +90,41 @@ var funcMap = template.FuncMap(map[string]interface{}{
 	},
 	"indexHasRangeKey": func(index []cloudformation.AWSDynamoDBTable_KeySchema) bool {
 		return len(index) == 2 && index[1].KeyType == "RANGE"
+	},
+	"indexes": func(config XDBConfig) [][]cloudformation.AWSDynamoDBTable_KeySchema {
+		indexes := [][]cloudformation.AWSDynamoDBTable_KeySchema{config.DynamoDB.KeySchema}
+		for _, gsi := range config.DynamoDB.GlobalSecondaryIndexes {
+			indexes = append(indexes, gsi.KeySchema)
+		}
+		return indexes
+	},
+	"unionKeySchemas": func(a, b []cloudformation.AWSDynamoDBTable_KeySchema) []cloudformation.AWSDynamoDBTable_KeySchema {
+		ret := []cloudformation.AWSDynamoDBTable_KeySchema{}
+		seen := map[string]struct{}{}
+		for _, ks := range append(a, b...) {
+			if _, ok := seen[ks.AttributeName]; ok {
+				continue
+			}
+			seen[ks.AttributeName] = struct{}{}
+			cpy := ks
+			ret = append(ret, cpy)
+		}
+		return ret
+	},
+	"differenceKeySchemas": func(a, b []cloudformation.AWSDynamoDBTable_KeySchema) []cloudformation.AWSDynamoDBTable_KeySchema {
+		ret := []cloudformation.AWSDynamoDBTable_KeySchema{}
+		inB := map[string]struct{}{}
+		for _, ks := range b {
+			inB[ks.AttributeName] = struct{}{}
+		}
+		for _, ks := range a {
+			if _, ok := inB[ks.AttributeName]; ok {
+				continue
+			}
+			cpy := ks
+			ret = append(ret, cpy)
+		}
+		return ret
 	},
 	"indexName": func(index []cloudformation.AWSDynamoDBTable_KeySchema) string {
 		pascalize := generator.FuncMap["pascalize"].(func(string) string)
@@ -99,6 +138,23 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		} else {
 			return ""
 		}
+	},
+	"attributeNames": func(table AWSDynamoDBTable) []string {
+		attrnames := map[string]struct{}{}
+		for _, ks := range table.KeySchema {
+			attrnames[ks.AttributeName] = struct{}{}
+		}
+		for _, gsi := range table.GlobalSecondaryIndexes {
+			for _, ks := range gsi.KeySchema {
+				attrnames[ks.AttributeName] = struct{}{}
+			}
+		}
+		attrs := []string{}
+		for k := range attrnames {
+			attrs = append(attrs, k)
+		}
+		sort.Strings(attrs)
+		return attrs
 	},
 	"goType": func(propertySchema spec.Schema) string {
 		if propertySchema.Format == "date-time" {
