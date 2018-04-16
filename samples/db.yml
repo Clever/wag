@@ -51,6 +51,21 @@ definitions:
             KeyType: HASH
           - AttributeName: version
             KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: thingID # "id" is two chars, min IndexName length is 3
+            Projection:
+              ProjectionType: ALL
+            KeySchema:
+              - AttributeName: id
+                KeyType: HASH
+          - IndexName: name-createdAt
+            Projection:
+              ProjectionType: ALL
+            KeySchema:
+              - AttributeName: name
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
     type: object
     properties:
       id:

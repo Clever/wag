@@ -27,6 +27,8 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingsByNameAndVersion", GetThingsByNameAndVersion(dbFactory(), t))
 	t.Run("SaveThing", SaveThing(dbFactory(), t))
 	t.Run("DeleteThing", DeleteThing(dbFactory(), t))
+	t.Run("GetThingByID", GetThingByID(dbFactory(), t))
+	t.Run("GetThingsByNameAndCreatedAt", GetThingsByNameAndCreatedAt(dbFactory(), t))
 	t.Run("GetThingWithDateRange", GetThingWithDateRange(dbFactory(), t))
 	t.Run("GetThingWithDateRangesByNameAndDate", GetThingWithDateRangesByNameAndDate(dbFactory(), t))
 	t.Run("SaveThingWithDateRange", SaveThingWithDateRange(dbFactory(), t))
@@ -243,6 +245,161 @@ func DeleteThing(s db.Interface, t *testing.T) func(t *testing.T) {
 		}
 		require.Nil(t, s.SaveThing(ctx, m))
 		require.Nil(t, s.DeleteThing(ctx, m.Name, m.Version))
+	}
+}
+
+func GetThingByID(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.Thing{
+			Name:    "string1",
+			Version: 1,
+			ID:      "string1",
+		}
+		require.Nil(t, s.SaveThing(ctx, m))
+		m2, err := s.GetThingByID(ctx, m.ID)
+		require.Nil(t, err)
+		require.Equal(t, m.Name, m2.Name)
+		require.Equal(t, m.Version, m2.Version)
+		require.Equal(t, m.ID, m2.ID)
+
+		_, err = s.GetThingByID(ctx, "string2")
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrThingByIDNotFound{})
+	}
+}
+
+type getThingsByNameAndCreatedAtInput struct {
+	ctx   context.Context
+	input db.GetThingsByNameAndCreatedAtInput
+}
+type getThingsByNameAndCreatedAtOutput struct {
+	things []models.Thing
+	err    error
+}
+type getThingsByNameAndCreatedAtTest struct {
+	name   string
+	d      db.Interface
+	input  getThingsByNameAndCreatedAtInput
+	output getThingsByNameAndCreatedAtOutput
+}
+
+func (g getThingsByNameAndCreatedAtTest) run(t *testing.T) {
+	things, err := g.d.GetThingsByNameAndCreatedAt(g.input.ctx, g.input.input)
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.things, things)
+}
+
+func GetThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThing(ctx, models.Thing{
+			Name:      "string1",
+			CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
+			Version:   1,
+		}))
+		require.Nil(t, d.SaveThing(ctx, models.Thing{
+			Name:      "string1",
+			CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
+			Version:   3,
+		}))
+		require.Nil(t, d.SaveThing(ctx, models.Thing{
+			Name:      "string1",
+			CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
+			Version:   2,
+		}))
+		tests := []getThingsByNameAndCreatedAtTest{
+			{
+				name: "basic",
+				d:    d,
+				input: getThingsByNameAndCreatedAtInput{
+					ctx: context.Background(),
+					input: db.GetThingsByNameAndCreatedAtInput{
+						Name: "string1",
+					},
+				},
+				output: getThingsByNameAndCreatedAtOutput{
+					things: []models.Thing{
+						models.Thing{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
+							Version:   1,
+						},
+						models.Thing{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
+							Version:   3,
+						},
+						models.Thing{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
+							Version:   2,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				name: "descending",
+				d:    d,
+				input: getThingsByNameAndCreatedAtInput{
+					ctx: context.Background(),
+					input: db.GetThingsByNameAndCreatedAtInput{
+						Name:       "string1",
+						Descending: true,
+					},
+				},
+				output: getThingsByNameAndCreatedAtOutput{
+					things: []models.Thing{
+						models.Thing{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
+							Version:   2,
+						},
+						models.Thing{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
+							Version:   3,
+						},
+						models.Thing{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
+							Version:   1,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				name: "starting after",
+				d:    d,
+				input: getThingsByNameAndCreatedAtInput{
+					ctx: context.Background(),
+					input: db.GetThingsByNameAndCreatedAtInput{
+						Name:                "string1",
+						CreatedAtStartingAt: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+					},
+				},
+				output: getThingsByNameAndCreatedAtOutput{
+					things: []models.Thing{
+						models.Thing{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
+							Version:   3,
+						},
+						models.Thing{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
+							Version:   2,
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.name, test.run)
+		}
 	}
 }
 

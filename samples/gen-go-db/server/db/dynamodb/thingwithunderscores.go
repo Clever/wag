@@ -27,8 +27,7 @@ type ddbThingWithUnderscoresPrimaryKey struct {
 
 // ddbThingWithUnderscores represents a ThingWithUnderscores as stored in DynamoDB.
 type ddbThingWithUnderscores struct {
-	ddbThingWithUnderscoresPrimaryKey
-	ThingWithUnderscores models.ThingWithUnderscores `dynamodbav:"thing-with-underscores"`
+	models.ThingWithUnderscores
 }
 
 func (t ThingWithUnderscoresTable) name() string {
@@ -121,9 +120,6 @@ func (t ThingWithUnderscoresTable) deleteThingWithUnderscores(ctx context.Contex
 // encodeThingWithUnderscores encodes a ThingWithUnderscores as a DynamoDB map of attribute values.
 func encodeThingWithUnderscores(m models.ThingWithUnderscores) (map[string]*dynamodb.AttributeValue, error) {
 	return dynamodbattribute.MarshalMap(ddbThingWithUnderscores{
-		ddbThingWithUnderscoresPrimaryKey: ddbThingWithUnderscoresPrimaryKey{
-			IDApp: m.IDApp,
-		},
 		ThingWithUnderscores: m,
 	})
 }

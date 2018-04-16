@@ -28,8 +28,7 @@ type ddbSimpleThingPrimaryKey struct {
 
 // ddbSimpleThing represents a SimpleThing as stored in DynamoDB.
 type ddbSimpleThing struct {
-	ddbSimpleThingPrimaryKey
-	SimpleThing models.SimpleThing `dynamodbav:"simple-thing"`
+	models.SimpleThing
 }
 
 func (t SimpleThingTable) name() string {
@@ -136,9 +135,6 @@ func (t SimpleThingTable) deleteSimpleThing(ctx context.Context, name string) er
 // encodeSimpleThing encodes a SimpleThing as a DynamoDB map of attribute values.
 func encodeSimpleThing(m models.SimpleThing) (map[string]*dynamodb.AttributeValue, error) {
 	return dynamodbattribute.MarshalMap(ddbSimpleThing{
-		ddbSimpleThingPrimaryKey: ddbSimpleThingPrimaryKey{
-			Name: m.Name,
-		},
 		SimpleThing: m,
 	})
 }

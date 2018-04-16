@@ -113,7 +113,7 @@ func (d DB) Save{{ $modelName }}(ctx context.Context, m models.{{ $modelName }})
 }
 
 // Get{{ $modelName }} retrieves a {{ $modelName }} from the database.
-func (d DB) Get{{ $modelName }}(ctx context.Context, 
+func (d DB) Get{{ $modelName }}(ctx context.Context,
 	{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
 	{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
 	{{- camelize $pk.AttributeName }} {{ goType $pkAttrSchema }},
@@ -135,7 +135,7 @@ func (d DB) Get{{ $modelName }}sBy{{ $indexName }}(ctx context.Context, input db
 {{- end }}
 
 // Delete{{ $modelName }} deletes a {{ $modelName }} from the database.
-func (d DB) Delete{{ $modelName }}(ctx context.Context, 
+func (d DB) Delete{{ $modelName }}(ctx context.Context,
 	{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
 	{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
 	{{- camelize $pk.AttributeName }} {{ goType $pkAttrSchema }},
@@ -147,4 +147,28 @@ func (d DB) Delete{{ $modelName }}(ctx context.Context,
 		{{- end -}}
     )
 }
+
+{{- range $gsi := $xdbConfig.DynamoDB.GlobalSecondaryIndexes }}
+{{- $indexName := indexName $gsi.KeySchema }}
+{{- if indexHasRangeKey $gsi.KeySchema }}
+// Get{{ $modelName }}sBy{{ $indexName }} retrieves a list of {{ $modelName }}s from the database.
+func (d DB) Get{{ $modelName }}sBy{{ $indexName }}(ctx context.Context, input db.Get{{ $modelName }}sBy{{ $indexName }}Input) ([]models.{{ $modelName }}, error) {
+	return d.{{ $modelNameCamel }}Table.get{{ $modelName }}sBy{{ $indexName }}(ctx, input)
+}
+{{- else }}
+// Get{{ $modelName }}By{{ $indexName }} retrieves a {{ $modelName }} from the database.
+func (d DB) Get{{ $modelName }}By{{ $indexName }}(ctx context.Context,
+      {{- range $_, $ks := $gsi.KeySchema }}
+      {{- $ksAttrSchema := index $xdbConfig.Schema.Properties $ks.AttributeName }}
+      {{- camelize $ks.AttributeName }} {{ goType $ksAttrSchema }},
+      {{- end -}}
+    ) (*models.{{ $modelName }}, error) {
+	return d.{{ $modelNameCamel }}Table.get{{ $modelName }}By{{ $indexName }}(ctx,
+          {{- range $_, $ks := $gsi.KeySchema }}
+          {{- camelize $ks.AttributeName }},
+          {{- end -}}
+        )
+}
+{{- end }}
+{{- end }}
 {{- end }}

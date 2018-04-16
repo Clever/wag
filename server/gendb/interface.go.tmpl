@@ -37,6 +37,21 @@ type Interface interface {
       {{- camelize $pk.AttributeName }} {{ goType $pkAttrSchema }},
       {{- end -}}
     ) error
+    {{- range $gsi := $xdbConfig.DynamoDB.GlobalSecondaryIndexes }}
+    {{- $indexName := indexName $gsi.KeySchema }}
+    {{- if indexHasRangeKey $gsi.KeySchema }}
+    // Get{{ $modelName }}sBy{{ $indexName }} retrieves a list of {{ $modelName }}s from the database.
+    Get{{ $modelName }}sBy{{ $indexName }}(ctx context.Context, input Get{{ $modelName }}sBy{{ $indexName }}Input) ([]models.{{ $modelName }}, error)
+    {{- else }}
+    // Get{{ $modelName }}By{{ $indexName }} retrieves a {{ $modelName }} from the database.
+    Get{{ $modelName }}By{{ $indexName }}(ctx context.Context,
+      {{- range $_, $ks := $gsi.KeySchema }}
+      {{- $ksAttrSchema := index $xdbConfig.Schema.Properties $ks.AttributeName }}
+      {{- camelize $ks.AttributeName }} {{ goType $ksAttrSchema }},
+      {{- end -}}
+    ) (*models.{{ $modelName }}, error)
+    {{- end }}
+    {{- end }}
 
     {{ end }}
 }
@@ -83,6 +98,37 @@ var _ error = Err{{ $modelName}}NotFound{}
 func (e Err{{ $modelName}}NotFound) Error() string {
 	return fmt.Sprintf("could not find {{ $modelName}}: %%v", e)
 }
+
+{{ range $gsi := $xdbConfig.DynamoDB.GlobalSecondaryIndexes }}
+{{- $computedIndexName := indexName $gsi.KeySchema }}
+{{- $hashKey := index $gsi.KeySchema 0 }}
+{{- $hashKeySchema := index $xdbConfig.Schema.Properties $hashKey.AttributeName }}
+{{- if indexHasRangeKey $gsi.KeySchema }}
+{{- $rangeKey := index $gsi.KeySchema 1 }}
+{{- $rangeKeySchema := index $xdbConfig.Schema.Properties $rangeKey.AttributeName }}
+// Get{{ $modelName }}sBy{{ $computedIndexName }}Input is the query input to Get{{ $modelName }}sBy{{ $computedIndexName }}.
+type Get{{ $modelName }}sBy{{ $computedIndexName }}Input struct {
+	{{ pascalize $hashKey.AttributeName }} {{ goType $hashKeySchema }}
+        {{ pascalize $rangeKey.AttributeName }}StartingAt *{{ goType $rangeKeySchema }}
+        Descending bool
+}
+{{- end }}
+
+// Err{{ $modelName}}By{{ $computedIndexName }}NotFound is returned when the database fails to find a {{ $modelName}}.
+type Err{{ $modelName}}By{{ $computedIndexName }}NotFound struct {
+	{{- range $_, $ks := $gsi.KeySchema }}
+	{{- $ksAttrSchema := index $xdbConfig.Schema.Properties $ks.AttributeName }}
+	{{ pascalize $ks.AttributeName }} {{ goType $ksAttrSchema }}
+	{{- end }}
+}
+
+var _ error = Err{{ $modelName}}By{{ $computedIndexName }}NotFound{}
+
+// Error returns a description of the error.
+func (e Err{{ $modelName}}By{{ $computedIndexName }}NotFound) Error() string {
+	return fmt.Sprintf("could not find {{ $modelName}}: %%v", e)
+}
+{{ end }}
 
 {{- if not $xdbConfig.AllowOverwrites }}
 // Err{{ $modelName }}AlreadyExists is returned when trying to overwrite a {{ $modelName }}.
