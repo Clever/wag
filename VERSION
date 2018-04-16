@@ -1,2 +1,2 @@
-v1.7.2
-- Fix data race in auto-generated dynamodb tests
+v1.8.0
+- Add support for GSIs
