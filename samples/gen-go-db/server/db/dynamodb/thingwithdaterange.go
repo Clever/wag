@@ -18,6 +18,7 @@ import (
 type ThingWithDateRangeTable struct {
 	DynamoDBAPI        dynamodbiface.DynamoDBAPI
 	Prefix             string
+	TableName          string
 	ReadCapacityUnits  int64
 	WriteCapacityUnits int64
 }
@@ -34,6 +35,9 @@ type ddbThingWithDateRange struct {
 }
 
 func (t ThingWithDateRangeTable) name() string {
+	if t.TableName != "" {
+		return t.TableName
+	}
 	return fmt.Sprintf("%s-thing-with-date-ranges", t.Prefix)
 }
 
