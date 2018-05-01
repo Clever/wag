@@ -16,6 +16,7 @@ import (
 type ThingWithUnderscoresTable struct {
 	DynamoDBAPI        dynamodbiface.DynamoDBAPI
 	Prefix             string
+	TableName          string
 	ReadCapacityUnits  int64
 	WriteCapacityUnits int64
 }
@@ -31,6 +32,9 @@ type ddbThingWithUnderscores struct {
 }
 
 func (t ThingWithUnderscoresTable) name() string {
+	if t.TableName != "" {
+		return t.TableName
+	}
 	return fmt.Sprintf("%s-thing-with-underscoress", t.Prefix)
 }
 

@@ -27,6 +27,7 @@ import (
 type {{ $modelName }}Table struct {
 	DynamoDBAPI        dynamodbiface.DynamoDBAPI
 	Prefix             string
+	TableName          string
 	ReadCapacityUnits  int64
 	WriteCapacityUnits int64
 }
@@ -57,6 +58,9 @@ type ddb{{ $modelName }} struct {
 }
 
 func (t {{ $modelName }}Table) name() string {
+	if t.TableName != "" {
+		return t.TableName
+	}
 	return fmt.Sprintf("%%s-{{ dasherize $modelName }}s", t.Prefix)
 }
 

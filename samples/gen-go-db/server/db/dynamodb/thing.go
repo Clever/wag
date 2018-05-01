@@ -19,6 +19,7 @@ import (
 type ThingTable struct {
 	DynamoDBAPI        dynamodbiface.DynamoDBAPI
 	Prefix             string
+	TableName          string
 	ReadCapacityUnits  int64
 	WriteCapacityUnits int64
 }
@@ -46,6 +47,9 @@ type ddbThing struct {
 }
 
 func (t ThingTable) name() string {
+	if t.TableName != "" {
+		return t.TableName
+	}
 	return fmt.Sprintf("%s-things", t.Prefix)
 }
 
