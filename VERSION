@@ -1,2 +1,2 @@
-v1.8.0
-- Add support for GSIs
+v1.8.1
+- Allow specifying the full table name
