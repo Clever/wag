@@ -1,2 +1,2 @@
-v1.8.1
-- Allow specifying the full table name
+v1.8.2
+- Set Content-Type in Go client
