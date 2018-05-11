@@ -369,6 +369,8 @@ func methodDoerCode(s *spec.Swagger, op *spec.Operation) string {
 func (c *WagClient) do%sRequest(ctx context.Context, req *http.Request, headers map[string]string) %s {
 	client := &http.Client{Transport: c.transport}
 
+	req.Header.Set("Content-Type", "application/json")
+
 	for field, value := range headers {
 		req.Header.Set(field, value)
 	}
