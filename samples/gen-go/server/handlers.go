@@ -306,10 +306,12 @@ func newGetAuthorsWithPutInput(r *http.Request) (*models.GetAuthorsWithPutInput,
 	data, err := ioutil.ReadAll(r.Body)
 
 	if len(data) > 0 {
+
 		input.FavoriteBooks = &models.Book{}
 		if err := json.NewDecoder(bytes.NewReader(data)).Decode(input.FavoriteBooks); err != nil {
 			return nil, err
 		}
+
 	}
 
 	return &input, nil
@@ -587,7 +589,9 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 		return
 	}
 
-	err = input.Validate(nil)
+	if input != nil {
+		err = input.Validate(nil)
+	}
 
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
@@ -626,8 +630,6 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 
 // newCreateBookInput takes in an http.Request an returns the input struct.
 func newCreateBookInput(r *http.Request) (*models.Book, error) {
-	var input models.Book
-
 	var err error
 	_ = err
 
@@ -637,12 +639,16 @@ func newCreateBookInput(r *http.Request) (*models.Book, error) {
 	}
 
 	if len(data) > 0 {
+
+		var input models.Book
 		if err := json.NewDecoder(bytes.NewReader(data)).Decode(&input); err != nil {
 			return nil, err
 		}
+		return &input, nil
+
 	}
 
-	return &input, nil
+	return nil, nil
 }
 
 // statusCodeForPutBook returns the status code corresponding to the returned
@@ -683,7 +689,9 @@ func (h handler) PutBookHandler(ctx context.Context, w http.ResponseWriter, r *h
 		return
 	}
 
-	err = input.Validate(nil)
+	if input != nil {
+		err = input.Validate(nil)
+	}
 
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
@@ -722,20 +730,22 @@ func (h handler) PutBookHandler(ctx context.Context, w http.ResponseWriter, r *h
 
 // newPutBookInput takes in an http.Request an returns the input struct.
 func newPutBookInput(r *http.Request) (*models.Book, error) {
-	var input models.Book
-
 	var err error
 	_ = err
 
 	data, err := ioutil.ReadAll(r.Body)
 
 	if len(data) > 0 {
+
+		var input models.Book
 		if err := json.NewDecoder(bytes.NewReader(data)).Decode(&input); err != nil {
 			return nil, err
 		}
+		return &input, nil
+
 	}
 
-	return &input, nil
+	return nil, nil
 }
 
 // statusCodeForGetBookByID returns the status code corresponding to the returned
