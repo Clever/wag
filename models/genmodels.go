@@ -184,8 +184,10 @@ type validateTemplate struct {
 
 var validationStr = `
 	{{if eq .Type "body" -}}
-	if err := {{.AccessString}}.Validate(nil); err != nil {
-		return err
+	if {{.AccessString}} != nil {
+		if err := {{.AccessString}}.Validate(nil); err != nil {
+			return err
+		}
 	}
 	{{- end -}}
 	{{- $type := .Type -}}

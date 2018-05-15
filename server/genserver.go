@@ -439,7 +439,13 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 	{{if .SingleStringPathParameter}}
 		err = models.Validate{{.Op}}Input({{.SingleStringPathParameterVarName}})
 	{{else}}
-		err = input.Validate({{if .SingleSchemaedBodyParameter}}nil{{end}})
+		{{if .SingleSchemaedBodyParameter}}
+			if input != nil {
+				err = input.Validate(nil)
+			}
+		{{else}}
+			err = input.Validate()
+		{{end}}
 	{{end}}
 		if err != nil {
 			logger.FromContext(ctx).AddContext("error", err.Error())
