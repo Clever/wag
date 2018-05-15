@@ -33,8 +33,10 @@ type NilCheckInput struct {
 // requirements from the swagger yml file.
 func (i NilCheckInput) Validate() error {
 
-	if err := i.Body.Validate(nil); err != nil {
-		return err
+	if i.Body != nil {
+		if err := i.Body.Validate(nil); err != nil {
+			return err
+		}
 	}
 	return nil
 }

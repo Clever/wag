@@ -60,8 +60,10 @@ type GetAuthorsWithPutInput struct {
 // requirements from the swagger yml file.
 func (i GetAuthorsWithPutInput) Validate() error {
 
-	if err := i.FavoriteBooks.Validate(nil); err != nil {
-		return err
+	if i.FavoriteBooks != nil {
+		if err := i.FavoriteBooks.Validate(nil); err != nil {
+			return err
+		}
 	}
 	return nil
 }

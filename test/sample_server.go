@@ -11,10 +11,11 @@ import (
 
 // ControllerImpl implements the test server controller interface.
 type ControllerImpl struct {
-	books    map[int64]*models.Book
-	maxID    int64
-	pageSize int
-	authors  []*models.Author
+	books           map[int64]*models.Book
+	maxID           int64
+	pageSize        int
+	authors         []*models.Author
+	nilPutBookCount int
 }
 
 // GetBooks returns a list of books.
@@ -80,6 +81,10 @@ func (c *ControllerImpl) CreateBook(ctx context.Context, input *models.Book) (*m
 
 // PutBook creates a book.
 func (c *ControllerImpl) PutBook(ctx context.Context, input *models.Book) (*models.Book, error) {
+	if input == nil {
+		c.nilPutBookCount++
+		return nil, nil
+	}
 	if input.ID > c.maxID {
 		c.maxID = input.ID
 	}

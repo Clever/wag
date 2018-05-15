@@ -439,7 +439,13 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 	{{if .SingleStringPathParameter}}
 		err = models.Validate{{.Op}}Input({{.SingleStringPathParameterVarName}})
 	{{else}}
-		err = input.Validate({{if .SingleSchemaedBodyParameter}}nil{{end}})
+		{{if .SingleSchemaedBodyParameter}}
+			if input != nil {
+				err = input.Validate(nil)
+			}
+		{{else}}
+			err = input.Validate()
+		{{end}}
 	{{end}}
 		if err != nil {
 			logger.FromContext(ctx).AddContext("error", err.Error())
@@ -549,7 +555,6 @@ func generateNewInput(op *spec.Operation) (string, error) {
 	if singleSchemaedBodyParameter {
 		buf.WriteString(fmt.Sprintf("func new%sInput(r *http.Request) (*models.%s, error) {\n",
 			capOpID, opModel))
-		buf.WriteString(fmt.Sprintf("\tvar input models.%s\n\n", opModel))
 	} else {
 		buf.WriteString(fmt.Sprintf("func new%sInput(r *http.Request) (*models.%sInput, error) {\n",
 			capOpID, capOpID))
@@ -619,7 +624,11 @@ func generateNewInput(op *spec.Operation) (string, error) {
 	}
 	buf.WriteString(fmt.Sprintf("\n"))
 
-	buf.WriteString(fmt.Sprintf("\treturn &input, nil\n"))
+	if singleSchemaedBodyParameter {
+		buf.WriteString(fmt.Sprintf("\treturn nil, nil\n"))
+	} else {
+		buf.WriteString(fmt.Sprintf("\treturn &input, nil\n"))
+	}
 	buf.WriteString(fmt.Sprintf("}\n\n"))
 
 	return buf.String(), nil
@@ -699,13 +708,18 @@ var bodyParamTemplateStr = `
 		return nil, errors.New("request body is required, but was empty")
 	}{{end}}
 
-	if len(data) > 0 { {{if eq (len .ParamField) 0}}
-		if err := json.NewDecoder(bytes.NewReader(data)).Decode(&input); err != nil {
-			return nil, err
-		}{{else}}
-		input.{{.ParamField}} = &models.{{.TypeName}}{}
-		if err := json.NewDecoder(bytes.NewReader(data)).Decode(input.{{.ParamField}}); err != nil {
-			return nil, err
-		}{{end}}
+	if len(data) > 0 {
+		{{if eq (len .ParamField) 0}}
+			var input models.{{.TypeName}}
+			if err := json.NewDecoder(bytes.NewReader(data)).Decode(&input); err != nil {
+				return nil, err
+			}
+			return &input, nil
+		{{else}}
+			input.{{.ParamField}} = &models.{{.TypeName}}{}
+			if err := json.NewDecoder(bytes.NewReader(data)).Decode(input.{{.ParamField}}); err != nil {
+				return nil, err
+			}
+		{{end}}
 	}
 `
