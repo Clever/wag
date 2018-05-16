@@ -28,13 +28,13 @@ func TypeFromSchema(schema *spec.Schema, includeModels bool) (string, error) {
 	} else {
 		schemaType := schema.Type
 		if len(schemaType) != 1 || schemaType[0] != "array" {
-			return "", fmt.Errorf("Cannot define complex data types inline. They must be defined in" +
-				"the #/definitions section of the swagger yaml")
+			return "", fmt.Errorf("Cannot define complex data types inline. They must be defined in " +
+				"the #/definitions section of the swagger yaml.")
 		}
 		items := schema.Items
-		if items == nil || items.Schema == nil {
-			return "", fmt.Errorf("Cannot define complex data types inline. They must be defined in" +
-				"the #/definitions section of the swagger yaml")
+		if items == nil || items.Schema == nil || items.Schema.Ref.String() == "" {
+			return "", fmt.Errorf("Cannot define complex data types inline. They must be defined in " +
+				"the #/definitions section of the swagger yaml.")
 		}
 		def, err := defFromRef(items.Schema.Ref.String())
 		if err != nil {

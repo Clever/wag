@@ -78,7 +78,7 @@ func validateResponses(path, method string, op *spec.Operation) error {
 
 		_, err := swagger.TypeFromSchema(response.Schema, false)
 		if err != nil {
-			return err
+			return fmt.Errorf("responses.%d for %s %s: %s", statusCode, method, path, err.Error())
 		}
 	}
 	return nil
