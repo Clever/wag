@@ -1,2 +1,2 @@
-v1.8.3
-- Handle nil bodies properly
+v1.8.4
+- Better validation for response types.
