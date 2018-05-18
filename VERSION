@@ -1,2 +1,2 @@
-v1.8.4
-- Better validation for response types.
+v1.8.5
+- Fix bug in dynamodb tests
