@@ -427,7 +427,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
 func Get{{ $modelName }}By{{ $computedIndexName }}(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
-		m := models.Thing{
+		m := models.{{ $modelName }}{
 			{{- range $ks := $primaryAndSecondaryKeySchemas }}
 			{{- $ksAttrSchema := index $xdbConfig.Schema.Properties $ks.AttributeName }}
 			{{ pascalize $ks.AttributeName }}: {{ exampleValue $ksAttrSchema 1 }},

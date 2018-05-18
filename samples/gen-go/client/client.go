@@ -258,8 +258,6 @@ func (i *getAuthorsIterImpl) Err() error {
 func (c *WagClient) doGetAuthorsRequest(ctx context.Context, req *http.Request, headers map[string]string) (*models.AuthorsResponse, string, error) {
 	client := &http.Client{Transport: c.transport}
 
-	req.Header.Set("Content-Type", "application/json")
-
 	for field, value := range headers {
 		req.Header.Set(field, value)
 	}
@@ -468,8 +466,6 @@ func (i *getAuthorsWithPutIterImpl) Err() error {
 func (c *WagClient) doGetAuthorsWithPutRequest(ctx context.Context, req *http.Request, headers map[string]string) (*models.AuthorsResponse, string, error) {
 	client := &http.Client{Transport: c.transport}
 
-	req.Header.Set("Content-Type", "application/json")
-
 	for field, value := range headers {
 		req.Header.Set(field, value)
 	}
@@ -660,8 +656,6 @@ func (i *getBooksIterImpl) Err() error {
 func (c *WagClient) doGetBooksRequest(ctx context.Context, req *http.Request, headers map[string]string) ([]models.Book, string, error) {
 	client := &http.Client{Transport: c.transport}
 
-	req.Header.Set("Content-Type", "application/json")
-
 	for field, value := range headers {
 		req.Header.Set(field, value)
 	}
@@ -766,8 +760,6 @@ func (c *WagClient) CreateBook(ctx context.Context, i *models.Book) (*models.Boo
 
 func (c *WagClient) doCreateBookRequest(ctx context.Context, req *http.Request, headers map[string]string) (*models.Book, error) {
 	client := &http.Client{Transport: c.transport}
-
-	req.Header.Set("Content-Type", "application/json")
 
 	for field, value := range headers {
 		req.Header.Set(field, value)
@@ -874,8 +866,6 @@ func (c *WagClient) PutBook(ctx context.Context, i *models.Book) (*models.Book, 
 func (c *WagClient) doPutBookRequest(ctx context.Context, req *http.Request, headers map[string]string) (*models.Book, error) {
 	client := &http.Client{Transport: c.transport}
 
-	req.Header.Set("Content-Type", "application/json")
-
 	for field, value := range headers {
 		req.Header.Set(field, value)
 	}
@@ -981,8 +971,6 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 
 func (c *WagClient) doGetBookByIDRequest(ctx context.Context, req *http.Request, headers map[string]string) (*models.Book, error) {
 	client := &http.Client{Transport: c.transport}
-
-	req.Header.Set("Content-Type", "application/json")
 
 	for field, value := range headers {
 		req.Header.Set(field, value)
@@ -1101,8 +1089,6 @@ func (c *WagClient) GetBookByID2(ctx context.Context, id string) (*models.Book, 
 func (c *WagClient) doGetBookByID2Request(ctx context.Context, req *http.Request, headers map[string]string) (*models.Book, error) {
 	client := &http.Client{Transport: c.transport}
 
-	req.Header.Set("Content-Type", "application/json")
-
 	for field, value := range headers {
 		req.Header.Set(field, value)
 	}
@@ -1204,8 +1190,6 @@ func (c *WagClient) HealthCheck(ctx context.Context) error {
 
 func (c *WagClient) doHealthCheckRequest(ctx context.Context, req *http.Request, headers map[string]string) error {
 	client := &http.Client{Transport: c.transport}
-
-	req.Header.Set("Content-Type", "application/json")
 
 	for field, value := range headers {
 		req.Header.Set(field, value)

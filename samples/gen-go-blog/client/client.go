@@ -172,8 +172,6 @@ func (c *WagClient) GetSectionsForStudent(ctx context.Context, studentID string)
 func (c *WagClient) doGetSectionsForStudentRequest(ctx context.Context, req *http.Request, headers map[string]string) ([]models.Section, error) {
 	client := &http.Client{Transport: c.transport}
 
-	req.Header.Set("Content-Type", "application/json")
-
 	for field, value := range headers {
 		req.Header.Set(field, value)
 	}

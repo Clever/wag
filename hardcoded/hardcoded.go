@@ -214,8 +214,8 @@ var _bindata = map[string]*asset{
 			"\xa7\xa0\x34\x14\xa1\x53\x64\x41\xfd\xc5\xf6\x16\x1d\x3c\x4d\xe3\xa3\xb3\xe4\xff\x09\x00\x00\xff" +
 			"\xff",
 		size: 10896,
-		mode: 0644,
-		time: time.Unix(1523652402, 0),
+		mode: 0664,
+		time: time.Unix(1524593583, 423895781),
 	},
 	"../_hardcoded/middleware.go": &asset{
 		name: "middleware.go",
@@ -287,8 +287,8 @@ var _bindata = map[string]*asset{
 			"\x33\x06\xf1\x3d\xd2\x97\x0e\x8d\x20\xa9\x95\x3b\x50\xce\x8e\xa3\xcc\x77\x88\x9f\x39\xf3\x5b\xd9" +
 			"\x1a\xbe\x96\x1d\x92\x46\xd8\x7a\x8f\xd2\xf1\x82\xfe\x7f\x00\x00\x00\xff\xff",
 		size: 3827,
-		mode: 0644,
-		time: time.Unix(1495998368, 0),
+		mode: 0664,
+		time: time.Unix(1524593583, 431895771),
 	},
 }
 

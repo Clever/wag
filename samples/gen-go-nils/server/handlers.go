@@ -176,12 +176,10 @@ func newNilCheckInput(r *http.Request) (*models.NilCheckInput, error) {
 	data, err := ioutil.ReadAll(r.Body)
 
 	if len(data) > 0 {
-
 		input.Body = &models.NilFields{}
 		if err := json.NewDecoder(bytes.NewReader(data)).Decode(input.Body); err != nil {
 			return nil, err
 		}
-
 	}
 
 	return &input, nil

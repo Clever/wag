@@ -173,8 +173,6 @@ func (c *WagClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
 func (c *WagClient) doGetBookRequest(ctx context.Context, req *http.Request, headers map[string]string) error {
 	client := &http.Client{Transport: c.transport}
 
-	req.Header.Set("Content-Type", "application/json")
-
 	for field, value := range headers {
 		req.Header.Set(field, value)
 	}
