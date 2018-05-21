@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"fmt"
 
 	"{{ .PackageName }}/models"
 	{{- if anyTableUsesDateTime .XDBConfigs }}
@@ -96,7 +95,7 @@ var _ error = Err{{ $modelName}}NotFound{}
 
 // Error returns a description of the error.
 func (e Err{{ $modelName}}NotFound) Error() string {
-	return fmt.Sprintf("could not find {{ $modelName}}: %%v", e)
+	return "could not find {{ $modelName}}"
 }
 
 {{ range $gsi := $xdbConfig.DynamoDB.GlobalSecondaryIndexes }}
@@ -126,7 +125,7 @@ var _ error = Err{{ $modelName}}By{{ $computedIndexName }}NotFound{}
 
 // Error returns a description of the error.
 func (e Err{{ $modelName}}By{{ $computedIndexName }}NotFound) Error() string {
-	return fmt.Sprintf("could not find {{ $modelName}}: %%v", e)
+	return "could not find {{ $modelName}}"
 }
 {{ end }}
 
@@ -143,7 +142,7 @@ var _ error = Err{{ $modelName }}AlreadyExists{}
 
 // Error returns a description of the error.
 func (e Err{{ $modelName }}AlreadyExists) Error() string {
-	return fmt.Sprintf("{{ $modelName }} already exists: %%v", e)
+	return "{{ $modelName }} already exists"
 }
 {{- end }}
 {{- end }}

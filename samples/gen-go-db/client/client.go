@@ -166,6 +166,8 @@ func (c *WagClient) HealthCheck(ctx context.Context) error {
 func (c *WagClient) doHealthCheckRequest(ctx context.Context, req *http.Request, headers map[string]string) error {
 	client := &http.Client{Transport: c.transport}
 
+	req.Header.Set("Content-Type", "application/json")
+
 	for field, value := range headers {
 		req.Header.Set(field, value)
 	}

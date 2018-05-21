@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Clever/wag/samples/gen-go-db/models"
 	"github.com/go-openapi/strfmt"
@@ -67,7 +66,7 @@ var _ error = ErrSimpleThingNotFound{}
 
 // Error returns a description of the error.
 func (e ErrSimpleThingNotFound) Error() string {
-	return fmt.Sprintf("could not find SimpleThing: %v", e)
+	return "could not find SimpleThing"
 }
 
 // ErrSimpleThingAlreadyExists is returned when trying to overwrite a SimpleThing.
@@ -79,7 +78,7 @@ var _ error = ErrSimpleThingAlreadyExists{}
 
 // Error returns a description of the error.
 func (e ErrSimpleThingAlreadyExists) Error() string {
-	return fmt.Sprintf("SimpleThing already exists: %v", e)
+	return "SimpleThing already exists"
 }
 
 // GetThingsByNameAndVersionInput is the query input to GetThingsByNameAndVersion.
@@ -100,7 +99,7 @@ var _ error = ErrThingNotFound{}
 
 // Error returns a description of the error.
 func (e ErrThingNotFound) Error() string {
-	return fmt.Sprintf("could not find Thing: %v", e)
+	return "could not find Thing"
 }
 
 // ErrThingByIDNotFound is returned when the database fails to find a Thing.
@@ -112,7 +111,7 @@ var _ error = ErrThingByIDNotFound{}
 
 // Error returns a description of the error.
 func (e ErrThingByIDNotFound) Error() string {
-	return fmt.Sprintf("could not find Thing: %v", e)
+	return "could not find Thing"
 }
 
 // GetThingsByNameAndCreatedAtInput is the query input to GetThingsByNameAndCreatedAt.
@@ -132,7 +131,7 @@ var _ error = ErrThingByNameAndCreatedAtNotFound{}
 
 // Error returns a description of the error.
 func (e ErrThingByNameAndCreatedAtNotFound) Error() string {
-	return fmt.Sprintf("could not find Thing: %v", e)
+	return "could not find Thing"
 }
 
 // ErrThingAlreadyExists is returned when trying to overwrite a Thing.
@@ -145,7 +144,7 @@ var _ error = ErrThingAlreadyExists{}
 
 // Error returns a description of the error.
 func (e ErrThingAlreadyExists) Error() string {
-	return fmt.Sprintf("Thing already exists: %v", e)
+	return "Thing already exists"
 }
 
 // GetThingWithDateRangesByNameAndDateInput is the query input to GetThingWithDateRangesByNameAndDate.
@@ -166,7 +165,7 @@ var _ error = ErrThingWithDateRangeNotFound{}
 
 // Error returns a description of the error.
 func (e ErrThingWithDateRangeNotFound) Error() string {
-	return fmt.Sprintf("could not find ThingWithDateRange: %v", e)
+	return "could not find ThingWithDateRange"
 }
 
 // ErrThingWithUnderscoresNotFound is returned when the database fails to find a ThingWithUnderscores.
@@ -178,5 +177,5 @@ var _ error = ErrThingWithUnderscoresNotFound{}
 
 // Error returns a description of the error.
 func (e ErrThingWithUnderscoresNotFound) Error() string {
-	return fmt.Sprintf("could not find ThingWithUnderscores: %v", e)
+	return "could not find ThingWithUnderscores"
 }
