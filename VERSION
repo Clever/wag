@@ -1,2 +1,2 @@
-v1.8.5
-- Fix bug in dynamodb tests
+v1.8.6
+- Fix bug in dynamodb error strings
