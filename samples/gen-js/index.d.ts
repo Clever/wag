@@ -6,9 +6,15 @@ interface SwaggerTest {
 
   getAuthors(...args: any[]): any;
 
+  getAuthorsIter(...args: any[]): any;
+
   getAuthorsWithPut(...args: any[]): any;
 
+  getAuthorsWithPutIter(...args: any[]): any;
+
   getBooks(...args: any[]): any;
+
+  getBooksIter(...args: any[]): any;
 
   createBook(...args: any[]): any;
 
