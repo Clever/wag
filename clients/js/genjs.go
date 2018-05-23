@@ -795,39 +795,42 @@ func responseToJSDocReturnType(r *spec.Response) string {
 
 type typesTemplate struct {
 	ServiceName string
+	Methods     []string
 }
 
-var typesTmplString = `{{$ServiceName := .ServiceName}}interface StaticClass {
+var typesTmplString = `{{$ServiceName := .ServiceName}}interface {{$ServiceName}}Class {
     new(options: {{$ServiceName}}Options): {{$ServiceName}};
 }
 
 interface {{$ServiceName}} {
-Whatever(): IlTokenServiceOptions;
+{{ range $method := .Methods }}
+  {{$method}}(...args: any[]): any;
+{{end}}
 }
 
 type {{$ServiceName}}Options = {
-timeout?: number;
-retryPolicy?: any;
-logger?: any;
-circuit?: CircuitBreakerOptions;
+  timeout?: number;
+  retryPolicy?: any;
+  logger?: any;
+  circuit?: CircuitBreakerOptions;
 } & (
 {
-discovery: true;
+  discovery: true;
 }
 |
 {
-discovery?: false;
-address: string;
+  discovery?: false;
+  address: string;
 }
 )
 
 type CircuitBreakerOptions = {
-forceClosed:            boolean;
-requestVolumeThreshold: number;
-maxConcurrentRequests:  number;
-sleepWindow:            number;
-errorPercentThreshold:  number;
-logIntervalMs:          number;
+  forceClosed:            boolean;
+  requestVolumeThreshold: number;
+  maxConcurrentRequests:  number;
+  sleepWindow:            number;
+  errorPercentThreshold:  number;
+  logIntervalMs:          number;
 }
 
 type RequestOptions = {
@@ -841,7 +844,7 @@ interface RetryPolicy {
   retry(requestOptions: any, err: any, res: any): any;
 }
 
-declare var ExportedClass: StaticClass;
+declare var ExportedClass: {{$ServiceName}}Class;
 export = ExportedClass;`
 
 var errorTmplString = `module.exports.Errors = {};
@@ -888,8 +891,19 @@ func jsDocPropertyFromSchema(name string, schema *spec.Schema) jsDocProperty {
 }
 
 func generateTypesFile(s spec.Swagger) (string, error) {
+	methods := []string{}
+	for _, pathKey := range swagger.SortedPathItemKeys(s.Paths.Paths) {
+		path := s.Paths.Paths[pathKey]
+		pathItemOps := swagger.PathItemOperations(path)
+		for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
+			m := pathItemOps[opKey].ID
+			methods = append(methods, m)
+		}
+	}
+
 	tmpl := typesTemplate{
-		ServiceName: s.Info.InfoProps.Title,
+		ServiceName: utils.CamelCase(s.Info.InfoProps.Title, true),
+		Methods:     methods,
 	}
 
 	return templates.WriteTemplate(typesTmplString, tmpl)
