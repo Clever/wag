@@ -47,7 +47,7 @@ func Generate(modulePath string, s spec.Swagger) error {
 		}
 	}
 
-	typeFileCode, err := generateTypesFile(s)
+	errorsJS, err := generateErrorsFile(s)
 	if err != nil {
 		return err
 	}
@@ -62,7 +62,7 @@ func Generate(modulePath string, s spec.Swagger) error {
 		return err
 	}
 
-	if err = ioutil.WriteFile(filepath.Join(modulePath, "errors.js"), []byte(typeFileCode), 0644); err != nil {
+	if err = ioutil.WriteFile(filepath.Join(modulePath, "errors.js"), []byte(errorsJS), 0644); err != nil {
 		return err
 	}
 
@@ -783,7 +783,7 @@ func responseToJSDocReturnType(r *spec.Response) string {
 	return ""
 }
 
-var typeTmplString = `module.exports.Errors = {};
+var errorTmplString = `module.exports.Errors = {};
 {{$ServiceName := .ServiceName}}
 {{range .ErrorTypes}}/**
  * {{.Name}}
@@ -803,7 +803,7 @@ module.exports.Errors.{{ .Name }} = class extends Error {
 
 {{ end }}`
 
-type typesTemplate struct {
+type errorsTemplate struct {
 	ServiceName string
 	ErrorTypes  []errorType
 }
@@ -826,8 +826,8 @@ func jsDocPropertyFromSchema(name string, schema *spec.Schema) jsDocProperty {
 	}
 }
 
-func generateTypesFile(s spec.Swagger) (string, error) {
-	typesTmpl := typesTemplate{
+func generateErrorsFile(s spec.Swagger) (string, error) {
+	errorsTmpl := errorsTemplate{
 		ServiceName: s.Info.InfoProps.Title,
 	}
 
@@ -865,10 +865,10 @@ func generateTypesFile(s spec.Swagger) (string, error) {
 					}
 				}
 
-				typesTmpl.ErrorTypes = append(typesTmpl.ErrorTypes, etype)
+				errorsTmpl.ErrorTypes = append(errorsTmpl.ErrorTypes, etype)
 			}
 		}
 	}
 
-	return templates.WriteTemplate(typeTmplString, typesTmpl)
+	return templates.WriteTemplate(errorTmplString, errorsTmpl)
 }
