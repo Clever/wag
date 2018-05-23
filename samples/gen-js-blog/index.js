@@ -11,7 +11,7 @@ const RollingNumberEvent = require("hystrixjs/lib/metrics/RollingNumberEvent");
  * @see {@link https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html}
  */
 
-const { Errors } = require("./types");
+const { Errors } = require("./errors");
 
 /**
  * The exponential retry policy will retry five times with an exponential backoff.
@@ -99,7 +99,6 @@ function responseLog(logger, req, res, err) {
  */
 const defaultCircuitOptions = {
   forceClosed:            true,
-  requestVolumeThreshold: 20,
   maxConcurrentRequests:  100,
   requestVolumeThreshold: 20,
   sleepWindow:            5000,
@@ -130,7 +129,7 @@ class Blog {
    * in milliseconds. This can be overridden on a per-request basis. Default is 5000ms.
    * @param {module:blog.RetryPolicies} [options.retryPolicy=RetryPolicies.Single] - The logic to
    * determine which requests to retry, as well as how many times to retry.
-   * @param {module:kayvee.Logger} [options.logger=logger.New("blog-wagclient")] - The Kayvee 
+   * @param {module:kayvee.Logger} [options.logger=logger.New("blog-wagclient")] - The Kayvee
    * logger to use in the client.
    * @param {Object} [options.circuit] - Options for constructing the client's circuit breaker.
    * @param {bool} [options.circuit.forceClosed] - When set to true the circuit will always be closed. Default: true.
