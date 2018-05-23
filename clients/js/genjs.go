@@ -898,6 +898,9 @@ func generateTypesFile(s spec.Swagger) (string, error) {
 		for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
 			m := pathItemOps[opKey].ID
 			methods = append(methods, m)
+			if _, hasPaging := swagger.PagingParam(pathItemOps[opKey]); hasPaging {
+				methods = append(methods, m+"Iter")
+			}
 		}
 	}
 
