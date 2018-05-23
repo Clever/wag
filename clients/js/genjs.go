@@ -183,7 +183,6 @@ function responseLog(logger, req, res, err) {
  */
 const defaultCircuitOptions = {
   forceClosed:            true,
-  requestVolumeThreshold: 20,
   maxConcurrentRequests:  100,
   requestVolumeThreshold: 20,
   sleepWindow:            5000,
