@@ -1,35 +1,62 @@
-interface StaticClass {
-    new(options: swagger-testOptions): swagger-test;
+interface SwaggerTestClass {
+    new(options: SwaggerTestOptions): SwaggerTest;
 }
 
-interface swagger-test {
-Whatever(): IlTokenServiceOptions;
+interface SwaggerTest {
+
+  getAuthors(...args: any[]): any;
+
+  getAuthorsWithPut(...args: any[]): any;
+
+  getBooks(...args: any[]): any;
+
+  createBook(...args: any[]): any;
+
+  putBook(...args: any[]): any;
+
+  getBookByID(...args: any[]): any;
+
+  getBookByID2(...args: any[]): any;
+
+  healthCheck(...args: any[]): any;
+
 }
 
-type swagger-testOptions = {
-timeout?: number;
-retryPolicy?: any;
-logger?: any;
-circuit?: CircuitBreakerOptions;
+type SwaggerTestOptions = {
+  timeout?: number;
+  retryPolicy?: any;
+  logger?: any;
+  circuit?: CircuitBreakerOptions;
 } & (
 {
-discovery: true;
+  discovery: true;
 }
 |
 {
-discovery?: false;
-address: string;
+  discovery?: false;
+  address: string;
 }
 )
 
 type CircuitBreakerOptions = {
-forceClosed:            boolean;
-requestVolumeThreshold: number;
-maxConcurrentRequests:  number;
-sleepWindow:            number;
-errorPercentThreshold:  number;
-logIntervalMs:          number;
+  forceClosed:            boolean;
+  requestVolumeThreshold: number;
+  maxConcurrentRequests:  number;
+  sleepWindow:            number;
+  errorPercentThreshold:  number;
+  logIntervalMs:          number;
 }
 
-declare var ExportedClass: StaticClass;
+type RequestOptions = {
+  timeout?: number;
+  span?: any; // opentracing span
+  retryPolicy?: RetryPolicy;
+}
+
+interface RetryPolicy {
+  backoffs(): void;
+  retry(requestOptions: any, err: any, res: any): any;
+}
+
+declare var ExportedClass: SwaggerTestClass;
 export = ExportedClass;

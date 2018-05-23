@@ -1,35 +1,48 @@
-interface StaticClass {
-    new(options: blogOptions): blog;
+interface BlogClass {
+    new(options: BlogOptions): Blog;
 }
 
-interface blog {
-Whatever(): IlTokenServiceOptions;
+interface Blog {
+
+  getSectionsForStudent(...args: any[]): any;
+
 }
 
-type blogOptions = {
-timeout?: number;
-retryPolicy?: any;
-logger?: any;
-circuit?: CircuitBreakerOptions;
+type BlogOptions = {
+  timeout?: number;
+  retryPolicy?: any;
+  logger?: any;
+  circuit?: CircuitBreakerOptions;
 } & (
 {
-discovery: true;
+  discovery: true;
 }
 |
 {
-discovery?: false;
-address: string;
+  discovery?: false;
+  address: string;
 }
 )
 
 type CircuitBreakerOptions = {
-forceClosed:            boolean;
-requestVolumeThreshold: number;
-maxConcurrentRequests:  number;
-sleepWindow:            number;
-errorPercentThreshold:  number;
-logIntervalMs:          number;
+  forceClosed:            boolean;
+  requestVolumeThreshold: number;
+  maxConcurrentRequests:  number;
+  sleepWindow:            number;
+  errorPercentThreshold:  number;
+  logIntervalMs:          number;
 }
 
-declare var ExportedClass: StaticClass;
+type RequestOptions = {
+  timeout?: number;
+  span?: any; // opentracing span
+  retryPolicy?: RetryPolicy;
+}
+
+interface RetryPolicy {
+  backoffs(): void;
+  retry(requestOptions: any, err: any, res: any): any;
+}
+
+declare var ExportedClass: BlogClass;
 export = ExportedClass;

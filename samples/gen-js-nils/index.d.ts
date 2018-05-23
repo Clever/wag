@@ -1,35 +1,48 @@
-interface StaticClass {
-    new(options: nil-testOptions): nil-test;
+interface NilTestClass {
+    new(options: NilTestOptions): NilTest;
 }
 
-interface nil-test {
-Whatever(): IlTokenServiceOptions;
+interface NilTest {
+
+  nilCheck(...args: any[]): any;
+
 }
 
-type nil-testOptions = {
-timeout?: number;
-retryPolicy?: any;
-logger?: any;
-circuit?: CircuitBreakerOptions;
+type NilTestOptions = {
+  timeout?: number;
+  retryPolicy?: any;
+  logger?: any;
+  circuit?: CircuitBreakerOptions;
 } & (
 {
-discovery: true;
+  discovery: true;
 }
 |
 {
-discovery?: false;
-address: string;
+  discovery?: false;
+  address: string;
 }
 )
 
 type CircuitBreakerOptions = {
-forceClosed:            boolean;
-requestVolumeThreshold: number;
-maxConcurrentRequests:  number;
-sleepWindow:            number;
-errorPercentThreshold:  number;
-logIntervalMs:          number;
+  forceClosed:            boolean;
+  requestVolumeThreshold: number;
+  maxConcurrentRequests:  number;
+  sleepWindow:            number;
+  errorPercentThreshold:  number;
+  logIntervalMs:          number;
 }
 
-declare var ExportedClass: StaticClass;
+type RequestOptions = {
+  timeout?: number;
+  span?: any; // opentracing span
+  retryPolicy?: RetryPolicy;
+}
+
+interface RetryPolicy {
+  backoffs(): void;
+  retry(requestOptions: any, err: any, res: any): any;
+}
+
+declare var ExportedClass: NilTestClass;
 export = ExportedClass;
