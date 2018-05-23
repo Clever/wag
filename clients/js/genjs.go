@@ -830,6 +830,17 @@ errorPercentThreshold:  number;
 logIntervalMs:          number;
 }
 
+type RequestOptions = {
+  timeout?: number;
+  span?: any; // opentracing span
+  retryPolicy?: RetryPolicy;
+}
+
+interface RetryPolicy {
+  backoffs(): void;
+  retry(requestOptions: any, err: any, res: any): any;
+}
+
 declare var ExportedClass: StaticClass;
 export = ExportedClass;`
 
