@@ -11,5 +11,6 @@
     "kayvee": "^3.8.2",
     "hystrixjs": "^0.2.0",
     "rxjs": "^5.4.1"
-  }
+  },
+  "types": "./index.d.ts"
 }
