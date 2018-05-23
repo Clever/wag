@@ -47,6 +47,11 @@ func Generate(modulePath string, s spec.Swagger) error {
 		}
 	}
 
+	typescriptTypes, err := generateTypesFile(s)
+	if err != nil {
+		return err
+	}
+
 	errorsJS, err := generateErrorsFile(s)
 	if err != nil {
 		return err
@@ -59,6 +64,10 @@ func Generate(modulePath string, s spec.Swagger) error {
 
 	packageJSON, err := templates.WriteTemplate(packageJSONTmplStr, tmplInfo)
 	if err != nil {
+		return err
+	}
+
+	if err = ioutil.WriteFile(filepath.Join(modulePath, "index.d.ts"), []byte(typescriptTypes), 0644); err != nil {
 		return err
 	}
 
@@ -339,7 +348,8 @@ var packageJSONTmplStr = `{
     "kayvee": "^3.8.2",
     "hystrixjs": "^0.2.0",
     "rxjs": "^5.4.1"
-  }
+  },
+  "types": "./index.d.ts"
 }
 `
 
@@ -783,6 +793,46 @@ func responseToJSDocReturnType(r *spec.Response) string {
 	return ""
 }
 
+type typesTemplate struct {
+	ServiceName string
+}
+
+var typesTmplString = `{{$ServiceName := .ServiceName}}interface StaticClass {
+    new(options: {{$ServiceName}}Options): {{$ServiceName}};
+}
+
+interface {{$ServiceName}} {
+Whatever(): IlTokenServiceOptions;
+}
+
+type {{$ServiceName}}Options = {
+timeout?: number;
+retryPolicy?: any;
+logger?: any;
+circuit?: CircuitBreakerOptions;
+} & (
+{
+discovery: true;
+}
+|
+{
+discovery?: false;
+address: string;
+}
+)
+
+type CircuitBreakerOptions = {
+forceClosed:            boolean;
+requestVolumeThreshold: number;
+maxConcurrentRequests:  number;
+sleepWindow:            number;
+errorPercentThreshold:  number;
+logIntervalMs:          number;
+}
+
+declare var ExportedClass: StaticClass;
+export = ExportedClass;`
+
 var errorTmplString = `module.exports.Errors = {};
 {{$ServiceName := .ServiceName}}
 {{range .ErrorTypes}}/**
@@ -824,6 +874,14 @@ func jsDocPropertyFromSchema(name string, schema *spec.Schema) jsDocProperty {
 		Name: name,
 		Type: schemaToJSDocType(schema),
 	}
+}
+
+func generateTypesFile(s spec.Swagger) (string, error) {
+	tmpl := typesTemplate{
+		ServiceName: s.Info.InfoProps.Title,
+	}
+
+	return templates.WriteTemplate(typesTmplString, tmpl)
 }
 
 func generateErrorsFile(s spec.Swagger) (string, error) {
