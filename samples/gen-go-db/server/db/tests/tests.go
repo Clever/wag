@@ -107,10 +107,10 @@ type getThingsByNameAndVersionOutput struct {
 	err    error
 }
 type getThingsByNameAndVersionTest struct {
-	name   string
-	d      db.Interface
-	input  getThingsByNameAndVersionInput
-	output getThingsByNameAndVersionOutput
+	testName string
+	d        db.Interface
+	input    getThingsByNameAndVersionInput
+	output   getThingsByNameAndVersionOutput
 }
 
 func (g getThingsByNameAndVersionTest) run(t *testing.T) {
@@ -136,8 +136,8 @@ func GetThingsByNameAndVersion(d db.Interface, t *testing.T) func(t *testing.T) 
 		}))
 		tests := []getThingsByNameAndVersionTest{
 			{
-				name: "basic",
-				d:    d,
+				testName: "basic",
+				d:        d,
 				input: getThingsByNameAndVersionInput{
 					ctx: context.Background(),
 					input: db.GetThingsByNameAndVersionInput{
@@ -163,8 +163,8 @@ func GetThingsByNameAndVersion(d db.Interface, t *testing.T) func(t *testing.T) 
 				},
 			},
 			{
-				name: "descending",
-				d:    d,
+				testName: "descending",
+				d:        d,
 				input: getThingsByNameAndVersionInput{
 					ctx: context.Background(),
 					input: db.GetThingsByNameAndVersionInput{
@@ -191,8 +191,8 @@ func GetThingsByNameAndVersion(d db.Interface, t *testing.T) func(t *testing.T) 
 				},
 			},
 			{
-				name: "starting after",
-				d:    d,
+				testName: "starting after",
+				d:        d,
 				input: getThingsByNameAndVersionInput{
 					ctx: context.Background(),
 					input: db.GetThingsByNameAndVersionInput{
@@ -216,7 +216,7 @@ func GetThingsByNameAndVersion(d db.Interface, t *testing.T) func(t *testing.T) 
 			},
 		}
 		for _, test := range tests {
-			t.Run(test.name, test.run)
+			t.Run(test.testName, test.run)
 		}
 	}
 }
@@ -278,10 +278,10 @@ type getThingsByNameAndCreatedAtOutput struct {
 	err    error
 }
 type getThingsByNameAndCreatedAtTest struct {
-	name   string
-	d      db.Interface
-	input  getThingsByNameAndCreatedAtInput
-	output getThingsByNameAndCreatedAtOutput
+	testName string
+	d        db.Interface
+	input    getThingsByNameAndCreatedAtInput
+	output   getThingsByNameAndCreatedAtOutput
 }
 
 func (g getThingsByNameAndCreatedAtTest) run(t *testing.T) {
@@ -310,8 +310,8 @@ func GetThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.T
 		}))
 		tests := []getThingsByNameAndCreatedAtTest{
 			{
-				name: "basic",
-				d:    d,
+				testName: "basic",
+				d:        d,
 				input: getThingsByNameAndCreatedAtInput{
 					ctx: context.Background(),
 					input: db.GetThingsByNameAndCreatedAtInput{
@@ -340,8 +340,8 @@ func GetThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.T
 				},
 			},
 			{
-				name: "descending",
-				d:    d,
+				testName: "descending",
+				d:        d,
 				input: getThingsByNameAndCreatedAtInput{
 					ctx: context.Background(),
 					input: db.GetThingsByNameAndCreatedAtInput{
@@ -371,8 +371,8 @@ func GetThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.T
 				},
 			},
 			{
-				name: "starting after",
-				d:    d,
+				testName: "starting after",
+				d:        d,
 				input: getThingsByNameAndCreatedAtInput{
 					ctx: context.Background(),
 					input: db.GetThingsByNameAndCreatedAtInput{
@@ -398,7 +398,7 @@ func GetThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.T
 			},
 		}
 		for _, test := range tests {
-			t.Run(test.name, test.run)
+			t.Run(test.testName, test.run)
 		}
 	}
 }
@@ -431,10 +431,10 @@ type getThingWithDateRangesByNameAndDateOutput struct {
 	err                 error
 }
 type getThingWithDateRangesByNameAndDateTest struct {
-	name   string
-	d      db.Interface
-	input  getThingWithDateRangesByNameAndDateInput
-	output getThingWithDateRangesByNameAndDateOutput
+	testName string
+	d        db.Interface
+	input    getThingWithDateRangesByNameAndDateInput
+	output   getThingWithDateRangesByNameAndDateOutput
 }
 
 func (g getThingWithDateRangesByNameAndDateTest) run(t *testing.T) {
@@ -460,8 +460,8 @@ func GetThingWithDateRangesByNameAndDate(d db.Interface, t *testing.T) func(t *t
 		}))
 		tests := []getThingWithDateRangesByNameAndDateTest{
 			{
-				name: "basic",
-				d:    d,
+				testName: "basic",
+				d:        d,
 				input: getThingWithDateRangesByNameAndDateInput{
 					ctx: context.Background(),
 					input: db.GetThingWithDateRangesByNameAndDateInput{
@@ -487,8 +487,8 @@ func GetThingWithDateRangesByNameAndDate(d db.Interface, t *testing.T) func(t *t
 				},
 			},
 			{
-				name: "descending",
-				d:    d,
+				testName: "descending",
+				d:        d,
 				input: getThingWithDateRangesByNameAndDateInput{
 					ctx: context.Background(),
 					input: db.GetThingWithDateRangesByNameAndDateInput{
@@ -515,8 +515,8 @@ func GetThingWithDateRangesByNameAndDate(d db.Interface, t *testing.T) func(t *t
 				},
 			},
 			{
-				name: "starting after",
-				d:    d,
+				testName: "starting after",
+				d:        d,
 				input: getThingWithDateRangesByNameAndDateInput{
 					ctx: context.Background(),
 					input: db.GetThingWithDateRangesByNameAndDateInput{
@@ -540,7 +540,7 @@ func GetThingWithDateRangesByNameAndDate(d db.Interface, t *testing.T) func(t *t
 			},
 		}
 		for _, test := range tests {
-			t.Run(test.name, test.run)
+			t.Run(test.testName, test.run)
 		}
 	}
 }

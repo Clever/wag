@@ -96,7 +96,7 @@ type get{{ $modelName }}sBy{{ $indexName }}Output struct {
 	err    error
 }
 type get{{ $modelName }}sBy{{ $indexName }}Test struct {
-	{{ camelize $hashKey.AttributeName }}   string
+	testName string
 	d      db.Interface
 	input  get{{ $modelName }}sBy{{ $indexName }}Input
 	output get{{ $modelName }}sBy{{ $indexName }}Output
@@ -125,7 +125,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
 		}))
 		tests := []get{{ $modelName }}sBy{{ $indexName }}Test{
 			{
-				name: "basic",
+				testName: "basic",
 				d:    d,
 				input: get{{ $modelName }}sBy{{ $indexName }}Input{
 					ctx: context.Background(),
@@ -152,7 +152,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
 				},
 			},
 			{
-				name: "descending",
+				testName: "descending",
 				d:    d,
 				input: get{{ $modelName }}sBy{{ $indexName }}Input{
 					ctx: context.Background(),
@@ -180,7 +180,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
 				},
 			},
 			{
-				name: "starting after",
+				testName: "starting after",
 				d:    d,
 				input: get{{ $modelName }}sBy{{ $indexName }}Input{
 					ctx: context.Background(),
@@ -205,7 +205,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
 			},
 		}
 		for _, test := range tests {
-			t.Run(test.name, test.run)
+			t.Run(test.testName, test.run)
 		}
 	}
 }
@@ -264,8 +264,7 @@ type get{{ $modelName }}sBy{{ $computedIndexName }}Output struct {
 	err    error
 }
 type get{{ $modelName }}sBy{{ $computedIndexName }}Test struct {
-	name string
-	{{ camelize $hashKey.AttributeName }}   string
+	testName string
 	d      db.Interface
 	input  get{{ $modelName }}sBy{{ $computedIndexName }}Input
 	output get{{ $modelName }}sBy{{ $computedIndexName }}Output
@@ -306,7 +305,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
 		}))
 		tests := []get{{ $modelName }}sBy{{ $computedIndexName }}Test{
 			{
-				name: "basic",
+				testName: "basic",
 				d:    d,
 				input: get{{ $modelName }}sBy{{ $computedIndexName }}Input{
 					ctx: context.Background(),
@@ -345,7 +344,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
 				},
 			},
 			{
-				name: "descending",
+				testName: "descending",
 				d:    d,
 				input: get{{ $modelName }}sBy{{ $computedIndexName }}Input{
 					ctx: context.Background(),
@@ -385,7 +384,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
 				},
 			},
 			{
-				name: "starting after",
+				testName: "starting after",
 				d:    d,
 				input: get{{ $modelName }}sBy{{ $computedIndexName }}Input{
 					ctx: context.Background(),
@@ -418,7 +417,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
 			},
 		}
 		for _, test := range tests {
-			t.Run(test.name, test.run)
+			t.Run(test.testName, test.run)
 		}
 	}
 }
