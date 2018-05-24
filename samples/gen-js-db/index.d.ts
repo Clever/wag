@@ -1,11 +1,11 @@
 interface SwaggerTestClass {
-    new(options: SwaggerTestOptions): SwaggerTest;
+  new(options: SwaggerTestOptions): SwaggerTest;
+  Errors: any;
 }
 
 interface SwaggerTest {
-
   healthCheck(...args: any[]): any;
-
+  
 }
 
 type SwaggerTestOptions = {

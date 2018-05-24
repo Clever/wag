@@ -1,11 +1,11 @@
 interface NilTestClass {
-    new(options: NilTestOptions): NilTest;
+  new(options: NilTestOptions): NilTest;
+  Errors: any;
 }
 
 interface NilTest {
-
   nilCheck(...args: any[]): any;
-
+  
 }
 
 type NilTestOptions = {

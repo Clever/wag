@@ -1,31 +1,21 @@
 interface SwaggerTestClass {
-    new(options: SwaggerTestOptions): SwaggerTest;
+  new(options: SwaggerTestOptions): SwaggerTest;
+  Errors: any;
 }
 
 interface SwaggerTest {
-
   getAuthors(...args: any[]): any;
-
   getAuthorsIter(...args: any[]): any;
-
   getAuthorsWithPut(...args: any[]): any;
-
   getAuthorsWithPutIter(...args: any[]): any;
-
   getBooks(...args: any[]): any;
-
   getBooksIter(...args: any[]): any;
-
   createBook(...args: any[]): any;
-
   putBook(...args: any[]): any;
-
   getBookByID(...args: any[]): any;
-
   getBookByID2(...args: any[]): any;
-
   healthCheck(...args: any[]): any;
-
+  
 }
 
 type SwaggerTestOptions = {

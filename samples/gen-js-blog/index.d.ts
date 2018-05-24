@@ -1,11 +1,11 @@
 interface BlogClass {
-    new(options: BlogOptions): Blog;
+  new(options: BlogOptions): Blog;
+  Errors: any;
 }
 
 interface Blog {
-
   getSectionsForStudent(...args: any[]): any;
-
+  
 }
 
 type BlogOptions = {
