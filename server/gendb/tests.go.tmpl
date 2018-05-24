@@ -264,6 +264,7 @@ type get{{ $modelName }}sBy{{ $computedIndexName }}Output struct {
 	err    error
 }
 type get{{ $modelName }}sBy{{ $computedIndexName }}Test struct {
+	name string
 	{{ camelize $hashKey.AttributeName }}   string
 	d      db.Interface
 	input  get{{ $modelName }}sBy{{ $computedIndexName }}Input
