@@ -799,13 +799,13 @@ type typesTemplate struct {
 }
 
 var typesTmplString = `{{$ServiceName := .ServiceName}}interface {{$ServiceName}}Class {
-    new(options: {{$ServiceName}}Options): {{$ServiceName}};
+  new(options: {{$ServiceName}}Options): {{$ServiceName}};
+  Errors: any;
 }
 
 interface {{$ServiceName}} {
-{{ range $method := .Methods }}
-  {{$method}}(...args: any[]): any;
-{{end}}
+  {{ range $method := .Methods }}{{$method}}(...args: any[]): any;
+  {{end}}
 }
 
 type {{$ServiceName}}Options = {
