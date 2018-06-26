@@ -26,7 +26,7 @@ var _ = bytes.Compare
 type WagClient struct {
 	basePath    string
 	requestDoer doer
-	transport   *http.Transport
+	transport   http.RoundTripper
 	timeout     time.Duration
 	// Keep the retry doer around so that we can set the number of retries
 	retryDoer *retryDoer
@@ -140,6 +140,11 @@ func (c *WagClient) SetCircuitBreakerSettings(settings CircuitBreakerSettings) {
 // with a timeout use context.WithTimeout as described here: https://godoc.org/golang.org/x/net/context#WithTimeout.
 func (c *WagClient) SetTimeout(timeout time.Duration) {
 	c.defaultTimeout = timeout
+}
+
+// SetTransport sets the http transport used by the client.
+func (c *WagClient) SetTransport(t http.RoundTripper) {
+	c.transport = t
 }
 
 // GetBook makes a GET request to /books/{id}
