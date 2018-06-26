@@ -1,2 +1,2 @@
-v1.8.7
-- Fix bug in dynamodb tests
+v1.9.0
+- Allow setting http Transport
