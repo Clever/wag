@@ -57,7 +57,7 @@ var _ = bytes.Compare
 type WagClient struct {
 	basePath    string
 	requestDoer doer
-	transport   *http.Transport
+	transport   http.RoundTripper
 	timeout     time.Duration
 	// Keep the retry doer around so that we can set the number of retries
 	retryDoer *retryDoer
@@ -91,7 +91,7 @@ func New(basePath string) *WagClient {
 		retryDoer: &retry,
 		circuitDoer: circuit,
 		defaultTimeout: 5 * time.Second,
- 		transport: &http.Transport{}, 
+ 		transport: &http.Transport{},
 		basePath: basePath,
 		logger: logger,
 	}
@@ -171,6 +171,11 @@ func (c *WagClient) SetCircuitBreakerSettings(settings CircuitBreakerSettings) {
 // with a timeout use context.WithTimeout as described here: https://godoc.org/golang.org/x/net/context#WithTimeout.
 func (c *WagClient) SetTimeout(timeout time.Duration){
 	c.defaultTimeout = timeout
+}
+
+// SetTransport sets the http transport used by the client.
+func (c *WagClient) SetTransport(t http.RoundTripper){
+	c.transport = t
 }
 
 {{range $operationCode := .Operations}}
@@ -512,7 +517,7 @@ var bodyParamStr = `
 	{{end}}
 	var err error
 	body, err = json.Marshal({{.AccessString}})
-	{{.ErrorMessage}}	
+	{{.ErrorMessage}}
 	{{if .Pointer}}
 	}
 	{{end}}
@@ -536,7 +541,7 @@ var errMsgTemplStr = `
 		if err != nil {
 			return err
 		}
-	{{else}}	
+	{{else}}
 		if err != nil {
 			return nil, err
 		}
