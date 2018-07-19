@@ -1,2 +1,2 @@
-v1.9.0
-- Allow setting http Transport
+v1.10.0
+- Allow setting keepalive in node clients

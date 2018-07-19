@@ -128,6 +128,8 @@ class SwaggerTest {
    * this or the address argument
    * @param {number} [options.timeout] - The timeout to use for all client requests,
    * in milliseconds. This can be overridden on a per-request basis. Default is 5000ms.
+   * @param {bool} [options.keepalive] - Set keepalive to true for client requests. This sets the
+   * forever: true attribute in request. Defaults to false
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy=RetryPolicies.Single] - The logic to
    * determine which requests to retry, as well as how many times to retry.
    * @param {module:kayvee.Logger} [options.logger=logger.New("swagger-test-wagclient")] - The Kayvee 
@@ -157,6 +159,11 @@ class SwaggerTest {
       this.address = options.address;
     } else {
       throw new Error("Cannot initialize swagger-test without discovery or address");
+    }
+    if (options.keepalive) {
+      this.keepalive = options.keepalive
+    } else {
+      this.keepalive = false;
     }
     if (options.timeout) {
       this.timeout = options.timeout;
@@ -286,7 +293,7 @@ class SwaggerTest {
         span.setTag("span.kind", "client");
       }
 
-      const requestOptions = {
+	  const requestOptions = {
         method: "GET",
         uri: this.address + "/v1/authors",
         json: true,
@@ -295,6 +302,9 @@ class SwaggerTest {
         qs: query,
         useQuerystring: true,
       };
+	  if (this.keepalive) {
+		requestOptions.forever = true;
+	  }
   
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
@@ -400,7 +410,7 @@ class SwaggerTest {
         span.setTag("span.kind", "client");
       }
 
-      const requestOptions = {
+	  const requestOptions = {
         method: "GET",
         uri: this.address + "/v1/authors",
         json: true,
@@ -409,6 +419,9 @@ class SwaggerTest {
         qs: query,
         useQuerystring: true,
       };
+	  if (this.keepalive) {
+		requestOptions.forever = true;
+	  }
   
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
@@ -564,7 +577,7 @@ class SwaggerTest {
         span.setTag("span.kind", "client");
       }
 
-      const requestOptions = {
+	  const requestOptions = {
         method: "PUT",
         uri: this.address + "/v1/authors",
         json: true,
@@ -573,6 +586,9 @@ class SwaggerTest {
         qs: query,
         useQuerystring: true,
       };
+	  if (this.keepalive) {
+		requestOptions.forever = true;
+	  }
   
       requestOptions.body = params.favoriteBooks;
   
@@ -681,7 +697,7 @@ class SwaggerTest {
         span.setTag("span.kind", "client");
       }
 
-      const requestOptions = {
+	  const requestOptions = {
         method: "PUT",
         uri: this.address + "/v1/authors",
         json: true,
@@ -690,6 +706,9 @@ class SwaggerTest {
         qs: query,
         useQuerystring: true,
       };
+	  if (this.keepalive) {
+		requestOptions.forever = true;
+	  }
   
       requestOptions.body = params.favoriteBooks;
   
@@ -888,7 +907,7 @@ class SwaggerTest {
         span.setTag("span.kind", "client");
       }
 
-      const requestOptions = {
+	  const requestOptions = {
         method: "GET",
         uri: this.address + "/v1/books",
         json: true,
@@ -897,6 +916,9 @@ class SwaggerTest {
         qs: query,
         useQuerystring: true,
       };
+	  if (this.keepalive) {
+		requestOptions.forever = true;
+	  }
   
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
@@ -1044,7 +1066,7 @@ class SwaggerTest {
         span.setTag("span.kind", "client");
       }
 
-      const requestOptions = {
+	  const requestOptions = {
         method: "GET",
         uri: this.address + "/v1/books",
         json: true,
@@ -1053,6 +1075,9 @@ class SwaggerTest {
         qs: query,
         useQuerystring: true,
       };
+	  if (this.keepalive) {
+		requestOptions.forever = true;
+	  }
   
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
@@ -1200,7 +1225,7 @@ class SwaggerTest {
         span.setTag("span.kind", "client");
       }
 
-      const requestOptions = {
+	  const requestOptions = {
         method: "POST",
         uri: this.address + "/v1/books",
         json: true,
@@ -1209,6 +1234,9 @@ class SwaggerTest {
         qs: query,
         useQuerystring: true,
       };
+	  if (this.keepalive) {
+		requestOptions.forever = true;
+	  }
   
       requestOptions.body = params.newBook;
   
@@ -1319,7 +1347,7 @@ class SwaggerTest {
         span.setTag("span.kind", "client");
       }
 
-      const requestOptions = {
+	  const requestOptions = {
         method: "PUT",
         uri: this.address + "/v1/books",
         json: true,
@@ -1328,6 +1356,9 @@ class SwaggerTest {
         qs: query,
         useQuerystring: true,
       };
+	  if (this.keepalive) {
+		requestOptions.forever = true;
+	  }
   
       requestOptions.body = params.newBook;
   
@@ -1456,7 +1487,7 @@ class SwaggerTest {
         span.setTag("span.kind", "client");
       }
 
-      const requestOptions = {
+	  const requestOptions = {
         method: "GET",
         uri: this.address + "/v1/books/" + params.bookID + "",
         json: true,
@@ -1465,6 +1496,9 @@ class SwaggerTest {
         qs: query,
         useQuerystring: true,
       };
+	  if (this.keepalive) {
+		requestOptions.forever = true;
+	  }
   
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
@@ -1590,7 +1624,7 @@ class SwaggerTest {
         span.setTag("span.kind", "client");
       }
 
-      const requestOptions = {
+	  const requestOptions = {
         method: "GET",
         uri: this.address + "/v1/books2/" + params.id + "",
         json: true,
@@ -1599,6 +1633,9 @@ class SwaggerTest {
         qs: query,
         useQuerystring: true,
       };
+	  if (this.keepalive) {
+		requestOptions.forever = true;
+	  }
   
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
@@ -1710,7 +1747,7 @@ class SwaggerTest {
         span.setTag("span.kind", "client");
       }
 
-      const requestOptions = {
+	  const requestOptions = {
         method: "GET",
         uri: this.address + "/v1/health/check",
         json: true,
@@ -1719,6 +1756,9 @@ class SwaggerTest {
         qs: query,
         useQuerystring: true,
       };
+	  if (this.keepalive) {
+		requestOptions.forever = true;
+	  }
   
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;

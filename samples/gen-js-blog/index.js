@@ -128,6 +128,8 @@ class Blog {
    * this or the address argument
    * @param {number} [options.timeout] - The timeout to use for all client requests,
    * in milliseconds. This can be overridden on a per-request basis. Default is 5000ms.
+   * @param {bool} [options.keepalive] - Set keepalive to true for client requests. This sets the
+   * forever: true attribute in request. Defaults to false
    * @param {module:blog.RetryPolicies} [options.retryPolicy=RetryPolicies.Single] - The logic to
    * determine which requests to retry, as well as how many times to retry.
    * @param {module:kayvee.Logger} [options.logger=logger.New("blog-wagclient")] - The Kayvee 
@@ -157,6 +159,11 @@ class Blog {
       this.address = options.address;
     } else {
       throw new Error("Cannot initialize blog without discovery or address");
+    }
+    if (options.keepalive) {
+      this.keepalive = options.keepalive
+    } else {
+      this.keepalive = false;
     }
     if (options.timeout) {
       this.timeout = options.timeout;
@@ -283,7 +290,7 @@ class Blog {
         span.setTag("span.kind", "client");
       }
 
-      const requestOptions = {
+	  const requestOptions = {
         method: "GET",
         uri: this.address + "/students/" + params.studentID + "/sections",
         json: true,
@@ -292,6 +299,9 @@ class Blog {
         qs: query,
         useQuerystring: true,
       };
+	  if (this.keepalive) {
+		requestOptions.forever = true;
+	  }
   
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
