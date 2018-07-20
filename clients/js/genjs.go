@@ -245,7 +245,7 @@ class {{.ClassName}} {
       throw new Error("Cannot initialize {{.ServiceName}} without discovery or address");
     }
     if (options.keepalive) {
-      this.keepalive = options.keepalive
+      this.keepalive = options.keepalive;
     } else {
       this.keepalive = false;
     }
@@ -422,9 +422,9 @@ var methodTmplStr = `
         qs: query,
         useQuerystring: true,
       };
-	  if (this.keepalive) {
-		requestOptions.forever = true;
-	  }
+      if (this.keepalive) {
+        requestOptions.forever = true;
+      }
   {{ if ne .BodyParam ""}}
       requestOptions.body = params.{{.BodyParam}};
   {{ end }}
