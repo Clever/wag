@@ -87,7 +87,7 @@ func (SingleRetryPolicy) Backoffs() []time.Duration {
 // Retry will retry non-POST, non-PATCH requests that 5XX.
 // TODO: It does not currently retry any errors returned by net/http.Client's `Do`.
 func (SingleRetryPolicy) Retry(req *http.Request, resp *http.Response, err error) bool {
-	if err != nil || req.Method == "POST" || req.Method == "PATCH" ||
+	if req.Method == "POST" || req.Method == "PATCH" ||
 		resp.StatusCode < 500 {
 		return false
 	}
@@ -114,7 +114,7 @@ func (ExponentialRetryPolicy) Backoffs() []time.Duration {
 // Retry will retry non-POST, non-PATCH requests that 5XX.
 // TODO: It does not currently retry any errors returned by net/http.Client's `Do`.
 func (ExponentialRetryPolicy) Retry(req *http.Request, resp *http.Response, err error) bool {
-	if err != nil || req.Method == "POST" || req.Method == "PATCH" ||
+	if req.Method == "POST" || req.Method == "PATCH" ||
 		resp.StatusCode < 500 {
 		return false
 	}

@@ -114,7 +114,7 @@ const exponentialRetryPolicy = {
     return ret;
   },
   retry(requestOptions, err, res) {
-    if (err || requestOptions.method === "POST" ||
+    if (requestOptions.method === "POST" ||
         requestOptions.method === "PATCH" ||
         res.statusCode < 500) {
       return false;
@@ -132,7 +132,7 @@ const singleRetryPolicy = {
     return [1000];
   },
   retry(requestOptions, err, res) {
-    if (err || requestOptions.method === "POST" ||
+    if (requestOptions.method === "POST" ||
         requestOptions.method === "PATCH" ||
         res.statusCode < 500) {
       return false;
