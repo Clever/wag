@@ -161,7 +161,7 @@ class SwaggerTest {
       throw new Error("Cannot initialize swagger-test without discovery or address");
     }
     if (options.keepalive) {
-      this.keepalive = options.keepalive
+      this.keepalive = options.keepalive;
     } else {
       this.keepalive = false;
     }

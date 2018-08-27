@@ -161,7 +161,7 @@ class NilTest {
       throw new Error("Cannot initialize nil-test without discovery or address");
     }
     if (options.keepalive) {
-      this.keepalive = options.keepalive
+      this.keepalive = options.keepalive;
     } else {
       this.keepalive = false;
     }
@@ -310,9 +310,9 @@ class NilTest {
         qs: query,
         useQuerystring: true,
       };
-	  if (this.keepalive) {
-		requestOptions.forever = true;
-	  }
+      if (this.keepalive) {
+        requestOptions.forever = true;
+      }
   
       requestOptions.body = params.body;
   
