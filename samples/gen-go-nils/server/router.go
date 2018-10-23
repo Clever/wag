@@ -52,24 +52,35 @@ func (s *Server) Serve() error {
 		s.l.Info("please provide a kvconfig.yml file to enable app log routing")
 	}
 
-	if signalfxToken := os.Getenv("SIGNALFX_ACCESS_TOKEN"); signalfxToken != "" {
-		ingestUrl := os.Getenv("SIGNALFX_INGEST_URL")
+	if tracingToken := os.Getenv("TRACING_ACCESS_TOKEN"); tracingToken != "" {
+		ingestUrl := os.Getenv("TRACING_INGEST_URL")
 		if ingestUrl == "" {
 			ingestUrl = "https://ingest.signalfx.com"
 		}
 
 		// Create a Jaeger HTTP Thrift transport
 		transport := transport.NewHTTPTransport(ingestUrl+"/v1/trace",
-			transport.HTTPBasicAuth("auth", signalfxToken))
+			transport.HTTPBasicAuth("auth", tracingToken))
 
-		cfg, err := jaegercfg.FromEnv()
-		if err != nil {
-			log.Fatal("Could not parse Jaeger env vars: ", err.Error())
+		// Add rate limited sampling. We will only sample [Param] requests per second
+		// and [MaxOperations] different endpoints. Any endpoint above the [MaxOperations]
+		// limit will be probabilistically sampled.
+		cfgSampler := &jaegercfg.SamplerConfig{
+			Type:          jaeger.SamplerTypeRateLimiting,
+			Param:         5,
+			MaxOperations: 100,
 		}
-		cfg.ServiceName = "nil-test"
-		cfg.Sampler = &jaegercfg.SamplerConfig{
-			Type:  jaeger.SamplerTypeRateLimiting,
-			Param: 500,
+		cfgTags := []opentracing.Tag{
+			opentracing.Tag{Key: "app_name", Value: os.Getenv("_APP_NAME")},
+			opentracing.Tag{Key: "build_id", Value: os.Getenv("_BUILD_ID")},
+			opentracing.Tag{Key: "deploy_env", Value: os.Getenv("_DEPLOY_ENV")},
+			opentracing.Tag{Key: "team_owner", Value: os.Getenv("_TEAM_OWNER")},
+		}
+
+		cfg := &jaegercfg.Configuration{
+			ServiceName: "nil-test",
+			Sampler:     cfgSampler,
+			Tags:        cfgTags,
 		}
 
 		signalfxTracer, closer, err := cfg.NewTracer(jaegercfg.Reporter(jaeger.NewRemoteReporter(transport)))
@@ -80,7 +91,7 @@ func (s *Server) Serve() error {
 
 		opentracing.SetGlobalTracer(signalfxTracer)
 	} else {
-		s.l.Error("please set SIGNALFX_ACCESS_TOKEN to enable tracing")
+		s.l.Error("please set TRACING_ACCESS_TOKEN to enable tracing")
 	}
 
 	s.l.Counter("server-started")

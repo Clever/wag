@@ -372,6 +372,7 @@
   revision = "40f4993ede74f673cfe96bed75ef8513a389a00a"
 
 [[projects]]
+  branch = "master"
   name = "github.com/uber/jaeger-client-go"
   packages = [
     ".",
@@ -392,8 +393,7 @@
     "transport",
     "utils"
   ]
-  revision = "1a782e2da844727691fef1757c72eb190c2909f0"
-  version = "v2.15.0"
+  revision = "84fe9bc9ad17d9a4bcf8e4387026088ac55664e2"
 
 [[projects]]
   name = "github.com/uber/jaeger-lib"
@@ -501,6 +501,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2083394c9c51654b47e376779f14992ca7e4b7e17e795acdaf4774395d51441a"
+  inputs-digest = "5b993f750e5f72443c8eaecf9c85f5dbdf136ce70e0707438478e499919a360d"
   solver-name = "gps-cdcl"
   solver-version = 1
