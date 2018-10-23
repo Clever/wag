@@ -73,6 +73,7 @@ required = ["github.com/tmthrgd/go-bindata", "github.com/golang/mock/mockgen"]
 
 [[constraint]]
   name = "github.com/uber/jaeger-client-go"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/opentracing/opentracing-go"
