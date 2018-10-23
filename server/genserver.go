@@ -54,13 +54,15 @@ import (
 	"path"
 
 	"github.com/gorilla/mux"
-	lightstep "github.com/lightstep/lightstep-tracer-go"
 	opentracing "github.com/opentracing/opentracing-go"
 	"gopkg.in/Clever/kayvee-go.v6/logger"
 	kvMiddleware "gopkg.in/Clever/kayvee-go.v6/middleware"
 	"gopkg.in/tylerb/graceful.v1"
 	"github.com/Clever/go-process-metrics/metrics"
 	"github.com/kardianos/osext"
+	"github.com/uber/jaeger-client-go"
+	jaegercfg "github.com/uber/jaeger-client-go/config"
+	"github.com/uber/jaeger-client-go/transport"
 )
 
 type contextKey struct{}
@@ -93,18 +95,46 @@ func (s *Server) Serve() error {
 		s.l.Info("please provide a kvconfig.yml file to enable app log routing")
 	}
 
-	if lightstepToken := os.Getenv("LIGHTSTEP_ACCESS_TOKEN"); lightstepToken != "" {
-		tags := make(map[string]interface{})
-		tags[lightstep.ComponentNameKey] = "{{.Title}}"
-		lightstepTracer := lightstep.NewTracer(lightstep.Options{
-			AccessToken: lightstepToken,
-			Tags:        tags,
-			UseGRPC:     true,
-		})
-		defer lightstep.FlushLightStepTracer(lightstepTracer)
-		opentracing.InitGlobalTracer(lightstepTracer)
+	if tracingToken := os.Getenv("TRACING_ACCESS_TOKEN"); tracingToken != "" {
+		ingestUrl := os.Getenv("TRACING_INGEST_URL")
+		if ingestUrl == "" {
+			ingestUrl = "https://ingest.signalfx.com/v1/trace"
+		}
+
+		// Create a Jaeger HTTP Thrift transport
+		transport := transport.NewHTTPTransport(ingestUrl,
+			transport.HTTPBasicAuth("auth", tracingToken))
+
+		// Add rate limited sampling. We will only sample [Param] requests per second
+		// and [MaxOperations] different endpoints. Any endpoint above the [MaxOperations]
+		// limit will be probabilistically sampled.
+		cfgSampler := &jaegercfg.SamplerConfig{
+			Type: jaeger.SamplerTypeRateLimiting,
+			Param: 5,
+			MaxOperations: 100,
+		}
+		cfgTags := []opentracing.Tag{
+			opentracing.Tag{Key: "app_name", Value: os.Getenv("_APP_NAME")},
+			opentracing.Tag{Key: "build_id", Value: os.Getenv("_BUILD_ID")},
+			opentracing.Tag{Key: "deploy_env", Value: os.Getenv("_DEPLOY_ENV")},
+			opentracing.Tag{Key: "team_owner", Value: os.Getenv("_TEAM_OWNER")},
+		}
+
+		cfg := &jaegercfg.Configuration{
+			ServiceName: "{{.Title}}",
+			Sampler: cfgSampler,
+			Tags: cfgTags,
+		}
+
+		signalfxTracer, closer, err := cfg.NewTracer(jaegercfg.Reporter(jaeger.NewRemoteReporter(transport)))
+		if err != nil {
+			log.Fatal("Could not initialize jaeger tracer: ", err.Error())
+		}
+		defer closer.Close()
+
+		opentracing.SetGlobalTracer(signalfxTracer)
 	} else {
-		s.l.Error("please set LIGHTSTEP_ACCESS_TOKEN to enable tracing")
+		s.l.Error("please set TRACING_ACCESS_TOKEN to enable tracing")
 	}
 
 	s.l.Counter("server-started")

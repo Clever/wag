@@ -72,8 +72,8 @@ required = ["github.com/tmthrgd/go-bindata", "github.com/golang/mock/mockgen"]
   branch = "master"
 
 [[constraint]]
-  name = "github.com/lightstep/lightstep-tracer-go"
-  version = "0.15.2"
+  name = "github.com/uber/jaeger-client-go"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/opentracing/opentracing-go"
