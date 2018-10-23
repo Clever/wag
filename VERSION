@@ -1,3 +1,2 @@
-v1.10.1
-- fixup in formatting
-- Allow setting keepalive in node clients
+v1.11.0
+- Use Jaeger client as tracer instead of Lightstep client
