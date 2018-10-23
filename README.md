@@ -239,28 +239,7 @@ definitions:
   This is done via [opentracing](http://opentracing.io/).
   In order for it to work, you are required to do two things:
 
-  * Configure your `main()` function to report tracing data to [LightStep](http://lightstep.com/).
-     We are testing Lightstep as a way to view tracing-related data:
-```go
-package main
-
-import (
-	lightstep "github.com/lightstep/lightstep-tracer-go"
-	opentracing "github.com/opentracing/opentracing-go"
-)
-
-func main() {
-	tags := make(map[string]interface{})
-	tags[lightstep.ComponentNameKey] = "<name of the repo>"
-	lightstepTracer := lightstep.NewTracer(lightstep.Options{
-	    AccessToken: os.Getenv("LIGHTSTEP_ACCESS_TOKEN"),
-	    Tags:        tags,
-	})
-	defer lightstep.FlushLightStepTracer(lightstepTracer)
-	opentracing.InitGlobalTracer(lightstepTracer)
-	...
-}
-```
+  * Add `TRACING_ACCESS_TOKEN` to your ark-config with the access token stored in the secret store. This will automatically report tracing data to [SignalFX](https://app.signalfx.com/#/trace/).
   * By default we tag traces with `http.method`, `span.kind`, `http.url`, `http.status_code`, and `error`. For more information about what these tags mean see: https://github.com/opentracing/opentracing.io/blob/95b966bd6a6b2cf0f231260e3e1fa6206ede2151/_docs/pages/api/data-conventions.md#component-identification
 
 ## Using the Go Client
@@ -361,8 +340,8 @@ import * as SampleClientLib from 'sample-client-lib-js';
 const app = express();
 const sampleClient = new SampleClientLib({discovery: true}); // Using discovery
 
-const LIGHTSTEP_ACCESS_TOKEN = "access_token";
-app.use(middleware({access_token: LIGHTSTEP_ACCESS_TOKEN}));
+const TRACING_ACCESS_TOKEN = "access_token";
+app.use(middleware({access_token: TRACING_ACCESS_TOKEN}));
 
 app.get("/my-url", (req, res) => {
   sampleClient.getBookById("bookID", {span: req.span}, (err, book) => {
