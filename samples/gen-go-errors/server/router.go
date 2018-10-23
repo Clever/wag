@@ -55,11 +55,11 @@ func (s *Server) Serve() error {
 	if tracingToken := os.Getenv("TRACING_ACCESS_TOKEN"); tracingToken != "" {
 		ingestUrl := os.Getenv("TRACING_INGEST_URL")
 		if ingestUrl == "" {
-			ingestUrl = "https://ingest.signalfx.com"
+			ingestUrl = "https://ingest.signalfx.com/v1/trace"
 		}
 
 		// Create a Jaeger HTTP Thrift transport
-		transport := transport.NewHTTPTransport(ingestUrl+"/v1/trace",
+		transport := transport.NewHTTPTransport(ingestUrl,
 			transport.HTTPBasicAuth("auth", tracingToken))
 
 		// Add rate limited sampling. We will only sample [Param] requests per second
