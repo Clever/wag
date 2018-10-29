@@ -1,2 +1,2 @@
-v1.11.0
-- Use Jaeger client as tracer instead of Lightstep client
+v1.11.1
+- Update JS client to actually send tracing information in headers
