@@ -87,6 +87,7 @@ const discovery = require("clever-discovery");
 const kayvee = require("kayvee");
 const request = require("request");
 const opentracing = require("opentracing");
+const globalTracing = require("opentracing/lib/global_tracer");
 const {commandFactory} = require("hystrixjs");
 const RollingNumberEvent = require("hystrixjs/lib/metrics/RollingNumberEvent");
 
@@ -216,7 +217,7 @@ class {{.ClassName}} {
    * forever: true attribute in request. Defaults to false
    * @param {module:{{.ServiceName}}.RetryPolicies} [options.retryPolicy=RetryPolicies.Single] - The logic to
    * determine which requests to retry, as well as how many times to retry.
-   * @param {module:kayvee.Logger} [options.logger=logger.New("{{.ServiceName}}-wagclient")] - The Kayvee 
+   * @param {module:kayvee.Logger} [options.logger=logger.New("{{.ServiceName}}-wagclient")] - The Kayvee
    * logger to use in the client.
    * @param {Object} [options.circuit] - Options for constructing the client's circuit breaker.
    * @param {bool} [options.circuit.forceClosed] - When set to true the circuit will always be closed. Default: true.
@@ -406,7 +407,8 @@ var methodTmplStr = `
   {{end}}{{end}}
 
       if (span) {
-        opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
+        globalTracing.globalTracer().inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
         {{- if not .IterMethod}}
         span.logEvent("{{.Method}} {{.Path}}");
         {{- end}}
