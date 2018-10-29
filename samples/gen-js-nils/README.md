@@ -57,7 +57,7 @@ Create a new client object.
 | [options.timeout] | <code>number</code> |  | The timeout to use for all client requests, in milliseconds. This can be overridden on a per-request basis. Default is 5000ms. |
 | [options.keepalive] | <code>bool</code> |  | Set keepalive to true for client requests. This sets the forever: true attribute in request. Defaults to false |
 | [options.retryPolicy] | <code>[RetryPolicies](#module_nil-test--NilTest.RetryPolicies)</code> | <code>RetryPolicies.Single</code> | The logic to determine which requests to retry, as well as how many times to retry. |
-| [options.logger] | <code>module:kayvee.Logger</code> | <code>logger.New(&quot;nil-test-wagclient&quot;)</code> | The Kayvee  logger to use in the client. |
+| [options.logger] | <code>module:kayvee.Logger</code> | <code>logger.New(&quot;nil-test-wagclient&quot;)</code> | The Kayvee logger to use in the client. |
 | [options.circuit] | <code>Object</code> |  | Options for constructing the client's circuit breaker. |
 | [options.circuit.forceClosed] | <code>bool</code> |  | When set to true the circuit will always be closed. Default: true. |
 | [options.circuit.maxConcurrentRequests] | <code>number</code> |  | the maximum number of concurrent requests the client can make at the same time. Default: 100. |

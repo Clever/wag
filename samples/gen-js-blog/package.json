@@ -6,7 +6,7 @@
   "dependencies": {
     "async": "^2.1.4",
     "clever-discovery": "0.0.8",
-    "opentracing": "^0.11.1",
+    "opentracing": "^0.14.0",
     "request": "^2.87.0",
     "kayvee": "^3.8.2",
     "hystrixjs": "^0.2.0",
