@@ -3,7 +3,6 @@ const discovery = require("clever-discovery");
 const kayvee = require("kayvee");
 const request = require("request");
 const opentracing = require("opentracing");
-const globalTracing = require("opentracing/lib/global_tracer");
 const {commandFactory} = require("hystrixjs");
 const RollingNumberEvent = require("hystrixjs/lib/metrics/RollingNumberEvent");
 
@@ -178,6 +177,11 @@ class SwaggerTest {
       this.logger = options.logger;
     } else {
       this.logger =  new kayvee.logger("swagger-test-wagclient");
+    }
+    if (options.tracer) {
+      this.tracer = options.tracer;
+    } else {
+      this.tracer = opentracing.globalTracer();
     }
 
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);

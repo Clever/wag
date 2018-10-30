@@ -3,7 +3,6 @@ const discovery = require("clever-discovery");
 const kayvee = require("kayvee");
 const request = require("request");
 const opentracing = require("opentracing");
-const globalTracing = require("opentracing/lib/global_tracer");
 const {commandFactory} = require("hystrixjs");
 const RollingNumberEvent = require("hystrixjs/lib/metrics/RollingNumberEvent");
 
@@ -179,6 +178,11 @@ class Blog {
     } else {
       this.logger =  new kayvee.logger("blog-wagclient");
     }
+    if (options.tracer) {
+      this.tracer = options.tracer;
+    } else {
+      this.tracer = opentracing.globalTracer();
+    }
 
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
     this._hystrixCommand = commandFactory.getOrCreate("blog").
@@ -275,6 +279,7 @@ class Blog {
       }
 
       const timeout = options.timeout || this.timeout;
+      const tracer = options.tracer || this.tracer;
       const span = options.span;
 
       const headers = {};
@@ -287,7 +292,7 @@ class Blog {
 
       if (span) {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        globalTracing.globalTracer().inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
+        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
         span.logEvent("GET /students/{student_id}/sections");
         span.setTag("span.kind", "client");
       }

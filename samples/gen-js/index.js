@@ -3,7 +3,6 @@ const discovery = require("clever-discovery");
 const kayvee = require("kayvee");
 const request = require("request");
 const opentracing = require("opentracing");
-const globalTracing = require("opentracing/lib/global_tracer");
 const {commandFactory} = require("hystrixjs");
 const RollingNumberEvent = require("hystrixjs/lib/metrics/RollingNumberEvent");
 
@@ -179,6 +178,11 @@ class SwaggerTest {
     } else {
       this.logger =  new kayvee.logger("swagger-test-wagclient");
     }
+    if (options.tracer) {
+      this.tracer = options.tracer;
+    } else {
+      this.tracer = opentracing.globalTracer();
+    }
 
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
     this._hystrixCommand = commandFactory.getOrCreate("swagger-test").
@@ -274,6 +278,7 @@ class SwaggerTest {
       }
 
       const timeout = options.timeout || this.timeout;
+      const tracer = options.tracer || this.tracer;
       const span = options.span;
 
       const headers = {};
@@ -290,7 +295,7 @@ class SwaggerTest {
 
       if (span) {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        globalTracing.globalTracer().inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
+        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
         span.logEvent("GET /v1/authors");
         span.setTag("span.kind", "client");
       }
@@ -393,6 +398,7 @@ class SwaggerTest {
       }
 
       const timeout = options.timeout || this.timeout;
+      const tracer = options.tracer || this.tracer;
       const span = options.span;
 
       const headers = {};
@@ -409,7 +415,7 @@ class SwaggerTest {
 
       if (span) {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        globalTracing.globalTracer().inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
+        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
         span.setTag("span.kind", "client");
       }
 
@@ -560,6 +566,7 @@ class SwaggerTest {
       }
 
       const timeout = options.timeout || this.timeout;
+      const tracer = options.tracer || this.tracer;
       const span = options.span;
 
       const headers = {};
@@ -576,7 +583,7 @@ class SwaggerTest {
 
       if (span) {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        globalTracing.globalTracer().inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
+        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
         span.logEvent("PUT /v1/authors");
         span.setTag("span.kind", "client");
       }
@@ -682,6 +689,7 @@ class SwaggerTest {
       }
 
       const timeout = options.timeout || this.timeout;
+      const tracer = options.tracer || this.tracer;
       const span = options.span;
 
       const headers = {};
@@ -698,7 +706,7 @@ class SwaggerTest {
 
       if (span) {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        globalTracing.globalTracer().inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
+        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
         span.setTag("span.kind", "client");
       }
 
@@ -859,6 +867,7 @@ class SwaggerTest {
       }
 
       const timeout = options.timeout || this.timeout;
+      const tracer = options.tracer || this.tracer;
       const span = options.span;
 
       const headers = {};
@@ -908,7 +917,7 @@ class SwaggerTest {
 
       if (span) {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        globalTracing.globalTracer().inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
+        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
         span.logEvent("GET /v1/books");
         span.setTag("span.kind", "client");
       }
@@ -1020,6 +1029,7 @@ class SwaggerTest {
       }
 
       const timeout = options.timeout || this.timeout;
+      const tracer = options.tracer || this.tracer;
       const span = options.span;
 
       const headers = {};
@@ -1069,7 +1079,7 @@ class SwaggerTest {
 
       if (span) {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        globalTracing.globalTracer().inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
+        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
         span.setTag("span.kind", "client");
       }
 
@@ -1220,6 +1230,7 @@ class SwaggerTest {
       }
 
       const timeout = options.timeout || this.timeout;
+      const tracer = options.tracer || this.tracer;
       const span = options.span;
 
       const headers = {};
@@ -1228,7 +1239,7 @@ class SwaggerTest {
 
       if (span) {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        globalTracing.globalTracer().inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
+        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
         span.logEvent("POST /v1/books");
         span.setTag("span.kind", "client");
       }
@@ -1343,6 +1354,7 @@ class SwaggerTest {
       }
 
       const timeout = options.timeout || this.timeout;
+      const tracer = options.tracer || this.tracer;
       const span = options.span;
 
       const headers = {};
@@ -1351,7 +1363,7 @@ class SwaggerTest {
 
       if (span) {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        globalTracing.globalTracer().inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
+        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
         span.logEvent("PUT /v1/books");
         span.setTag("span.kind", "client");
       }
@@ -1470,6 +1482,7 @@ class SwaggerTest {
       }
 
       const timeout = options.timeout || this.timeout;
+      const tracer = options.tracer || this.tracer;
       const span = options.span;
 
       const headers = {};
@@ -1492,7 +1505,7 @@ class SwaggerTest {
 
       if (span) {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        globalTracing.globalTracer().inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
+        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
         span.logEvent("GET /v1/books/{book_id}");
         span.setTag("span.kind", "client");
       }
@@ -1618,6 +1631,7 @@ class SwaggerTest {
       }
 
       const timeout = options.timeout || this.timeout;
+      const tracer = options.tracer || this.tracer;
       const span = options.span;
 
       const headers = {};
@@ -1630,7 +1644,7 @@ class SwaggerTest {
 
       if (span) {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        globalTracing.globalTracer().inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
+        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
         span.logEvent("GET /v1/books2/{id}");
         span.setTag("span.kind", "client");
       }
@@ -1746,6 +1760,7 @@ class SwaggerTest {
       }
 
       const timeout = options.timeout || this.timeout;
+      const tracer = options.tracer || this.tracer;
       const span = options.span;
 
       const headers = {};
@@ -1754,7 +1769,7 @@ class SwaggerTest {
 
       if (span) {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        globalTracing.globalTracer().inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
+        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
         span.logEvent("GET /v1/health/check");
         span.setTag("span.kind", "client");
       }
