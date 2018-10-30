@@ -241,6 +241,7 @@ definitions:
 
   * Add `TRACING_ACCESS_TOKEN` to your ark-config with the access token stored in the secret store. This will automatically report tracing data to [SignalFX](https://app.signalfx.com/#/trace/).
   * By default we tag traces with `http.method`, `span.kind`, `http.url`, `http.status_code`, and `error`. For more information about what these tags mean see: https://github.com/opentracing/opentracing.io/blob/95b966bd6a6b2cf0f231260e3e1fa6206ede2151/_docs/pages/api/data-conventions.md#component-identification
+  * Pass the tracer as an option when initializing the client or on each API call to be traced
 
 ## Using the Go Client
 Initialize the client with `New`

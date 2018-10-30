@@ -132,7 +132,7 @@ class Blog {
    * forever: true attribute in request. Defaults to false
    * @param {module:blog.RetryPolicies} [options.retryPolicy=RetryPolicies.Single] - The logic to
    * determine which requests to retry, as well as how many times to retry.
-   * @param {module:kayvee.Logger} [options.logger=logger.New("blog-wagclient")] - The Kayvee 
+   * @param {module:kayvee.Logger} [options.logger=logger.New("blog-wagclient")] - The Kayvee
    * logger to use in the client.
    * @param {Object} [options.circuit] - Options for constructing the client's circuit breaker.
    * @param {bool} [options.circuit.forceClosed] - When set to true the circuit will always be closed. Default: true.
@@ -177,6 +177,11 @@ class Blog {
       this.logger = options.logger;
     } else {
       this.logger =  new kayvee.logger("blog-wagclient");
+    }
+    if (options.tracer) {
+      this.tracer = options.tracer;
+    } else {
+      this.tracer = opentracing.globalTracer();
     }
 
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
@@ -274,6 +279,7 @@ class Blog {
       }
 
       const timeout = options.timeout || this.timeout;
+      const tracer = options.tracer || this.tracer;
       const span = options.span;
 
       const headers = {};
@@ -285,7 +291,8 @@ class Blog {
       const query = {};
 
       if (span) {
-        opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
+        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
         span.logEvent("GET /students/{student_id}/sections");
         span.setTag("span.kind", "client");
       }

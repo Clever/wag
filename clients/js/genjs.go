@@ -216,7 +216,7 @@ class {{.ClassName}} {
    * forever: true attribute in request. Defaults to false
    * @param {module:{{.ServiceName}}.RetryPolicies} [options.retryPolicy=RetryPolicies.Single] - The logic to
    * determine which requests to retry, as well as how many times to retry.
-   * @param {module:kayvee.Logger} [options.logger=logger.New("{{.ServiceName}}-wagclient")] - The Kayvee 
+   * @param {module:kayvee.Logger} [options.logger=logger.New("{{.ServiceName}}-wagclient")] - The Kayvee
    * logger to use in the client.
    * @param {Object} [options.circuit] - Options for constructing the client's circuit breaker.
    * @param {bool} [options.circuit.forceClosed] - When set to true the circuit will always be closed. Default: true.
@@ -261,6 +261,11 @@ class {{.ClassName}} {
       this.logger = options.logger;
     } else {
       this.logger =  new kayvee.logger("{{.ServiceName}}-wagclient");
+    }
+    if (options.tracer) {
+      this.tracer = options.tracer;
+    } else {
+      this.tracer = opentracing.globalTracer();
     }
 
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
@@ -342,7 +347,7 @@ var packageJSONTmplStr = `{
   "dependencies": {
     "async": "^2.1.4",
     "clever-discovery": "0.0.8",
-    "opentracing": "^0.11.1",
+    "opentracing": "^0.14.0",
     "request": "^2.87.0",
     "kayvee": "^3.8.2",
     "hystrixjs": "^0.2.0",
@@ -382,6 +387,7 @@ var methodTmplStr = `
       }
 
       const timeout = options.timeout || this.timeout;
+      const tracer = options.tracer || this.tracer;
       const span = options.span;
 
       const headers = {};
@@ -406,7 +412,8 @@ var methodTmplStr = `
   {{end}}{{end}}
 
       if (span) {
-        opentracing.inject(span, opentracing.FORMAT_TEXT_MAP, headers);
+        // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
+        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
         {{- if not .IterMethod}}
         span.logEvent("{{.Method}} {{.Path}}");
         {{- end}}
