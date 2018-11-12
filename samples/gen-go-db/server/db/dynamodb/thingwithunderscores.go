@@ -43,7 +43,7 @@ func (t ThingWithUnderscoresTable) create(ctx context.Context) error {
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
 			{
 				AttributeName: aws.String("id_app"),
-				AttributeType: aws.String(dynamodb.ScalarAttributeTypeS),
+				AttributeType: aws.String("S"),
 			},
 		},
 		KeySchema: []*dynamodb.KeySchemaElement{

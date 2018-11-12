@@ -138,3 +138,51 @@ definitions:
     properties:
       id_app:
         type: string
+
+  ThingWithCompositeAttributes:
+    x-db:
+      AllowOverwrites: true
+      CompositeAttributes:
+      - AttributeName: name_branch
+        Properties: [ name, branch ]
+        Separator: "@"
+      # - AttributeName: name_version
+      #   Properties: [ name, version ]
+      #   Separator: ":"
+      # - AttributeName: branch_version
+      #   Properties: [ branch, version ]
+      #   Separator: ":"
+      DynamoDB:
+        KeySchema:
+          - AttributeName: name_branch
+            KeyType: HASH
+          - AttributeName: date
+            KeyType: RANGE
+        # GlobalSecondaryIndexes:
+        #   - IndexName: nameVersion
+        #     Projection:
+        #       ProjectionType: ALL
+        #     KeySchema:
+        #       - AttributeName: name_version
+        #         KeyType: HASH
+        #       - AttributeName: date
+        #         KeyType: RANGE
+        #   - IndexName: nameVersion
+        #     Projection:
+        #       ProjectionType: ALL
+        #     KeySchema:
+        #       - AttributeName: name
+        #         KeyType: HASH
+        #       - AttributeName: branch_version
+        #         KeyType: RANGE
+    type: object
+    properties:
+      name:
+        type: string
+      branch:
+        type: string
+      version:
+        type: integer
+      date:
+        type: string
+        format: date-time

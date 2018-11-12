@@ -15,14 +15,14 @@ import (
 type Interface interface {
     {{- range $xdbConfig := .XDBConfigs }}
     {{- $modelName := pascalize $xdbConfig.SchemaName }}
+    {{- $pkModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
     // Save{{ $modelName }} saves a {{ $modelName }} to the database.
     Save{{ $modelName }}(ctx context.Context, m models.{{ $modelName }}) error
     // Get{{ $modelName }} retrieves a {{ $modelName }} from the database.
     Get{{ $modelName }}(ctx context.Context,
-      {{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-      {{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
-      {{- camelize $pk.AttributeName }} {{ goType $pkAttrSchema }},
-      {{- end -}}
+	{{- range $_, $attributeName := $pkModelAttributeNames }}
+	{{- camelize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
+	{{- end -}}
     ) (*models.{{ $modelName }}, error)
     {{- if indexHasRangeKey $xdbConfig.DynamoDB.KeySchema }}
     {{- $indexName := indexName $xdbConfig.DynamoDB.KeySchema }}
@@ -31,10 +31,9 @@ type Interface interface {
     {{- end }}
     // Delete{{ $modelName }} deletes a {{ $modelName }} from the database.
     Delete{{ $modelName }}(ctx context.Context,
-      {{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-      {{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
-      {{- camelize $pk.AttributeName }} {{ goType $pkAttrSchema }},
-      {{- end -}}
+	{{- range $_, $attributeName := $pkModelAttributeNames }}
+	{{- camelize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
+	{{- end -}}
     ) error
     {{- range $gsi := $xdbConfig.DynamoDB.GlobalSecondaryIndexes }}
     {{- $indexName := indexName $gsi.KeySchema }}
@@ -45,8 +44,7 @@ type Interface interface {
     // Get{{ $modelName }}By{{ $indexName }} retrieves a {{ $modelName }} from the database.
     Get{{ $modelName }}By{{ $indexName }}(ctx context.Context,
       {{- range $_, $ks := $gsi.KeySchema }}
-      {{- $ksAttrSchema := index $xdbConfig.Schema.Properties $ks.AttributeName }}
-      {{- camelize $ks.AttributeName }} {{ goType $ksAttrSchema }},
+      {{- camelize $ks.AttributeName }} {{ goTypeForAttribute $xdbConfig $ks.AttributeName }},
       {{- end -}}
     ) (*models.{{ $modelName }}, error)
     {{- end }}
@@ -70,25 +68,28 @@ func DateTime(d strfmt.DateTime) *strfmt.DateTime { return &d }
 {{- $modelName := pascalize $xdbConfig.SchemaName }}
 {{- $indexName := indexName $xdbConfig.DynamoDB.KeySchema }}
 {{- $hashKey := index $xdbConfig.DynamoDB.KeySchema 0 }}
-{{- $hashKeySchema := index $xdbConfig.Schema.Properties $hashKey.AttributeName }}
 {{- if indexHasRangeKey $xdbConfig.DynamoDB.KeySchema }}
 {{- $rangeKey := index $xdbConfig.DynamoDB.KeySchema 1 }}
-{{- $rangeKeySchema := index $xdbConfig.Schema.Properties $rangeKey.AttributeName }}
+{{- $pkModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
 // Get{{ $modelName }}sBy{{ $indexName }}Input is the query input to Get{{ $modelName }}sBy{{ $indexName }}.
 type Get{{ $modelName }}sBy{{ $indexName }}Input struct {
-	{{ pascalize $hashKey.AttributeName }} {{ goType $hashKeySchema }}
-        {{ pascalize $rangeKey.AttributeName }}StartingAt *{{ goType $rangeKeySchema }}
+	{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
+	{{ pascalize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }}
+        {{- end }}
+	{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "RANGE" }}
+	{{ pascalize $attributeName }}StartingAt *{{ goTypeForAttribute $xdbConfig $attributeName }}
+        {{- end }}
         Descending bool
         DisableConsistentRead bool
 }
 {{- end }}
 
+{{- $pkModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
 // Err{{ $modelName}}NotFound is returned when the database fails to find a {{ $modelName}}.
 type Err{{ $modelName}}NotFound struct {
-	{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-	{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
-	{{ pascalize $pk.AttributeName }} {{ goType $pkAttrSchema }}
-	{{- end }}
+        {{- range $attributeName := $pkModelAttributeNames }}
+	{{ pascalize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }}
+        {{- end }}
 }
 
 var _ error = Err{{ $modelName}}NotFound{}
@@ -101,14 +102,12 @@ func (e Err{{ $modelName}}NotFound) Error() string {
 {{ range $gsi := $xdbConfig.DynamoDB.GlobalSecondaryIndexes }}
 {{- $computedIndexName := indexName $gsi.KeySchema }}
 {{- $hashKey := index $gsi.KeySchema 0 }}
-{{- $hashKeySchema := index $xdbConfig.Schema.Properties $hashKey.AttributeName }}
 {{- if indexHasRangeKey $gsi.KeySchema }}
 {{- $rangeKey := index $gsi.KeySchema 1 }}
-{{- $rangeKeySchema := index $xdbConfig.Schema.Properties $rangeKey.AttributeName }}
 // Get{{ $modelName }}sBy{{ $computedIndexName }}Input is the query input to Get{{ $modelName }}sBy{{ $computedIndexName }}.
 type Get{{ $modelName }}sBy{{ $computedIndexName }}Input struct {
-	{{ pascalize $hashKey.AttributeName }} {{ goType $hashKeySchema }}
-        {{ pascalize $rangeKey.AttributeName }}StartingAt *{{ goType $rangeKeySchema }}
+	{{ pascalize $hashKey.AttributeName }} {{ goTypeForAttribute $xdbConfig $hashKey.AttributeName }}
+        {{ pascalize $rangeKey.AttributeName }}StartingAt *{{ goTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
         Descending bool
 }
 {{- end }}
@@ -116,8 +115,7 @@ type Get{{ $modelName }}sBy{{ $computedIndexName }}Input struct {
 // Err{{ $modelName}}By{{ $computedIndexName }}NotFound is returned when the database fails to find a {{ $modelName}}.
 type Err{{ $modelName}}By{{ $computedIndexName }}NotFound struct {
 	{{- range $_, $ks := $gsi.KeySchema }}
-	{{- $ksAttrSchema := index $xdbConfig.Schema.Properties $ks.AttributeName }}
-	{{ pascalize $ks.AttributeName }} {{ goType $ksAttrSchema }}
+	{{ pascalize $ks.AttributeName }} {{ goTypeForAttribute $xdbConfig $ks.AttributeName }}
 	{{- end }}
 }
 
@@ -133,8 +131,7 @@ func (e Err{{ $modelName}}By{{ $computedIndexName }}NotFound) Error() string {
 // Err{{ $modelName }}AlreadyExists is returned when trying to overwrite a {{ $modelName }}.
 type Err{{ $modelName }}AlreadyExists struct {
 	{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-	{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
-	{{ pascalize $pk.AttributeName }} {{ goType $pkAttrSchema }}
+	{{ pascalize $pk.AttributeName }} {{ goTypeForAttribute $xdbConfig $pk.AttributeName }}
 	{{- end }}
 }
 

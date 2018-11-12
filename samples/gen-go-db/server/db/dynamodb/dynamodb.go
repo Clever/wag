@@ -31,6 +31,8 @@ type Config struct {
 	SimpleThingTable SimpleThingTable
 	// ThingTable configuration.
 	ThingTable ThingTable
+	// ThingWithCompositeAttributesTable configuration.
+	ThingWithCompositeAttributesTable ThingWithCompositeAttributesTable
 	// ThingWithDateRangeTable configuration.
 	ThingWithDateRangeTable ThingWithDateRangeTable
 	// ThingWithUnderscoresTable configuration.
@@ -80,6 +82,20 @@ func New(config Config) (*DB, error) {
 	if thingTable.WriteCapacityUnits == 0 {
 		thingTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	// configure ThingWithCompositeAttributes table
+	thingWithCompositeAttributesTable := config.ThingWithCompositeAttributesTable
+	if thingWithCompositeAttributesTable.DynamoDBAPI == nil {
+		thingWithCompositeAttributesTable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if thingWithCompositeAttributesTable.Prefix == "" {
+		thingWithCompositeAttributesTable.Prefix = config.DefaultPrefix
+	}
+	if thingWithCompositeAttributesTable.ReadCapacityUnits == 0 {
+		thingWithCompositeAttributesTable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if thingWithCompositeAttributesTable.WriteCapacityUnits == 0 {
+		thingWithCompositeAttributesTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
 	// configure ThingWithDateRange table
 	thingWithDateRangeTable := config.ThingWithDateRangeTable
 	if thingWithDateRangeTable.DynamoDBAPI == nil {
@@ -110,19 +126,21 @@ func New(config Config) (*DB, error) {
 	}
 
 	return &DB{
-		simpleThingTable:          simpleThingTable,
-		thingTable:                thingTable,
-		thingWithDateRangeTable:   thingWithDateRangeTable,
-		thingWithUnderscoresTable: thingWithUnderscoresTable,
+		simpleThingTable:                  simpleThingTable,
+		thingTable:                        thingTable,
+		thingWithCompositeAttributesTable: thingWithCompositeAttributesTable,
+		thingWithDateRangeTable:           thingWithDateRangeTable,
+		thingWithUnderscoresTable:         thingWithUnderscoresTable,
 	}, nil
 }
 
 // DB implements the database interface using DynamoDB to store data.
 type DB struct {
-	simpleThingTable          SimpleThingTable
-	thingTable                ThingTable
-	thingWithDateRangeTable   ThingWithDateRangeTable
-	thingWithUnderscoresTable ThingWithUnderscoresTable
+	simpleThingTable                  SimpleThingTable
+	thingTable                        ThingTable
+	thingWithCompositeAttributesTable ThingWithCompositeAttributesTable
+	thingWithDateRangeTable           ThingWithDateRangeTable
+	thingWithUnderscoresTable         ThingWithUnderscoresTable
 }
 
 var _ db.Interface = DB{}
@@ -133,6 +151,9 @@ func (d DB) CreateTables(ctx context.Context) error {
 		return err
 	}
 	if err := d.thingTable.create(ctx); err != nil {
+		return err
+	}
+	if err := d.thingWithCompositeAttributesTable.create(ctx); err != nil {
 		return err
 	}
 	if err := d.thingWithDateRangeTable.create(ctx); err != nil {
@@ -187,6 +208,26 @@ func (d DB) GetThingByID(ctx context.Context, id string) (*models.Thing, error) 
 // GetThingsByNameAndCreatedAt retrieves a list of Things from the database.
 func (d DB) GetThingsByNameAndCreatedAt(ctx context.Context, input db.GetThingsByNameAndCreatedAtInput) ([]models.Thing, error) {
 	return d.thingTable.getThingsByNameAndCreatedAt(ctx, input)
+}
+
+// SaveThingWithCompositeAttributes saves a ThingWithCompositeAttributes to the database.
+func (d DB) SaveThingWithCompositeAttributes(ctx context.Context, m models.ThingWithCompositeAttributes) error {
+	return d.thingWithCompositeAttributesTable.saveThingWithCompositeAttributes(ctx, m)
+}
+
+// GetThingWithCompositeAttributes retrieves a ThingWithCompositeAttributes from the database.
+func (d DB) GetThingWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) (*models.ThingWithCompositeAttributes, error) {
+	return d.thingWithCompositeAttributesTable.getThingWithCompositeAttributes(ctx, name, branch, date)
+}
+
+// GetThingWithCompositeAttributessByNameBranchAndDate retrieves a list of ThingWithCompositeAttributess from the database.
+func (d DB) GetThingWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input db.GetThingWithCompositeAttributessByNameBranchAndDateInput) ([]models.ThingWithCompositeAttributes, error) {
+	return d.thingWithCompositeAttributesTable.getThingWithCompositeAttributessByNameBranchAndDate(ctx, input)
+}
+
+// DeleteThingWithCompositeAttributes deletes a ThingWithCompositeAttributes from the database.
+func (d DB) DeleteThingWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) error {
+	return d.thingWithCompositeAttributesTable.deleteThingWithCompositeAttributes(ctx, name, branch, date)
 }
 
 // SaveThingWithDateRange saves a ThingWithDateRange to the database.

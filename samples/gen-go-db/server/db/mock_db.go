@@ -148,6 +148,56 @@ func (mr *MockInterfaceMockRecorder) GetThingsByNameAndCreatedAt(ctx, input inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingsByNameAndCreatedAt", reflect.TypeOf((*MockInterface)(nil).GetThingsByNameAndCreatedAt), ctx, input)
 }
 
+// SaveThingWithCompositeAttributes mocks base method
+func (m_2 *MockInterface) SaveThingWithCompositeAttributes(ctx context.Context, m models.ThingWithCompositeAttributes) error {
+	ret := m_2.ctrl.Call(m_2, "SaveThingWithCompositeAttributes", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveThingWithCompositeAttributes indicates an expected call of SaveThingWithCompositeAttributes
+func (mr *MockInterfaceMockRecorder) SaveThingWithCompositeAttributes(ctx, m interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).SaveThingWithCompositeAttributes), ctx, m)
+}
+
+// GetThingWithCompositeAttributes mocks base method
+func (m *MockInterface) GetThingWithCompositeAttributes(ctx context.Context, name, branch string, date strfmt.DateTime) (*models.ThingWithCompositeAttributes, error) {
+	ret := m.ctrl.Call(m, "GetThingWithCompositeAttributes", ctx, name, branch, date)
+	ret0, _ := ret[0].(*models.ThingWithCompositeAttributes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingWithCompositeAttributes indicates an expected call of GetThingWithCompositeAttributes
+func (mr *MockInterfaceMockRecorder) GetThingWithCompositeAttributes(ctx, name, branch, date interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).GetThingWithCompositeAttributes), ctx, name, branch, date)
+}
+
+// GetThingWithCompositeAttributessByNameBranchAndDate mocks base method
+func (m *MockInterface) GetThingWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input GetThingWithCompositeAttributessByNameBranchAndDateInput) ([]models.ThingWithCompositeAttributes, error) {
+	ret := m.ctrl.Call(m, "GetThingWithCompositeAttributessByNameBranchAndDate", ctx, input)
+	ret0, _ := ret[0].([]models.ThingWithCompositeAttributes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingWithCompositeAttributessByNameBranchAndDate indicates an expected call of GetThingWithCompositeAttributessByNameBranchAndDate
+func (mr *MockInterfaceMockRecorder) GetThingWithCompositeAttributessByNameBranchAndDate(ctx, input interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithCompositeAttributessByNameBranchAndDate", reflect.TypeOf((*MockInterface)(nil).GetThingWithCompositeAttributessByNameBranchAndDate), ctx, input)
+}
+
+// DeleteThingWithCompositeAttributes mocks base method
+func (m *MockInterface) DeleteThingWithCompositeAttributes(ctx context.Context, name, branch string, date strfmt.DateTime) error {
+	ret := m.ctrl.Call(m, "DeleteThingWithCompositeAttributes", ctx, name, branch, date)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteThingWithCompositeAttributes indicates an expected call of DeleteThingWithCompositeAttributes
+func (mr *MockInterfaceMockRecorder) DeleteThingWithCompositeAttributes(ctx, name, branch, date interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithCompositeAttributes), ctx, name, branch, date)
+}
+
 // SaveThingWithDateRange mocks base method
 func (m_2 *MockInterface) SaveThingWithDateRange(ctx context.Context, m models.ThingWithDateRange) error {
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithDateRange", ctx, m)

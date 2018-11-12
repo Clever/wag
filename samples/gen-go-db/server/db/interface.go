@@ -31,6 +31,15 @@ type Interface interface {
 	// GetThingsByNameAndCreatedAt retrieves a list of Things from the database.
 	GetThingsByNameAndCreatedAt(ctx context.Context, input GetThingsByNameAndCreatedAtInput) ([]models.Thing, error)
 
+	// SaveThingWithCompositeAttributes saves a ThingWithCompositeAttributes to the database.
+	SaveThingWithCompositeAttributes(ctx context.Context, m models.ThingWithCompositeAttributes) error
+	// GetThingWithCompositeAttributes retrieves a ThingWithCompositeAttributes from the database.
+	GetThingWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) (*models.ThingWithCompositeAttributes, error)
+	// GetThingWithCompositeAttributessByNameBranchAndDate retrieves a list of ThingWithCompositeAttributess from the database.
+	GetThingWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input GetThingWithCompositeAttributessByNameBranchAndDateInput) ([]models.ThingWithCompositeAttributes, error)
+	// DeleteThingWithCompositeAttributes deletes a ThingWithCompositeAttributes from the database.
+	DeleteThingWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) error
+
 	// SaveThingWithDateRange saves a ThingWithDateRange to the database.
 	SaveThingWithDateRange(ctx context.Context, m models.ThingWithDateRange) error
 	// GetThingWithDateRange retrieves a ThingWithDateRange from the database.
@@ -145,6 +154,29 @@ var _ error = ErrThingAlreadyExists{}
 // Error returns a description of the error.
 func (e ErrThingAlreadyExists) Error() string {
 	return "Thing already exists"
+}
+
+// GetThingWithCompositeAttributessByNameBranchAndDateInput is the query input to GetThingWithCompositeAttributessByNameBranchAndDate.
+type GetThingWithCompositeAttributessByNameBranchAndDateInput struct {
+	Name                  string
+	Branch                string
+	DateStartingAt        *strfmt.DateTime
+	Descending            bool
+	DisableConsistentRead bool
+}
+
+// ErrThingWithCompositeAttributesNotFound is returned when the database fails to find a ThingWithCompositeAttributes.
+type ErrThingWithCompositeAttributesNotFound struct {
+	Name   string
+	Branch string
+	Date   strfmt.DateTime
+}
+
+var _ error = ErrThingWithCompositeAttributesNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithCompositeAttributesNotFound) Error() string {
+	return "could not find ThingWithCompositeAttributes"
 }
 
 // GetThingWithDateRangesByNameAndDateInput is the query input to GetThingWithDateRangesByNameAndDate.
