@@ -234,6 +234,13 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		}
 		return diff
 	},
+	"pascalizeAndJoin": func(s []string) string {
+		ret := ""
+		for _, el := range s {
+			ret += swag.ToGoName(el)
+		}
+		return ret
+	},
 })
 
 func contains(el string, arr []string) bool {

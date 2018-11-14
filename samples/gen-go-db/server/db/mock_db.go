@@ -72,6 +72,56 @@ func (mr *MockInterfaceMockRecorder) DeleteSimpleThing(ctx, name interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSimpleThing", reflect.TypeOf((*MockInterface)(nil).DeleteSimpleThing), ctx, name)
 }
 
+// SaveTeacherSharingRule mocks base method
+func (m_2 *MockInterface) SaveTeacherSharingRule(ctx context.Context, m models.TeacherSharingRule) error {
+	ret := m_2.ctrl.Call(m_2, "SaveTeacherSharingRule", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveTeacherSharingRule indicates an expected call of SaveTeacherSharingRule
+func (mr *MockInterfaceMockRecorder) SaveTeacherSharingRule(ctx, m interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveTeacherSharingRule", reflect.TypeOf((*MockInterface)(nil).SaveTeacherSharingRule), ctx, m)
+}
+
+// GetTeacherSharingRule mocks base method
+func (m *MockInterface) GetTeacherSharingRule(ctx context.Context, teacher, school, app string) (*models.TeacherSharingRule, error) {
+	ret := m.ctrl.Call(m, "GetTeacherSharingRule", ctx, teacher, school, app)
+	ret0, _ := ret[0].(*models.TeacherSharingRule)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTeacherSharingRule indicates an expected call of GetTeacherSharingRule
+func (mr *MockInterfaceMockRecorder) GetTeacherSharingRule(ctx, teacher, school, app interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTeacherSharingRule", reflect.TypeOf((*MockInterface)(nil).GetTeacherSharingRule), ctx, teacher, school, app)
+}
+
+// GetTeacherSharingRulesByTeacherAndSchoolApp mocks base method
+func (m *MockInterface) GetTeacherSharingRulesByTeacherAndSchoolApp(ctx context.Context, input GetTeacherSharingRulesByTeacherAndSchoolAppInput) ([]models.TeacherSharingRule, error) {
+	ret := m.ctrl.Call(m, "GetTeacherSharingRulesByTeacherAndSchoolApp", ctx, input)
+	ret0, _ := ret[0].([]models.TeacherSharingRule)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTeacherSharingRulesByTeacherAndSchoolApp indicates an expected call of GetTeacherSharingRulesByTeacherAndSchoolApp
+func (mr *MockInterfaceMockRecorder) GetTeacherSharingRulesByTeacherAndSchoolApp(ctx, input interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTeacherSharingRulesByTeacherAndSchoolApp", reflect.TypeOf((*MockInterface)(nil).GetTeacherSharingRulesByTeacherAndSchoolApp), ctx, input)
+}
+
+// DeleteTeacherSharingRule mocks base method
+func (m *MockInterface) DeleteTeacherSharingRule(ctx context.Context, teacher, school, app string) error {
+	ret := m.ctrl.Call(m, "DeleteTeacherSharingRule", ctx, teacher, school, app)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteTeacherSharingRule indicates an expected call of DeleteTeacherSharingRule
+func (mr *MockInterfaceMockRecorder) DeleteTeacherSharingRule(ctx, teacher, school, app interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTeacherSharingRule", reflect.TypeOf((*MockInterface)(nil).DeleteTeacherSharingRule), ctx, teacher, school, app)
+}
+
 // SaveThing mocks base method
 func (m_2 *MockInterface) SaveThing(ctx context.Context, m models.Thing) error {
 	ret := m_2.ctrl.Call(m_2, "SaveThing", ctx, m)

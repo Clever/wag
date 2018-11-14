@@ -68,23 +68,35 @@ func DateTime(d strfmt.DateTime) *strfmt.DateTime { return &d }
 {{- $modelName := pascalize $xdbConfig.SchemaName }}
 {{- $indexName := indexName $xdbConfig.DynamoDB.KeySchema }}
 {{- $hashKey := index $xdbConfig.DynamoDB.KeySchema 0 }}
+{{- $pkModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
 {{- if indexHasRangeKey $xdbConfig.DynamoDB.KeySchema }}
 {{- $rangeKey := index $xdbConfig.DynamoDB.KeySchema 1 }}
-{{- $pkModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
+{{- $rangeKeyAttributes := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "RANGE" }}
+{{- $lenRangeKeyAttributes := len $rangeKeyAttributes }}
 // Get{{ $modelName }}sBy{{ $indexName }}Input is the query input to Get{{ $modelName }}sBy{{ $indexName }}.
 type Get{{ $modelName }}sBy{{ $indexName }}Input struct {
 	{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
 	{{ pascalize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }}
         {{- end }}
-	{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "RANGE" }}
+	{{- if gt $lenRangeKeyAttributes 1 }}
+	StartingAt *{{ pascalizeAndJoin $rangeKeyAttributes }}
+        {{- else }}
+	{{- $attributeName := index $rangeKeyAttributes 0 }}
 	{{ pascalize $attributeName }}StartingAt *{{ goTypeForAttribute $xdbConfig $attributeName }}
         {{- end }}
         Descending bool
         DisableConsistentRead bool
 }
+{{- if gt $lenRangeKeyAttributes 1 }}
+// {{ pascalizeAndJoin $rangeKeyAttributes }} struct.
+type {{ pascalizeAndJoin $rangeKeyAttributes }} struct {
+	{{- range $attributeName := $rangeKeyAttributes }}
+        {{ pascalize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }}
+        {{- end }}
+}
+{{- end }}
 {{- end }}
 
-{{- $pkModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
 // Err{{ $modelName}}NotFound is returned when the database fails to find a {{ $modelName}}.
 type Err{{ $modelName}}NotFound struct {
         {{- range $attributeName := $pkModelAttributeNames }}

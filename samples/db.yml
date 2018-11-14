@@ -176,3 +176,46 @@ definitions:
       date:
         type: string
         format: date-time
+
+  # Composite range keys + three part composites
+  TeacherSharingRule:
+    x-db:
+      AllowOverwrites: true
+      CompositeAttributes:
+      - AttributeName: school_app
+        Properties: [ school, app ]
+        Separator: "_"
+      DynamoDB:
+        KeySchema:
+          - AttributeName: teacher
+            KeyType: HASH
+          - AttributeName: school_app
+            KeyType: RANGE
+    type: object
+    properties:
+      id:
+        type: string
+      district:
+        type: string
+      school:
+        type: string
+      teacher:
+        type: string
+      app:
+        type: string
+      teacher_app:
+        type: string
+        pattern: '^[0-9a-f]{24}_[0-9a-f]{24}$'
+      school_teacher_app:
+        type: string
+        pattern: '^[0-9a-f]{24}_[0-9a-f]{24}_[0-9a-f]{24}$'
+      sections:
+        type: array
+        items:
+          type: string
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time

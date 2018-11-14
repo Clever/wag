@@ -23,6 +23,10 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetSimpleThing", GetSimpleThing(dbFactory(), t))
 	t.Run("SaveSimpleThing", SaveSimpleThing(dbFactory(), t))
 	t.Run("DeleteSimpleThing", DeleteSimpleThing(dbFactory(), t))
+	t.Run("GetTeacherSharingRule", GetTeacherSharingRule(dbFactory(), t))
+	t.Run("GetTeacherSharingRulesByTeacherAndSchoolApp", GetTeacherSharingRulesByTeacherAndSchoolApp(dbFactory(), t))
+	t.Run("SaveTeacherSharingRule", SaveTeacherSharingRule(dbFactory(), t))
+	t.Run("DeleteTeacherSharingRule", DeleteTeacherSharingRule(dbFactory(), t))
 	t.Run("GetThing", GetThing(dbFactory(), t))
 	t.Run("GetThingsByNameAndVersion", GetThingsByNameAndVersion(dbFactory(), t))
 	t.Run("SaveThing", SaveThing(dbFactory(), t))
@@ -81,6 +85,189 @@ func DeleteSimpleThing(s db.Interface, t *testing.T) func(t *testing.T) {
 		}
 		require.Nil(t, s.SaveSimpleThing(ctx, m))
 		require.Nil(t, s.DeleteSimpleThing(ctx, m.Name))
+	}
+}
+
+func GetTeacherSharingRule(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.TeacherSharingRule{
+			Teacher: "string1",
+			School:  "string1",
+			App:     "string1",
+		}
+		require.Nil(t, s.SaveTeacherSharingRule(ctx, m))
+		m2, err := s.GetTeacherSharingRule(ctx, m.Teacher, m.School, m.App)
+		require.Nil(t, err)
+		require.Equal(t, m.Teacher, m2.Teacher)
+		require.Equal(t, m.School, m2.School)
+		require.Equal(t, m.App, m2.App)
+
+		_, err = s.GetTeacherSharingRule(ctx, "string2", "string2", "string2")
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrTeacherSharingRuleNotFound{})
+	}
+}
+
+type getTeacherSharingRulesByTeacherAndSchoolAppInput struct {
+	ctx   context.Context
+	input db.GetTeacherSharingRulesByTeacherAndSchoolAppInput
+}
+type getTeacherSharingRulesByTeacherAndSchoolAppOutput struct {
+	teacherSharingRules []models.TeacherSharingRule
+	err                 error
+}
+type getTeacherSharingRulesByTeacherAndSchoolAppTest struct {
+	testName string
+	d        db.Interface
+	input    getTeacherSharingRulesByTeacherAndSchoolAppInput
+	output   getTeacherSharingRulesByTeacherAndSchoolAppOutput
+}
+
+func (g getTeacherSharingRulesByTeacherAndSchoolAppTest) run(t *testing.T) {
+	teacherSharingRules, err := g.d.GetTeacherSharingRulesByTeacherAndSchoolApp(g.input.ctx, g.input.input)
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.teacherSharingRules, teacherSharingRules)
+}
+
+func GetTeacherSharingRulesByTeacherAndSchoolApp(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveTeacherSharingRule(ctx, models.TeacherSharingRule{
+			Teacher: "string1",
+			School:  "string1",
+			App:     "string1",
+		}))
+		require.Nil(t, d.SaveTeacherSharingRule(ctx, models.TeacherSharingRule{
+			Teacher: "string1",
+			School:  "string2",
+			App:     "string2",
+		}))
+		require.Nil(t, d.SaveTeacherSharingRule(ctx, models.TeacherSharingRule{
+			Teacher: "string1",
+			School:  "string3",
+			App:     "string3",
+		}))
+		tests := []getTeacherSharingRulesByTeacherAndSchoolAppTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getTeacherSharingRulesByTeacherAndSchoolAppInput{
+					ctx: context.Background(),
+					input: db.GetTeacherSharingRulesByTeacherAndSchoolAppInput{
+						Teacher: "string1",
+					},
+				},
+				output: getTeacherSharingRulesByTeacherAndSchoolAppOutput{
+					teacherSharingRules: []models.TeacherSharingRule{
+						models.TeacherSharingRule{
+							Teacher: "string1",
+							School:  "string1",
+							App:     "string1",
+						},
+						models.TeacherSharingRule{
+							Teacher: "string1",
+							School:  "string2",
+							App:     "string2",
+						},
+						models.TeacherSharingRule{
+							Teacher: "string1",
+							School:  "string3",
+							App:     "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getTeacherSharingRulesByTeacherAndSchoolAppInput{
+					ctx: context.Background(),
+					input: db.GetTeacherSharingRulesByTeacherAndSchoolAppInput{
+						Teacher:    "string1",
+						Descending: true,
+					},
+				},
+				output: getTeacherSharingRulesByTeacherAndSchoolAppOutput{
+					teacherSharingRules: []models.TeacherSharingRule{
+						models.TeacherSharingRule{
+							Teacher: "string1",
+							School:  "string3",
+							App:     "string3",
+						},
+						models.TeacherSharingRule{
+							Teacher: "string1",
+							School:  "string2",
+							App:     "string2",
+						},
+						models.TeacherSharingRule{
+							Teacher: "string1",
+							School:  "string1",
+							App:     "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getTeacherSharingRulesByTeacherAndSchoolAppInput{
+					ctx: context.Background(),
+					input: db.GetTeacherSharingRulesByTeacherAndSchoolAppInput{
+						Teacher: "string1",
+						StartingAt: &db.SchoolApp{
+							School: "string2",
+							App:    "string2",
+						},
+					},
+				},
+				output: getTeacherSharingRulesByTeacherAndSchoolAppOutput{
+					teacherSharingRules: []models.TeacherSharingRule{
+						models.TeacherSharingRule{
+							Teacher: "string1",
+							School:  "string2",
+							App:     "string2",
+						},
+						models.TeacherSharingRule{
+							Teacher: "string1",
+							School:  "string3",
+							App:     "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+func SaveTeacherSharingRule(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.TeacherSharingRule{
+			Teacher: "string1",
+			School:  "string1",
+			App:     "string1",
+		}
+		require.Nil(t, s.SaveTeacherSharingRule(ctx, m))
+	}
+}
+
+func DeleteTeacherSharingRule(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.TeacherSharingRule{
+			Teacher: "string1",
+			School:  "string1",
+			App:     "string1",
+		}
+		require.Nil(t, s.SaveTeacherSharingRule(ctx, m))
+		require.Nil(t, s.DeleteTeacherSharingRule(ctx, m.Teacher, m.School, m.App))
 	}
 }
 

@@ -82,7 +82,10 @@ func Get{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
 {{- if indexHasRangeKey $xdbConfig.DynamoDB.KeySchema }}
 {{- $indexName := indexName $xdbConfig.DynamoDB.KeySchema }}
 {{- $hashKey := index $xdbConfig.DynamoDB.KeySchema 0 }}
+{{- $hashKeyAttributes := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
 {{- $rangeKey := index $xdbConfig.DynamoDB.KeySchema 1 }}
+{{- $rangeKeyAttributes := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "RANGE" }}
+{{- $lenRangeKeyAttributes := len $rangeKeyAttributes }}
 type get{{ $modelName }}sBy{{ $indexName }}Input struct {
 	ctx   context.Context
 	input db.Get{{ $modelName }}sBy{{ $indexName }}Input
@@ -113,18 +116,18 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
 			{{- end }}
 		}))
 		require.Nil(t, d.Save{{ $modelName }}(ctx, models.{{ $modelName }}{
-        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
+        		{{- range $attributeName := $hashKeyAttributes }}
 			{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
                         {{- end }}
-        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "RANGE" }}
+        		{{- range $attributeName := $rangeKeyAttributes }}
 			{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
                         {{- end }}
 		}))
 		require.Nil(t, d.Save{{ $modelName }}(ctx, models.{{ $modelName }}{
-        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
+        		{{- range $attributeName := $hashKeyAttributes }}
 			{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
                         {{- end }}
-        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "RANGE" }}
+        		{{- range $attributeName := $rangeKeyAttributes }}
 			{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
                         {{- end }}
 		}))
@@ -135,7 +138,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
 				input: get{{ $modelName }}sBy{{ $indexName }}Input{
 					ctx: context.Background(),
 					input: db.Get{{ $modelName }}sBy{{ $indexName }}Input{
-			        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
+			        		{{- range $attributeName := $hashKeyAttributes }}
 						{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
                                                 {{- end }}
 					},
@@ -148,18 +151,18 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
                                                         {{- end }}
 						},
 						models.{{ $modelName }}{
-				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
+				        		{{- range $attributeName := $hashKeyAttributes }}
 							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
                                                         {{- end }}
-				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "RANGE" }}
+				        		{{- range $attributeName := $rangeKeyAttributes }}
 							{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
                                                         {{- end }}
 						},
 						models.{{ $modelName }}{
-				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
+				        		{{- range $attributeName := $hashKeyAttributes }}
 							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
                                                         {{- end }}
-				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "RANGE" }}
+				        		{{- range $attributeName := $rangeKeyAttributes }}
 							{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
                                                         {{- end }}
 						},
@@ -173,7 +176,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
 				input: get{{ $modelName }}sBy{{ $indexName }}Input{
 					ctx: context.Background(),
 					input: db.Get{{ $modelName }}sBy{{ $indexName }}Input{
-			        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
+			        		{{- range $attributeName := $hashKeyAttributes }}
 						{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
                                                 {{- end }}
 						Descending: true,
@@ -182,26 +185,26 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
 				output: get{{ $modelName }}sBy{{ $indexName }}Output{
 					{{ camelize $modelName }}s: []models.{{ $modelName }}{
 						models.{{ $modelName }}{
-				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
+				        		{{- range $attributeName := $hashKeyAttributes }}
 							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
                                                         {{- end }}
-				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "RANGE" }}
+				        		{{- range $attributeName := $rangeKeyAttributes }}
 							{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
                                                         {{- end }}
 						},
 						models.{{ $modelName }}{
-				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
+				        		{{- range $attributeName := $hashKeyAttributes }}
 							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
                                                         {{- end }}
-				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "RANGE" }}
+				        		{{- range $attributeName := $rangeKeyAttributes }}
 							{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
                                                         {{- end }}
 						},
 						models.{{ $modelName }}{
-				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
+				        		{{- range $attributeName := $hashKeyAttributes }}
 							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
                                                         {{- end }}
-				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "RANGE" }}
+				        		{{- range $attributeName := $rangeKeyAttributes }}
 							{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
                                                         {{- end }}
 						},
@@ -215,10 +218,17 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
 				input: get{{ $modelName }}sBy{{ $indexName }}Input{
 					ctx: context.Background(),
 					input: db.Get{{ $modelName }}sBy{{ $indexName }}Input{
-			        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
+			        		{{- range $attributeName := $hashKeyAttributes }}
 						{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
                                                 {{- end }}
-			        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "RANGE" }}
+                                                {{- if gt $lenRangeKeyAttributes 1 }}
+                                                StartingAt: &db.{{ pascalizeAndJoin $rangeKeyAttributes }}{
+                                                	{{- range $attributeName := $rangeKeyAttributes }}
+                                                        {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
+                                                        {{- end }}
+                                                },
+                                                {{- else }}
+			        		{{- $attributeName := index $rangeKeyAttributes 0 }}
 						{{ pascalize $attributeName }}StartingAt: db.{{ exampleValuePtrForAttribute $xdbConfig $attributeName 2 }},
                                                 {{- end }}
 					},
@@ -226,18 +236,18 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
 				output: get{{ $modelName }}sBy{{ $indexName }}Output{
 					{{ camelize $modelName }}s: []models.{{ $modelName }}{
 						models.{{ $modelName }}{
-				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
+				        		{{- range $attributeName := $hashKeyAttributes }}
 							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
                                                         {{- end }}
-				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "RANGE" }}
+				        		{{- range $attributeName := $rangeKeyAttributes }}
 							{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
                                                         {{- end }}
 						},
 						models.{{ $modelName }}{
-				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
+				        		{{- range $attributeName := $hashKeyAttributes }}
 							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
                                                         {{- end }}
-				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "RANGE" }}
+				        		{{- range $attributeName := $rangeKeyAttributes }}
 							{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
                                                         {{- end }}
 						},

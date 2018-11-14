@@ -18,6 +18,15 @@ type Interface interface {
 	// DeleteSimpleThing deletes a SimpleThing from the database.
 	DeleteSimpleThing(ctx context.Context, name string) error
 
+	// SaveTeacherSharingRule saves a TeacherSharingRule to the database.
+	SaveTeacherSharingRule(ctx context.Context, m models.TeacherSharingRule) error
+	// GetTeacherSharingRule retrieves a TeacherSharingRule from the database.
+	GetTeacherSharingRule(ctx context.Context, teacher string, school string, app string) (*models.TeacherSharingRule, error)
+	// GetTeacherSharingRulesByTeacherAndSchoolApp retrieves a list of TeacherSharingRules from the database.
+	GetTeacherSharingRulesByTeacherAndSchoolApp(ctx context.Context, input GetTeacherSharingRulesByTeacherAndSchoolAppInput) ([]models.TeacherSharingRule, error)
+	// DeleteTeacherSharingRule deletes a TeacherSharingRule from the database.
+	DeleteTeacherSharingRule(ctx context.Context, teacher string, school string, app string) error
+
 	// SaveThing saves a Thing to the database.
 	SaveThing(ctx context.Context, m models.Thing) error
 	// GetThing retrieves a Thing from the database.
@@ -90,6 +99,34 @@ var _ error = ErrSimpleThingAlreadyExists{}
 // Error returns a description of the error.
 func (e ErrSimpleThingAlreadyExists) Error() string {
 	return "SimpleThing already exists"
+}
+
+// GetTeacherSharingRulesByTeacherAndSchoolAppInput is the query input to GetTeacherSharingRulesByTeacherAndSchoolApp.
+type GetTeacherSharingRulesByTeacherAndSchoolAppInput struct {
+	Teacher               string
+	StartingAt            *SchoolApp
+	Descending            bool
+	DisableConsistentRead bool
+}
+
+// SchoolApp struct.
+type SchoolApp struct {
+	School string
+	App    string
+}
+
+// ErrTeacherSharingRuleNotFound is returned when the database fails to find a TeacherSharingRule.
+type ErrTeacherSharingRuleNotFound struct {
+	Teacher string
+	School  string
+	App     string
+}
+
+var _ error = ErrTeacherSharingRuleNotFound{}
+
+// Error returns a description of the error.
+func (e ErrTeacherSharingRuleNotFound) Error() string {
+	return "could not find TeacherSharingRule"
 }
 
 // GetThingsByNameAndVersionInput is the query input to GetThingsByNameAndVersion.

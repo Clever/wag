@@ -29,6 +29,8 @@ type Config struct {
 	DefaultReadCapacityUnits int64
 	// SimpleThingTable configuration.
 	SimpleThingTable SimpleThingTable
+	// TeacherSharingRuleTable configuration.
+	TeacherSharingRuleTable TeacherSharingRuleTable
 	// ThingTable configuration.
 	ThingTable ThingTable
 	// ThingWithCompositeAttributesTable configuration.
@@ -67,6 +69,20 @@ func New(config Config) (*DB, error) {
 	}
 	if simpleThingTable.WriteCapacityUnits == 0 {
 		simpleThingTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
+	// configure TeacherSharingRule table
+	teacherSharingRuleTable := config.TeacherSharingRuleTable
+	if teacherSharingRuleTable.DynamoDBAPI == nil {
+		teacherSharingRuleTable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if teacherSharingRuleTable.Prefix == "" {
+		teacherSharingRuleTable.Prefix = config.DefaultPrefix
+	}
+	if teacherSharingRuleTable.ReadCapacityUnits == 0 {
+		teacherSharingRuleTable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if teacherSharingRuleTable.WriteCapacityUnits == 0 {
+		teacherSharingRuleTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
 	// configure Thing table
 	thingTable := config.ThingTable
@@ -127,6 +143,7 @@ func New(config Config) (*DB, error) {
 
 	return &DB{
 		simpleThingTable:                  simpleThingTable,
+		teacherSharingRuleTable:           teacherSharingRuleTable,
 		thingTable:                        thingTable,
 		thingWithCompositeAttributesTable: thingWithCompositeAttributesTable,
 		thingWithDateRangeTable:           thingWithDateRangeTable,
@@ -137,6 +154,7 @@ func New(config Config) (*DB, error) {
 // DB implements the database interface using DynamoDB to store data.
 type DB struct {
 	simpleThingTable                  SimpleThingTable
+	teacherSharingRuleTable           TeacherSharingRuleTable
 	thingTable                        ThingTable
 	thingWithCompositeAttributesTable ThingWithCompositeAttributesTable
 	thingWithDateRangeTable           ThingWithDateRangeTable
@@ -148,6 +166,9 @@ var _ db.Interface = DB{}
 // CreateTables creates all tables.
 func (d DB) CreateTables(ctx context.Context) error {
 	if err := d.simpleThingTable.create(ctx); err != nil {
+		return err
+	}
+	if err := d.teacherSharingRuleTable.create(ctx); err != nil {
 		return err
 	}
 	if err := d.thingTable.create(ctx); err != nil {
@@ -178,6 +199,26 @@ func (d DB) GetSimpleThing(ctx context.Context, name string) (*models.SimpleThin
 // DeleteSimpleThing deletes a SimpleThing from the database.
 func (d DB) DeleteSimpleThing(ctx context.Context, name string) error {
 	return d.simpleThingTable.deleteSimpleThing(ctx, name)
+}
+
+// SaveTeacherSharingRule saves a TeacherSharingRule to the database.
+func (d DB) SaveTeacherSharingRule(ctx context.Context, m models.TeacherSharingRule) error {
+	return d.teacherSharingRuleTable.saveTeacherSharingRule(ctx, m)
+}
+
+// GetTeacherSharingRule retrieves a TeacherSharingRule from the database.
+func (d DB) GetTeacherSharingRule(ctx context.Context, teacher string, school string, app string) (*models.TeacherSharingRule, error) {
+	return d.teacherSharingRuleTable.getTeacherSharingRule(ctx, teacher, school, app)
+}
+
+// GetTeacherSharingRulesByTeacherAndSchoolApp retrieves a list of TeacherSharingRules from the database.
+func (d DB) GetTeacherSharingRulesByTeacherAndSchoolApp(ctx context.Context, input db.GetTeacherSharingRulesByTeacherAndSchoolAppInput) ([]models.TeacherSharingRule, error) {
+	return d.teacherSharingRuleTable.getTeacherSharingRulesByTeacherAndSchoolApp(ctx, input)
+}
+
+// DeleteTeacherSharingRule deletes a TeacherSharingRule from the database.
+func (d DB) DeleteTeacherSharingRule(ctx context.Context, teacher string, school string, app string) error {
+	return d.teacherSharingRuleTable.deleteTeacherSharingRule(ctx, teacher, school, app)
 }
 
 // SaveThing saves a Thing to the database.

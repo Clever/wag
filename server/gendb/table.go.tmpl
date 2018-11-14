@@ -209,6 +209,8 @@ func (t {{ $modelName }}Table) get{{ $modelName }}(ctx context.Context,
 {{- $computedIndexName := indexName $xdbConfig.DynamoDB.KeySchema }}
 {{- $hashKey := index $xdbConfig.DynamoDB.KeySchema 0 }}
 {{- $rangeKey := index $xdbConfig.DynamoDB.KeySchema 1 }}
+{{- $rangeKeyAttributes := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "RANGE" }}
+{{- $lenRangeKeyAttributes := len $rangeKeyAttributes }}
 func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx context.Context, input db.Get{{ $modelName }}sBy{{ $computedIndexName }}Input) ([]models.{{ $modelName }}, error) {
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
@@ -228,11 +230,18 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
 	}
+	{{- if gt $lenRangeKeyAttributes 1 }}
+	if input.StartingAt == nil {
+        {{- else }}
 	if input.{{ pascalize $rangeKey.AttributeName }}StartingAt == nil {
+        {{- end }}
 		queryInput.KeyConditionExpression = aws.String("#{{ upper $hashKey.AttributeName }} = :{{ camelize $hashKey.AttributeName }}")
 	} else {
 		queryInput.ExpressionAttributeNames["#{{ upper $rangeKey.AttributeName }}"] = aws.String("{{ $rangeKey.AttributeName }}")
 		queryInput.ExpressionAttributeValues[":{{ camelize $rangeKey.AttributeName }}"] = &dynamodb.AttributeValue{
+			{{- if gt $lenRangeKeyAttributes 1 }}
+                        S: aws.String({{ compositeValue $xdbConfig $rangeKey.AttributeName "input.StartingAt" }}),
+                        {{- else }}
                        	{{- $attrGoType := goTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
                         {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
                         {{- if eq $attrDynamoDBType "S" }}
@@ -243,6 +252,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
                         {{- end }}
                        	{{- else if eq $attrDynamoDBType "N" }}
 			N: aws.String(fmt.Sprintf("%%d", *input.{{ pascalize $rangeKey.AttributeName }}StartingAt)),
+                        {{- end }}
                         {{- end }}
 		}
 		queryInput.KeyConditionExpression = aws.String("#{{ upper $hashKey.AttributeName }} = :{{ camelize $hashKey.AttributeName }} AND #{{ upper $rangeKey.AttributeName }} >= :{{ camelize $rangeKey.AttributeName }}")
