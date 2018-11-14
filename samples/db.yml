@@ -185,11 +185,23 @@ definitions:
       - AttributeName: school_app
         Properties: [ school, app ]
         Separator: "_"
+      - AttributeName: school_teacher_app
+        Properties: [ school, teacher, app ]
+        Separator: "_"
       DynamoDB:
         KeySchema:
-          - AttributeName: teacher
+        - AttributeName: teacher
+          KeyType: HASH
+        - AttributeName: school_app
+          KeyType: RANGE
+        GlobalSecondaryIndexes:
+        - IndexName: district_school_teacher_app
+          Projection:
+            ProjectionType: KEYS_ONLY
+          KeySchema:
+          - AttributeName: district
             KeyType: HASH
-          - AttributeName: school_app
+          - AttributeName: school_teacher_app
             KeyType: RANGE
     type: object
     properties:
@@ -203,19 +215,7 @@ definitions:
         type: string
       app:
         type: string
-      teacher_app:
-        type: string
-        pattern: '^[0-9a-f]{24}_[0-9a-f]{24}$'
-      school_teacher_app:
-        type: string
-        pattern: '^[0-9a-f]{24}_[0-9a-f]{24}_[0-9a-f]{24}$'
       sections:
         type: array
         items:
           type: string
-      created_at:
-        type: string
-        format: date-time
-      updated_at:
-        type: string
-        format: date-time

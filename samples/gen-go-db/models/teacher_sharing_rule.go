@@ -10,7 +10,6 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
-	"github.com/go-openapi/validate"
 )
 
 // TeacherSharingRule teacher sharing rule
@@ -19,9 +18,6 @@ type TeacherSharingRule struct {
 
 	// app
 	App string `json:"app,omitempty"`
-
-	// created at
-	CreatedAt strfmt.DateTime `json:"created_at,omitempty"`
 
 	// district
 	District string `json:"district,omitempty"`
@@ -32,39 +28,18 @@ type TeacherSharingRule struct {
 	// school
 	School string `json:"school,omitempty"`
 
-	// school teacher app
-	// Pattern: ^[0-9a-f]{24}_[0-9a-f]{24}_[0-9a-f]{24}$
-	SchoolTeacherApp string `json:"school_teacher_app,omitempty"`
-
 	// sections
 	Sections []string `json:"sections"`
 
 	// teacher
 	Teacher string `json:"teacher,omitempty"`
-
-	// teacher app
-	// Pattern: ^[0-9a-f]{24}_[0-9a-f]{24}$
-	TeacherApp string `json:"teacher_app,omitempty"`
-
-	// updated at
-	UpdatedAt strfmt.DateTime `json:"updated_at,omitempty"`
 }
 
 // Validate validates this teacher sharing rule
 func (m *TeacherSharingRule) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateSchoolTeacherApp(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
 	if err := m.validateSections(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateTeacherApp(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -75,36 +50,10 @@ func (m *TeacherSharingRule) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *TeacherSharingRule) validateSchoolTeacherApp(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.SchoolTeacherApp) { // not required
-		return nil
-	}
-
-	if err := validate.Pattern("school_teacher_app", "body", string(m.SchoolTeacherApp), `^[0-9a-f]{24}_[0-9a-f]{24}_[0-9a-f]{24}$`); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (m *TeacherSharingRule) validateSections(formats strfmt.Registry) error {
 
 	if swag.IsZero(m.Sections) { // not required
 		return nil
-	}
-
-	return nil
-}
-
-func (m *TeacherSharingRule) validateTeacherApp(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.TeacherApp) { // not required
-		return nil
-	}
-
-	if err := validate.Pattern("teacher_app", "body", string(m.TeacherApp), `^[0-9a-f]{24}_[0-9a-f]{24}$`); err != nil {
-		return err
 	}
 
 	return nil

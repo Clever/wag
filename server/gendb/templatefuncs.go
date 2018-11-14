@@ -38,6 +38,17 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		}
 		return indexes
 	},
+	"projectedIndexesWithCompositeAttributes": func(config XDBConfig) [][]cloudformation.AWSDynamoDBTable_KeySchema {
+		indexes := [][]cloudformation.AWSDynamoDBTable_KeySchema{}
+		for _, gsi := range config.DynamoDB.GlobalSecondaryIndexes {
+			if gsi.Projection == nil || gsi.Projection.ProjectionType == "ALL" ||
+				!indexContainsCompositeAttribute(config, gsi.KeySchema) {
+				continue
+			}
+			indexes = append(indexes, gsi.KeySchema)
+		}
+		return indexes
+	},
 	"unionKeySchemas": func(a, b []cloudformation.AWSDynamoDBTable_KeySchema) []cloudformation.AWSDynamoDBTable_KeySchema {
 		ret := []cloudformation.AWSDynamoDBTable_KeySchema{}
 		seen := map[string]struct{}{}
@@ -79,21 +90,9 @@ var funcMap = template.FuncMap(map[string]interface{}{
 			return ""
 		}
 	},
-	"findCompositeAttribute": findCompositeAttribute,
-	"indexContainsCompositeAttribute": func(config XDBConfig, keySchema []cloudformation.AWSDynamoDBTable_KeySchema) bool {
-		for _, ks := range keySchema {
-			if ca := findCompositeAttribute(config, ks.AttributeName); ca != nil {
-				return true
-			}
-		}
-		return false
-	},
-	"isComposite": func(config XDBConfig, attributeName string) bool {
-		if ca := findCompositeAttribute(config, attributeName); ca != nil {
-			return true
-		}
-		return false
-	},
+	"findCompositeAttribute":          findCompositeAttribute,
+	"indexContainsCompositeAttribute": indexContainsCompositeAttribute,
+	"isComposite":                     isComposite,
 	"compositeValue": func(config XDBConfig, attributeName string, modelVarName string) string {
 		ca := findCompositeAttribute(config, attributeName)
 		if ca == nil {
@@ -142,19 +141,7 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		sort.Strings(attrs)
 		return attrs
 	},
-	"modelAttributeNamesForIndex": func(config XDBConfig, keySchema []cloudformation.AWSDynamoDBTable_KeySchema) []string {
-		attributeNames := []string{}
-		for _, ks := range keySchema {
-			if _, ok := config.Schema.Properties[ks.AttributeName]; ok {
-				attributeNames = append(attributeNames, ks.AttributeName)
-			} else if ca := findCompositeAttribute(config, ks.AttributeName); ca != nil {
-				attributeNames = append(attributeNames, ca.Properties...)
-			} else {
-				attributeNames = append(attributeNames, "unknownAttributeName")
-			}
-		}
-		return attributeNames
-	},
+	"modelAttributeNamesForIndex": modelAttributeNamesForIndex,
 	"modelAttributeNamesForKeyType": func(config XDBConfig, keySchema []cloudformation.AWSDynamoDBTable_KeySchema, keyType string) []string {
 		attributeNames := []string{}
 		for _, ks := range keySchema {
@@ -171,23 +158,27 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		}
 		return attributeNames
 	},
-	"goTypeForAttribute": goTypeForAttribute,
-	"dynamoDBTypeForAttribute": func(config XDBConfig, attributeName string) string {
-		if propertySchema, ok := config.Schema.Properties[attributeName]; ok {
-			if len(propertySchema.Type) > 0 {
-				if propertySchema.Type[0] == "string" {
-					return "S"
-				} else if propertySchema.Type[0] == "integer" {
-					return "N"
-				}
+	"nonPKSecondaryStringProperties": func(config XDBConfig) []string {
+		// find attributes in non-primary indexes that are strings.
+		// these must be specified when saving a model
+		secondaryStringAttributes := []string{}
+		for _, gsi := range config.DynamoDB.GlobalSecondaryIndexes {
+			if gsi.Projection != nil && gsi.Projection.ProjectionType == "ALL" {
+				continue
 			}
-		} else if ca := findCompositeAttribute(config, attributeName); ca != nil {
-			// composite attributes must be strings, since they are
-			// a concatenation of values
-			return "S"
+			for _, attrName := range modelAttributeNamesForIndex(config, gsi.KeySchema) {
+				if dynamoDBTypeForAttribute(config, attrName) != "S" {
+					// only care about string properties
+					continue
+				}
+				secondaryStringAttributes = append(secondaryStringAttributes, attrName)
+			}
 		}
-		return "unknownType"
+		pkAttributes := modelAttributeNamesForIndex(config, config.DynamoDB.KeySchema)
+		return difference(secondaryStringAttributes, pkAttributes)
 	},
+	"goTypeForAttribute":       goTypeForAttribute,
+	"dynamoDBTypeForAttribute": dynamoDBTypeForAttribute,
 	"exampleValueForAttribute": func(config XDBConfig, attributeName string, i int) string {
 		if propertySchema, ok := config.Schema.Properties[attributeName]; ok {
 			if propertySchema.Format == "date-time" {
@@ -225,15 +216,7 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		}
 		return "unknownType"
 	},
-	"difference": func(a, b []string) []string {
-		diff := []string{}
-		for _, el := range a {
-			if !contains(el, b) {
-				diff = append(diff, el)
-			}
-		}
-		return diff
-	},
+	"difference": difference,
 	"pascalizeAndJoin": func(s []string) string {
 		ret := ""
 		for _, el := range s {
@@ -269,4 +252,61 @@ func goTypeForAttribute(config XDBConfig, attributeName string) string {
 		return "string"
 	}
 	return "unknownType"
+}
+
+func indexContainsCompositeAttribute(config XDBConfig, keySchema []cloudformation.AWSDynamoDBTable_KeySchema) bool {
+	for _, ks := range keySchema {
+		if ca := findCompositeAttribute(config, ks.AttributeName); ca != nil {
+			return true
+		}
+	}
+	return false
+}
+
+func difference(a, b []string) []string {
+	diff := []string{}
+	for _, el := range a {
+		if !contains(el, b) {
+			diff = append(diff, el)
+		}
+	}
+	return diff
+}
+
+func dynamoDBTypeForAttribute(config XDBConfig, attributeName string) string {
+	if propertySchema, ok := config.Schema.Properties[attributeName]; ok {
+		if len(propertySchema.Type) > 0 {
+			if propertySchema.Type[0] == "string" {
+				return "S"
+			} else if propertySchema.Type[0] == "integer" {
+				return "N"
+			}
+		}
+	} else if ca := findCompositeAttribute(config, attributeName); ca != nil {
+		// composite attributes must be strings, since they are
+		// a concatenation of values
+		return "S"
+	}
+	return "unknownType"
+}
+
+func modelAttributeNamesForIndex(config XDBConfig, keySchema []cloudformation.AWSDynamoDBTable_KeySchema) []string {
+	attributeNames := []string{}
+	for _, ks := range keySchema {
+		if _, ok := config.Schema.Properties[ks.AttributeName]; ok {
+			attributeNames = append(attributeNames, ks.AttributeName)
+		} else if ca := findCompositeAttribute(config, ks.AttributeName); ca != nil {
+			attributeNames = append(attributeNames, ca.Properties...)
+		} else {
+			attributeNames = append(attributeNames, "unknownAttributeName")
+		}
+	}
+	return attributeNames
+}
+
+func isComposite(config XDBConfig, attributeName string) bool {
+	if ca := findCompositeAttribute(config, attributeName); ca != nil {
+		return true
+	}
+	return false
 }

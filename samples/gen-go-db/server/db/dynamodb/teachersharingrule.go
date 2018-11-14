@@ -3,6 +3,7 @@ package dynamodb
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/Clever/wag/samples/gen-go-db/models"
 	"github.com/Clever/wag/samples/gen-go-db/server/db"
@@ -27,6 +28,12 @@ type ddbTeacherSharingRulePrimaryKey struct {
 	SchoolApp string `dynamodbav:"school_app"`
 }
 
+// ddbTeacherSharingRuleGSIDistrictSchoolTeacherApp represents the district_school_teacher_app GSI.
+type ddbTeacherSharingRuleGSIDistrictSchoolTeacherApp struct {
+	District         string `dynamodbav:"district"`
+	SchoolTeacherApp string `dynamodbav:"school_teacher_app"`
+}
+
 // ddbTeacherSharingRule represents a TeacherSharingRule as stored in DynamoDB.
 type ddbTeacherSharingRule struct {
 	models.TeacherSharingRule
@@ -43,7 +50,15 @@ func (t TeacherSharingRuleTable) create(ctx context.Context) error {
 	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
 			{
+				AttributeName: aws.String("district"),
+				AttributeType: aws.String("S"),
+			},
+			{
 				AttributeName: aws.String("school_app"),
+				AttributeType: aws.String("S"),
+			},
+			{
+				AttributeName: aws.String("school_teacher_app"),
 				AttributeType: aws.String("S"),
 			},
 			{
@@ -59,6 +74,28 @@ func (t TeacherSharingRuleTable) create(ctx context.Context) error {
 			{
 				AttributeName: aws.String("school_app"),
 				KeyType:       aws.String(dynamodb.KeyTypeRange),
+			},
+		},
+		GlobalSecondaryIndexes: []*dynamodb.GlobalSecondaryIndex{
+			{
+				IndexName: aws.String("district_school_teacher_app"),
+				Projection: &dynamodb.Projection{
+					ProjectionType: aws.String("KEYS_ONLY"),
+				},
+				KeySchema: []*dynamodb.KeySchemaElement{
+					{
+						AttributeName: aws.String("district"),
+						KeyType:       aws.String(dynamodb.KeyTypeHash),
+					},
+					{
+						AttributeName: aws.String("school_teacher_app"),
+						KeyType:       aws.String(dynamodb.KeyTypeRange),
+					},
+				},
+				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
+					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
+				},
 			},
 		},
 		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
@@ -169,6 +206,41 @@ func (t TeacherSharingRuleTable) deleteTeacherSharingRule(ctx context.Context, t
 	return nil
 }
 
+func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx context.Context, input db.GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput) ([]models.TeacherSharingRule, error) {
+	queryInput := &dynamodb.QueryInput{
+		TableName: aws.String(t.name()),
+		IndexName: aws.String("district_school_teacher_app"),
+		ExpressionAttributeNames: map[string]*string{
+			"#DISTRICT": aws.String("district"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":district": &dynamodb.AttributeValue{
+				S: aws.String(input.District),
+			},
+		},
+		ScanIndexForward: aws.Bool(!input.Descending),
+	}
+	if input.StartingAt == nil {
+		queryInput.KeyConditionExpression = aws.String("#DISTRICT = :district")
+	} else {
+		queryInput.ExpressionAttributeNames["#SCHOOL_TEACHER_APP"] = aws.String("school_teacher_app")
+		queryInput.ExpressionAttributeValues[":schoolTeacherApp"] = &dynamodb.AttributeValue{
+			S: aws.String(fmt.Sprintf("%s_%s_%s", input.StartingAt.School, input.StartingAt.Teacher, input.StartingAt.App)),
+		}
+		queryInput.KeyConditionExpression = aws.String("#DISTRICT = :district AND #SCHOOL_TEACHER_APP >= :schoolTeacherApp")
+	}
+
+	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	if err != nil {
+		return nil, err
+	}
+	if len(queryOutput.Items) == 0 {
+		return []models.TeacherSharingRule{}, nil
+	}
+
+	return decodeTeacherSharingRules(queryOutput.Items)
+}
+
 // encodeTeacherSharingRule encodes a TeacherSharingRule as a DynamoDB map of attribute values.
 func encodeTeacherSharingRule(m models.TeacherSharingRule) (map[string]*dynamodb.AttributeValue, error) {
 	val, err := dynamodbattribute.MarshalMap(ddbTeacherSharingRule{
@@ -188,6 +260,16 @@ func encodeTeacherSharingRule(m models.TeacherSharingRule) (map[string]*dynamodb
 	for k, v := range primaryKey {
 		val[k] = v
 	}
+	districtSchoolTeacherApp, err := dynamodbattribute.MarshalMap(ddbTeacherSharingRuleGSIDistrictSchoolTeacherApp{
+		District:         m.District,
+		SchoolTeacherApp: fmt.Sprintf("%s_%s_%s", m.School, m.Teacher, m.App),
+	})
+	if err != nil {
+		return nil, err
+	}
+	for k, v := range districtSchoolTeacherApp {
+		val[k] = v
+	}
 	return val, err
 }
 
@@ -198,6 +280,17 @@ func decodeTeacherSharingRule(m map[string]*dynamodb.AttributeValue, out *models
 		return err
 	}
 	*out = ddbTeacherSharingRule.TeacherSharingRule
+	// parse composite attributes from projected secondary indexes and fill
+	// in model properties
+	if v, ok := m["school_teacher_app"]; ok && v.S != nil {
+		parts := strings.Split(*v.S, "_")
+		if len(parts) != 3 {
+			return fmt.Errorf("expected 3 parts: '%s'", *v.S)
+		}
+		out.School = parts[0]
+		out.Teacher = parts[1]
+		out.App = parts[2]
+	}
 	return nil
 }
 

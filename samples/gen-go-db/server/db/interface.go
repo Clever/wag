@@ -26,6 +26,8 @@ type Interface interface {
 	GetTeacherSharingRulesByTeacherAndSchoolApp(ctx context.Context, input GetTeacherSharingRulesByTeacherAndSchoolAppInput) ([]models.TeacherSharingRule, error)
 	// DeleteTeacherSharingRule deletes a TeacherSharingRule from the database.
 	DeleteTeacherSharingRule(ctx context.Context, teacher string, school string, app string) error
+	// GetTeacherSharingRulesByDistrictAndSchoolTeacherApp retrieves a list of TeacherSharingRules from the database.
+	GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx context.Context, input GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput) ([]models.TeacherSharingRule, error)
 
 	// SaveThing saves a Thing to the database.
 	SaveThing(ctx context.Context, m models.Thing) error
@@ -126,6 +128,35 @@ var _ error = ErrTeacherSharingRuleNotFound{}
 
 // Error returns a description of the error.
 func (e ErrTeacherSharingRuleNotFound) Error() string {
+	return "could not find TeacherSharingRule"
+}
+
+// GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput is the query input to GetTeacherSharingRulesByDistrictAndSchoolTeacherApp.
+type GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput struct {
+	District   string
+	StartingAt *SchoolTeacherApp
+	Descending bool
+}
+
+// SchoolTeacherApp struct.
+type SchoolTeacherApp struct {
+	School  string
+	Teacher string
+	App     string
+}
+
+// ErrTeacherSharingRuleByDistrictAndSchoolTeacherAppNotFound is returned when the database fails to find a TeacherSharingRule.
+type ErrTeacherSharingRuleByDistrictAndSchoolTeacherAppNotFound struct {
+	District string
+	School   string
+	Teacher  string
+	App      string
+}
+
+var _ error = ErrTeacherSharingRuleByDistrictAndSchoolTeacherAppNotFound{}
+
+// Error returns a description of the error.
+func (e ErrTeacherSharingRuleByDistrictAndSchoolTeacherAppNotFound) Error() string {
 	return "could not find TeacherSharingRule"
 }
 

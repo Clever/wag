@@ -1,10 +1,14 @@
 {{- $modelName := pascalize .XDBConfig.SchemaName }}
 {{- $xdbConfig := .XDBConfig }}
+{{- $projectedIndexesWithCompositeAttributes := projectedIndexesWithCompositeAttributes $xdbConfig }}
 package dynamodb
 
 import (
 	"context"
 	"fmt"
+        {{- if len $projectedIndexesWithCompositeAttributes }}
+        "strings"
+        {{- end }}
 	{{- if tableUsesDateTime $xdbConfig }}
 	"time"
         {{- end }}
@@ -298,6 +302,8 @@ func (t {{ $modelName }}Table) delete{{ $modelName }}(ctx context.Context,
 {{- if indexHasRangeKey $gsi.KeySchema }}
 {{- $hashKey := index $gsi.KeySchema 0 }}
 {{- $rangeKey := index $gsi.KeySchema 1 }}
+{{- $rangeKeyAttributes := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "RANGE" }}
+{{- $lenRangeKeyAttributes := len $rangeKeyAttributes }}
 func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx context.Context, input db.Get{{ $modelName }}sBy{{ $computedIndexName }}Input) ([]models.{{ $modelName }}, error) {
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
@@ -317,11 +323,18 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 	}
+	{{- if gt $lenRangeKeyAttributes 1 }}
+	if input.StartingAt == nil {
+        {{- else }}
 	if input.{{ pascalize $rangeKey.AttributeName }}StartingAt == nil {
+        {{- end }}
 		queryInput.KeyConditionExpression = aws.String("#{{ upper $hashKey.AttributeName }} = :{{ camelize $hashKey.AttributeName }}")
 	} else {
 		queryInput.ExpressionAttributeNames["#{{ upper $rangeKey.AttributeName }}"] = aws.String("{{ $rangeKey.AttributeName }}")
 		queryInput.ExpressionAttributeValues[":{{ camelize $rangeKey.AttributeName }}"] = &dynamodb.AttributeValue{
+			{{- if gt $lenRangeKeyAttributes 1 }}
+                        S: aws.String({{ compositeValue $xdbConfig $rangeKey.AttributeName "input.StartingAt" }}),
+                        {{- else }}
                        	{{- $attrGoType := goTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
                         {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
                      	{{- if eq $attrDynamoDBType "S" }}
@@ -332,6 +345,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
                         {{- end }}
                        	{{- else if eq $attrDynamoDBType "N" }}
 			N: aws.String(fmt.Sprintf("%%d", *input.{{ pascalize $rangeKey.AttributeName }}StartingAt)),
+                        {{- end }}
                         {{- end }}
 		}
 		queryInput.KeyConditionExpression = aws.String("#{{ upper $hashKey.AttributeName }} = :{{ camelize $hashKey.AttributeName }} AND #{{ upper $rangeKey.AttributeName }} >= :{{ camelize $rangeKey.AttributeName }}")
@@ -443,6 +457,26 @@ func decode{{ $modelName }}(m map[string]*dynamodb.AttributeValue, out *models.{
 		return err
 	}
 	*out = ddb{{ $modelName }}.{{ $modelName }}
+        {{- if len $projectedIndexesWithCompositeAttributes }}
+	// parse composite attributes from projected secondary indexes and fill
+	// in model properties
+        {{- range $projectedIndexWithCompositeAttributes := $projectedIndexesWithCompositeAttributes }}
+        {{- range $ks := $projectedIndexWithCompositeAttributes }}
+        {{- if isComposite $xdbConfig $ks.AttributeName }}
+        {{- $ca := findCompositeAttribute $xdbConfig $ks.AttributeName }}
+        if v, ok := m["{{ $ks.AttributeName }}"]; ok && v.S != nil {
+		parts := strings.Split(*v.S, "{{ $ca.Separator }}")
+		if len(parts) != {{ len $ca.Properties }} {
+			return fmt.Errorf("expected {{ len $ca.Properties }} parts: '%%s'", *v.S)
+		}
+                {{- range $i, $prop := $ca.Properties }}
+		out.{{ pascalize $prop }} = parts[{{ $i }}]
+                {{- end }}
+	}
+        {{- end }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
 	return nil
 }
 

@@ -221,6 +221,11 @@ func (d DB) DeleteTeacherSharingRule(ctx context.Context, teacher string, school
 	return d.teacherSharingRuleTable.deleteTeacherSharingRule(ctx, teacher, school, app)
 }
 
+// GetTeacherSharingRulesByDistrictAndSchoolTeacherApp retrieves a list of TeacherSharingRules from the database.
+func (d DB) GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx context.Context, input db.GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput) ([]models.TeacherSharingRule, error) {
+	return d.teacherSharingRuleTable.getTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx, input)
+}
+
 // SaveThing saves a Thing to the database.
 func (d DB) SaveThing(ctx context.Context, m models.Thing) error {
 	return d.thingTable.saveThing(ctx, m)

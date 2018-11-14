@@ -116,16 +116,29 @@ func (e Err{{ $modelName}}NotFound) Error() string {
 {{- $hashKey := index $gsi.KeySchema 0 }}
 {{- if indexHasRangeKey $gsi.KeySchema }}
 {{- $rangeKey := index $gsi.KeySchema 1 }}
+{{- $rangeKeyAttributes := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "RANGE" }}
+{{- $lenRangeKeyAttributes := len $rangeKeyAttributes }}
 // Get{{ $modelName }}sBy{{ $computedIndexName }}Input is the query input to Get{{ $modelName }}sBy{{ $computedIndexName }}.
 type Get{{ $modelName }}sBy{{ $computedIndexName }}Input struct {
 	{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "HASH" }}
 	{{ pascalize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }}
         {{- end }}
-	{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "RANGE" }}
+	{{- if gt $lenRangeKeyAttributes 1 }}
+	StartingAt *{{ pascalizeAndJoin $rangeKeyAttributes }}
+        {{- else }}
+	{{- $attributeName := index $rangeKeyAttributes 0 }}
 	{{ pascalize $attributeName }}StartingAt *{{ goTypeForAttribute $xdbConfig $attributeName }}
         {{- end }}
         Descending bool
 }
+{{- if gt $lenRangeKeyAttributes 1 }}
+// {{ pascalizeAndJoin $rangeKeyAttributes }} struct.
+type {{ pascalizeAndJoin $rangeKeyAttributes }} struct {
+	{{- range $attributeName := $rangeKeyAttributes }}
+        {{ pascalize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }}
+        {{- end }}
+}
+{{- end }}
 {{- end }}
 
 {{- $gsiModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $gsi.KeySchema }}
