@@ -21,7 +21,7 @@ type Interface interface {
     // Get{{ $modelName }} retrieves a {{ $modelName }} from the database.
     Get{{ $modelName }}(ctx context.Context,
 	{{- range $_, $attributeName := $pkModelAttributeNames }}
-	{{- camelize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
+	{{- varname $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
 	{{- end -}}
     ) (*models.{{ $modelName }}, error)
     {{- if indexHasRangeKey $xdbConfig.DynamoDB.KeySchema }}
@@ -32,7 +32,7 @@ type Interface interface {
     // Delete{{ $modelName }} deletes a {{ $modelName }} from the database.
     Delete{{ $modelName }}(ctx context.Context,
 	{{- range $_, $attributeName := $pkModelAttributeNames }}
-	{{- camelize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
+	{{- varname $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
 	{{- end -}}
     ) error
     {{- range $gsi := $xdbConfig.DynamoDB.GlobalSecondaryIndexes }}
@@ -44,7 +44,7 @@ type Interface interface {
     // Get{{ $modelName }}By{{ $indexName }} retrieves a {{ $modelName }} from the database.
     Get{{ $modelName }}By{{ $indexName }}(ctx context.Context,
       {{- range $_, $ks := $gsi.KeySchema }}
-      {{- camelize $ks.AttributeName }} {{ goTypeForAttribute $xdbConfig $ks.AttributeName }},
+      {{- varname $ks.AttributeName }} {{ goTypeForAttribute $xdbConfig $ks.AttributeName }},
       {{- end -}}
     ) (*models.{{ $modelName }}, error)
     {{- end }}

@@ -115,7 +115,7 @@ var funcMap = template.FuncMap(map[string]interface{}{
 			if modelVarName != "" {
 				value += fmt.Sprintf("%s.%s", modelVarName, swag.ToGoName(prop))
 			} else {
-				value += prop
+				value += generator.FuncMap["varname"].(func(string) string)(prop)
 			}
 			if i != len(ca.Properties)-1 {
 				value += `, `

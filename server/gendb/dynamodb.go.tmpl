@@ -116,12 +116,12 @@ func (d DB) Save{{ $modelName }}(ctx context.Context, m models.{{ $modelName }})
 // Get{{ $modelName }} retrieves a {{ $modelName }} from the database.
 func (d DB) Get{{ $modelName }}(ctx context.Context,
 	{{- range $_, $attributeName := $pkModelAttributeNames }}
-	{{- camelize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
+	{{- varname $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
 	{{- end -}}
 ) (*models.{{ $modelName }}, error) {
 	return d.{{ $modelNameCamel }}Table.get{{ $modelName }}(ctx,
 		{{- range $_, $attributeName := $pkModelAttributeNames }}
-		{{- camelize $attributeName }},
+		{{- varname $attributeName }},
 		{{- end -}}
 )
 }
@@ -136,12 +136,12 @@ func (d DB) Get{{ $modelName }}sBy{{ $indexName }}(ctx context.Context, input db
 // Delete{{ $modelName }} deletes a {{ $modelName }} from the database.
 func (d DB) Delete{{ $modelName }}(ctx context.Context,
 	{{- range $_, $attributeName := $pkModelAttributeNames }}
-	{{- camelize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
+	{{- varname $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
 	{{- end -}}
 ) error {
 	return d.{{ $modelNameCamel }}Table.delete{{ $modelName }}(ctx,
 		{{- range $_, $attributeName := $pkModelAttributeNames }}
-		{{- camelize $attributeName }},
+		{{- varname $attributeName }},
 		{{- end -}}
     )
 }
@@ -158,12 +158,12 @@ func (d DB) Get{{ $modelName }}sBy{{ $indexName }}(ctx context.Context, input db
 // Get{{ $modelName }}By{{ $indexName }} retrieves a {{ $modelName }} from the database.
 func (d DB) Get{{ $modelName }}By{{ $indexName }}(ctx context.Context,
 	{{- range $_, $attributeName := $gsiModelAttributeNames }}
-	{{- camelize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
+	{{- varname $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
 	{{- end -}}
     ) (*models.{{ $modelName }}, error) {
 	return d.{{ $modelNameCamel }}Table.get{{ $modelName }}By{{ $indexName }}(ctx,
 		{{- range $_, $attributeName := $gsiModelAttributeNames }}
-		{{- camelize $attributeName }},
+		{{- varname $attributeName }},
 		{{- end -}}
         )
 }

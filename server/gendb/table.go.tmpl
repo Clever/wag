@@ -174,12 +174,12 @@ func (t {{ $modelName }}Table) save{{ $modelName }}(ctx context.Context, m model
 {{ $pkModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
 func (t {{ $modelName }}Table) get{{ $modelName }}(ctx context.Context,
 	{{- range $_, $attributeName := $pkModelAttributeNames }}
-	{{- camelize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
+	{{- varname $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
 	{{- end -}}
 ) (*models.{{ $modelName }}, error) {
 	key, err := dynamodbattribute.MarshalMap(ddb{{ $modelName }}PrimaryKey{
 		{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-		{{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValue $xdbConfig $pk.AttributeName "" }}{{ else }}{{ camelize $pk.AttributeName }}{{ end }},
+		{{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValue $xdbConfig $pk.AttributeName "" }}{{ else }}{{ varname $pk.AttributeName }}{{ end }},
 		{{- end }}
 	})
 	if err != nil {
@@ -196,7 +196,7 @@ func (t {{ $modelName }}Table) get{{ $modelName }}(ctx context.Context,
 	if len(res.Item) == 0 {
 		return nil, db.Err{{ $modelName }}NotFound{
 		{{- range $_, $attributeName := $pkModelAttributeNames }}
-		{{ pascalize $attributeName }}: {{ camelize $attributeName }},
+		{{ pascalize $attributeName }}: {{ varname $attributeName }},
 		{{- end }}
 		}
 	}
@@ -276,12 +276,12 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
 
 func (t {{ $modelName }}Table) delete{{ $modelName }}(ctx context.Context,
 	{{- range $_, $attributeName := $pkModelAttributeNames }}
-	{{- camelize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
+	{{- varname $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
 	{{- end -}}
 ) error {
 	key, err := dynamodbattribute.MarshalMap(ddb{{ $modelName }}PrimaryKey{
 		{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-		{{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValue $xdbConfig $pk.AttributeName "" }}{{ else }}{{ camelize $pk.AttributeName }}{{ end }},
+		{{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValue $xdbConfig $pk.AttributeName "" }}{{ else }}{{ varname $pk.AttributeName }}{{ end }},
 		{{- end }}
 	})
 	if err != nil {
@@ -365,7 +365,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
 {{- $ks := index $gsi.KeySchema 0 }}
 {{- $ksAttrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $ks.AttributeName }}
 func (t {{ $modelName}}Table) get{{ $modelName }}By{{ $computedIndexName }}(ctx context.Context,
-      {{- camelize $ks.AttributeName }} {{ goTypeForAttribute $xdbConfig $ks.AttributeName }}) (*models.{{ $modelName }}, error) {
+      {{- varname $ks.AttributeName }} {{ goTypeForAttribute $xdbConfig $ks.AttributeName }}) (*models.{{ $modelName }}, error) {
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		IndexName: aws.String("{{ $gsi.IndexName }}"),
@@ -375,9 +375,9 @@ func (t {{ $modelName}}Table) get{{ $modelName }}By{{ $computedIndexName }}(ctx 
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":{{ camelize $ks.AttributeName }}": &dynamodb.AttributeValue{
                         	{{- if eq $ksAttrDynamoDBType "S" }}
-				S: aws.String({{- camelize $ks.AttributeName }}),
+				S: aws.String({{- varname $ks.AttributeName }}),
                         	{{- else if eq $ksAttrDynamoDBType "N" }}
-				N: aws.String(fmt.Sprintf("%d", {{ camelize $ks.AttributeName }})),
+				N: aws.String(fmt.Sprintf("%d", {{ varname $ks.AttributeName }})),
 	                        {{- end }}
 			},
 		},
@@ -390,7 +390,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}By{{ $computedIndexName }}(ctx 
 	}
 	if len(queryOutput.Items) == 0 {
 		return nil, db.Err{{ $modelName }}By{{ $computedIndexName }}NotFound{
-                {{- pascalize $ks.AttributeName }}: {{ camelize $ks.AttributeName -}}
+                {{- pascalize $ks.AttributeName }}: {{ varname $ks.AttributeName -}}
                 }
 	}
 

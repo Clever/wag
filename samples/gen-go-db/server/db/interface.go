@@ -65,9 +65,9 @@ type Interface interface {
 	// SaveThingWithUnderscores saves a ThingWithUnderscores to the database.
 	SaveThingWithUnderscores(ctx context.Context, m models.ThingWithUnderscores) error
 	// GetThingWithUnderscores retrieves a ThingWithUnderscores from the database.
-	GetThingWithUnderscores(ctx context.Context, idApp string) (*models.ThingWithUnderscores, error)
+	GetThingWithUnderscores(ctx context.Context, iDApp string) (*models.ThingWithUnderscores, error)
 	// DeleteThingWithUnderscores deletes a ThingWithUnderscores from the database.
-	DeleteThingWithUnderscores(ctx context.Context, idApp string) error
+	DeleteThingWithUnderscores(ctx context.Context, iDApp string) error
 }
 
 // Int64 returns a pointer to the int64 value passed in.

@@ -307,11 +307,11 @@ func (d DB) SaveThingWithUnderscores(ctx context.Context, m models.ThingWithUnde
 }
 
 // GetThingWithUnderscores retrieves a ThingWithUnderscores from the database.
-func (d DB) GetThingWithUnderscores(ctx context.Context, idApp string) (*models.ThingWithUnderscores, error) {
-	return d.thingWithUnderscoresTable.getThingWithUnderscores(ctx, idApp)
+func (d DB) GetThingWithUnderscores(ctx context.Context, iDApp string) (*models.ThingWithUnderscores, error) {
+	return d.thingWithUnderscoresTable.getThingWithUnderscores(ctx, iDApp)
 }
 
 // DeleteThingWithUnderscores deletes a ThingWithUnderscores from the database.
-func (d DB) DeleteThingWithUnderscores(ctx context.Context, idApp string) error {
-	return d.thingWithUnderscoresTable.deleteThingWithUnderscores(ctx, idApp)
+func (d DB) DeleteThingWithUnderscores(ctx context.Context, iDApp string) error {
+	return d.thingWithUnderscoresTable.deleteThingWithUnderscores(ctx, iDApp)
 }
