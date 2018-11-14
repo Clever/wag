@@ -68,7 +68,7 @@ func (config XDBConfig) attributeNameIsDefined(attributeName string) error {
 	} else if ca := findCompositeAttribute(config, attributeName); ca != nil {
 		return nil
 	}
-	return fmt.Errorf("'%s' is unrecognized and cannot be used as AttributeName. AttributeNames must match schema properties or be defined as composite attributes.", attributeName)
+	return fmt.Errorf("unrecognized attribute: '%s'. AttributeNames must match schema properties or be defined as composite attributes", attributeName)
 }
 
 // AWSDynamoDBTable is a subset of clouformation.AWSDynamoDBTable. Currently supported fields:

@@ -29,6 +29,12 @@ type ddbThingWithCompositeAttributesPrimaryKey struct {
 	Date       strfmt.DateTime `dynamodbav:"date"`
 }
 
+// ddbThingWithCompositeAttributesGSINameVersion represents the nameVersion GSI.
+type ddbThingWithCompositeAttributesGSINameVersion struct {
+	NameVersion string          `dynamodbav:"name_version"`
+	Date        strfmt.DateTime `dynamodbav:"date"`
+}
+
 // ddbThingWithCompositeAttributes represents a ThingWithCompositeAttributes as stored in DynamoDB.
 type ddbThingWithCompositeAttributes struct {
 	models.ThingWithCompositeAttributes
@@ -52,6 +58,10 @@ func (t ThingWithCompositeAttributesTable) create(ctx context.Context) error {
 				AttributeName: aws.String("name_branch"),
 				AttributeType: aws.String("S"),
 			},
+			{
+				AttributeName: aws.String("name_version"),
+				AttributeType: aws.String("S"),
+			},
 		},
 		KeySchema: []*dynamodb.KeySchemaElement{
 			{
@@ -61,6 +71,28 @@ func (t ThingWithCompositeAttributesTable) create(ctx context.Context) error {
 			{
 				AttributeName: aws.String("date"),
 				KeyType:       aws.String(dynamodb.KeyTypeRange),
+			},
+		},
+		GlobalSecondaryIndexes: []*dynamodb.GlobalSecondaryIndex{
+			{
+				IndexName: aws.String("nameVersion"),
+				Projection: &dynamodb.Projection{
+					ProjectionType: aws.String("ALL"),
+				},
+				KeySchema: []*dynamodb.KeySchemaElement{
+					{
+						AttributeName: aws.String("name_version"),
+						KeyType:       aws.String(dynamodb.KeyTypeHash),
+					},
+					{
+						AttributeName: aws.String("date"),
+						KeyType:       aws.String(dynamodb.KeyTypeRange),
+					},
+				},
+				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
+					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
+				},
 			},
 		},
 		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
@@ -171,6 +203,41 @@ func (t ThingWithCompositeAttributesTable) deleteThingWithCompositeAttributes(ct
 	return nil
 }
 
+func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input db.GetThingWithCompositeAttributessByNameVersionAndDateInput) ([]models.ThingWithCompositeAttributes, error) {
+	queryInput := &dynamodb.QueryInput{
+		TableName: aws.String(t.name()),
+		IndexName: aws.String("nameVersion"),
+		ExpressionAttributeNames: map[string]*string{
+			"#NAME_VERSION": aws.String("name_version"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":nameVersion": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s:%d", input.Name, input.Version)),
+			},
+		},
+		ScanIndexForward: aws.Bool(!input.Descending),
+	}
+	if input.DateStartingAt == nil {
+		queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion")
+	} else {
+		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
+		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
+			S: aws.String(time.Time(*input.DateStartingAt).Format(time.RFC3339)), // dynamodb attributevalue only supports RFC3339 resolution
+		}
+		queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion AND #DATE >= :date")
+	}
+
+	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	if err != nil {
+		return nil, err
+	}
+	if len(queryOutput.Items) == 0 {
+		return []models.ThingWithCompositeAttributes{}, nil
+	}
+
+	return decodeThingWithCompositeAttributess(queryOutput.Items)
+}
+
 // encodeThingWithCompositeAttributes encodes a ThingWithCompositeAttributes as a DynamoDB map of attribute values.
 func encodeThingWithCompositeAttributes(m models.ThingWithCompositeAttributes) (map[string]*dynamodb.AttributeValue, error) {
 	val, err := dynamodbattribute.MarshalMap(ddbThingWithCompositeAttributes{
@@ -188,6 +255,16 @@ func encodeThingWithCompositeAttributes(m models.ThingWithCompositeAttributes) (
 		return nil, err
 	}
 	for k, v := range primaryKey {
+		val[k] = v
+	}
+	nameVersion, err := dynamodbattribute.MarshalMap(ddbThingWithCompositeAttributesGSINameVersion{
+		NameVersion: fmt.Sprintf("%s:%d", m.Name, m.Version),
+		Date:        m.Date,
+	})
+	if err != nil {
+		return nil, err
+	}
+	for k, v := range nameVersion {
 		val[k] = v
 	}
 	return val, err

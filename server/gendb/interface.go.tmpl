@@ -106,17 +106,22 @@ func (e Err{{ $modelName}}NotFound) Error() string {
 {{- $rangeKey := index $gsi.KeySchema 1 }}
 // Get{{ $modelName }}sBy{{ $computedIndexName }}Input is the query input to Get{{ $modelName }}sBy{{ $computedIndexName }}.
 type Get{{ $modelName }}sBy{{ $computedIndexName }}Input struct {
-	{{ pascalize $hashKey.AttributeName }} {{ goTypeForAttribute $xdbConfig $hashKey.AttributeName }}
-        {{ pascalize $rangeKey.AttributeName }}StartingAt *{{ goTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
+	{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "HASH" }}
+	{{ pascalize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }}
+        {{- end }}
+	{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "RANGE" }}
+	{{ pascalize $attributeName }}StartingAt *{{ goTypeForAttribute $xdbConfig $attributeName }}
+        {{- end }}
         Descending bool
 }
 {{- end }}
 
+{{- $gsiModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $gsi.KeySchema }}
 // Err{{ $modelName}}By{{ $computedIndexName }}NotFound is returned when the database fails to find a {{ $modelName}}.
 type Err{{ $modelName}}By{{ $computedIndexName }}NotFound struct {
-	{{- range $_, $ks := $gsi.KeySchema }}
-	{{ pascalize $ks.AttributeName }} {{ goTypeForAttribute $xdbConfig $ks.AttributeName }}
-	{{- end }}
+        {{- range $attributeName := $gsiModelAttributeNames }}
+	{{ pascalize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }}
+        {{- end }}
 }
 
 var _ error = Err{{ $modelName}}By{{ $computedIndexName }}NotFound{}

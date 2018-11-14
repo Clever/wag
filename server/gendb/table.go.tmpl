@@ -297,11 +297,10 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":{{ camelize $hashKey.AttributeName }}": &dynamodb.AttributeValue{
-                           	{{- $attrGoType := goTypeForAttribute $xdbConfig $hashKey.AttributeName }}
-                                {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $hashKey.AttributeName }}
-                        	{{- if eq $attrDynamoDBType "S" }}
-				S: aws.String(input.{{ pascalize $hashKey.AttributeName }}),
-                        	{{- else if eq $attrDynamoDBType "N" }}
+                        	{{- $dynamoDBType := dynamoDBTypeForAttribute $xdbConfig $hashKey.AttributeName }}
+                        	{{- if eq $dynamoDBType "S" }}
+                                S: aws.String({{ if isComposite $xdbConfig $hashKey.AttributeName }}{{ compositeValue $xdbConfig $hashKey.AttributeName "input" }}{{ else }}input.{{ pascalize $hashKey.AttributeName }}{{ end }}),
+                        	{{- else if eq $dynamoDBType "N" }}
 				N: aws.String(fmt.Sprintf("%d", input.{{ pascalize $hashKey.AttributeName }})),
 	                        {{- end }}
 			},
@@ -412,7 +411,7 @@ func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]*dynamodb.Att
         {{- if indexContainsCompositeAttribute $xdbConfig $gsi.KeySchema }}
 	{{ camelize $gsi.IndexName }}, err := dynamodbattribute.MarshalMap(ddb{{ $modelName }}GSI{{ pascalize $gsi.IndexName }}{
 		{{- range $_, $sk := $gsi.KeySchema }}
-		{{ pascalize $sk.AttributeName }}: {{ if isComposite $xdbConfig $sk.AttributeName }}{{ compositeValue $xdbConfig $sk.AttributeName "" }}{{ else }}{{ camelize $sk.AttributeName }}{{ end }},
+		{{ pascalize $sk.AttributeName }}: {{ if isComposite $xdbConfig $sk.AttributeName }}{{ compositeValue $xdbConfig $sk.AttributeName "m" }}{{ else }}m.{{ pascalize $sk.AttributeName }}{{ end }},
                 {{- end }}
 	})
 	if err != nil {

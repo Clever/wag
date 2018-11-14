@@ -39,6 +39,8 @@ type Interface interface {
 	GetThingWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input GetThingWithCompositeAttributessByNameBranchAndDateInput) ([]models.ThingWithCompositeAttributes, error)
 	// DeleteThingWithCompositeAttributes deletes a ThingWithCompositeAttributes from the database.
 	DeleteThingWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) error
+	// GetThingWithCompositeAttributessByNameVersionAndDate retrieves a list of ThingWithCompositeAttributess from the database.
+	GetThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input GetThingWithCompositeAttributessByNameVersionAndDateInput) ([]models.ThingWithCompositeAttributes, error)
 
 	// SaveThingWithDateRange saves a ThingWithDateRange to the database.
 	SaveThingWithDateRange(ctx context.Context, m models.ThingWithDateRange) error
@@ -176,6 +178,28 @@ var _ error = ErrThingWithCompositeAttributesNotFound{}
 
 // Error returns a description of the error.
 func (e ErrThingWithCompositeAttributesNotFound) Error() string {
+	return "could not find ThingWithCompositeAttributes"
+}
+
+// GetThingWithCompositeAttributessByNameVersionAndDateInput is the query input to GetThingWithCompositeAttributessByNameVersionAndDate.
+type GetThingWithCompositeAttributessByNameVersionAndDateInput struct {
+	Name           string
+	Version        int64
+	DateStartingAt *strfmt.DateTime
+	Descending     bool
+}
+
+// ErrThingWithCompositeAttributesByNameVersionAndDateNotFound is returned when the database fails to find a ThingWithCompositeAttributes.
+type ErrThingWithCompositeAttributesByNameVersionAndDateNotFound struct {
+	Name    string
+	Version int64
+	Date    strfmt.DateTime
+}
+
+var _ error = ErrThingWithCompositeAttributesByNameVersionAndDateNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithCompositeAttributesByNameVersionAndDateNotFound) Error() string {
 	return "could not find ThingWithCompositeAttributes"
 }
 

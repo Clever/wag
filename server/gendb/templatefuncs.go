@@ -100,8 +100,13 @@ var funcMap = template.FuncMap(map[string]interface{}{
 			return "not-a-composite-attribute"
 		}
 		value := `fmt.Sprintf("`
-		for i, _ := range ca.Properties {
-			value += `%%s`
+		for i, prop := range ca.Properties {
+			goTyp := goTypeForAttribute(config, prop)
+			if goTyp == "int64" {
+				value += `%%d`
+			} else {
+				value += `%%s`
+			}
 			if i != len(ca.Properties)-1 {
 				value += ca.Separator
 			}
@@ -166,24 +171,7 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		}
 		return attributeNames
 	},
-	"goTypeForAttribute": func(config XDBConfig, attributeName string) string {
-		if propertySchema, ok := config.Schema.Properties[attributeName]; ok {
-			if propertySchema.Format == "date-time" {
-				return "strfmt.DateTime"
-			} else if len(propertySchema.Type) > 0 {
-				if propertySchema.Type[0] == "string" {
-					return "string"
-				} else if propertySchema.Type[0] == "integer" {
-					return "int64"
-				}
-			}
-		} else if ca := findCompositeAttribute(config, attributeName); ca != nil {
-			// composite attributes must be strings, since they are
-			// a concatenation of values
-			return "string"
-		}
-		return "unknownType"
-	},
+	"goTypeForAttribute": goTypeForAttribute,
 	"dynamoDBTypeForAttribute": func(config XDBConfig, attributeName string) string {
 		if propertySchema, ok := config.Schema.Properties[attributeName]; ok {
 			if len(propertySchema.Type) > 0 {
@@ -237,4 +225,41 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		}
 		return "unknownType"
 	},
+	"difference": func(a, b []string) []string {
+		diff := []string{}
+		for _, el := range a {
+			if !contains(el, b) {
+				diff = append(diff, el)
+			}
+		}
+		return diff
+	},
 })
+
+func contains(el string, arr []string) bool {
+	for _, val := range arr {
+		if el == val {
+			return true
+		}
+	}
+	return false
+}
+
+func goTypeForAttribute(config XDBConfig, attributeName string) string {
+	if propertySchema, ok := config.Schema.Properties[attributeName]; ok {
+		if propertySchema.Format == "date-time" {
+			return "strfmt.DateTime"
+		} else if len(propertySchema.Type) > 0 {
+			if propertySchema.Type[0] == "string" {
+				return "string"
+			} else if propertySchema.Type[0] == "integer" {
+				return "int64"
+			}
+		}
+	} else if ca := findCompositeAttribute(config, attributeName); ca != nil {
+		// composite attributes must be strings, since they are
+		// a concatenation of values
+		return "string"
+	}
+	return "unknownType"
+}

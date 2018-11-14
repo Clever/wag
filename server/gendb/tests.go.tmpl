@@ -289,6 +289,8 @@ func Delete{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
 {{- $computedIndexName := indexName $gsi.KeySchema }}
 {{ $primaryAndSecondaryKeySchemas := unionKeySchemas $xdbConfig.DynamoDB.KeySchema $gsi.KeySchema }}
 {{ $primaryKeySchemaWithoutSecondary := differenceKeySchemas $xdbConfig.DynamoDB.KeySchema $gsi.KeySchema }}
+{{- $gsiModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $gsi.KeySchema }}
+{{- $pkAttributeNamesWithoutSecondary := difference $pkModelAttributeNames $gsiModelAttributeNames }}
 {{- if indexHasRangeKey $gsi.KeySchema }}
 {{- $hashKey := index $gsi.KeySchema 0 }}
 {{- $rangeKey := index $gsi.KeySchema 1 }}
@@ -317,25 +319,37 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
 	return func(t *testing.T) {
 		ctx := context.Background()
 		require.Nil(t, d.Save{{ $modelName }}(ctx, models.{{ $modelName }}{
-			{{ pascalize $hashKey.AttributeName }}:    {{ exampleValueForAttribute $xdbConfig $hashKey.AttributeName 1 }},
-			{{ pascalize $rangeKey.AttributeName }}: {{ exampleValueForAttribute $xdbConfig $rangeKey.AttributeName 1 }},
-                        {{- range $ks := $primaryKeySchemaWithoutSecondary }}
-			{{ pascalize $ks.AttributeName }}:    {{ exampleValueForAttribute $xdbConfig $ks.AttributeName 1 }},
-                        {{- end }}
+        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "HASH" }}
+			{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+			{{- end }}
+        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "RANGE" }}
+			{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+			{{- end }}
+                        {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+			{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+			{{- end }}
 		}))
 		require.Nil(t, d.Save{{ $modelName }}(ctx, models.{{ $modelName }}{
-			{{ pascalize $hashKey.AttributeName }}:    {{ exampleValueForAttribute $xdbConfig $hashKey.AttributeName 1 }},
-			{{ pascalize $rangeKey.AttributeName }}: {{ exampleValueForAttribute $xdbConfig $rangeKey.AttributeName 2 }},
-                        {{- range $ks := $primaryKeySchemaWithoutSecondary }}
-			{{ pascalize $ks.AttributeName }}:    {{ exampleValueForAttribute $xdbConfig $ks.AttributeName 3 }},
-                        {{- end }}
+        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "HASH" }}
+			{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+			{{- end }}
+        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "RANGE" }}
+			{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
+			{{- end }}
+                        {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+			{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
+			{{- end }}
 		}))
 		require.Nil(t, d.Save{{ $modelName }}(ctx, models.{{ $modelName }}{
-			{{ pascalize $hashKey.AttributeName }}:    {{ exampleValueForAttribute $xdbConfig $hashKey.AttributeName 1 }},
-			{{ pascalize $rangeKey.AttributeName }}: {{ exampleValueForAttribute $xdbConfig $rangeKey.AttributeName 3 }},
-                        {{- range $ks := $primaryKeySchemaWithoutSecondary }}
-			{{ pascalize $ks.AttributeName }}:    {{ exampleValueForAttribute $xdbConfig $ks.AttributeName 2 }},
-                        {{- end }}
+        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "HASH" }}
+			{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+			{{- end }}
+        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "RANGE" }}
+			{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
+			{{- end }}
+                        {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+			{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
+			{{- end }}
 		}))
 		tests := []get{{ $modelName }}sBy{{ $computedIndexName }}Test{
 			{
@@ -344,31 +358,45 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
 				input: get{{ $modelName }}sBy{{ $computedIndexName }}Input{
 					ctx: context.Background(),
 					input: db.Get{{ $modelName }}sBy{{ $computedIndexName }}Input{
-						{{ pascalize $hashKey.AttributeName }}: {{ exampleValueForAttribute $xdbConfig $hashKey.AttributeName 1 }},
+						{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "HASH" }}
+						{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+                                                {{- end }}
 					},
 				},
 				output: get{{ $modelName }}sBy{{ $computedIndexName }}Output{
 					{{ camelize $modelName }}s: []models.{{ $modelName }}{
 						models.{{ $modelName }}{
-							{{ pascalize $hashKey.AttributeName }}:    {{ exampleValueForAttribute $xdbConfig $hashKey.AttributeName 1 }},
-							{{ pascalize $rangeKey.AttributeName }}: {{ exampleValueForAttribute $xdbConfig $rangeKey.AttributeName 1 }},
-				                        {{- range $ks := $primaryKeySchemaWithoutSecondary }}
-							{{ pascalize $ks.AttributeName }}:    {{ exampleValueForAttribute $xdbConfig $ks.AttributeName 1 }},
-				                        {{- end }}
+				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "HASH" }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+							{{- end }}
+				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "RANGE" }}
+							{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+							{{- end }}
+				                        {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+							{{- end }}
 						},
 						models.{{ $modelName }}{
-							{{ pascalize $hashKey.AttributeName }}:    {{ exampleValueForAttribute $xdbConfig $hashKey.AttributeName 1 }},
-							{{ pascalize $rangeKey.AttributeName }}: {{ exampleValueForAttribute $xdbConfig $rangeKey.AttributeName 2 }},
-				                        {{- range $ks := $primaryKeySchemaWithoutSecondary }}
-							{{ pascalize $ks.AttributeName }}:    {{ exampleValueForAttribute $xdbConfig $ks.AttributeName 3 }},
-				                        {{- end }}
+				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "HASH" }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+							{{- end }}
+				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "RANGE" }}
+							{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
+							{{- end }}
+				                        {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
+							{{- end }}
 						},
 						models.{{ $modelName }}{
-							{{ pascalize $hashKey.AttributeName }}:    {{ exampleValueForAttribute $xdbConfig $hashKey.AttributeName 1 }},
-							{{ pascalize $rangeKey.AttributeName }}: {{ exampleValueForAttribute $xdbConfig $rangeKey.AttributeName 3 }},
-				                        {{- range $ks := $primaryKeySchemaWithoutSecondary }}
-							{{ pascalize $ks.AttributeName }}:    {{ exampleValueForAttribute $xdbConfig $ks.AttributeName 2 }},
-				                        {{- end }}
+				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "HASH" }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+							{{- end }}
+				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "RANGE" }}
+							{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
+							{{- end }}
+				                        {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
+							{{- end }}
 						},
 					},
 					err: nil,
@@ -380,32 +408,46 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
 				input: get{{ $modelName }}sBy{{ $computedIndexName }}Input{
 					ctx: context.Background(),
 					input: db.Get{{ $modelName }}sBy{{ $computedIndexName }}Input{
-						{{ pascalize $hashKey.AttributeName }}:       {{ exampleValueForAttribute $xdbConfig $hashKey.AttributeName 1 }},
+						{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "HASH" }}
+						{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+                                                {{- end }}
 						Descending: true,
 					},
 				},
 				output: get{{ $modelName }}sBy{{ $computedIndexName }}Output{
 					{{ camelize $modelName }}s: []models.{{ $modelName }}{
 						models.{{ $modelName }}{
-							{{ pascalize $hashKey.AttributeName }}:    {{ exampleValueForAttribute $xdbConfig $hashKey.AttributeName 1 }},
-							{{ pascalize $rangeKey.AttributeName }}: {{ exampleValueForAttribute $xdbConfig $rangeKey.AttributeName 3 }},
-				                        {{- range $ks := $primaryKeySchemaWithoutSecondary }}
-							{{ pascalize $ks.AttributeName }}:    {{ exampleValueForAttribute $xdbConfig $ks.AttributeName 2 }},
-				                        {{- end }}
+				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "HASH" }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+							{{- end }}
+				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "RANGE" }}
+							{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
+							{{- end }}
+				                        {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
+							{{- end }}
 						},
 						models.{{ $modelName }}{
-							{{ pascalize $hashKey.AttributeName }}:    {{ exampleValueForAttribute $xdbConfig $hashKey.AttributeName 1 }},
-							{{ pascalize $rangeKey.AttributeName }}: {{ exampleValueForAttribute $xdbConfig $rangeKey.AttributeName 2 }},
-				                        {{- range $ks := $primaryKeySchemaWithoutSecondary }}
-							{{ pascalize $ks.AttributeName }}:    {{ exampleValueForAttribute $xdbConfig $ks.AttributeName 3 }},
-				                        {{- end }}
+				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "HASH" }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+							{{- end }}
+				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "RANGE" }}
+							{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
+							{{- end }}
+				                        {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
+							{{- end }}
 						},
 						models.{{ $modelName }}{
-							{{ pascalize $hashKey.AttributeName }}:    {{ exampleValueForAttribute $xdbConfig $hashKey.AttributeName 1 }},
-							{{ pascalize $rangeKey.AttributeName }}: {{ exampleValueForAttribute $xdbConfig $rangeKey.AttributeName 1 }},
-				                        {{- range $ks := $primaryKeySchemaWithoutSecondary }}
-							{{ pascalize $ks.AttributeName }}:    {{ exampleValueForAttribute $xdbConfig $ks.AttributeName 1 }},
-				                        {{- end }}
+				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "HASH" }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+							{{- end }}
+				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "RANGE" }}
+							{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+							{{- end }}
+				                        {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+							{{- end }}
 						},
 					},
 					err: nil,
@@ -417,25 +459,37 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
 				input: get{{ $modelName }}sBy{{ $computedIndexName }}Input{
 					ctx: context.Background(),
 					input: db.Get{{ $modelName }}sBy{{ $computedIndexName }}Input{
-						{{ pascalize $hashKey.AttributeName }}:                 {{ exampleValueForAttribute $xdbConfig $hashKey.AttributeName 1 }},
-						{{ pascalize $rangeKey.AttributeName }}StartingAt: db.{{ exampleValuePtrForAttribute $xdbConfig $rangeKey.AttributeName 2 }},
+						{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "HASH" }}
+						{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+                                                {{- end }}
+						{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "RANGE" }}
+						{{ pascalize $attributeName }}StartingAt: db.{{ exampleValuePtrForAttribute $xdbConfig $attributeName 2 }},
+                                                {{- end }}
 					},
 				},
 				output: get{{ $modelName }}sBy{{ $computedIndexName }}Output{
 					{{ camelize $modelName }}s: []models.{{ $modelName }}{
 						models.{{ $modelName }}{
-							{{ pascalize $hashKey.AttributeName }}:    {{ exampleValueForAttribute $xdbConfig $hashKey.AttributeName 1 }},
-							{{ pascalize $rangeKey.AttributeName }}: {{ exampleValueForAttribute $xdbConfig $rangeKey.AttributeName 2 }},
-				                        {{- range $ks := $primaryKeySchemaWithoutSecondary }}
-							{{ pascalize $ks.AttributeName }}:    {{ exampleValueForAttribute $xdbConfig $ks.AttributeName 3 }},
-				                        {{- end }}
+				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "HASH" }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+							{{- end }}
+				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "RANGE" }}
+							{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
+							{{- end }}
+				                        {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
+							{{- end }}
 						},
 						models.{{ $modelName }}{
-							{{ pascalize $hashKey.AttributeName }}:    {{ exampleValueForAttribute $xdbConfig $hashKey.AttributeName 1 }},
-							{{ pascalize $rangeKey.AttributeName }}: {{ exampleValueForAttribute $xdbConfig $rangeKey.AttributeName 3 }},
-				                        {{- range $ks := $primaryKeySchemaWithoutSecondary }}
-							{{ pascalize $ks.AttributeName }}:    {{ exampleValueForAttribute $xdbConfig $ks.AttributeName 2 }},
-				                        {{- end }}
+				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "HASH" }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+							{{- end }}
+				        		{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "RANGE" }}
+							{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
+							{{- end }}
+				                        {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
+							{{- end }}
 						},
 					},
 					err: nil,

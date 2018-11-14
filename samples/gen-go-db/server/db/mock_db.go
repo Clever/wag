@@ -198,6 +198,19 @@ func (mr *MockInterfaceMockRecorder) DeleteThingWithCompositeAttributes(ctx, nam
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithCompositeAttributes), ctx, name, branch, date)
 }
 
+// GetThingWithCompositeAttributessByNameVersionAndDate mocks base method
+func (m *MockInterface) GetThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input GetThingWithCompositeAttributessByNameVersionAndDateInput) ([]models.ThingWithCompositeAttributes, error) {
+	ret := m.ctrl.Call(m, "GetThingWithCompositeAttributessByNameVersionAndDate", ctx, input)
+	ret0, _ := ret[0].([]models.ThingWithCompositeAttributes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingWithCompositeAttributessByNameVersionAndDate indicates an expected call of GetThingWithCompositeAttributessByNameVersionAndDate
+func (mr *MockInterfaceMockRecorder) GetThingWithCompositeAttributessByNameVersionAndDate(ctx, input interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithCompositeAttributessByNameVersionAndDate", reflect.TypeOf((*MockInterface)(nil).GetThingWithCompositeAttributessByNameVersionAndDate), ctx, input)
+}
+
 // SaveThingWithDateRange mocks base method
 func (m_2 *MockInterface) SaveThingWithDateRange(ctx context.Context, m models.ThingWithDateRange) error {
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithDateRange", ctx, m)

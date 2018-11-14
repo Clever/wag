@@ -230,6 +230,11 @@ func (d DB) DeleteThingWithCompositeAttributes(ctx context.Context, name string,
 	return d.thingWithCompositeAttributesTable.deleteThingWithCompositeAttributes(ctx, name, branch, date)
 }
 
+// GetThingWithCompositeAttributessByNameVersionAndDate retrieves a list of ThingWithCompositeAttributess from the database.
+func (d DB) GetThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input db.GetThingWithCompositeAttributessByNameVersionAndDateInput) ([]models.ThingWithCompositeAttributes, error) {
+	return d.thingWithCompositeAttributesTable.getThingWithCompositeAttributessByNameVersionAndDate(ctx, input)
+}
+
 // SaveThingWithDateRange saves a ThingWithDateRange to the database.
 func (d DB) SaveThingWithDateRange(ctx context.Context, m models.ThingWithDateRange) error {
 	return d.thingWithDateRangeTable.saveThingWithDateRange(ctx, m)
