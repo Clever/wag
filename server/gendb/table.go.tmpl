@@ -1,12 +1,19 @@
 {{- $modelName := pascalize .XDBConfig.SchemaName }}
 {{- $xdbConfig := .XDBConfig }}
+{{- $lenCompositeAttrs := len $xdbConfig.CompositeAttributes }}
+{{- $hasCompositeAttrs := gt $lenCompositeAttrs 0 }}
 {{- $projectedIndexesWithCompositeAttributes := projectedIndexesWithCompositeAttributes $xdbConfig }}
+{{- $lenProjectedIndexesWithCompositeAttributes := len $projectedIndexesWithCompositeAttributes }}
+{{- $hasProjectedIndexesWithCompositeAttributes := gt $lenProjectedIndexesWithCompositeAttributes 0 }}
+{{- $stringPropertiesInComposites := stringPropertiesInComposites $xdbConfig }}
+{{- $lenStringPropertiesInComposites := len $stringPropertiesInComposites }}
+{{- $hasStringPropertiesInComposites := gt $lenStringPropertiesInComposites 0 }}
 package dynamodb
 
 import (
 	"context"
 	"fmt"
-        {{- if len $projectedIndexesWithCompositeAttributes }}
+        {{- if or $hasProjectedIndexesWithCompositeAttributes $hasStringPropertiesInComposites }}
         "strings"
         {{- end }}
 	{{- if tableUsesDateTime $xdbConfig }}
@@ -405,8 +412,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}By{{ $computedIndexName }}(ctx 
 
 // encode{{ $modelName }} encodes a {{ $modelName }} as a DynamoDB map of attribute values.
 func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]*dynamodb.AttributeValue, error) {
-{{- $lenCompositeAttrs := len $xdbConfig.CompositeAttributes }}
-{{- if eq $lenCompositeAttrs 0 }}
+{{- if not $hasCompositeAttrs }}
 	return dynamodbattribute.MarshalMap(ddb{{ $modelName }}{
 		{{ $modelName }}: m,
 	})
@@ -417,6 +423,14 @@ func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]*dynamodb.Att
 	if err != nil {
 		return nil, err
 	}
+        // make sure composite attributes don't contain separator characters
+        {{- range $sep, $compositeProps := stringPropertiesInComposites $xdbConfig }}
+        {{- range $compositeProp := $compositeProps }}
+	if strings.Contains(m.{{ pascalize $compositeProp }}, "{{ $sep }}") {
+		return nil, fmt.Errorf("{{ $compositeProp }} cannot contain '{{ $sep }}': %%s", m.{{ pascalize $compositeProp }})
+	}
+        {{- end }}
+        {{- end }}
 	// add in composite attributes
         {{- if indexContainsCompositeAttribute $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
 	primaryKey, err := dynamodbattribute.MarshalMap(ddb{{ $modelName }}PrimaryKey{

@@ -3,6 +3,7 @@ package dynamodb
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/Clever/wag/samples/gen-go-db/models"
@@ -245,6 +246,16 @@ func encodeThingWithCompositeAttributes(m models.ThingWithCompositeAttributes) (
 	})
 	if err != nil {
 		return nil, err
+	}
+	// make sure composite attributes don't contain separator characters
+	if strings.Contains(m.Name, ":") {
+		return nil, fmt.Errorf("name cannot contain ':': %s", m.Name)
+	}
+	if strings.Contains(m.Name, "@") {
+		return nil, fmt.Errorf("name cannot contain '@': %s", m.Name)
+	}
+	if strings.Contains(m.Branch, "@") {
+		return nil, fmt.Errorf("branch cannot contain '@': %s", m.Branch)
 	}
 	// add in composite attributes
 	primaryKey, err := dynamodbattribute.MarshalMap(ddbThingWithCompositeAttributesPrimaryKey{

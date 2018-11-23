@@ -249,6 +249,16 @@ func encodeTeacherSharingRule(m models.TeacherSharingRule) (map[string]*dynamodb
 	if err != nil {
 		return nil, err
 	}
+	// make sure composite attributes don't contain separator characters
+	if strings.Contains(m.School, "_") {
+		return nil, fmt.Errorf("school cannot contain '_': %s", m.School)
+	}
+	if strings.Contains(m.App, "_") {
+		return nil, fmt.Errorf("app cannot contain '_': %s", m.App)
+	}
+	if strings.Contains(m.Teacher, "_") {
+		return nil, fmt.Errorf("teacher cannot contain '_': %s", m.Teacher)
+	}
 	// add in composite attributes
 	primaryKey, err := dynamodbattribute.MarshalMap(ddbTeacherSharingRulePrimaryKey{
 		Teacher:   m.Teacher,

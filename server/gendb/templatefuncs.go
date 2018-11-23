@@ -93,6 +93,20 @@ var funcMap = template.FuncMap(map[string]interface{}{
 	"findCompositeAttribute":          findCompositeAttribute,
 	"indexContainsCompositeAttribute": indexContainsCompositeAttribute,
 	"isComposite":                     isComposite,
+	"stringPropertiesInComposites": func(config XDBConfig) map[string][]string {
+		sepToProps := map[string][]string{}
+		for _, attr := range config.CompositeAttributes {
+			for _, prop := range attr.Properties {
+				if goTypeForAttribute(config, prop) == "string" {
+					sepToProps[attr.Separator] = append(sepToProps[attr.Separator], prop)
+				}
+			}
+		}
+		for k, v := range sepToProps {
+			sepToProps[k] = uniq(v)
+		}
+		return sepToProps
+	},
 	"compositeValue": func(config XDBConfig, attributeName string, modelVarName string) string {
 		ca := findCompositeAttribute(config, attributeName)
 		if ca == nil {
@@ -309,4 +323,16 @@ func isComposite(config XDBConfig, attributeName string) bool {
 		return true
 	}
 	return false
+}
+
+func uniq(arr []string) []string {
+	u := map[string]struct{}{}
+	for _, el := range arr {
+		u[el] = struct{}{}
+	}
+	unique := []string{}
+	for k := range u {
+		unique = append(unique, k)
+	}
+	return unique
 }
