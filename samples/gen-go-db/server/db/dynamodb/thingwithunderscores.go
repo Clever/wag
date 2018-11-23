@@ -43,7 +43,7 @@ func (t ThingWithUnderscoresTable) create(ctx context.Context) error {
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
 			{
 				AttributeName: aws.String("id_app"),
-				AttributeType: aws.String(dynamodb.ScalarAttributeTypeS),
+				AttributeType: aws.String("S"),
 			},
 		},
 		KeySchema: []*dynamodb.KeySchemaElement{
@@ -75,9 +75,9 @@ func (t ThingWithUnderscoresTable) saveThingWithUnderscores(ctx context.Context,
 	return err
 }
 
-func (t ThingWithUnderscoresTable) getThingWithUnderscores(ctx context.Context, idApp string) (*models.ThingWithUnderscores, error) {
+func (t ThingWithUnderscoresTable) getThingWithUnderscores(ctx context.Context, iDApp string) (*models.ThingWithUnderscores, error) {
 	key, err := dynamodbattribute.MarshalMap(ddbThingWithUnderscoresPrimaryKey{
-		IDApp: idApp,
+		IDApp: iDApp,
 	})
 	if err != nil {
 		return nil, err
@@ -92,7 +92,7 @@ func (t ThingWithUnderscoresTable) getThingWithUnderscores(ctx context.Context, 
 
 	if len(res.Item) == 0 {
 		return nil, db.ErrThingWithUnderscoresNotFound{
-			IDApp: idApp,
+			IDApp: iDApp,
 		}
 	}
 
@@ -104,9 +104,9 @@ func (t ThingWithUnderscoresTable) getThingWithUnderscores(ctx context.Context, 
 	return &m, nil
 }
 
-func (t ThingWithUnderscoresTable) deleteThingWithUnderscores(ctx context.Context, idApp string) error {
+func (t ThingWithUnderscoresTable) deleteThingWithUnderscores(ctx context.Context, iDApp string) error {
 	key, err := dynamodbattribute.MarshalMap(ddbThingWithUnderscoresPrimaryKey{
-		IDApp: idApp,
+		IDApp: iDApp,
 	})
 	if err != nil {
 		return err

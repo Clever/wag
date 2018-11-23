@@ -1,10 +1,21 @@
 {{- $modelName := pascalize .XDBConfig.SchemaName }}
 {{- $xdbConfig := .XDBConfig }}
+{{- $lenCompositeAttrs := len $xdbConfig.CompositeAttributes }}
+{{- $hasCompositeAttrs := gt $lenCompositeAttrs 0 }}
+{{- $projectedIndexesWithCompositeAttributes := projectedIndexesWithCompositeAttributes $xdbConfig }}
+{{- $lenProjectedIndexesWithCompositeAttributes := len $projectedIndexesWithCompositeAttributes }}
+{{- $hasProjectedIndexesWithCompositeAttributes := gt $lenProjectedIndexesWithCompositeAttributes 0 }}
+{{- $stringPropertiesInComposites := stringPropertiesInComposites $xdbConfig }}
+{{- $lenStringPropertiesInComposites := len $stringPropertiesInComposites }}
+{{- $hasStringPropertiesInComposites := gt $lenStringPropertiesInComposites 0 }}
 package dynamodb
 
 import (
 	"context"
 	"fmt"
+        {{- if or $hasProjectedIndexesWithCompositeAttributes $hasStringPropertiesInComposites }}
+        "strings"
+        {{- end }}
 	{{- if tableUsesDateTime $xdbConfig }}
 	"time"
         {{- end }}
@@ -36,8 +47,7 @@ type {{ $modelName }}Table struct {
 type ddb{{ $modelName }}PrimaryKey struct {
 	{{- /* loop over primary key attributes and add them as fields in the struct */}}
 	{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-	{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
-	{{ pascalize $pk.AttributeName }} {{ goType $pkAttrSchema }} `dynamodbav:"{{ $pk.AttributeName }}"`
+	{{ pascalize $pk.AttributeName }} {{ goTypeForAttribute $xdbConfig $pk.AttributeName }} `dynamodbav:"{{ $pk.AttributeName }}"`
 	{{- end }}
 }
 
@@ -45,9 +55,7 @@ type ddb{{ $modelName }}PrimaryKey struct {
 // ddb{{$modelName}}GSI{{ pascalize $gsi.IndexName }} represents the {{ $gsi.IndexName }} GSI.
 type ddb{{$modelName}}GSI{{ pascalize $gsi.IndexName }} struct {
 	{{ range $ks := $gsi.KeySchema }}
-	{{- $ksAttrSchema := index $xdbConfig.Schema.Properties $ks.AttributeName }}
-	{{- $ksAttrSchemaGoType := goType $ksAttrSchema }}
-	{{- pascalize $ks.AttributeName }} {{ $ksAttrSchemaGoType }} `dynamodbav:"{{ $ks.AttributeName }}"`
+	{{- pascalize $ks.AttributeName }} {{ goTypeForAttribute $xdbConfig $ks.AttributeName }} `dynamodbav:"{{ $ks.AttributeName }}"`
         {{ end }}
 }
 {{ end }}
@@ -69,15 +77,9 @@ func (t {{ $modelName }}Table) create(ctx context.Context) error {
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
                         {{- $attrs := attributeNames $xdbConfig.DynamoDB }}
                         {{- range $attr := $attrs }}
-                        {{- $attrSchema := index $xdbConfig.Schema.Properties $attr }}
-                        {{- $attrSchemaType := index $attrSchema.Type 0 }}
 			{
 				AttributeName: aws.String("{{- $attr }}"),
-                                {{- if eq $attrSchemaType "string" }}
-				AttributeType: aws.String(dynamodb.ScalarAttributeTypeS),
-                                {{- else if eq $attrSchemaType "integer" }}
-				AttributeType: aws.String(dynamodb.ScalarAttributeTypeN),
-                                {{- end }}
+				AttributeType: aws.String("{{ dynamoDBTypeForAttribute $xdbConfig $attr }}"),
 			},
                         {{- end }}
 		},
@@ -176,16 +178,15 @@ func (t {{ $modelName }}Table) save{{ $modelName }}(ctx context.Context, m model
         {{- end }}
 }
 
+{{ $pkModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
 func (t {{ $modelName }}Table) get{{ $modelName }}(ctx context.Context,
-	{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-	{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
-	{{- $pkAttrSchemaGoType := goType $pkAttrSchema }}
-	{{- camelize $pk.AttributeName }} {{ $pkAttrSchemaGoType }},
+	{{- range $_, $attributeName := $pkModelAttributeNames }}
+	{{- varname $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
 	{{- end -}}
 ) (*models.{{ $modelName }}, error) {
 	key, err := dynamodbattribute.MarshalMap(ddb{{ $modelName }}PrimaryKey{
 		{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-		{{ pascalize $pk.AttributeName }}: {{ camelize $pk.AttributeName }},
+		{{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValue $xdbConfig $pk.AttributeName "" }}{{ else }}{{ varname $pk.AttributeName }}{{ end }},
 		{{- end }}
 	})
 	if err != nil {
@@ -201,8 +202,8 @@ func (t {{ $modelName }}Table) get{{ $modelName }}(ctx context.Context,
 
 	if len(res.Item) == 0 {
 		return nil, db.Err{{ $modelName }}NotFound{
-		{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-		{{ pascalize $pk.AttributeName }}: {{ camelize $pk.AttributeName }},
+		{{- range $_, $attributeName := $pkModelAttributeNames }}
+		{{ pascalize $attributeName }}: {{ varname $attributeName }},
 		{{- end }}
 		}
 	}
@@ -219,6 +220,8 @@ func (t {{ $modelName }}Table) get{{ $modelName }}(ctx context.Context,
 {{- $computedIndexName := indexName $xdbConfig.DynamoDB.KeySchema }}
 {{- $hashKey := index $xdbConfig.DynamoDB.KeySchema 0 }}
 {{- $rangeKey := index $xdbConfig.DynamoDB.KeySchema 1 }}
+{{- $rangeKeyAttributes := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "RANGE" }}
+{{- $lenRangeKeyAttributes := len $rangeKeyAttributes }}
 func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx context.Context, input db.Get{{ $modelName }}sBy{{ $computedIndexName }}Input) ([]models.{{ $modelName }}, error) {
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
@@ -227,11 +230,10 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":{{ camelize $hashKey.AttributeName }}": &dynamodb.AttributeValue{
-                        	{{- $hashKeyAttrSchema := index $xdbConfig.Schema.Properties $hashKey.AttributeName }}
-                        	{{- $hashKeyAttrSchemaType := index $hashKeyAttrSchema.Type 0 }}
-                        	{{- if eq $hashKeyAttrSchemaType "string" }}
-				S: aws.String(input.{{ pascalize $hashKey.AttributeName }}),
-                        	{{- else if eq $hashKeyAttrSchemaType "integer" }}
+                        	{{- $dynamoDBType := dynamoDBTypeForAttribute $xdbConfig $hashKey.AttributeName }}
+                        	{{- if eq $dynamoDBType "S" }}
+                                S: aws.String({{ if isComposite $xdbConfig $hashKey.AttributeName }}{{ compositeValue $xdbConfig $hashKey.AttributeName "input" }}{{ else }}input.{{ pascalize $hashKey.AttributeName }}{{ end }}),
+                        	{{- else if eq $dynamoDBType "N" }}
 				N: aws.String(fmt.Sprintf("%d", input.{{ pascalize $hashKey.AttributeName }})),
 	                        {{- end }}
 			},
@@ -239,20 +241,29 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
 	}
+	{{- if gt $lenRangeKeyAttributes 1 }}
+	if input.StartingAt == nil {
+        {{- else }}
 	if input.{{ pascalize $rangeKey.AttributeName }}StartingAt == nil {
+        {{- end }}
 		queryInput.KeyConditionExpression = aws.String("#{{ upper $hashKey.AttributeName }} = :{{ camelize $hashKey.AttributeName }}")
 	} else {
 		queryInput.ExpressionAttributeNames["#{{ upper $rangeKey.AttributeName }}"] = aws.String("{{ $rangeKey.AttributeName }}")
 		queryInput.ExpressionAttributeValues[":{{ camelize $rangeKey.AttributeName }}"] = &dynamodb.AttributeValue{
-                       	{{- $rangeKeyAttrSchema := index $xdbConfig.Schema.Properties $rangeKey.AttributeName }}
-                       	{{- $rangeKeyAttrSchemaType := index $rangeKeyAttrSchema.Type 0 }}
-                       	{{- $rangeKeyAttrGoType := goType $rangeKeyAttrSchema }}
-                       	{{- if eq $rangeKeyAttrGoType "strfmt.DateTime" }}
+			{{- if gt $lenRangeKeyAttributes 1 }}
+                        S: aws.String({{ compositeValue $xdbConfig $rangeKey.AttributeName "input.StartingAt" }}),
+                        {{- else }}
+                       	{{- $attrGoType := goTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
+                        {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
+                        {{- if eq $attrDynamoDBType "S" }}
+                       	{{- if eq $attrGoType "strfmt.DateTime" }}
 			S: aws.String(time.Time(*input.{{ pascalize $rangeKey.AttributeName }}StartingAt).Format(time.RFC3339)), // dynamodb attributevalue only supports RFC3339 resolution
-                       	{{- else if eq $rangeKeyAttrSchemaType "string" }}
+                        {{- else }}
 			S: aws.String(*input.{{ pascalize $rangeKey.AttributeName }}StartingAt),
-                       	{{- else if eq $rangeKeyAttrSchemaType "integer" }}
+                        {{- end }}
+                       	{{- else if eq $attrDynamoDBType "N" }}
 			N: aws.String(fmt.Sprintf("%%d", *input.{{ pascalize $rangeKey.AttributeName }}StartingAt)),
+                        {{- end }}
                         {{- end }}
 		}
 		queryInput.KeyConditionExpression = aws.String("#{{ upper $hashKey.AttributeName }} = :{{ camelize $hashKey.AttributeName }} AND #{{ upper $rangeKey.AttributeName }} >= :{{ camelize $rangeKey.AttributeName }}")
@@ -271,15 +282,13 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
 {{- end }}
 
 func (t {{ $modelName }}Table) delete{{ $modelName }}(ctx context.Context,
-	{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-	{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
-	{{- $pkAttrSchemaGoType := goType $pkAttrSchema }}
-	{{- camelize $pk.AttributeName }} {{ $pkAttrSchemaGoType }},
+	{{- range $_, $attributeName := $pkModelAttributeNames }}
+	{{- varname $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
 	{{- end -}}
 ) error {
 	key, err := dynamodbattribute.MarshalMap(ddb{{ $modelName }}PrimaryKey{
 		{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-		{{ pascalize $pk.AttributeName }}: {{ camelize $pk.AttributeName }},
+		{{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValue $xdbConfig $pk.AttributeName "" }}{{ else }}{{ varname $pk.AttributeName }}{{ end }},
 		{{- end }}
 	})
 	if err != nil {
@@ -300,6 +309,8 @@ func (t {{ $modelName }}Table) delete{{ $modelName }}(ctx context.Context,
 {{- if indexHasRangeKey $gsi.KeySchema }}
 {{- $hashKey := index $gsi.KeySchema 0 }}
 {{- $rangeKey := index $gsi.KeySchema 1 }}
+{{- $rangeKeyAttributes := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "RANGE" }}
+{{- $lenRangeKeyAttributes := len $rangeKeyAttributes }}
 func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx context.Context, input db.Get{{ $modelName }}sBy{{ $computedIndexName }}Input) ([]models.{{ $modelName }}, error) {
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
@@ -309,31 +320,39 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":{{ camelize $hashKey.AttributeName }}": &dynamodb.AttributeValue{
-                        	{{- $hashKeyAttrSchema := index $xdbConfig.Schema.Properties $hashKey.AttributeName }}
-                        	{{- $hashKeyAttrSchemaType := index $hashKeyAttrSchema.Type 0 }}
-                        	{{- if eq $hashKeyAttrSchemaType "string" }}
-				S: aws.String(input.{{ pascalize $hashKey.AttributeName }}),
-                        	{{- else if eq $hashKeyAttrSchemaType "integer" }}
+                        	{{- $dynamoDBType := dynamoDBTypeForAttribute $xdbConfig $hashKey.AttributeName }}
+                        	{{- if eq $dynamoDBType "S" }}
+                                S: aws.String({{ if isComposite $xdbConfig $hashKey.AttributeName }}{{ compositeValue $xdbConfig $hashKey.AttributeName "input" }}{{ else }}input.{{ pascalize $hashKey.AttributeName }}{{ end }}),
+                        	{{- else if eq $dynamoDBType "N" }}
 				N: aws.String(fmt.Sprintf("%d", input.{{ pascalize $hashKey.AttributeName }})),
 	                        {{- end }}
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 	}
+	{{- if gt $lenRangeKeyAttributes 1 }}
+	if input.StartingAt == nil {
+        {{- else }}
 	if input.{{ pascalize $rangeKey.AttributeName }}StartingAt == nil {
+        {{- end }}
 		queryInput.KeyConditionExpression = aws.String("#{{ upper $hashKey.AttributeName }} = :{{ camelize $hashKey.AttributeName }}")
 	} else {
 		queryInput.ExpressionAttributeNames["#{{ upper $rangeKey.AttributeName }}"] = aws.String("{{ $rangeKey.AttributeName }}")
 		queryInput.ExpressionAttributeValues[":{{ camelize $rangeKey.AttributeName }}"] = &dynamodb.AttributeValue{
-                       	{{- $rangeKeyAttrSchema := index $xdbConfig.Schema.Properties $rangeKey.AttributeName }}
-                       	{{- $rangeKeyAttrSchemaType := index $rangeKeyAttrSchema.Type 0 }}
-                       	{{- $rangeKeyAttrGoType := goType $rangeKeyAttrSchema }}
-                       	{{- if eq $rangeKeyAttrGoType "strfmt.DateTime" }}
+			{{- if gt $lenRangeKeyAttributes 1 }}
+                        S: aws.String({{ compositeValue $xdbConfig $rangeKey.AttributeName "input.StartingAt" }}),
+                        {{- else }}
+                       	{{- $attrGoType := goTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
+                        {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
+                     	{{- if eq $attrDynamoDBType "S" }}
+                       	{{- if eq $attrGoType "strfmt.DateTime" }}
 			S: aws.String(time.Time(*input.{{ pascalize $rangeKey.AttributeName }}StartingAt).Format(time.RFC3339)), // dynamodb attributevalue only supports RFC3339 resolution
-                       	{{- else if eq $rangeKeyAttrSchemaType "string" }}
+                       	{{- else }}
 			S: aws.String(*input.{{ pascalize $rangeKey.AttributeName }}StartingAt),
-                       	{{- else if eq $rangeKeyAttrSchemaType "integer" }}
+                        {{- end }}
+                       	{{- else if eq $attrDynamoDBType "N" }}
 			N: aws.String(fmt.Sprintf("%%d", *input.{{ pascalize $rangeKey.AttributeName }}StartingAt)),
+                        {{- end }}
                         {{- end }}
 		}
 		queryInput.KeyConditionExpression = aws.String("#{{ upper $hashKey.AttributeName }} = :{{ camelize $hashKey.AttributeName }} AND #{{ upper $rangeKey.AttributeName }} >= :{{ camelize $rangeKey.AttributeName }}")
@@ -351,10 +370,9 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
 }
 {{- else }}
 {{- $ks := index $gsi.KeySchema 0 }}
-{{- $ksAttrSchema := index $xdbConfig.Schema.Properties $ks.AttributeName }}
-{{- $ksAttrSchemaType := index $ksAttrSchema.Type 0 }}
+{{- $ksAttrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $ks.AttributeName }}
 func (t {{ $modelName}}Table) get{{ $modelName }}By{{ $computedIndexName }}(ctx context.Context,
-      {{- camelize $ks.AttributeName }} {{ goType $ksAttrSchema }}) (*models.{{ $modelName }}, error) {
+      {{- varname $ks.AttributeName }} {{ goTypeForAttribute $xdbConfig $ks.AttributeName }}) (*models.{{ $modelName }}, error) {
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		IndexName: aws.String("{{ $gsi.IndexName }}"),
@@ -363,10 +381,10 @@ func (t {{ $modelName}}Table) get{{ $modelName }}By{{ $computedIndexName }}(ctx 
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":{{ camelize $ks.AttributeName }}": &dynamodb.AttributeValue{
-                        	{{- if eq $ksAttrSchemaType "string" }}
-				S: aws.String({{- camelize $ks.AttributeName }}),
-                        	{{- else if eq $ksAttrSchemaType "integer" }}
-				N: aws.String(fmt.Sprintf("%d", {{ camelize $ks.AttributeName }})),
+                        	{{- if eq $ksAttrDynamoDBType "S" }}
+				S: aws.String({{- varname $ks.AttributeName }}),
+                        	{{- else if eq $ksAttrDynamoDBType "N" }}
+				N: aws.String(fmt.Sprintf("%d", {{ varname $ks.AttributeName }})),
 	                        {{- end }}
 			},
 		},
@@ -379,7 +397,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}By{{ $computedIndexName }}(ctx 
 	}
 	if len(queryOutput.Items) == 0 {
 		return nil, db.Err{{ $modelName }}By{{ $computedIndexName }}NotFound{
-                {{- pascalize $ks.AttributeName }}: {{ camelize $ks.AttributeName -}}
+                {{- pascalize $ks.AttributeName }}: {{ varname $ks.AttributeName -}}
                 }
 	}
 
@@ -394,9 +412,56 @@ func (t {{ $modelName}}Table) get{{ $modelName }}By{{ $computedIndexName }}(ctx 
 
 // encode{{ $modelName }} encodes a {{ $modelName }} as a DynamoDB map of attribute values.
 func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]*dynamodb.AttributeValue, error) {
+{{- if not $hasCompositeAttrs }}
 	return dynamodbattribute.MarshalMap(ddb{{ $modelName }}{
 		{{ $modelName }}: m,
 	})
+{{- else }}        
+	val, err := dynamodbattribute.MarshalMap(ddb{{ $modelName }}{
+		{{ $modelName }}: m,
+	})
+	if err != nil {
+		return nil, err
+	}
+        // make sure composite attributes don't contain separator characters
+        {{- range $sep, $compositeProps := stringPropertiesInComposites $xdbConfig }}
+        {{- range $compositeProp := $compositeProps }}
+	if strings.Contains(m.{{ pascalize $compositeProp }}, "{{ $sep }}") {
+		return nil, fmt.Errorf("{{ $compositeProp }} cannot contain '{{ $sep }}': %%s", m.{{ pascalize $compositeProp }})
+	}
+        {{- end }}
+        {{- end }}
+	// add in composite attributes
+        {{- if indexContainsCompositeAttribute $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
+	primaryKey, err := dynamodbattribute.MarshalMap(ddb{{ $modelName }}PrimaryKey{
+		{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+		{{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValue $xdbConfig $pk.AttributeName "m" }}{{ else }}m.{{ pascalize $pk.AttributeName }}{{ end }},
+                {{- end }}
+	})
+	if err != nil {
+		return nil, err
+	}
+	for k, v := range primaryKey {
+		val[k] = v
+	}
+        {{- end }}
+        {{- range $gsi := $xdbConfig.DynamoDB.GlobalSecondaryIndexes }}
+        {{- if indexContainsCompositeAttribute $xdbConfig $gsi.KeySchema }}
+	{{ camelize $gsi.IndexName }}, err := dynamodbattribute.MarshalMap(ddb{{ $modelName }}GSI{{ pascalize $gsi.IndexName }}{
+		{{- range $_, $sk := $gsi.KeySchema }}
+		{{ pascalize $sk.AttributeName }}: {{ if isComposite $xdbConfig $sk.AttributeName }}{{ compositeValue $xdbConfig $sk.AttributeName "m" }}{{ else }}m.{{ pascalize $sk.AttributeName }}{{ end }},
+                {{- end }}
+	})
+	if err != nil {
+		return nil, err
+	}
+	for k, v := range {{ camelize $gsi.IndexName }} {
+		val[k] = v
+	}
+        {{- end }}
+        {{- end }}
+	return val, err
+{{- end }}        
 }
 
 // decode{{ $modelName }} translates a {{ $modelName }} stored in DynamoDB to a {{ $modelName }} struct.
@@ -406,6 +471,26 @@ func decode{{ $modelName }}(m map[string]*dynamodb.AttributeValue, out *models.{
 		return err
 	}
 	*out = ddb{{ $modelName }}.{{ $modelName }}
+        {{- if len $projectedIndexesWithCompositeAttributes }}
+	// parse composite attributes from projected secondary indexes and fill
+	// in model properties
+        {{- range $projectedIndexWithCompositeAttributes := $projectedIndexesWithCompositeAttributes }}
+        {{- range $ks := $projectedIndexWithCompositeAttributes }}
+        {{- if isComposite $xdbConfig $ks.AttributeName }}
+        {{- $ca := findCompositeAttribute $xdbConfig $ks.AttributeName }}
+        if v, ok := m["{{ $ks.AttributeName }}"]; ok && v.S != nil {
+		parts := strings.Split(*v.S, "{{ $ca.Separator }}")
+		if len(parts) != {{ len $ca.Properties }} {
+			return fmt.Errorf("expected {{ len $ca.Properties }} parts: '%%s'", *v.S)
+		}
+                {{- range $i, $prop := $ca.Properties }}
+		out.{{ pascalize $prop }} = parts[{{ $i }}]
+                {{- end }}
+	}
+        {{- end }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
 	return nil
 }
 

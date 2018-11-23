@@ -23,12 +23,52 @@ type XDBConfig struct {
 	// AllowOverwrites sets whether saving an object that already exists should fail.
 	AllowOverwrites bool
 
+	// CompositeAttributes encodes attributes that are composed of multiple properties in the schema.
+	CompositeAttributes []CompositeAttribute
+
 	// DynamoDB configuration.
 	DynamoDB AWSDynamoDBTable
 
 	// Schema and SchemaName that the config was contained within.
 	Schema     spec.Schema
 	SchemaName string
+}
+
+// CompositeAttribute is an attribute that is composed of multiple properties in the object's schema.
+type CompositeAttribute struct {
+	AttributeName string
+	Properties    []string
+	Separator     string
+}
+
+// Validate checks that the user enter a valid x-db config.
+func (config XDBConfig) Validate() error {
+	// check that all attribute names show up in the schema or in composite attribute defs.
+	for _, ks := range config.DynamoDB.KeySchema {
+		if err := config.attributeNameIsDefined(ks.AttributeName); err != nil {
+			return err
+		}
+	}
+	for _, gsi := range config.DynamoDB.GlobalSecondaryIndexes {
+		for _, ks := range gsi.KeySchema {
+			if err := config.attributeNameIsDefined(ks.AttributeName); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// attributeNameIsDefined checks whether a user has provided an AttributeName that
+// is either contained as a property in the swagger schema or defined as a composite
+// attribute.
+func (config XDBConfig) attributeNameIsDefined(attributeName string) error {
+	if _, ok := config.Schema.SchemaProps.Properties[attributeName]; ok {
+		return nil
+	} else if ca := findCompositeAttribute(config, attributeName); ca != nil {
+		return nil
+	}
+	return fmt.Errorf("unrecognized attribute: '%s'. AttributeNames must match schema properties or be defined as composite attributes", attributeName)
 }
 
 // AWSDynamoDBTable is a subset of clouformation.AWSDynamoDBTable. Currently supported fields:
@@ -64,6 +104,16 @@ func DecodeConfig(schemaName string, schema spec.Schema) (*XDBConfig, error) {
 	return config, nil
 }
 
+func findCompositeAttribute(config XDBConfig, attributeName string) *CompositeAttribute {
+	for _, compositeAttr := range config.CompositeAttributes {
+		if compositeAttr.AttributeName == attributeName {
+			return &compositeAttr
+		}
+	}
+	return nil
+
+}
+
 var tableUsesDateTime = func(config XDBConfig) bool {
 	keySchemas := config.DynamoDB.KeySchema
 	for _, gsi := range config.DynamoDB.GlobalSecondaryIndexes {
@@ -77,123 +127,6 @@ var tableUsesDateTime = func(config XDBConfig) bool {
 	return false
 }
 
-// funcMap contains useful functiosn to use in templates
-var funcMap = template.FuncMap(map[string]interface{}{
-	"tableUsesDateTime": tableUsesDateTime,
-	"anyTableUsesDateTime": func(configs []XDBConfig) bool {
-		for _, config := range configs {
-			if tableUsesDateTime(config) {
-				return true
-			}
-		}
-		return false
-	},
-	"indexHasRangeKey": func(index []cloudformation.AWSDynamoDBTable_KeySchema) bool {
-		return len(index) == 2 && index[1].KeyType == "RANGE"
-	},
-	"indexes": func(config XDBConfig) [][]cloudformation.AWSDynamoDBTable_KeySchema {
-		indexes := [][]cloudformation.AWSDynamoDBTable_KeySchema{config.DynamoDB.KeySchema}
-		for _, gsi := range config.DynamoDB.GlobalSecondaryIndexes {
-			indexes = append(indexes, gsi.KeySchema)
-		}
-		return indexes
-	},
-	"unionKeySchemas": func(a, b []cloudformation.AWSDynamoDBTable_KeySchema) []cloudformation.AWSDynamoDBTable_KeySchema {
-		ret := []cloudformation.AWSDynamoDBTable_KeySchema{}
-		seen := map[string]struct{}{}
-		for _, ks := range append(a, b...) {
-			if _, ok := seen[ks.AttributeName]; ok {
-				continue
-			}
-			seen[ks.AttributeName] = struct{}{}
-			cpy := ks
-			ret = append(ret, cpy)
-		}
-		return ret
-	},
-	"differenceKeySchemas": func(a, b []cloudformation.AWSDynamoDBTable_KeySchema) []cloudformation.AWSDynamoDBTable_KeySchema {
-		ret := []cloudformation.AWSDynamoDBTable_KeySchema{}
-		inB := map[string]struct{}{}
-		for _, ks := range b {
-			inB[ks.AttributeName] = struct{}{}
-		}
-		for _, ks := range a {
-			if _, ok := inB[ks.AttributeName]; ok {
-				continue
-			}
-			cpy := ks
-			ret = append(ret, cpy)
-		}
-		return ret
-	},
-	"indexName": func(index []cloudformation.AWSDynamoDBTable_KeySchema) string {
-		pascalize := generator.FuncMap["pascalize"].(func(string) string)
-		if len(index) == 1 {
-			return pascalize(index[0].AttributeName)
-		} else if len(index) == 2 {
-			return fmt.Sprintf("%sAnd%s",
-				pascalize(index[0].AttributeName),
-				pascalize(index[1].AttributeName),
-			)
-		} else {
-			return ""
-		}
-	},
-	"attributeNames": func(table AWSDynamoDBTable) []string {
-		attrnames := map[string]struct{}{}
-		for _, ks := range table.KeySchema {
-			attrnames[ks.AttributeName] = struct{}{}
-		}
-		for _, gsi := range table.GlobalSecondaryIndexes {
-			for _, ks := range gsi.KeySchema {
-				attrnames[ks.AttributeName] = struct{}{}
-			}
-		}
-		attrs := []string{}
-		for k := range attrnames {
-			attrs = append(attrs, k)
-		}
-		sort.Strings(attrs)
-		return attrs
-	},
-	"goType": func(propertySchema spec.Schema) string {
-		if propertySchema.Format == "date-time" {
-			return "strfmt.DateTime"
-		} else if len(propertySchema.Type) > 0 {
-			if propertySchema.Type[0] == "string" {
-				return "string"
-			} else if propertySchema.Type[0] == "integer" {
-				return "int64"
-			}
-		}
-		return "unknownType"
-	},
-	"exampleValue": func(propertySchema spec.Schema, i int) string {
-		if propertySchema.Format == "date-time" {
-			return fmt.Sprintf(`mustTime("2018-03-11T15:04:0%d+07:00")`, i)
-		} else if len(propertySchema.Type) > 0 {
-			if propertySchema.Type[0] == "string" {
-				return fmt.Sprintf(`"string%d"`, i)
-			} else if propertySchema.Type[0] == "integer" {
-				return fmt.Sprintf("%d", i)
-			}
-		}
-		return "unknownType"
-	},
-	"exampleValuePtr": func(propertySchema spec.Schema, i int) string {
-		if propertySchema.Format == "date-time" {
-			return fmt.Sprintf(`DateTime(mustTime("2018-03-11T15:04:0%d+07:00"))`, i)
-		} else if len(propertySchema.Type) > 0 {
-			if propertySchema.Type[0] == "string" {
-				return fmt.Sprintf(`String("string%d")`, i)
-			} else if propertySchema.Type[0] == "integer" {
-				return fmt.Sprintf("Int64(%d)", i)
-			}
-		}
-		return "unknownType"
-	},
-})
-
 // GenerateDB generates DB code for schemas annotated with the x-db extension.
 func GenerateDB(packageName string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
 	var xdbConfigs []XDBConfig
@@ -201,6 +134,9 @@ func GenerateDB(packageName string, s *spec.Swagger, serviceName string, paths *
 		if config, err := DecodeConfig(schemaName, schema); err != nil {
 			return err
 		} else if config != nil {
+			if err := config.Validate(); err != nil {
+				return err
+			}
 			xdbConfigs = append(xdbConfigs, *config)
 		}
 	}
@@ -210,7 +146,7 @@ func GenerateDB(packageName string, s *spec.Swagger, serviceName string, paths *
 	sort.Slice(xdbConfigs, func(i, j int) bool { return xdbConfigs[i].SchemaName < xdbConfigs[j].SchemaName })
 
 	writeTemplate := func(tmplFilename, outputFilename string, data interface{}) error {
-		tmpl, err := template.New("test").
+		tmpl, err := template.New(tmplFilename).
 			Funcs(generator.FuncMap).
 			Funcs(funcMap).
 			Parse(string(MustAsset(tmplFilename)))

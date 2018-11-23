@@ -107,6 +107,7 @@ func (d DB) CreateTables(ctx context.Context) error {
 {{- range $xdbConfig := .XDBConfigs }}
 {{- $modelName := pascalize $xdbConfig.SchemaName }}
 {{- $modelNameCamel := camelize $modelName }}
+{{- $pkModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
 // Save{{ $modelName }} saves a {{ $modelName }} to the database.
 func (d DB) Save{{ $modelName }}(ctx context.Context, m models.{{ $modelName }}) error {
 	return d.{{ $modelNameCamel }}Table.save{{ $modelName }}(ctx, m)
@@ -114,14 +115,13 @@ func (d DB) Save{{ $modelName }}(ctx context.Context, m models.{{ $modelName }})
 
 // Get{{ $modelName }} retrieves a {{ $modelName }} from the database.
 func (d DB) Get{{ $modelName }}(ctx context.Context,
-	{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-	{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
-	{{- camelize $pk.AttributeName }} {{ goType $pkAttrSchema }},
+	{{- range $_, $attributeName := $pkModelAttributeNames }}
+	{{- varname $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
 	{{- end -}}
 ) (*models.{{ $modelName }}, error) {
 	return d.{{ $modelNameCamel }}Table.get{{ $modelName }}(ctx,
-		{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-		{{- camelize $pk.AttributeName }},
+		{{- range $_, $attributeName := $pkModelAttributeNames }}
+		{{- varname $attributeName }},
 		{{- end -}}
 )
 }
@@ -133,17 +133,15 @@ func (d DB) Get{{ $modelName }}sBy{{ $indexName }}(ctx context.Context, input db
 	return d.{{ $modelNameCamel }}Table.get{{ $modelName }}sBy{{ $indexName }}(ctx, input)
 }
 {{- end }}
-
 // Delete{{ $modelName }} deletes a {{ $modelName }} from the database.
 func (d DB) Delete{{ $modelName }}(ctx context.Context,
-	{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-	{{- $pkAttrSchema := index $xdbConfig.Schema.Properties $pk.AttributeName }}
-	{{- camelize $pk.AttributeName }} {{ goType $pkAttrSchema }},
+	{{- range $_, $attributeName := $pkModelAttributeNames }}
+	{{- varname $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
 	{{- end -}}
 ) error {
 	return d.{{ $modelNameCamel }}Table.delete{{ $modelName }}(ctx,
-		{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-		{{- camelize $pk.AttributeName }},
+		{{- range $_, $attributeName := $pkModelAttributeNames }}
+		{{- varname $attributeName }},
 		{{- end -}}
     )
 }
@@ -156,17 +154,17 @@ func (d DB) Get{{ $modelName }}sBy{{ $indexName }}(ctx context.Context, input db
 	return d.{{ $modelNameCamel }}Table.get{{ $modelName }}sBy{{ $indexName }}(ctx, input)
 }
 {{- else }}
+{{- $gsiModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $gsi.KeySchema }}
 // Get{{ $modelName }}By{{ $indexName }} retrieves a {{ $modelName }} from the database.
 func (d DB) Get{{ $modelName }}By{{ $indexName }}(ctx context.Context,
-      {{- range $_, $ks := $gsi.KeySchema }}
-      {{- $ksAttrSchema := index $xdbConfig.Schema.Properties $ks.AttributeName }}
-      {{- camelize $ks.AttributeName }} {{ goType $ksAttrSchema }},
-      {{- end -}}
+	{{- range $_, $attributeName := $gsiModelAttributeNames }}
+	{{- varname $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
+	{{- end -}}
     ) (*models.{{ $modelName }}, error) {
 	return d.{{ $modelNameCamel }}Table.get{{ $modelName }}By{{ $indexName }}(ctx,
-          {{- range $_, $ks := $gsi.KeySchema }}
-          {{- camelize $ks.AttributeName }},
-          {{- end -}}
+		{{- range $_, $attributeName := $gsiModelAttributeNames }}
+		{{- varname $attributeName }},
+		{{- end -}}
         )
 }
 {{- end }}

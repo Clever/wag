@@ -46,11 +46,11 @@ func (t ThingWithDateRangeTable) create(ctx context.Context) error {
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
 			{
 				AttributeName: aws.String("date"),
-				AttributeType: aws.String(dynamodb.ScalarAttributeTypeS),
+				AttributeType: aws.String("S"),
 			},
 			{
 				AttributeName: aws.String("name"),
-				AttributeType: aws.String(dynamodb.ScalarAttributeTypeS),
+				AttributeType: aws.String("S"),
 			},
 		},
 		KeySchema: []*dynamodb.KeySchemaElement{

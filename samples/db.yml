@@ -138,3 +138,84 @@ definitions:
     properties:
       id_app:
         type: string
+
+  # Composite hash keys
+  ThingWithCompositeAttributes:
+    x-db:
+      AllowOverwrites: true
+      CompositeAttributes:
+      - AttributeName: name_branch
+        Properties: [ name, branch ]
+        Separator: "@"
+      - AttributeName: name_version
+        Properties: [ name, version ]
+        Separator: ":"
+      DynamoDB:
+        KeySchema:
+        - AttributeName: name_branch
+          KeyType: HASH
+        - AttributeName: date
+          KeyType: RANGE
+        GlobalSecondaryIndexes:
+        - IndexName: nameVersion
+          Projection:
+            ProjectionType: ALL
+          KeySchema:
+          - AttributeName: name_version
+            KeyType: HASH
+          - AttributeName: date
+            KeyType: RANGE
+    type: object
+    properties:
+      name:
+        type: string
+      branch:
+        type: string
+      version:
+        type: integer
+      date:
+        type: string
+        format: date-time
+
+  # Composite range keys + three part composites
+  TeacherSharingRule:
+    x-db:
+      AllowOverwrites: true
+      CompositeAttributes:
+      - AttributeName: school_app
+        Properties: [ school, app ]
+        Separator: "_"
+      - AttributeName: school_teacher_app
+        Properties: [ school, teacher, app ]
+        Separator: "_"
+      DynamoDB:
+        KeySchema:
+        - AttributeName: teacher
+          KeyType: HASH
+        - AttributeName: school_app
+          KeyType: RANGE
+        GlobalSecondaryIndexes:
+        - IndexName: district_school_teacher_app
+          Projection:
+            ProjectionType: KEYS_ONLY
+          KeySchema:
+          - AttributeName: district
+            KeyType: HASH
+          - AttributeName: school_teacher_app
+            KeyType: RANGE
+    type: object
+    properties:
+      id:
+        type: string
+      district:
+        type: string
+      school:
+        type: string
+      teacher:
+        type: string
+      app:
+        type: string
+      sections:
+        type: array
+        items:
+          type: string

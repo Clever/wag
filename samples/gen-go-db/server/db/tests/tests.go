@@ -23,12 +23,22 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetSimpleThing", GetSimpleThing(dbFactory(), t))
 	t.Run("SaveSimpleThing", SaveSimpleThing(dbFactory(), t))
 	t.Run("DeleteSimpleThing", DeleteSimpleThing(dbFactory(), t))
+	t.Run("GetTeacherSharingRule", GetTeacherSharingRule(dbFactory(), t))
+	t.Run("GetTeacherSharingRulesByTeacherAndSchoolApp", GetTeacherSharingRulesByTeacherAndSchoolApp(dbFactory(), t))
+	t.Run("SaveTeacherSharingRule", SaveTeacherSharingRule(dbFactory(), t))
+	t.Run("DeleteTeacherSharingRule", DeleteTeacherSharingRule(dbFactory(), t))
+	t.Run("GetTeacherSharingRulesByDistrictAndSchoolTeacherApp", GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(dbFactory(), t))
 	t.Run("GetThing", GetThing(dbFactory(), t))
 	t.Run("GetThingsByNameAndVersion", GetThingsByNameAndVersion(dbFactory(), t))
 	t.Run("SaveThing", SaveThing(dbFactory(), t))
 	t.Run("DeleteThing", DeleteThing(dbFactory(), t))
 	t.Run("GetThingByID", GetThingByID(dbFactory(), t))
 	t.Run("GetThingsByNameAndCreatedAt", GetThingsByNameAndCreatedAt(dbFactory(), t))
+	t.Run("GetThingWithCompositeAttributes", GetThingWithCompositeAttributes(dbFactory(), t))
+	t.Run("GetThingWithCompositeAttributessByNameBranchAndDate", GetThingWithCompositeAttributessByNameBranchAndDate(dbFactory(), t))
+	t.Run("SaveThingWithCompositeAttributes", SaveThingWithCompositeAttributes(dbFactory(), t))
+	t.Run("DeleteThingWithCompositeAttributes", DeleteThingWithCompositeAttributes(dbFactory(), t))
+	t.Run("GetThingWithCompositeAttributessByNameVersionAndDate", GetThingWithCompositeAttributessByNameVersionAndDate(dbFactory(), t))
 	t.Run("GetThingWithDateRange", GetThingWithDateRange(dbFactory(), t))
 	t.Run("GetThingWithDateRangesByNameAndDate", GetThingWithDateRangesByNameAndDate(dbFactory(), t))
 	t.Run("SaveThingWithDateRange", SaveThingWithDateRange(dbFactory(), t))
@@ -76,6 +86,361 @@ func DeleteSimpleThing(s db.Interface, t *testing.T) func(t *testing.T) {
 		}
 		require.Nil(t, s.SaveSimpleThing(ctx, m))
 		require.Nil(t, s.DeleteSimpleThing(ctx, m.Name))
+	}
+}
+
+func GetTeacherSharingRule(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.TeacherSharingRule{
+			Teacher: "string1",
+			School:  "string1",
+			App:     "string1",
+			// must specify non-empty string values for attributes
+			// in secondary indexes, since dynamodb doesn't support
+			// empty strings:
+			District: "district",
+		}
+		require.Nil(t, s.SaveTeacherSharingRule(ctx, m))
+		m2, err := s.GetTeacherSharingRule(ctx, m.Teacher, m.School, m.App)
+		require.Nil(t, err)
+		require.Equal(t, m.Teacher, m2.Teacher)
+		require.Equal(t, m.School, m2.School)
+		require.Equal(t, m.App, m2.App)
+
+		_, err = s.GetTeacherSharingRule(ctx, "string2", "string2", "string2")
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrTeacherSharingRuleNotFound{})
+	}
+}
+
+type getTeacherSharingRulesByTeacherAndSchoolAppInput struct {
+	ctx   context.Context
+	input db.GetTeacherSharingRulesByTeacherAndSchoolAppInput
+}
+type getTeacherSharingRulesByTeacherAndSchoolAppOutput struct {
+	teacherSharingRules []models.TeacherSharingRule
+	err                 error
+}
+type getTeacherSharingRulesByTeacherAndSchoolAppTest struct {
+	testName string
+	d        db.Interface
+	input    getTeacherSharingRulesByTeacherAndSchoolAppInput
+	output   getTeacherSharingRulesByTeacherAndSchoolAppOutput
+}
+
+func (g getTeacherSharingRulesByTeacherAndSchoolAppTest) run(t *testing.T) {
+	teacherSharingRules, err := g.d.GetTeacherSharingRulesByTeacherAndSchoolApp(g.input.ctx, g.input.input)
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.teacherSharingRules, teacherSharingRules)
+}
+
+func GetTeacherSharingRulesByTeacherAndSchoolApp(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveTeacherSharingRule(ctx, models.TeacherSharingRule{
+			Teacher:  "string1",
+			School:   "string1",
+			App:      "string1",
+			District: "district",
+		}))
+		require.Nil(t, d.SaveTeacherSharingRule(ctx, models.TeacherSharingRule{
+			Teacher:  "string1",
+			School:   "string2",
+			App:      "string2",
+			District: "district",
+		}))
+		require.Nil(t, d.SaveTeacherSharingRule(ctx, models.TeacherSharingRule{
+			Teacher:  "string1",
+			School:   "string3",
+			App:      "string3",
+			District: "district",
+		}))
+		tests := []getTeacherSharingRulesByTeacherAndSchoolAppTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getTeacherSharingRulesByTeacherAndSchoolAppInput{
+					ctx: context.Background(),
+					input: db.GetTeacherSharingRulesByTeacherAndSchoolAppInput{
+						Teacher: "string1",
+					},
+				},
+				output: getTeacherSharingRulesByTeacherAndSchoolAppOutput{
+					teacherSharingRules: []models.TeacherSharingRule{
+						models.TeacherSharingRule{
+							Teacher:  "string1",
+							School:   "string1",
+							App:      "string1",
+							District: "district",
+						},
+						models.TeacherSharingRule{
+							Teacher:  "string1",
+							School:   "string2",
+							App:      "string2",
+							District: "district",
+						},
+						models.TeacherSharingRule{
+							Teacher:  "string1",
+							School:   "string3",
+							App:      "string3",
+							District: "district",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getTeacherSharingRulesByTeacherAndSchoolAppInput{
+					ctx: context.Background(),
+					input: db.GetTeacherSharingRulesByTeacherAndSchoolAppInput{
+						Teacher:    "string1",
+						Descending: true,
+					},
+				},
+				output: getTeacherSharingRulesByTeacherAndSchoolAppOutput{
+					teacherSharingRules: []models.TeacherSharingRule{
+						models.TeacherSharingRule{
+							Teacher:  "string1",
+							School:   "string3",
+							App:      "string3",
+							District: "district",
+						},
+						models.TeacherSharingRule{
+							Teacher:  "string1",
+							School:   "string2",
+							App:      "string2",
+							District: "district",
+						},
+						models.TeacherSharingRule{
+							Teacher:  "string1",
+							School:   "string1",
+							App:      "string1",
+							District: "district",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getTeacherSharingRulesByTeacherAndSchoolAppInput{
+					ctx: context.Background(),
+					input: db.GetTeacherSharingRulesByTeacherAndSchoolAppInput{
+						Teacher: "string1",
+						StartingAt: &db.SchoolApp{
+							School: "string2",
+							App:    "string2",
+						},
+					},
+				},
+				output: getTeacherSharingRulesByTeacherAndSchoolAppOutput{
+					teacherSharingRules: []models.TeacherSharingRule{
+						models.TeacherSharingRule{
+							Teacher:  "string1",
+							School:   "string2",
+							App:      "string2",
+							District: "district",
+						},
+						models.TeacherSharingRule{
+							Teacher:  "string1",
+							School:   "string3",
+							App:      "string3",
+							District: "district",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+func SaveTeacherSharingRule(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.TeacherSharingRule{
+			Teacher: "string1",
+			School:  "string1",
+			App:     "string1",
+			// must specify non-empty string values for attributes
+			// in secondary indexes, since dynamodb doesn't support
+			// empty strings:
+			District: "district",
+		}
+		require.Nil(t, s.SaveTeacherSharingRule(ctx, m))
+	}
+}
+
+func DeleteTeacherSharingRule(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.TeacherSharingRule{
+			Teacher: "string1",
+			School:  "string1",
+			App:     "string1",
+			// must specify non-empty string values for attributes
+			// in secondary indexes, since dynamodb doesn't support
+			// empty strings:
+			District: "district",
+		}
+		require.Nil(t, s.SaveTeacherSharingRule(ctx, m))
+		require.Nil(t, s.DeleteTeacherSharingRule(ctx, m.Teacher, m.School, m.App))
+	}
+}
+
+type getTeacherSharingRulesByDistrictAndSchoolTeacherAppInput struct {
+	ctx   context.Context
+	input db.GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput
+}
+type getTeacherSharingRulesByDistrictAndSchoolTeacherAppOutput struct {
+	teacherSharingRules []models.TeacherSharingRule
+	err                 error
+}
+type getTeacherSharingRulesByDistrictAndSchoolTeacherAppTest struct {
+	testName string
+	d        db.Interface
+	input    getTeacherSharingRulesByDistrictAndSchoolTeacherAppInput
+	output   getTeacherSharingRulesByDistrictAndSchoolTeacherAppOutput
+}
+
+func (g getTeacherSharingRulesByDistrictAndSchoolTeacherAppTest) run(t *testing.T) {
+	teacherSharingRules, err := g.d.GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(g.input.ctx, g.input.input)
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.teacherSharingRules, teacherSharingRules)
+}
+
+func GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveTeacherSharingRule(ctx, models.TeacherSharingRule{
+			District: "string1",
+			School:   "string1",
+			Teacher:  "string1",
+			App:      "string1",
+		}))
+		require.Nil(t, d.SaveTeacherSharingRule(ctx, models.TeacherSharingRule{
+			District: "string1",
+			School:   "string2",
+			Teacher:  "string2",
+			App:      "string2",
+		}))
+		require.Nil(t, d.SaveTeacherSharingRule(ctx, models.TeacherSharingRule{
+			District: "string1",
+			School:   "string3",
+			Teacher:  "string3",
+			App:      "string3",
+		}))
+		tests := []getTeacherSharingRulesByDistrictAndSchoolTeacherAppTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getTeacherSharingRulesByDistrictAndSchoolTeacherAppInput{
+					ctx: context.Background(),
+					input: db.GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput{
+						District: "string1",
+					},
+				},
+				output: getTeacherSharingRulesByDistrictAndSchoolTeacherAppOutput{
+					teacherSharingRules: []models.TeacherSharingRule{
+						models.TeacherSharingRule{
+							District: "string1",
+							School:   "string1",
+							Teacher:  "string1",
+							App:      "string1",
+						},
+						models.TeacherSharingRule{
+							District: "string1",
+							School:   "string2",
+							Teacher:  "string2",
+							App:      "string2",
+						},
+						models.TeacherSharingRule{
+							District: "string1",
+							School:   "string3",
+							Teacher:  "string3",
+							App:      "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getTeacherSharingRulesByDistrictAndSchoolTeacherAppInput{
+					ctx: context.Background(),
+					input: db.GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput{
+						District:   "string1",
+						Descending: true,
+					},
+				},
+				output: getTeacherSharingRulesByDistrictAndSchoolTeacherAppOutput{
+					teacherSharingRules: []models.TeacherSharingRule{
+						models.TeacherSharingRule{
+							District: "string1",
+							School:   "string3",
+							Teacher:  "string3",
+							App:      "string3",
+						},
+						models.TeacherSharingRule{
+							District: "string1",
+							School:   "string2",
+							Teacher:  "string2",
+							App:      "string2",
+						},
+						models.TeacherSharingRule{
+							District: "string1",
+							School:   "string1",
+							Teacher:  "string1",
+							App:      "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getTeacherSharingRulesByDistrictAndSchoolTeacherAppInput{
+					ctx: context.Background(),
+					input: db.GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput{
+						District: "string1",
+						StartingAt: &db.SchoolTeacherApp{
+							School:  "string2",
+							Teacher: "string2",
+							App:     "string2",
+						},
+					},
+				},
+				output: getTeacherSharingRulesByDistrictAndSchoolTeacherAppOutput{
+					teacherSharingRules: []models.TeacherSharingRule{
+						models.TeacherSharingRule{
+							District: "string1",
+							School:   "string2",
+							Teacher:  "string2",
+							App:      "string2",
+						},
+						models.TeacherSharingRule{
+							District: "string1",
+							School:   "string3",
+							Teacher:  "string3",
+							App:      "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
 	}
 }
 
@@ -391,6 +756,337 @@ func GetThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.T
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
 							Version:   2,
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+func GetThingWithCompositeAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithCompositeAttributes{
+			Name:   "string1",
+			Branch: "string1",
+			Date:   mustTime("2018-03-11T15:04:01+07:00"),
+		}
+		require.Nil(t, s.SaveThingWithCompositeAttributes(ctx, m))
+		m2, err := s.GetThingWithCompositeAttributes(ctx, m.Name, m.Branch, m.Date)
+		require.Nil(t, err)
+		require.Equal(t, m.Name, m2.Name)
+		require.Equal(t, m.Branch, m2.Branch)
+		require.Equal(t, m.Date.String(), m2.Date.String())
+
+		_, err = s.GetThingWithCompositeAttributes(ctx, "string2", "string2", mustTime("2018-03-11T15:04:02+07:00"))
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrThingWithCompositeAttributesNotFound{})
+	}
+}
+
+type getThingWithCompositeAttributessByNameBranchAndDateInput struct {
+	ctx   context.Context
+	input db.GetThingWithCompositeAttributessByNameBranchAndDateInput
+}
+type getThingWithCompositeAttributessByNameBranchAndDateOutput struct {
+	thingWithCompositeAttributess []models.ThingWithCompositeAttributes
+	err                           error
+}
+type getThingWithCompositeAttributessByNameBranchAndDateTest struct {
+	testName string
+	d        db.Interface
+	input    getThingWithCompositeAttributessByNameBranchAndDateInput
+	output   getThingWithCompositeAttributessByNameBranchAndDateOutput
+}
+
+func (g getThingWithCompositeAttributessByNameBranchAndDateTest) run(t *testing.T) {
+	thingWithCompositeAttributess, err := g.d.GetThingWithCompositeAttributessByNameBranchAndDate(g.input.ctx, g.input.input)
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.thingWithCompositeAttributess, thingWithCompositeAttributess)
+}
+
+func GetThingWithCompositeAttributessByNameBranchAndDate(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithCompositeAttributes(ctx, models.ThingWithCompositeAttributes{
+			Name:   "string1",
+			Branch: "string1",
+			Date:   mustTime("2018-03-11T15:04:01+07:00"),
+		}))
+		require.Nil(t, d.SaveThingWithCompositeAttributes(ctx, models.ThingWithCompositeAttributes{
+			Name:   "string1",
+			Branch: "string1",
+			Date:   mustTime("2018-03-11T15:04:02+07:00"),
+		}))
+		require.Nil(t, d.SaveThingWithCompositeAttributes(ctx, models.ThingWithCompositeAttributes{
+			Name:   "string1",
+			Branch: "string1",
+			Date:   mustTime("2018-03-11T15:04:03+07:00"),
+		}))
+		tests := []getThingWithCompositeAttributessByNameBranchAndDateTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getThingWithCompositeAttributessByNameBranchAndDateInput{
+					ctx: context.Background(),
+					input: db.GetThingWithCompositeAttributessByNameBranchAndDateInput{
+						Name:   "string1",
+						Branch: "string1",
+					},
+				},
+				output: getThingWithCompositeAttributessByNameBranchAndDateOutput{
+					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
+						models.ThingWithCompositeAttributes{
+							Name:   "string1",
+							Branch: "string1",
+							Date:   mustTime("2018-03-11T15:04:01+07:00"),
+						},
+						models.ThingWithCompositeAttributes{
+							Name:   "string1",
+							Branch: "string1",
+							Date:   mustTime("2018-03-11T15:04:02+07:00"),
+						},
+						models.ThingWithCompositeAttributes{
+							Name:   "string1",
+							Branch: "string1",
+							Date:   mustTime("2018-03-11T15:04:03+07:00"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getThingWithCompositeAttributessByNameBranchAndDateInput{
+					ctx: context.Background(),
+					input: db.GetThingWithCompositeAttributessByNameBranchAndDateInput{
+						Name:       "string1",
+						Branch:     "string1",
+						Descending: true,
+					},
+				},
+				output: getThingWithCompositeAttributessByNameBranchAndDateOutput{
+					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
+						models.ThingWithCompositeAttributes{
+							Name:   "string1",
+							Branch: "string1",
+							Date:   mustTime("2018-03-11T15:04:03+07:00"),
+						},
+						models.ThingWithCompositeAttributes{
+							Name:   "string1",
+							Branch: "string1",
+							Date:   mustTime("2018-03-11T15:04:02+07:00"),
+						},
+						models.ThingWithCompositeAttributes{
+							Name:   "string1",
+							Branch: "string1",
+							Date:   mustTime("2018-03-11T15:04:01+07:00"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getThingWithCompositeAttributessByNameBranchAndDateInput{
+					ctx: context.Background(),
+					input: db.GetThingWithCompositeAttributessByNameBranchAndDateInput{
+						Name:           "string1",
+						Branch:         "string1",
+						DateStartingAt: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+					},
+				},
+				output: getThingWithCompositeAttributessByNameBranchAndDateOutput{
+					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
+						models.ThingWithCompositeAttributes{
+							Name:   "string1",
+							Branch: "string1",
+							Date:   mustTime("2018-03-11T15:04:02+07:00"),
+						},
+						models.ThingWithCompositeAttributes{
+							Name:   "string1",
+							Branch: "string1",
+							Date:   mustTime("2018-03-11T15:04:03+07:00"),
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+func SaveThingWithCompositeAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithCompositeAttributes{
+			Name:   "string1",
+			Branch: "string1",
+			Date:   mustTime("2018-03-11T15:04:01+07:00"),
+		}
+		require.Nil(t, s.SaveThingWithCompositeAttributes(ctx, m))
+	}
+}
+
+func DeleteThingWithCompositeAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithCompositeAttributes{
+			Name:   "string1",
+			Branch: "string1",
+			Date:   mustTime("2018-03-11T15:04:01+07:00"),
+		}
+		require.Nil(t, s.SaveThingWithCompositeAttributes(ctx, m))
+		require.Nil(t, s.DeleteThingWithCompositeAttributes(ctx, m.Name, m.Branch, m.Date))
+	}
+}
+
+type getThingWithCompositeAttributessByNameVersionAndDateInput struct {
+	ctx   context.Context
+	input db.GetThingWithCompositeAttributessByNameVersionAndDateInput
+}
+type getThingWithCompositeAttributessByNameVersionAndDateOutput struct {
+	thingWithCompositeAttributess []models.ThingWithCompositeAttributes
+	err                           error
+}
+type getThingWithCompositeAttributessByNameVersionAndDateTest struct {
+	testName string
+	d        db.Interface
+	input    getThingWithCompositeAttributessByNameVersionAndDateInput
+	output   getThingWithCompositeAttributessByNameVersionAndDateOutput
+}
+
+func (g getThingWithCompositeAttributessByNameVersionAndDateTest) run(t *testing.T) {
+	thingWithCompositeAttributess, err := g.d.GetThingWithCompositeAttributessByNameVersionAndDate(g.input.ctx, g.input.input)
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.thingWithCompositeAttributess, thingWithCompositeAttributess)
+}
+
+func GetThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithCompositeAttributes(ctx, models.ThingWithCompositeAttributes{
+			Name:    "string1",
+			Version: 1,
+			Date:    mustTime("2018-03-11T15:04:01+07:00"),
+			Branch:  "string1",
+		}))
+		require.Nil(t, d.SaveThingWithCompositeAttributes(ctx, models.ThingWithCompositeAttributes{
+			Name:    "string1",
+			Version: 1,
+			Date:    mustTime("2018-03-11T15:04:02+07:00"),
+			Branch:  "string3",
+		}))
+		require.Nil(t, d.SaveThingWithCompositeAttributes(ctx, models.ThingWithCompositeAttributes{
+			Name:    "string1",
+			Version: 1,
+			Date:    mustTime("2018-03-11T15:04:03+07:00"),
+			Branch:  "string2",
+		}))
+		tests := []getThingWithCompositeAttributessByNameVersionAndDateTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getThingWithCompositeAttributessByNameVersionAndDateInput{
+					ctx: context.Background(),
+					input: db.GetThingWithCompositeAttributessByNameVersionAndDateInput{
+						Name:    "string1",
+						Version: 1,
+					},
+				},
+				output: getThingWithCompositeAttributessByNameVersionAndDateOutput{
+					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
+						models.ThingWithCompositeAttributes{
+							Name:    "string1",
+							Version: 1,
+							Date:    mustTime("2018-03-11T15:04:01+07:00"),
+							Branch:  "string1",
+						},
+						models.ThingWithCompositeAttributes{
+							Name:    "string1",
+							Version: 1,
+							Date:    mustTime("2018-03-11T15:04:02+07:00"),
+							Branch:  "string3",
+						},
+						models.ThingWithCompositeAttributes{
+							Name:    "string1",
+							Version: 1,
+							Date:    mustTime("2018-03-11T15:04:03+07:00"),
+							Branch:  "string2",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getThingWithCompositeAttributessByNameVersionAndDateInput{
+					ctx: context.Background(),
+					input: db.GetThingWithCompositeAttributessByNameVersionAndDateInput{
+						Name:       "string1",
+						Version:    1,
+						Descending: true,
+					},
+				},
+				output: getThingWithCompositeAttributessByNameVersionAndDateOutput{
+					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
+						models.ThingWithCompositeAttributes{
+							Name:    "string1",
+							Version: 1,
+							Date:    mustTime("2018-03-11T15:04:03+07:00"),
+							Branch:  "string2",
+						},
+						models.ThingWithCompositeAttributes{
+							Name:    "string1",
+							Version: 1,
+							Date:    mustTime("2018-03-11T15:04:02+07:00"),
+							Branch:  "string3",
+						},
+						models.ThingWithCompositeAttributes{
+							Name:    "string1",
+							Version: 1,
+							Date:    mustTime("2018-03-11T15:04:01+07:00"),
+							Branch:  "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getThingWithCompositeAttributessByNameVersionAndDateInput{
+					ctx: context.Background(),
+					input: db.GetThingWithCompositeAttributessByNameVersionAndDateInput{
+						Name:           "string1",
+						Version:        1,
+						DateStartingAt: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+					},
+				},
+				output: getThingWithCompositeAttributessByNameVersionAndDateOutput{
+					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
+						models.ThingWithCompositeAttributes{
+							Name:    "string1",
+							Version: 1,
+							Date:    mustTime("2018-03-11T15:04:02+07:00"),
+							Branch:  "string3",
+						},
+						models.ThingWithCompositeAttributes{
+							Name:    "string1",
+							Version: 1,
+							Date:    mustTime("2018-03-11T15:04:03+07:00"),
+							Branch:  "string2",
 						},
 					},
 					err: nil,

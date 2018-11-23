@@ -29,8 +29,12 @@ type Config struct {
 	DefaultReadCapacityUnits int64
 	// SimpleThingTable configuration.
 	SimpleThingTable SimpleThingTable
+	// TeacherSharingRuleTable configuration.
+	TeacherSharingRuleTable TeacherSharingRuleTable
 	// ThingTable configuration.
 	ThingTable ThingTable
+	// ThingWithCompositeAttributesTable configuration.
+	ThingWithCompositeAttributesTable ThingWithCompositeAttributesTable
 	// ThingWithDateRangeTable configuration.
 	ThingWithDateRangeTable ThingWithDateRangeTable
 	// ThingWithUnderscoresTable configuration.
@@ -66,6 +70,20 @@ func New(config Config) (*DB, error) {
 	if simpleThingTable.WriteCapacityUnits == 0 {
 		simpleThingTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	// configure TeacherSharingRule table
+	teacherSharingRuleTable := config.TeacherSharingRuleTable
+	if teacherSharingRuleTable.DynamoDBAPI == nil {
+		teacherSharingRuleTable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if teacherSharingRuleTable.Prefix == "" {
+		teacherSharingRuleTable.Prefix = config.DefaultPrefix
+	}
+	if teacherSharingRuleTable.ReadCapacityUnits == 0 {
+		teacherSharingRuleTable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if teacherSharingRuleTable.WriteCapacityUnits == 0 {
+		teacherSharingRuleTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
 	// configure Thing table
 	thingTable := config.ThingTable
 	if thingTable.DynamoDBAPI == nil {
@@ -79,6 +97,20 @@ func New(config Config) (*DB, error) {
 	}
 	if thingTable.WriteCapacityUnits == 0 {
 		thingTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
+	// configure ThingWithCompositeAttributes table
+	thingWithCompositeAttributesTable := config.ThingWithCompositeAttributesTable
+	if thingWithCompositeAttributesTable.DynamoDBAPI == nil {
+		thingWithCompositeAttributesTable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if thingWithCompositeAttributesTable.Prefix == "" {
+		thingWithCompositeAttributesTable.Prefix = config.DefaultPrefix
+	}
+	if thingWithCompositeAttributesTable.ReadCapacityUnits == 0 {
+		thingWithCompositeAttributesTable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if thingWithCompositeAttributesTable.WriteCapacityUnits == 0 {
+		thingWithCompositeAttributesTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
 	// configure ThingWithDateRange table
 	thingWithDateRangeTable := config.ThingWithDateRangeTable
@@ -110,19 +142,23 @@ func New(config Config) (*DB, error) {
 	}
 
 	return &DB{
-		simpleThingTable:          simpleThingTable,
-		thingTable:                thingTable,
-		thingWithDateRangeTable:   thingWithDateRangeTable,
-		thingWithUnderscoresTable: thingWithUnderscoresTable,
+		simpleThingTable:                  simpleThingTable,
+		teacherSharingRuleTable:           teacherSharingRuleTable,
+		thingTable:                        thingTable,
+		thingWithCompositeAttributesTable: thingWithCompositeAttributesTable,
+		thingWithDateRangeTable:           thingWithDateRangeTable,
+		thingWithUnderscoresTable:         thingWithUnderscoresTable,
 	}, nil
 }
 
 // DB implements the database interface using DynamoDB to store data.
 type DB struct {
-	simpleThingTable          SimpleThingTable
-	thingTable                ThingTable
-	thingWithDateRangeTable   ThingWithDateRangeTable
-	thingWithUnderscoresTable ThingWithUnderscoresTable
+	simpleThingTable                  SimpleThingTable
+	teacherSharingRuleTable           TeacherSharingRuleTable
+	thingTable                        ThingTable
+	thingWithCompositeAttributesTable ThingWithCompositeAttributesTable
+	thingWithDateRangeTable           ThingWithDateRangeTable
+	thingWithUnderscoresTable         ThingWithUnderscoresTable
 }
 
 var _ db.Interface = DB{}
@@ -132,7 +168,13 @@ func (d DB) CreateTables(ctx context.Context) error {
 	if err := d.simpleThingTable.create(ctx); err != nil {
 		return err
 	}
+	if err := d.teacherSharingRuleTable.create(ctx); err != nil {
+		return err
+	}
 	if err := d.thingTable.create(ctx); err != nil {
+		return err
+	}
+	if err := d.thingWithCompositeAttributesTable.create(ctx); err != nil {
 		return err
 	}
 	if err := d.thingWithDateRangeTable.create(ctx); err != nil {
@@ -157,6 +199,31 @@ func (d DB) GetSimpleThing(ctx context.Context, name string) (*models.SimpleThin
 // DeleteSimpleThing deletes a SimpleThing from the database.
 func (d DB) DeleteSimpleThing(ctx context.Context, name string) error {
 	return d.simpleThingTable.deleteSimpleThing(ctx, name)
+}
+
+// SaveTeacherSharingRule saves a TeacherSharingRule to the database.
+func (d DB) SaveTeacherSharingRule(ctx context.Context, m models.TeacherSharingRule) error {
+	return d.teacherSharingRuleTable.saveTeacherSharingRule(ctx, m)
+}
+
+// GetTeacherSharingRule retrieves a TeacherSharingRule from the database.
+func (d DB) GetTeacherSharingRule(ctx context.Context, teacher string, school string, app string) (*models.TeacherSharingRule, error) {
+	return d.teacherSharingRuleTable.getTeacherSharingRule(ctx, teacher, school, app)
+}
+
+// GetTeacherSharingRulesByTeacherAndSchoolApp retrieves a list of TeacherSharingRules from the database.
+func (d DB) GetTeacherSharingRulesByTeacherAndSchoolApp(ctx context.Context, input db.GetTeacherSharingRulesByTeacherAndSchoolAppInput) ([]models.TeacherSharingRule, error) {
+	return d.teacherSharingRuleTable.getTeacherSharingRulesByTeacherAndSchoolApp(ctx, input)
+}
+
+// DeleteTeacherSharingRule deletes a TeacherSharingRule from the database.
+func (d DB) DeleteTeacherSharingRule(ctx context.Context, teacher string, school string, app string) error {
+	return d.teacherSharingRuleTable.deleteTeacherSharingRule(ctx, teacher, school, app)
+}
+
+// GetTeacherSharingRulesByDistrictAndSchoolTeacherApp retrieves a list of TeacherSharingRules from the database.
+func (d DB) GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx context.Context, input db.GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput) ([]models.TeacherSharingRule, error) {
+	return d.teacherSharingRuleTable.getTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx, input)
 }
 
 // SaveThing saves a Thing to the database.
@@ -189,6 +256,31 @@ func (d DB) GetThingsByNameAndCreatedAt(ctx context.Context, input db.GetThingsB
 	return d.thingTable.getThingsByNameAndCreatedAt(ctx, input)
 }
 
+// SaveThingWithCompositeAttributes saves a ThingWithCompositeAttributes to the database.
+func (d DB) SaveThingWithCompositeAttributes(ctx context.Context, m models.ThingWithCompositeAttributes) error {
+	return d.thingWithCompositeAttributesTable.saveThingWithCompositeAttributes(ctx, m)
+}
+
+// GetThingWithCompositeAttributes retrieves a ThingWithCompositeAttributes from the database.
+func (d DB) GetThingWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) (*models.ThingWithCompositeAttributes, error) {
+	return d.thingWithCompositeAttributesTable.getThingWithCompositeAttributes(ctx, name, branch, date)
+}
+
+// GetThingWithCompositeAttributessByNameBranchAndDate retrieves a list of ThingWithCompositeAttributess from the database.
+func (d DB) GetThingWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input db.GetThingWithCompositeAttributessByNameBranchAndDateInput) ([]models.ThingWithCompositeAttributes, error) {
+	return d.thingWithCompositeAttributesTable.getThingWithCompositeAttributessByNameBranchAndDate(ctx, input)
+}
+
+// DeleteThingWithCompositeAttributes deletes a ThingWithCompositeAttributes from the database.
+func (d DB) DeleteThingWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) error {
+	return d.thingWithCompositeAttributesTable.deleteThingWithCompositeAttributes(ctx, name, branch, date)
+}
+
+// GetThingWithCompositeAttributessByNameVersionAndDate retrieves a list of ThingWithCompositeAttributess from the database.
+func (d DB) GetThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input db.GetThingWithCompositeAttributessByNameVersionAndDateInput) ([]models.ThingWithCompositeAttributes, error) {
+	return d.thingWithCompositeAttributesTable.getThingWithCompositeAttributessByNameVersionAndDate(ctx, input)
+}
+
 // SaveThingWithDateRange saves a ThingWithDateRange to the database.
 func (d DB) SaveThingWithDateRange(ctx context.Context, m models.ThingWithDateRange) error {
 	return d.thingWithDateRangeTable.saveThingWithDateRange(ctx, m)
@@ -215,11 +307,11 @@ func (d DB) SaveThingWithUnderscores(ctx context.Context, m models.ThingWithUnde
 }
 
 // GetThingWithUnderscores retrieves a ThingWithUnderscores from the database.
-func (d DB) GetThingWithUnderscores(ctx context.Context, idApp string) (*models.ThingWithUnderscores, error) {
-	return d.thingWithUnderscoresTable.getThingWithUnderscores(ctx, idApp)
+func (d DB) GetThingWithUnderscores(ctx context.Context, iDApp string) (*models.ThingWithUnderscores, error) {
+	return d.thingWithUnderscoresTable.getThingWithUnderscores(ctx, iDApp)
 }
 
 // DeleteThingWithUnderscores deletes a ThingWithUnderscores from the database.
-func (d DB) DeleteThingWithUnderscores(ctx context.Context, idApp string) error {
-	return d.thingWithUnderscoresTable.deleteThingWithUnderscores(ctx, idApp)
+func (d DB) DeleteThingWithUnderscores(ctx context.Context, iDApp string) error {
+	return d.thingWithUnderscoresTable.deleteThingWithUnderscores(ctx, iDApp)
 }

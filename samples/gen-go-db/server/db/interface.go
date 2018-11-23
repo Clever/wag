@@ -18,6 +18,17 @@ type Interface interface {
 	// DeleteSimpleThing deletes a SimpleThing from the database.
 	DeleteSimpleThing(ctx context.Context, name string) error
 
+	// SaveTeacherSharingRule saves a TeacherSharingRule to the database.
+	SaveTeacherSharingRule(ctx context.Context, m models.TeacherSharingRule) error
+	// GetTeacherSharingRule retrieves a TeacherSharingRule from the database.
+	GetTeacherSharingRule(ctx context.Context, teacher string, school string, app string) (*models.TeacherSharingRule, error)
+	// GetTeacherSharingRulesByTeacherAndSchoolApp retrieves a list of TeacherSharingRules from the database.
+	GetTeacherSharingRulesByTeacherAndSchoolApp(ctx context.Context, input GetTeacherSharingRulesByTeacherAndSchoolAppInput) ([]models.TeacherSharingRule, error)
+	// DeleteTeacherSharingRule deletes a TeacherSharingRule from the database.
+	DeleteTeacherSharingRule(ctx context.Context, teacher string, school string, app string) error
+	// GetTeacherSharingRulesByDistrictAndSchoolTeacherApp retrieves a list of TeacherSharingRules from the database.
+	GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx context.Context, input GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput) ([]models.TeacherSharingRule, error)
+
 	// SaveThing saves a Thing to the database.
 	SaveThing(ctx context.Context, m models.Thing) error
 	// GetThing retrieves a Thing from the database.
@@ -31,6 +42,17 @@ type Interface interface {
 	// GetThingsByNameAndCreatedAt retrieves a list of Things from the database.
 	GetThingsByNameAndCreatedAt(ctx context.Context, input GetThingsByNameAndCreatedAtInput) ([]models.Thing, error)
 
+	// SaveThingWithCompositeAttributes saves a ThingWithCompositeAttributes to the database.
+	SaveThingWithCompositeAttributes(ctx context.Context, m models.ThingWithCompositeAttributes) error
+	// GetThingWithCompositeAttributes retrieves a ThingWithCompositeAttributes from the database.
+	GetThingWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) (*models.ThingWithCompositeAttributes, error)
+	// GetThingWithCompositeAttributessByNameBranchAndDate retrieves a list of ThingWithCompositeAttributess from the database.
+	GetThingWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input GetThingWithCompositeAttributessByNameBranchAndDateInput) ([]models.ThingWithCompositeAttributes, error)
+	// DeleteThingWithCompositeAttributes deletes a ThingWithCompositeAttributes from the database.
+	DeleteThingWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) error
+	// GetThingWithCompositeAttributessByNameVersionAndDate retrieves a list of ThingWithCompositeAttributess from the database.
+	GetThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input GetThingWithCompositeAttributessByNameVersionAndDateInput) ([]models.ThingWithCompositeAttributes, error)
+
 	// SaveThingWithDateRange saves a ThingWithDateRange to the database.
 	SaveThingWithDateRange(ctx context.Context, m models.ThingWithDateRange) error
 	// GetThingWithDateRange retrieves a ThingWithDateRange from the database.
@@ -43,9 +65,9 @@ type Interface interface {
 	// SaveThingWithUnderscores saves a ThingWithUnderscores to the database.
 	SaveThingWithUnderscores(ctx context.Context, m models.ThingWithUnderscores) error
 	// GetThingWithUnderscores retrieves a ThingWithUnderscores from the database.
-	GetThingWithUnderscores(ctx context.Context, idApp string) (*models.ThingWithUnderscores, error)
+	GetThingWithUnderscores(ctx context.Context, iDApp string) (*models.ThingWithUnderscores, error)
 	// DeleteThingWithUnderscores deletes a ThingWithUnderscores from the database.
-	DeleteThingWithUnderscores(ctx context.Context, idApp string) error
+	DeleteThingWithUnderscores(ctx context.Context, iDApp string) error
 }
 
 // Int64 returns a pointer to the int64 value passed in.
@@ -79,6 +101,63 @@ var _ error = ErrSimpleThingAlreadyExists{}
 // Error returns a description of the error.
 func (e ErrSimpleThingAlreadyExists) Error() string {
 	return "SimpleThing already exists"
+}
+
+// GetTeacherSharingRulesByTeacherAndSchoolAppInput is the query input to GetTeacherSharingRulesByTeacherAndSchoolApp.
+type GetTeacherSharingRulesByTeacherAndSchoolAppInput struct {
+	Teacher               string
+	StartingAt            *SchoolApp
+	Descending            bool
+	DisableConsistentRead bool
+}
+
+// SchoolApp struct.
+type SchoolApp struct {
+	School string
+	App    string
+}
+
+// ErrTeacherSharingRuleNotFound is returned when the database fails to find a TeacherSharingRule.
+type ErrTeacherSharingRuleNotFound struct {
+	Teacher string
+	School  string
+	App     string
+}
+
+var _ error = ErrTeacherSharingRuleNotFound{}
+
+// Error returns a description of the error.
+func (e ErrTeacherSharingRuleNotFound) Error() string {
+	return "could not find TeacherSharingRule"
+}
+
+// GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput is the query input to GetTeacherSharingRulesByDistrictAndSchoolTeacherApp.
+type GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput struct {
+	District   string
+	StartingAt *SchoolTeacherApp
+	Descending bool
+}
+
+// SchoolTeacherApp struct.
+type SchoolTeacherApp struct {
+	School  string
+	Teacher string
+	App     string
+}
+
+// ErrTeacherSharingRuleByDistrictAndSchoolTeacherAppNotFound is returned when the database fails to find a TeacherSharingRule.
+type ErrTeacherSharingRuleByDistrictAndSchoolTeacherAppNotFound struct {
+	District string
+	School   string
+	Teacher  string
+	App      string
+}
+
+var _ error = ErrTeacherSharingRuleByDistrictAndSchoolTeacherAppNotFound{}
+
+// Error returns a description of the error.
+func (e ErrTeacherSharingRuleByDistrictAndSchoolTeacherAppNotFound) Error() string {
+	return "could not find TeacherSharingRule"
 }
 
 // GetThingsByNameAndVersionInput is the query input to GetThingsByNameAndVersion.
@@ -145,6 +224,51 @@ var _ error = ErrThingAlreadyExists{}
 // Error returns a description of the error.
 func (e ErrThingAlreadyExists) Error() string {
 	return "Thing already exists"
+}
+
+// GetThingWithCompositeAttributessByNameBranchAndDateInput is the query input to GetThingWithCompositeAttributessByNameBranchAndDate.
+type GetThingWithCompositeAttributessByNameBranchAndDateInput struct {
+	Name                  string
+	Branch                string
+	DateStartingAt        *strfmt.DateTime
+	Descending            bool
+	DisableConsistentRead bool
+}
+
+// ErrThingWithCompositeAttributesNotFound is returned when the database fails to find a ThingWithCompositeAttributes.
+type ErrThingWithCompositeAttributesNotFound struct {
+	Name   string
+	Branch string
+	Date   strfmt.DateTime
+}
+
+var _ error = ErrThingWithCompositeAttributesNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithCompositeAttributesNotFound) Error() string {
+	return "could not find ThingWithCompositeAttributes"
+}
+
+// GetThingWithCompositeAttributessByNameVersionAndDateInput is the query input to GetThingWithCompositeAttributessByNameVersionAndDate.
+type GetThingWithCompositeAttributessByNameVersionAndDateInput struct {
+	Name           string
+	Version        int64
+	DateStartingAt *strfmt.DateTime
+	Descending     bool
+}
+
+// ErrThingWithCompositeAttributesByNameVersionAndDateNotFound is returned when the database fails to find a ThingWithCompositeAttributes.
+type ErrThingWithCompositeAttributesByNameVersionAndDateNotFound struct {
+	Name    string
+	Version int64
+	Date    strfmt.DateTime
+}
+
+var _ error = ErrThingWithCompositeAttributesByNameVersionAndDateNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithCompositeAttributesByNameVersionAndDateNotFound) Error() string {
+	return "could not find ThingWithCompositeAttributes"
 }
 
 // GetThingWithDateRangesByNameAndDateInput is the query input to GetThingWithDateRangesByNameAndDate.
