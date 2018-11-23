@@ -1,2 +1,2 @@
-v1.11.1
-- Update JS client to actually send tracing information in headers
+v1.12.0
+- DynamoDB codegen supports composite attributes
