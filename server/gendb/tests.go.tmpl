@@ -29,6 +29,9 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	{{- range $xdbConfig := .XDBConfigs }}
 	{{- $modelName := pascalize $xdbConfig.SchemaName }}
 	t.Run("Get{{ $modelName }}", Get{{ $modelName }}(dbFactory(), t))
+        {{- if $xdbConfig.AllowPrimaryIndexScan }}
+	t.Run("Scan{{ $modelName }}s", Scan{{ $modelName }}s(dbFactory(), t))
+        {{- end }}
 	{{- if indexHasRangeKey $xdbConfig.DynamoDB.KeySchema }}
 	{{- $indexName := indexName $xdbConfig.DynamoDB.KeySchema }}
 	t.Run("Get{{ $modelName }}sBy{{ $indexName }}", Get{{ $modelName }}sBy{{ $indexName }}(dbFactory(), t))
@@ -326,6 +329,193 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
 	}
 }
 {{- end }}
+
+{{- if $xdbConfig.AllowPrimaryIndexScan }}
+type scan{{ $modelName }}sInput struct {
+	ctx   context.Context
+	input db.Scan{{ $modelName }}sInput
+}
+type scan{{ $modelName }}sOutput struct {
+	{{ varname $modelName }}s []models.{{ $modelName }}
+	err    error
+}
+type scan{{ $modelName }}sTest struct {
+	testName string
+	d        db.Interface
+	input    scan{{ $modelName }}sInput
+	output   scan{{ $modelName }}sOutput
+}
+
+func (g scan{{ $modelName }}sTest) run(t *testing.T) {
+	{{ varname $modelName }}s := []models.{{ $modelName }}{}
+	err := g.d.Scan{{ $modelName }}s(g.input.ctx, g.input.input, func(m *models.{{ $modelName }}, last bool) bool {
+		{{ varname $modelName }}s = append({{ varname $modelName }}s, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.{{ varname $modelName }}s, {{ varname $modelName }}s)
+}
+
+func Scan{{ $modelName }}s(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.Save{{ $modelName }}(ctx, models.{{ $modelName }}{
+			{{- range $attributeName := $pkModelAttributeNames }}
+			{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+			{{- end }}
+                        {{- if len $nonPKSecondaryStringProperties }}
+			// must specify non-empty string values for attributes
+			// in secondary indexes, since dynamodb doesn't support
+			// empty strings:
+                        {{- range $attr := $nonPKSecondaryStringProperties }}
+                        {{ pascalize $attr }}: "{{ $attr }}",
+                        {{- end }}
+                        {{- end }}
+		}))
+		require.Nil(t, d.Save{{ $modelName }}(ctx, models.{{ $modelName }}{
+			{{- range $attributeName := $pkModelAttributeNames }}
+			{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
+			{{- end }}
+                        {{- if len $nonPKSecondaryStringProperties }}
+			// must specify non-empty string values for attributes
+			// in secondary indexes, since dynamodb doesn't support
+			// empty strings:
+                        {{- range $attr := $nonPKSecondaryStringProperties }}
+                        {{ pascalize $attr }}: "{{ $attr }}",
+                        {{- end }}
+                        {{- end }}
+		}))
+		require.Nil(t, d.Save{{ $modelName }}(ctx, models.{{ $modelName }}{
+			{{- range $attributeName := $pkModelAttributeNames }}
+			{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
+			{{- end }}
+                        {{- if len $nonPKSecondaryStringProperties }}
+			// must specify non-empty string values for attributes
+			// in secondary indexes, since dynamodb doesn't support
+			// empty strings:
+                        {{- range $attr := $nonPKSecondaryStringProperties }}
+                        {{ pascalize $attr }}: "{{ $attr }}",
+                        {{- end }}
+                        {{- end }}
+		}))
+		tests := []scan{{ $modelName }}sTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scan{{ $modelName }}sInput{
+					ctx:   context.Background(),
+					input: db.Scan{{ $modelName }}sInput{},
+				},
+				output: scan{{ $modelName }}sOutput{
+					things: []models.{{ $modelName }}{
+						models.{{ $modelName }}{
+							{{- range $attributeName := $pkModelAttributeNames }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
+							{{- end }}
+				                        {{- if len $nonPKSecondaryStringProperties }}
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+				                        {{- range $attr := $nonPKSecondaryStringProperties }}
+				                        {{ pascalize $attr }}: "{{ $attr }}",
+				                        {{- end }}
+				                        {{- end }}
+						},
+						models.{{ $modelName }}{
+							{{- range $attributeName := $pkModelAttributeNames }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
+							{{- end }}
+				                        {{- if len $nonPKSecondaryStringProperties }}
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+				                        {{- range $attr := $nonPKSecondaryStringProperties }}
+				                        {{ pascalize $attr }}: "{{ $attr }}",
+				                        {{- end }}
+				                        {{- end }}
+						},
+						models.{{ $modelName }}{
+							{{- range $attributeName := $pkModelAttributeNames }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+							{{- end }}
+				                        {{- if len $nonPKSecondaryStringProperties }}
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+				                        {{- range $attr := $nonPKSecondaryStringProperties }}
+				                        {{ pascalize $attr }}: "{{ $attr }}",
+				                        {{- end }}
+				                        {{- end }}
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scan{{ $modelName }}sInput{
+					ctx: context.Background(),
+					input: db.Scan{{ $modelName }}sInput{
+						StartingAfter: &models.{{ $modelName }}{
+							{{- range $attributeName := $pkModelAttributeNames }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
+							{{- end }}
+				                        {{- if len $nonPKSecondaryStringProperties }}
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+				                        {{- range $attr := $nonPKSecondaryStringProperties }}
+				                        {{ pascalize $attr }}: "{{ $attr }}",
+				                        {{- end }}
+				                        {{- end }}
+						},
+					},
+				},
+				output: scan{{ $modelName }}sOutput{
+					{{ varname $modelName }}s: []models.{{ $modelName }}{
+						models.{{ $modelName }}{
+							{{- range $attributeName := $pkModelAttributeNames }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
+							{{- end }}
+				                        {{- if len $nonPKSecondaryStringProperties }}
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+				                        {{- range $attr := $nonPKSecondaryStringProperties }}
+				                        {{ pascalize $attr }}: "{{ $attr }}",
+				                        {{- end }}
+				                        {{- end }}
+						},
+						models.{{ $modelName }}{
+							{{- range $attributeName := $pkModelAttributeNames }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+							{{- end }}
+				                        {{- if len $nonPKSecondaryStringProperties }}
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+				                        {{- range $attr := $nonPKSecondaryStringProperties }}
+				                        {{ pascalize $attr }}: "{{ $attr }}",
+				                        {{- end }}
+				                        {{- end }}
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+{{- end }}
+
 
 func Save{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {

@@ -26,6 +26,9 @@ type XDBConfig struct {
 	// CompositeAttributes encodes attributes that are composed of multiple properties in the schema.
 	CompositeAttributes []CompositeAttribute
 
+	// AllowPrimaryIndexScan determines whether methods should be generated that scan the primary index.
+	AllowPrimaryIndexScan bool
+
 	// DynamoDB configuration.
 	DynamoDB AWSDynamoDBTable
 

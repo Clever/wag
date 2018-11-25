@@ -5,6 +5,7 @@ import (
 
 	"github.com/Clever/wag/samples/gen-go-db/models"
 	"github.com/go-openapi/strfmt"
+	"golang.org/x/time/rate"
 )
 
 //go:generate $GOPATH/bin/mockgen -source=$GOFILE -destination=mock_db.go -package=db
@@ -33,6 +34,8 @@ type Interface interface {
 	SaveThing(ctx context.Context, m models.Thing) error
 	// GetThing retrieves a Thing from the database.
 	GetThing(ctx context.Context, name string, version int64) (*models.Thing, error)
+	// ScanThings runs a scan on the Things table.
+	ScanThings(ctx context.Context, input ScanThingsInput, fn func(m *models.Thing, lastThing bool) bool) error
 	// GetThingsByNameAndVersion retrieves a list of Things from the database.
 	GetThingsByNameAndVersion(ctx context.Context, input GetThingsByNameAndVersionInput) ([]models.Thing, error)
 	// DeleteThing deletes a Thing from the database.
@@ -165,6 +168,16 @@ var _ error = ErrTeacherSharingRuleByDistrictAndSchoolTeacherAppNotFound{}
 // Error returns a description of the error.
 func (e ErrTeacherSharingRuleByDistrictAndSchoolTeacherAppNotFound) Error() string {
 	return "could not find TeacherSharingRule"
+}
+
+// ScanThingsInput is the input to the ScanThings method.
+type ScanThingsInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.Thing
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
 }
 
 // GetThingsByNameAndVersionInput is the query input to GetThingsByNameAndVersion.
