@@ -324,6 +324,43 @@ func (mr *MockInterfaceMockRecorder) DeleteThingWithDateRange(ctx, name, date in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithDateRange", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithDateRange), ctx, name, date)
 }
 
+// SaveThingWithRequiredFields mocks base method
+func (m_2 *MockInterface) SaveThingWithRequiredFields(ctx context.Context, m models.ThingWithRequiredFields) error {
+	ret := m_2.ctrl.Call(m_2, "SaveThingWithRequiredFields", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveThingWithRequiredFields indicates an expected call of SaveThingWithRequiredFields
+func (mr *MockInterfaceMockRecorder) SaveThingWithRequiredFields(ctx, m interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithRequiredFields", reflect.TypeOf((*MockInterface)(nil).SaveThingWithRequiredFields), ctx, m)
+}
+
+// GetThingWithRequiredFields mocks base method
+func (m *MockInterface) GetThingWithRequiredFields(ctx context.Context, name string) (*models.ThingWithRequiredFields, error) {
+	ret := m.ctrl.Call(m, "GetThingWithRequiredFields", ctx, name)
+	ret0, _ := ret[0].(*models.ThingWithRequiredFields)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingWithRequiredFields indicates an expected call of GetThingWithRequiredFields
+func (mr *MockInterfaceMockRecorder) GetThingWithRequiredFields(ctx, name interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithRequiredFields", reflect.TypeOf((*MockInterface)(nil).GetThingWithRequiredFields), ctx, name)
+}
+
+// DeleteThingWithRequiredFields mocks base method
+func (m *MockInterface) DeleteThingWithRequiredFields(ctx context.Context, name string) error {
+	ret := m.ctrl.Call(m, "DeleteThingWithRequiredFields", ctx, name)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteThingWithRequiredFields indicates an expected call of DeleteThingWithRequiredFields
+func (mr *MockInterfaceMockRecorder) DeleteThingWithRequiredFields(ctx, name interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithRequiredFields", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithRequiredFields), ctx, name)
+}
+
 // SaveThingWithUnderscores mocks base method
 func (m_2 *MockInterface) SaveThingWithUnderscores(ctx context.Context, m models.ThingWithUnderscores) error {
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithUnderscores", ctx, m)

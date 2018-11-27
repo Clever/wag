@@ -62,6 +62,13 @@ type Interface interface {
 	// DeleteThingWithDateRange deletes a ThingWithDateRange from the database.
 	DeleteThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) error
 
+	// SaveThingWithRequiredFields saves a ThingWithRequiredFields to the database.
+	SaveThingWithRequiredFields(ctx context.Context, m models.ThingWithRequiredFields) error
+	// GetThingWithRequiredFields retrieves a ThingWithRequiredFields from the database.
+	GetThingWithRequiredFields(ctx context.Context, name string) (*models.ThingWithRequiredFields, error)
+	// DeleteThingWithRequiredFields deletes a ThingWithRequiredFields from the database.
+	DeleteThingWithRequiredFields(ctx context.Context, name string) error
+
 	// SaveThingWithUnderscores saves a ThingWithUnderscores to the database.
 	SaveThingWithUnderscores(ctx context.Context, m models.ThingWithUnderscores) error
 	// GetThingWithUnderscores retrieves a ThingWithUnderscores from the database.
@@ -290,6 +297,30 @@ var _ error = ErrThingWithDateRangeNotFound{}
 // Error returns a description of the error.
 func (e ErrThingWithDateRangeNotFound) Error() string {
 	return "could not find ThingWithDateRange"
+}
+
+// ErrThingWithRequiredFieldsNotFound is returned when the database fails to find a ThingWithRequiredFields.
+type ErrThingWithRequiredFieldsNotFound struct {
+	Name string
+}
+
+var _ error = ErrThingWithRequiredFieldsNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithRequiredFieldsNotFound) Error() string {
+	return "could not find ThingWithRequiredFields"
+}
+
+// ErrThingWithRequiredFieldsAlreadyExists is returned when trying to overwrite a ThingWithRequiredFields.
+type ErrThingWithRequiredFieldsAlreadyExists struct {
+	Name string
+}
+
+var _ error = ErrThingWithRequiredFieldsAlreadyExists{}
+
+// Error returns a description of the error.
+func (e ErrThingWithRequiredFieldsAlreadyExists) Error() string {
+	return "ThingWithRequiredFields already exists"
 }
 
 // ErrThingWithUnderscoresNotFound is returned when the database fails to find a ThingWithUnderscores.
