@@ -248,19 +248,19 @@ func encodeThingWithCompositeAttributes(m models.ThingWithCompositeAttributes) (
 		return nil, err
 	}
 	// make sure composite attributes don't contain separator characters
-	if strings.Contains(m.Name, ":") {
-		return nil, fmt.Errorf("name cannot contain ':': %s", m.Name)
+	if strings.Contains(*m.Name, ":") {
+		return nil, fmt.Errorf("name cannot contain ':': %s", *m.Name)
 	}
-	if strings.Contains(m.Name, "@") {
-		return nil, fmt.Errorf("name cannot contain '@': %s", m.Name)
+	if strings.Contains(*m.Branch, "@") {
+		return nil, fmt.Errorf("branch cannot contain '@': %s", *m.Branch)
 	}
-	if strings.Contains(m.Branch, "@") {
-		return nil, fmt.Errorf("branch cannot contain '@': %s", m.Branch)
+	if strings.Contains(*m.Name, "@") {
+		return nil, fmt.Errorf("name cannot contain '@': %s", *m.Name)
 	}
 	// add in composite attributes
 	primaryKey, err := dynamodbattribute.MarshalMap(ddbThingWithCompositeAttributesPrimaryKey{
-		NameBranch: fmt.Sprintf("%s@%s", m.Name, m.Branch),
-		Date:       m.Date,
+		NameBranch: fmt.Sprintf("%s@%s", *m.Name, *m.Branch),
+		Date:       *m.Date,
 	})
 	if err != nil {
 		return nil, err
@@ -269,8 +269,8 @@ func encodeThingWithCompositeAttributes(m models.ThingWithCompositeAttributes) (
 		val[k] = v
 	}
 	nameVersion, err := dynamodbattribute.MarshalMap(ddbThingWithCompositeAttributesGSINameVersion{
-		NameVersion: fmt.Sprintf("%s:%d", m.Name, m.Version),
-		Date:        m.Date,
+		NameVersion: fmt.Sprintf("%s:%d", *m.Name, m.Version),
+		Date:        *m.Date,
 	})
 	if err != nil {
 		return nil, err

@@ -43,6 +43,9 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingWithDateRangesByNameAndDate", GetThingWithDateRangesByNameAndDate(dbFactory(), t))
 	t.Run("SaveThingWithDateRange", SaveThingWithDateRange(dbFactory(), t))
 	t.Run("DeleteThingWithDateRange", DeleteThingWithDateRange(dbFactory(), t))
+	t.Run("GetThingWithRequiredFields", GetThingWithRequiredFields(dbFactory(), t))
+	t.Run("SaveThingWithRequiredFields", SaveThingWithRequiredFields(dbFactory(), t))
+	t.Run("DeleteThingWithRequiredFields", DeleteThingWithRequiredFields(dbFactory(), t))
 	t.Run("GetThingWithUnderscores", GetThingWithUnderscores(dbFactory(), t))
 	t.Run("SaveThingWithUnderscores", SaveThingWithUnderscores(dbFactory(), t))
 	t.Run("DeleteThingWithUnderscores", DeleteThingWithUnderscores(dbFactory(), t))
@@ -772,15 +775,15 @@ func GetThingWithCompositeAttributes(s db.Interface, t *testing.T) func(t *testi
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m := models.ThingWithCompositeAttributes{
-			Name:   "string1",
-			Branch: "string1",
-			Date:   mustTime("2018-03-11T15:04:01+07:00"),
+			Name:   db.String("string1"),
+			Branch: db.String("string1"),
+			Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 		}
 		require.Nil(t, s.SaveThingWithCompositeAttributes(ctx, m))
-		m2, err := s.GetThingWithCompositeAttributes(ctx, m.Name, m.Branch, m.Date)
+		m2, err := s.GetThingWithCompositeAttributes(ctx, *m.Name, *m.Branch, *m.Date)
 		require.Nil(t, err)
-		require.Equal(t, m.Name, m2.Name)
-		require.Equal(t, m.Branch, m2.Branch)
+		require.Equal(t, *m.Name, *m2.Name)
+		require.Equal(t, *m.Branch, *m2.Branch)
 		require.Equal(t, m.Date.String(), m2.Date.String())
 
 		_, err = s.GetThingWithCompositeAttributes(ctx, "string2", "string2", mustTime("2018-03-11T15:04:02+07:00"))
@@ -814,19 +817,19 @@ func GetThingWithCompositeAttributessByNameBranchAndDate(d db.Interface, t *test
 	return func(t *testing.T) {
 		ctx := context.Background()
 		require.Nil(t, d.SaveThingWithCompositeAttributes(ctx, models.ThingWithCompositeAttributes{
-			Name:   "string1",
-			Branch: "string1",
-			Date:   mustTime("2018-03-11T15:04:01+07:00"),
+			Name:   db.String("string1"),
+			Branch: db.String("string1"),
+			Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 		}))
 		require.Nil(t, d.SaveThingWithCompositeAttributes(ctx, models.ThingWithCompositeAttributes{
-			Name:   "string1",
-			Branch: "string1",
-			Date:   mustTime("2018-03-11T15:04:02+07:00"),
+			Name:   db.String("string1"),
+			Branch: db.String("string1"),
+			Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 		}))
 		require.Nil(t, d.SaveThingWithCompositeAttributes(ctx, models.ThingWithCompositeAttributes{
-			Name:   "string1",
-			Branch: "string1",
-			Date:   mustTime("2018-03-11T15:04:03+07:00"),
+			Name:   db.String("string1"),
+			Branch: db.String("string1"),
+			Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 		}))
 		tests := []getThingWithCompositeAttributessByNameBranchAndDateTest{
 			{
@@ -842,19 +845,19 @@ func GetThingWithCompositeAttributessByNameBranchAndDate(d db.Interface, t *test
 				output: getThingWithCompositeAttributessByNameBranchAndDateOutput{
 					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
 						models.ThingWithCompositeAttributes{
-							Name:   "string1",
-							Branch: "string1",
-							Date:   mustTime("2018-03-11T15:04:01+07:00"),
+							Name:   db.String("string1"),
+							Branch: db.String("string1"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 						},
 						models.ThingWithCompositeAttributes{
-							Name:   "string1",
-							Branch: "string1",
-							Date:   mustTime("2018-03-11T15:04:02+07:00"),
+							Name:   db.String("string1"),
+							Branch: db.String("string1"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 						},
 						models.ThingWithCompositeAttributes{
-							Name:   "string1",
-							Branch: "string1",
-							Date:   mustTime("2018-03-11T15:04:03+07:00"),
+							Name:   db.String("string1"),
+							Branch: db.String("string1"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 						},
 					},
 					err: nil,
@@ -874,19 +877,19 @@ func GetThingWithCompositeAttributessByNameBranchAndDate(d db.Interface, t *test
 				output: getThingWithCompositeAttributessByNameBranchAndDateOutput{
 					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
 						models.ThingWithCompositeAttributes{
-							Name:   "string1",
-							Branch: "string1",
-							Date:   mustTime("2018-03-11T15:04:03+07:00"),
+							Name:   db.String("string1"),
+							Branch: db.String("string1"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 						},
 						models.ThingWithCompositeAttributes{
-							Name:   "string1",
-							Branch: "string1",
-							Date:   mustTime("2018-03-11T15:04:02+07:00"),
+							Name:   db.String("string1"),
+							Branch: db.String("string1"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 						},
 						models.ThingWithCompositeAttributes{
-							Name:   "string1",
-							Branch: "string1",
-							Date:   mustTime("2018-03-11T15:04:01+07:00"),
+							Name:   db.String("string1"),
+							Branch: db.String("string1"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 						},
 					},
 					err: nil,
@@ -906,14 +909,14 @@ func GetThingWithCompositeAttributessByNameBranchAndDate(d db.Interface, t *test
 				output: getThingWithCompositeAttributessByNameBranchAndDateOutput{
 					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
 						models.ThingWithCompositeAttributes{
-							Name:   "string1",
-							Branch: "string1",
-							Date:   mustTime("2018-03-11T15:04:02+07:00"),
+							Name:   db.String("string1"),
+							Branch: db.String("string1"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 						},
 						models.ThingWithCompositeAttributes{
-							Name:   "string1",
-							Branch: "string1",
-							Date:   mustTime("2018-03-11T15:04:03+07:00"),
+							Name:   db.String("string1"),
+							Branch: db.String("string1"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 						},
 					},
 					err: nil,
@@ -930,9 +933,9 @@ func SaveThingWithCompositeAttributes(s db.Interface, t *testing.T) func(t *test
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m := models.ThingWithCompositeAttributes{
-			Name:   "string1",
-			Branch: "string1",
-			Date:   mustTime("2018-03-11T15:04:01+07:00"),
+			Name:   db.String("string1"),
+			Branch: db.String("string1"),
+			Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 		}
 		require.Nil(t, s.SaveThingWithCompositeAttributes(ctx, m))
 	}
@@ -942,12 +945,12 @@ func DeleteThingWithCompositeAttributes(s db.Interface, t *testing.T) func(t *te
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m := models.ThingWithCompositeAttributes{
-			Name:   "string1",
-			Branch: "string1",
-			Date:   mustTime("2018-03-11T15:04:01+07:00"),
+			Name:   db.String("string1"),
+			Branch: db.String("string1"),
+			Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 		}
 		require.Nil(t, s.SaveThingWithCompositeAttributes(ctx, m))
-		require.Nil(t, s.DeleteThingWithCompositeAttributes(ctx, m.Name, m.Branch, m.Date))
+		require.Nil(t, s.DeleteThingWithCompositeAttributes(ctx, *m.Name, *m.Branch, *m.Date))
 	}
 }
 
@@ -976,22 +979,22 @@ func GetThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *tes
 	return func(t *testing.T) {
 		ctx := context.Background()
 		require.Nil(t, d.SaveThingWithCompositeAttributes(ctx, models.ThingWithCompositeAttributes{
-			Name:    "string1",
+			Name:    db.String("string1"),
 			Version: 1,
-			Date:    mustTime("2018-03-11T15:04:01+07:00"),
-			Branch:  "string1",
+			Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Branch:  db.String("string1"),
 		}))
 		require.Nil(t, d.SaveThingWithCompositeAttributes(ctx, models.ThingWithCompositeAttributes{
-			Name:    "string1",
+			Name:    db.String("string1"),
 			Version: 1,
-			Date:    mustTime("2018-03-11T15:04:02+07:00"),
-			Branch:  "string3",
+			Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+			Branch:  db.String("string3"),
 		}))
 		require.Nil(t, d.SaveThingWithCompositeAttributes(ctx, models.ThingWithCompositeAttributes{
-			Name:    "string1",
+			Name:    db.String("string1"),
 			Version: 1,
-			Date:    mustTime("2018-03-11T15:04:03+07:00"),
-			Branch:  "string2",
+			Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+			Branch:  db.String("string2"),
 		}))
 		tests := []getThingWithCompositeAttributessByNameVersionAndDateTest{
 			{
@@ -1007,22 +1010,22 @@ func GetThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *tes
 				output: getThingWithCompositeAttributessByNameVersionAndDateOutput{
 					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
 						models.ThingWithCompositeAttributes{
-							Name:    "string1",
+							Name:    db.String("string1"),
 							Version: 1,
-							Date:    mustTime("2018-03-11T15:04:01+07:00"),
-							Branch:  "string1",
+							Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+							Branch:  db.String("string1"),
 						},
 						models.ThingWithCompositeAttributes{
-							Name:    "string1",
+							Name:    db.String("string1"),
 							Version: 1,
-							Date:    mustTime("2018-03-11T15:04:02+07:00"),
-							Branch:  "string3",
+							Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+							Branch:  db.String("string3"),
 						},
 						models.ThingWithCompositeAttributes{
-							Name:    "string1",
+							Name:    db.String("string1"),
 							Version: 1,
-							Date:    mustTime("2018-03-11T15:04:03+07:00"),
-							Branch:  "string2",
+							Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+							Branch:  db.String("string2"),
 						},
 					},
 					err: nil,
@@ -1042,22 +1045,22 @@ func GetThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *tes
 				output: getThingWithCompositeAttributessByNameVersionAndDateOutput{
 					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
 						models.ThingWithCompositeAttributes{
-							Name:    "string1",
+							Name:    db.String("string1"),
 							Version: 1,
-							Date:    mustTime("2018-03-11T15:04:03+07:00"),
-							Branch:  "string2",
+							Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+							Branch:  db.String("string2"),
 						},
 						models.ThingWithCompositeAttributes{
-							Name:    "string1",
+							Name:    db.String("string1"),
 							Version: 1,
-							Date:    mustTime("2018-03-11T15:04:02+07:00"),
-							Branch:  "string3",
+							Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+							Branch:  db.String("string3"),
 						},
 						models.ThingWithCompositeAttributes{
-							Name:    "string1",
+							Name:    db.String("string1"),
 							Version: 1,
-							Date:    mustTime("2018-03-11T15:04:01+07:00"),
-							Branch:  "string1",
+							Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+							Branch:  db.String("string1"),
 						},
 					},
 					err: nil,
@@ -1077,16 +1080,16 @@ func GetThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *tes
 				output: getThingWithCompositeAttributessByNameVersionAndDateOutput{
 					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
 						models.ThingWithCompositeAttributes{
-							Name:    "string1",
+							Name:    db.String("string1"),
 							Version: 1,
-							Date:    mustTime("2018-03-11T15:04:02+07:00"),
-							Branch:  "string3",
+							Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+							Branch:  db.String("string3"),
 						},
 						models.ThingWithCompositeAttributes{
-							Name:    "string1",
+							Name:    db.String("string1"),
 							Version: 1,
-							Date:    mustTime("2018-03-11T15:04:03+07:00"),
-							Branch:  "string2",
+							Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+							Branch:  db.String("string2"),
 						},
 					},
 					err: nil,
@@ -1261,6 +1264,47 @@ func DeleteThingWithDateRange(s db.Interface, t *testing.T) func(t *testing.T) {
 		}
 		require.Nil(t, s.SaveThingWithDateRange(ctx, m))
 		require.Nil(t, s.DeleteThingWithDateRange(ctx, m.Name, m.Date))
+	}
+}
+
+func GetThingWithRequiredFields(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithRequiredFields{
+			Name: db.String("string1"),
+		}
+		require.Nil(t, s.SaveThingWithRequiredFields(ctx, m))
+		m2, err := s.GetThingWithRequiredFields(ctx, *m.Name)
+		require.Nil(t, err)
+		require.Equal(t, *m.Name, *m2.Name)
+
+		_, err = s.GetThingWithRequiredFields(ctx, "string2")
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrThingWithRequiredFieldsNotFound{})
+	}
+}
+
+func SaveThingWithRequiredFields(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithRequiredFields{
+			Name: db.String("string1"),
+		}
+		require.Nil(t, s.SaveThingWithRequiredFields(ctx, m))
+		require.Equal(t, db.ErrThingWithRequiredFieldsAlreadyExists{
+			Name: "string1",
+		}, s.SaveThingWithRequiredFields(ctx, m))
+	}
+}
+
+func DeleteThingWithRequiredFields(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithRequiredFields{
+			Name: db.String("string1"),
+		}
+		require.Nil(t, s.SaveThingWithRequiredFields(ctx, m))
+		require.Nil(t, s.DeleteThingWithRequiredFields(ctx, *m.Name))
 	}
 }
 

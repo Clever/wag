@@ -3,6 +3,7 @@ package gendb
 import (
 	"fmt"
 	"sort"
+	"strings"
 	"text/template"
 
 	"github.com/awslabs/goformation/cloudformation"
@@ -16,6 +17,15 @@ var funcMap = template.FuncMap(map[string]interface{}{
 	"anyTableUsesDateTime": func(configs []XDBConfig) bool {
 		for _, config := range configs {
 			if tableUsesDateTime(config) {
+				return true
+			}
+		}
+		return false
+	},
+	"primaryIndexUsesDateTime": primaryIndexUsesDateTime,
+	"anyTablePrimaryIndexUsesDateTime": func(configs []XDBConfig) bool {
+		for _, config := range configs {
+			if primaryIndexUsesDateTime(config) {
 				return true
 			}
 		}
@@ -107,6 +117,14 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		}
 		return sepToProps
 	},
+	"sortedKeys": func(m map[string][]string) []string {
+		keys := []string{}
+		for k := range m {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		return keys
+	},
 	"compositeValue": func(config XDBConfig, attributeName string, modelVarName string) string {
 		ca := findCompositeAttribute(config, attributeName)
 		if ca == nil {
@@ -126,10 +144,13 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		}
 		value += `",`
 		for i, prop := range ca.Properties {
-			if modelVarName != "" {
-				value += fmt.Sprintf("%s.%s", modelVarName, swag.ToGoName(prop))
+			if modelVarName == "m" {
+				// hackyaf: usually "m." signifies it could be a pointer
+				value += attributeToModelValue(config, prop, modelVarName+".")
+			} else if modelVarName == "" {
+				value += attributeToModelValueNotPtr(config, prop, "")
 			} else {
-				value += generator.FuncMap["varname"].(func(string) string)(prop)
+				value += attributeToModelValueNotPtr(config, prop, modelVarName+".")
 			}
 			if i != len(ca.Properties)-1 {
 				value += `, `
@@ -191,46 +212,12 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		pkAttributes := modelAttributeNamesForIndex(config, config.DynamoDB.KeySchema)
 		return difference(secondaryStringAttributes, pkAttributes)
 	},
-	"goTypeForAttribute":       goTypeForAttribute,
-	"dynamoDBTypeForAttribute": dynamoDBTypeForAttribute,
-	"exampleValueForAttribute": func(config XDBConfig, attributeName string, i int) string {
-		if propertySchema, ok := config.Schema.Properties[attributeName]; ok {
-			if propertySchema.Format == "date-time" {
-				return fmt.Sprintf(`mustTime("2018-03-11T15:04:0%d+07:00")`, i)
-			} else if len(propertySchema.Type) > 0 {
-				if propertySchema.Type[0] == "string" {
-					return fmt.Sprintf(`"string%d"`, i)
-				} else if propertySchema.Type[0] == "integer" {
-					return fmt.Sprintf("%d", i)
-				}
-			}
-		} else if ca := findCompositeAttribute(config, attributeName); ca != nil {
-			// composite attributes must be strings, since they are
-			// a concatenation of values
-			return fmt.Sprintf(`"string%d"`, i)
-		}
-		return "unknownType"
-	},
-	"exampleValuePtrForAttribute": func(config XDBConfig, attributeName string, i int) string {
-		if propertySchema, ok := config.Schema.Properties[attributeName]; ok {
-			if propertySchema.Format == "date-time" {
-				return fmt.Sprintf(`DateTime(mustTime("2018-03-11T15:04:0%d+07:00"))`, i)
-			} else if len(propertySchema.Type) > 0 {
-				if propertySchema.Type[0] == "string" {
-					return fmt.Sprintf(`String("string%d")`, i)
-				} else if propertySchema.Type[0] == "integer" {
-					return fmt.Sprintf("Int64(%d)", i)
-				}
-			}
-		} else if ca := findCompositeAttribute(config, attributeName); ca != nil {
-			// composite attributes must be strings, since they are
-			// a concatenation of values
-			return fmt.Sprintf(`String("string%d")`, i)
-
-		}
-		return "unknownType"
-	},
-	"difference": difference,
+	"goTypeForAttribute":             goTypeForAttribute,
+	"dynamoDBTypeForAttribute":       dynamoDBTypeForAttribute,
+	"exampleValueForAttribute":       exampleValueForAttribute,
+	"exampleValueNotPtrForAttribute": exampleValueNotPtrForAttribute,
+	"exampleValuePtrForAttribute":    exampleValuePtrForAttribute,
+	"difference":                     difference,
 	"pascalizeAndJoin": func(s []string) string {
 		ret := ""
 		for _, el := range s {
@@ -238,6 +225,10 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		}
 		return ret
 	},
+	"attributeIsPointer":          attributeIsPointer,
+	"attributeToModelValue":       attributeToModelValue,
+	"attributeToModelValueNotPtr": attributeToModelValueNotPtr,
+	"attributeToModelValuePtr":    attributeToModelValuePtr,
 })
 
 func contains(el string, arr []string) bool {
@@ -251,7 +242,7 @@ func contains(el string, arr []string) bool {
 
 func goTypeForAttribute(config XDBConfig, attributeName string) string {
 	if propertySchema, ok := config.Schema.Properties[attributeName]; ok {
-		if propertySchema.Format == "date-time" {
+		if isDateTimeFormat(propertySchema.Format) {
 			return "strfmt.DateTime"
 		} else if len(propertySchema.Type) > 0 {
 			if propertySchema.Type[0] == "string" {
@@ -334,5 +325,101 @@ func uniq(arr []string) []string {
 	for k := range u {
 		unique = append(unique, k)
 	}
+	sort.Strings(unique)
 	return unique
+}
+
+func attributeIsPointer(config XDBConfig, attributeName string) bool {
+	return contains(attributeName, config.Schema.Required)
+}
+
+func exampleValueNotPtrForAttribute(config XDBConfig, attributeName string, i int) string {
+	if propertySchema, ok := config.Schema.Properties[attributeName]; ok {
+		if isDateTimeFormat(propertySchema.Format) {
+			return fmt.Sprintf(`mustTime("2018-03-11T15:04:0%d+07:00")`, i)
+		} else if len(propertySchema.Type) > 0 {
+			if propertySchema.Type[0] == "string" {
+				return fmt.Sprintf(`"string%d"`, i)
+			} else if propertySchema.Type[0] == "integer" {
+				return fmt.Sprintf("%d", i)
+			}
+		}
+	} else if ca := findCompositeAttribute(config, attributeName); ca != nil {
+		// composite attributes must be strings, since they are
+		// a concatenation of values
+		return fmt.Sprintf(`"string%d"`, i)
+	}
+	return "unknownType"
+}
+
+func exampleValueForAttribute(config XDBConfig, attributeName string, i int) string {
+	if attributeIsPointer(config, attributeName) {
+		return exampleValuePtrForAttribute(config, attributeName, i)
+	}
+	return exampleValueNotPtrForAttribute(config, attributeName, i)
+}
+
+func exampleValuePtrForAttribute(config XDBConfig, attributeName string, i int) string {
+	if propertySchema, ok := config.Schema.Properties[attributeName]; ok {
+		if isDateTimeFormat(propertySchema.Format) {
+			return fmt.Sprintf(`db.DateTime(mustTime("2018-03-11T15:04:0%d+07:00"))`, i)
+		} else if len(propertySchema.Type) > 0 {
+			if propertySchema.Type[0] == "string" {
+				return fmt.Sprintf(`db.String("string%d")`, i)
+			} else if propertySchema.Type[0] == "integer" {
+				return fmt.Sprintf("db.Int64(%d)", i)
+			}
+		}
+	} else if ca := findCompositeAttribute(config, attributeName); ca != nil {
+		// composite attributes must be strings, since they are
+		// a concatenation of values
+		return fmt.Sprintf(`db.String("string%d")`, i)
+
+	}
+	return "unknownType"
+}
+
+func attributeToModelValue(config XDBConfig, attributeName string, prefix string) string {
+	if attributeIsPointer(config, attributeName) {
+		return attributeToModelValuePtr(config, attributeName, prefix)
+	}
+	return attributeToModelValueNotPtr(config, attributeName, prefix)
+}
+
+func attributeToModelValuePtr(config XDBConfig, attributeName string, prefix string) string {
+	return "*" + attributeToModelValueNotPtr(config, attributeName, prefix)
+}
+
+func attributeToModelValueNotPtr(config XDBConfig, attributeName string, prefix string) string {
+	goName := swag.ToGoName(attributeName)
+	if prefix == "" {
+		goName = strings.ToLower(goName)
+	}
+	return prefix + goName
+}
+
+func isDateTimeFormat(s string) bool {
+	return contains(s, []string{"datetime", "date-time"})
+}
+
+func tableUsesDateTime(config XDBConfig) bool {
+	keySchemas := config.DynamoDB.KeySchema
+	for _, gsi := range config.DynamoDB.GlobalSecondaryIndexes {
+		keySchemas = append(keySchemas, gsi.KeySchema...)
+	}
+	for _, ks := range keySchemas {
+		if isDateTimeFormat(config.Schema.Properties[ks.AttributeName].Format) {
+			return true
+		}
+	}
+	return false
+}
+
+func primaryIndexUsesDateTime(config XDBConfig) bool {
+	for _, ks := range config.DynamoDB.KeySchema {
+		if isDateTimeFormat(config.Schema.Properties[ks.AttributeName].Format) {
+			return true
+		}
+	}
+	return false
 }

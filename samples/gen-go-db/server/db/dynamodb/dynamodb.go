@@ -37,6 +37,8 @@ type Config struct {
 	ThingWithCompositeAttributesTable ThingWithCompositeAttributesTable
 	// ThingWithDateRangeTable configuration.
 	ThingWithDateRangeTable ThingWithDateRangeTable
+	// ThingWithRequiredFieldsTable configuration.
+	ThingWithRequiredFieldsTable ThingWithRequiredFieldsTable
 	// ThingWithUnderscoresTable configuration.
 	ThingWithUnderscoresTable ThingWithUnderscoresTable
 }
@@ -126,6 +128,20 @@ func New(config Config) (*DB, error) {
 	if thingWithDateRangeTable.WriteCapacityUnits == 0 {
 		thingWithDateRangeTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	// configure ThingWithRequiredFields table
+	thingWithRequiredFieldsTable := config.ThingWithRequiredFieldsTable
+	if thingWithRequiredFieldsTable.DynamoDBAPI == nil {
+		thingWithRequiredFieldsTable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if thingWithRequiredFieldsTable.Prefix == "" {
+		thingWithRequiredFieldsTable.Prefix = config.DefaultPrefix
+	}
+	if thingWithRequiredFieldsTable.ReadCapacityUnits == 0 {
+		thingWithRequiredFieldsTable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if thingWithRequiredFieldsTable.WriteCapacityUnits == 0 {
+		thingWithRequiredFieldsTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
 	// configure ThingWithUnderscores table
 	thingWithUnderscoresTable := config.ThingWithUnderscoresTable
 	if thingWithUnderscoresTable.DynamoDBAPI == nil {
@@ -147,6 +163,7 @@ func New(config Config) (*DB, error) {
 		thingTable:                        thingTable,
 		thingWithCompositeAttributesTable: thingWithCompositeAttributesTable,
 		thingWithDateRangeTable:           thingWithDateRangeTable,
+		thingWithRequiredFieldsTable:      thingWithRequiredFieldsTable,
 		thingWithUnderscoresTable:         thingWithUnderscoresTable,
 	}, nil
 }
@@ -158,6 +175,7 @@ type DB struct {
 	thingTable                        ThingTable
 	thingWithCompositeAttributesTable ThingWithCompositeAttributesTable
 	thingWithDateRangeTable           ThingWithDateRangeTable
+	thingWithRequiredFieldsTable      ThingWithRequiredFieldsTable
 	thingWithUnderscoresTable         ThingWithUnderscoresTable
 }
 
@@ -178,6 +196,9 @@ func (d DB) CreateTables(ctx context.Context) error {
 		return err
 	}
 	if err := d.thingWithDateRangeTable.create(ctx); err != nil {
+		return err
+	}
+	if err := d.thingWithRequiredFieldsTable.create(ctx); err != nil {
 		return err
 	}
 	if err := d.thingWithUnderscoresTable.create(ctx); err != nil {
@@ -299,6 +320,21 @@ func (d DB) GetThingWithDateRangesByNameAndDate(ctx context.Context, input db.Ge
 // DeleteThingWithDateRange deletes a ThingWithDateRange from the database.
 func (d DB) DeleteThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) error {
 	return d.thingWithDateRangeTable.deleteThingWithDateRange(ctx, name, date)
+}
+
+// SaveThingWithRequiredFields saves a ThingWithRequiredFields to the database.
+func (d DB) SaveThingWithRequiredFields(ctx context.Context, m models.ThingWithRequiredFields) error {
+	return d.thingWithRequiredFieldsTable.saveThingWithRequiredFields(ctx, m)
+}
+
+// GetThingWithRequiredFields retrieves a ThingWithRequiredFields from the database.
+func (d DB) GetThingWithRequiredFields(ctx context.Context, name string) (*models.ThingWithRequiredFields, error) {
+	return d.thingWithRequiredFieldsTable.getThingWithRequiredFields(ctx, name)
+}
+
+// DeleteThingWithRequiredFields deletes a ThingWithRequiredFields from the database.
+func (d DB) DeleteThingWithRequiredFields(ctx context.Context, name string) error {
+	return d.thingWithRequiredFieldsTable.deleteThingWithRequiredFields(ctx, name)
 }
 
 // SaveThingWithUnderscores saves a ThingWithUnderscores to the database.

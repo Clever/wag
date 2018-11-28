@@ -110,6 +110,23 @@ definitions:
       name:
         type: string
 
+  ThingWithRequiredFields:
+    x-db:
+      AllowOverwrites: false
+      DynamoDB:
+        KeySchema:
+          - AttributeName: name
+            KeyType: HASH
+    type: object
+    required:
+    - id
+    - name
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+
   ThingWithDateRange:
     x-db:
       AllowOverwrites: true
@@ -166,6 +183,10 @@ definitions:
           - AttributeName: date
             KeyType: RANGE
     type: object
+    required:
+    - name
+    - branch
+    - date
     properties:
       name:
         type: string

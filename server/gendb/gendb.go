@@ -114,19 +114,6 @@ func findCompositeAttribute(config XDBConfig, attributeName string) *CompositeAt
 
 }
 
-var tableUsesDateTime = func(config XDBConfig) bool {
-	keySchemas := config.DynamoDB.KeySchema
-	for _, gsi := range config.DynamoDB.GlobalSecondaryIndexes {
-		keySchemas = append(keySchemas, gsi.KeySchema...)
-	}
-	for _, ks := range keySchemas {
-		if config.Schema.Properties[ks.AttributeName].Format == "date-time" {
-			return true
-		}
-	}
-	return false
-}
-
 // GenerateDB generates DB code for schemas annotated with the x-db extension.
 func GenerateDB(packageName string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
 	var xdbConfigs []XDBConfig

@@ -67,20 +67,20 @@ func Get{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
                         {{- end }}
 		}
 		require.Nil(t, s.Save{{ $modelName }}(ctx, m))
-		m2, err := s.Get{{ $modelName }}(ctx, {{ range $attributeName := $pkModelAttributeNames }}m.{{ pascalize $attributeName }},{{ end }})
+		m2, err := s.Get{{ $modelName }}(ctx, {{ range $attributeName := $pkModelAttributeNames }}{{ attributeToModelValue $xdbConfig $attributeName "m." }},{{ end }})
 		require.Nil(t, err)
 		{{- range $attributeName := $pkModelAttributeNames }}
 		{{- $attrGoType := goTypeForAttribute $xdbConfig $attributeName }}
                 {{- if eq $attrGoType "strfmt.DateTime" }}
 		require.Equal(t, m.{{ pascalize $attributeName }}.String(), m2.{{ pascalize $attributeName }}.String())
                 {{- else }}
-		require.Equal(t, m.{{ pascalize $attributeName }}, m2.{{ pascalize $attributeName }})
+		require.Equal(t, {{ attributeToModelValue $xdbConfig $attributeName "m." }}, {{ attributeToModelValue $xdbConfig $attributeName "m2." }})
 		{{- end }}
 		{{- end }}
 
 		_, err = s.Get{{ $modelName }}(ctx,
 			{{- range $attributeName := $pkModelAttributeNames -}}
-			{{- exampleValueForAttribute $xdbConfig $attributeName 2 -}},
+			{{- exampleValueNotPtrForAttribute $xdbConfig $attributeName 2 -}},
 			{{- end -}}
                 )
                 require.NotNil(t, err)
@@ -163,7 +163,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
 					ctx: context.Background(),
 					input: db.Get{{ $modelName }}sBy{{ $indexName }}Input{
 			        		{{- range $attributeName := $hashKeyAttributes }}
-						{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+						{{ pascalize $attributeName }}: {{ exampleValueNotPtrForAttribute $xdbConfig $attributeName 1 }},
                                                 {{- end }}
 					},
 				},
@@ -216,7 +216,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
 					ctx: context.Background(),
 					input: db.Get{{ $modelName }}sBy{{ $indexName }}Input{
 			        		{{- range $attributeName := $hashKeyAttributes }}
-						{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+						{{ pascalize $attributeName }}: {{ exampleValueNotPtrForAttribute $xdbConfig $attributeName 1 }},
                                                 {{- end }}
 						Descending: true,
 					},
@@ -273,17 +273,17 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
 					ctx: context.Background(),
 					input: db.Get{{ $modelName }}sBy{{ $indexName }}Input{
 			        		{{- range $attributeName := $hashKeyAttributes }}
-						{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+						{{ pascalize $attributeName }}: {{ exampleValueNotPtrForAttribute $xdbConfig $attributeName 1 }},
                                                 {{- end }}
                                                 {{- if gt $lenRangeKeyAttributes 1 }}
                                                 StartingAt: &db.{{ pascalizeAndJoin $rangeKeyAttributes }}{
                                                 	{{- range $attributeName := $rangeKeyAttributes }}
-                                                        {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
+                                                        {{ pascalize $attributeName }}: {{ exampleValueNotPtrForAttribute $xdbConfig $attributeName 2 }},
                                                         {{- end }}
                                                 },
                                                 {{- else }}
 			        		{{- $attributeName := index $rangeKeyAttributes 0 }}
-						{{ pascalize $attributeName }}StartingAt: db.{{ exampleValuePtrForAttribute $xdbConfig $attributeName 2 }},
+						{{ pascalize $attributeName }}StartingAt: {{ exampleValuePtrForAttribute $xdbConfig $attributeName 2 }},
                                                 {{- end }}
 					},
 				},
@@ -347,7 +347,7 @@ func Save{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
                 {{- if not $xdbConfig.AllowOverwrites }}
 		require.Equal(t, db.Err{{ $modelName }}AlreadyExists{
 			{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-			{{ pascalize $pk.AttributeName }}: {{ exampleValueForAttribute $xdbConfig $pk.AttributeName 1 }},
+			{{ pascalize $pk.AttributeName }}: {{ exampleValueNotPtrForAttribute $xdbConfig $pk.AttributeName 1 }},
 			{{- end }}
                 }, s.Save{{ $modelName }}(ctx, m))
                 {{- end }}
@@ -371,7 +371,7 @@ func Delete{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
                         {{- end }}
 		}
 		require.Nil(t, s.Save{{ $modelName }}(ctx, m))
-		require.Nil(t, s.Delete{{ $modelName }}(ctx, {{- range $attributeName := $pkModelAttributeNames }}m.{{ pascalize $attributeName }},{{- end -}}))
+		require.Nil(t, s.Delete{{ $modelName }}(ctx, {{- range $attributeName := $pkModelAttributeNames }}{{ attributeToModelValue $xdbConfig $attributeName "m." }},{{- end -}}))
 	}
 }
 
@@ -452,7 +452,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
 					ctx: context.Background(),
 					input: db.Get{{ $modelName }}sBy{{ $computedIndexName }}Input{
 						{{- range $attributeName := $hashKeyAttributes }}
-						{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+						{{ pascalize $attributeName }}: {{ exampleValueNotPtrForAttribute $xdbConfig $attributeName 1 }},
                                                 {{- end }}
 					},
 				},
@@ -502,7 +502,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
 					ctx: context.Background(),
 					input: db.Get{{ $modelName }}sBy{{ $computedIndexName }}Input{
 						{{- range $attributeName := $hashKeyAttributes }}
-						{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+						{{ pascalize $attributeName }}: {{ exampleValueNotPtrForAttribute $xdbConfig $attributeName 1 }},
                                                 {{- end }}
 						Descending: true,
 					},
@@ -553,17 +553,17 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
 					ctx: context.Background(),
 					input: db.Get{{ $modelName }}sBy{{ $computedIndexName }}Input{
 						{{- range $attributeName := $hashKeyAttributes }}
-						{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+						{{ pascalize $attributeName }}: {{ exampleValueNotPtrForAttribute $xdbConfig $attributeName 1 }},
                                                 {{- end }}
                                                 {{- if gt $lenRangeKeyAttributes 1 }}
                                                 StartingAt: &db.{{ pascalizeAndJoin $rangeKeyAttributes }}{
                                                 	{{- range $attributeName := $rangeKeyAttributes }}
-                                                        {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
+                                                        {{ pascalize $attributeName }}: {{ exampleValueNotPtrForAttribute $xdbConfig $attributeName 2 }},
                                                         {{- end }}
                                                 },
                                                 {{- else }}
 			        		{{- $attributeName := index $rangeKeyAttributes 0 }}
-						{{ pascalize $attributeName }}StartingAt: db.{{ exampleValuePtrForAttribute $xdbConfig $attributeName 2 }},
+						{{ pascalize $attributeName }}StartingAt: {{ exampleValuePtrForAttribute $xdbConfig $attributeName 2 }},
                                                 {{- end }}
 					},
 				},

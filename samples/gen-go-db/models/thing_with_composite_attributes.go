@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // ThingWithCompositeAttributes thing with composite attributes
@@ -17,13 +18,16 @@ import (
 type ThingWithCompositeAttributes struct {
 
 	// branch
-	Branch string `json:"branch,omitempty"`
+	// Required: true
+	Branch *string `json:"branch"`
 
 	// date
-	Date strfmt.DateTime `json:"date,omitempty"`
+	// Required: true
+	Date *strfmt.DateTime `json:"date"`
 
 	// name
-	Name string `json:"name,omitempty"`
+	// Required: true
+	Name *string `json:"name"`
 
 	// version
 	Version int64 `json:"version,omitempty"`
@@ -33,9 +37,55 @@ type ThingWithCompositeAttributes struct {
 func (m *ThingWithCompositeAttributes) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateBranch(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateDate(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateName(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ThingWithCompositeAttributes) validateBranch(formats strfmt.Registry) error {
+
+	if err := validate.Required("branch", "body", m.Branch); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ThingWithCompositeAttributes) validateDate(formats strfmt.Registry) error {
+
+	if err := validate.Required("date", "body", m.Date); err != nil {
+		return err
+	}
+
+	if err := validate.FormatOf("date", "body", "date-time", m.Date.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ThingWithCompositeAttributes) validateName(formats strfmt.Registry) error {
+
+	if err := validate.Required("name", "body", m.Name); err != nil {
+		return err
+	}
+
 	return nil
 }
 

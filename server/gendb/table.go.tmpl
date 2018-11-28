@@ -167,7 +167,7 @@ func (t {{ $modelName }}Table) save{{ $modelName }}(ctx context.Context, m model
 			if awsErr.Code() == dynamodb.ErrCodeConditionalCheckFailedException {
 				return db.Err{{ $modelName }}AlreadyExists{
 					{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-					{{ pascalize $pk.AttributeName }}: m.{{ pascalize $pk.AttributeName }},
+					{{ pascalize $pk.AttributeName }}: {{ attributeToModelValue $xdbConfig $pk.AttributeName "m." }},
 					{{- end }}
 				}
 			}
@@ -424,10 +424,12 @@ func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]*dynamodb.Att
 		return nil, err
 	}
         // make sure composite attributes don't contain separator characters
-        {{- range $sep, $compositeProps := stringPropertiesInComposites $xdbConfig }}
+        {{- $stringPropertiesInComposites := stringPropertiesInComposites $xdbConfig }}
+        {{- range $_, $sep := sortedKeys $stringPropertiesInComposites }}
+        {{- $compositeProps := index $stringPropertiesInComposites $sep }}
         {{- range $compositeProp := $compositeProps }}
-	if strings.Contains(m.{{ pascalize $compositeProp }}, "{{ $sep }}") {
-		return nil, fmt.Errorf("{{ $compositeProp }} cannot contain '{{ $sep }}': %%s", m.{{ pascalize $compositeProp }})
+	if strings.Contains({{ attributeToModelValue $xdbConfig $compositeProp "m." }}, "{{ $sep }}") {
+		return nil, fmt.Errorf("{{ $compositeProp }} cannot contain '{{ $sep }}': %%s", {{ attributeToModelValue $xdbConfig $compositeProp "m." }})
 	}
         {{- end }}
         {{- end }}
@@ -435,7 +437,7 @@ func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]*dynamodb.Att
         {{- if indexContainsCompositeAttribute $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
 	primaryKey, err := dynamodbattribute.MarshalMap(ddb{{ $modelName }}PrimaryKey{
 		{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-		{{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValue $xdbConfig $pk.AttributeName "m" }}{{ else }}m.{{ pascalize $pk.AttributeName }}{{ end }},
+		{{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValue $xdbConfig $pk.AttributeName "m" }}{{ else }}{{ attributeToModelValue $xdbConfig $pk.AttributeName "m." }}{{ end }},
                 {{- end }}
 	})
 	if err != nil {
@@ -449,7 +451,7 @@ func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]*dynamodb.Att
         {{- if indexContainsCompositeAttribute $xdbConfig $gsi.KeySchema }}
 	{{ camelize $gsi.IndexName }}, err := dynamodbattribute.MarshalMap(ddb{{ $modelName }}GSI{{ pascalize $gsi.IndexName }}{
 		{{- range $_, $sk := $gsi.KeySchema }}
-		{{ pascalize $sk.AttributeName }}: {{ if isComposite $xdbConfig $sk.AttributeName }}{{ compositeValue $xdbConfig $sk.AttributeName "m" }}{{ else }}m.{{ pascalize $sk.AttributeName }}{{ end }},
+		{{ pascalize $sk.AttributeName }}: {{ if isComposite $xdbConfig $sk.AttributeName }}{{ compositeValue $xdbConfig $sk.AttributeName "m" }}{{ else }}{{ attributeToModelValue $xdbConfig $sk.AttributeName "m." }}{{ end }},
                 {{- end }}
 	})
 	if err != nil {
