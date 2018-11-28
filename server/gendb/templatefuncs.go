@@ -117,6 +117,14 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		}
 		return sepToProps
 	},
+	"sortedKeys": func(m map[string][]string) []string {
+		keys := []string{}
+		for k := range m {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		return keys
+	},
 	"compositeValue": func(config XDBConfig, attributeName string, modelVarName string) string {
 		ca := findCompositeAttribute(config, attributeName)
 		if ca == nil {
@@ -317,6 +325,7 @@ func uniq(arr []string) []string {
 	for k := range u {
 		unique = append(unique, k)
 	}
+	sort.Strings(unique)
 	return unique
 }
 

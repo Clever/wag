@@ -424,7 +424,9 @@ func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]*dynamodb.Att
 		return nil, err
 	}
         // make sure composite attributes don't contain separator characters
-        {{- range $sep, $compositeProps := stringPropertiesInComposites $xdbConfig }}
+        {{- $stringPropertiesInComposites := stringPropertiesInComposites $xdbConfig }}
+        {{- range $_, $sep := sortedKeys $stringPropertiesInComposites }}
+        {{- $compositeProps := index $stringPropertiesInComposites $sep }}
         {{- range $compositeProp := $compositeProps }}
 	if strings.Contains({{ attributeToModelValue $xdbConfig $compositeProp "m." }}, "{{ $sep }}") {
 		return nil, fmt.Errorf("{{ $compositeProp }} cannot contain '{{ $sep }}': %%s", {{ attributeToModelValue $xdbConfig $compositeProp "m." }})

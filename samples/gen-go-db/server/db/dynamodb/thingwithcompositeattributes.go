@@ -251,11 +251,11 @@ func encodeThingWithCompositeAttributes(m models.ThingWithCompositeAttributes) (
 	if strings.Contains(*m.Name, ":") {
 		return nil, fmt.Errorf("name cannot contain ':': %s", *m.Name)
 	}
-	if strings.Contains(*m.Name, "@") {
-		return nil, fmt.Errorf("name cannot contain '@': %s", *m.Name)
-	}
 	if strings.Contains(*m.Branch, "@") {
 		return nil, fmt.Errorf("branch cannot contain '@': %s", *m.Branch)
+	}
+	if strings.Contains(*m.Name, "@") {
+		return nil, fmt.Errorf("name cannot contain '@': %s", *m.Name)
 	}
 	// add in composite attributes
 	primaryKey, err := dynamodbattribute.MarshalMap(ddbThingWithCompositeAttributesPrimaryKey{
