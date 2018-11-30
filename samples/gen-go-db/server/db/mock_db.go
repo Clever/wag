@@ -160,6 +160,18 @@ func (mr *MockInterfaceMockRecorder) GetThing(ctx, name, version interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThing", reflect.TypeOf((*MockInterface)(nil).GetThing), ctx, name, version)
 }
 
+// ScanThings mocks base method
+func (m *MockInterface) ScanThings(ctx context.Context, input ScanThingsInput, fn func(*models.Thing, bool) bool) error {
+	ret := m.ctrl.Call(m, "ScanThings", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ScanThings indicates an expected call of ScanThings
+func (mr *MockInterfaceMockRecorder) ScanThings(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThings", reflect.TypeOf((*MockInterface)(nil).ScanThings), ctx, input, fn)
+}
+
 // GetThingsByNameAndVersion mocks base method
 func (m *MockInterface) GetThingsByNameAndVersion(ctx context.Context, input GetThingsByNameAndVersionInput) ([]models.Thing, error) {
 	ret := m.ctrl.Call(m, "GetThingsByNameAndVersion", ctx, input)

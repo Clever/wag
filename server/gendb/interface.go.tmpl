@@ -7,6 +7,9 @@ import (
 	{{- if anyTableUsesDateTime .XDBConfigs }}
 	"github.com/go-openapi/strfmt"
         {{- end -}}
+	{{- if anyTableAllowsScans .XDBConfigs }}
+	"golang.org/x/time/rate"
+        {{- end -}}
 )
 
 //go:generate $GOPATH/bin/mockgen -source=$GOFILE -destination=mock_db.go -package=db
@@ -24,6 +27,10 @@ type Interface interface {
 	{{- varname $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
 	{{- end -}}
     ) (*models.{{ $modelName }}, error)
+    {{- if $xdbConfig.AllowPrimaryIndexScan }}
+    // Scan{{ $modelName }}s runs a scan on the {{ $modelName }}s table.
+    Scan{{ $modelName }}s(ctx context.Context, input Scan{{ $modelName }}sInput, fn func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool) error
+    {{- end }}
     {{- if indexHasRangeKey $xdbConfig.DynamoDB.KeySchema }}
     {{- $indexName := indexName $xdbConfig.DynamoDB.KeySchema }}
     // Get{{ $modelName }}sBy{{ $indexName }} retrieves a list of {{ $modelName }}s from the database.
@@ -66,6 +73,17 @@ func DateTime(d strfmt.DateTime) *strfmt.DateTime { return &d }
 
 {{- range $xdbConfig := .XDBConfigs }}
 {{- $modelName := pascalize $xdbConfig.SchemaName }}
+{{- if $xdbConfig.AllowPrimaryIndexScan }}
+// Scan{{ $modelName }}sInput is the input to the Scan{{ $modelName }}s method.
+type Scan{{ $modelName }}sInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.{{ $modelName }}
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter        
+}
+{{- end }}
 {{- $indexName := indexName $xdbConfig.DynamoDB.KeySchema }}
 {{- $hashKey := index $xdbConfig.DynamoDB.KeySchema 0 }}
 {{- $pkModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $xdbConfig.DynamoDB.KeySchema }}

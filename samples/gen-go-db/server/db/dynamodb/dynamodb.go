@@ -257,6 +257,11 @@ func (d DB) GetThing(ctx context.Context, name string, version int64) (*models.T
 	return d.thingTable.getThing(ctx, name, version)
 }
 
+// ScanThings runs a scan on the Things table.
+func (d DB) ScanThings(ctx context.Context, input db.ScanThingsInput, fn func(m *models.Thing, lastThing bool) bool) error {
+	return d.thingTable.scanThings(ctx, input, fn)
+}
+
 // GetThingsByNameAndVersion retrieves a list of Things from the database.
 func (d DB) GetThingsByNameAndVersion(ctx context.Context, input db.GetThingsByNameAndVersionInput) ([]models.Thing, error) {
 	return d.thingTable.getThingsByNameAndVersion(ctx, input)

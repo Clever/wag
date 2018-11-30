@@ -29,6 +29,7 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("DeleteTeacherSharingRule", DeleteTeacherSharingRule(dbFactory(), t))
 	t.Run("GetTeacherSharingRulesByDistrictAndSchoolTeacherApp", GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(dbFactory(), t))
 	t.Run("GetThing", GetThing(dbFactory(), t))
+	t.Run("ScanThings", ScanThings(dbFactory(), t))
 	t.Run("GetThingsByNameAndVersion", GetThingsByNameAndVersion(dbFactory(), t))
 	t.Run("SaveThing", SaveThing(dbFactory(), t))
 	t.Run("DeleteThing", DeleteThing(dbFactory(), t))
@@ -577,6 +578,109 @@ func GetThingsByNameAndVersion(d db.Interface, t *testing.T) func(t *testing.T) 
 						models.Thing{
 							Name:    "string1",
 							Version: 3,
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+type scanThingsInput struct {
+	ctx   context.Context
+	input db.ScanThingsInput
+}
+type scanThingsOutput struct {
+	things []models.Thing
+	err    error
+}
+type scanThingsTest struct {
+	testName string
+	d        db.Interface
+	input    scanThingsInput
+	output   scanThingsOutput
+}
+
+func (g scanThingsTest) run(t *testing.T) {
+	things := []models.Thing{}
+	err := g.d.ScanThings(g.input.ctx, g.input.input, func(m *models.Thing, last bool) bool {
+		things = append(things, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.things, things)
+}
+
+func ScanThings(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThing(ctx, models.Thing{
+			Name:    "string1",
+			Version: 1,
+		}))
+		require.Nil(t, d.SaveThing(ctx, models.Thing{
+			Name:    "string2",
+			Version: 2,
+		}))
+		require.Nil(t, d.SaveThing(ctx, models.Thing{
+			Name:    "string3",
+			Version: 3,
+		}))
+		tests := []scanThingsTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanThingsInput{
+					ctx:   context.Background(),
+					input: db.ScanThingsInput{},
+				},
+				output: scanThingsOutput{
+					things: []models.Thing{
+						models.Thing{
+							Name:    "string3",
+							Version: 3,
+						},
+						models.Thing{
+							Name:    "string2",
+							Version: 2,
+						},
+						models.Thing{
+							Name:    "string1",
+							Version: 1,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanThingsInput{
+					ctx: context.Background(),
+					input: db.ScanThingsInput{
+						StartingAfter: &models.Thing{
+							Name:    "string3",
+							Version: 3,
+						},
+					},
+				},
+				output: scanThingsOutput{
+					things: []models.Thing{
+						models.Thing{
+							Name:    "string2",
+							Version: 2,
+						},
+						models.Thing{
+							Name:    "string1",
+							Version: 1,
 						},
 					},
 					err: nil,
