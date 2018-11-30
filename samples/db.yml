@@ -45,6 +45,7 @@ definitions:
   Thing:
     x-db:
       AllowOverwrites: false
+      AllowPrimaryIndexScan: true
       DynamoDB:
         KeySchema:
           - AttributeName: name

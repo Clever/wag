@@ -126,6 +126,13 @@ func (d DB) Get{{ $modelName }}(ctx context.Context,
 )
 }
 
+{{- if $xdbConfig.AllowPrimaryIndexScan }}
+// Scan{{ $modelName }}s runs a scan on the {{ $modelName }}s table.
+func (d DB) Scan{{ $modelName }}s(ctx context.Context, input db.Scan{{ $modelName }}sInput, fn func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool) error {
+	return d.{{ $modelNameCamel }}Table.scan{{ $modelName }}s(ctx, input, fn)
+}
+{{- end }}
+
 {{- if indexHasRangeKey $xdbConfig.DynamoDB.KeySchema }}
 {{- $indexName := indexName $xdbConfig.DynamoDB.KeySchema }}
 // Get{{ $modelName }}sBy{{ $indexName }} retrieves a list of {{ $modelName }}s from the database.
