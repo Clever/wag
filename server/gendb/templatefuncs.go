@@ -402,7 +402,7 @@ func attributeToModelValuePtr(config XDBConfig, attributeName string, prefix str
 func attributeToModelValueNotPtr(config XDBConfig, attributeName string, prefix string) string {
 	goName := swag.ToGoName(attributeName)
 	if prefix == "" {
-		goName = strings.ToLower(goName)
+		goName = generator.FuncMap["varname"].(func(string) string)(strings.ToLower(goName))
 	}
 	return prefix + goName
 }
