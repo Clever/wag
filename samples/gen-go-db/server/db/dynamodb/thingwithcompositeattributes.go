@@ -9,6 +9,7 @@ import (
 	"github.com/Clever/wag/samples/gen-go-db/models"
 	"github.com/Clever/wag/samples/gen-go-db/server/db"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
@@ -115,8 +116,24 @@ func (t ThingWithCompositeAttributesTable) saveThingWithCompositeAttributes(ctx 
 	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(t.name()),
 		Item:      data,
+		ExpressionAttributeNames: map[string]*string{
+			"#NAME_BRANCH": aws.String("name_branch"),
+			"#DATE":        aws.String("date"),
+		},
+		ConditionExpression: aws.String("attribute_not_exists(#NAME_BRANCH) AND attribute_not_exists(#DATE)"),
 	})
-	return err
+	if err != nil {
+		if awsErr, ok := err.(awserr.Error); ok {
+			if awsErr.Code() == dynamodb.ErrCodeConditionalCheckFailedException {
+				return db.ErrThingWithCompositeAttributesAlreadyExists{
+					NameBranch: fmt.Sprintf("%s@%s", *m.Name, *m.Branch),
+					Date:       *m.Date,
+				}
+			}
+		}
+		return err
+	}
+	return nil
 }
 
 func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) (*models.ThingWithCompositeAttributes, error) {

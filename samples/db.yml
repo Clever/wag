@@ -160,7 +160,7 @@ definitions:
   # Composite hash keys
   ThingWithCompositeAttributes:
     x-db:
-      AllowOverwrites: true
+      AllowOverwrites: false
       CompositeAttributes:
       - AttributeName: name_branch
         Properties: [ name, branch ]

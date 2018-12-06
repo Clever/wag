@@ -167,7 +167,7 @@ func (t {{ $modelName }}Table) save{{ $modelName }}(ctx context.Context, m model
 			if awsErr.Code() == dynamodb.ErrCodeConditionalCheckFailedException {
 				return db.Err{{ $modelName }}AlreadyExists{
 					{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-					{{ pascalize $pk.AttributeName }}: {{ attributeToModelValue $xdbConfig $pk.AttributeName "m." }},
+					{{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValue $xdbConfig $pk.AttributeName "m" }}{{ else }}{{ attributeToModelValue $xdbConfig $pk.AttributeName "m." }}{{ end }},
 					{{- end }}
 				}
 			}

@@ -76,9 +76,7 @@ func SaveSimpleThing(s db.Interface, t *testing.T) func(t *testing.T) {
 			Name: "string1",
 		}
 		require.Nil(t, s.SaveSimpleThing(ctx, m))
-		require.Equal(t, db.ErrSimpleThingAlreadyExists{
-			Name: "string1",
-		}, s.SaveSimpleThing(ctx, m))
+		require.IsType(t, db.ErrSimpleThingAlreadyExists{}, s.SaveSimpleThing(ctx, m))
 	}
 }
 
@@ -701,10 +699,7 @@ func SaveThing(s db.Interface, t *testing.T) func(t *testing.T) {
 			Version: 1,
 		}
 		require.Nil(t, s.SaveThing(ctx, m))
-		require.Equal(t, db.ErrThingAlreadyExists{
-			Name:    "string1",
-			Version: 1,
-		}, s.SaveThing(ctx, m))
+		require.IsType(t, db.ErrThingAlreadyExists{}, s.SaveThing(ctx, m))
 	}
 }
 
@@ -1042,6 +1037,7 @@ func SaveThingWithCompositeAttributes(s db.Interface, t *testing.T) func(t *test
 			Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 		}
 		require.Nil(t, s.SaveThingWithCompositeAttributes(ctx, m))
+		require.IsType(t, db.ErrThingWithCompositeAttributesAlreadyExists{}, s.SaveThingWithCompositeAttributes(ctx, m))
 	}
 }
 
@@ -1395,9 +1391,7 @@ func SaveThingWithRequiredFields(s db.Interface, t *testing.T) func(t *testing.T
 			Name: db.String("string1"),
 		}
 		require.Nil(t, s.SaveThingWithRequiredFields(ctx, m))
-		require.Equal(t, db.ErrThingWithRequiredFieldsAlreadyExists{
-			Name: "string1",
-		}, s.SaveThingWithRequiredFields(ctx, m))
+		require.IsType(t, db.ErrThingWithRequiredFieldsAlreadyExists{}, s.SaveThingWithRequiredFields(ctx, m))
 	}
 }
 

@@ -291,6 +291,19 @@ func (e ErrThingWithCompositeAttributesByNameVersionAndDateNotFound) Error() str
 	return "could not find ThingWithCompositeAttributes"
 }
 
+// ErrThingWithCompositeAttributesAlreadyExists is returned when trying to overwrite a ThingWithCompositeAttributes.
+type ErrThingWithCompositeAttributesAlreadyExists struct {
+	NameBranch string
+	Date       strfmt.DateTime
+}
+
+var _ error = ErrThingWithCompositeAttributesAlreadyExists{}
+
+// Error returns a description of the error.
+func (e ErrThingWithCompositeAttributesAlreadyExists) Error() string {
+	return "ThingWithCompositeAttributes already exists"
+}
+
 // GetThingWithDateRangesByNameAndDateInput is the query input to GetThingWithDateRangesByNameAndDate.
 type GetThingWithDateRangesByNameAndDateInput struct {
 	Name                  string

@@ -535,11 +535,7 @@ func Save{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
 		}
 		require.Nil(t, s.Save{{ $modelName }}(ctx, m))
                 {{- if not $xdbConfig.AllowOverwrites }}
-		require.Equal(t, db.Err{{ $modelName }}AlreadyExists{
-			{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-			{{ pascalize $pk.AttributeName }}: {{ exampleValueNotPtrForAttribute $xdbConfig $pk.AttributeName 1 }},
-			{{- end }}
-                }, s.Save{{ $modelName }}(ctx, m))
+		require.IsType(t, db.Err{{ $modelName }}AlreadyExists{}, s.Save{{ $modelName }}(ctx, m))
                 {{- end }}
 	}
 }
