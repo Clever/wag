@@ -1,2 +1,2 @@
-v1.13.3
+v1.13.4
 - Close spans in WAG client after initializing them
