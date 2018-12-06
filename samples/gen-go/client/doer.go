@@ -58,6 +58,7 @@ func (d tracingDoer) Do(c *http.Client, r *http.Request) (*http.Response, error)
 		opentracing.HTTPHeadersCarrier(r.Header)); err != nil {
 		return nil, fmt.Errorf("couldn't inject tracing headers (%v)", err)
 	}
+	defer sp.Finish()
 	return d.d.Do(c, r)
 }
 
