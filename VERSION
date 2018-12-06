@@ -1,2 +1,2 @@
-v1.13.2
-- DynamoDB codegen supports scans
+v1.13.3
+- Close spans in WAG client after initializing them
