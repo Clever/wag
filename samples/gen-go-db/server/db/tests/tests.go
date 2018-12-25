@@ -40,6 +40,10 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("SaveThingWithCompositeAttributes", SaveThingWithCompositeAttributes(dbFactory(), t))
 	t.Run("DeleteThingWithCompositeAttributes", DeleteThingWithCompositeAttributes(dbFactory(), t))
 	t.Run("GetThingWithCompositeAttributessByNameVersionAndDate", GetThingWithCompositeAttributessByNameVersionAndDate(dbFactory(), t))
+	t.Run("GetThingWithCompositeEnumAttributes", GetThingWithCompositeEnumAttributes(dbFactory(), t))
+	t.Run("GetThingWithCompositeEnumAttributessByNameBranchAndDate", GetThingWithCompositeEnumAttributessByNameBranchAndDate(dbFactory(), t))
+	t.Run("SaveThingWithCompositeEnumAttributes", SaveThingWithCompositeEnumAttributes(dbFactory(), t))
+	t.Run("DeleteThingWithCompositeEnumAttributes", DeleteThingWithCompositeEnumAttributes(dbFactory(), t))
 	t.Run("GetThingWithDateRange", GetThingWithDateRange(dbFactory(), t))
 	t.Run("GetThingWithDateRangesByNameAndDate", GetThingWithDateRangesByNameAndDate(dbFactory(), t))
 	t.Run("SaveThingWithDateRange", SaveThingWithDateRange(dbFactory(), t))
@@ -1199,6 +1203,190 @@ func GetThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *tes
 		for _, test := range tests {
 			t.Run(test.testName, test.run)
 		}
+	}
+}
+
+func GetThingWithCompositeEnumAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithCompositeEnumAttributes{
+			Name:     db.String("string1"),
+			BranchID: models.BranchMaster,
+			Date:     db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+		}
+		require.Nil(t, s.SaveThingWithCompositeEnumAttributes(ctx, m))
+		m2, err := s.GetThingWithCompositeEnumAttributes(ctx, *m.Name, m.BranchID, *m.Date)
+		require.Nil(t, err)
+		require.Equal(t, *m.Name, *m2.Name)
+		require.Equal(t, m.BranchID, m2.BranchID)
+		require.Equal(t, m.Date.String(), m2.Date.String())
+
+		_, err = s.GetThingWithCompositeEnumAttributes(ctx, "string2", models.BranchDEVBRANCH, mustTime("2018-03-11T15:04:02+07:00"))
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrThingWithCompositeEnumAttributesNotFound{})
+	}
+}
+
+type getThingWithCompositeEnumAttributessByNameBranchAndDateInput struct {
+	ctx   context.Context
+	input db.GetThingWithCompositeEnumAttributessByNameBranchAndDateInput
+}
+type getThingWithCompositeEnumAttributessByNameBranchAndDateOutput struct {
+	thingWithCompositeEnumAttributess []models.ThingWithCompositeEnumAttributes
+	err                               error
+}
+type getThingWithCompositeEnumAttributessByNameBranchAndDateTest struct {
+	testName string
+	d        db.Interface
+	input    getThingWithCompositeEnumAttributessByNameBranchAndDateInput
+	output   getThingWithCompositeEnumAttributessByNameBranchAndDateOutput
+}
+
+func (g getThingWithCompositeEnumAttributessByNameBranchAndDateTest) run(t *testing.T) {
+	thingWithCompositeEnumAttributess, err := g.d.GetThingWithCompositeEnumAttributessByNameBranchAndDate(g.input.ctx, g.input.input)
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.thingWithCompositeEnumAttributess, thingWithCompositeEnumAttributess)
+}
+
+func GetThingWithCompositeEnumAttributessByNameBranchAndDate(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithCompositeEnumAttributes(ctx, models.ThingWithCompositeEnumAttributes{
+			Name:     db.String("string1"),
+			BranchID: models.BranchMaster,
+			Date:     db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+		}))
+		require.Nil(t, d.SaveThingWithCompositeEnumAttributes(ctx, models.ThingWithCompositeEnumAttributes{
+			Name:     db.String("string1"),
+			BranchID: models.BranchMaster,
+			Date:     db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+		}))
+		require.Nil(t, d.SaveThingWithCompositeEnumAttributes(ctx, models.ThingWithCompositeEnumAttributes{
+			Name:     db.String("string1"),
+			BranchID: models.BranchMaster,
+			Date:     db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+		}))
+		tests := []getThingWithCompositeEnumAttributessByNameBranchAndDateTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getThingWithCompositeEnumAttributessByNameBranchAndDateInput{
+					ctx: context.Background(),
+					input: db.GetThingWithCompositeEnumAttributessByNameBranchAndDateInput{
+						Name:     "string1",
+						BranchID: models.BranchMaster,
+					},
+				},
+				output: getThingWithCompositeEnumAttributessByNameBranchAndDateOutput{
+					thingWithCompositeEnumAttributess: []models.ThingWithCompositeEnumAttributes{
+						models.ThingWithCompositeEnumAttributes{
+							Name:     db.String("string1"),
+							BranchID: models.BranchMaster,
+							Date:     db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+						},
+						models.ThingWithCompositeEnumAttributes{
+							Name:     db.String("string1"),
+							BranchID: models.BranchMaster,
+							Date:     db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+						},
+						models.ThingWithCompositeEnumAttributes{
+							Name:     db.String("string1"),
+							BranchID: models.BranchMaster,
+							Date:     db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getThingWithCompositeEnumAttributessByNameBranchAndDateInput{
+					ctx: context.Background(),
+					input: db.GetThingWithCompositeEnumAttributessByNameBranchAndDateInput{
+						Name:       "string1",
+						BranchID:   models.BranchMaster,
+						Descending: true,
+					},
+				},
+				output: getThingWithCompositeEnumAttributessByNameBranchAndDateOutput{
+					thingWithCompositeEnumAttributess: []models.ThingWithCompositeEnumAttributes{
+						models.ThingWithCompositeEnumAttributes{
+							Name:     db.String("string1"),
+							BranchID: models.BranchMaster,
+							Date:     db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+						},
+						models.ThingWithCompositeEnumAttributes{
+							Name:     db.String("string1"),
+							BranchID: models.BranchMaster,
+							Date:     db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+						},
+						models.ThingWithCompositeEnumAttributes{
+							Name:     db.String("string1"),
+							BranchID: models.BranchMaster,
+							Date:     db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getThingWithCompositeEnumAttributessByNameBranchAndDateInput{
+					ctx: context.Background(),
+					input: db.GetThingWithCompositeEnumAttributessByNameBranchAndDateInput{
+						Name:           "string1",
+						BranchID:       models.BranchMaster,
+						DateStartingAt: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+					},
+				},
+				output: getThingWithCompositeEnumAttributessByNameBranchAndDateOutput{
+					thingWithCompositeEnumAttributess: []models.ThingWithCompositeEnumAttributes{
+						models.ThingWithCompositeEnumAttributes{
+							Name:     db.String("string1"),
+							BranchID: models.BranchMaster,
+							Date:     db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+						},
+						models.ThingWithCompositeEnumAttributes{
+							Name:     db.String("string1"),
+							BranchID: models.BranchMaster,
+							Date:     db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+func SaveThingWithCompositeEnumAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithCompositeEnumAttributes{
+			Name:     db.String("string1"),
+			BranchID: models.BranchMaster,
+			Date:     db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+		}
+		require.Nil(t, s.SaveThingWithCompositeEnumAttributes(ctx, m))
+		require.IsType(t, db.ErrThingWithCompositeEnumAttributesAlreadyExists{}, s.SaveThingWithCompositeEnumAttributes(ctx, m))
+	}
+}
+
+func DeleteThingWithCompositeEnumAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithCompositeEnumAttributes{
+			Name:     db.String("string1"),
+			BranchID: models.BranchMaster,
+			Date:     db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+		}
+		require.Nil(t, s.SaveThingWithCompositeEnumAttributes(ctx, m))
+		require.Nil(t, s.DeleteThingWithCompositeEnumAttributes(ctx, *m.Name, m.BranchID, *m.Date))
 	}
 }
 

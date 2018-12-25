@@ -35,6 +35,8 @@ type Config struct {
 	ThingTable ThingTable
 	// ThingWithCompositeAttributesTable configuration.
 	ThingWithCompositeAttributesTable ThingWithCompositeAttributesTable
+	// ThingWithCompositeEnumAttributesTable configuration.
+	ThingWithCompositeEnumAttributesTable ThingWithCompositeEnumAttributesTable
 	// ThingWithDateRangeTable configuration.
 	ThingWithDateRangeTable ThingWithDateRangeTable
 	// ThingWithRequiredFieldsTable configuration.
@@ -114,6 +116,20 @@ func New(config Config) (*DB, error) {
 	if thingWithCompositeAttributesTable.WriteCapacityUnits == 0 {
 		thingWithCompositeAttributesTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	// configure ThingWithCompositeEnumAttributes table
+	thingWithCompositeEnumAttributesTable := config.ThingWithCompositeEnumAttributesTable
+	if thingWithCompositeEnumAttributesTable.DynamoDBAPI == nil {
+		thingWithCompositeEnumAttributesTable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if thingWithCompositeEnumAttributesTable.Prefix == "" {
+		thingWithCompositeEnumAttributesTable.Prefix = config.DefaultPrefix
+	}
+	if thingWithCompositeEnumAttributesTable.ReadCapacityUnits == 0 {
+		thingWithCompositeEnumAttributesTable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if thingWithCompositeEnumAttributesTable.WriteCapacityUnits == 0 {
+		thingWithCompositeEnumAttributesTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
 	// configure ThingWithDateRange table
 	thingWithDateRangeTable := config.ThingWithDateRangeTable
 	if thingWithDateRangeTable.DynamoDBAPI == nil {
@@ -158,25 +174,27 @@ func New(config Config) (*DB, error) {
 	}
 
 	return &DB{
-		simpleThingTable:                  simpleThingTable,
-		teacherSharingRuleTable:           teacherSharingRuleTable,
-		thingTable:                        thingTable,
-		thingWithCompositeAttributesTable: thingWithCompositeAttributesTable,
-		thingWithDateRangeTable:           thingWithDateRangeTable,
-		thingWithRequiredFieldsTable:      thingWithRequiredFieldsTable,
-		thingWithUnderscoresTable:         thingWithUnderscoresTable,
+		simpleThingTable:                      simpleThingTable,
+		teacherSharingRuleTable:               teacherSharingRuleTable,
+		thingTable:                            thingTable,
+		thingWithCompositeAttributesTable:     thingWithCompositeAttributesTable,
+		thingWithCompositeEnumAttributesTable: thingWithCompositeEnumAttributesTable,
+		thingWithDateRangeTable:               thingWithDateRangeTable,
+		thingWithRequiredFieldsTable:          thingWithRequiredFieldsTable,
+		thingWithUnderscoresTable:             thingWithUnderscoresTable,
 	}, nil
 }
 
 // DB implements the database interface using DynamoDB to store data.
 type DB struct {
-	simpleThingTable                  SimpleThingTable
-	teacherSharingRuleTable           TeacherSharingRuleTable
-	thingTable                        ThingTable
-	thingWithCompositeAttributesTable ThingWithCompositeAttributesTable
-	thingWithDateRangeTable           ThingWithDateRangeTable
-	thingWithRequiredFieldsTable      ThingWithRequiredFieldsTable
-	thingWithUnderscoresTable         ThingWithUnderscoresTable
+	simpleThingTable                      SimpleThingTable
+	teacherSharingRuleTable               TeacherSharingRuleTable
+	thingTable                            ThingTable
+	thingWithCompositeAttributesTable     ThingWithCompositeAttributesTable
+	thingWithCompositeEnumAttributesTable ThingWithCompositeEnumAttributesTable
+	thingWithDateRangeTable               ThingWithDateRangeTable
+	thingWithRequiredFieldsTable          ThingWithRequiredFieldsTable
+	thingWithUnderscoresTable             ThingWithUnderscoresTable
 }
 
 var _ db.Interface = DB{}
@@ -193,6 +211,9 @@ func (d DB) CreateTables(ctx context.Context) error {
 		return err
 	}
 	if err := d.thingWithCompositeAttributesTable.create(ctx); err != nil {
+		return err
+	}
+	if err := d.thingWithCompositeEnumAttributesTable.create(ctx); err != nil {
 		return err
 	}
 	if err := d.thingWithDateRangeTable.create(ctx); err != nil {
@@ -305,6 +326,26 @@ func (d DB) DeleteThingWithCompositeAttributes(ctx context.Context, name string,
 // GetThingWithCompositeAttributessByNameVersionAndDate retrieves a list of ThingWithCompositeAttributess from the database.
 func (d DB) GetThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input db.GetThingWithCompositeAttributessByNameVersionAndDateInput) ([]models.ThingWithCompositeAttributes, error) {
 	return d.thingWithCompositeAttributesTable.getThingWithCompositeAttributessByNameVersionAndDate(ctx, input)
+}
+
+// SaveThingWithCompositeEnumAttributes saves a ThingWithCompositeEnumAttributes to the database.
+func (d DB) SaveThingWithCompositeEnumAttributes(ctx context.Context, m models.ThingWithCompositeEnumAttributes) error {
+	return d.thingWithCompositeEnumAttributesTable.saveThingWithCompositeEnumAttributes(ctx, m)
+}
+
+// GetThingWithCompositeEnumAttributes retrieves a ThingWithCompositeEnumAttributes from the database.
+func (d DB) GetThingWithCompositeEnumAttributes(ctx context.Context, name string, branchID models.Branch, date strfmt.DateTime) (*models.ThingWithCompositeEnumAttributes, error) {
+	return d.thingWithCompositeEnumAttributesTable.getThingWithCompositeEnumAttributes(ctx, name, branchID, date)
+}
+
+// GetThingWithCompositeEnumAttributessByNameBranchAndDate retrieves a list of ThingWithCompositeEnumAttributess from the database.
+func (d DB) GetThingWithCompositeEnumAttributessByNameBranchAndDate(ctx context.Context, input db.GetThingWithCompositeEnumAttributessByNameBranchAndDateInput) ([]models.ThingWithCompositeEnumAttributes, error) {
+	return d.thingWithCompositeEnumAttributesTable.getThingWithCompositeEnumAttributessByNameBranchAndDate(ctx, input)
+}
+
+// DeleteThingWithCompositeEnumAttributes deletes a ThingWithCompositeEnumAttributes from the database.
+func (d DB) DeleteThingWithCompositeEnumAttributes(ctx context.Context, name string, branchID models.Branch, date strfmt.DateTime) error {
+	return d.thingWithCompositeEnumAttributesTable.deleteThingWithCompositeEnumAttributes(ctx, name, branchID, date)
 }
 
 // SaveThingWithDateRange saves a ThingWithDateRange to the database.

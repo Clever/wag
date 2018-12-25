@@ -7,6 +7,7 @@ import (
 	"text/template"
 
 	"github.com/awslabs/goformation/cloudformation"
+	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
 	"github.com/go-swagger/go-swagger/generator"
 )
@@ -259,6 +260,9 @@ func goTypeForAttribute(config XDBConfig, attributeName string) string {
 			} else if propertySchema.Type[0] == "integer" {
 				return "int64"
 			}
+		} else if ref := propertySchema.Ref.String(); ref != "" {
+			refSplit := strings.Split(ref, "/")
+			return "models." + swag.ToGoName(refSplit[len(refSplit)-1])
 		}
 	} else if ca := findCompositeAttribute(config, attributeName); ca != nil {
 		// composite attributes must be strings, since they are
@@ -295,6 +299,8 @@ func dynamoDBTypeForAttribute(config XDBConfig, attributeName string) string {
 			} else if propertySchema.Type[0] == "integer" {
 				return "N"
 			}
+		} else if propertySchema.Ref.String() != "" {
+			return "S"
 		}
 	} else if ca := findCompositeAttribute(config, attributeName); ca != nil {
 		// composite attributes must be strings, since they are
@@ -339,6 +345,12 @@ func uniq(arr []string) []string {
 }
 
 func attributeIsPointer(config XDBConfig, attributeName string) bool {
+	if propertySchema, ok := config.Schema.Properties[attributeName]; ok {
+		if propertySchema.Ref.String() != "" {
+			// most ref types aren't pointers, for now treat all as non pointers
+			return false
+		}
+	}
 	return contains(attributeName, config.Schema.Required)
 }
 
@@ -351,6 +363,19 @@ func exampleValueNotPtrForAttribute(config XDBConfig, attributeName string, i in
 				return fmt.Sprintf(`"string%d"`, i)
 			} else if propertySchema.Type[0] == "integer" {
 				return fmt.Sprintf("%d", i)
+			}
+		} else if propertySchema.Ref.String() != "" {
+			schemaI, _, err := propertySchema.Ref.GetPointer().Get(config.SwaggerSpec)
+			if err != nil {
+				panic(err)
+			}
+			schema, ok := schemaI.(spec.Schema)
+			if !ok {
+				panic("expected spec.Schema")
+			}
+			enumVals := schema.SchemaProps.Enum
+			if enumLength := len(enumVals); enumLength > 0 {
+				return fmt.Sprintf(`models.Branch%s`, swag.ToGoName(enumVals[(i-1)%enumLength].(string)))
 			}
 		}
 	} else if ca := findCompositeAttribute(config, attributeName); ca != nil {
@@ -402,7 +427,8 @@ func attributeToModelValuePtr(config XDBConfig, attributeName string, prefix str
 func attributeToModelValueNotPtr(config XDBConfig, attributeName string, prefix string) string {
 	goName := swag.ToGoName(attributeName)
 	if prefix == "" {
-		goName = generator.FuncMap["varname"].(func(string) string)(strings.ToLower(goName))
+		goName = strings.ToLower(goName)[0:1] + goName[1:]
+		goName = generator.FuncMap["varname"].(func(string) string)(goName)
 	}
 	return prefix + goName
 }

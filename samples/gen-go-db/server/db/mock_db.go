@@ -286,6 +286,56 @@ func (mr *MockInterfaceMockRecorder) GetThingWithCompositeAttributessByNameVersi
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithCompositeAttributessByNameVersionAndDate", reflect.TypeOf((*MockInterface)(nil).GetThingWithCompositeAttributessByNameVersionAndDate), ctx, input)
 }
 
+// SaveThingWithCompositeEnumAttributes mocks base method
+func (m_2 *MockInterface) SaveThingWithCompositeEnumAttributes(ctx context.Context, m models.ThingWithCompositeEnumAttributes) error {
+	ret := m_2.ctrl.Call(m_2, "SaveThingWithCompositeEnumAttributes", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveThingWithCompositeEnumAttributes indicates an expected call of SaveThingWithCompositeEnumAttributes
+func (mr *MockInterfaceMockRecorder) SaveThingWithCompositeEnumAttributes(ctx, m interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithCompositeEnumAttributes", reflect.TypeOf((*MockInterface)(nil).SaveThingWithCompositeEnumAttributes), ctx, m)
+}
+
+// GetThingWithCompositeEnumAttributes mocks base method
+func (m *MockInterface) GetThingWithCompositeEnumAttributes(ctx context.Context, name string, branchID models.Branch, date strfmt.DateTime) (*models.ThingWithCompositeEnumAttributes, error) {
+	ret := m.ctrl.Call(m, "GetThingWithCompositeEnumAttributes", ctx, name, branchID, date)
+	ret0, _ := ret[0].(*models.ThingWithCompositeEnumAttributes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingWithCompositeEnumAttributes indicates an expected call of GetThingWithCompositeEnumAttributes
+func (mr *MockInterfaceMockRecorder) GetThingWithCompositeEnumAttributes(ctx, name, branchID, date interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithCompositeEnumAttributes", reflect.TypeOf((*MockInterface)(nil).GetThingWithCompositeEnumAttributes), ctx, name, branchID, date)
+}
+
+// GetThingWithCompositeEnumAttributessByNameBranchAndDate mocks base method
+func (m *MockInterface) GetThingWithCompositeEnumAttributessByNameBranchAndDate(ctx context.Context, input GetThingWithCompositeEnumAttributessByNameBranchAndDateInput) ([]models.ThingWithCompositeEnumAttributes, error) {
+	ret := m.ctrl.Call(m, "GetThingWithCompositeEnumAttributessByNameBranchAndDate", ctx, input)
+	ret0, _ := ret[0].([]models.ThingWithCompositeEnumAttributes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingWithCompositeEnumAttributessByNameBranchAndDate indicates an expected call of GetThingWithCompositeEnumAttributessByNameBranchAndDate
+func (mr *MockInterfaceMockRecorder) GetThingWithCompositeEnumAttributessByNameBranchAndDate(ctx, input interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithCompositeEnumAttributessByNameBranchAndDate", reflect.TypeOf((*MockInterface)(nil).GetThingWithCompositeEnumAttributessByNameBranchAndDate), ctx, input)
+}
+
+// DeleteThingWithCompositeEnumAttributes mocks base method
+func (m *MockInterface) DeleteThingWithCompositeEnumAttributes(ctx context.Context, name string, branchID models.Branch, date strfmt.DateTime) error {
+	ret := m.ctrl.Call(m, "DeleteThingWithCompositeEnumAttributes", ctx, name, branchID, date)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteThingWithCompositeEnumAttributes indicates an expected call of DeleteThingWithCompositeEnumAttributes
+func (mr *MockInterfaceMockRecorder) DeleteThingWithCompositeEnumAttributes(ctx, name, branchID, date interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithCompositeEnumAttributes", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithCompositeEnumAttributes), ctx, name, branchID, date)
+}
+
 // SaveThingWithDateRange mocks base method
 func (m_2 *MockInterface) SaveThingWithDateRange(ctx context.Context, m models.ThingWithDateRange) error {
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithDateRange", ctx, m)

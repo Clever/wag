@@ -241,3 +241,38 @@ definitions:
         type: array
         items:
           type: string
+
+  # Composite enum hash keys
+  ThingWithCompositeEnumAttributes:
+    x-db:
+      AllowOverwrites: false
+      CompositeAttributes:
+      - AttributeName: name_branch
+        Properties: [ name, branchID ]
+        Separator: "@"
+      DynamoDB:
+        KeySchema:
+        - AttributeName: name_branch
+          KeyType: HASH
+        - AttributeName: date
+          KeyType: RANGE
+    type: object
+    required:
+    - name
+    - branchID
+    - date
+    properties:
+      name:
+        type: string
+      branchID:
+        $ref: "#/definitions/Branch"
+      date:
+        type: string
+        format: date-time
+
+  Branch:
+    type: string
+    enum:
+      - master
+      - DEV_BRANCH
+      - test
