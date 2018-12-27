@@ -211,7 +211,9 @@ class NilTest {
   }
 
   _hystrixCommandRun(method, args) {
-    return method.apply(this, args);
+    return method.apply(this, args).catch(err => {
+      throw err;
+    });
   }
 
   _logCircuitState(logger) {

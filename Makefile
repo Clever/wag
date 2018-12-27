@@ -15,8 +15,8 @@ build: go-generate
 
 test: build generate $(PKGS) js-tests
 
-js-tests:
-	cd test/js && rm -rf node_modules && npm install && npm test
+js-tests: build generate
+	cd test/js && rm -rf node_modules && rm package-lock.json && npm install && npm test
 
 jsdoc2md:
 	hash npm 2>/dev/null || (echo "Could not run npm, please install node" && false)
