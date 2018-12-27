@@ -56,6 +56,15 @@ type Interface interface {
 	// GetThingWithCompositeAttributessByNameVersionAndDate retrieves a list of ThingWithCompositeAttributess from the database.
 	GetThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input GetThingWithCompositeAttributessByNameVersionAndDateInput) ([]models.ThingWithCompositeAttributes, error)
 
+	// SaveThingWithCompositeEnumAttributes saves a ThingWithCompositeEnumAttributes to the database.
+	SaveThingWithCompositeEnumAttributes(ctx context.Context, m models.ThingWithCompositeEnumAttributes) error
+	// GetThingWithCompositeEnumAttributes retrieves a ThingWithCompositeEnumAttributes from the database.
+	GetThingWithCompositeEnumAttributes(ctx context.Context, name string, branchID models.Branch, date strfmt.DateTime) (*models.ThingWithCompositeEnumAttributes, error)
+	// GetThingWithCompositeEnumAttributessByNameBranchAndDate retrieves a list of ThingWithCompositeEnumAttributess from the database.
+	GetThingWithCompositeEnumAttributessByNameBranchAndDate(ctx context.Context, input GetThingWithCompositeEnumAttributessByNameBranchAndDateInput) ([]models.ThingWithCompositeEnumAttributes, error)
+	// DeleteThingWithCompositeEnumAttributes deletes a ThingWithCompositeEnumAttributes from the database.
+	DeleteThingWithCompositeEnumAttributes(ctx context.Context, name string, branchID models.Branch, date strfmt.DateTime) error
+
 	// SaveThingWithDateRange saves a ThingWithDateRange to the database.
 	SaveThingWithDateRange(ctx context.Context, m models.ThingWithDateRange) error
 	// GetThingWithDateRange retrieves a ThingWithDateRange from the database.
@@ -302,6 +311,42 @@ var _ error = ErrThingWithCompositeAttributesAlreadyExists{}
 // Error returns a description of the error.
 func (e ErrThingWithCompositeAttributesAlreadyExists) Error() string {
 	return "ThingWithCompositeAttributes already exists"
+}
+
+// GetThingWithCompositeEnumAttributessByNameBranchAndDateInput is the query input to GetThingWithCompositeEnumAttributessByNameBranchAndDate.
+type GetThingWithCompositeEnumAttributessByNameBranchAndDateInput struct {
+	Name                  string
+	BranchID              models.Branch
+	DateStartingAt        *strfmt.DateTime
+	Descending            bool
+	DisableConsistentRead bool
+}
+
+// ErrThingWithCompositeEnumAttributesNotFound is returned when the database fails to find a ThingWithCompositeEnumAttributes.
+type ErrThingWithCompositeEnumAttributesNotFound struct {
+	Name     string
+	BranchID models.Branch
+	Date     strfmt.DateTime
+}
+
+var _ error = ErrThingWithCompositeEnumAttributesNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithCompositeEnumAttributesNotFound) Error() string {
+	return "could not find ThingWithCompositeEnumAttributes"
+}
+
+// ErrThingWithCompositeEnumAttributesAlreadyExists is returned when trying to overwrite a ThingWithCompositeEnumAttributes.
+type ErrThingWithCompositeEnumAttributesAlreadyExists struct {
+	NameBranch string
+	Date       strfmt.DateTime
+}
+
+var _ error = ErrThingWithCompositeEnumAttributesAlreadyExists{}
+
+// Error returns a description of the error.
+func (e ErrThingWithCompositeEnumAttributesAlreadyExists) Error() string {
+	return "ThingWithCompositeEnumAttributes already exists"
 }
 
 // GetThingWithDateRangesByNameAndDateInput is the query input to GetThingWithDateRangesByNameAndDate.

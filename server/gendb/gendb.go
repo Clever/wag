@@ -32,9 +32,10 @@ type XDBConfig struct {
 	// DynamoDB configuration.
 	DynamoDB AWSDynamoDBTable
 
-	// Schema and SchemaName that the config was contained within.
-	Schema     spec.Schema
-	SchemaName string
+	// SwaggerSpec, Schema and SchemaName that the config was contained within.
+	SwaggerSpec spec.Swagger
+	Schema      spec.Schema
+	SchemaName  string
 }
 
 // CompositeAttribute is an attribute that is composed of multiple properties in the object's schema.
@@ -85,7 +86,7 @@ type AWSDynamoDBTable struct {
 }
 
 // DecodeConfig extracts a db configuration from the schema definition, if one exists.
-func DecodeConfig(schemaName string, schema spec.Schema) (*XDBConfig, error) {
+func DecodeConfig(schemaName string, schema spec.Schema, swaggerSpec spec.Swagger) (*XDBConfig, error) {
 	var config *XDBConfig
 	for k, v := range schema.VendorExtensible.Extensions {
 		switch k {
@@ -100,6 +101,7 @@ func DecodeConfig(schemaName string, schema spec.Schema) (*XDBConfig, error) {
 	if config != nil {
 		config.SchemaName = schemaName
 		config.Schema = schema
+		config.SwaggerSpec = swaggerSpec
 		if config.DynamoDB.KeySchema == nil || len(config.DynamoDB.KeySchema) == 0 {
 			return nil, fmt.Errorf("x-db DynamoDB config must contain.DynamoDB.KeySchema: %s", schemaName)
 		}
@@ -121,7 +123,7 @@ func findCompositeAttribute(config XDBConfig, attributeName string) *CompositeAt
 func GenerateDB(packageName string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
 	var xdbConfigs []XDBConfig
 	for schemaName, schema := range s.Definitions {
-		if config, err := DecodeConfig(schemaName, schema); err != nil {
+		if config, err := DecodeConfig(schemaName, schema, *s); err != nil {
 			return err
 		} else if config != nil {
 			if err := config.Validate(); err != nil {
