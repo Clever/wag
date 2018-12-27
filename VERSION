@@ -1,2 +1,2 @@
-v1.13.4
-- Close spans in WAG client after initializing them
+v1.14.0
+- Support enums in db codegen
