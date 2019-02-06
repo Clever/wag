@@ -74,6 +74,15 @@ type Interface interface {
 	// DeleteThingWithDateRange deletes a ThingWithDateRange from the database.
 	DeleteThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) error
 
+	// SaveThingWithDateTimeComposite saves a ThingWithDateTimeComposite to the database.
+	SaveThingWithDateTimeComposite(ctx context.Context, m models.ThingWithDateTimeComposite) error
+	// GetThingWithDateTimeComposite retrieves a ThingWithDateTimeComposite from the database.
+	GetThingWithDateTimeComposite(ctx context.Context, typeVar string, id string, created strfmt.DateTime, resource string) (*models.ThingWithDateTimeComposite, error)
+	// GetThingWithDateTimeCompositesByTypeIDAndCreatedResource retrieves a list of ThingWithDateTimeComposites from the database.
+	GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx context.Context, input GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput) ([]models.ThingWithDateTimeComposite, error)
+	// DeleteThingWithDateTimeComposite deletes a ThingWithDateTimeComposite from the database.
+	DeleteThingWithDateTimeComposite(ctx context.Context, typeVar string, id string, created strfmt.DateTime, resource string) error
+
 	// SaveThingWithRequiredFields saves a ThingWithRequiredFields to the database.
 	SaveThingWithRequiredFields(ctx context.Context, m models.ThingWithRequiredFields) error
 	// GetThingWithRequiredFields retrieves a ThingWithRequiredFields from the database.
@@ -368,6 +377,36 @@ var _ error = ErrThingWithDateRangeNotFound{}
 // Error returns a description of the error.
 func (e ErrThingWithDateRangeNotFound) Error() string {
 	return "could not find ThingWithDateRange"
+}
+
+// GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput is the query input to GetThingWithDateTimeCompositesByTypeIDAndCreatedResource.
+type GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput struct {
+	Type                  string
+	ID                    string
+	StartingAt            *CreatedResource
+	Descending            bool
+	DisableConsistentRead bool
+}
+
+// CreatedResource struct.
+type CreatedResource struct {
+	Created  strfmt.DateTime
+	Resource string
+}
+
+// ErrThingWithDateTimeCompositeNotFound is returned when the database fails to find a ThingWithDateTimeComposite.
+type ErrThingWithDateTimeCompositeNotFound struct {
+	Type     string
+	ID       string
+	Created  strfmt.DateTime
+	Resource string
+}
+
+var _ error = ErrThingWithDateTimeCompositeNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithDateTimeCompositeNotFound) Error() string {
+	return "could not find ThingWithDateTimeComposite"
 }
 
 // ErrThingWithRequiredFieldsNotFound is returned when the database fails to find a ThingWithRequiredFields.

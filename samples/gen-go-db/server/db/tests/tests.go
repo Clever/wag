@@ -48,6 +48,10 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingWithDateRangesByNameAndDate", GetThingWithDateRangesByNameAndDate(dbFactory(), t))
 	t.Run("SaveThingWithDateRange", SaveThingWithDateRange(dbFactory(), t))
 	t.Run("DeleteThingWithDateRange", DeleteThingWithDateRange(dbFactory(), t))
+	t.Run("GetThingWithDateTimeComposite", GetThingWithDateTimeComposite(dbFactory(), t))
+	t.Run("GetThingWithDateTimeCompositesByTypeIDAndCreatedResource", GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(dbFactory(), t))
+	t.Run("SaveThingWithDateTimeComposite", SaveThingWithDateTimeComposite(dbFactory(), t))
+	t.Run("DeleteThingWithDateTimeComposite", DeleteThingWithDateTimeComposite(dbFactory(), t))
 	t.Run("GetThingWithRequiredFields", GetThingWithRequiredFields(dbFactory(), t))
 	t.Run("SaveThingWithRequiredFields", SaveThingWithRequiredFields(dbFactory(), t))
 	t.Run("DeleteThingWithRequiredFields", DeleteThingWithRequiredFields(dbFactory(), t))
@@ -1552,6 +1556,207 @@ func DeleteThingWithDateRange(s db.Interface, t *testing.T) func(t *testing.T) {
 		}
 		require.Nil(t, s.SaveThingWithDateRange(ctx, m))
 		require.Nil(t, s.DeleteThingWithDateRange(ctx, m.Name, m.Date))
+	}
+}
+
+func GetThingWithDateTimeComposite(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithDateTimeComposite{
+			Type:     "string1",
+			ID:       "string1",
+			Created:  mustTime("2018-03-11T15:04:01+07:00"),
+			Resource: "string1",
+		}
+		require.Nil(t, s.SaveThingWithDateTimeComposite(ctx, m))
+		m2, err := s.GetThingWithDateTimeComposite(ctx, m.Type, m.ID, m.Created, m.Resource)
+		require.Nil(t, err)
+		require.Equal(t, m.Type, m2.Type)
+		require.Equal(t, m.ID, m2.ID)
+		require.Equal(t, m.Created.String(), m2.Created.String())
+		require.Equal(t, m.Resource, m2.Resource)
+
+		_, err = s.GetThingWithDateTimeComposite(ctx, "string2", "string2", mustTime("2018-03-11T15:04:02+07:00"), "string2")
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrThingWithDateTimeCompositeNotFound{})
+	}
+}
+
+type getThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput struct {
+	ctx   context.Context
+	input db.GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput
+}
+type getThingWithDateTimeCompositesByTypeIDAndCreatedResourceOutput struct {
+	thingWithDateTimeComposites []models.ThingWithDateTimeComposite
+	err                         error
+}
+type getThingWithDateTimeCompositesByTypeIDAndCreatedResourceTest struct {
+	testName string
+	d        db.Interface
+	input    getThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput
+	output   getThingWithDateTimeCompositesByTypeIDAndCreatedResourceOutput
+}
+
+func (g getThingWithDateTimeCompositesByTypeIDAndCreatedResourceTest) run(t *testing.T) {
+	thingWithDateTimeComposites, err := g.d.GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(g.input.ctx, g.input.input)
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.thingWithDateTimeComposites, thingWithDateTimeComposites)
+}
+
+func GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithDateTimeComposite(ctx, models.ThingWithDateTimeComposite{
+			Type:     "string1",
+			ID:       "string1",
+			Created:  mustTime("2018-03-11T15:04:01+07:00"),
+			Resource: "string1",
+		}))
+		require.Nil(t, d.SaveThingWithDateTimeComposite(ctx, models.ThingWithDateTimeComposite{
+			Type:     "string1",
+			ID:       "string1",
+			Created:  mustTime("2018-03-11T15:04:02+07:00"),
+			Resource: "string2",
+		}))
+		require.Nil(t, d.SaveThingWithDateTimeComposite(ctx, models.ThingWithDateTimeComposite{
+			Type:     "string1",
+			ID:       "string1",
+			Created:  mustTime("2018-03-11T15:04:03+07:00"),
+			Resource: "string3",
+		}))
+		tests := []getThingWithDateTimeCompositesByTypeIDAndCreatedResourceTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput{
+					ctx: context.Background(),
+					input: db.GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput{
+						Type: "string1",
+						ID:   "string1",
+					},
+				},
+				output: getThingWithDateTimeCompositesByTypeIDAndCreatedResourceOutput{
+					thingWithDateTimeComposites: []models.ThingWithDateTimeComposite{
+						models.ThingWithDateTimeComposite{
+							Type:     "string1",
+							ID:       "string1",
+							Created:  mustTime("2018-03-11T15:04:01+07:00"),
+							Resource: "string1",
+						},
+						models.ThingWithDateTimeComposite{
+							Type:     "string1",
+							ID:       "string1",
+							Created:  mustTime("2018-03-11T15:04:02+07:00"),
+							Resource: "string2",
+						},
+						models.ThingWithDateTimeComposite{
+							Type:     "string1",
+							ID:       "string1",
+							Created:  mustTime("2018-03-11T15:04:03+07:00"),
+							Resource: "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput{
+					ctx: context.Background(),
+					input: db.GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput{
+						Type:       "string1",
+						ID:         "string1",
+						Descending: true,
+					},
+				},
+				output: getThingWithDateTimeCompositesByTypeIDAndCreatedResourceOutput{
+					thingWithDateTimeComposites: []models.ThingWithDateTimeComposite{
+						models.ThingWithDateTimeComposite{
+							Type:     "string1",
+							ID:       "string1",
+							Created:  mustTime("2018-03-11T15:04:03+07:00"),
+							Resource: "string3",
+						},
+						models.ThingWithDateTimeComposite{
+							Type:     "string1",
+							ID:       "string1",
+							Created:  mustTime("2018-03-11T15:04:02+07:00"),
+							Resource: "string2",
+						},
+						models.ThingWithDateTimeComposite{
+							Type:     "string1",
+							ID:       "string1",
+							Created:  mustTime("2018-03-11T15:04:01+07:00"),
+							Resource: "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput{
+					ctx: context.Background(),
+					input: db.GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput{
+						Type: "string1",
+						ID:   "string1",
+						StartingAt: &db.CreatedResource{
+							Created:  mustTime("2018-03-11T15:04:02+07:00"),
+							Resource: "string2",
+						},
+					},
+				},
+				output: getThingWithDateTimeCompositesByTypeIDAndCreatedResourceOutput{
+					thingWithDateTimeComposites: []models.ThingWithDateTimeComposite{
+						models.ThingWithDateTimeComposite{
+							Type:     "string1",
+							ID:       "string1",
+							Created:  mustTime("2018-03-11T15:04:02+07:00"),
+							Resource: "string2",
+						},
+						models.ThingWithDateTimeComposite{
+							Type:     "string1",
+							ID:       "string1",
+							Created:  mustTime("2018-03-11T15:04:03+07:00"),
+							Resource: "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+func SaveThingWithDateTimeComposite(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithDateTimeComposite{
+			Type:     "string1",
+			ID:       "string1",
+			Created:  mustTime("2018-03-11T15:04:01+07:00"),
+			Resource: "string1",
+		}
+		require.Nil(t, s.SaveThingWithDateTimeComposite(ctx, m))
+	}
+}
+
+func DeleteThingWithDateTimeComposite(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithDateTimeComposite{
+			Type:     "string1",
+			ID:       "string1",
+			Created:  mustTime("2018-03-11T15:04:01+07:00"),
+			Resource: "string1",
+		}
+		require.Nil(t, s.SaveThingWithDateTimeComposite(ctx, m))
+		require.Nil(t, s.DeleteThingWithDateTimeComposite(ctx, m.Type, m.ID, m.Created, m.Resource))
 	}
 }
 

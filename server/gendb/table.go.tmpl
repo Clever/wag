@@ -16,9 +16,6 @@ import (
         {{- if or $hasProjectedIndexesWithCompositeAttributes $hasStringPropertiesInComposites }}
         "strings"
         {{- end }}
-	{{- if tableUsesDateTime $xdbConfig }}
-	"time"
-        {{- end }}
 
 	"{{ .PackageName }}/models"
 	"{{ .PackageName }}/server/db"
@@ -29,10 +26,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
-	{{- if tableUsesDateTime $xdbConfig }}
 	"github.com/go-openapi/strfmt"
-        {{- end }}
 )
+
+var _ = strfmt.DateTime{}
 
 // {{ $modelName }}Table represents the user-configurable properties of the {{ $modelName }} table.
 type {{ $modelName }}Table struct {
@@ -303,7 +300,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
                         {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
                         {{- if eq $attrDynamoDBType "S" }}
                        	{{- if eq $attrGoType "strfmt.DateTime" }}
-			S: aws.String(time.Time(*input.{{ pascalize $rangeKey.AttributeName }}StartingAt).Format(time.RFC3339)), // dynamodb attributevalue only supports RFC3339 resolution
+			S: aws.String(toDynamoTimeString(*input.{{ pascalize $rangeKey.AttributeName }}StartingAt)),
                         {{- else }}
 			S: aws.String(*input.{{ pascalize $rangeKey.AttributeName }}StartingAt),
                         {{- end }}
@@ -392,7 +389,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
                         {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
                      	{{- if eq $attrDynamoDBType "S" }}
                        	{{- if eq $attrGoType "strfmt.DateTime" }}
-			S: aws.String(time.Time(*input.{{ pascalize $rangeKey.AttributeName }}StartingAt).Format(time.RFC3339)), // dynamodb attributevalue only supports RFC3339 resolution
+			S: aws.String(toDynamoTimeString(*input.{{ pascalize $rangeKey.AttributeName }}StartingAt)),
                        	{{- else }}
 			S: aws.String(*input.{{ pascalize $rangeKey.AttributeName }}StartingAt),
                         {{- end }}

@@ -10,7 +10,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/go-openapi/strfmt"
 )
+
+var _ = strfmt.DateTime{}
 
 // ThingWithUnderscoresTable represents the user-configurable properties of the ThingWithUnderscores table.
 type ThingWithUnderscoresTable struct {

@@ -276,3 +276,32 @@ definitions:
       - master
       - DEV_BRANCH
       - test
+
+  ThingWithDateTimeComposite:
+    type: object
+    x-db:
+      AllowOverwrites: true
+      AllowPrimaryIndexScan: false
+      CompositeAttributes:
+      - AttributeName: typeID
+        Properties: [ type, id ]
+        Separator: "|"
+      - AttributeName: createdResource
+        Properties: [ created, resource ]
+        Separator: "|"
+      DynamoDB:
+        KeySchema:
+        - AttributeName: typeID
+          KeyType: HASH
+        - AttributeName: createdResource
+          KeyType: RANGE
+    properties:
+      type:
+        type: string
+      id:
+        type: string
+      created:
+        type: string
+        format: date-time
+      resource:
+        type: string

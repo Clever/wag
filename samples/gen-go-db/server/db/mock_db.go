@@ -386,6 +386,56 @@ func (mr *MockInterfaceMockRecorder) DeleteThingWithDateRange(ctx, name, date in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithDateRange", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithDateRange), ctx, name, date)
 }
 
+// SaveThingWithDateTimeComposite mocks base method
+func (m_2 *MockInterface) SaveThingWithDateTimeComposite(ctx context.Context, m models.ThingWithDateTimeComposite) error {
+	ret := m_2.ctrl.Call(m_2, "SaveThingWithDateTimeComposite", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveThingWithDateTimeComposite indicates an expected call of SaveThingWithDateTimeComposite
+func (mr *MockInterfaceMockRecorder) SaveThingWithDateTimeComposite(ctx, m interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithDateTimeComposite", reflect.TypeOf((*MockInterface)(nil).SaveThingWithDateTimeComposite), ctx, m)
+}
+
+// GetThingWithDateTimeComposite mocks base method
+func (m *MockInterface) GetThingWithDateTimeComposite(ctx context.Context, typeVar, id string, created strfmt.DateTime, resource string) (*models.ThingWithDateTimeComposite, error) {
+	ret := m.ctrl.Call(m, "GetThingWithDateTimeComposite", ctx, typeVar, id, created, resource)
+	ret0, _ := ret[0].(*models.ThingWithDateTimeComposite)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingWithDateTimeComposite indicates an expected call of GetThingWithDateTimeComposite
+func (mr *MockInterfaceMockRecorder) GetThingWithDateTimeComposite(ctx, typeVar, id, created, resource interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithDateTimeComposite", reflect.TypeOf((*MockInterface)(nil).GetThingWithDateTimeComposite), ctx, typeVar, id, created, resource)
+}
+
+// GetThingWithDateTimeCompositesByTypeIDAndCreatedResource mocks base method
+func (m *MockInterface) GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx context.Context, input GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput) ([]models.ThingWithDateTimeComposite, error) {
+	ret := m.ctrl.Call(m, "GetThingWithDateTimeCompositesByTypeIDAndCreatedResource", ctx, input)
+	ret0, _ := ret[0].([]models.ThingWithDateTimeComposite)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingWithDateTimeCompositesByTypeIDAndCreatedResource indicates an expected call of GetThingWithDateTimeCompositesByTypeIDAndCreatedResource
+func (mr *MockInterfaceMockRecorder) GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx, input interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithDateTimeCompositesByTypeIDAndCreatedResource", reflect.TypeOf((*MockInterface)(nil).GetThingWithDateTimeCompositesByTypeIDAndCreatedResource), ctx, input)
+}
+
+// DeleteThingWithDateTimeComposite mocks base method
+func (m *MockInterface) DeleteThingWithDateTimeComposite(ctx context.Context, typeVar, id string, created strfmt.DateTime, resource string) error {
+	ret := m.ctrl.Call(m, "DeleteThingWithDateTimeComposite", ctx, typeVar, id, created, resource)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteThingWithDateTimeComposite indicates an expected call of DeleteThingWithDateTimeComposite
+func (mr *MockInterfaceMockRecorder) DeleteThingWithDateTimeComposite(ctx, typeVar, id, created, resource interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithDateTimeComposite", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithDateTimeComposite), ctx, typeVar, id, created, resource)
+}
+
 // SaveThingWithRequiredFields mocks base method
 func (m_2 *MockInterface) SaveThingWithRequiredFields(ctx context.Context, m models.ThingWithRequiredFields) error {
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithRequiredFields", ctx, m)

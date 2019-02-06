@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/Clever/wag/samples/gen-go-db/models"
 	"github.com/Clever/wag/samples/gen-go-db/server/db"
@@ -15,6 +14,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/go-openapi/strfmt"
 )
+
+var _ = strfmt.DateTime{}
 
 // ThingWithCompositeAttributesTable represents the user-configurable properties of the ThingWithCompositeAttributes table.
 type ThingWithCompositeAttributesTable struct {
@@ -187,7 +188,7 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 	} else {
 		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
 		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
-			S: aws.String(time.Time(*input.DateStartingAt).Format(time.RFC3339)), // dynamodb attributevalue only supports RFC3339 resolution
+			S: aws.String(toDynamoTimeString(*input.DateStartingAt)),
 		}
 		queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE >= :date")
 	}
@@ -240,7 +241,7 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 	} else {
 		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
 		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
-			S: aws.String(time.Time(*input.DateStartingAt).Format(time.RFC3339)), // dynamodb attributevalue only supports RFC3339 resolution
+			S: aws.String(toDynamoTimeString(*input.DateStartingAt)),
 		}
 		queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion AND #DATE >= :date")
 	}

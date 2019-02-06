@@ -3,7 +3,6 @@ package dynamodb
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/Clever/wag/samples/gen-go-db/models"
 	"github.com/Clever/wag/samples/gen-go-db/server/db"
@@ -14,6 +13,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/go-openapi/strfmt"
 )
+
+var _ = strfmt.DateTime{}
 
 // ThingTable represents the user-configurable properties of the Thing table.
 type ThingTable struct {
@@ -336,7 +337,7 @@ func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.Ge
 	} else {
 		queryInput.ExpressionAttributeNames["#CREATEDAT"] = aws.String("createdAt")
 		queryInput.ExpressionAttributeValues[":createdAt"] = &dynamodb.AttributeValue{
-			S: aws.String(time.Time(*input.CreatedAtStartingAt).Format(time.RFC3339)), // dynamodb attributevalue only supports RFC3339 resolution
+			S: aws.String(toDynamoTimeString(*input.CreatedAtStartingAt)),
 		}
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #CREATEDAT >= :createdAt")
 	}

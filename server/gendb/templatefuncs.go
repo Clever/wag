@@ -12,21 +12,11 @@ import (
 	"github.com/go-swagger/go-swagger/generator"
 )
 
-// funcMap contains useful functiosn to use in templates
+// funcMap contains useful functions to use in templates
 var funcMap = template.FuncMap(map[string]interface{}{
-	"tableUsesDateTime": tableUsesDateTime,
 	"anyTableUsesDateTime": func(configs []XDBConfig) bool {
 		for _, config := range configs {
 			if tableUsesDateTime(config) {
-				return true
-			}
-		}
-		return false
-	},
-	"primaryIndexUsesDateTime": primaryIndexUsesDateTime,
-	"anyTablePrimaryIndexUsesDateTime": func(configs []XDBConfig) bool {
-		for _, config := range configs {
-			if primaryIndexUsesDateTime(config) {
 				return true
 			}
 		}
@@ -442,17 +432,16 @@ func tableUsesDateTime(config XDBConfig) bool {
 	for _, gsi := range config.DynamoDB.GlobalSecondaryIndexes {
 		keySchemas = append(keySchemas, gsi.KeySchema...)
 	}
+	schemaProperties := []string{}
 	for _, ks := range keySchemas {
-		if isDateTimeFormat(config.Schema.Properties[ks.AttributeName].Format) {
-			return true
+		if _, ok := config.Schema.Properties[ks.AttributeName]; ok {
+			schemaProperties = append(schemaProperties, ks.AttributeName)
+		} else if ca := findCompositeAttribute(config, ks.AttributeName); ca != nil {
+			schemaProperties = append(schemaProperties, ca.Properties...)
 		}
 	}
-	return false
-}
-
-func primaryIndexUsesDateTime(config XDBConfig) bool {
-	for _, ks := range config.DynamoDB.KeySchema {
-		if isDateTimeFormat(config.Schema.Properties[ks.AttributeName].Format) {
+	for _, schemaProp := range schemaProperties {
+		if isDateTimeFormat(config.Schema.Properties[schemaProp].Format) {
 			return true
 		}
 	}

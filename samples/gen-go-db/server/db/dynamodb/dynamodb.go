@@ -3,6 +3,7 @@ package dynamodb
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/Clever/wag/samples/gen-go-db/models"
 	"github.com/Clever/wag/samples/gen-go-db/server/db"
@@ -39,6 +40,8 @@ type Config struct {
 	ThingWithCompositeEnumAttributesTable ThingWithCompositeEnumAttributesTable
 	// ThingWithDateRangeTable configuration.
 	ThingWithDateRangeTable ThingWithDateRangeTable
+	// ThingWithDateTimeCompositeTable configuration.
+	ThingWithDateTimeCompositeTable ThingWithDateTimeCompositeTable
 	// ThingWithRequiredFieldsTable configuration.
 	ThingWithRequiredFieldsTable ThingWithRequiredFieldsTable
 	// ThingWithUnderscoresTable configuration.
@@ -144,6 +147,20 @@ func New(config Config) (*DB, error) {
 	if thingWithDateRangeTable.WriteCapacityUnits == 0 {
 		thingWithDateRangeTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	// configure ThingWithDateTimeComposite table
+	thingWithDateTimeCompositeTable := config.ThingWithDateTimeCompositeTable
+	if thingWithDateTimeCompositeTable.DynamoDBAPI == nil {
+		thingWithDateTimeCompositeTable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if thingWithDateTimeCompositeTable.Prefix == "" {
+		thingWithDateTimeCompositeTable.Prefix = config.DefaultPrefix
+	}
+	if thingWithDateTimeCompositeTable.ReadCapacityUnits == 0 {
+		thingWithDateTimeCompositeTable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if thingWithDateTimeCompositeTable.WriteCapacityUnits == 0 {
+		thingWithDateTimeCompositeTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
 	// configure ThingWithRequiredFields table
 	thingWithRequiredFieldsTable := config.ThingWithRequiredFieldsTable
 	if thingWithRequiredFieldsTable.DynamoDBAPI == nil {
@@ -180,6 +197,7 @@ func New(config Config) (*DB, error) {
 		thingWithCompositeAttributesTable:     thingWithCompositeAttributesTable,
 		thingWithCompositeEnumAttributesTable: thingWithCompositeEnumAttributesTable,
 		thingWithDateRangeTable:               thingWithDateRangeTable,
+		thingWithDateTimeCompositeTable:       thingWithDateTimeCompositeTable,
 		thingWithRequiredFieldsTable:          thingWithRequiredFieldsTable,
 		thingWithUnderscoresTable:             thingWithUnderscoresTable,
 	}, nil
@@ -193,6 +211,7 @@ type DB struct {
 	thingWithCompositeAttributesTable     ThingWithCompositeAttributesTable
 	thingWithCompositeEnumAttributesTable ThingWithCompositeEnumAttributesTable
 	thingWithDateRangeTable               ThingWithDateRangeTable
+	thingWithDateTimeCompositeTable       ThingWithDateTimeCompositeTable
 	thingWithRequiredFieldsTable          ThingWithRequiredFieldsTable
 	thingWithUnderscoresTable             ThingWithUnderscoresTable
 }
@@ -217,6 +236,9 @@ func (d DB) CreateTables(ctx context.Context) error {
 		return err
 	}
 	if err := d.thingWithDateRangeTable.create(ctx); err != nil {
+		return err
+	}
+	if err := d.thingWithDateTimeCompositeTable.create(ctx); err != nil {
 		return err
 	}
 	if err := d.thingWithRequiredFieldsTable.create(ctx); err != nil {
@@ -368,6 +390,26 @@ func (d DB) DeleteThingWithDateRange(ctx context.Context, name string, date strf
 	return d.thingWithDateRangeTable.deleteThingWithDateRange(ctx, name, date)
 }
 
+// SaveThingWithDateTimeComposite saves a ThingWithDateTimeComposite to the database.
+func (d DB) SaveThingWithDateTimeComposite(ctx context.Context, m models.ThingWithDateTimeComposite) error {
+	return d.thingWithDateTimeCompositeTable.saveThingWithDateTimeComposite(ctx, m)
+}
+
+// GetThingWithDateTimeComposite retrieves a ThingWithDateTimeComposite from the database.
+func (d DB) GetThingWithDateTimeComposite(ctx context.Context, typeVar string, id string, created strfmt.DateTime, resource string) (*models.ThingWithDateTimeComposite, error) {
+	return d.thingWithDateTimeCompositeTable.getThingWithDateTimeComposite(ctx, typeVar, id, created, resource)
+}
+
+// GetThingWithDateTimeCompositesByTypeIDAndCreatedResource retrieves a list of ThingWithDateTimeComposites from the database.
+func (d DB) GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx context.Context, input db.GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput) ([]models.ThingWithDateTimeComposite, error) {
+	return d.thingWithDateTimeCompositeTable.getThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx, input)
+}
+
+// DeleteThingWithDateTimeComposite deletes a ThingWithDateTimeComposite from the database.
+func (d DB) DeleteThingWithDateTimeComposite(ctx context.Context, typeVar string, id string, created strfmt.DateTime, resource string) error {
+	return d.thingWithDateTimeCompositeTable.deleteThingWithDateTimeComposite(ctx, typeVar, id, created, resource)
+}
+
 // SaveThingWithRequiredFields saves a ThingWithRequiredFields to the database.
 func (d DB) SaveThingWithRequiredFields(ctx context.Context, m models.ThingWithRequiredFields) error {
 	return d.thingWithRequiredFieldsTable.saveThingWithRequiredFields(ctx, m)
@@ -396,4 +438,8 @@ func (d DB) GetThingWithUnderscores(ctx context.Context, iDApp string) (*models.
 // DeleteThingWithUnderscores deletes a ThingWithUnderscores from the database.
 func (d DB) DeleteThingWithUnderscores(ctx context.Context, iDApp string) error {
 	return d.thingWithUnderscoresTable.deleteThingWithUnderscores(ctx, iDApp)
+}
+
+func toDynamoTimeString(d strfmt.DateTime) string {
+	return time.Time(d).Format(time.RFC3339) // dynamodb attributevalue only supports RFC3339 resolution
 }
