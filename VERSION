@@ -1,2 +1,2 @@
-v1.14.0
-- Support enums in db codegen
+v1.14.1
+- Fix missing import bug in dynamodb codegen
