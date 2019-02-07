@@ -1,2 +1,2 @@
-v1.14.1
-- Fix missing import bug in dynamodb codegen
+v1.14.2
+- Fix descending comparison
