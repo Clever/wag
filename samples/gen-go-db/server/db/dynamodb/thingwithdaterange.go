@@ -139,7 +139,11 @@ func (t ThingWithDateRangeTable) getThingWithDateRangesByNameAndDate(ctx context
 		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
 			S: aws.String(toDynamoTimeString(*input.DateStartingAt)),
 		}
-		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #DATE >= :date")
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #DATE <= :date")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #DATE >= :date")
+		}
 	}
 
 	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)

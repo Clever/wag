@@ -256,7 +256,11 @@ func (t ThingTable) getThingsByNameAndVersion(ctx context.Context, input db.GetT
 		queryInput.ExpressionAttributeValues[":version"] = &dynamodb.AttributeValue{
 			N: aws.String(fmt.Sprintf("%d", *input.VersionStartingAt)),
 		}
-		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #VERSION >= :version")
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #VERSION <= :version")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #VERSION >= :version")
+		}
 	}
 
 	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
@@ -339,7 +343,11 @@ func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.Ge
 		queryInput.ExpressionAttributeValues[":createdAt"] = &dynamodb.AttributeValue{
 			S: aws.String(toDynamoTimeString(*input.CreatedAtStartingAt)),
 		}
-		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #CREATEDAT >= :createdAt")
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #CREATEDAT <= :createdAt")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #CREATEDAT >= :createdAt")
+		}
 	}
 
 	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)

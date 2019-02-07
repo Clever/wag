@@ -177,7 +177,11 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByTeacherAndSchoolApp(ctx
 		queryInput.ExpressionAttributeValues[":schoolApp"] = &dynamodb.AttributeValue{
 			S: aws.String(fmt.Sprintf("%s_%s", input.StartingAt.School, input.StartingAt.App)),
 		}
-		queryInput.KeyConditionExpression = aws.String("#TEACHER = :teacher AND #SCHOOL_APP >= :schoolApp")
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#TEACHER = :teacher AND #SCHOOL_APP <= :schoolApp")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#TEACHER = :teacher AND #SCHOOL_APP >= :schoolApp")
+		}
 	}
 
 	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
@@ -230,7 +234,11 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeache
 		queryInput.ExpressionAttributeValues[":schoolTeacherApp"] = &dynamodb.AttributeValue{
 			S: aws.String(fmt.Sprintf("%s_%s_%s", input.StartingAt.School, input.StartingAt.Teacher, input.StartingAt.App)),
 		}
-		queryInput.KeyConditionExpression = aws.String("#DISTRICT = :district AND #SCHOOL_TEACHER_APP >= :schoolTeacherApp")
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#DISTRICT = :district AND #SCHOOL_TEACHER_APP <= :schoolTeacherApp")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#DISTRICT = :district AND #SCHOOL_TEACHER_APP >= :schoolTeacherApp")
+		}
 	}
 
 	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)

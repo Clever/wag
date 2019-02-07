@@ -142,7 +142,11 @@ func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDA
 		queryInput.ExpressionAttributeValues[":createdResource"] = &dynamodb.AttributeValue{
 			S: aws.String(fmt.Sprintf("%s|%s", input.StartingAt.Created, input.StartingAt.Resource)),
 		}
-		queryInput.KeyConditionExpression = aws.String("#TYPEID = :typeId AND #CREATEDRESOURCE >= :createdResource")
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#TYPEID = :typeId AND #CREATEDRESOURCE <= :createdResource")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#TYPEID = :typeId AND #CREATEDRESOURCE >= :createdResource")
+		}
 	}
 
 	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)

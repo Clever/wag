@@ -190,7 +190,11 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
 			S: aws.String(toDynamoTimeString(*input.DateStartingAt)),
 		}
-		queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE >= :date")
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE <= :date")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE >= :date")
+		}
 	}
 
 	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
@@ -243,7 +247,11 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
 			S: aws.String(toDynamoTimeString(*input.DateStartingAt)),
 		}
-		queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion AND #DATE >= :date")
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion AND #DATE <= :date")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion AND #DATE >= :date")
+		}
 	}
 
 	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
