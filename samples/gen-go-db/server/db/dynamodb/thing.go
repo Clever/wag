@@ -274,6 +274,68 @@ func (t ThingTable) getThingsByNameAndVersion(ctx context.Context, input db.GetT
 	return decodeThings(queryOutput.Items)
 }
 
+func (t ThingTable) getThingsByNameAndVersionPage(ctx context.Context, input db.GetThingsByNameAndVersionPageInput, fn func(m *models.Thing, lastThing bool) bool) error {
+	queryInput := &dynamodb.QueryInput{
+		TableName: aws.String(t.name()),
+		ExpressionAttributeNames: map[string]*string{
+			"#NAME": aws.String("name"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":name": &dynamodb.AttributeValue{
+				S: aws.String(input.StartingAfter.Name),
+			},
+		},
+		ScanIndexForward: aws.Bool(!input.Descending),
+		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
+		Limit:            input.Limit,
+		ExclusiveStartKey: map[string]*dynamodb.AttributeValue{
+			"version": &dynamodb.AttributeValue{
+				N: aws.String(fmt.Sprintf("%d", input.StartingAfter.Version)),
+			},
+			"name": &dynamodb.AttributeValue{
+				S: aws.String(input.StartingAfter.Name),
+			},
+		},
+	}
+	queryInput.ExpressionAttributeNames["#VERSION"] = aws.String("version")
+	queryInput.ExpressionAttributeValues[":version"] = &dynamodb.AttributeValue{
+		N: aws.String(fmt.Sprintf("%d", input.StartingAfter.Version)),
+	}
+	if input.Descending {
+		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #VERSION <= :version")
+	} else {
+		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #VERSION >= :version")
+	}
+
+	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	if err != nil {
+		return err
+	}
+	if len(queryOutput.Items) == 0 {
+		fn(nil, false)
+		return nil
+	}
+
+	items, err := decodeThings(queryOutput.Items)
+	if err != nil {
+		return err
+	}
+
+	for i, item := range items {
+		hasMore := false
+		if len(queryOutput.LastEvaluatedKey) > 0 {
+			hasMore = true
+		} else {
+			hasMore = i < len(items)-1
+		}
+		if !fn(&item, hasMore) {
+			break
+		}
+	}
+
+	return nil
+}
+
 func (t ThingTable) deleteThing(ctx context.Context, name string, version int64) error {
 	key, err := dynamodbattribute.MarshalMap(ddbThingPrimaryKey{
 		Name:    name,

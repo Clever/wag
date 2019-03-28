@@ -157,6 +157,68 @@ func (t ThingWithDateRangeTable) getThingWithDateRangesByNameAndDate(ctx context
 	return decodeThingWithDateRanges(queryOutput.Items)
 }
 
+func (t ThingWithDateRangeTable) getThingWithDateRangesByNameAndDatePage(ctx context.Context, input db.GetThingWithDateRangesByNameAndDatePageInput, fn func(m *models.ThingWithDateRange, lastThingWithDateRange bool) bool) error {
+	queryInput := &dynamodb.QueryInput{
+		TableName: aws.String(t.name()),
+		ExpressionAttributeNames: map[string]*string{
+			"#NAME": aws.String("name"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":name": &dynamodb.AttributeValue{
+				S: aws.String(input.StartingAfter.Name),
+			},
+		},
+		ScanIndexForward: aws.Bool(!input.Descending),
+		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
+		Limit:            input.Limit,
+		ExclusiveStartKey: map[string]*dynamodb.AttributeValue{
+			"date": &dynamodb.AttributeValue{
+				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
+			},
+			"name": &dynamodb.AttributeValue{
+				S: aws.String(input.StartingAfter.Name),
+			},
+		},
+	}
+	queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
+	queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
+		S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
+	}
+	if input.Descending {
+		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #DATE <= :date")
+	} else {
+		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #DATE >= :date")
+	}
+
+	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	if err != nil {
+		return err
+	}
+	if len(queryOutput.Items) == 0 {
+		fn(nil, false)
+		return nil
+	}
+
+	items, err := decodeThingWithDateRanges(queryOutput.Items)
+	if err != nil {
+		return err
+	}
+
+	for i, item := range items {
+		hasMore := false
+		if len(queryOutput.LastEvaluatedKey) > 0 {
+			hasMore = true
+		} else {
+			hasMore = i < len(items)-1
+		}
+		if !fn(&item, hasMore) {
+			break
+		}
+	}
+
+	return nil
+}
+
 func (t ThingWithDateRangeTable) deleteThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) error {
 	key, err := dynamodbattribute.MarshalMap(ddbThingWithDateRangePrimaryKey{
 		Name: name,

@@ -35,6 +35,8 @@ type Interface interface {
     {{- $indexName := indexName $xdbConfig.DynamoDB.KeySchema }}
     // Get{{ $modelName }}sBy{{ $indexName }} retrieves a list of {{ $modelName }}s from the database.
     Get{{ $modelName }}sBy{{ $indexName }}(ctx context.Context, input Get{{ $modelName }}sBy{{ $indexName }}Input) ([]models.{{ $modelName }}, error)
+    // Get{{ $modelName }}sBy{{ $indexName }}Page retrieves a page of {{ $modelName }}s from the database.
+    Get{{ $modelName }}sBy{{ $indexName }}Page(ctx context.Context, input Get{{ $modelName }}sBy{{ $indexName }}PageInput, fn func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool) error
     {{- end }}
     // Delete{{ $modelName }} deletes a {{ $modelName }} from the database.
     Delete{{ $modelName }}(ctx context.Context,
@@ -81,7 +83,7 @@ type Scan{{ $modelName }}sInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limiter is an optional limit on how quickly items are scanned.
-	Limiter *rate.Limiter        
+	Limiter *rate.Limiter
 }
 {{- end }}
 {{- $indexName := indexName $xdbConfig.DynamoDB.KeySchema }}
@@ -113,6 +115,17 @@ type {{ pascalizeAndJoin $rangeKeyAttributes }} struct {
         {{- end }}
 }
 {{- end }}
+
+// Get{{ $modelName }}sBy{{ $indexName }}PageInput is the query input to Get{{ $modelName }}sBy{{ $indexName }}Page.
+type Get{{ $modelName }}sBy{{ $indexName }}PageInput struct {
+  // StartingAfter is a required specification of an (exclusive) starting point.
+	StartingAfter *models.{{ $modelName }}
+	// Limit is a required limit on how many items to evaluate.
+	Limit  *int64
+  // DisableConsistentRead turns off the default behavior of running a consistent read.
+  DisableConsistentRead bool
+  Descending bool
+}
 {{- end }}
 
 // Err{{ $modelName}}NotFound is returned when the database fails to find a {{ $modelName}}.

@@ -2,13 +2,16 @@ package dynamodb
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/Clever/wag/samples/gen-go-db/models"
 	"github.com/Clever/wag/samples/gen-go-db/server/db"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/go-openapi/strfmt"
+	"github.com/mailru/easyjson/jwriter"
 )
 
 // Config is used to create a new DB struct.
@@ -280,6 +283,11 @@ func (d DB) GetTeacherSharingRulesByTeacherAndSchoolApp(ctx context.Context, inp
 	return d.teacherSharingRuleTable.getTeacherSharingRulesByTeacherAndSchoolApp(ctx, input)
 }
 
+// GetTeacherSharingRulesByTeacherAndSchoolAppPage retrieves a page of TeacherSharingRules from the database.
+func (d DB) GetTeacherSharingRulesByTeacherAndSchoolAppPage(ctx context.Context, input db.GetTeacherSharingRulesByTeacherAndSchoolAppPageInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error {
+	return d.teacherSharingRuleTable.getTeacherSharingRulesByTeacherAndSchoolAppPage(ctx, input, fn)
+}
+
 // DeleteTeacherSharingRule deletes a TeacherSharingRule from the database.
 func (d DB) DeleteTeacherSharingRule(ctx context.Context, teacher string, school string, app string) error {
 	return d.teacherSharingRuleTable.deleteTeacherSharingRule(ctx, teacher, school, app)
@@ -308,6 +316,11 @@ func (d DB) ScanThings(ctx context.Context, input db.ScanThingsInput, fn func(m 
 // GetThingsByNameAndVersion retrieves a list of Things from the database.
 func (d DB) GetThingsByNameAndVersion(ctx context.Context, input db.GetThingsByNameAndVersionInput) ([]models.Thing, error) {
 	return d.thingTable.getThingsByNameAndVersion(ctx, input)
+}
+
+// GetThingsByNameAndVersionPage retrieves a page of Things from the database.
+func (d DB) GetThingsByNameAndVersionPage(ctx context.Context, input db.GetThingsByNameAndVersionPageInput, fn func(m *models.Thing, lastThing bool) bool) error {
+	return d.thingTable.getThingsByNameAndVersionPage(ctx, input, fn)
 }
 
 // DeleteThing deletes a Thing from the database.
@@ -340,6 +353,11 @@ func (d DB) GetThingWithCompositeAttributessByNameBranchAndDate(ctx context.Cont
 	return d.thingWithCompositeAttributesTable.getThingWithCompositeAttributessByNameBranchAndDate(ctx, input)
 }
 
+// GetThingWithCompositeAttributessByNameBranchAndDatePage retrieves a page of ThingWithCompositeAttributess from the database.
+func (d DB) GetThingWithCompositeAttributessByNameBranchAndDatePage(ctx context.Context, input db.GetThingWithCompositeAttributessByNameBranchAndDatePageInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error {
+	return d.thingWithCompositeAttributesTable.getThingWithCompositeAttributessByNameBranchAndDatePage(ctx, input, fn)
+}
+
 // DeleteThingWithCompositeAttributes deletes a ThingWithCompositeAttributes from the database.
 func (d DB) DeleteThingWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) error {
 	return d.thingWithCompositeAttributesTable.deleteThingWithCompositeAttributes(ctx, name, branch, date)
@@ -365,6 +383,11 @@ func (d DB) GetThingWithCompositeEnumAttributessByNameBranchAndDate(ctx context.
 	return d.thingWithCompositeEnumAttributesTable.getThingWithCompositeEnumAttributessByNameBranchAndDate(ctx, input)
 }
 
+// GetThingWithCompositeEnumAttributessByNameBranchAndDatePage retrieves a page of ThingWithCompositeEnumAttributess from the database.
+func (d DB) GetThingWithCompositeEnumAttributessByNameBranchAndDatePage(ctx context.Context, input db.GetThingWithCompositeEnumAttributessByNameBranchAndDatePageInput, fn func(m *models.ThingWithCompositeEnumAttributes, lastThingWithCompositeEnumAttributes bool) bool) error {
+	return d.thingWithCompositeEnumAttributesTable.getThingWithCompositeEnumAttributessByNameBranchAndDatePage(ctx, input, fn)
+}
+
 // DeleteThingWithCompositeEnumAttributes deletes a ThingWithCompositeEnumAttributes from the database.
 func (d DB) DeleteThingWithCompositeEnumAttributes(ctx context.Context, name string, branchID models.Branch, date strfmt.DateTime) error {
 	return d.thingWithCompositeEnumAttributesTable.deleteThingWithCompositeEnumAttributes(ctx, name, branchID, date)
@@ -385,6 +408,11 @@ func (d DB) GetThingWithDateRangesByNameAndDate(ctx context.Context, input db.Ge
 	return d.thingWithDateRangeTable.getThingWithDateRangesByNameAndDate(ctx, input)
 }
 
+// GetThingWithDateRangesByNameAndDatePage retrieves a page of ThingWithDateRanges from the database.
+func (d DB) GetThingWithDateRangesByNameAndDatePage(ctx context.Context, input db.GetThingWithDateRangesByNameAndDatePageInput, fn func(m *models.ThingWithDateRange, lastThingWithDateRange bool) bool) error {
+	return d.thingWithDateRangeTable.getThingWithDateRangesByNameAndDatePage(ctx, input, fn)
+}
+
 // DeleteThingWithDateRange deletes a ThingWithDateRange from the database.
 func (d DB) DeleteThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) error {
 	return d.thingWithDateRangeTable.deleteThingWithDateRange(ctx, name, date)
@@ -403,6 +431,11 @@ func (d DB) GetThingWithDateTimeComposite(ctx context.Context, typeVar string, i
 // GetThingWithDateTimeCompositesByTypeIDAndCreatedResource retrieves a list of ThingWithDateTimeComposites from the database.
 func (d DB) GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx context.Context, input db.GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput) ([]models.ThingWithDateTimeComposite, error) {
 	return d.thingWithDateTimeCompositeTable.getThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx, input)
+}
+
+// GetThingWithDateTimeCompositesByTypeIDAndCreatedResourcePage retrieves a page of ThingWithDateTimeComposites from the database.
+func (d DB) GetThingWithDateTimeCompositesByTypeIDAndCreatedResourcePage(ctx context.Context, input db.GetThingWithDateTimeCompositesByTypeIDAndCreatedResourcePageInput, fn func(m *models.ThingWithDateTimeComposite, lastThingWithDateTimeComposite bool) bool) error {
+	return d.thingWithDateTimeCompositeTable.getThingWithDateTimeCompositesByTypeIDAndCreatedResourcePage(ctx, input, fn)
 }
 
 // DeleteThingWithDateTimeComposite deletes a ThingWithDateTimeComposite from the database.
@@ -440,6 +473,20 @@ func (d DB) DeleteThingWithUnderscores(ctx context.Context, iDApp string) error 
 	return d.thingWithUnderscoresTable.deleteThingWithUnderscores(ctx, iDApp)
 }
 
-func toDynamoTimeString(d strfmt.DateTime) string {
-	return time.Time(d).Format(time.RFC3339) // dynamodb attributevalue only supports RFC3339 resolution
+// bad hack for type checking
+type strfmtTime interface {
+	Value() (driver.Value, error)
+	MarshalEasyJSON(w *jwriter.Writer)
+}
+
+func toDynamoTimeString(d strfmtTime) string {
+	switch v := d.(type) {
+	case strfmt.DateTime:
+		return time.Time(v).Format(time.RFC3339) // dynamodb attributevalue only supports RFC3339 resolution
+	case *strfmt.DateTime:
+		return time.Time(*v).Format(time.RFC3339) // dynamodb attributevalue only supports RFC3339 resolution
+	default:
+		log.Fatal("oops")
+		return ""
+	}
 }

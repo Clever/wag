@@ -195,6 +195,68 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByTeacherAndSchoolApp(ctx
 	return decodeTeacherSharingRules(queryOutput.Items)
 }
 
+func (t TeacherSharingRuleTable) getTeacherSharingRulesByTeacherAndSchoolAppPage(ctx context.Context, input db.GetTeacherSharingRulesByTeacherAndSchoolAppPageInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error {
+	queryInput := &dynamodb.QueryInput{
+		TableName: aws.String(t.name()),
+		ExpressionAttributeNames: map[string]*string{
+			"#TEACHER": aws.String("teacher"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":teacher": &dynamodb.AttributeValue{
+				S: aws.String(input.StartingAfter.Teacher),
+			},
+		},
+		ScanIndexForward: aws.Bool(!input.Descending),
+		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
+		Limit:            input.Limit,
+		ExclusiveStartKey: map[string]*dynamodb.AttributeValue{
+			"school_app": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s_%s", input.StartingAfter.School, input.StartingAfter.App)),
+			},
+			"teacher": &dynamodb.AttributeValue{
+				S: aws.String(input.StartingAfter.Teacher),
+			},
+		},
+	}
+	queryInput.ExpressionAttributeNames["#SCHOOL_APP"] = aws.String("school_app")
+	queryInput.ExpressionAttributeValues[":schoolApp"] = &dynamodb.AttributeValue{
+		S: aws.String(fmt.Sprintf("%s_%s", input.StartingAfter.School, input.StartingAfter.App)),
+	}
+	if input.Descending {
+		queryInput.KeyConditionExpression = aws.String("#TEACHER = :teacher AND #SCHOOL_APP <= :schoolApp")
+	} else {
+		queryInput.KeyConditionExpression = aws.String("#TEACHER = :teacher AND #SCHOOL_APP >= :schoolApp")
+	}
+
+	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	if err != nil {
+		return err
+	}
+	if len(queryOutput.Items) == 0 {
+		fn(nil, false)
+		return nil
+	}
+
+	items, err := decodeTeacherSharingRules(queryOutput.Items)
+	if err != nil {
+		return err
+	}
+
+	for i, item := range items {
+		hasMore := false
+		if len(queryOutput.LastEvaluatedKey) > 0 {
+			hasMore = true
+		} else {
+			hasMore = i < len(items)-1
+		}
+		if !fn(&item, hasMore) {
+			break
+		}
+	}
+
+	return nil
+}
+
 func (t TeacherSharingRuleTable) deleteTeacherSharingRule(ctx context.Context, teacher string, school string, app string) error {
 	key, err := dynamodbattribute.MarshalMap(ddbTeacherSharingRulePrimaryKey{
 		Teacher:   teacher,

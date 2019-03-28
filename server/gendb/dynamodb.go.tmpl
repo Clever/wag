@@ -3,10 +3,13 @@ package dynamodb
 import (
 	"context"
 	"errors"
-        "time"
+  "time"
+  "log"
+  "database/sql/driver"
 
 	"{{ .PackageName }}/models"
 	"{{ .PackageName }}/server/db"
+  "github.com/mailru/easyjson/jwriter"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/go-openapi/strfmt"
 )
@@ -139,6 +142,14 @@ func (d DB) Get{{ $modelName }}sBy{{ $indexName }}(ctx context.Context, input db
 	return d.{{ $modelNameCamel }}Table.get{{ $modelName }}sBy{{ $indexName }}(ctx, input)
 }
 {{- end }}
+
+{{- if indexHasRangeKey $xdbConfig.DynamoDB.KeySchema }}
+{{- $indexName := indexName $xdbConfig.DynamoDB.KeySchema }}
+// Get{{ $modelName }}sBy{{ $indexName }}Page retrieves a page of {{ $modelName }}s from the database.
+func (d DB) Get{{ $modelName }}sBy{{ $indexName }}Page(ctx context.Context, input db.Get{{ $modelName }}sBy{{ $indexName }}PageInput, fn func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool)  error {
+	return d.{{ $modelNameCamel }}Table.get{{ $modelName }}sBy{{ $indexName }}Page(ctx, input, fn)
+}
+{{- end }}
 // Delete{{ $modelName }} deletes a {{ $modelName }} from the database.
 func (d DB) Delete{{ $modelName }}(ctx context.Context,
 	{{- range $_, $attributeName := $pkModelAttributeNames }}
@@ -177,6 +188,21 @@ func (d DB) Get{{ $modelName }}By{{ $indexName }}(ctx context.Context,
 {{- end }}
 {{- end }}
 
-func toDynamoTimeString(d strfmt.DateTime) string {
-	return time.Time(d).Format(time.RFC3339) // dynamodb attributevalue only supports RFC3339 resolution
+
+// bad hack for type checking
+type strfmtTime interface {
+	Value() (driver.Value, error)
+	MarshalEasyJSON(w *jwriter.Writer)
+}
+
+func toDynamoTimeString(d strfmtTime) string {
+	switch v := d.(type) {
+	case strfmt.DateTime:
+		return time.Time(v).Format(time.RFC3339) // dynamodb attributevalue only supports RFC3339 resolution
+	case *strfmt.DateTime:
+		return time.Time(*v).Format(time.RFC3339) // dynamodb attributevalue only supports RFC3339 resolution
+	default:
+		log.Fatal("oops")
+		return ""
+	}
 }

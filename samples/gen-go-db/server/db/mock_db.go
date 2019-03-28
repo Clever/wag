@@ -110,6 +110,18 @@ func (mr *MockInterfaceMockRecorder) GetTeacherSharingRulesByTeacherAndSchoolApp
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTeacherSharingRulesByTeacherAndSchoolApp", reflect.TypeOf((*MockInterface)(nil).GetTeacherSharingRulesByTeacherAndSchoolApp), ctx, input)
 }
 
+// GetTeacherSharingRulesByTeacherAndSchoolAppPage mocks base method
+func (m *MockInterface) GetTeacherSharingRulesByTeacherAndSchoolAppPage(ctx context.Context, input GetTeacherSharingRulesByTeacherAndSchoolAppPageInput, fn func(*models.TeacherSharingRule, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetTeacherSharingRulesByTeacherAndSchoolAppPage", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetTeacherSharingRulesByTeacherAndSchoolAppPage indicates an expected call of GetTeacherSharingRulesByTeacherAndSchoolAppPage
+func (mr *MockInterfaceMockRecorder) GetTeacherSharingRulesByTeacherAndSchoolAppPage(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTeacherSharingRulesByTeacherAndSchoolAppPage", reflect.TypeOf((*MockInterface)(nil).GetTeacherSharingRulesByTeacherAndSchoolAppPage), ctx, input, fn)
+}
+
 // DeleteTeacherSharingRule mocks base method
 func (m *MockInterface) DeleteTeacherSharingRule(ctx context.Context, teacher, school, app string) error {
 	ret := m.ctrl.Call(m, "DeleteTeacherSharingRule", ctx, teacher, school, app)
@@ -183,6 +195,18 @@ func (m *MockInterface) GetThingsByNameAndVersion(ctx context.Context, input Get
 // GetThingsByNameAndVersion indicates an expected call of GetThingsByNameAndVersion
 func (mr *MockInterfaceMockRecorder) GetThingsByNameAndVersion(ctx, input interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingsByNameAndVersion", reflect.TypeOf((*MockInterface)(nil).GetThingsByNameAndVersion), ctx, input)
+}
+
+// GetThingsByNameAndVersionPage mocks base method
+func (m *MockInterface) GetThingsByNameAndVersionPage(ctx context.Context, input GetThingsByNameAndVersionPageInput, fn func(*models.Thing, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetThingsByNameAndVersionPage", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingsByNameAndVersionPage indicates an expected call of GetThingsByNameAndVersionPage
+func (mr *MockInterfaceMockRecorder) GetThingsByNameAndVersionPage(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingsByNameAndVersionPage", reflect.TypeOf((*MockInterface)(nil).GetThingsByNameAndVersionPage), ctx, input, fn)
 }
 
 // DeleteThing mocks base method
@@ -261,6 +285,18 @@ func (mr *MockInterfaceMockRecorder) GetThingWithCompositeAttributessByNameBranc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithCompositeAttributessByNameBranchAndDate", reflect.TypeOf((*MockInterface)(nil).GetThingWithCompositeAttributessByNameBranchAndDate), ctx, input)
 }
 
+// GetThingWithCompositeAttributessByNameBranchAndDatePage mocks base method
+func (m *MockInterface) GetThingWithCompositeAttributessByNameBranchAndDatePage(ctx context.Context, input GetThingWithCompositeAttributessByNameBranchAndDatePageInput, fn func(*models.ThingWithCompositeAttributes, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetThingWithCompositeAttributessByNameBranchAndDatePage", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingWithCompositeAttributessByNameBranchAndDatePage indicates an expected call of GetThingWithCompositeAttributessByNameBranchAndDatePage
+func (mr *MockInterfaceMockRecorder) GetThingWithCompositeAttributessByNameBranchAndDatePage(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithCompositeAttributessByNameBranchAndDatePage", reflect.TypeOf((*MockInterface)(nil).GetThingWithCompositeAttributessByNameBranchAndDatePage), ctx, input, fn)
+}
+
 // DeleteThingWithCompositeAttributes mocks base method
 func (m *MockInterface) DeleteThingWithCompositeAttributes(ctx context.Context, name, branch string, date strfmt.DateTime) error {
 	ret := m.ctrl.Call(m, "DeleteThingWithCompositeAttributes", ctx, name, branch, date)
@@ -324,6 +360,18 @@ func (mr *MockInterfaceMockRecorder) GetThingWithCompositeEnumAttributessByNameB
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithCompositeEnumAttributessByNameBranchAndDate", reflect.TypeOf((*MockInterface)(nil).GetThingWithCompositeEnumAttributessByNameBranchAndDate), ctx, input)
 }
 
+// GetThingWithCompositeEnumAttributessByNameBranchAndDatePage mocks base method
+func (m *MockInterface) GetThingWithCompositeEnumAttributessByNameBranchAndDatePage(ctx context.Context, input GetThingWithCompositeEnumAttributessByNameBranchAndDatePageInput, fn func(*models.ThingWithCompositeEnumAttributes, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetThingWithCompositeEnumAttributessByNameBranchAndDatePage", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingWithCompositeEnumAttributessByNameBranchAndDatePage indicates an expected call of GetThingWithCompositeEnumAttributessByNameBranchAndDatePage
+func (mr *MockInterfaceMockRecorder) GetThingWithCompositeEnumAttributessByNameBranchAndDatePage(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithCompositeEnumAttributessByNameBranchAndDatePage", reflect.TypeOf((*MockInterface)(nil).GetThingWithCompositeEnumAttributessByNameBranchAndDatePage), ctx, input, fn)
+}
+
 // DeleteThingWithCompositeEnumAttributes mocks base method
 func (m *MockInterface) DeleteThingWithCompositeEnumAttributes(ctx context.Context, name string, branchID models.Branch, date strfmt.DateTime) error {
 	ret := m.ctrl.Call(m, "DeleteThingWithCompositeEnumAttributes", ctx, name, branchID, date)
@@ -374,6 +422,18 @@ func (mr *MockInterfaceMockRecorder) GetThingWithDateRangesByNameAndDate(ctx, in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithDateRangesByNameAndDate", reflect.TypeOf((*MockInterface)(nil).GetThingWithDateRangesByNameAndDate), ctx, input)
 }
 
+// GetThingWithDateRangesByNameAndDatePage mocks base method
+func (m *MockInterface) GetThingWithDateRangesByNameAndDatePage(ctx context.Context, input GetThingWithDateRangesByNameAndDatePageInput, fn func(*models.ThingWithDateRange, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetThingWithDateRangesByNameAndDatePage", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingWithDateRangesByNameAndDatePage indicates an expected call of GetThingWithDateRangesByNameAndDatePage
+func (mr *MockInterfaceMockRecorder) GetThingWithDateRangesByNameAndDatePage(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithDateRangesByNameAndDatePage", reflect.TypeOf((*MockInterface)(nil).GetThingWithDateRangesByNameAndDatePage), ctx, input, fn)
+}
+
 // DeleteThingWithDateRange mocks base method
 func (m *MockInterface) DeleteThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) error {
 	ret := m.ctrl.Call(m, "DeleteThingWithDateRange", ctx, name, date)
@@ -422,6 +482,18 @@ func (m *MockInterface) GetThingWithDateTimeCompositesByTypeIDAndCreatedResource
 // GetThingWithDateTimeCompositesByTypeIDAndCreatedResource indicates an expected call of GetThingWithDateTimeCompositesByTypeIDAndCreatedResource
 func (mr *MockInterfaceMockRecorder) GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx, input interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithDateTimeCompositesByTypeIDAndCreatedResource", reflect.TypeOf((*MockInterface)(nil).GetThingWithDateTimeCompositesByTypeIDAndCreatedResource), ctx, input)
+}
+
+// GetThingWithDateTimeCompositesByTypeIDAndCreatedResourcePage mocks base method
+func (m *MockInterface) GetThingWithDateTimeCompositesByTypeIDAndCreatedResourcePage(ctx context.Context, input GetThingWithDateTimeCompositesByTypeIDAndCreatedResourcePageInput, fn func(*models.ThingWithDateTimeComposite, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetThingWithDateTimeCompositesByTypeIDAndCreatedResourcePage", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingWithDateTimeCompositesByTypeIDAndCreatedResourcePage indicates an expected call of GetThingWithDateTimeCompositesByTypeIDAndCreatedResourcePage
+func (mr *MockInterfaceMockRecorder) GetThingWithDateTimeCompositesByTypeIDAndCreatedResourcePage(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithDateTimeCompositesByTypeIDAndCreatedResourcePage", reflect.TypeOf((*MockInterface)(nil).GetThingWithDateTimeCompositesByTypeIDAndCreatedResourcePage), ctx, input, fn)
 }
 
 // DeleteThingWithDateTimeComposite mocks base method

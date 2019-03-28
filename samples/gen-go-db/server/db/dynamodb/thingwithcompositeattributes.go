@@ -208,6 +208,68 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 	return decodeThingWithCompositeAttributess(queryOutput.Items)
 }
 
+func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNameBranchAndDatePage(ctx context.Context, input db.GetThingWithCompositeAttributessByNameBranchAndDatePageInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error {
+	queryInput := &dynamodb.QueryInput{
+		TableName: aws.String(t.name()),
+		ExpressionAttributeNames: map[string]*string{
+			"#NAME_BRANCH": aws.String("name_branch"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":nameBranch": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s@%s", input.StartingAfter.Name, input.StartingAfter.Branch)),
+			},
+		},
+		ScanIndexForward: aws.Bool(!input.Descending),
+		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
+		Limit:            input.Limit,
+		ExclusiveStartKey: map[string]*dynamodb.AttributeValue{
+			"date": &dynamodb.AttributeValue{
+				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
+			},
+			"name_branch": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s@%s", input.StartingAfter.Name, input.StartingAfter.Branch)),
+			},
+		},
+	}
+	queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
+	queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
+		S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
+	}
+	if input.Descending {
+		queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE <= :date")
+	} else {
+		queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE >= :date")
+	}
+
+	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	if err != nil {
+		return err
+	}
+	if len(queryOutput.Items) == 0 {
+		fn(nil, false)
+		return nil
+	}
+
+	items, err := decodeThingWithCompositeAttributess(queryOutput.Items)
+	if err != nil {
+		return err
+	}
+
+	for i, item := range items {
+		hasMore := false
+		if len(queryOutput.LastEvaluatedKey) > 0 {
+			hasMore = true
+		} else {
+			hasMore = i < len(items)-1
+		}
+		if !fn(&item, hasMore) {
+			break
+		}
+	}
+
+	return nil
+}
+
 func (t ThingWithCompositeAttributesTable) deleteThingWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) error {
 	key, err := dynamodbattribute.MarshalMap(ddbThingWithCompositeAttributesPrimaryKey{
 		NameBranch: fmt.Sprintf("%s@%s", name, branch),
