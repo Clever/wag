@@ -359,7 +359,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}Page
           {{- if eq $attrGoType "strfmt.DateTime" }}
 			S: aws.String(toDynamoTimeString(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
           {{- else }}
-			S: aws.String(*input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}),
+			S: aws.String({{if attributeIsPointer $xdbConfig $rangeKey.AttributeName }}*{{end}}input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}),
           {{- end }}
         {{- else if eq $attrDynamoDBType "N" }}
 			N: aws.String(fmt.Sprintf("%%d", input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
@@ -430,7 +430,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}Page
 		} else {
 			hasMore = i < len(items)-1
 		}
-		if !fn(&item, hasMore) {
+		if !fn(&item, !hasMore) {
 			break
 		}
 	}

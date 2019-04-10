@@ -214,7 +214,7 @@ func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDA
 		} else {
 			hasMore = i < len(items)-1
 		}
-		if !fn(&item, hasMore) {
+		if !fn(&item, !hasMore) {
 			break
 		}
 	}
