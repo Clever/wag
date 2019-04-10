@@ -177,7 +177,7 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":nameBranch": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s@%s", input.Name, input.Branch)),
+				S: aws.String(fmt.Sprintf("%s@%s", *input.Name, *input.Branch)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
@@ -216,7 +216,7 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":nameBranch": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s@%s", input.StartingAfter.Name, input.StartingAfter.Branch)),
+				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
@@ -227,7 +227,7 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
 			},
 			"name_branch": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s@%s", input.StartingAfter.Name, input.StartingAfter.Branch)),
+				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
 			},
 		},
 	}
@@ -297,7 +297,7 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":nameVersion": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s:%d", input.Name, input.Version)),
+				S: aws.String(fmt.Sprintf("%s:%d", *input.Name, input.Version)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),

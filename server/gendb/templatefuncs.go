@@ -149,6 +149,8 @@ var funcMap = template.FuncMap(map[string]interface{}{
 				value += attributeToModelValue(config, prop, modelVarName+".")
 			} else if modelVarName == "" {
 				value += attributeToModelValueNotPtr(config, prop, "")
+			} else if attributeIsPointer(config, prop) {
+				value += attributeToModelValuePtr(config, prop, modelVarName+".")
 			} else {
 				value += attributeToModelValueNotPtr(config, prop, modelVarName+".")
 			}

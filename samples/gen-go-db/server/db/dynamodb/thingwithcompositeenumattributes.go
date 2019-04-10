@@ -145,7 +145,7 @@ func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttribut
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":nameBranch": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s@%s", input.Name, input.BranchID)),
+				S: aws.String(fmt.Sprintf("%s@%s", *input.Name, input.BranchID)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
@@ -184,7 +184,7 @@ func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttribut
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":nameBranch": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s@%s", input.StartingAfter.Name, input.StartingAfter.BranchID)),
+				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, input.StartingAfter.BranchID)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
@@ -195,7 +195,7 @@ func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttribut
 				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
 			},
 			"name_branch": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s@%s", input.StartingAfter.Name, input.StartingAfter.BranchID)),
+				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, input.StartingAfter.BranchID)),
 			},
 		},
 	}
