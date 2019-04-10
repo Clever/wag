@@ -145,7 +145,7 @@ func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttribut
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":nameBranch": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s@%s", *input.Name, input.BranchID)),
+				S: aws.String(fmt.Sprintf("%s@%s", input.Name, input.BranchID)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),

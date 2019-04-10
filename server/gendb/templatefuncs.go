@@ -149,6 +149,40 @@ var funcMap = template.FuncMap(map[string]interface{}{
 				value += attributeToModelValue(config, prop, modelVarName+".")
 			} else if modelVarName == "" {
 				value += attributeToModelValueNotPtr(config, prop, "")
+			} else {
+				value += attributeToModelValueNotPtr(config, prop, modelVarName+".")
+			}
+			if i != len(ca.Properties)-1 {
+				value += `, `
+			}
+		}
+		value += `)`
+		return value
+	},
+	"compositeValuePage": func(config XDBConfig, attributeName string, modelVarName string) string {
+		ca := findCompositeAttribute(config, attributeName)
+		if ca == nil {
+			return "not-a-composite-attribute"
+		}
+		value := `fmt.Sprintf("`
+		for i, prop := range ca.Properties {
+			goTyp := goTypeForAttribute(config, prop)
+			if goTyp == "int64" {
+				value += `%%d`
+			} else {
+				value += `%%s`
+			}
+			if i != len(ca.Properties)-1 {
+				value += ca.Separator
+			}
+		}
+		value += `",`
+		for i, prop := range ca.Properties {
+			if modelVarName == "m" {
+				// hackyaf: usually "m." signifies it could be a pointer
+				value += attributeToModelValue(config, prop, modelVarName+".")
+			} else if modelVarName == "" {
+				value += attributeToModelValueNotPtr(config, prop, "")
 			} else if attributeIsPointer(config, prop) {
 				value += attributeToModelValuePtr(config, prop, modelVarName+".")
 			} else {

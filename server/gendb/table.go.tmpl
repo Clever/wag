@@ -339,7 +339,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}Page
 			":{{ camelize $hashKey.AttributeName }}": &dynamodb.AttributeValue{
                         	{{- $dynamoDBType := dynamoDBTypeForAttribute $xdbConfig $hashKey.AttributeName }}
                         	{{- if eq $dynamoDBType "S" }}
-                        	    S: aws.String({{ if isComposite $xdbConfig $hashKey.AttributeName }}{{ compositeValue $xdbConfig $hashKey.AttributeName "input.StartingAfter" }}{{ else }}input.StartingAfter.{{ pascalize $hashKey.AttributeName }}{{ end }}),
+                        	    S: aws.String({{ if isComposite $xdbConfig $hashKey.AttributeName }}{{ compositeValuePage $xdbConfig $hashKey.AttributeName "input.StartingAfter" }}{{ else }}input.StartingAfter.{{ pascalize $hashKey.AttributeName }}{{ end }}),
                           {{- else if eq $dynamoDBType "N" }}
 			                        N: aws.String(fmt.Sprintf("%d", input.{{ pascalize $hashKey.AttributeName }})),
                           {{- end }}
@@ -351,7 +351,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}Page
     ExclusiveStartKey: map[string]*dynamodb.AttributeValue{
       "{{ $rangeKey.AttributeName }}": &dynamodb.AttributeValue{
     	{{- if gt $lenRangeKeyAttributes 1 }}
-        S: aws.String({{ compositeValue $xdbConfig $rangeKey.AttributeName "input.StartingAfter" }}),
+        S: aws.String({{ compositeValuePage $xdbConfig $rangeKey.AttributeName "input.StartingAfter" }}),
       {{- else }}
           {{- $attrGoType := goTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
           {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
@@ -368,7 +368,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}Page
       },
       "{{ $hashKey.AttributeName }}": &dynamodb.AttributeValue{
         {{- if gt $lenHashKeyAttributes 1 }}
-          S: aws.String({{ compositeValue $xdbConfig $hashKey.AttributeName "input.StartingAfter" }}),
+          S: aws.String({{ compositeValuePage $xdbConfig $hashKey.AttributeName "input.StartingAfter" }}),
         {{- else }}
               {{- $attrGoType := goTypeForAttribute $xdbConfig $hashKey.AttributeName }}
               {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $hashKey.AttributeName }}
@@ -388,7 +388,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}Page
   queryInput.ExpressionAttributeNames["#{{ upper $rangeKey.AttributeName }}"] = aws.String("{{ $rangeKey.AttributeName }}")
   queryInput.ExpressionAttributeValues[":{{ camelize $rangeKey.AttributeName }}"] = &dynamodb.AttributeValue{
     {{- if gt $lenRangeKeyAttributes 1 }}
-                      S: aws.String({{- if isComposite $xdbConfig $rangeKey.AttributeName }}{{ compositeValue $xdbConfig $rangeKey.AttributeName "input.StartingAfter" }}{{ else }}input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}{{ end }}),
+                      S: aws.String({{- if isComposite $xdbConfig $rangeKey.AttributeName }}{{ compositeValuePage $xdbConfig $rangeKey.AttributeName "input.StartingAfter" }}{{ else }}input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}{{ end }}),
                       {{- else }}
                       {{- $attrGoType := goTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
                       {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
