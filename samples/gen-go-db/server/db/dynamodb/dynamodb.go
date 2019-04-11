@@ -2,16 +2,13 @@ package dynamodb
 
 import (
 	"context"
-	"database/sql/driver"
 	"errors"
-	"log"
 	"time"
 
 	"github.com/Clever/wag/samples/gen-go-db/models"
 	"github.com/Clever/wag/samples/gen-go-db/server/db"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/go-openapi/strfmt"
-	"github.com/mailru/easyjson/jwriter"
 )
 
 // Config is used to create a new DB struct.
@@ -488,20 +485,10 @@ func (d DB) DeleteThingWithUnderscores(ctx context.Context, iDApp string) error 
 	return d.thingWithUnderscoresTable.deleteThingWithUnderscores(ctx, iDApp)
 }
 
-// bad hack for type checking
-type strfmtTime interface {
-	Value() (driver.Value, error)
-	MarshalEasyJSON(w *jwriter.Writer)
+func toDynamoTimeString(d strfmt.DateTime) string {
+	return time.Time(d).Format(time.RFC3339) // dynamodb attributevalue only supports RFC3339 resolution
 }
 
-func toDynamoTimeString(d strfmtTime) string {
-	switch v := d.(type) {
-	case strfmt.DateTime:
-		return time.Time(v).Format(time.RFC3339) // dynamodb attributevalue only supports RFC3339 resolution
-	case *strfmt.DateTime:
-		return time.Time(*v).Format(time.RFC3339) // dynamodb attributevalue only supports RFC3339 resolution
-	default:
-		log.Fatal("oops")
-		return ""
-	}
+func toDynamoTimeStringPtr(d *strfmt.DateTime) string {
+	return time.Time(*d).Format(time.RFC3339) // dynamodb attributevalue only supports RFC3339 resolution
 }

@@ -188,7 +188,7 @@ func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttribut
 				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, input.StartingAfter.BranchID)),
 			},
 			":date": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
+				S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.Date)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
@@ -196,7 +196,7 @@ func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttribut
 		Limit:            input.Limit,
 		ExclusiveStartKey: map[string]*dynamodb.AttributeValue{
 			"date": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
+				S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.Date)),
 			},
 			"name_branch": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, input.StartingAfter.BranchID)),

@@ -220,7 +220,7 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
 			},
 			":date": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
+				S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.Date)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
@@ -228,7 +228,7 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 		Limit:            input.Limit,
 		ExclusiveStartKey: map[string]*dynamodb.AttributeValue{
 			"date": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
+				S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.Date)),
 			},
 			"name_branch": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
@@ -339,7 +339,7 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 				S: aws.String(fmt.Sprintf("%s:%d", *input.StartingAfter.Name, input.StartingAfter.Version)),
 			},
 			":date": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
+				S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.Date)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
@@ -347,7 +347,7 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 		Limit:            input.Limit,
 		ExclusiveStartKey: map[string]*dynamodb.AttributeValue{
 			"date": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
+				S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.Date)),
 			},
 			"name_version": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s:%d", *input.StartingAfter.Name, input.StartingAfter.Version)),

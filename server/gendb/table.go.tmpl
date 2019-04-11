@@ -353,7 +353,11 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}Page
                           {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
                           {{- if eq $attrDynamoDBType "S" }}
                           {{- if eq $attrGoType "strfmt.DateTime" }}
-                              S: aws.String(toDynamoTimeString(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
+                          {{- if attributeIsPointer $xdbConfig $rangeKey.AttributeName }}
+                            S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
+                          {{- else }}
+                            S: aws.String(toDynamoTimeString(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
+                          {{- end}}
                           {{- else }}
                               S: aws.String(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}),
                           {{- end }}
@@ -375,7 +379,11 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}Page
           {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
         {{- if eq $attrDynamoDBType "S" }}
           {{- if eq $attrGoType "strfmt.DateTime" }}
-			S: aws.String(toDynamoTimeString(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
+          {{- if attributeIsPointer $xdbConfig $rangeKey.AttributeName }}
+            S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
+          {{- else }}
+            S: aws.String(toDynamoTimeString(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
+          {{- end}}
           {{- else }}
 			S: aws.String({{if attributeIsPointer $xdbConfig $rangeKey.AttributeName }}*{{end}}input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}),
           {{- end }}
@@ -392,7 +400,11 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}Page
               {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $hashKey.AttributeName }}
         {{- if eq $attrDynamoDBType "S" }}
           {{- if eq $attrGoType "strfmt.DateTime" }}
-			S: aws.String(toDynamoTimeString(input.StartingAfter.{{ pascalize $hashKey.AttributeName }})),
+          {{- if attributeIsPointer $xdbConfig $hashKey.AttributeName }}
+            S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.{{ pascalize $hashKey.AttributeName }})),
+          {{- else }}
+            S: aws.String(toDynamoTimeString(input.StartingAfter.{{ pascalize $hashKey.AttributeName }})),
+          {{- end}}
           {{- else }}
 			S: aws.String(input.StartingAfter.{{ pascalize $hashKey.AttributeName }}),
           {{- end }}
@@ -564,7 +576,11 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}Page
                           {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
                           {{- if eq $attrDynamoDBType "S" }}
                           {{- if eq $attrGoType "strfmt.DateTime" }}
-                              S: aws.String(toDynamoTimeString(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
+                          {{- if attributeIsPointer $xdbConfig $rangeKey.AttributeName }}
+                            S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
+                          {{- else }}
+                            S: aws.String(toDynamoTimeString(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
+                          {{- end}}
                           {{- else }}
                               S: aws.String(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}),
                           {{- end }}
@@ -586,7 +602,11 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}Page
           {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
         {{- if eq $attrDynamoDBType "S" }}
           {{- if eq $attrGoType "strfmt.DateTime" }}
-			S: aws.String(toDynamoTimeString(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
+          {{- if attributeIsPointer $xdbConfig $rangeKey.AttributeName }}
+            S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
+          {{- else }}
+            S: aws.String(toDynamoTimeString(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
+          {{- end}}
           {{- else }}
 			S: aws.String({{if attributeIsPointer $xdbConfig $rangeKey.AttributeName }}*{{end}}input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}),
           {{- end }}
@@ -603,7 +623,11 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}Page
               {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $hashKey.AttributeName }}
         {{- if eq $attrDynamoDBType "S" }}
           {{- if eq $attrGoType "strfmt.DateTime" }}
-			S: aws.String(toDynamoTimeString(input.StartingAfter.{{ pascalize $hashKey.AttributeName }})),
+          {{- if attributeIsPointer $xdbConfig $hashKey.AttributeName }}
+            S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.{{ pascalize $hashKey.AttributeName }})),
+          {{- else }}
+            S: aws.String(toDynamoTimeString(input.StartingAfter.{{ pascalize $hashKey.AttributeName }})),
+          {{- end}}
           {{- else }}
 			S: aws.String(input.StartingAfter.{{ pascalize $hashKey.AttributeName }}),
           {{- end }}
@@ -622,7 +646,11 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}Page
           {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $primaryRangeKey.AttributeName }}
         {{- if eq $attrDynamoDBType "S" }}
           {{- if eq $attrGoType "strfmt.DateTime" }}
-			S: aws.String(toDynamoTimeString(input.StartingAfter.{{ pascalize $primaryRangeKey.AttributeName }})),
+          {{- if attributeIsPointer $xdbConfig $primaryRangeKey.AttributeName }}
+            S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.{{ pascalize $primaryRangeKey.AttributeName }})),
+          {{- else }}
+            S: aws.String(toDynamoTimeString(input.StartingAfter.{{ pascalize $primaryRangeKey.AttributeName }})),
+          {{- end}}
           {{- else }}
 			S: aws.String({{if attributeIsPointer $xdbConfig $primaryRangeKey.AttributeName }}*{{end}}input.StartingAfter.{{ pascalize $primaryRangeKey.AttributeName }}),
           {{- end }}
@@ -642,7 +670,11 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}Page
               {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $primaryHashKey.AttributeName }}
         {{- if eq $attrDynamoDBType "S" }}
           {{- if eq $attrGoType "strfmt.DateTime" }}
-			S: aws.String(toDynamoTimeString(input.StartingAfter.{{ pascalize $primaryHashKey.AttributeName }})),
+          {{- if attributeIsPointer $xdbConfig $primaryHashKey.AttributeName }}
+            S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.{{ pascalize $primaryHashKey.AttributeName }})),
+          {{- else }}
+            S: aws.String(toDynamoTimeString(input.StartingAfter.{{ pascalize $primaryHashKey.AttributeName }})),
+          {{- end}}
           {{- else }}
 			S: aws.String(input.StartingAfter.{{ pascalize $primaryHashKey.AttributeName }}),
           {{- end }}
