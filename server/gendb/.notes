@@ -1,3 +1,0 @@
-thingwithcompositeattributes.go:230  -  is string pointer, needs to be &
-  	S: aws.String(fmt.Sprintf("%s@%s", input.StartingAfter.Name, input.StartingAfter.Branch)),
-
