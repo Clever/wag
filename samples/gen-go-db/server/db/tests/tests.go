@@ -343,7 +343,10 @@ func GetTeacherSharingRulesByTeacherAndSchoolAppPage(d db.Interface, t *testing.
 					ctx: context.Background(),
 					input: db.GetTeacherSharingRulesByTeacherAndSchoolAppPageInput{
 						StartingAfter: &models.TeacherSharingRule{
-							Teacher: "string1",
+							Teacher:  "string1",
+							School:   "string0",
+							App:      "string0",
+							District: "district",
 						},
 						Limit: &limit,
 					},
@@ -379,12 +382,13 @@ func GetTeacherSharingRulesByTeacherAndSchoolAppPage(d db.Interface, t *testing.
 					ctx: context.Background(),
 					input: db.GetTeacherSharingRulesByTeacherAndSchoolAppPageInput{
 						StartingAfter: &models.TeacherSharingRule{
-							Teacher: "string1",
-							School:  "string4",
-							App:     "string4",
+							Teacher:  "string1",
+							School:   "string4",
+							App:      "string4",
+							District: "district",
 						},
-						Limit:      &limit,
 						Descending: true,
+						Limit:      &limit,
 					},
 				},
 				output: getTeacherSharingRulesByTeacherAndSchoolAppPageOutput{
@@ -418,9 +422,10 @@ func GetTeacherSharingRulesByTeacherAndSchoolAppPage(d db.Interface, t *testing.
 					ctx: context.Background(),
 					input: db.GetTeacherSharingRulesByTeacherAndSchoolAppPageInput{
 						StartingAfter: &models.TeacherSharingRule{
-							Teacher: "string1",
-							School:  "string1",
-							App:     "string1",
+							Teacher:  "string1",
+							School:   "string1",
+							App:      "string1",
+							District: "district",
 						},
 						Limit: &limit,
 					},
@@ -732,8 +737,8 @@ func GetTeacherSharingRulesByDistrictAndSchoolTeacherAppPage(d db.Interface, t *
 					input: db.GetTeacherSharingRulesByDistrictAndSchoolTeacherAppPageInput{
 						StartingAfter: &models.TeacherSharingRule{
 							District: "string1",
-							Teacher:  "string4",
 							School:   "string4",
+							Teacher:  "string4",
 							App:      "string4",
 						},
 						Descending: true,
@@ -771,11 +776,12 @@ func GetTeacherSharingRulesByDistrictAndSchoolTeacherAppPage(d db.Interface, t *
 					ctx: context.Background(),
 					input: db.GetTeacherSharingRulesByDistrictAndSchoolTeacherAppPageInput{
 						StartingAfter: &models.TeacherSharingRule{
+							District: "string1",
 							School:   "string1",
 							Teacher:  "string1",
 							App:      "string1",
-							District: "string1",
 						},
+						Limit: &limit,
 					},
 				},
 				output: getTeacherSharingRulesByDistrictAndSchoolTeacherAppPageOutput{
@@ -999,7 +1005,8 @@ func GetThingsByNameAndVersionPage(d db.Interface, t *testing.T) func(t *testing
 					ctx: context.Background(),
 					input: db.GetThingsByNameAndVersionPageInput{
 						StartingAfter: &models.Thing{
-							Name: "string1",
+							Name:    "string1",
+							Version: 0,
 						},
 						Limit: &limit,
 					},
@@ -1030,7 +1037,7 @@ func GetThingsByNameAndVersionPage(d db.Interface, t *testing.T) func(t *testing
 					input: db.GetThingsByNameAndVersionPageInput{
 						StartingAfter: &models.Thing{
 							Name:    "string1",
-							Version: int64(4),
+							Version: 4,
 						},
 						Descending: true,
 						Limit:      &limit,
@@ -1062,7 +1069,7 @@ func GetThingsByNameAndVersionPage(d db.Interface, t *testing.T) func(t *testing
 					input: db.GetThingsByNameAndVersionPageInput{
 						StartingAfter: &models.Thing{
 							Name:    "string1",
-							Version: int64(1),
+							Version: 1,
 						},
 						Limit: &limit,
 					},
@@ -1429,7 +1436,9 @@ func GetThingsByNameAndCreatedAtPage(d db.Interface, t *testing.T) func(t *testi
 						StartingAfter: &models.Thing{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:00+07:00"),
+							Version:   0,
 						},
+						Limit: &limit,
 					},
 				},
 				output: getThingsByNameAndCreatedAtPageOutput{
@@ -1461,9 +1470,11 @@ func GetThingsByNameAndCreatedAtPage(d db.Interface, t *testing.T) func(t *testi
 					input: db.GetThingsByNameAndCreatedAtPageInput{
 						StartingAfter: &models.Thing{
 							Name:      "string1",
-							CreatedAt: *db.DateTime(mustTime("2018-03-11T15:04:04+07:00")),
+							CreatedAt: mustTime("2018-03-11T15:04:04+07:00"),
+							Version:   4,
 						},
 						Descending: true,
+						Limit:      &limit,
 					},
 				},
 				output: getThingsByNameAndCreatedAtPageOutput{
@@ -1495,8 +1506,10 @@ func GetThingsByNameAndCreatedAtPage(d db.Interface, t *testing.T) func(t *testi
 					input: db.GetThingsByNameAndCreatedAtPageInput{
 						StartingAfter: &models.Thing{
 							Name:      "string1",
-							CreatedAt: *db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+							CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
+							Version:   1,
 						},
+						Limit: &limit,
 					},
 				},
 				output: getThingsByNameAndCreatedAtPageOutput{
@@ -1741,6 +1754,7 @@ func GetThingWithCompositeAttributessByNameBranchAndDatePage(d db.Interface, t *
 							Branch: db.String("string1"),
 							Date:   db.DateTime(mustTime("2018-03-11T15:04:00+07:00")),
 						},
+						Limit: &limit,
 					},
 				},
 				output: getThingWithCompositeAttributessByNameBranchAndDatePageOutput{
@@ -1776,6 +1790,7 @@ func GetThingWithCompositeAttributessByNameBranchAndDatePage(d db.Interface, t *
 							Date:   db.DateTime(mustTime("2018-03-11T15:04:04+07:00")),
 						},
 						Descending: true,
+						Limit:      &limit,
 					},
 				},
 				output: getThingWithCompositeAttributessByNameBranchAndDatePageOutput{
@@ -1810,6 +1825,7 @@ func GetThingWithCompositeAttributessByNameBranchAndDatePage(d db.Interface, t *
 							Branch: db.String("string1"),
 							Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 						},
+						Limit: &limit,
 					},
 				},
 				output: getThingWithCompositeAttributessByNameBranchAndDatePageOutput{
@@ -2072,8 +2088,9 @@ func GetThingWithCompositeAttributessByNameVersionAndDatePage(d db.Interface, t 
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:00+07:00")),
-							Branch:  db.String("string1"),
+							Branch:  db.String("string0"),
 						},
+						Limit: &limit,
 					},
 				},
 				output: getThingWithCompositeAttributessByNameVersionAndDatePageOutput{
@@ -2113,6 +2130,7 @@ func GetThingWithCompositeAttributessByNameVersionAndDatePage(d db.Interface, t 
 							Branch:  db.String("string4"),
 						},
 						Descending: true,
+						Limit:      &limit,
 					},
 				},
 				output: getThingWithCompositeAttributessByNameVersionAndDatePageOutput{
@@ -2151,6 +2169,7 @@ func GetThingWithCompositeAttributessByNameVersionAndDatePage(d db.Interface, t 
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 							Branch:  db.String("string1"),
 						},
+						Limit: &limit,
 					},
 				},
 				output: getThingWithCompositeAttributessByNameVersionAndDatePageOutput{
@@ -2353,11 +2372,11 @@ type getThingWithCompositeEnumAttributessByNameBranchAndDatePageTest struct {
 
 func (g getThingWithCompositeEnumAttributessByNameBranchAndDatePageTest) run(t *testing.T) {
 	thingWithCompositeEnumAttributess := []models.ThingWithCompositeEnumAttributes{}
-	fn := func(m *models.ThingWithCompositeEnumAttributes, lastThingWithCompositeEnumAttributess bool) bool {
+	fn := func(m *models.ThingWithCompositeEnumAttributes, lastThingWithCompositeEnumAttributes bool) bool {
 		if m != nil {
 			thingWithCompositeEnumAttributess = append(thingWithCompositeEnumAttributess, *m)
 		}
-		if lastThingWithCompositeEnumAttributess {
+		if lastThingWithCompositeEnumAttributes {
 			return false
 		}
 		return true
@@ -2397,6 +2416,7 @@ func GetThingWithCompositeEnumAttributessByNameBranchAndDatePage(d db.Interface,
 							BranchID: models.BranchMaster,
 							Date:     db.DateTime(mustTime("2018-03-11T15:04:00+07:00")),
 						},
+						Limit: &limit,
 					},
 				},
 				output: getThingWithCompositeEnumAttributessByNameBranchAndDatePageOutput{
@@ -2432,6 +2452,7 @@ func GetThingWithCompositeEnumAttributessByNameBranchAndDatePage(d db.Interface,
 							Date:     db.DateTime(mustTime("2018-03-11T15:04:04+07:00")),
 						},
 						Descending: true,
+						Limit:      &limit,
 					},
 				},
 				output: getThingWithCompositeEnumAttributessByNameBranchAndDatePageOutput{
@@ -2466,6 +2487,7 @@ func GetThingWithCompositeEnumAttributessByNameBranchAndDatePage(d db.Interface,
 							BranchID: models.BranchMaster,
 							Date:     db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 						},
+						Limit: &limit,
 					},
 				},
 				output: getThingWithCompositeEnumAttributessByNameBranchAndDatePageOutput{
@@ -2716,6 +2738,7 @@ func GetThingWithDateRangesByNameAndDatePage(d db.Interface, t *testing.T) func(
 							Name: "string1",
 							Date: mustTime("2018-03-11T15:04:00+07:00"),
 						},
+						Limit: &limit,
 					},
 				},
 				output: getThingWithDateRangesByNameAndDatePageOutput{
@@ -2747,6 +2770,7 @@ func GetThingWithDateRangesByNameAndDatePage(d db.Interface, t *testing.T) func(
 							Date: mustTime("2018-03-11T15:04:04+07:00"),
 						},
 						Descending: true,
+						Limit:      &limit,
 					},
 				},
 				output: getThingWithDateRangesByNameAndDatePageOutput{
@@ -2777,6 +2801,7 @@ func GetThingWithDateRangesByNameAndDatePage(d db.Interface, t *testing.T) func(
 							Name: "string1",
 							Date: mustTime("2018-03-11T15:04:01+07:00"),
 						},
+						Limit: &limit,
 					},
 				},
 				output: getThingWithDateRangesByNameAndDatePageOutput{
@@ -3060,8 +3085,9 @@ func GetThingWithDateTimeCompositesByTypeIDAndCreatedResourcePage(d db.Interface
 							Type:     "string1",
 							ID:       "string1",
 							Created:  mustTime("2018-03-11T15:04:00+07:00"),
-							Resource: "string1",
+							Resource: "string0",
 						},
+						Limit: &limit,
 					},
 				},
 				output: getThingWithDateTimeCompositesByTypeIDAndCreatedResourcePageOutput{
@@ -3101,6 +3127,7 @@ func GetThingWithDateTimeCompositesByTypeIDAndCreatedResourcePage(d db.Interface
 							Resource: "string4",
 						},
 						Descending: true,
+						Limit:      &limit,
 					},
 				},
 				output: getThingWithDateTimeCompositesByTypeIDAndCreatedResourcePageOutput{
@@ -3139,6 +3166,7 @@ func GetThingWithDateTimeCompositesByTypeIDAndCreatedResourcePage(d db.Interface
 							Created:  mustTime("2018-03-11T15:04:01+07:00"),
 							Resource: "string1",
 						},
+						Limit: &limit,
 					},
 				},
 				output: getThingWithDateTimeCompositesByTypeIDAndCreatedResourcePageOutput{
