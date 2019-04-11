@@ -171,8 +171,6 @@ type Get{{ $modelName }}sBy{{ $computedIndexName }}PageInput struct {
 	StartingAfter *models.{{ $modelName }}
 	// Limit is a required limit on how many items to evaluate.
 	Limit  *int64
-  // DisableConsistentRead turns off the default behavior of running a consistent read.
-  DisableConsistentRead bool
   Descending bool
 }
 {{- if gt $lenRangeKeyAttributes 1 }}

@@ -200,10 +200,8 @@ type GetTeacherSharingRulesByDistrictAndSchoolTeacherAppPageInput struct {
 	// StartingAfter is a required specification of an (exclusive) starting point.
 	StartingAfter *models.TeacherSharingRule
 	// Limit is a required limit on how many items to evaluate.
-	Limit *int64
-	// DisableConsistentRead turns off the default behavior of running a consistent read.
-	DisableConsistentRead bool
-	Descending            bool
+	Limit      *int64
+	Descending bool
 }
 
 // SchoolTeacherApp struct.
@@ -294,10 +292,8 @@ type GetThingsByNameAndCreatedAtPageInput struct {
 	// StartingAfter is a required specification of an (exclusive) starting point.
 	StartingAfter *models.Thing
 	// Limit is a required limit on how many items to evaluate.
-	Limit *int64
-	// DisableConsistentRead turns off the default behavior of running a consistent read.
-	DisableConsistentRead bool
-	Descending            bool
+	Limit      *int64
+	Descending bool
 }
 
 // ErrThingByNameAndCreatedAtNotFound is returned when the database fails to find a Thing.
@@ -373,10 +369,8 @@ type GetThingWithCompositeAttributessByNameVersionAndDatePageInput struct {
 	// StartingAfter is a required specification of an (exclusive) starting point.
 	StartingAfter *models.ThingWithCompositeAttributes
 	// Limit is a required limit on how many items to evaluate.
-	Limit *int64
-	// DisableConsistentRead turns off the default behavior of running a consistent read.
-	DisableConsistentRead bool
-	Descending            bool
+	Limit      *int64
+	Descending bool
 }
 
 // ErrThingWithCompositeAttributesByNameVersionAndDateNotFound is returned when the database fails to find a ThingWithCompositeAttributes.

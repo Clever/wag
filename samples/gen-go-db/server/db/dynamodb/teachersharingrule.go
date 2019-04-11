@@ -199,11 +199,15 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByTeacherAndSchoolAppPage
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		ExpressionAttributeNames: map[string]*string{
-			"#TEACHER": aws.String("teacher"),
+			"#TEACHER":    aws.String("teacher"),
+			"#SCHOOL_APP": aws.String("school_app"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":teacher": &dynamodb.AttributeValue{
 				S: aws.String(input.StartingAfter.Teacher),
+			},
+			":schoolApp": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s_%s", input.StartingAfter.School, input.StartingAfter.App)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
@@ -217,10 +221,6 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByTeacherAndSchoolAppPage
 				S: aws.String(input.StartingAfter.Teacher),
 			},
 		},
-	}
-	queryInput.ExpressionAttributeNames["#SCHOOL_APP"] = aws.String("school_app")
-	queryInput.ExpressionAttributeValues[":schoolApp"] = &dynamodb.AttributeValue{
-		S: aws.String(fmt.Sprintf("%s_%s", input.StartingAfter.School, input.StartingAfter.App)),
 	}
 	if input.Descending {
 		queryInput.KeyConditionExpression = aws.String("#TEACHER = :teacher AND #SCHOOL_APP <= :schoolApp")
@@ -310,7 +310,6 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeache
 	if len(queryOutput.Items) == 0 {
 		return []models.TeacherSharingRule{}, nil
 	}
-
 	return decodeTeacherSharingRules(queryOutput.Items)
 }
 
@@ -319,15 +318,19 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeache
 		TableName: aws.String(t.name()),
 		IndexName: aws.String("district_school_teacher_app"),
 		ExpressionAttributeNames: map[string]*string{
-			"#DISTRICT": aws.String("district"),
+			"#DISTRICT":           aws.String("district"),
+			"#SCHOOL_TEACHER_APP": aws.String("school_teacher_app"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":district": &dynamodb.AttributeValue{
 				S: aws.String(input.StartingAfter.District),
 			},
+			":schoolTeacherApp": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s_%s_%s", input.StartingAfter.School, input.StartingAfter.Teacher, input.StartingAfter.App)),
+			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
-		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
+		ConsistentRead:   aws.Bool(false),
 		Limit:            input.Limit,
 		ExclusiveStartKey: map[string]*dynamodb.AttributeValue{
 			"school_teacher_app": &dynamodb.AttributeValue{
@@ -336,11 +339,13 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeache
 			"district": &dynamodb.AttributeValue{
 				S: aws.String(input.StartingAfter.District),
 			},
+			"school_app": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s_%s", input.StartingAfter.School, input.StartingAfter.App)),
+			},
+			"teacher": &dynamodb.AttributeValue{
+				S: aws.String(input.StartingAfter.Teacher),
+			},
 		},
-	}
-	queryInput.ExpressionAttributeNames["#SCHOOL_TEACHER_APP"] = aws.String("school_teacher_app")
-	queryInput.ExpressionAttributeValues[":schoolTeacherApp"] = &dynamodb.AttributeValue{
-		S: aws.String(fmt.Sprintf("%s_%s_%s", input.StartingAfter.School, input.StartingAfter.Teacher, input.StartingAfter.App)),
 	}
 	if input.Descending {
 		queryInput.KeyConditionExpression = aws.String("#DISTRICT = :district AND #SCHOOL_TEACHER_APP <= :schoolTeacherApp")

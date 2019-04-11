@@ -181,10 +181,14 @@ func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttribut
 		TableName: aws.String(t.name()),
 		ExpressionAttributeNames: map[string]*string{
 			"#NAME_BRANCH": aws.String("name_branch"),
+			"#DATE":        aws.String("date"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":nameBranch": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, input.StartingAfter.BranchID)),
+			},
+			":date": &dynamodb.AttributeValue{
+				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
@@ -198,10 +202,6 @@ func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttribut
 				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, input.StartingAfter.BranchID)),
 			},
 		},
-	}
-	queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
-	queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
-		S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
 	}
 	if input.Descending {
 		queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE <= :date")

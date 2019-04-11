@@ -265,6 +265,9 @@ var funcMap = template.FuncMap(map[string]interface{}{
 	"attributeToModelValue":       attributeToModelValue,
 	"attributeToModelValueNotPtr": attributeToModelValueNotPtr,
 	"attributeToModelValuePtr":    attributeToModelValuePtr,
+	"stringsEqual": func(s1, s2 string) bool {
+		return s1 == s2
+	},
 })
 
 func contains(el string, arr []string) bool {

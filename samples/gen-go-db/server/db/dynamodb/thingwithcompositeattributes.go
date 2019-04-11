@@ -213,10 +213,14 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 		TableName: aws.String(t.name()),
 		ExpressionAttributeNames: map[string]*string{
 			"#NAME_BRANCH": aws.String("name_branch"),
+			"#DATE":        aws.String("date"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":nameBranch": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
+			},
+			":date": &dynamodb.AttributeValue{
+				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
@@ -230,10 +234,6 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
 			},
 		},
-	}
-	queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
-	queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
-		S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
 	}
 	if input.Descending {
 		queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE <= :date")
@@ -323,7 +323,6 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 	if len(queryOutput.Items) == 0 {
 		return []models.ThingWithCompositeAttributes{}, nil
 	}
-
 	return decodeThingWithCompositeAttributess(queryOutput.Items)
 }
 
@@ -333,14 +332,18 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 		IndexName: aws.String("nameVersion"),
 		ExpressionAttributeNames: map[string]*string{
 			"#NAME_VERSION": aws.String("name_version"),
+			"#DATE":         aws.String("date"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":nameVersion": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s:%d", *input.StartingAfter.Name, input.StartingAfter.Version)),
 			},
+			":date": &dynamodb.AttributeValue{
+				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
+			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
-		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
+		ConsistentRead:   aws.Bool(false),
 		Limit:            input.Limit,
 		ExclusiveStartKey: map[string]*dynamodb.AttributeValue{
 			"date": &dynamodb.AttributeValue{
@@ -349,11 +352,10 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 			"name_version": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s:%d", *input.StartingAfter.Name, input.StartingAfter.Version)),
 			},
+			"name_branch": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
+			},
 		},
-	}
-	queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
-	queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
-		S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
 	}
 	if input.Descending {
 		queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion AND #DATE <= :date")

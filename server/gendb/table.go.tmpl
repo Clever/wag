@@ -334,6 +334,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}Page
 		TableName: aws.String(t.name()),
 		ExpressionAttributeNames: map[string]*string{
 			"#{{ upper $hashKey.AttributeName }}": aws.String("{{ $hashKey.AttributeName }}"),
+      "#{{ upper $rangeKey.AttributeName }}": aws.String("{{ $rangeKey.AttributeName }}"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":{{ camelize $hashKey.AttributeName }}": &dynamodb.AttributeValue{
@@ -342,6 +343,23 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}Page
                         	    S: aws.String({{ if isComposite $xdbConfig $hashKey.AttributeName }}{{ compositeValuePage $xdbConfig $hashKey.AttributeName "input.StartingAfter" }}{{ else }}input.StartingAfter.{{ pascalize $hashKey.AttributeName }}{{ end }}),
                           {{- else if eq $dynamoDBType "N" }}
 			                        N: aws.String(fmt.Sprintf("%d", input.{{ pascalize $hashKey.AttributeName }})),
+                          {{- end }}
+      },
+      ":{{ camelize $rangeKey.AttributeName }}": &dynamodb.AttributeValue{
+                          {{- if gt $lenRangeKeyAttributes 1 }}
+                              S: aws.String({{- if isComposite $xdbConfig $rangeKey.AttributeName }}{{ compositeValuePage $xdbConfig $rangeKey.AttributeName "input.StartingAfter" }}{{ else }}input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}{{ end }}),
+                          {{- else }}
+                          {{- $attrGoType := goTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
+                          {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
+                          {{- if eq $attrDynamoDBType "S" }}
+                          {{- if eq $attrGoType "strfmt.DateTime" }}
+                              S: aws.String(toDynamoTimeString(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
+                          {{- else }}
+                              S: aws.String(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}),
+                          {{- end }}
+                          {{- else if eq $attrDynamoDBType "N" }}
+                              N: aws.String(fmt.Sprintf("%%d", input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
+                          {{- end }}
                           {{- end }}
 			},
 		},
@@ -385,24 +403,6 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}Page
       },
     },
 	}
-  queryInput.ExpressionAttributeNames["#{{ upper $rangeKey.AttributeName }}"] = aws.String("{{ $rangeKey.AttributeName }}")
-  queryInput.ExpressionAttributeValues[":{{ camelize $rangeKey.AttributeName }}"] = &dynamodb.AttributeValue{
-    {{- if gt $lenRangeKeyAttributes 1 }}
-                      S: aws.String({{- if isComposite $xdbConfig $rangeKey.AttributeName }}{{ compositeValuePage $xdbConfig $rangeKey.AttributeName "input.StartingAfter" }}{{ else }}input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}{{ end }}),
-                      {{- else }}
-                      {{- $attrGoType := goTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
-                      {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
-                      {{- if eq $attrDynamoDBType "S" }}
-                      {{- if eq $attrGoType "strfmt.DateTime" }}
-    S: aws.String(toDynamoTimeString(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
-                      {{- else }}
-    S: aws.String(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}),
-                      {{- end }}
-                      {{- else if eq $attrDynamoDBType "N" }}
-    N: aws.String(fmt.Sprintf("%%d", input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
-                      {{- end }}
-                      {{- end }}
-  }
   if input.Descending {
     queryInput.KeyConditionExpression = aws.String("#{{ upper $hashKey.AttributeName }} = :{{ camelize $hashKey.AttributeName }} AND #{{ upper $rangeKey.AttributeName }} <= :{{ camelize $rangeKey.AttributeName }}")
   } else {
@@ -471,6 +471,13 @@ func (t {{ $modelName }}Table) delete{{ $modelName }}(ctx context.Context,
 {{- $lenRangeKeyAttributes := len $rangeKeyAttributes }}
 {{- $hashKeyAttributes := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "HASH" }}
 {{- $lenHashKeyAttributes := len $hashKeyAttributes }}
+{{- $primaryIndexName := indexName $xdbConfig.DynamoDB.KeySchema }}
+{{- $primaryHashKey := index $xdbConfig.DynamoDB.KeySchema 0 }}
+{{- $primaryRangeKey := index $xdbConfig.DynamoDB.KeySchema 1 }}
+{{- $primaryRangeKeyAttributes := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "RANGE" }}
+{{- $lenPrimaryRangeKeyAttributes := len $primaryRangeKeyAttributes }}
+{{- $primaryHashKeyAttributes := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
+{{- $lenPrimaryHashKeyAttributes := len $primaryHashKeyAttributes }}
 func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx context.Context, input db.Get{{ $modelName }}sBy{{ $computedIndexName }}Input) ([]models.{{ $modelName }}, error) {
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
@@ -529,7 +536,6 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
 	if len(queryOutput.Items) == 0 {
 		return []models.{{ $modelName }}{}, nil
 	}
-
 	return decode{{ $modelName }}s(queryOutput.Items)
 }
 
@@ -539,6 +545,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}Page
     IndexName: aws.String("{{ $gsi.IndexName }}"),
 		ExpressionAttributeNames: map[string]*string{
 			"#{{ upper $hashKey.AttributeName }}": aws.String("{{ $hashKey.AttributeName }}"),
+      "#{{ upper $rangeKey.AttributeName }}": aws.String("{{ $rangeKey.AttributeName }}"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":{{ camelize $hashKey.AttributeName }}": &dynamodb.AttributeValue{
@@ -548,10 +555,27 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}Page
                           {{- else if eq $dynamoDBType "N" }}
 			                        N: aws.String(fmt.Sprintf("%d", input.{{ pascalize $hashKey.AttributeName }})),
                           {{- end }}
+      },
+      ":{{ camelize $rangeKey.AttributeName }}": &dynamodb.AttributeValue{
+                          {{- if gt $lenRangeKeyAttributes 1 }}
+                              S: aws.String({{- if isComposite $xdbConfig $rangeKey.AttributeName }}{{ compositeValuePage $xdbConfig $rangeKey.AttributeName "input.StartingAfter" }}{{ else }}input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}{{ end }}),
+                          {{- else }}
+                          {{- $attrGoType := goTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
+                          {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
+                          {{- if eq $attrDynamoDBType "S" }}
+                          {{- if eq $attrGoType "strfmt.DateTime" }}
+                              S: aws.String(toDynamoTimeString(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
+                          {{- else }}
+                              S: aws.String(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}),
+                          {{- end }}
+                          {{- else if eq $attrDynamoDBType "N" }}
+                              N: aws.String(fmt.Sprintf("%%d", input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
+                          {{- end }}
+                          {{- end }}
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
-		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
+		ConsistentRead:   aws.Bool(false),
     Limit: input.Limit,
     ExclusiveStartKey: map[string]*dynamodb.AttributeValue{
       "{{ $rangeKey.AttributeName }}": &dynamodb.AttributeValue{
@@ -588,26 +612,48 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}Page
         {{- end }}
       {{- end }}
       },
+      {{- $sameRangeKey := stringsEqual $primaryRangeKey.AttributeName $rangeKey.AttributeName }}
+      {{- if not $sameRangeKey }}
+     "{{ $primaryRangeKey.AttributeName }}": &dynamodb.AttributeValue{
+    	{{- if gt $lenPrimaryRangeKeyAttributes 1 }}
+        S: aws.String({{ compositeValuePage $xdbConfig $primaryRangeKey.AttributeName "input.StartingAfter" }}),
+      {{- else }}
+          {{- $attrGoType := goTypeForAttribute $xdbConfig $primaryRangeKey.AttributeName }}
+          {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $primaryRangeKey.AttributeName }}
+        {{- if eq $attrDynamoDBType "S" }}
+          {{- if eq $attrGoType "strfmt.DateTime" }}
+			S: aws.String(toDynamoTimeString(input.StartingAfter.{{ pascalize $primaryRangeKey.AttributeName }})),
+          {{- else }}
+			S: aws.String({{if attributeIsPointer $xdbConfig $primaryRangeKey.AttributeName }}*{{end}}input.StartingAfter.{{ pascalize $primaryRangeKey.AttributeName }}),
+          {{- end }}
+        {{- else if eq $attrDynamoDBType "N" }}
+			N: aws.String(fmt.Sprintf("%%d", input.StartingAfter.{{ pascalize $primaryRangeKey.AttributeName }})),
+        {{- end }}
+      {{- end }}
+      },
+      {{- end}}
+      {{- $sameHashKey := stringsEqual $primaryHashKey.AttributeName $hashKey.AttributeName }}
+      {{- if not $sameHashKey }}
+      "{{ $primaryHashKey.AttributeName }}": &dynamodb.AttributeValue{
+        {{- if gt $lenPrimaryHashKeyAttributes 1 }}
+          S: aws.String({{ compositeValuePage $xdbConfig $primaryHashKey.AttributeName "input.StartingAfter" }}),
+        {{- else }}
+              {{- $attrGoType := goTypeForAttribute $xdbConfig $primaryHashKey.AttributeName }}
+              {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $primaryHashKey.AttributeName }}
+        {{- if eq $attrDynamoDBType "S" }}
+          {{- if eq $attrGoType "strfmt.DateTime" }}
+			S: aws.String(toDynamoTimeString(input.StartingAfter.{{ pascalize $primaryHashKey.AttributeName }})),
+          {{- else }}
+			S: aws.String(input.StartingAfter.{{ pascalize $primaryHashKey.AttributeName }}),
+          {{- end }}
+        {{- else if eq $attrDynamoDBType "N" }}
+			N: aws.String(fmt.Sprintf("%%d", *input.StartingAfter.{{ pascalize $primaryHashKey.AttributeName }})),
+        {{- end }}
+      {{- end }}
+      },
+      {{- end}}
     },
 	}
-  queryInput.ExpressionAttributeNames["#{{ upper $rangeKey.AttributeName }}"] = aws.String("{{ $rangeKey.AttributeName }}")
-  queryInput.ExpressionAttributeValues[":{{ camelize $rangeKey.AttributeName }}"] = &dynamodb.AttributeValue{
-    {{- if gt $lenRangeKeyAttributes 1 }}
-                      S: aws.String({{- if isComposite $xdbConfig $rangeKey.AttributeName }}{{ compositeValuePage $xdbConfig $rangeKey.AttributeName "input.StartingAfter" }}{{ else }}input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}{{ end }}),
-                      {{- else }}
-                      {{- $attrGoType := goTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
-                      {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
-                      {{- if eq $attrDynamoDBType "S" }}
-                      {{- if eq $attrGoType "strfmt.DateTime" }}
-    S: aws.String(toDynamoTimeString(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
-                      {{- else }}
-    S: aws.String(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}),
-                      {{- end }}
-                      {{- else if eq $attrDynamoDBType "N" }}
-    N: aws.String(fmt.Sprintf("%%d", input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
-                      {{- end }}
-                      {{- end }}
-  }
   if input.Descending {
     queryInput.KeyConditionExpression = aws.String("#{{ upper $hashKey.AttributeName }} = :{{ camelize $hashKey.AttributeName }} AND #{{ upper $rangeKey.AttributeName }} <= :{{ camelize $rangeKey.AttributeName }}")
   } else {

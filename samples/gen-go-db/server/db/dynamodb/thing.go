@@ -278,11 +278,15 @@ func (t ThingTable) getThingsByNameAndVersionPage(ctx context.Context, input db.
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		ExpressionAttributeNames: map[string]*string{
-			"#NAME": aws.String("name"),
+			"#NAME":    aws.String("name"),
+			"#VERSION": aws.String("version"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":name": &dynamodb.AttributeValue{
 				S: aws.String(input.StartingAfter.Name),
+			},
+			":version": &dynamodb.AttributeValue{
+				N: aws.String(fmt.Sprintf("%d", input.StartingAfter.Version)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
@@ -296,10 +300,6 @@ func (t ThingTable) getThingsByNameAndVersionPage(ctx context.Context, input db.
 				S: aws.String(input.StartingAfter.Name),
 			},
 		},
-	}
-	queryInput.ExpressionAttributeNames["#VERSION"] = aws.String("version")
-	queryInput.ExpressionAttributeValues[":version"] = &dynamodb.AttributeValue{
-		N: aws.String(fmt.Sprintf("%d", input.StartingAfter.Version)),
 	}
 	if input.Descending {
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #VERSION <= :version")
@@ -419,7 +419,6 @@ func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.Ge
 	if len(queryOutput.Items) == 0 {
 		return []models.Thing{}, nil
 	}
-
 	return decodeThings(queryOutput.Items)
 }
 
@@ -428,15 +427,19 @@ func (t ThingTable) getThingsByNameAndCreatedAtPage(ctx context.Context, input d
 		TableName: aws.String(t.name()),
 		IndexName: aws.String("name-createdAt"),
 		ExpressionAttributeNames: map[string]*string{
-			"#NAME": aws.String("name"),
+			"#NAME":      aws.String("name"),
+			"#CREATEDAT": aws.String("createdAt"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":name": &dynamodb.AttributeValue{
 				S: aws.String(input.StartingAfter.Name),
 			},
+			":createdAt": &dynamodb.AttributeValue{
+				S: aws.String(toDynamoTimeString(input.StartingAfter.CreatedAt)),
+			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
-		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
+		ConsistentRead:   aws.Bool(false),
 		Limit:            input.Limit,
 		ExclusiveStartKey: map[string]*dynamodb.AttributeValue{
 			"createdAt": &dynamodb.AttributeValue{
@@ -445,11 +448,10 @@ func (t ThingTable) getThingsByNameAndCreatedAtPage(ctx context.Context, input d
 			"name": &dynamodb.AttributeValue{
 				S: aws.String(input.StartingAfter.Name),
 			},
+			"version": &dynamodb.AttributeValue{
+				N: aws.String(fmt.Sprintf("%d", input.StartingAfter.Version)),
+			},
 		},
-	}
-	queryInput.ExpressionAttributeNames["#CREATEDAT"] = aws.String("createdAt")
-	queryInput.ExpressionAttributeValues[":createdAt"] = &dynamodb.AttributeValue{
-		S: aws.String(toDynamoTimeString(input.StartingAfter.CreatedAt)),
 	}
 	if input.Descending {
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #CREATEDAT <= :createdAt")
