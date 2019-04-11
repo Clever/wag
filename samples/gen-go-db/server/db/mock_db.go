@@ -147,6 +147,18 @@ func (mr *MockInterfaceMockRecorder) GetTeacherSharingRulesByDistrictAndSchoolTe
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTeacherSharingRulesByDistrictAndSchoolTeacherApp", reflect.TypeOf((*MockInterface)(nil).GetTeacherSharingRulesByDistrictAndSchoolTeacherApp), ctx, input)
 }
 
+// GetTeacherSharingRulesByDistrictAndSchoolTeacherAppPage mocks base method
+func (m *MockInterface) GetTeacherSharingRulesByDistrictAndSchoolTeacherAppPage(ctx context.Context, input GetTeacherSharingRulesByDistrictAndSchoolTeacherAppPageInput, fn func(*models.TeacherSharingRule, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetTeacherSharingRulesByDistrictAndSchoolTeacherAppPage", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetTeacherSharingRulesByDistrictAndSchoolTeacherAppPage indicates an expected call of GetTeacherSharingRulesByDistrictAndSchoolTeacherAppPage
+func (mr *MockInterfaceMockRecorder) GetTeacherSharingRulesByDistrictAndSchoolTeacherAppPage(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTeacherSharingRulesByDistrictAndSchoolTeacherAppPage", reflect.TypeOf((*MockInterface)(nil).GetTeacherSharingRulesByDistrictAndSchoolTeacherAppPage), ctx, input, fn)
+}
+
 // SaveThing mocks base method
 func (m_2 *MockInterface) SaveThing(ctx context.Context, m models.Thing) error {
 	ret := m_2.ctrl.Call(m_2, "SaveThing", ctx, m)
@@ -247,6 +259,18 @@ func (mr *MockInterfaceMockRecorder) GetThingsByNameAndCreatedAt(ctx, input inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingsByNameAndCreatedAt", reflect.TypeOf((*MockInterface)(nil).GetThingsByNameAndCreatedAt), ctx, input)
 }
 
+// GetThingsByNameAndCreatedAtPage mocks base method
+func (m *MockInterface) GetThingsByNameAndCreatedAtPage(ctx context.Context, input GetThingsByNameAndCreatedAtPageInput, fn func(*models.Thing, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetThingsByNameAndCreatedAtPage", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingsByNameAndCreatedAtPage indicates an expected call of GetThingsByNameAndCreatedAtPage
+func (mr *MockInterfaceMockRecorder) GetThingsByNameAndCreatedAtPage(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingsByNameAndCreatedAtPage", reflect.TypeOf((*MockInterface)(nil).GetThingsByNameAndCreatedAtPage), ctx, input, fn)
+}
+
 // SaveThingWithCompositeAttributes mocks base method
 func (m_2 *MockInterface) SaveThingWithCompositeAttributes(ctx context.Context, m models.ThingWithCompositeAttributes) error {
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithCompositeAttributes", ctx, m)
@@ -320,6 +344,18 @@ func (m *MockInterface) GetThingWithCompositeAttributessByNameVersionAndDate(ctx
 // GetThingWithCompositeAttributessByNameVersionAndDate indicates an expected call of GetThingWithCompositeAttributessByNameVersionAndDate
 func (mr *MockInterfaceMockRecorder) GetThingWithCompositeAttributessByNameVersionAndDate(ctx, input interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithCompositeAttributessByNameVersionAndDate", reflect.TypeOf((*MockInterface)(nil).GetThingWithCompositeAttributessByNameVersionAndDate), ctx, input)
+}
+
+// GetThingWithCompositeAttributessByNameVersionAndDatePage mocks base method
+func (m *MockInterface) GetThingWithCompositeAttributessByNameVersionAndDatePage(ctx context.Context, input GetThingWithCompositeAttributessByNameVersionAndDatePageInput, fn func(*models.ThingWithCompositeAttributes, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetThingWithCompositeAttributessByNameVersionAndDatePage", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingWithCompositeAttributessByNameVersionAndDatePage indicates an expected call of GetThingWithCompositeAttributessByNameVersionAndDatePage
+func (mr *MockInterfaceMockRecorder) GetThingWithCompositeAttributessByNameVersionAndDatePage(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithCompositeAttributessByNameVersionAndDatePage", reflect.TypeOf((*MockInterface)(nil).GetThingWithCompositeAttributessByNameVersionAndDatePage), ctx, input, fn)
 }
 
 // SaveThingWithCompositeEnumAttributes mocks base method

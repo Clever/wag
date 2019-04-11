@@ -170,6 +170,11 @@ func (d DB) Delete{{ $modelName }}(ctx context.Context,
 func (d DB) Get{{ $modelName }}sBy{{ $indexName }}(ctx context.Context, input db.Get{{ $modelName }}sBy{{ $indexName }}Input) ([]models.{{ $modelName }}, error) {
 	return d.{{ $modelNameCamel }}Table.get{{ $modelName }}sBy{{ $indexName }}(ctx, input)
 }
+
+// Get{{ $modelName }}sBy{{ $indexName }}Page retrieves a page of {{ $modelName }}s from the database.
+func (d DB) Get{{ $modelName }}sBy{{ $indexName }}Page(ctx context.Context, input db.Get{{ $modelName }}sBy{{ $indexName }}PageInput, fn func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool) error {
+	return d.{{ $modelNameCamel }}Table.get{{ $modelName }}sBy{{ $indexName }}Page(ctx, input, fn)
+}
 {{- else }}
 {{- $gsiModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $gsi.KeySchema }}
 // Get{{ $modelName }}By{{ $indexName }} retrieves a {{ $modelName }} from the database.

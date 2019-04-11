@@ -327,6 +327,69 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 	return decodeThingWithCompositeAttributess(queryOutput.Items)
 }
 
+func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNameVersionAndDatePage(ctx context.Context, input db.GetThingWithCompositeAttributessByNameVersionAndDatePageInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error {
+	queryInput := &dynamodb.QueryInput{
+		TableName: aws.String(t.name()),
+		IndexName: aws.String("nameVersion"),
+		ExpressionAttributeNames: map[string]*string{
+			"#NAME_VERSION": aws.String("name_version"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":nameVersion": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s:%d", *input.StartingAfter.Name, input.StartingAfter.Version)),
+			},
+		},
+		ScanIndexForward: aws.Bool(!input.Descending),
+		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
+		Limit:            input.Limit,
+		ExclusiveStartKey: map[string]*dynamodb.AttributeValue{
+			"date": &dynamodb.AttributeValue{
+				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
+			},
+			"name_version": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s:%d", *input.StartingAfter.Name, input.StartingAfter.Version)),
+			},
+		},
+	}
+	queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
+	queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
+		S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
+	}
+	if input.Descending {
+		queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion AND #DATE <= :date")
+	} else {
+		queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion AND #DATE >= :date")
+	}
+
+	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	if err != nil {
+		return err
+	}
+	if len(queryOutput.Items) == 0 {
+		fn(nil, false)
+		return nil
+	}
+
+	items, err := decodeThingWithCompositeAttributess(queryOutput.Items)
+	if err != nil {
+		return err
+	}
+
+	for i, item := range items {
+		hasMore := false
+		if len(queryOutput.LastEvaluatedKey) > 0 {
+			hasMore = true
+		} else {
+			hasMore = i < len(items)-1
+		}
+		if !fn(&item, !hasMore) {
+			break
+		}
+	}
+
+	return nil
+}
+
 // encodeThingWithCompositeAttributes encodes a ThingWithCompositeAttributes as a DynamoDB map of attribute values.
 func encodeThingWithCompositeAttributes(m models.ThingWithCompositeAttributes) (map[string]*dynamodb.AttributeValue, error) {
 	val, err := dynamodbattribute.MarshalMap(ddbThingWithCompositeAttributes{

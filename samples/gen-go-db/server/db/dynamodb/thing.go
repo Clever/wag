@@ -423,6 +423,69 @@ func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.Ge
 	return decodeThings(queryOutput.Items)
 }
 
+func (t ThingTable) getThingsByNameAndCreatedAtPage(ctx context.Context, input db.GetThingsByNameAndCreatedAtPageInput, fn func(m *models.Thing, lastThing bool) bool) error {
+	queryInput := &dynamodb.QueryInput{
+		TableName: aws.String(t.name()),
+		IndexName: aws.String("name-createdAt"),
+		ExpressionAttributeNames: map[string]*string{
+			"#NAME": aws.String("name"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":name": &dynamodb.AttributeValue{
+				S: aws.String(input.StartingAfter.Name),
+			},
+		},
+		ScanIndexForward: aws.Bool(!input.Descending),
+		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
+		Limit:            input.Limit,
+		ExclusiveStartKey: map[string]*dynamodb.AttributeValue{
+			"createdAt": &dynamodb.AttributeValue{
+				S: aws.String(toDynamoTimeString(input.StartingAfter.CreatedAt)),
+			},
+			"name": &dynamodb.AttributeValue{
+				S: aws.String(input.StartingAfter.Name),
+			},
+		},
+	}
+	queryInput.ExpressionAttributeNames["#CREATEDAT"] = aws.String("createdAt")
+	queryInput.ExpressionAttributeValues[":createdAt"] = &dynamodb.AttributeValue{
+		S: aws.String(toDynamoTimeString(input.StartingAfter.CreatedAt)),
+	}
+	if input.Descending {
+		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #CREATEDAT <= :createdAt")
+	} else {
+		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #CREATEDAT >= :createdAt")
+	}
+
+	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	if err != nil {
+		return err
+	}
+	if len(queryOutput.Items) == 0 {
+		fn(nil, false)
+		return nil
+	}
+
+	items, err := decodeThings(queryOutput.Items)
+	if err != nil {
+		return err
+	}
+
+	for i, item := range items {
+		hasMore := false
+		if len(queryOutput.LastEvaluatedKey) > 0 {
+			hasMore = true
+		} else {
+			hasMore = i < len(items)-1
+		}
+		if !fn(&item, !hasMore) {
+			break
+		}
+	}
+
+	return nil
+}
+
 // encodeThing encodes a Thing as a DynamoDB map of attribute values.
 func encodeThing(m models.Thing) (map[string]*dynamodb.AttributeValue, error) {
 	return dynamodbattribute.MarshalMap(ddbThing{

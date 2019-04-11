@@ -298,6 +298,11 @@ func (d DB) GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx context.Cont
 	return d.teacherSharingRuleTable.getTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx, input)
 }
 
+// GetTeacherSharingRulesByDistrictAndSchoolTeacherAppPage retrieves a page of TeacherSharingRules from the database.
+func (d DB) GetTeacherSharingRulesByDistrictAndSchoolTeacherAppPage(ctx context.Context, input db.GetTeacherSharingRulesByDistrictAndSchoolTeacherAppPageInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error {
+	return d.teacherSharingRuleTable.getTeacherSharingRulesByDistrictAndSchoolTeacherAppPage(ctx, input, fn)
+}
+
 // SaveThing saves a Thing to the database.
 func (d DB) SaveThing(ctx context.Context, m models.Thing) error {
 	return d.thingTable.saveThing(ctx, m)
@@ -338,6 +343,11 @@ func (d DB) GetThingsByNameAndCreatedAt(ctx context.Context, input db.GetThingsB
 	return d.thingTable.getThingsByNameAndCreatedAt(ctx, input)
 }
 
+// GetThingsByNameAndCreatedAtPage retrieves a page of Things from the database.
+func (d DB) GetThingsByNameAndCreatedAtPage(ctx context.Context, input db.GetThingsByNameAndCreatedAtPageInput, fn func(m *models.Thing, lastThing bool) bool) error {
+	return d.thingTable.getThingsByNameAndCreatedAtPage(ctx, input, fn)
+}
+
 // SaveThingWithCompositeAttributes saves a ThingWithCompositeAttributes to the database.
 func (d DB) SaveThingWithCompositeAttributes(ctx context.Context, m models.ThingWithCompositeAttributes) error {
 	return d.thingWithCompositeAttributesTable.saveThingWithCompositeAttributes(ctx, m)
@@ -366,6 +376,11 @@ func (d DB) DeleteThingWithCompositeAttributes(ctx context.Context, name string,
 // GetThingWithCompositeAttributessByNameVersionAndDate retrieves a list of ThingWithCompositeAttributess from the database.
 func (d DB) GetThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input db.GetThingWithCompositeAttributessByNameVersionAndDateInput) ([]models.ThingWithCompositeAttributes, error) {
 	return d.thingWithCompositeAttributesTable.getThingWithCompositeAttributessByNameVersionAndDate(ctx, input)
+}
+
+// GetThingWithCompositeAttributessByNameVersionAndDatePage retrieves a page of ThingWithCompositeAttributess from the database.
+func (d DB) GetThingWithCompositeAttributessByNameVersionAndDatePage(ctx context.Context, input db.GetThingWithCompositeAttributessByNameVersionAndDatePageInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error {
+	return d.thingWithCompositeAttributesTable.getThingWithCompositeAttributessByNameVersionAndDatePage(ctx, input, fn)
 }
 
 // SaveThingWithCompositeEnumAttributes saves a ThingWithCompositeEnumAttributes to the database.

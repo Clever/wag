@@ -314,6 +314,69 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeache
 	return decodeTeacherSharingRules(queryOutput.Items)
 }
 
+func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeacherAppPage(ctx context.Context, input db.GetTeacherSharingRulesByDistrictAndSchoolTeacherAppPageInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error {
+	queryInput := &dynamodb.QueryInput{
+		TableName: aws.String(t.name()),
+		IndexName: aws.String("district_school_teacher_app"),
+		ExpressionAttributeNames: map[string]*string{
+			"#DISTRICT": aws.String("district"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":district": &dynamodb.AttributeValue{
+				S: aws.String(input.StartingAfter.District),
+			},
+		},
+		ScanIndexForward: aws.Bool(!input.Descending),
+		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
+		Limit:            input.Limit,
+		ExclusiveStartKey: map[string]*dynamodb.AttributeValue{
+			"school_teacher_app": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s_%s_%s", input.StartingAfter.School, input.StartingAfter.Teacher, input.StartingAfter.App)),
+			},
+			"district": &dynamodb.AttributeValue{
+				S: aws.String(input.StartingAfter.District),
+			},
+		},
+	}
+	queryInput.ExpressionAttributeNames["#SCHOOL_TEACHER_APP"] = aws.String("school_teacher_app")
+	queryInput.ExpressionAttributeValues[":schoolTeacherApp"] = &dynamodb.AttributeValue{
+		S: aws.String(fmt.Sprintf("%s_%s_%s", input.StartingAfter.School, input.StartingAfter.Teacher, input.StartingAfter.App)),
+	}
+	if input.Descending {
+		queryInput.KeyConditionExpression = aws.String("#DISTRICT = :district AND #SCHOOL_TEACHER_APP <= :schoolTeacherApp")
+	} else {
+		queryInput.KeyConditionExpression = aws.String("#DISTRICT = :district AND #SCHOOL_TEACHER_APP >= :schoolTeacherApp")
+	}
+
+	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	if err != nil {
+		return err
+	}
+	if len(queryOutput.Items) == 0 {
+		fn(nil, false)
+		return nil
+	}
+
+	items, err := decodeTeacherSharingRules(queryOutput.Items)
+	if err != nil {
+		return err
+	}
+
+	for i, item := range items {
+		hasMore := false
+		if len(queryOutput.LastEvaluatedKey) > 0 {
+			hasMore = true
+		} else {
+			hasMore = i < len(items)-1
+		}
+		if !fn(&item, !hasMore) {
+			break
+		}
+	}
+
+	return nil
+}
+
 // encodeTeacherSharingRule encodes a TeacherSharingRule as a DynamoDB map of attribute values.
 func encodeTeacherSharingRule(m models.TeacherSharingRule) (map[string]*dynamodb.AttributeValue, error) {
 	val, err := dynamodbattribute.MarshalMap(ddbTeacherSharingRule{
