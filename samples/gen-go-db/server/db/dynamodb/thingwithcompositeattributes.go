@@ -246,7 +246,6 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 		return err
 	}
 	if len(queryOutput.Items) == 0 {
-		fn(nil, false)
 		return nil
 	}
 
@@ -368,7 +367,6 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 		return err
 	}
 	if len(queryOutput.Items) == 0 {
-		fn(nil, false)
 		return nil
 	}
 

@@ -195,7 +195,6 @@ func (t ThingWithDateRangeTable) getThingWithDateRangesByNameAndDatePage(ctx con
 		return err
 	}
 	if len(queryOutput.Items) == 0 {
-		fn(nil, false)
 		return nil
 	}
 

@@ -426,7 +426,6 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}Page
 		return err
 	}
 	if len(queryOutput.Items) == 0 {
-    fn(nil, false)
 		return nil
 	}
 
@@ -697,7 +696,6 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}Page
 		return err
 	}
 	if len(queryOutput.Items) == 0 {
-    fn(nil, false)
 		return nil
 	}
 

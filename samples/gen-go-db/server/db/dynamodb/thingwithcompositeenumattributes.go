@@ -214,7 +214,6 @@ func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttribut
 		return err
 	}
 	if len(queryOutput.Items) == 0 {
-		fn(nil, false)
 		return nil
 	}
 

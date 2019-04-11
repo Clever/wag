@@ -312,7 +312,6 @@ func (t ThingTable) getThingsByNameAndVersionPage(ctx context.Context, input db.
 		return err
 	}
 	if len(queryOutput.Items) == 0 {
-		fn(nil, false)
 		return nil
 	}
 
@@ -464,7 +463,6 @@ func (t ThingTable) getThingsByNameAndCreatedAtPage(ctx context.Context, input d
 		return err
 	}
 	if len(queryOutput.Items) == 0 {
-		fn(nil, false)
 		return nil
 	}
 

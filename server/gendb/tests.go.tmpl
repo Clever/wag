@@ -351,9 +351,7 @@ type get{{ $modelName }}sBy{{ $indexName }}PageTest struct {
 func (g get{{ $modelName }}sBy{{ $indexName }}PageTest) run(t *testing.T) {
   {{ camelize $modelName }}s := []models.{{ $modelName }}{}
 	fn := func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool {
-		if m != nil {
-			{{ camelize $modelName }}s = append({{ camelize $modelName }}s, *m)
-		}
+		{{ camelize $modelName }}s = append({{ camelize $modelName }}s, *m)
 		if last{{ $modelName }} {
 			return false
 		}
@@ -1075,9 +1073,7 @@ type get{{ $modelName }}sBy{{ $computedIndexName }}PageTest struct {
 func (g get{{ $modelName }}sBy{{ $computedIndexName }}PageTest) run(t *testing.T) {
   {{ camelize $modelName }}s := []models.{{ $modelName }}{}
 	fn := func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool {
-		if m != nil {
-			{{ camelize $modelName }}s = append({{ camelize $modelName }}s, *m)
-		}
+		{{ camelize $modelName }}s = append({{ camelize $modelName }}s, *m)
 		if last{{ $modelName }} {
 			return false
 		}

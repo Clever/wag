@@ -233,7 +233,6 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByTeacherAndSchoolAppPage
 		return err
 	}
 	if len(queryOutput.Items) == 0 {
-		fn(nil, false)
 		return nil
 	}
 
@@ -358,7 +357,6 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeache
 		return err
 	}
 	if len(queryOutput.Items) == 0 {
-		fn(nil, false)
 		return nil
 	}
 

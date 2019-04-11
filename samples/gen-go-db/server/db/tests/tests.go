@@ -301,9 +301,7 @@ type getTeacherSharingRulesByTeacherAndSchoolAppPageTest struct {
 func (g getTeacherSharingRulesByTeacherAndSchoolAppPageTest) run(t *testing.T) {
 	teacherSharingRules := []models.TeacherSharingRule{}
 	fn := func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool {
-		if m != nil {
-			teacherSharingRules = append(teacherSharingRules, *m)
-		}
+		teacherSharingRules = append(teacherSharingRules, *m)
 		if lastTeacherSharingRule {
 			return false
 		}
@@ -655,9 +653,7 @@ type getTeacherSharingRulesByDistrictAndSchoolTeacherAppPageTest struct {
 func (g getTeacherSharingRulesByDistrictAndSchoolTeacherAppPageTest) run(t *testing.T) {
 	teacherSharingRules := []models.TeacherSharingRule{}
 	fn := func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool {
-		if m != nil {
-			teacherSharingRules = append(teacherSharingRules, *m)
-		}
+		teacherSharingRules = append(teacherSharingRules, *m)
 		if lastTeacherSharingRule {
 			return false
 		}
@@ -969,9 +965,7 @@ type getThingsByNameAndVersionPageTest struct {
 func (g getThingsByNameAndVersionPageTest) run(t *testing.T) {
 	things := []models.Thing{}
 	fn := func(m *models.Thing, lastThing bool) bool {
-		if m != nil {
-			things = append(things, *m)
-		}
+		things = append(things, *m)
 		if lastThing {
 			return false
 		}
@@ -1395,9 +1389,7 @@ type getThingsByNameAndCreatedAtPageTest struct {
 func (g getThingsByNameAndCreatedAtPageTest) run(t *testing.T) {
 	things := []models.Thing{}
 	fn := func(m *models.Thing, lastThing bool) bool {
-		if m != nil {
-			things = append(things, *m)
-		}
+		things = append(things, *m)
 		if lastThing {
 			return false
 		}
@@ -1711,9 +1703,7 @@ type getThingWithCompositeAttributessByNameBranchAndDatePageTest struct {
 func (g getThingWithCompositeAttributessByNameBranchAndDatePageTest) run(t *testing.T) {
 	thingWithCompositeAttributess := []models.ThingWithCompositeAttributes{}
 	fn := func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool {
-		if m != nil {
-			thingWithCompositeAttributess = append(thingWithCompositeAttributess, *m)
-		}
+		thingWithCompositeAttributess = append(thingWithCompositeAttributess, *m)
 		if lastThingWithCompositeAttributes {
 			return false
 		}
@@ -2043,9 +2033,7 @@ type getThingWithCompositeAttributessByNameVersionAndDatePageTest struct {
 func (g getThingWithCompositeAttributessByNameVersionAndDatePageTest) run(t *testing.T) {
 	thingWithCompositeAttributess := []models.ThingWithCompositeAttributes{}
 	fn := func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool {
-		if m != nil {
-			thingWithCompositeAttributess = append(thingWithCompositeAttributess, *m)
-		}
+		thingWithCompositeAttributess = append(thingWithCompositeAttributess, *m)
 		if lastThingWithCompositeAttributes {
 			return false
 		}
@@ -2373,9 +2361,7 @@ type getThingWithCompositeEnumAttributessByNameBranchAndDatePageTest struct {
 func (g getThingWithCompositeEnumAttributessByNameBranchAndDatePageTest) run(t *testing.T) {
 	thingWithCompositeEnumAttributess := []models.ThingWithCompositeEnumAttributes{}
 	fn := func(m *models.ThingWithCompositeEnumAttributes, lastThingWithCompositeEnumAttributes bool) bool {
-		if m != nil {
-			thingWithCompositeEnumAttributess = append(thingWithCompositeEnumAttributess, *m)
-		}
+		thingWithCompositeEnumAttributess = append(thingWithCompositeEnumAttributess, *m)
 		if lastThingWithCompositeEnumAttributes {
 			return false
 		}
@@ -2699,9 +2685,7 @@ type getThingWithDateRangesByNameAndDatePageTest struct {
 func (g getThingWithDateRangesByNameAndDatePageTest) run(t *testing.T) {
 	thingWithDateRanges := []models.ThingWithDateRange{}
 	fn := func(m *models.ThingWithDateRange, lastThingWithDateRange bool) bool {
-		if m != nil {
-			thingWithDateRanges = append(thingWithDateRanges, *m)
-		}
+		thingWithDateRanges = append(thingWithDateRanges, *m)
 		if lastThingWithDateRange {
 			return false
 		}
@@ -3040,9 +3024,7 @@ type getThingWithDateTimeCompositesByTypeIDAndCreatedResourcePageTest struct {
 func (g getThingWithDateTimeCompositesByTypeIDAndCreatedResourcePageTest) run(t *testing.T) {
 	thingWithDateTimeComposites := []models.ThingWithDateTimeComposite{}
 	fn := func(m *models.ThingWithDateTimeComposite, lastThingWithDateTimeComposite bool) bool {
-		if m != nil {
-			thingWithDateTimeComposites = append(thingWithDateTimeComposites, *m)
-		}
+		thingWithDateTimeComposites = append(thingWithDateTimeComposites, *m)
 		if lastThingWithDateTimeComposite {
 			return false
 		}
