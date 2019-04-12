@@ -424,6 +424,12 @@ func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.Ge
 }
 
 func (t ThingTable) getThingsByNameAndCreatedAtPage(ctx context.Context, input db.GetThingsByNameAndCreatedAtPageInput, fn func(m *models.Thing, lastThing bool) bool) error {
+	if input.StartingAt == nil {
+		return fmt.Errorf("StartingAt cannot be nil")
+	}
+	if input.Limit == nil {
+		return fmt.Errorf("Limit cannot be nil")
+	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		IndexName: aws.String("name-createdAt"),

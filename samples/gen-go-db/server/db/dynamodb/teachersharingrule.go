@@ -315,6 +315,12 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeache
 }
 
 func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeacherAppPage(ctx context.Context, input db.GetTeacherSharingRulesByDistrictAndSchoolTeacherAppPageInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error {
+	if input.StartingAt == nil {
+		return fmt.Errorf("StartingAt cannot be nil")
+	}
+	if input.Limit == nil {
+		return fmt.Errorf("Limit cannot be nil")
+	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		IndexName: aws.String("district_school_teacher_app"),

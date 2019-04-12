@@ -328,6 +328,12 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 }
 
 func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNameVersionAndDatePage(ctx context.Context, input db.GetThingWithCompositeAttributessByNameVersionAndDatePageInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error {
+	if input.StartingAt == nil {
+		return fmt.Errorf("StartingAt cannot be nil")
+	}
+	if input.Limit == nil {
+		return fmt.Errorf("Limit cannot be nil")
+	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		IndexName: aws.String("nameVersion"),

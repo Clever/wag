@@ -553,7 +553,13 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
 }
 
 func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}Page(ctx context.Context, input db.Get{{ $modelName }}sBy{{ $computedIndexName }}PageInput, fn func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool) error {
-	queryInput := &dynamodb.QueryInput{
+	if input.StartingAt == nil {
+    return fmt.Errorf("StartingAt cannot be nil")
+  }
+  if input.Limit == nil {
+    return fmt.Errorf("Limit cannot be nil")
+  }
+  queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
     IndexName: aws.String("{{ $gsi.IndexName }}"),
 		ExpressionAttributeNames: map[string]*string{
