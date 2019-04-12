@@ -137,46 +137,7 @@ func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttribut
 	return &m, nil
 }
 
-func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttributessByNameBranchAndDate(ctx context.Context, input db.GetThingWithCompositeEnumAttributessByNameBranchAndDateInput) ([]models.ThingWithCompositeEnumAttributes, error) {
-	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
-		ExpressionAttributeNames: map[string]*string{
-			"#NAME_BRANCH": aws.String("name_branch"),
-		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":nameBranch": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s@%s", input.Name, input.BranchID)),
-			},
-		},
-		ScanIndexForward: aws.Bool(!input.Descending),
-		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
-	}
-	if input.DateStartingAt == nil {
-		queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch")
-	} else {
-		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
-		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
-			S: aws.String(toDynamoTimeString(*input.DateStartingAt)),
-		}
-		if input.Descending {
-			queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE <= :date")
-		} else {
-			queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE >= :date")
-		}
-	}
-
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
-	if err != nil {
-		return nil, err
-	}
-	if len(queryOutput.Items) == 0 {
-		return []models.ThingWithCompositeEnumAttributes{}, nil
-	}
-
-	return decodeThingWithCompositeEnumAttributess(queryOutput.Items)
-}
-
-func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttributessByNameBranchAndDatePage(ctx context.Context, input db.GetThingWithCompositeEnumAttributessByNameBranchAndDatePageInput, fn func(m *models.ThingWithCompositeEnumAttributes, lastThingWithCompositeEnumAttributes bool) bool) error {
+func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttributessByNameBranchAndDate(ctx context.Context, input db.GetThingWithCompositeEnumAttributessByNameBranchAndDateInput, fn func(m *models.ThingWithCompositeEnumAttributes, lastThingWithCompositeEnumAttributes bool) bool) error {
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		ExpressionAttributeNames: map[string]*string{

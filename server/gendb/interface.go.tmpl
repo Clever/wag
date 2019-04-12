@@ -33,10 +33,8 @@ type Interface interface {
     {{- end }}
     {{- if indexHasRangeKey $xdbConfig.DynamoDB.KeySchema }}
     {{- $indexName := indexName $xdbConfig.DynamoDB.KeySchema }}
-    // Get{{ $modelName }}sBy{{ $indexName }} retrieves a list of {{ $modelName }}s from the database.
-    Get{{ $modelName }}sBy{{ $indexName }}(ctx context.Context, input Get{{ $modelName }}sBy{{ $indexName }}Input) ([]models.{{ $modelName }}, error)
-    // Get{{ $modelName }}sBy{{ $indexName }}Page retrieves a page of {{ $modelName }}s from the database.
-    Get{{ $modelName }}sBy{{ $indexName }}Page(ctx context.Context, input Get{{ $modelName }}sBy{{ $indexName }}PageInput, fn func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool) error
+    // Get{{ $modelName }}sBy{{ $indexName }} retrieves a page of {{ $modelName }}s from the database.
+    Get{{ $modelName }}sBy{{ $indexName }}(ctx context.Context, input Get{{ $modelName }}sBy{{ $indexName }}Input, fn func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool) error
     {{- end }}
     // Delete{{ $modelName }} deletes a {{ $modelName }} from the database.
     Delete{{ $modelName }}(ctx context.Context,
@@ -47,10 +45,8 @@ type Interface interface {
     {{- range $gsi := $xdbConfig.DynamoDB.GlobalSecondaryIndexes }}
     {{- $indexName := indexName $gsi.KeySchema }}
     {{- if indexHasRangeKey $gsi.KeySchema }}
-    // Get{{ $modelName }}sBy{{ $indexName }} retrieves a list of {{ $modelName }}s from the database.
-    Get{{ $modelName }}sBy{{ $indexName }}(ctx context.Context, input Get{{ $modelName }}sBy{{ $indexName }}Input) ([]models.{{ $modelName }}, error)
-    // Get{{ $modelName }}sBy{{ $indexName }}Page retrieves a page of {{ $modelName }}s from the database.
-    Get{{ $modelName }}sBy{{ $indexName }}Page(ctx context.Context, input Get{{ $modelName }}sBy{{ $indexName }}PageInput, fn func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool) error
+    // Get{{ $modelName }}sBy{{ $indexName }} retrieves a page of {{ $modelName }}s from the database.
+    Get{{ $modelName }}sBy{{ $indexName }}(ctx context.Context, input Get{{ $modelName }}sBy{{ $indexName }}Input, fn func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool) error
     {{- else }}
     // Get{{ $modelName }}By{{ $indexName }} retrieves a {{ $modelName }} from the database.
     Get{{ $modelName }}By{{ $indexName }}(ctx context.Context,
@@ -97,29 +93,6 @@ type Scan{{ $modelName }}sInput struct {
 {{- $lenRangeKeyAttributes := len $rangeKeyAttributes }}
 // Get{{ $modelName }}sBy{{ $indexName }}Input is the query input to Get{{ $modelName }}sBy{{ $indexName }}.
 type Get{{ $modelName }}sBy{{ $indexName }}Input struct {
-	{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
-	{{ pascalize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }}
-        {{- end }}
-	{{- if gt $lenRangeKeyAttributes 1 }}
-	StartingAt *{{ pascalizeAndJoin $rangeKeyAttributes }}
-        {{- else }}
-	{{- $attributeName := index $rangeKeyAttributes 0 }}
-	{{ pascalize $attributeName }}StartingAt *{{ goTypeForAttribute $xdbConfig $attributeName }}
-        {{- end }}
-        Descending bool
-        DisableConsistentRead bool
-}
-{{- if gt $lenRangeKeyAttributes 1 }}
-// {{ pascalizeAndJoin $rangeKeyAttributes }} struct.
-type {{ pascalizeAndJoin $rangeKeyAttributes }} struct {
-	{{- range $attributeName := $rangeKeyAttributes }}
-        {{ pascalize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }}
-        {{- end }}
-}
-{{- end }}
-
-// Get{{ $modelName }}sBy{{ $indexName }}PageInput is the query input to Get{{ $modelName }}sBy{{ $indexName }}Page.
-type Get{{ $modelName }}sBy{{ $indexName }}PageInput struct {
   // StartingAt is a required specification of an (exclusive) starting point.
 	StartingAt *models.{{ $modelName }}
   // Exclusive toggles whether results include the start point
@@ -130,6 +103,14 @@ type Get{{ $modelName }}sBy{{ $indexName }}PageInput struct {
   DisableConsistentRead bool
   Descending bool
 }
+{{- if gt $lenRangeKeyAttributes 1 }}
+// {{ pascalizeAndJoin $rangeKeyAttributes }} struct.
+type {{ pascalizeAndJoin $rangeKeyAttributes }} struct {
+	{{- range $attributeName := $rangeKeyAttributes }}
+        {{ pascalize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }}
+        {{- end }}
+}
+{{- end }}
 {{- end }}
 
 // Err{{ $modelName}}NotFound is returned when the database fails to find a {{ $modelName}}.
@@ -155,20 +136,6 @@ func (e Err{{ $modelName}}NotFound) Error() string {
 {{- $lenRangeKeyAttributes := len $rangeKeyAttributes }}
 // Get{{ $modelName }}sBy{{ $computedIndexName }}Input is the query input to Get{{ $modelName }}sBy{{ $computedIndexName }}.
 type Get{{ $modelName }}sBy{{ $computedIndexName }}Input struct {
-	{{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "HASH" }}
-	{{ pascalize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }}
-        {{- end }}
-	{{- if gt $lenRangeKeyAttributes 1 }}
-	StartingAt *{{ pascalizeAndJoin $rangeKeyAttributes }}
-        {{- else }}
-	{{- $attributeName := index $rangeKeyAttributes 0 }}
-	{{ pascalize $attributeName }}StartingAt *{{ goTypeForAttribute $xdbConfig $attributeName }}
-        {{- end }}
-        Descending bool
-}
-
-// Get{{ $modelName }}sBy{{ $computedIndexName }}PageInput is the query input to Get{{ $modelName }}sBy{{ $computedIndexName }}Page.
-type Get{{ $modelName }}sBy{{ $computedIndexName }}PageInput struct {
   // StartingAt is a required specification of an (exclusive) starting point.
 	StartingAt *models.{{ $modelName }}
   // Exclusive toggles whether results include the start point

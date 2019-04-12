@@ -121,46 +121,7 @@ func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeComposite(ctx conte
 	return &m, nil
 }
 
-func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx context.Context, input db.GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput) ([]models.ThingWithDateTimeComposite, error) {
-	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
-		ExpressionAttributeNames: map[string]*string{
-			"#TYPEID": aws.String("typeID"),
-		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":typeId": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s|%s", input.Type, input.ID)),
-			},
-		},
-		ScanIndexForward: aws.Bool(!input.Descending),
-		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
-	}
-	if input.StartingAt == nil {
-		queryInput.KeyConditionExpression = aws.String("#TYPEID = :typeId")
-	} else {
-		queryInput.ExpressionAttributeNames["#CREATEDRESOURCE"] = aws.String("createdResource")
-		queryInput.ExpressionAttributeValues[":createdResource"] = &dynamodb.AttributeValue{
-			S: aws.String(fmt.Sprintf("%s|%s", input.StartingAt.Created, input.StartingAt.Resource)),
-		}
-		if input.Descending {
-			queryInput.KeyConditionExpression = aws.String("#TYPEID = :typeId AND #CREATEDRESOURCE <= :createdResource")
-		} else {
-			queryInput.KeyConditionExpression = aws.String("#TYPEID = :typeId AND #CREATEDRESOURCE >= :createdResource")
-		}
-	}
-
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
-	if err != nil {
-		return nil, err
-	}
-	if len(queryOutput.Items) == 0 {
-		return []models.ThingWithDateTimeComposite{}, nil
-	}
-
-	return decodeThingWithDateTimeComposites(queryOutput.Items)
-}
-
-func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDAndCreatedResourcePage(ctx context.Context, input db.GetThingWithDateTimeCompositesByTypeIDAndCreatedResourcePageInput, fn func(m *models.ThingWithDateTimeComposite, lastThingWithDateTimeComposite bool) bool) error {
+func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx context.Context, input db.GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput, fn func(m *models.ThingWithDateTimeComposite, lastThingWithDateTimeComposite bool) bool) error {
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		ExpressionAttributeNames: map[string]*string{

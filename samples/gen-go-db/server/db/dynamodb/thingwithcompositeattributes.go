@@ -169,46 +169,7 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributes(ctx c
 	return &m, nil
 }
 
-func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input db.GetThingWithCompositeAttributessByNameBranchAndDateInput) ([]models.ThingWithCompositeAttributes, error) {
-	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
-		ExpressionAttributeNames: map[string]*string{
-			"#NAME_BRANCH": aws.String("name_branch"),
-		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":nameBranch": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s@%s", input.Name, input.Branch)),
-			},
-		},
-		ScanIndexForward: aws.Bool(!input.Descending),
-		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
-	}
-	if input.DateStartingAt == nil {
-		queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch")
-	} else {
-		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
-		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
-			S: aws.String(toDynamoTimeString(*input.DateStartingAt)),
-		}
-		if input.Descending {
-			queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE <= :date")
-		} else {
-			queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE >= :date")
-		}
-	}
-
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
-	if err != nil {
-		return nil, err
-	}
-	if len(queryOutput.Items) == 0 {
-		return []models.ThingWithCompositeAttributes{}, nil
-	}
-
-	return decodeThingWithCompositeAttributess(queryOutput.Items)
-}
-
-func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNameBranchAndDatePage(ctx context.Context, input db.GetThingWithCompositeAttributessByNameBranchAndDatePageInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error {
+func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input db.GetThingWithCompositeAttributessByNameBranchAndDateInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error {
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		ExpressionAttributeNames: map[string]*string{
@@ -289,45 +250,7 @@ func (t ThingWithCompositeAttributesTable) deleteThingWithCompositeAttributes(ct
 	return nil
 }
 
-func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input db.GetThingWithCompositeAttributessByNameVersionAndDateInput) ([]models.ThingWithCompositeAttributes, error) {
-	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
-		IndexName: aws.String("nameVersion"),
-		ExpressionAttributeNames: map[string]*string{
-			"#NAME_VERSION": aws.String("name_version"),
-		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":nameVersion": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s:%d", input.Name, input.Version)),
-			},
-		},
-		ScanIndexForward: aws.Bool(!input.Descending),
-	}
-	if input.DateStartingAt == nil {
-		queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion")
-	} else {
-		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
-		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
-			S: aws.String(toDynamoTimeString(*input.DateStartingAt)),
-		}
-		if input.Descending {
-			queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion AND #DATE <= :date")
-		} else {
-			queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion AND #DATE >= :date")
-		}
-	}
-
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
-	if err != nil {
-		return nil, err
-	}
-	if len(queryOutput.Items) == 0 {
-		return []models.ThingWithCompositeAttributes{}, nil
-	}
-	return decodeThingWithCompositeAttributess(queryOutput.Items)
-}
-
-func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNameVersionAndDatePage(ctx context.Context, input db.GetThingWithCompositeAttributessByNameVersionAndDatePageInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error {
+func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input db.GetThingWithCompositeAttributessByNameVersionAndDateInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error {
 	if input.StartingAt == nil {
 		return fmt.Errorf("StartingAt cannot be nil")
 	}

@@ -118,46 +118,7 @@ func (t ThingWithDateRangeTable) getThingWithDateRange(ctx context.Context, name
 	return &m, nil
 }
 
-func (t ThingWithDateRangeTable) getThingWithDateRangesByNameAndDate(ctx context.Context, input db.GetThingWithDateRangesByNameAndDateInput) ([]models.ThingWithDateRange, error) {
-	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
-		ExpressionAttributeNames: map[string]*string{
-			"#NAME": aws.String("name"),
-		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":name": &dynamodb.AttributeValue{
-				S: aws.String(input.Name),
-			},
-		},
-		ScanIndexForward: aws.Bool(!input.Descending),
-		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
-	}
-	if input.DateStartingAt == nil {
-		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
-	} else {
-		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
-		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
-			S: aws.String(toDynamoTimeString(*input.DateStartingAt)),
-		}
-		if input.Descending {
-			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #DATE <= :date")
-		} else {
-			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #DATE >= :date")
-		}
-	}
-
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
-	if err != nil {
-		return nil, err
-	}
-	if len(queryOutput.Items) == 0 {
-		return []models.ThingWithDateRange{}, nil
-	}
-
-	return decodeThingWithDateRanges(queryOutput.Items)
-}
-
-func (t ThingWithDateRangeTable) getThingWithDateRangesByNameAndDatePage(ctx context.Context, input db.GetThingWithDateRangesByNameAndDatePageInput, fn func(m *models.ThingWithDateRange, lastThingWithDateRange bool) bool) error {
+func (t ThingWithDateRangeTable) getThingWithDateRangesByNameAndDate(ctx context.Context, input db.GetThingWithDateRangesByNameAndDateInput, fn func(m *models.ThingWithDateRange, lastThingWithDateRange bool) bool) error {
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		ExpressionAttributeNames: map[string]*string{

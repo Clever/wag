@@ -156,46 +156,7 @@ func (t TeacherSharingRuleTable) getTeacherSharingRule(ctx context.Context, teac
 	return &m, nil
 }
 
-func (t TeacherSharingRuleTable) getTeacherSharingRulesByTeacherAndSchoolApp(ctx context.Context, input db.GetTeacherSharingRulesByTeacherAndSchoolAppInput) ([]models.TeacherSharingRule, error) {
-	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
-		ExpressionAttributeNames: map[string]*string{
-			"#TEACHER": aws.String("teacher"),
-		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":teacher": &dynamodb.AttributeValue{
-				S: aws.String(input.Teacher),
-			},
-		},
-		ScanIndexForward: aws.Bool(!input.Descending),
-		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
-	}
-	if input.StartingAt == nil {
-		queryInput.KeyConditionExpression = aws.String("#TEACHER = :teacher")
-	} else {
-		queryInput.ExpressionAttributeNames["#SCHOOL_APP"] = aws.String("school_app")
-		queryInput.ExpressionAttributeValues[":schoolApp"] = &dynamodb.AttributeValue{
-			S: aws.String(fmt.Sprintf("%s_%s", input.StartingAt.School, input.StartingAt.App)),
-		}
-		if input.Descending {
-			queryInput.KeyConditionExpression = aws.String("#TEACHER = :teacher AND #SCHOOL_APP <= :schoolApp")
-		} else {
-			queryInput.KeyConditionExpression = aws.String("#TEACHER = :teacher AND #SCHOOL_APP >= :schoolApp")
-		}
-	}
-
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
-	if err != nil {
-		return nil, err
-	}
-	if len(queryOutput.Items) == 0 {
-		return []models.TeacherSharingRule{}, nil
-	}
-
-	return decodeTeacherSharingRules(queryOutput.Items)
-}
-
-func (t TeacherSharingRuleTable) getTeacherSharingRulesByTeacherAndSchoolAppPage(ctx context.Context, input db.GetTeacherSharingRulesByTeacherAndSchoolAppPageInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error {
+func (t TeacherSharingRuleTable) getTeacherSharingRulesByTeacherAndSchoolApp(ctx context.Context, input db.GetTeacherSharingRulesByTeacherAndSchoolAppInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error {
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		ExpressionAttributeNames: map[string]*string{
@@ -276,45 +237,7 @@ func (t TeacherSharingRuleTable) deleteTeacherSharingRule(ctx context.Context, t
 	return nil
 }
 
-func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx context.Context, input db.GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput) ([]models.TeacherSharingRule, error) {
-	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
-		IndexName: aws.String("district_school_teacher_app"),
-		ExpressionAttributeNames: map[string]*string{
-			"#DISTRICT": aws.String("district"),
-		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":district": &dynamodb.AttributeValue{
-				S: aws.String(input.District),
-			},
-		},
-		ScanIndexForward: aws.Bool(!input.Descending),
-	}
-	if input.StartingAt == nil {
-		queryInput.KeyConditionExpression = aws.String("#DISTRICT = :district")
-	} else {
-		queryInput.ExpressionAttributeNames["#SCHOOL_TEACHER_APP"] = aws.String("school_teacher_app")
-		queryInput.ExpressionAttributeValues[":schoolTeacherApp"] = &dynamodb.AttributeValue{
-			S: aws.String(fmt.Sprintf("%s_%s_%s", input.StartingAt.School, input.StartingAt.Teacher, input.StartingAt.App)),
-		}
-		if input.Descending {
-			queryInput.KeyConditionExpression = aws.String("#DISTRICT = :district AND #SCHOOL_TEACHER_APP <= :schoolTeacherApp")
-		} else {
-			queryInput.KeyConditionExpression = aws.String("#DISTRICT = :district AND #SCHOOL_TEACHER_APP >= :schoolTeacherApp")
-		}
-	}
-
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
-	if err != nil {
-		return nil, err
-	}
-	if len(queryOutput.Items) == 0 {
-		return []models.TeacherSharingRule{}, nil
-	}
-	return decodeTeacherSharingRules(queryOutput.Items)
-}
-
-func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeacherAppPage(ctx context.Context, input db.GetTeacherSharingRulesByDistrictAndSchoolTeacherAppPageInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error {
+func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx context.Context, input db.GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error {
 	if input.StartingAt == nil {
 		return fmt.Errorf("StartingAt cannot be nil")
 	}
