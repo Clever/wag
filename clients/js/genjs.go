@@ -39,7 +39,7 @@ func Generate(modulePath string, s spec.Swagger) error {
 			if op.Deprecated {
 				continue
 			}
-			methodCode, err := methodCode(s, op, method, s.BasePath, path)
+			methodCode, err := methodCode(s, op, method, path)
 			if err != nil {
 				return err
 			}
@@ -62,6 +62,8 @@ func Generate(modulePath string, s spec.Swagger) error {
 		return err
 	}
 
+	typescriptTypes, err := generateTypescriptTypes(s)
+
 	if err = ioutil.WriteFile(filepath.Join(modulePath, "types.js"), []byte(typeFileCode), 0644); err != nil {
 		return err
 	}
@@ -70,7 +72,11 @@ func Generate(modulePath string, s spec.Swagger) error {
 		return err
 	}
 
-	return ioutil.WriteFile(filepath.Join(modulePath, "package.json"), []byte(packageJSON), 0644)
+	if err = ioutil.WriteFile(filepath.Join(modulePath, "package.json"), []byte(packageJSON), 0644); err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(filepath.Join(modulePath, "index.d.ts"), []byte(typescriptTypes), 0644)
 }
 
 type clientCodeTemplate struct {
@@ -356,7 +362,7 @@ module.exports.Errors = Errors;
 module.exports.DefaultCircuitOptions = defaultCircuitOptions;
 `
 
-var packageJSONTmplStr = `{
+const packageJSONTmplStr = `{
   "name": "{{.PackageName}}",
   "version": "{{.Version}}",
   "description": "{{.Description}}",
@@ -369,11 +375,14 @@ var packageJSONTmplStr = `{
     "kayvee": "^3.8.2",
     "hystrixjs": "^0.2.0",
     "rxjs": "^5.4.1"
+  },
+  "devDependencies": {
+    "typescript": "^3.3.0"
   }
 }
 `
 
-var methodTmplStr = `
+const methodTmplStr = `
   {{.MethodDefinition}}
     {{if .IterMethod -}}
     const it = (f, saveResults) => new Promise((resolve, reject) => {
@@ -548,7 +557,7 @@ var methodTmplStr = `
   }
 `
 
-var singleParamMethodDefinitionTemplateString = `/**{{if .Description}}
+const singleParamMethodDefinitionTemplateString = `/**{{if .Description}}
    * {{.Description}}{{end}}{{range $param := .Params}}
    * @param {{if $param.JSDocType}}{{.JSDocType}} {{end}}{{$param.JSName}}{{if $param.Default}}={{$param.Default}}{{end}}{{if $param.Description}} - {{.Description}}{{end}}{{end}}
    * @param {object} [options]
@@ -584,7 +593,7 @@ var singleParamMethodDefinitionTemplateString = `/**{{if .Description}}
     params["{{$param.JSName}}"] = {{$param.JSName}};{{end}}
 `
 
-var pluralParamMethodDefinitionTemplateString = `/**{{if .Description}}
+const pluralParamMethodDefinitionTemplateString = `/**{{if .Description}}
    * {{.Description}}{{end}}
    * @param {Object} params{{range $param := .Params}}
    * @param {{if $param.JSDocType}}{{.JSDocType}} {{end}}{{if not $param.Required}}[{{end}}params.{{$param.JSName}}{{if $param.Default}}={{$param.Default}}{{end}}{{if not $param.Required}}]{{end}}{{if $param.Description}} - {{.Description}}{{end}}{{end}}
@@ -653,6 +662,12 @@ type methodTemplate struct {
 	JSDocSuccessReturnType   string
 }
 
+type methodDeclTemplate struct {
+	Name string
+	Params []Param
+	ReturnType DataType
+}
+
 // This function takes in a swagger path such as "/path/goes/to/{location}/and/to/{other_Location}"
 // and returns a string of javacript code such as "/path/goes/to/" + location + "/and/to/" + otherLocation.
 func fillOutPath(path string) string {
@@ -665,8 +680,8 @@ func fillOutPath(path string) string {
 	})
 }
 
-func methodCode(s spec.Swagger, op *spec.Operation, method, basePath, path string) (string, error) {
-
+func methodCode(s spec.Swagger, op *spec.Operation, method, path string) (string, error) {
+	basePath := s.BasePath
 	tmplInfo := methodTemplate{
 		ServiceName: s.Info.InfoProps.Title,
 		MethodName:  op.ID,
@@ -902,3 +917,161 @@ func generateTypesFile(s spec.Swagger) (string, error) {
 
 	return templates.WriteTemplate(typeTmplString, typesTmpl)
 }
+
+type typescriptTypes struct {
+	ServiceName string
+	IncludedTypes map[string]bool
+	MethodDecls []string
+}
+
+func generateTypescriptTypes(s spec.Swagger) (string, error) {
+	tt := typescriptTypes{
+		ServiceName: s.Info.InfoProps.Title,
+		IncludedTypes: map[string]bool{},
+		MethodDecls: []string{},
+	}
+
+	for _, path := range swagger.SortedPathItemKeys(s.Paths.Paths) {
+		pathItem := s.Paths.Paths[path]
+		pathItemOps := swagger.PathItemOperations(pathItem)
+		for _, method := range swagger.SortedOperationsKeys(pathItemOps) {
+			op := pathItemOps[method]
+			if op.Deprecated {
+				continue
+			}
+			methodDecl, includedTypes, err := methodDecl(s, op, path, method)
+			if err != nil {
+				return "", err
+			}
+			tt.MethodDecls = append(tt.MethodDecls, methodDecl)
+			for _, inclType := range includedTypes {
+				tt.IncludedTypes[inclType] = true
+			}
+		}
+	}
+	return "", nil
+}
+
+
+
+func methodDecl(s spec.Swagger, op *spec.Operation, path, method string) (string, []string, error) {
+	basePath := s.BasePath
+	tmplInfo := methodTemplate{
+		ServiceName: s.Info.InfoProps.Title,
+		MethodName:  op.ID,
+		Description: op.Description,
+		Method:      method,
+		PathCode:    basePath + fillOutPath(path),
+		Path:        basePath + path,
+	}
+	fmt.Printf("path = %s\n", tmplInfo.Path)
+	fmt.Printf("  method = %s\n", tmplInfo.MethodName)
+	fmt.Printf("  httpMethod = %s\n", tmplInfo.Method)
+	fmt.Printf("  description = %s\n", tmplInfo.Description)
+	fmt.Printf("  params:\n")
+	for _, param := range op.Parameters {
+		fmt.Printf("    %s: %s", param.Name, param.Type)
+	}
+	returnType, err := ReturnType(s, op); if err != nil {
+		return "", []string{}, err
+	}
+	fmt.Printf("\n  returns: %s\n", returnType)
+	return "", []string{}, nil
+}
+
+const methodDeclTmplStr = `  {{.Name}}({{range $index, $param := .Params}}{{if $index}}, {{end}}{{$param}}): {{.ReturnType}}`
+
+func ReturnType(s spec.Swagger, op *spec.Operation) (string, error) {
+	successCodes := []int{}
+	for statusCode := range op.Responses.StatusCodeResponses {
+		if statusCode < 400 {
+			successCodes = append(successCodes, statusCode)
+		}
+	}
+	if len(successCodes) == 0 {
+		return "void", nil
+	} else if len(successCodes) == 1 {
+		return typeOf(s, op, successCodes[0])
+	}
+	return "", fmt.Errorf("Operation %s has more than one possible success return type", op.ID)
+}
+
+func typeOf(s spec.Swagger, op *spec.Operation, statusCode int) (string, error) {
+	return "", nil
+}
+
+
+const typescriptTmplStr = `import { Span } from "opentracing";
+
+interface RetryPolicy {
+  backoffs(): number[],
+  retry(requestOptions: {method: string}, err: Error, res: {statusCode: number}): boolean,
+}
+
+interface RetryPolicies {
+  Single: RetryPolicy,
+  Exponential: RetryPolicy,
+  None: RetryPolicy,
+}
+
+interface CallOptions {
+  timeout?: number,
+  span?: Span,
+  retryPolicy?: RetryPolicy
+}
+
+type Callback<R> = (Error, R) => void;
+
+interface CallOptions {
+  timeout?: number,
+  span?: Span,
+  retryPolicy?: RetryPolicy,
+}
+
+interface CircuitOptions {
+  forceClosed: boolean;
+  maxConcurrentRequests: number;
+  requestVolumeThreshold: number;
+  sleepWindow: number;
+  errorPercentThreshold: number;
+}
+
+interface GenericOptions {
+  timeout: number;
+  keepalive: boolean;
+  retryPolicy: RetryPolicy;
+  logger: Logger;
+}
+
+interface DiscoveryOptions {
+  discovery: true;
+  address?: undefined;
+}
+
+interface AddressOptions {
+  discovery?: false;
+  address: string;
+}
+
+type {{.ServiceName}}Options = (DiscoveryOptions | AddressOptions) & GenericOptions; 
+
+{{range .IncludedTypes}}
+.
+
+{{end}}
+
+declare class {{.ServiceName}} {
+  constructor(options: {{.ServiceName}}Options);
+
+  {{range .MethodDecls}}
+  .
+  {{end}}
+}
+
+declare namespace {{.ServiceName}} {
+
+}
+
+export = {{.ServiceName}};
+
+`
