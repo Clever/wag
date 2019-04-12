@@ -169,23 +169,25 @@ func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDA
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":typeId": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAfter.Type, input.StartingAfter.ID)),
+				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAt.Type, input.StartingAt.ID)),
 			},
 			":createdResource": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAfter.Created, input.StartingAfter.Resource)),
+				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAt.Created, input.StartingAt.Resource)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
 		Limit:            input.Limit,
-		ExclusiveStartKey: map[string]*dynamodb.AttributeValue{
+	}
+	if input.Exclusive {
+		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"createdResource": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAfter.Created, input.StartingAfter.Resource)),
+				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAt.Created, input.StartingAt.Resource)),
 			},
 			"typeID": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAfter.Type, input.StartingAfter.ID)),
+				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAt.Type, input.StartingAt.ID)),
 			},
-		},
+		}
 	}
 	if input.Descending {
 		queryInput.KeyConditionExpression = aws.String("#TYPEID = :typeId AND #CREATEDRESOURCE <= :createdResource")

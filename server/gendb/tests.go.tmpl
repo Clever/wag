@@ -1,6 +1,7 @@
 package tests
 
 import (
+  "fmt"
 	"context"
 	"testing"
 	{{- if anyTableUsesDateTime .XDBConfigs }}
@@ -165,7 +166,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
 		tests := []get{{ $modelName }}sBy{{ $indexName }}Test{
 			{
 				testName: "basic",
-				d:    d,
+				d: d,
 				input: get{{ $modelName }}sBy{{ $indexName }}Input{
 					ctx: context.Background(),
 					input: db.Get{{ $modelName }}sBy{{ $indexName }}Input{
@@ -218,7 +219,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
 			},
 			{
 				testName: "descending",
-				d:    d,
+				d: d,
 				input: get{{ $modelName }}sBy{{ $indexName }}Input{
 					ctx: context.Background(),
 					input: db.Get{{ $modelName }}sBy{{ $indexName }}Input{
@@ -275,7 +276,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
 			},
 			{
 				testName: "starting after",
-				d:    d,
+				d: d,
 				input: get{{ $modelName }}sBy{{ $indexName }}Input{
 					ctx: context.Background(),
 					input: db.Get{{ $modelName }}sBy{{ $indexName }}Input{
@@ -358,6 +359,9 @@ func (g get{{ $modelName }}sBy{{ $indexName }}PageTest) run(t *testing.T) {
 		return true
 	}
 	err := g.d.Get{{ $modelName }}sBy{{ $indexName }}Page(g.input.ctx, g.input.input, fn)
+  if err != nil {
+    fmt.Println(err.Error())
+  }
 	require.Equal(t, g.output.err, err)
 	require.Equal(t, g.output.{{ camelize $modelName }}s, {{ camelize $modelName }}s)
 }
@@ -404,11 +408,11 @@ func Get{{ $modelName }}sBy{{ $indexName }}Page(d db.Interface, t *testing.T) fu
 		tests := []get{{ $modelName }}sBy{{ $indexName }}PageTest{
 			{
 				testName: "basic",
-				d:    d,
+				d: d,
 				input: get{{ $modelName }}sBy{{ $indexName }}PageInput{
 					ctx: context.Background(),
 					input: db.Get{{ $modelName }}sBy{{ $indexName }}PageInput{
-            StartingAfter: &models.{{ $modelName }}{
+            StartingAt: &models.{{ $modelName }}{
               {{- range $attributeName := $hashKeyAttributes }}
                 {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
               {{- end }}
@@ -421,6 +425,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}Page(d db.Interface, t *testing.T) fu
               {{- end }}
               {{- end }}
             },
+            Exclusive: true,
             Limit: &limit,
 					},
 				},
@@ -468,11 +473,11 @@ func Get{{ $modelName }}sBy{{ $indexName }}Page(d db.Interface, t *testing.T) fu
 			},
 			{
 				testName: "descending",
-				d:    d,
+				d: d,
 				input: get{{ $modelName }}sBy{{ $indexName }}PageInput{
 					ctx: context.Background(),
 					input: db.Get{{ $modelName }}sBy{{ $indexName }}PageInput{
-			      StartingAfter: &models.{{ $modelName }}{
+			      StartingAt: &models.{{ $modelName }}{
               {{- range $attributeName := $hashKeyAttributes }}
                 {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
               {{- end }}
@@ -485,6 +490,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}Page(d db.Interface, t *testing.T) fu
               {{- end }}
               {{- end }}
             },
+            Exclusive: true,
             Descending: true,
             Limit: &limit,
 					},
@@ -536,11 +542,66 @@ func Get{{ $modelName }}sBy{{ $indexName }}Page(d db.Interface, t *testing.T) fu
 			},
 			{
 				testName: "starting after",
-				d:    d,
+				d: d,
 				input: get{{ $modelName }}sBy{{ $indexName }}PageInput{
 					ctx: context.Background(),
 					input: db.Get{{ $modelName }}sBy{{ $indexName }}PageInput{
-            StartingAfter: &models.{{ $modelName }}{
+            StartingAt: &models.{{ $modelName }}{
+              {{- range $attributeName := $hashKeyAttributes }}
+                {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+              {{- end }}
+        		  {{- range $attributeName := $rangeKeyAttributes }}
+			        {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+              {{- end }}
+              {{- if len $nonPKSecondaryStringProperties }}
+              {{- range $attr := $nonPKSecondaryStringProperties }}
+              {{ pascalize $attr }}: "{{ $attr }}",
+              {{- end }}
+              {{- end }}
+            },
+            Exclusive: true,
+            Limit: &limit,
+					},
+				},
+				output: get{{ $modelName }}sBy{{ $indexName }}PageOutput{
+					{{ camelize $modelName }}s: []models.{{ $modelName }}{
+						models.{{ $modelName }}{
+				        		{{- range $attributeName := $hashKeyAttributes }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+                                                        {{- end }}
+				        		{{- range $attributeName := $rangeKeyAttributes }}
+							{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
+                                                        {{- end }}
+			                        	{{- if len $nonPKSecondaryStringProperties }}
+                                                        {{- range $attr := $nonPKSecondaryStringProperties }}
+                                                        {{ pascalize $attr }}: "{{ $attr }}",
+                                                        {{- end }}
+                                                        {{- end }}
+						},
+						models.{{ $modelName }}{
+				        		{{- range $attributeName := $hashKeyAttributes }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+                                                        {{- end }}
+				        		{{- range $attributeName := $rangeKeyAttributes }}
+							{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
+                                                        {{- end }}
+			                        	{{- if len $nonPKSecondaryStringProperties }}
+                                                        {{- range $attr := $nonPKSecondaryStringProperties }}
+                                                        {{ pascalize $attr }}: "{{ $attr }}",
+                                                        {{- end }}
+                                                        {{- end }}
+						},
+					},
+					err: nil,
+				},
+			},
+      	{
+				testName: "starting at",
+				d: d,
+				input: get{{ $modelName }}sBy{{ $indexName }}PageInput{
+					ctx: context.Background(),
+					input: db.Get{{ $modelName }}sBy{{ $indexName }}PageInput{
+            StartingAt: &models.{{ $modelName }}{
               {{- range $attributeName := $hashKeyAttributes }}
                 {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
               {{- end }}
@@ -558,6 +619,19 @@ func Get{{ $modelName }}sBy{{ $indexName }}Page(d db.Interface, t *testing.T) fu
 				},
 				output: get{{ $modelName }}sBy{{ $indexName }}PageOutput{
 					{{ camelize $modelName }}s: []models.{{ $modelName }}{
+            models.{{ $modelName }}{
+				        		{{- range $attributeName := $hashKeyAttributes }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+                                                        {{- end }}
+				        		{{- range $attributeName := $rangeKeyAttributes }}
+							{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+                                                        {{- end }}
+			                        	{{- if len $nonPKSecondaryStringProperties }}
+                                                        {{- range $attr := $nonPKSecondaryStringProperties }}
+                                                        {{ pascalize $attr }}: "{{ $attr }}",
+                                                        {{- end }}
+                                                        {{- end }}
+            },
 						models.{{ $modelName }}{
 				        		{{- range $attributeName := $hashKeyAttributes }}
 							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
@@ -900,7 +974,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
 		tests := []get{{ $modelName }}sBy{{ $computedIndexName }}Test{
 			{
 				testName: "basic",
-				d:    d,
+				d: d,
 				input: get{{ $modelName }}sBy{{ $computedIndexName }}Input{
 					ctx: context.Background(),
 					input: db.Get{{ $modelName }}sBy{{ $computedIndexName }}Input{
@@ -950,7 +1024,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
 			},
 			{
 				testName: "descending",
-				d:    d,
+				d: d,
 				input: get{{ $modelName }}sBy{{ $computedIndexName }}Input{
 					ctx: context.Background(),
 					input: db.Get{{ $modelName }}sBy{{ $computedIndexName }}Input{
@@ -1001,7 +1075,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
 			},
 			{
 				testName: "starting after",
-				d:    d,
+				d: d,
 				input: get{{ $modelName }}sBy{{ $computedIndexName }}Input{
 					ctx: context.Background(),
 					input: db.Get{{ $modelName }}sBy{{ $computedIndexName }}Input{
@@ -1080,6 +1154,9 @@ func (g get{{ $modelName }}sBy{{ $computedIndexName }}PageTest) run(t *testing.T
 		return true
 	}
 	err := g.d.Get{{ $modelName }}sBy{{ $computedIndexName }}Page(g.input.ctx, g.input.input, fn)
+  if err != nil {
+    fmt.Println(err.Error())
+  }
 	require.Equal(t, g.output.err, err)
 	require.Equal(t, g.output.{{ camelize $modelName }}s, {{ camelize $modelName }}s)
 }
@@ -1123,11 +1200,11 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}Page(d db.Interface, t *testi
 		tests := []get{{ $modelName }}sBy{{ $computedIndexName }}PageTest{
 			{
 				testName: "basic",
-				d:    d,
+				d: d,
 				input: get{{ $modelName }}sBy{{ $computedIndexName }}PageInput{
 					ctx: context.Background(),
 					input: db.Get{{ $modelName }}sBy{{ $computedIndexName }}PageInput{
-            StartingAfter: &models.{{ $modelName }}{
+            StartingAt: &models.{{ $modelName }}{
               {{- range $attributeName := $hashKeyAttributes }}
               {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
               {{- end }}
@@ -1138,6 +1215,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}Page(d db.Interface, t *testi
               {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 0 }},
               {{- end }}
             },
+            Exclusive: true,
             Limit: &limit,
 					},
 				},
@@ -1182,11 +1260,11 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}Page(d db.Interface, t *testi
 			},
 			{
 				testName: "descending",
-				d:    d,
+				d: d,
 				input: get{{ $modelName }}sBy{{ $computedIndexName }}PageInput{
 					ctx: context.Background(),
 					input: db.Get{{ $modelName }}sBy{{ $computedIndexName }}PageInput{
-			      StartingAfter: &models.{{ $modelName }}{
+			      StartingAt: &models.{{ $modelName }}{
               {{- range $attributeName := $hashKeyAttributes }}
               {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
               {{- end }}
@@ -1197,6 +1275,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}Page(d db.Interface, t *testi
               {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 4 }},
               {{- end }}
             },
+            Exclusive: true,
             Descending: true,
             Limit: &limit,
 					},
@@ -1242,11 +1321,60 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}Page(d db.Interface, t *testi
 			},
 			{
 				testName: "starting after",
-				d:    d,
+				d: d,
 				input: get{{ $modelName }}sBy{{ $computedIndexName }}PageInput{
 					ctx: context.Background(),
 					input: db.Get{{ $modelName }}sBy{{ $computedIndexName }}PageInput{
-            StartingAfter: &models.{{ $modelName }}{
+            StartingAt: &models.{{ $modelName }}{
+              {{- range $attributeName := $hashKeyAttributes }}
+              {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+              {{- end }}
+                    {{- range $attributeName := $rangeKeyAttributes }}
+              {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+              {{- end }}
+                                {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+              {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+              {{- end }}
+            },
+            Exclusive: true,
+            Limit: &limit,
+					},
+				},
+				output: get{{ $modelName }}sBy{{ $computedIndexName }}PageOutput{
+					{{ camelize $modelName }}s: []models.{{ $modelName }}{
+						models.{{ $modelName }}{
+				        		{{- range $attributeName := $hashKeyAttributes }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+							{{- end }}
+				        		{{- range $attributeName := $rangeKeyAttributes }}
+							{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
+							{{- end }}
+				                        {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
+							{{- end }}
+						},
+						models.{{ $modelName }}{
+				        		{{- range $attributeName := $hashKeyAttributes }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+							{{- end }}
+				        		{{- range $attributeName := $rangeKeyAttributes }}
+							{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
+							{{- end }}
+				                        {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
+							{{- end }}
+						},
+					},
+					err: nil,
+				},
+			},
+      {
+				testName: "starting at",
+				d: d,
+				input: get{{ $modelName }}sBy{{ $computedIndexName }}PageInput{
+					ctx: context.Background(),
+					input: db.Get{{ $modelName }}sBy{{ $computedIndexName }}PageInput{
+            StartingAt: &models.{{ $modelName }}{
               {{- range $attributeName := $hashKeyAttributes }}
               {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
               {{- end }}
@@ -1262,6 +1390,17 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}Page(d db.Interface, t *testi
 				},
 				output: get{{ $modelName }}sBy{{ $computedIndexName }}PageOutput{
 					{{ camelize $modelName }}s: []models.{{ $modelName }}{
+            	models.{{ $modelName }}{
+				        		{{- range $attributeName := $hashKeyAttributes }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+							{{- end }}
+				        		{{- range $attributeName := $rangeKeyAttributes }}
+							{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+							{{- end }}
+				                        {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+							{{- end }}
+						},
 						models.{{ $modelName }}{
 				        		{{- range $attributeName := $hashKeyAttributes }}
 							{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},

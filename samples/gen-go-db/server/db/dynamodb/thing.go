@@ -283,23 +283,25 @@ func (t ThingTable) getThingsByNameAndVersionPage(ctx context.Context, input db.
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":name": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.Name),
+				S: aws.String(input.StartingAt.Name),
 			},
 			":version": &dynamodb.AttributeValue{
-				N: aws.String(fmt.Sprintf("%d", input.StartingAfter.Version)),
+				N: aws.String(fmt.Sprintf("%d", input.StartingAt.Version)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
 		Limit:            input.Limit,
-		ExclusiveStartKey: map[string]*dynamodb.AttributeValue{
+	}
+	if input.Exclusive {
+		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"version": &dynamodb.AttributeValue{
-				N: aws.String(fmt.Sprintf("%d", input.StartingAfter.Version)),
+				N: aws.String(fmt.Sprintf("%d", input.StartingAt.Version)),
 			},
 			"name": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.Name),
+				S: aws.String(input.StartingAt.Name),
 			},
-		},
+		}
 	}
 	if input.Descending {
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #VERSION <= :version")
@@ -431,26 +433,28 @@ func (t ThingTable) getThingsByNameAndCreatedAtPage(ctx context.Context, input d
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":name": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.Name),
+				S: aws.String(input.StartingAt.Name),
 			},
 			":createdAt": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeString(input.StartingAfter.CreatedAt)),
+				S: aws.String(toDynamoTimeString(input.StartingAt.CreatedAt)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 		Limit:            input.Limit,
-		ExclusiveStartKey: map[string]*dynamodb.AttributeValue{
+	}
+	if input.Exclusive {
+		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"createdAt": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeString(input.StartingAfter.CreatedAt)),
+				S: aws.String(toDynamoTimeString(input.StartingAt.CreatedAt)),
 			},
 			"name": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.Name),
+				S: aws.String(input.StartingAt.Name),
 			},
 			"version": &dynamodb.AttributeValue{
-				N: aws.String(fmt.Sprintf("%d", input.StartingAfter.Version)),
+				N: aws.String(fmt.Sprintf("%d", input.StartingAt.Version)),
 			},
-		},
+		}
 	}
 	if input.Descending {
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #CREATEDAT <= :createdAt")

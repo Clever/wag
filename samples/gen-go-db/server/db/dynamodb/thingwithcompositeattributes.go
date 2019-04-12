@@ -217,23 +217,25 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":nameBranch": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
+				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAt.Name, *input.StartingAt.Branch)),
 			},
 			":date": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.Date)),
+				S: aws.String(toDynamoTimeStringPtr(input.StartingAt.Date)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
 		Limit:            input.Limit,
-		ExclusiveStartKey: map[string]*dynamodb.AttributeValue{
+	}
+	if input.Exclusive {
+		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"date": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.Date)),
+				S: aws.String(toDynamoTimeStringPtr(input.StartingAt.Date)),
 			},
 			"name_branch": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
+				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAt.Name, *input.StartingAt.Branch)),
 			},
-		},
+		}
 	}
 	if input.Descending {
 		queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE <= :date")
@@ -335,26 +337,28 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":nameVersion": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s:%d", *input.StartingAfter.Name, input.StartingAfter.Version)),
+				S: aws.String(fmt.Sprintf("%s:%d", *input.StartingAt.Name, input.StartingAt.Version)),
 			},
 			":date": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.Date)),
+				S: aws.String(toDynamoTimeStringPtr(input.StartingAt.Date)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 		Limit:            input.Limit,
-		ExclusiveStartKey: map[string]*dynamodb.AttributeValue{
+	}
+	if input.Exclusive {
+		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"date": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.Date)),
+				S: aws.String(toDynamoTimeStringPtr(input.StartingAt.Date)),
 			},
 			"name_version": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s:%d", *input.StartingAfter.Name, input.StartingAfter.Version)),
+				S: aws.String(fmt.Sprintf("%s:%d", *input.StartingAt.Name, input.StartingAt.Version)),
 			},
 			"name_branch": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
+				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAt.Name, *input.StartingAt.Branch)),
 			},
-		},
+		}
 	}
 	if input.Descending {
 		queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion AND #DATE <= :date")

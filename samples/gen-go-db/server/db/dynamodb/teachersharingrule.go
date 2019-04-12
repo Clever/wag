@@ -204,23 +204,25 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByTeacherAndSchoolAppPage
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":teacher": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.Teacher),
+				S: aws.String(input.StartingAt.Teacher),
 			},
 			":schoolApp": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s_%s", input.StartingAfter.School, input.StartingAfter.App)),
+				S: aws.String(fmt.Sprintf("%s_%s", input.StartingAt.School, input.StartingAt.App)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
 		Limit:            input.Limit,
-		ExclusiveStartKey: map[string]*dynamodb.AttributeValue{
+	}
+	if input.Exclusive {
+		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"school_app": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s_%s", input.StartingAfter.School, input.StartingAfter.App)),
+				S: aws.String(fmt.Sprintf("%s_%s", input.StartingAt.School, input.StartingAt.App)),
 			},
 			"teacher": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.Teacher),
+				S: aws.String(input.StartingAt.Teacher),
 			},
-		},
+		}
 	}
 	if input.Descending {
 		queryInput.KeyConditionExpression = aws.String("#TEACHER = :teacher AND #SCHOOL_APP <= :schoolApp")
@@ -322,29 +324,31 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeache
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":district": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.District),
+				S: aws.String(input.StartingAt.District),
 			},
 			":schoolTeacherApp": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s_%s_%s", input.StartingAfter.School, input.StartingAfter.Teacher, input.StartingAfter.App)),
+				S: aws.String(fmt.Sprintf("%s_%s_%s", input.StartingAt.School, input.StartingAt.Teacher, input.StartingAt.App)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 		Limit:            input.Limit,
-		ExclusiveStartKey: map[string]*dynamodb.AttributeValue{
+	}
+	if input.Exclusive {
+		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"school_teacher_app": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s_%s_%s", input.StartingAfter.School, input.StartingAfter.Teacher, input.StartingAfter.App)),
+				S: aws.String(fmt.Sprintf("%s_%s_%s", input.StartingAt.School, input.StartingAt.Teacher, input.StartingAt.App)),
 			},
 			"district": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.District),
+				S: aws.String(input.StartingAt.District),
 			},
 			"school_app": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s_%s", input.StartingAfter.School, input.StartingAfter.App)),
+				S: aws.String(fmt.Sprintf("%s_%s", input.StartingAt.School, input.StartingAt.App)),
 			},
 			"teacher": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.Teacher),
+				S: aws.String(input.StartingAt.Teacher),
 			},
-		},
+		}
 	}
 	if input.Descending {
 		queryInput.KeyConditionExpression = aws.String("#DISTRICT = :district AND #SCHOOL_TEACHER_APP <= :schoolTeacherApp")

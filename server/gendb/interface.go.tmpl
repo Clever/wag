@@ -120,8 +120,10 @@ type {{ pascalizeAndJoin $rangeKeyAttributes }} struct {
 
 // Get{{ $modelName }}sBy{{ $indexName }}PageInput is the query input to Get{{ $modelName }}sBy{{ $indexName }}Page.
 type Get{{ $modelName }}sBy{{ $indexName }}PageInput struct {
-  // StartingAfter is a required specification of an (exclusive) starting point.
-	StartingAfter *models.{{ $modelName }}
+  // StartingAt is a required specification of an (exclusive) starting point.
+	StartingAt *models.{{ $modelName }}
+  // Exclusive toggles whether results include the start point
+  Exclusive bool
 	// Limit is a required limit on how many items to evaluate.
 	Limit  *int64
   // DisableConsistentRead turns off the default behavior of running a consistent read.
@@ -167,8 +169,10 @@ type Get{{ $modelName }}sBy{{ $computedIndexName }}Input struct {
 
 // Get{{ $modelName }}sBy{{ $computedIndexName }}PageInput is the query input to Get{{ $modelName }}sBy{{ $computedIndexName }}Page.
 type Get{{ $modelName }}sBy{{ $computedIndexName }}PageInput struct {
-  // StartingAfter is a required specification of an (exclusive) starting point.
-	StartingAfter *models.{{ $modelName }}
+  // StartingAt is a required specification of an (exclusive) starting point.
+	StartingAt *models.{{ $modelName }}
+  // Exclusive toggles whether results include the start point
+  Exclusive bool
 	// Limit is a required limit on how many items to evaluate.
 	Limit  *int64
   Descending bool

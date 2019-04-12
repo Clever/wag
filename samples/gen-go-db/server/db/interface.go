@@ -165,8 +165,10 @@ type SchoolApp struct {
 
 // GetTeacherSharingRulesByTeacherAndSchoolAppPageInput is the query input to GetTeacherSharingRulesByTeacherAndSchoolAppPage.
 type GetTeacherSharingRulesByTeacherAndSchoolAppPageInput struct {
-	// StartingAfter is a required specification of an (exclusive) starting point.
-	StartingAfter *models.TeacherSharingRule
+	// StartingAt is a required specification of an (exclusive) starting point.
+	StartingAt *models.TeacherSharingRule
+	// Exclusive toggles whether results include the start point
+	Exclusive bool
 	// Limit is a required limit on how many items to evaluate.
 	Limit *int64
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
@@ -197,8 +199,10 @@ type GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput struct {
 
 // GetTeacherSharingRulesByDistrictAndSchoolTeacherAppPageInput is the query input to GetTeacherSharingRulesByDistrictAndSchoolTeacherAppPage.
 type GetTeacherSharingRulesByDistrictAndSchoolTeacherAppPageInput struct {
-	// StartingAfter is a required specification of an (exclusive) starting point.
-	StartingAfter *models.TeacherSharingRule
+	// StartingAt is a required specification of an (exclusive) starting point.
+	StartingAt *models.TeacherSharingRule
+	// Exclusive toggles whether results include the start point
+	Exclusive bool
 	// Limit is a required limit on how many items to evaluate.
 	Limit      *int64
 	Descending bool
@@ -246,8 +250,10 @@ type GetThingsByNameAndVersionInput struct {
 
 // GetThingsByNameAndVersionPageInput is the query input to GetThingsByNameAndVersionPage.
 type GetThingsByNameAndVersionPageInput struct {
-	// StartingAfter is a required specification of an (exclusive) starting point.
-	StartingAfter *models.Thing
+	// StartingAt is a required specification of an (exclusive) starting point.
+	StartingAt *models.Thing
+	// Exclusive toggles whether results include the start point
+	Exclusive bool
 	// Limit is a required limit on how many items to evaluate.
 	Limit *int64
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
@@ -289,8 +295,10 @@ type GetThingsByNameAndCreatedAtInput struct {
 
 // GetThingsByNameAndCreatedAtPageInput is the query input to GetThingsByNameAndCreatedAtPage.
 type GetThingsByNameAndCreatedAtPageInput struct {
-	// StartingAfter is a required specification of an (exclusive) starting point.
-	StartingAfter *models.Thing
+	// StartingAt is a required specification of an (exclusive) starting point.
+	StartingAt *models.Thing
+	// Exclusive toggles whether results include the start point
+	Exclusive bool
 	// Limit is a required limit on how many items to evaluate.
 	Limit      *int64
 	Descending bool
@@ -333,8 +341,10 @@ type GetThingWithCompositeAttributessByNameBranchAndDateInput struct {
 
 // GetThingWithCompositeAttributessByNameBranchAndDatePageInput is the query input to GetThingWithCompositeAttributessByNameBranchAndDatePage.
 type GetThingWithCompositeAttributessByNameBranchAndDatePageInput struct {
-	// StartingAfter is a required specification of an (exclusive) starting point.
-	StartingAfter *models.ThingWithCompositeAttributes
+	// StartingAt is a required specification of an (exclusive) starting point.
+	StartingAt *models.ThingWithCompositeAttributes
+	// Exclusive toggles whether results include the start point
+	Exclusive bool
 	// Limit is a required limit on how many items to evaluate.
 	Limit *int64
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
@@ -366,8 +376,10 @@ type GetThingWithCompositeAttributessByNameVersionAndDateInput struct {
 
 // GetThingWithCompositeAttributessByNameVersionAndDatePageInput is the query input to GetThingWithCompositeAttributessByNameVersionAndDatePage.
 type GetThingWithCompositeAttributessByNameVersionAndDatePageInput struct {
-	// StartingAfter is a required specification of an (exclusive) starting point.
-	StartingAfter *models.ThingWithCompositeAttributes
+	// StartingAt is a required specification of an (exclusive) starting point.
+	StartingAt *models.ThingWithCompositeAttributes
+	// Exclusive toggles whether results include the start point
+	Exclusive bool
 	// Limit is a required limit on how many items to evaluate.
 	Limit      *int64
 	Descending bool
@@ -411,8 +423,10 @@ type GetThingWithCompositeEnumAttributessByNameBranchAndDateInput struct {
 
 // GetThingWithCompositeEnumAttributessByNameBranchAndDatePageInput is the query input to GetThingWithCompositeEnumAttributessByNameBranchAndDatePage.
 type GetThingWithCompositeEnumAttributessByNameBranchAndDatePageInput struct {
-	// StartingAfter is a required specification of an (exclusive) starting point.
-	StartingAfter *models.ThingWithCompositeEnumAttributes
+	// StartingAt is a required specification of an (exclusive) starting point.
+	StartingAt *models.ThingWithCompositeEnumAttributes
+	// Exclusive toggles whether results include the start point
+	Exclusive bool
 	// Limit is a required limit on how many items to evaluate.
 	Limit *int64
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
@@ -457,8 +471,10 @@ type GetThingWithDateRangesByNameAndDateInput struct {
 
 // GetThingWithDateRangesByNameAndDatePageInput is the query input to GetThingWithDateRangesByNameAndDatePage.
 type GetThingWithDateRangesByNameAndDatePageInput struct {
-	// StartingAfter is a required specification of an (exclusive) starting point.
-	StartingAfter *models.ThingWithDateRange
+	// StartingAt is a required specification of an (exclusive) starting point.
+	StartingAt *models.ThingWithDateRange
+	// Exclusive toggles whether results include the start point
+	Exclusive bool
 	// Limit is a required limit on how many items to evaluate.
 	Limit *int64
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
@@ -496,8 +512,10 @@ type CreatedResource struct {
 
 // GetThingWithDateTimeCompositesByTypeIDAndCreatedResourcePageInput is the query input to GetThingWithDateTimeCompositesByTypeIDAndCreatedResourcePage.
 type GetThingWithDateTimeCompositesByTypeIDAndCreatedResourcePageInput struct {
-	// StartingAfter is a required specification of an (exclusive) starting point.
-	StartingAfter *models.ThingWithDateTimeComposite
+	// StartingAt is a required specification of an (exclusive) starting point.
+	StartingAt *models.ThingWithDateTimeComposite
+	// Exclusive toggles whether results include the start point
+	Exclusive bool
 	// Limit is a required limit on how many items to evaluate.
 	Limit *int64
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
