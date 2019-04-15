@@ -275,9 +275,9 @@ func (d DB) GetTeacherSharingRule(ctx context.Context, teacher string, school st
 	return d.teacherSharingRuleTable.getTeacherSharingRule(ctx, teacher, school, app)
 }
 
-// GetTeacherSharingRulesByTeacherAndSchoolApp retrieves a list of TeacherSharingRules from the database.
-func (d DB) GetTeacherSharingRulesByTeacherAndSchoolApp(ctx context.Context, input db.GetTeacherSharingRulesByTeacherAndSchoolAppInput) ([]models.TeacherSharingRule, error) {
-	return d.teacherSharingRuleTable.getTeacherSharingRulesByTeacherAndSchoolApp(ctx, input)
+// GetTeacherSharingRulesByTeacherAndSchoolApp retrieves a page of TeacherSharingRules from the database.
+func (d DB) GetTeacherSharingRulesByTeacherAndSchoolApp(ctx context.Context, input db.GetTeacherSharingRulesByTeacherAndSchoolAppInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error {
+	return d.teacherSharingRuleTable.getTeacherSharingRulesByTeacherAndSchoolApp(ctx, input, fn)
 }
 
 // DeleteTeacherSharingRule deletes a TeacherSharingRule from the database.
@@ -285,9 +285,9 @@ func (d DB) DeleteTeacherSharingRule(ctx context.Context, teacher string, school
 	return d.teacherSharingRuleTable.deleteTeacherSharingRule(ctx, teacher, school, app)
 }
 
-// GetTeacherSharingRulesByDistrictAndSchoolTeacherApp retrieves a list of TeacherSharingRules from the database.
-func (d DB) GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx context.Context, input db.GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput) ([]models.TeacherSharingRule, error) {
-	return d.teacherSharingRuleTable.getTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx, input)
+// GetTeacherSharingRulesByDistrictAndSchoolTeacherApp retrieves a page of TeacherSharingRules from the database.
+func (d DB) GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx context.Context, input db.GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error {
+	return d.teacherSharingRuleTable.getTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx, input, fn)
 }
 
 // SaveThing saves a Thing to the database.
@@ -305,9 +305,9 @@ func (d DB) ScanThings(ctx context.Context, input db.ScanThingsInput, fn func(m 
 	return d.thingTable.scanThings(ctx, input, fn)
 }
 
-// GetThingsByNameAndVersion retrieves a list of Things from the database.
-func (d DB) GetThingsByNameAndVersion(ctx context.Context, input db.GetThingsByNameAndVersionInput) ([]models.Thing, error) {
-	return d.thingTable.getThingsByNameAndVersion(ctx, input)
+// GetThingsByNameAndVersion retrieves a page of Things from the database.
+func (d DB) GetThingsByNameAndVersion(ctx context.Context, input db.GetThingsByNameAndVersionInput, fn func(m *models.Thing, lastThing bool) bool) error {
+	return d.thingTable.getThingsByNameAndVersion(ctx, input, fn)
 }
 
 // DeleteThing deletes a Thing from the database.
@@ -320,9 +320,9 @@ func (d DB) GetThingByID(ctx context.Context, id string) (*models.Thing, error) 
 	return d.thingTable.getThingByID(ctx, id)
 }
 
-// GetThingsByNameAndCreatedAt retrieves a list of Things from the database.
-func (d DB) GetThingsByNameAndCreatedAt(ctx context.Context, input db.GetThingsByNameAndCreatedAtInput) ([]models.Thing, error) {
-	return d.thingTable.getThingsByNameAndCreatedAt(ctx, input)
+// GetThingsByNameAndCreatedAt retrieves a page of Things from the database.
+func (d DB) GetThingsByNameAndCreatedAt(ctx context.Context, input db.GetThingsByNameAndCreatedAtInput, fn func(m *models.Thing, lastThing bool) bool) error {
+	return d.thingTable.getThingsByNameAndCreatedAt(ctx, input, fn)
 }
 
 // SaveThingWithCompositeAttributes saves a ThingWithCompositeAttributes to the database.
@@ -335,9 +335,9 @@ func (d DB) GetThingWithCompositeAttributes(ctx context.Context, name string, br
 	return d.thingWithCompositeAttributesTable.getThingWithCompositeAttributes(ctx, name, branch, date)
 }
 
-// GetThingWithCompositeAttributessByNameBranchAndDate retrieves a list of ThingWithCompositeAttributess from the database.
-func (d DB) GetThingWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input db.GetThingWithCompositeAttributessByNameBranchAndDateInput) ([]models.ThingWithCompositeAttributes, error) {
-	return d.thingWithCompositeAttributesTable.getThingWithCompositeAttributessByNameBranchAndDate(ctx, input)
+// GetThingWithCompositeAttributessByNameBranchAndDate retrieves a page of ThingWithCompositeAttributess from the database.
+func (d DB) GetThingWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input db.GetThingWithCompositeAttributessByNameBranchAndDateInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error {
+	return d.thingWithCompositeAttributesTable.getThingWithCompositeAttributessByNameBranchAndDate(ctx, input, fn)
 }
 
 // DeleteThingWithCompositeAttributes deletes a ThingWithCompositeAttributes from the database.
@@ -345,9 +345,9 @@ func (d DB) DeleteThingWithCompositeAttributes(ctx context.Context, name string,
 	return d.thingWithCompositeAttributesTable.deleteThingWithCompositeAttributes(ctx, name, branch, date)
 }
 
-// GetThingWithCompositeAttributessByNameVersionAndDate retrieves a list of ThingWithCompositeAttributess from the database.
-func (d DB) GetThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input db.GetThingWithCompositeAttributessByNameVersionAndDateInput) ([]models.ThingWithCompositeAttributes, error) {
-	return d.thingWithCompositeAttributesTable.getThingWithCompositeAttributessByNameVersionAndDate(ctx, input)
+// GetThingWithCompositeAttributessByNameVersionAndDate retrieves a page of ThingWithCompositeAttributess from the database.
+func (d DB) GetThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input db.GetThingWithCompositeAttributessByNameVersionAndDateInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error {
+	return d.thingWithCompositeAttributesTable.getThingWithCompositeAttributessByNameVersionAndDate(ctx, input, fn)
 }
 
 // SaveThingWithCompositeEnumAttributes saves a ThingWithCompositeEnumAttributes to the database.
@@ -360,9 +360,9 @@ func (d DB) GetThingWithCompositeEnumAttributes(ctx context.Context, name string
 	return d.thingWithCompositeEnumAttributesTable.getThingWithCompositeEnumAttributes(ctx, name, branchID, date)
 }
 
-// GetThingWithCompositeEnumAttributessByNameBranchAndDate retrieves a list of ThingWithCompositeEnumAttributess from the database.
-func (d DB) GetThingWithCompositeEnumAttributessByNameBranchAndDate(ctx context.Context, input db.GetThingWithCompositeEnumAttributessByNameBranchAndDateInput) ([]models.ThingWithCompositeEnumAttributes, error) {
-	return d.thingWithCompositeEnumAttributesTable.getThingWithCompositeEnumAttributessByNameBranchAndDate(ctx, input)
+// GetThingWithCompositeEnumAttributessByNameBranchAndDate retrieves a page of ThingWithCompositeEnumAttributess from the database.
+func (d DB) GetThingWithCompositeEnumAttributessByNameBranchAndDate(ctx context.Context, input db.GetThingWithCompositeEnumAttributessByNameBranchAndDateInput, fn func(m *models.ThingWithCompositeEnumAttributes, lastThingWithCompositeEnumAttributes bool) bool) error {
+	return d.thingWithCompositeEnumAttributesTable.getThingWithCompositeEnumAttributessByNameBranchAndDate(ctx, input, fn)
 }
 
 // DeleteThingWithCompositeEnumAttributes deletes a ThingWithCompositeEnumAttributes from the database.
@@ -380,9 +380,9 @@ func (d DB) GetThingWithDateRange(ctx context.Context, name string, date strfmt.
 	return d.thingWithDateRangeTable.getThingWithDateRange(ctx, name, date)
 }
 
-// GetThingWithDateRangesByNameAndDate retrieves a list of ThingWithDateRanges from the database.
-func (d DB) GetThingWithDateRangesByNameAndDate(ctx context.Context, input db.GetThingWithDateRangesByNameAndDateInput) ([]models.ThingWithDateRange, error) {
-	return d.thingWithDateRangeTable.getThingWithDateRangesByNameAndDate(ctx, input)
+// GetThingWithDateRangesByNameAndDate retrieves a page of ThingWithDateRanges from the database.
+func (d DB) GetThingWithDateRangesByNameAndDate(ctx context.Context, input db.GetThingWithDateRangesByNameAndDateInput, fn func(m *models.ThingWithDateRange, lastThingWithDateRange bool) bool) error {
+	return d.thingWithDateRangeTable.getThingWithDateRangesByNameAndDate(ctx, input, fn)
 }
 
 // DeleteThingWithDateRange deletes a ThingWithDateRange from the database.
@@ -400,9 +400,9 @@ func (d DB) GetThingWithDateTimeComposite(ctx context.Context, typeVar string, i
 	return d.thingWithDateTimeCompositeTable.getThingWithDateTimeComposite(ctx, typeVar, id, created, resource)
 }
 
-// GetThingWithDateTimeCompositesByTypeIDAndCreatedResource retrieves a list of ThingWithDateTimeComposites from the database.
-func (d DB) GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx context.Context, input db.GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput) ([]models.ThingWithDateTimeComposite, error) {
-	return d.thingWithDateTimeCompositeTable.getThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx, input)
+// GetThingWithDateTimeCompositesByTypeIDAndCreatedResource retrieves a page of ThingWithDateTimeComposites from the database.
+func (d DB) GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx context.Context, input db.GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput, fn func(m *models.ThingWithDateTimeComposite, lastThingWithDateTimeComposite bool) bool) error {
+	return d.thingWithDateTimeCompositeTable.getThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx, input, fn)
 }
 
 // DeleteThingWithDateTimeComposite deletes a ThingWithDateTimeComposite from the database.
@@ -442,4 +442,8 @@ func (d DB) DeleteThingWithUnderscores(ctx context.Context, iDApp string) error 
 
 func toDynamoTimeString(d strfmt.DateTime) string {
 	return time.Time(d).Format(time.RFC3339) // dynamodb attributevalue only supports RFC3339 resolution
+}
+
+func toDynamoTimeStringPtr(d *strfmt.DateTime) string {
+	return time.Time(*d).Format(time.RFC3339) // dynamodb attributevalue only supports RFC3339 resolution
 }

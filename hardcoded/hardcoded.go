@@ -2,7 +2,6 @@
 //  memcopy: true
 //  compress: true
 //  decompress: once
-//  metadata: true
 //  asset-dir: true
 //  restore: true
 // sources:
@@ -28,8 +27,6 @@ type asset struct {
 	name string
 	data string
 	size int64
-	mode os.FileMode
-	time time.Time
 
 	once  sync.Once
 	bytes []byte
@@ -45,11 +42,11 @@ func (a *asset) Size() int64 {
 }
 
 func (a *asset) Mode() os.FileMode {
-	return a.mode
+	return 0
 }
 
 func (a *asset) ModTime() time.Time {
-	return a.time
+	return time.Time{}
 }
 
 func (*asset) IsDir() bool {
@@ -214,8 +211,6 @@ var _bindata = map[string]*asset{
 			"\xf7\x6f\xab\xef\x11\xed\xdd\x8f\x87\x7c\x78\xd5\x41\xfa\x14\x94\x86\x22\x74\x8a\x2c\xa8\xbf\xd8" +
 			"\xde\xa2\x83\xa7\x69\x7c\x74\x96\xfc\x3f\x01\x00\x00\xff\xff",
 		size: 10915,
-		mode: 0664,
-		time: time.Unix(1544125033, 116862280),
 	},
 	"../_hardcoded/middleware.go": &asset{
 		name: "middleware.go",
@@ -287,8 +282,6 @@ var _bindata = map[string]*asset{
 			"\x33\x06\xf1\x3d\xd2\x97\x0e\x8d\x20\xa9\x95\x3b\x50\xce\x8e\xa3\xcc\x77\x88\x9f\x39\xf3\x5b\xd9" +
 			"\x1a\xbe\x96\x1d\x92\x46\xd8\x7a\x8f\xd2\xf1\x82\xfe\x7f\x00\x00\x00\xff\xff",
 		size: 3827,
-		mode: 0664,
-		time: time.Unix(1524593583, 431895771),
 	},
 }
 

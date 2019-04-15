@@ -2,6 +2,7 @@ package tests
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -10,6 +11,8 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/stretchr/testify/require"
 )
+
+var limit = int64(100)
 
 func mustTime(s string) strfmt.DateTime {
 	t, err := time.Parse(time.RFC3339, s)
@@ -140,7 +143,18 @@ type getTeacherSharingRulesByTeacherAndSchoolAppTest struct {
 }
 
 func (g getTeacherSharingRulesByTeacherAndSchoolAppTest) run(t *testing.T) {
-	teacherSharingRules, err := g.d.GetTeacherSharingRulesByTeacherAndSchoolApp(g.input.ctx, g.input.input)
+	teacherSharingRules := []models.TeacherSharingRule{}
+	fn := func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool {
+		teacherSharingRules = append(teacherSharingRules, *m)
+		if lastTeacherSharingRule {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetTeacherSharingRulesByTeacherAndSchoolApp(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	require.Equal(t, g.output.err, err)
 	require.Equal(t, g.output.teacherSharingRules, teacherSharingRules)
 }
@@ -173,7 +187,14 @@ func GetTeacherSharingRulesByTeacherAndSchoolApp(d db.Interface, t *testing.T) f
 				input: getTeacherSharingRulesByTeacherAndSchoolAppInput{
 					ctx: context.Background(),
 					input: db.GetTeacherSharingRulesByTeacherAndSchoolAppInput{
-						Teacher: "string1",
+						StartingAt: &models.TeacherSharingRule{
+							Teacher:  "string1",
+							School:   "string0",
+							App:      "string0",
+							District: "district",
+						},
+						Exclusive: true,
+						Limit:     &limit,
 					},
 				},
 				output: getTeacherSharingRulesByTeacherAndSchoolAppOutput{
@@ -206,8 +227,15 @@ func GetTeacherSharingRulesByTeacherAndSchoolApp(d db.Interface, t *testing.T) f
 				input: getTeacherSharingRulesByTeacherAndSchoolAppInput{
 					ctx: context.Background(),
 					input: db.GetTeacherSharingRulesByTeacherAndSchoolAppInput{
-						Teacher:    "string1",
+						StartingAt: &models.TeacherSharingRule{
+							Teacher:  "string1",
+							School:   "string4",
+							App:      "string4",
+							District: "district",
+						},
+						Exclusive:  true,
 						Descending: true,
+						Limit:      &limit,
 					},
 				},
 				output: getTeacherSharingRulesByTeacherAndSchoolAppOutput{
@@ -240,15 +268,57 @@ func GetTeacherSharingRulesByTeacherAndSchoolApp(d db.Interface, t *testing.T) f
 				input: getTeacherSharingRulesByTeacherAndSchoolAppInput{
 					ctx: context.Background(),
 					input: db.GetTeacherSharingRulesByTeacherAndSchoolAppInput{
-						Teacher: "string1",
-						StartingAt: &db.SchoolApp{
-							School: "string2",
-							App:    "string2",
+						StartingAt: &models.TeacherSharingRule{
+							Teacher:  "string1",
+							School:   "string1",
+							App:      "string1",
+							District: "district",
 						},
+						Exclusive: true,
+						Limit:     &limit,
 					},
 				},
 				output: getTeacherSharingRulesByTeacherAndSchoolAppOutput{
 					teacherSharingRules: []models.TeacherSharingRule{
+						models.TeacherSharingRule{
+							Teacher:  "string1",
+							School:   "string2",
+							App:      "string2",
+							District: "district",
+						},
+						models.TeacherSharingRule{
+							Teacher:  "string1",
+							School:   "string3",
+							App:      "string3",
+							District: "district",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getTeacherSharingRulesByTeacherAndSchoolAppInput{
+					ctx: context.Background(),
+					input: db.GetTeacherSharingRulesByTeacherAndSchoolAppInput{
+						StartingAt: &models.TeacherSharingRule{
+							Teacher:  "string1",
+							School:   "string1",
+							App:      "string1",
+							District: "district",
+						},
+						Limit: &limit,
+					},
+				},
+				output: getTeacherSharingRulesByTeacherAndSchoolAppOutput{
+					teacherSharingRules: []models.TeacherSharingRule{
+						models.TeacherSharingRule{
+							Teacher:  "string1",
+							School:   "string1",
+							App:      "string1",
+							District: "district",
+						},
 						models.TeacherSharingRule{
 							Teacher:  "string1",
 							School:   "string2",
@@ -321,7 +391,18 @@ type getTeacherSharingRulesByDistrictAndSchoolTeacherAppTest struct {
 }
 
 func (g getTeacherSharingRulesByDistrictAndSchoolTeacherAppTest) run(t *testing.T) {
-	teacherSharingRules, err := g.d.GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(g.input.ctx, g.input.input)
+	teacherSharingRules := []models.TeacherSharingRule{}
+	fn := func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool {
+		teacherSharingRules = append(teacherSharingRules, *m)
+		if lastTeacherSharingRule {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	require.Equal(t, g.output.err, err)
 	require.Equal(t, g.output.teacherSharingRules, teacherSharingRules)
 }
@@ -354,7 +435,14 @@ func GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(d db.Interface, t *test
 				input: getTeacherSharingRulesByDistrictAndSchoolTeacherAppInput{
 					ctx: context.Background(),
 					input: db.GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput{
-						District: "string1",
+						StartingAt: &models.TeacherSharingRule{
+							District: "string1",
+							School:   "string0",
+							Teacher:  "string0",
+							App:      "string0",
+						},
+						Exclusive: true,
+						Limit:     &limit,
 					},
 				},
 				output: getTeacherSharingRulesByDistrictAndSchoolTeacherAppOutput{
@@ -387,8 +475,15 @@ func GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(d db.Interface, t *test
 				input: getTeacherSharingRulesByDistrictAndSchoolTeacherAppInput{
 					ctx: context.Background(),
 					input: db.GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput{
-						District:   "string1",
+						StartingAt: &models.TeacherSharingRule{
+							District: "string1",
+							School:   "string4",
+							Teacher:  "string4",
+							App:      "string4",
+						},
+						Exclusive:  true,
 						Descending: true,
+						Limit:      &limit,
 					},
 				},
 				output: getTeacherSharingRulesByDistrictAndSchoolTeacherAppOutput{
@@ -421,16 +516,57 @@ func GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(d db.Interface, t *test
 				input: getTeacherSharingRulesByDistrictAndSchoolTeacherAppInput{
 					ctx: context.Background(),
 					input: db.GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput{
-						District: "string1",
-						StartingAt: &db.SchoolTeacherApp{
-							School:  "string2",
-							Teacher: "string2",
-							App:     "string2",
+						StartingAt: &models.TeacherSharingRule{
+							District: "string1",
+							School:   "string1",
+							Teacher:  "string1",
+							App:      "string1",
 						},
+						Exclusive: true,
+						Limit:     &limit,
 					},
 				},
 				output: getTeacherSharingRulesByDistrictAndSchoolTeacherAppOutput{
 					teacherSharingRules: []models.TeacherSharingRule{
+						models.TeacherSharingRule{
+							District: "string1",
+							School:   "string2",
+							Teacher:  "string2",
+							App:      "string2",
+						},
+						models.TeacherSharingRule{
+							District: "string1",
+							School:   "string3",
+							Teacher:  "string3",
+							App:      "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getTeacherSharingRulesByDistrictAndSchoolTeacherAppInput{
+					ctx: context.Background(),
+					input: db.GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput{
+						StartingAt: &models.TeacherSharingRule{
+							District: "string1",
+							School:   "string1",
+							Teacher:  "string1",
+							App:      "string1",
+						},
+						Limit: &limit,
+					},
+				},
+				output: getTeacherSharingRulesByDistrictAndSchoolTeacherAppOutput{
+					teacherSharingRules: []models.TeacherSharingRule{
+						models.TeacherSharingRule{
+							District: "string1",
+							School:   "string1",
+							Teacher:  "string1",
+							App:      "string1",
+						},
 						models.TeacherSharingRule{
 							District: "string1",
 							School:   "string2",
@@ -489,7 +625,18 @@ type getThingsByNameAndVersionTest struct {
 }
 
 func (g getThingsByNameAndVersionTest) run(t *testing.T) {
-	things, err := g.d.GetThingsByNameAndVersion(g.input.ctx, g.input.input)
+	things := []models.Thing{}
+	fn := func(m *models.Thing, lastThing bool) bool {
+		things = append(things, *m)
+		if lastThing {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingsByNameAndVersion(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	require.Equal(t, g.output.err, err)
 	require.Equal(t, g.output.things, things)
 }
@@ -516,7 +663,12 @@ func GetThingsByNameAndVersion(d db.Interface, t *testing.T) func(t *testing.T) 
 				input: getThingsByNameAndVersionInput{
 					ctx: context.Background(),
 					input: db.GetThingsByNameAndVersionInput{
-						Name: "string1",
+						StartingAt: &models.Thing{
+							Name:    "string1",
+							Version: 0,
+						},
+						Exclusive: true,
+						Limit:     &limit,
 					},
 				},
 				output: getThingsByNameAndVersionOutput{
@@ -543,8 +695,13 @@ func GetThingsByNameAndVersion(d db.Interface, t *testing.T) func(t *testing.T) 
 				input: getThingsByNameAndVersionInput{
 					ctx: context.Background(),
 					input: db.GetThingsByNameAndVersionInput{
-						Name:       "string1",
+						StartingAt: &models.Thing{
+							Name:    "string1",
+							Version: 4,
+						},
+						Exclusive:  true,
 						Descending: true,
+						Limit:      &limit,
 					},
 				},
 				output: getThingsByNameAndVersionOutput{
@@ -571,12 +728,47 @@ func GetThingsByNameAndVersion(d db.Interface, t *testing.T) func(t *testing.T) 
 				input: getThingsByNameAndVersionInput{
 					ctx: context.Background(),
 					input: db.GetThingsByNameAndVersionInput{
-						Name:              "string1",
-						VersionStartingAt: db.Int64(2),
+						StartingAt: &models.Thing{
+							Name:    "string1",
+							Version: 1,
+						},
+						Exclusive: true,
+						Limit:     &limit,
 					},
 				},
 				output: getThingsByNameAndVersionOutput{
 					things: []models.Thing{
+						models.Thing{
+							Name:    "string1",
+							Version: 2,
+						},
+						models.Thing{
+							Name:    "string1",
+							Version: 3,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingsByNameAndVersionInput{
+					ctx: context.Background(),
+					input: db.GetThingsByNameAndVersionInput{
+						StartingAt: &models.Thing{
+							Name:    "string1",
+							Version: 1,
+						},
+						Limit: &limit,
+					},
+				},
+				output: getThingsByNameAndVersionOutput{
+					things: []models.Thing{
+						models.Thing{
+							Name:    "string1",
+							Version: 1,
+						},
 						models.Thing{
 							Name:    "string1",
 							Version: 2,
@@ -760,7 +952,18 @@ type getThingsByNameAndCreatedAtTest struct {
 }
 
 func (g getThingsByNameAndCreatedAtTest) run(t *testing.T) {
-	things, err := g.d.GetThingsByNameAndCreatedAt(g.input.ctx, g.input.input)
+	things := []models.Thing{}
+	fn := func(m *models.Thing, lastThing bool) bool {
+		things = append(things, *m)
+		if lastThing {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingsByNameAndCreatedAt(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	require.Equal(t, g.output.err, err)
 	require.Equal(t, g.output.things, things)
 }
@@ -790,7 +993,13 @@ func GetThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.T
 				input: getThingsByNameAndCreatedAtInput{
 					ctx: context.Background(),
 					input: db.GetThingsByNameAndCreatedAtInput{
-						Name: "string1",
+						StartingAt: &models.Thing{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:00+07:00"),
+							Version:   0,
+						},
+						Exclusive: true,
+						Limit:     &limit,
 					},
 				},
 				output: getThingsByNameAndCreatedAtOutput{
@@ -820,8 +1029,14 @@ func GetThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.T
 				input: getThingsByNameAndCreatedAtInput{
 					ctx: context.Background(),
 					input: db.GetThingsByNameAndCreatedAtInput{
-						Name:       "string1",
+						StartingAt: &models.Thing{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:04+07:00"),
+							Version:   4,
+						},
+						Exclusive:  true,
 						Descending: true,
+						Limit:      &limit,
 					},
 				},
 				output: getThingsByNameAndCreatedAtOutput{
@@ -851,12 +1066,52 @@ func GetThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.T
 				input: getThingsByNameAndCreatedAtInput{
 					ctx: context.Background(),
 					input: db.GetThingsByNameAndCreatedAtInput{
-						Name:                "string1",
-						CreatedAtStartingAt: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+						StartingAt: &models.Thing{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
+							Version:   1,
+						},
+						Exclusive: true,
+						Limit:     &limit,
 					},
 				},
 				output: getThingsByNameAndCreatedAtOutput{
 					things: []models.Thing{
+						models.Thing{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
+							Version:   3,
+						},
+						models.Thing{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
+							Version:   2,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingsByNameAndCreatedAtInput{
+					ctx: context.Background(),
+					input: db.GetThingsByNameAndCreatedAtInput{
+						StartingAt: &models.Thing{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
+							Version:   1,
+						},
+						Limit: &limit,
+					},
+				},
+				output: getThingsByNameAndCreatedAtOutput{
+					things: []models.Thing{
+						models.Thing{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
+							Version:   1,
+						},
 						models.Thing{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
@@ -915,7 +1170,18 @@ type getThingWithCompositeAttributessByNameBranchAndDateTest struct {
 }
 
 func (g getThingWithCompositeAttributessByNameBranchAndDateTest) run(t *testing.T) {
-	thingWithCompositeAttributess, err := g.d.GetThingWithCompositeAttributessByNameBranchAndDate(g.input.ctx, g.input.input)
+	thingWithCompositeAttributess := []models.ThingWithCompositeAttributes{}
+	fn := func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool {
+		thingWithCompositeAttributess = append(thingWithCompositeAttributess, *m)
+		if lastThingWithCompositeAttributes {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingWithCompositeAttributessByNameBranchAndDate(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	require.Equal(t, g.output.err, err)
 	require.Equal(t, g.output.thingWithCompositeAttributess, thingWithCompositeAttributess)
 }
@@ -945,8 +1211,13 @@ func GetThingWithCompositeAttributessByNameBranchAndDate(d db.Interface, t *test
 				input: getThingWithCompositeAttributessByNameBranchAndDateInput{
 					ctx: context.Background(),
 					input: db.GetThingWithCompositeAttributessByNameBranchAndDateInput{
-						Name:   "string1",
-						Branch: "string1",
+						StartingAt: &models.ThingWithCompositeAttributes{
+							Name:   db.String("string1"),
+							Branch: db.String("string1"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:00+07:00")),
+						},
+						Exclusive: true,
+						Limit:     &limit,
 					},
 				},
 				output: getThingWithCompositeAttributessByNameBranchAndDateOutput{
@@ -976,9 +1247,14 @@ func GetThingWithCompositeAttributessByNameBranchAndDate(d db.Interface, t *test
 				input: getThingWithCompositeAttributessByNameBranchAndDateInput{
 					ctx: context.Background(),
 					input: db.GetThingWithCompositeAttributessByNameBranchAndDateInput{
-						Name:       "string1",
-						Branch:     "string1",
+						StartingAt: &models.ThingWithCompositeAttributes{
+							Name:   db.String("string1"),
+							Branch: db.String("string1"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:04+07:00")),
+						},
+						Exclusive:  true,
 						Descending: true,
+						Limit:      &limit,
 					},
 				},
 				output: getThingWithCompositeAttributessByNameBranchAndDateOutput{
@@ -1008,13 +1284,52 @@ func GetThingWithCompositeAttributessByNameBranchAndDate(d db.Interface, t *test
 				input: getThingWithCompositeAttributessByNameBranchAndDateInput{
 					ctx: context.Background(),
 					input: db.GetThingWithCompositeAttributessByNameBranchAndDateInput{
-						Name:           "string1",
-						Branch:         "string1",
-						DateStartingAt: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+						StartingAt: &models.ThingWithCompositeAttributes{
+							Name:   db.String("string1"),
+							Branch: db.String("string1"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+						},
+						Exclusive: true,
+						Limit:     &limit,
 					},
 				},
 				output: getThingWithCompositeAttributessByNameBranchAndDateOutput{
 					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
+						models.ThingWithCompositeAttributes{
+							Name:   db.String("string1"),
+							Branch: db.String("string1"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+						},
+						models.ThingWithCompositeAttributes{
+							Name:   db.String("string1"),
+							Branch: db.String("string1"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingWithCompositeAttributessByNameBranchAndDateInput{
+					ctx: context.Background(),
+					input: db.GetThingWithCompositeAttributessByNameBranchAndDateInput{
+						StartingAt: &models.ThingWithCompositeAttributes{
+							Name:   db.String("string1"),
+							Branch: db.String("string1"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+						},
+						Limit: &limit,
+					},
+				},
+				output: getThingWithCompositeAttributessByNameBranchAndDateOutput{
+					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
+						models.ThingWithCompositeAttributes{
+							Name:   db.String("string1"),
+							Branch: db.String("string1"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+						},
 						models.ThingWithCompositeAttributes{
 							Name:   db.String("string1"),
 							Branch: db.String("string1"),
@@ -1078,7 +1393,18 @@ type getThingWithCompositeAttributessByNameVersionAndDateTest struct {
 }
 
 func (g getThingWithCompositeAttributessByNameVersionAndDateTest) run(t *testing.T) {
-	thingWithCompositeAttributess, err := g.d.GetThingWithCompositeAttributessByNameVersionAndDate(g.input.ctx, g.input.input)
+	thingWithCompositeAttributess := []models.ThingWithCompositeAttributes{}
+	fn := func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool {
+		thingWithCompositeAttributess = append(thingWithCompositeAttributess, *m)
+		if lastThingWithCompositeAttributes {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingWithCompositeAttributessByNameVersionAndDate(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	require.Equal(t, g.output.err, err)
 	require.Equal(t, g.output.thingWithCompositeAttributess, thingWithCompositeAttributess)
 }
@@ -1111,8 +1437,14 @@ func GetThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *tes
 				input: getThingWithCompositeAttributessByNameVersionAndDateInput{
 					ctx: context.Background(),
 					input: db.GetThingWithCompositeAttributessByNameVersionAndDateInput{
-						Name:    "string1",
-						Version: 1,
+						StartingAt: &models.ThingWithCompositeAttributes{
+							Name:    db.String("string1"),
+							Version: 1,
+							Date:    db.DateTime(mustTime("2018-03-11T15:04:00+07:00")),
+							Branch:  db.String("string0"),
+						},
+						Exclusive: true,
+						Limit:     &limit,
 					},
 				},
 				output: getThingWithCompositeAttributessByNameVersionAndDateOutput{
@@ -1145,9 +1477,15 @@ func GetThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *tes
 				input: getThingWithCompositeAttributessByNameVersionAndDateInput{
 					ctx: context.Background(),
 					input: db.GetThingWithCompositeAttributessByNameVersionAndDateInput{
-						Name:       "string1",
-						Version:    1,
+						StartingAt: &models.ThingWithCompositeAttributes{
+							Name:    db.String("string1"),
+							Version: 1,
+							Date:    db.DateTime(mustTime("2018-03-11T15:04:04+07:00")),
+							Branch:  db.String("string4"),
+						},
+						Exclusive:  true,
 						Descending: true,
+						Limit:      &limit,
 					},
 				},
 				output: getThingWithCompositeAttributessByNameVersionAndDateOutput{
@@ -1180,13 +1518,57 @@ func GetThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *tes
 				input: getThingWithCompositeAttributessByNameVersionAndDateInput{
 					ctx: context.Background(),
 					input: db.GetThingWithCompositeAttributessByNameVersionAndDateInput{
-						Name:           "string1",
-						Version:        1,
-						DateStartingAt: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+						StartingAt: &models.ThingWithCompositeAttributes{
+							Name:    db.String("string1"),
+							Version: 1,
+							Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+							Branch:  db.String("string1"),
+						},
+						Exclusive: true,
+						Limit:     &limit,
 					},
 				},
 				output: getThingWithCompositeAttributessByNameVersionAndDateOutput{
 					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
+						models.ThingWithCompositeAttributes{
+							Name:    db.String("string1"),
+							Version: 1,
+							Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+							Branch:  db.String("string3"),
+						},
+						models.ThingWithCompositeAttributes{
+							Name:    db.String("string1"),
+							Version: 1,
+							Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+							Branch:  db.String("string2"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingWithCompositeAttributessByNameVersionAndDateInput{
+					ctx: context.Background(),
+					input: db.GetThingWithCompositeAttributessByNameVersionAndDateInput{
+						StartingAt: &models.ThingWithCompositeAttributes{
+							Name:    db.String("string1"),
+							Version: 1,
+							Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+							Branch:  db.String("string1"),
+						},
+						Limit: &limit,
+					},
+				},
+				output: getThingWithCompositeAttributessByNameVersionAndDateOutput{
+					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
+						models.ThingWithCompositeAttributes{
+							Name:    db.String("string1"),
+							Version: 1,
+							Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+							Branch:  db.String("string1"),
+						},
 						models.ThingWithCompositeAttributes{
 							Name:    db.String("string1"),
 							Version: 1,
@@ -1247,7 +1629,18 @@ type getThingWithCompositeEnumAttributessByNameBranchAndDateTest struct {
 }
 
 func (g getThingWithCompositeEnumAttributessByNameBranchAndDateTest) run(t *testing.T) {
-	thingWithCompositeEnumAttributess, err := g.d.GetThingWithCompositeEnumAttributessByNameBranchAndDate(g.input.ctx, g.input.input)
+	thingWithCompositeEnumAttributess := []models.ThingWithCompositeEnumAttributes{}
+	fn := func(m *models.ThingWithCompositeEnumAttributes, lastThingWithCompositeEnumAttributes bool) bool {
+		thingWithCompositeEnumAttributess = append(thingWithCompositeEnumAttributess, *m)
+		if lastThingWithCompositeEnumAttributes {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingWithCompositeEnumAttributessByNameBranchAndDate(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	require.Equal(t, g.output.err, err)
 	require.Equal(t, g.output.thingWithCompositeEnumAttributess, thingWithCompositeEnumAttributess)
 }
@@ -1277,8 +1670,13 @@ func GetThingWithCompositeEnumAttributessByNameBranchAndDate(d db.Interface, t *
 				input: getThingWithCompositeEnumAttributessByNameBranchAndDateInput{
 					ctx: context.Background(),
 					input: db.GetThingWithCompositeEnumAttributessByNameBranchAndDateInput{
-						Name:     "string1",
-						BranchID: models.BranchMaster,
+						StartingAt: &models.ThingWithCompositeEnumAttributes{
+							Name:     db.String("string1"),
+							BranchID: models.BranchMaster,
+							Date:     db.DateTime(mustTime("2018-03-11T15:04:00+07:00")),
+						},
+						Exclusive: true,
+						Limit:     &limit,
 					},
 				},
 				output: getThingWithCompositeEnumAttributessByNameBranchAndDateOutput{
@@ -1308,9 +1706,14 @@ func GetThingWithCompositeEnumAttributessByNameBranchAndDate(d db.Interface, t *
 				input: getThingWithCompositeEnumAttributessByNameBranchAndDateInput{
 					ctx: context.Background(),
 					input: db.GetThingWithCompositeEnumAttributessByNameBranchAndDateInput{
-						Name:       "string1",
-						BranchID:   models.BranchMaster,
+						StartingAt: &models.ThingWithCompositeEnumAttributes{
+							Name:     db.String("string1"),
+							BranchID: models.BranchMaster,
+							Date:     db.DateTime(mustTime("2018-03-11T15:04:04+07:00")),
+						},
+						Exclusive:  true,
 						Descending: true,
+						Limit:      &limit,
 					},
 				},
 				output: getThingWithCompositeEnumAttributessByNameBranchAndDateOutput{
@@ -1340,13 +1743,52 @@ func GetThingWithCompositeEnumAttributessByNameBranchAndDate(d db.Interface, t *
 				input: getThingWithCompositeEnumAttributessByNameBranchAndDateInput{
 					ctx: context.Background(),
 					input: db.GetThingWithCompositeEnumAttributessByNameBranchAndDateInput{
-						Name:           "string1",
-						BranchID:       models.BranchMaster,
-						DateStartingAt: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+						StartingAt: &models.ThingWithCompositeEnumAttributes{
+							Name:     db.String("string1"),
+							BranchID: models.BranchMaster,
+							Date:     db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+						},
+						Exclusive: true,
+						Limit:     &limit,
 					},
 				},
 				output: getThingWithCompositeEnumAttributessByNameBranchAndDateOutput{
 					thingWithCompositeEnumAttributess: []models.ThingWithCompositeEnumAttributes{
+						models.ThingWithCompositeEnumAttributes{
+							Name:     db.String("string1"),
+							BranchID: models.BranchMaster,
+							Date:     db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+						},
+						models.ThingWithCompositeEnumAttributes{
+							Name:     db.String("string1"),
+							BranchID: models.BranchMaster,
+							Date:     db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingWithCompositeEnumAttributessByNameBranchAndDateInput{
+					ctx: context.Background(),
+					input: db.GetThingWithCompositeEnumAttributessByNameBranchAndDateInput{
+						StartingAt: &models.ThingWithCompositeEnumAttributes{
+							Name:     db.String("string1"),
+							BranchID: models.BranchMaster,
+							Date:     db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+						},
+						Limit: &limit,
+					},
+				},
+				output: getThingWithCompositeEnumAttributessByNameBranchAndDateOutput{
+					thingWithCompositeEnumAttributess: []models.ThingWithCompositeEnumAttributes{
+						models.ThingWithCompositeEnumAttributes{
+							Name:     db.String("string1"),
+							BranchID: models.BranchMaster,
+							Date:     db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+						},
 						models.ThingWithCompositeEnumAttributes{
 							Name:     db.String("string1"),
 							BranchID: models.BranchMaster,
@@ -1429,7 +1871,18 @@ type getThingWithDateRangesByNameAndDateTest struct {
 }
 
 func (g getThingWithDateRangesByNameAndDateTest) run(t *testing.T) {
-	thingWithDateRanges, err := g.d.GetThingWithDateRangesByNameAndDate(g.input.ctx, g.input.input)
+	thingWithDateRanges := []models.ThingWithDateRange{}
+	fn := func(m *models.ThingWithDateRange, lastThingWithDateRange bool) bool {
+		thingWithDateRanges = append(thingWithDateRanges, *m)
+		if lastThingWithDateRange {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingWithDateRangesByNameAndDate(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	require.Equal(t, g.output.err, err)
 	require.Equal(t, g.output.thingWithDateRanges, thingWithDateRanges)
 }
@@ -1456,7 +1909,12 @@ func GetThingWithDateRangesByNameAndDate(d db.Interface, t *testing.T) func(t *t
 				input: getThingWithDateRangesByNameAndDateInput{
 					ctx: context.Background(),
 					input: db.GetThingWithDateRangesByNameAndDateInput{
-						Name: "string1",
+						StartingAt: &models.ThingWithDateRange{
+							Name: "string1",
+							Date: mustTime("2018-03-11T15:04:00+07:00"),
+						},
+						Exclusive: true,
+						Limit:     &limit,
 					},
 				},
 				output: getThingWithDateRangesByNameAndDateOutput{
@@ -1483,8 +1941,13 @@ func GetThingWithDateRangesByNameAndDate(d db.Interface, t *testing.T) func(t *t
 				input: getThingWithDateRangesByNameAndDateInput{
 					ctx: context.Background(),
 					input: db.GetThingWithDateRangesByNameAndDateInput{
-						Name:       "string1",
+						StartingAt: &models.ThingWithDateRange{
+							Name: "string1",
+							Date: mustTime("2018-03-11T15:04:04+07:00"),
+						},
+						Exclusive:  true,
 						Descending: true,
+						Limit:      &limit,
 					},
 				},
 				output: getThingWithDateRangesByNameAndDateOutput{
@@ -1511,12 +1974,47 @@ func GetThingWithDateRangesByNameAndDate(d db.Interface, t *testing.T) func(t *t
 				input: getThingWithDateRangesByNameAndDateInput{
 					ctx: context.Background(),
 					input: db.GetThingWithDateRangesByNameAndDateInput{
-						Name:           "string1",
-						DateStartingAt: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+						StartingAt: &models.ThingWithDateRange{
+							Name: "string1",
+							Date: mustTime("2018-03-11T15:04:01+07:00"),
+						},
+						Exclusive: true,
+						Limit:     &limit,
 					},
 				},
 				output: getThingWithDateRangesByNameAndDateOutput{
 					thingWithDateRanges: []models.ThingWithDateRange{
+						models.ThingWithDateRange{
+							Name: "string1",
+							Date: mustTime("2018-03-11T15:04:02+07:00"),
+						},
+						models.ThingWithDateRange{
+							Name: "string1",
+							Date: mustTime("2018-03-11T15:04:03+07:00"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingWithDateRangesByNameAndDateInput{
+					ctx: context.Background(),
+					input: db.GetThingWithDateRangesByNameAndDateInput{
+						StartingAt: &models.ThingWithDateRange{
+							Name: "string1",
+							Date: mustTime("2018-03-11T15:04:01+07:00"),
+						},
+						Limit: &limit,
+					},
+				},
+				output: getThingWithDateRangesByNameAndDateOutput{
+					thingWithDateRanges: []models.ThingWithDateRange{
+						models.ThingWithDateRange{
+							Name: "string1",
+							Date: mustTime("2018-03-11T15:04:01+07:00"),
+						},
 						models.ThingWithDateRange{
 							Name: "string1",
 							Date: mustTime("2018-03-11T15:04:02+07:00"),
@@ -1598,7 +2096,18 @@ type getThingWithDateTimeCompositesByTypeIDAndCreatedResourceTest struct {
 }
 
 func (g getThingWithDateTimeCompositesByTypeIDAndCreatedResourceTest) run(t *testing.T) {
-	thingWithDateTimeComposites, err := g.d.GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(g.input.ctx, g.input.input)
+	thingWithDateTimeComposites := []models.ThingWithDateTimeComposite{}
+	fn := func(m *models.ThingWithDateTimeComposite, lastThingWithDateTimeComposite bool) bool {
+		thingWithDateTimeComposites = append(thingWithDateTimeComposites, *m)
+		if lastThingWithDateTimeComposite {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	require.Equal(t, g.output.err, err)
 	require.Equal(t, g.output.thingWithDateTimeComposites, thingWithDateTimeComposites)
 }
@@ -1631,8 +2140,14 @@ func GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(d db.Interface, t 
 				input: getThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput{
 					ctx: context.Background(),
 					input: db.GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput{
-						Type: "string1",
-						ID:   "string1",
+						StartingAt: &models.ThingWithDateTimeComposite{
+							Type:     "string1",
+							ID:       "string1",
+							Created:  mustTime("2018-03-11T15:04:00+07:00"),
+							Resource: "string0",
+						},
+						Exclusive: true,
+						Limit:     &limit,
 					},
 				},
 				output: getThingWithDateTimeCompositesByTypeIDAndCreatedResourceOutput{
@@ -1665,9 +2180,15 @@ func GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(d db.Interface, t 
 				input: getThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput{
 					ctx: context.Background(),
 					input: db.GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput{
-						Type:       "string1",
-						ID:         "string1",
+						StartingAt: &models.ThingWithDateTimeComposite{
+							Type:     "string1",
+							ID:       "string1",
+							Created:  mustTime("2018-03-11T15:04:04+07:00"),
+							Resource: "string4",
+						},
+						Exclusive:  true,
 						Descending: true,
+						Limit:      &limit,
 					},
 				},
 				output: getThingWithDateTimeCompositesByTypeIDAndCreatedResourceOutput{
@@ -1700,16 +2221,57 @@ func GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(d db.Interface, t 
 				input: getThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput{
 					ctx: context.Background(),
 					input: db.GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput{
-						Type: "string1",
-						ID:   "string1",
-						StartingAt: &db.CreatedResource{
-							Created:  mustTime("2018-03-11T15:04:02+07:00"),
-							Resource: "string2",
+						StartingAt: &models.ThingWithDateTimeComposite{
+							Type:     "string1",
+							ID:       "string1",
+							Created:  mustTime("2018-03-11T15:04:01+07:00"),
+							Resource: "string1",
 						},
+						Exclusive: true,
+						Limit:     &limit,
 					},
 				},
 				output: getThingWithDateTimeCompositesByTypeIDAndCreatedResourceOutput{
 					thingWithDateTimeComposites: []models.ThingWithDateTimeComposite{
+						models.ThingWithDateTimeComposite{
+							Type:     "string1",
+							ID:       "string1",
+							Created:  mustTime("2018-03-11T15:04:02+07:00"),
+							Resource: "string2",
+						},
+						models.ThingWithDateTimeComposite{
+							Type:     "string1",
+							ID:       "string1",
+							Created:  mustTime("2018-03-11T15:04:03+07:00"),
+							Resource: "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput{
+					ctx: context.Background(),
+					input: db.GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput{
+						StartingAt: &models.ThingWithDateTimeComposite{
+							Type:     "string1",
+							ID:       "string1",
+							Created:  mustTime("2018-03-11T15:04:01+07:00"),
+							Resource: "string1",
+						},
+						Limit: &limit,
+					},
+				},
+				output: getThingWithDateTimeCompositesByTypeIDAndCreatedResourceOutput{
+					thingWithDateTimeComposites: []models.ThingWithDateTimeComposite{
+						models.ThingWithDateTimeComposite{
+							Type:     "string1",
+							ID:       "string1",
+							Created:  mustTime("2018-03-11T15:04:01+07:00"),
+							Resource: "string1",
+						},
 						models.ThingWithDateTimeComposite{
 							Type:     "string1",
 							ID:       "string1",

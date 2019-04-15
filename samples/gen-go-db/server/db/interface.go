@@ -23,12 +23,12 @@ type Interface interface {
 	SaveTeacherSharingRule(ctx context.Context, m models.TeacherSharingRule) error
 	// GetTeacherSharingRule retrieves a TeacherSharingRule from the database.
 	GetTeacherSharingRule(ctx context.Context, teacher string, school string, app string) (*models.TeacherSharingRule, error)
-	// GetTeacherSharingRulesByTeacherAndSchoolApp retrieves a list of TeacherSharingRules from the database.
-	GetTeacherSharingRulesByTeacherAndSchoolApp(ctx context.Context, input GetTeacherSharingRulesByTeacherAndSchoolAppInput) ([]models.TeacherSharingRule, error)
+	// GetTeacherSharingRulesByTeacherAndSchoolApp retrieves a page of TeacherSharingRules from the database.
+	GetTeacherSharingRulesByTeacherAndSchoolApp(ctx context.Context, input GetTeacherSharingRulesByTeacherAndSchoolAppInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error
 	// DeleteTeacherSharingRule deletes a TeacherSharingRule from the database.
 	DeleteTeacherSharingRule(ctx context.Context, teacher string, school string, app string) error
-	// GetTeacherSharingRulesByDistrictAndSchoolTeacherApp retrieves a list of TeacherSharingRules from the database.
-	GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx context.Context, input GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput) ([]models.TeacherSharingRule, error)
+	// GetTeacherSharingRulesByDistrictAndSchoolTeacherApp retrieves a page of TeacherSharingRules from the database.
+	GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx context.Context, input GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error
 
 	// SaveThing saves a Thing to the database.
 	SaveThing(ctx context.Context, m models.Thing) error
@@ -36,32 +36,32 @@ type Interface interface {
 	GetThing(ctx context.Context, name string, version int64) (*models.Thing, error)
 	// ScanThings runs a scan on the Things table.
 	ScanThings(ctx context.Context, input ScanThingsInput, fn func(m *models.Thing, lastThing bool) bool) error
-	// GetThingsByNameAndVersion retrieves a list of Things from the database.
-	GetThingsByNameAndVersion(ctx context.Context, input GetThingsByNameAndVersionInput) ([]models.Thing, error)
+	// GetThingsByNameAndVersion retrieves a page of Things from the database.
+	GetThingsByNameAndVersion(ctx context.Context, input GetThingsByNameAndVersionInput, fn func(m *models.Thing, lastThing bool) bool) error
 	// DeleteThing deletes a Thing from the database.
 	DeleteThing(ctx context.Context, name string, version int64) error
 	// GetThingByID retrieves a Thing from the database.
 	GetThingByID(ctx context.Context, id string) (*models.Thing, error)
-	// GetThingsByNameAndCreatedAt retrieves a list of Things from the database.
-	GetThingsByNameAndCreatedAt(ctx context.Context, input GetThingsByNameAndCreatedAtInput) ([]models.Thing, error)
+	// GetThingsByNameAndCreatedAt retrieves a page of Things from the database.
+	GetThingsByNameAndCreatedAt(ctx context.Context, input GetThingsByNameAndCreatedAtInput, fn func(m *models.Thing, lastThing bool) bool) error
 
 	// SaveThingWithCompositeAttributes saves a ThingWithCompositeAttributes to the database.
 	SaveThingWithCompositeAttributes(ctx context.Context, m models.ThingWithCompositeAttributes) error
 	// GetThingWithCompositeAttributes retrieves a ThingWithCompositeAttributes from the database.
 	GetThingWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) (*models.ThingWithCompositeAttributes, error)
-	// GetThingWithCompositeAttributessByNameBranchAndDate retrieves a list of ThingWithCompositeAttributess from the database.
-	GetThingWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input GetThingWithCompositeAttributessByNameBranchAndDateInput) ([]models.ThingWithCompositeAttributes, error)
+	// GetThingWithCompositeAttributessByNameBranchAndDate retrieves a page of ThingWithCompositeAttributess from the database.
+	GetThingWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input GetThingWithCompositeAttributessByNameBranchAndDateInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error
 	// DeleteThingWithCompositeAttributes deletes a ThingWithCompositeAttributes from the database.
 	DeleteThingWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) error
-	// GetThingWithCompositeAttributessByNameVersionAndDate retrieves a list of ThingWithCompositeAttributess from the database.
-	GetThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input GetThingWithCompositeAttributessByNameVersionAndDateInput) ([]models.ThingWithCompositeAttributes, error)
+	// GetThingWithCompositeAttributessByNameVersionAndDate retrieves a page of ThingWithCompositeAttributess from the database.
+	GetThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input GetThingWithCompositeAttributessByNameVersionAndDateInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error
 
 	// SaveThingWithCompositeEnumAttributes saves a ThingWithCompositeEnumAttributes to the database.
 	SaveThingWithCompositeEnumAttributes(ctx context.Context, m models.ThingWithCompositeEnumAttributes) error
 	// GetThingWithCompositeEnumAttributes retrieves a ThingWithCompositeEnumAttributes from the database.
 	GetThingWithCompositeEnumAttributes(ctx context.Context, name string, branchID models.Branch, date strfmt.DateTime) (*models.ThingWithCompositeEnumAttributes, error)
-	// GetThingWithCompositeEnumAttributessByNameBranchAndDate retrieves a list of ThingWithCompositeEnumAttributess from the database.
-	GetThingWithCompositeEnumAttributessByNameBranchAndDate(ctx context.Context, input GetThingWithCompositeEnumAttributessByNameBranchAndDateInput) ([]models.ThingWithCompositeEnumAttributes, error)
+	// GetThingWithCompositeEnumAttributessByNameBranchAndDate retrieves a page of ThingWithCompositeEnumAttributess from the database.
+	GetThingWithCompositeEnumAttributessByNameBranchAndDate(ctx context.Context, input GetThingWithCompositeEnumAttributessByNameBranchAndDateInput, fn func(m *models.ThingWithCompositeEnumAttributes, lastThingWithCompositeEnumAttributes bool) bool) error
 	// DeleteThingWithCompositeEnumAttributes deletes a ThingWithCompositeEnumAttributes from the database.
 	DeleteThingWithCompositeEnumAttributes(ctx context.Context, name string, branchID models.Branch, date strfmt.DateTime) error
 
@@ -69,8 +69,8 @@ type Interface interface {
 	SaveThingWithDateRange(ctx context.Context, m models.ThingWithDateRange) error
 	// GetThingWithDateRange retrieves a ThingWithDateRange from the database.
 	GetThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) (*models.ThingWithDateRange, error)
-	// GetThingWithDateRangesByNameAndDate retrieves a list of ThingWithDateRanges from the database.
-	GetThingWithDateRangesByNameAndDate(ctx context.Context, input GetThingWithDateRangesByNameAndDateInput) ([]models.ThingWithDateRange, error)
+	// GetThingWithDateRangesByNameAndDate retrieves a page of ThingWithDateRanges from the database.
+	GetThingWithDateRangesByNameAndDate(ctx context.Context, input GetThingWithDateRangesByNameAndDateInput, fn func(m *models.ThingWithDateRange, lastThingWithDateRange bool) bool) error
 	// DeleteThingWithDateRange deletes a ThingWithDateRange from the database.
 	DeleteThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) error
 
@@ -78,8 +78,8 @@ type Interface interface {
 	SaveThingWithDateTimeComposite(ctx context.Context, m models.ThingWithDateTimeComposite) error
 	// GetThingWithDateTimeComposite retrieves a ThingWithDateTimeComposite from the database.
 	GetThingWithDateTimeComposite(ctx context.Context, typeVar string, id string, created strfmt.DateTime, resource string) (*models.ThingWithDateTimeComposite, error)
-	// GetThingWithDateTimeCompositesByTypeIDAndCreatedResource retrieves a list of ThingWithDateTimeComposites from the database.
-	GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx context.Context, input GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput) ([]models.ThingWithDateTimeComposite, error)
+	// GetThingWithDateTimeCompositesByTypeIDAndCreatedResource retrieves a page of ThingWithDateTimeComposites from the database.
+	GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx context.Context, input GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput, fn func(m *models.ThingWithDateTimeComposite, lastThingWithDateTimeComposite bool) bool) error
 	// DeleteThingWithDateTimeComposite deletes a ThingWithDateTimeComposite from the database.
 	DeleteThingWithDateTimeComposite(ctx context.Context, typeVar string, id string, created strfmt.DateTime, resource string) error
 
@@ -133,10 +133,15 @@ func (e ErrSimpleThingAlreadyExists) Error() string {
 
 // GetTeacherSharingRulesByTeacherAndSchoolAppInput is the query input to GetTeacherSharingRulesByTeacherAndSchoolApp.
 type GetTeacherSharingRulesByTeacherAndSchoolAppInput struct {
-	Teacher               string
-	StartingAt            *SchoolApp
-	Descending            bool
+	// StartingAt is a required specification of an (exclusive) starting point.
+	StartingAt *models.TeacherSharingRule
+	// Exclusive toggles whether results include the start point
+	Exclusive bool
+	// Limit is a required limit on how many items to evaluate.
+	Limit *int64
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	Descending            bool
 }
 
 // SchoolApp struct.
@@ -161,8 +166,12 @@ func (e ErrTeacherSharingRuleNotFound) Error() string {
 
 // GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput is the query input to GetTeacherSharingRulesByDistrictAndSchoolTeacherApp.
 type GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput struct {
-	District   string
-	StartingAt *SchoolTeacherApp
+	// StartingAt is a required specification of an (exclusive) starting point.
+	StartingAt *models.TeacherSharingRule
+	// Exclusive toggles whether results include the start point
+	Exclusive bool
+	// Limit is a required limit on how many items to evaluate.
+	Limit      *int64
 	Descending bool
 }
 
@@ -200,10 +209,15 @@ type ScanThingsInput struct {
 
 // GetThingsByNameAndVersionInput is the query input to GetThingsByNameAndVersion.
 type GetThingsByNameAndVersionInput struct {
-	Name                  string
-	VersionStartingAt     *int64
-	Descending            bool
+	// StartingAt is a required specification of an (exclusive) starting point.
+	StartingAt *models.Thing
+	// Exclusive toggles whether results include the start point
+	Exclusive bool
+	// Limit is a required limit on how many items to evaluate.
+	Limit *int64
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	Descending            bool
 }
 
 // ErrThingNotFound is returned when the database fails to find a Thing.
@@ -233,9 +247,13 @@ func (e ErrThingByIDNotFound) Error() string {
 
 // GetThingsByNameAndCreatedAtInput is the query input to GetThingsByNameAndCreatedAt.
 type GetThingsByNameAndCreatedAtInput struct {
-	Name                string
-	CreatedAtStartingAt *strfmt.DateTime
-	Descending          bool
+	// StartingAt is a required specification of an (exclusive) starting point.
+	StartingAt *models.Thing
+	// Exclusive toggles whether results include the start point
+	Exclusive bool
+	// Limit is a required limit on how many items to evaluate.
+	Limit      *int64
+	Descending bool
 }
 
 // ErrThingByNameAndCreatedAtNotFound is returned when the database fails to find a Thing.
@@ -266,11 +284,15 @@ func (e ErrThingAlreadyExists) Error() string {
 
 // GetThingWithCompositeAttributessByNameBranchAndDateInput is the query input to GetThingWithCompositeAttributessByNameBranchAndDate.
 type GetThingWithCompositeAttributessByNameBranchAndDateInput struct {
-	Name                  string
-	Branch                string
-	DateStartingAt        *strfmt.DateTime
-	Descending            bool
+	// StartingAt is a required specification of an (exclusive) starting point.
+	StartingAt *models.ThingWithCompositeAttributes
+	// Exclusive toggles whether results include the start point
+	Exclusive bool
+	// Limit is a required limit on how many items to evaluate.
+	Limit *int64
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	Descending            bool
 }
 
 // ErrThingWithCompositeAttributesNotFound is returned when the database fails to find a ThingWithCompositeAttributes.
@@ -289,10 +311,13 @@ func (e ErrThingWithCompositeAttributesNotFound) Error() string {
 
 // GetThingWithCompositeAttributessByNameVersionAndDateInput is the query input to GetThingWithCompositeAttributessByNameVersionAndDate.
 type GetThingWithCompositeAttributessByNameVersionAndDateInput struct {
-	Name           string
-	Version        int64
-	DateStartingAt *strfmt.DateTime
-	Descending     bool
+	// StartingAt is a required specification of an (exclusive) starting point.
+	StartingAt *models.ThingWithCompositeAttributes
+	// Exclusive toggles whether results include the start point
+	Exclusive bool
+	// Limit is a required limit on how many items to evaluate.
+	Limit      *int64
+	Descending bool
 }
 
 // ErrThingWithCompositeAttributesByNameVersionAndDateNotFound is returned when the database fails to find a ThingWithCompositeAttributes.
@@ -324,11 +349,15 @@ func (e ErrThingWithCompositeAttributesAlreadyExists) Error() string {
 
 // GetThingWithCompositeEnumAttributessByNameBranchAndDateInput is the query input to GetThingWithCompositeEnumAttributessByNameBranchAndDate.
 type GetThingWithCompositeEnumAttributessByNameBranchAndDateInput struct {
-	Name                  string
-	BranchID              models.Branch
-	DateStartingAt        *strfmt.DateTime
-	Descending            bool
+	// StartingAt is a required specification of an (exclusive) starting point.
+	StartingAt *models.ThingWithCompositeEnumAttributes
+	// Exclusive toggles whether results include the start point
+	Exclusive bool
+	// Limit is a required limit on how many items to evaluate.
+	Limit *int64
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	Descending            bool
 }
 
 // ErrThingWithCompositeEnumAttributesNotFound is returned when the database fails to find a ThingWithCompositeEnumAttributes.
@@ -360,10 +389,15 @@ func (e ErrThingWithCompositeEnumAttributesAlreadyExists) Error() string {
 
 // GetThingWithDateRangesByNameAndDateInput is the query input to GetThingWithDateRangesByNameAndDate.
 type GetThingWithDateRangesByNameAndDateInput struct {
-	Name                  string
-	DateStartingAt        *strfmt.DateTime
-	Descending            bool
+	// StartingAt is a required specification of an (exclusive) starting point.
+	StartingAt *models.ThingWithDateRange
+	// Exclusive toggles whether results include the start point
+	Exclusive bool
+	// Limit is a required limit on how many items to evaluate.
+	Limit *int64
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	Descending            bool
 }
 
 // ErrThingWithDateRangeNotFound is returned when the database fails to find a ThingWithDateRange.
@@ -381,11 +415,15 @@ func (e ErrThingWithDateRangeNotFound) Error() string {
 
 // GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput is the query input to GetThingWithDateTimeCompositesByTypeIDAndCreatedResource.
 type GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput struct {
-	Type                  string
-	ID                    string
-	StartingAt            *CreatedResource
-	Descending            bool
+	// StartingAt is a required specification of an (exclusive) starting point.
+	StartingAt *models.ThingWithDateTimeComposite
+	// Exclusive toggles whether results include the start point
+	Exclusive bool
+	// Limit is a required limit on how many items to evaluate.
+	Limit *int64
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	Descending            bool
 }
 
 // CreatedResource struct.
