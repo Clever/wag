@@ -424,9 +424,6 @@ func (t {{ $modelName }}Table) delete{{ $modelName }}(ctx context.Context,
 {{- $lenHashKeyAttributes := len $hashKeyAttributes }}
 {{- $primaryIndexName := indexName $xdbConfig.DynamoDB.KeySchema }}
 {{- $primaryHashKey := index $xdbConfig.DynamoDB.KeySchema 0 }}
-{{- $primaryRangeKey := index $xdbConfig.DynamoDB.KeySchema 1 }}
-{{- $primaryRangeKeyAttributes := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "RANGE" }}
-{{- $lenPrimaryRangeKeyAttributes := len $primaryRangeKeyAttributes }}
 {{- $primaryHashKeyAttributes := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
 {{- $lenPrimaryHashKeyAttributes := len $primaryHashKeyAttributes }}
 func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx context.Context, input db.Get{{ $modelName }}sBy{{ $computedIndexName }}Input, fn func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool) error {
@@ -522,29 +519,34 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
         {{- end }}
       {{- end }}
       },
-      {{- $sameRangeKey := stringsEqual $primaryRangeKey.AttributeName $rangeKey.AttributeName }}
-      {{- if not $sameRangeKey }}
-     "{{ $primaryRangeKey.AttributeName }}": &dynamodb.AttributeValue{
-    	{{- if gt $lenPrimaryRangeKeyAttributes 1 }}
-        S: aws.String({{ compositeValuePage $xdbConfig $primaryRangeKey.AttributeName "input.StartingAt" }}),
-      {{- else }}
-          {{- $attrGoType := goTypeForAttribute $xdbConfig $primaryRangeKey.AttributeName }}
-          {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $primaryRangeKey.AttributeName }}
-        {{- if eq $attrDynamoDBType "S" }}
-          {{- if eq $attrGoType "strfmt.DateTime" }}
-          {{- if attributeIsPointer $xdbConfig $primaryRangeKey.AttributeName }}
-            S: aws.String(toDynamoTimeStringPtr(input.StartingAt.{{ pascalize $primaryRangeKey.AttributeName }})),
-          {{- else }}
-            S: aws.String(toDynamoTimeString(input.StartingAt.{{ pascalize $primaryRangeKey.AttributeName }})),
-          {{- end}}
-          {{- else }}
-			S: aws.String({{if attributeIsPointer $xdbConfig $primaryRangeKey.AttributeName }}*{{end}}input.StartingAt.{{ pascalize $primaryRangeKey.AttributeName }}),
+      {{- if indexHasRangeKey $xdbConfig.DynamoDB.KeySchema }}
+        {{- $primaryRangeKey := index $xdbConfig.DynamoDB.KeySchema 1 }}
+        {{- $primaryRangeKeyAttributes := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "RANGE" }}
+        {{- $lenPrimaryRangeKeyAttributes := len $primaryRangeKeyAttributes }}
+        {{- $sameRangeKey := stringsEqual $primaryRangeKey.AttributeName $rangeKey.AttributeName }}
+        {{- if not $sameRangeKey }}
+        "{{ $primaryRangeKey.AttributeName }}": &dynamodb.AttributeValue{
+        {{- if gt $lenPrimaryRangeKeyAttributes 1 }}
+          S: aws.String({{ compositeValuePage $xdbConfig $primaryRangeKey.AttributeName "input.StartingAt" }}),
+        {{- else }}
+            {{- $attrGoType := goTypeForAttribute $xdbConfig $primaryRangeKey.AttributeName }}
+            {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $primaryRangeKey.AttributeName }}
+          {{- if eq $attrDynamoDBType "S" }}
+            {{- if eq $attrGoType "strfmt.DateTime" }}
+              {{- if attributeIsPointer $xdbConfig $primaryRangeKey.AttributeName }}
+                S: aws.String(toDynamoTimeStringPtr(input.StartingAt.{{ pascalize $primaryRangeKey.AttributeName }})),
+              {{- else }}
+                S: aws.String(toDynamoTimeString(input.StartingAt.{{ pascalize $primaryRangeKey.AttributeName }})),
+              {{- end}}
+            {{- else }}
+              S: aws.String({{if attributeIsPointer $xdbConfig $primaryRangeKey.AttributeName }}*{{end}}input.StartingAt.{{ pascalize $primaryRangeKey.AttributeName }}),
+            {{- end }}
+          {{- else if eq $attrDynamoDBType "N" }}
+            N: aws.String(fmt.Sprintf("%%d", input.StartingAt.{{ pascalize $primaryRangeKey.AttributeName }})),
           {{- end }}
-        {{- else if eq $attrDynamoDBType "N" }}
-			N: aws.String(fmt.Sprintf("%%d", input.StartingAt.{{ pascalize $primaryRangeKey.AttributeName }})),
         {{- end }}
-      {{- end }}
       },
+      {{- end }}
       {{- end}}
       {{- $sameHashKey := stringsEqual $primaryHashKey.AttributeName $hashKey.AttributeName }}
       {{- if not $sameHashKey }}
