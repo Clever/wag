@@ -1,2 +1,2 @@
-v2.0.3
-- Add test for hash + range required
+v2.0.4
+- Add test + fix for indexes with matching keys

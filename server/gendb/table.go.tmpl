@@ -523,8 +523,10 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
         {{- $primaryRangeKey := index $xdbConfig.DynamoDB.KeySchema 1 }}
         {{- $primaryRangeKeyAttributes := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "RANGE" }}
         {{- $lenPrimaryRangeKeyAttributes := len $primaryRangeKeyAttributes }}
-        {{- $sameRangeKey := stringsEqual $primaryRangeKey.AttributeName $rangeKey.AttributeName }}
-        {{- if not $sameRangeKey }}
+        {{ $rangeIsHash := stringsEqual $primaryRangeKey.AttributeName $hashKey.AttributeName }}
+        {{ $rangeIsRange := stringsEqual $primaryRangeKey.AttributeName $rangeKey.AttributeName }}
+        {{- if not $rangeIsHash }}
+        {{- if not $rangeIsRange }}
         "{{ $primaryRangeKey.AttributeName }}": &dynamodb.AttributeValue{
         {{- if gt $lenPrimaryRangeKeyAttributes 1 }}
           S: aws.String({{ compositeValuePage $xdbConfig $primaryRangeKey.AttributeName "input.StartingAt" }}),
@@ -547,9 +549,12 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
         {{- end }}
       },
       {{- end }}
+      {{- end }}
       {{- end}}
-      {{- $sameHashKey := stringsEqual $primaryHashKey.AttributeName $hashKey.AttributeName }}
-      {{- if not $sameHashKey }}
+      {{ $hashIsHash := stringsEqual $primaryHashKey.AttributeName $rangeKey.AttributeName }}
+      {{ $hashIsRange := stringsEqual $primaryHashKey.AttributeName $hashKey.AttributeName }}
+      {{- if not $hashIsHash }}
+      {{- if not $hashIsRange }}
       "{{ $primaryHashKey.AttributeName }}": &dynamodb.AttributeValue{
         {{- if gt $lenPrimaryHashKeyAttributes 1 }}
           S: aws.String({{ compositeValuePage $xdbConfig $primaryHashKey.AttributeName "input.StartingAt" }}),
@@ -572,6 +577,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
       {{- end }}
       },
       {{- end}}
+      {{- end }}
     }
   }
   if input.Descending {

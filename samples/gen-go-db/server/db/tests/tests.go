@@ -59,6 +59,11 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingWithDateTimeCompositesByTypeIDAndCreatedResource", GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(dbFactory(), t))
 	t.Run("SaveThingWithDateTimeComposite", SaveThingWithDateTimeComposite(dbFactory(), t))
 	t.Run("DeleteThingWithDateTimeComposite", DeleteThingWithDateTimeComposite(dbFactory(), t))
+	t.Run("GetThingWithMatchingKeys", GetThingWithMatchingKeys(dbFactory(), t))
+	t.Run("GetThingWithMatchingKeyssByBearAndAssocTypeID", GetThingWithMatchingKeyssByBearAndAssocTypeID(dbFactory(), t))
+	t.Run("SaveThingWithMatchingKeys", SaveThingWithMatchingKeys(dbFactory(), t))
+	t.Run("DeleteThingWithMatchingKeys", DeleteThingWithMatchingKeys(dbFactory(), t))
+	t.Run("GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear", GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(dbFactory(), t))
 	t.Run("GetThingWithRequiredFields", GetThingWithRequiredFields(dbFactory(), t))
 	t.Run("SaveThingWithRequiredFields", SaveThingWithRequiredFields(dbFactory(), t))
 	t.Run("DeleteThingWithRequiredFields", DeleteThingWithRequiredFields(dbFactory(), t))
@@ -2591,6 +2596,467 @@ func DeleteThingWithDateTimeComposite(s db.Interface, t *testing.T) func(t *test
 		}
 		require.Nil(t, s.SaveThingWithDateTimeComposite(ctx, m))
 		require.Nil(t, s.DeleteThingWithDateTimeComposite(ctx, m.Type, m.ID, m.Created, m.Resource))
+	}
+}
+
+func GetThingWithMatchingKeys(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithMatchingKeys{
+			AssocID:   "string1",
+			AssocType: "string1",
+			Bear:      "string1",
+			Created:   mustTime("2018-03-11T15:04:01+07:00"),
+		}
+		require.Nil(t, s.SaveThingWithMatchingKeys(ctx, m))
+		m2, err := s.GetThingWithMatchingKeys(ctx, m.Bear, m.AssocType, m.AssocID)
+		require.Nil(t, err)
+		require.Equal(t, m.Bear, m2.Bear)
+		require.Equal(t, m.AssocType, m2.AssocType)
+		require.Equal(t, m.AssocID, m2.AssocID)
+
+		_, err = s.GetThingWithMatchingKeys(ctx, "string2", "string2", "string2")
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrThingWithMatchingKeysNotFound{})
+	}
+}
+
+type getThingWithMatchingKeyssByBearAndAssocTypeIDInput struct {
+	ctx   context.Context
+	input db.GetThingWithMatchingKeyssByBearAndAssocTypeIDInput
+}
+type getThingWithMatchingKeyssByBearAndAssocTypeIDOutput struct {
+	thingWithMatchingKeyss []models.ThingWithMatchingKeys
+	err                    error
+}
+type getThingWithMatchingKeyssByBearAndAssocTypeIDTest struct {
+	testName string
+	d        db.Interface
+	input    getThingWithMatchingKeyssByBearAndAssocTypeIDInput
+	output   getThingWithMatchingKeyssByBearAndAssocTypeIDOutput
+}
+
+func (g getThingWithMatchingKeyssByBearAndAssocTypeIDTest) run(t *testing.T) {
+	thingWithMatchingKeyss := []models.ThingWithMatchingKeys{}
+	fn := func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool {
+		thingWithMatchingKeyss = append(thingWithMatchingKeyss, *m)
+		if lastThingWithMatchingKeys {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingWithMatchingKeyssByBearAndAssocTypeID(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.thingWithMatchingKeyss, thingWithMatchingKeyss)
+}
+
+func GetThingWithMatchingKeyssByBearAndAssocTypeID(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithMatchingKeys(ctx, models.ThingWithMatchingKeys{
+			Bear:      "string1",
+			AssocType: "string1",
+			AssocID:   "string1",
+		}))
+		require.Nil(t, d.SaveThingWithMatchingKeys(ctx, models.ThingWithMatchingKeys{
+			Bear:      "string1",
+			AssocType: "string2",
+			AssocID:   "string2",
+		}))
+		require.Nil(t, d.SaveThingWithMatchingKeys(ctx, models.ThingWithMatchingKeys{
+			Bear:      "string1",
+			AssocType: "string3",
+			AssocID:   "string3",
+		}))
+		tests := []getThingWithMatchingKeyssByBearAndAssocTypeIDTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getThingWithMatchingKeyssByBearAndAssocTypeIDInput{
+					ctx: context.Background(),
+					input: db.GetThingWithMatchingKeyssByBearAndAssocTypeIDInput{
+						StartingAt: &models.ThingWithMatchingKeys{
+							Bear:      "string1",
+							AssocType: "string0",
+							AssocID:   "string0",
+						},
+						Exclusive: true,
+						Limit:     &limit,
+					},
+				},
+				output: getThingWithMatchingKeyssByBearAndAssocTypeIDOutput{
+					thingWithMatchingKeyss: []models.ThingWithMatchingKeys{
+						models.ThingWithMatchingKeys{
+							Bear:      "string1",
+							AssocType: "string1",
+							AssocID:   "string1",
+						},
+						models.ThingWithMatchingKeys{
+							Bear:      "string1",
+							AssocType: "string2",
+							AssocID:   "string2",
+						},
+						models.ThingWithMatchingKeys{
+							Bear:      "string1",
+							AssocType: "string3",
+							AssocID:   "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getThingWithMatchingKeyssByBearAndAssocTypeIDInput{
+					ctx: context.Background(),
+					input: db.GetThingWithMatchingKeyssByBearAndAssocTypeIDInput{
+						StartingAt: &models.ThingWithMatchingKeys{
+							Bear:      "string1",
+							AssocType: "string4",
+							AssocID:   "string4",
+						},
+						Exclusive:  true,
+						Descending: true,
+						Limit:      &limit,
+					},
+				},
+				output: getThingWithMatchingKeyssByBearAndAssocTypeIDOutput{
+					thingWithMatchingKeyss: []models.ThingWithMatchingKeys{
+						models.ThingWithMatchingKeys{
+							Bear:      "string1",
+							AssocType: "string3",
+							AssocID:   "string3",
+						},
+						models.ThingWithMatchingKeys{
+							Bear:      "string1",
+							AssocType: "string2",
+							AssocID:   "string2",
+						},
+						models.ThingWithMatchingKeys{
+							Bear:      "string1",
+							AssocType: "string1",
+							AssocID:   "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getThingWithMatchingKeyssByBearAndAssocTypeIDInput{
+					ctx: context.Background(),
+					input: db.GetThingWithMatchingKeyssByBearAndAssocTypeIDInput{
+						StartingAt: &models.ThingWithMatchingKeys{
+							Bear:      "string1",
+							AssocType: "string1",
+							AssocID:   "string1",
+						},
+						Exclusive: true,
+						Limit:     &limit,
+					},
+				},
+				output: getThingWithMatchingKeyssByBearAndAssocTypeIDOutput{
+					thingWithMatchingKeyss: []models.ThingWithMatchingKeys{
+						models.ThingWithMatchingKeys{
+							Bear:      "string1",
+							AssocType: "string2",
+							AssocID:   "string2",
+						},
+						models.ThingWithMatchingKeys{
+							Bear:      "string1",
+							AssocType: "string3",
+							AssocID:   "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingWithMatchingKeyssByBearAndAssocTypeIDInput{
+					ctx: context.Background(),
+					input: db.GetThingWithMatchingKeyssByBearAndAssocTypeIDInput{
+						StartingAt: &models.ThingWithMatchingKeys{
+							Bear:      "string1",
+							AssocType: "string1",
+							AssocID:   "string1",
+						},
+						Limit: &limit,
+					},
+				},
+				output: getThingWithMatchingKeyssByBearAndAssocTypeIDOutput{
+					thingWithMatchingKeyss: []models.ThingWithMatchingKeys{
+						models.ThingWithMatchingKeys{
+							Bear:      "string1",
+							AssocType: "string1",
+							AssocID:   "string1",
+						},
+						models.ThingWithMatchingKeys{
+							Bear:      "string1",
+							AssocType: "string2",
+							AssocID:   "string2",
+						},
+						models.ThingWithMatchingKeys{
+							Bear:      "string1",
+							AssocType: "string3",
+							AssocID:   "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+func SaveThingWithMatchingKeys(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithMatchingKeys{
+			AssocID:   "string1",
+			AssocType: "string1",
+			Bear:      "string1",
+			Created:   mustTime("2018-03-11T15:04:01+07:00"),
+		}
+		require.Nil(t, s.SaveThingWithMatchingKeys(ctx, m))
+	}
+}
+
+func DeleteThingWithMatchingKeys(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithMatchingKeys{
+			AssocID:   "string1",
+			AssocType: "string1",
+			Bear:      "string1",
+			Created:   mustTime("2018-03-11T15:04:01+07:00"),
+		}
+		require.Nil(t, s.SaveThingWithMatchingKeys(ctx, m))
+		require.Nil(t, s.DeleteThingWithMatchingKeys(ctx, m.Bear, m.AssocType, m.AssocID))
+	}
+}
+
+type getThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput struct {
+	ctx   context.Context
+	input db.GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput
+}
+type getThingWithMatchingKeyssByAssocTypeIDAndCreatedBearOutput struct {
+	thingWithMatchingKeyss []models.ThingWithMatchingKeys
+	err                    error
+}
+type getThingWithMatchingKeyssByAssocTypeIDAndCreatedBearTest struct {
+	testName string
+	d        db.Interface
+	input    getThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput
+	output   getThingWithMatchingKeyssByAssocTypeIDAndCreatedBearOutput
+}
+
+func (g getThingWithMatchingKeyssByAssocTypeIDAndCreatedBearTest) run(t *testing.T) {
+	thingWithMatchingKeyss := []models.ThingWithMatchingKeys{}
+	fn := func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool {
+		thingWithMatchingKeyss = append(thingWithMatchingKeyss, *m)
+		if lastThingWithMatchingKeys {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.thingWithMatchingKeyss, thingWithMatchingKeyss)
+}
+
+func GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithMatchingKeys(ctx, models.ThingWithMatchingKeys{
+			AssocType: "string1",
+			AssocID:   "string1",
+			Created:   mustTime("2018-03-11T15:04:01+07:00"),
+			Bear:      "string1",
+		}))
+		require.Nil(t, d.SaveThingWithMatchingKeys(ctx, models.ThingWithMatchingKeys{
+			AssocType: "string1",
+			AssocID:   "string1",
+			Created:   mustTime("2018-03-11T15:04:02+07:00"),
+			Bear:      "string2",
+		}))
+		require.Nil(t, d.SaveThingWithMatchingKeys(ctx, models.ThingWithMatchingKeys{
+			AssocType: "string1",
+			AssocID:   "string1",
+			Created:   mustTime("2018-03-11T15:04:03+07:00"),
+			Bear:      "string3",
+		}))
+		tests := []getThingWithMatchingKeyssByAssocTypeIDAndCreatedBearTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput{
+					ctx: context.Background(),
+					input: db.GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput{
+						StartingAt: &models.ThingWithMatchingKeys{
+							AssocType: "string1",
+							AssocID:   "string1",
+							Created:   mustTime("2018-03-11T15:04:00+07:00"),
+							Bear:      "string0",
+						},
+						Exclusive: true,
+						Limit:     &limit,
+					},
+				},
+				output: getThingWithMatchingKeyssByAssocTypeIDAndCreatedBearOutput{
+					thingWithMatchingKeyss: []models.ThingWithMatchingKeys{
+						models.ThingWithMatchingKeys{
+							AssocType: "string1",
+							AssocID:   "string1",
+							Created:   mustTime("2018-03-11T15:04:01+07:00"),
+							Bear:      "string1",
+						},
+						models.ThingWithMatchingKeys{
+							AssocType: "string1",
+							AssocID:   "string1",
+							Created:   mustTime("2018-03-11T15:04:02+07:00"),
+							Bear:      "string2",
+						},
+						models.ThingWithMatchingKeys{
+							AssocType: "string1",
+							AssocID:   "string1",
+							Created:   mustTime("2018-03-11T15:04:03+07:00"),
+							Bear:      "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput{
+					ctx: context.Background(),
+					input: db.GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput{
+						StartingAt: &models.ThingWithMatchingKeys{
+							AssocType: "string1",
+							AssocID:   "string1",
+							Created:   mustTime("2018-03-11T15:04:04+07:00"),
+							Bear:      "string4",
+						},
+						Exclusive:  true,
+						Descending: true,
+						Limit:      &limit,
+					},
+				},
+				output: getThingWithMatchingKeyssByAssocTypeIDAndCreatedBearOutput{
+					thingWithMatchingKeyss: []models.ThingWithMatchingKeys{
+						models.ThingWithMatchingKeys{
+							AssocType: "string1",
+							AssocID:   "string1",
+							Created:   mustTime("2018-03-11T15:04:03+07:00"),
+							Bear:      "string3",
+						},
+						models.ThingWithMatchingKeys{
+							AssocType: "string1",
+							AssocID:   "string1",
+							Created:   mustTime("2018-03-11T15:04:02+07:00"),
+							Bear:      "string2",
+						},
+						models.ThingWithMatchingKeys{
+							AssocType: "string1",
+							AssocID:   "string1",
+							Created:   mustTime("2018-03-11T15:04:01+07:00"),
+							Bear:      "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput{
+					ctx: context.Background(),
+					input: db.GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput{
+						StartingAt: &models.ThingWithMatchingKeys{
+							AssocType: "string1",
+							AssocID:   "string1",
+							Created:   mustTime("2018-03-11T15:04:01+07:00"),
+							Bear:      "string1",
+						},
+						Exclusive: true,
+						Limit:     &limit,
+					},
+				},
+				output: getThingWithMatchingKeyssByAssocTypeIDAndCreatedBearOutput{
+					thingWithMatchingKeyss: []models.ThingWithMatchingKeys{
+						models.ThingWithMatchingKeys{
+							AssocType: "string1",
+							AssocID:   "string1",
+							Created:   mustTime("2018-03-11T15:04:02+07:00"),
+							Bear:      "string2",
+						},
+						models.ThingWithMatchingKeys{
+							AssocType: "string1",
+							AssocID:   "string1",
+							Created:   mustTime("2018-03-11T15:04:03+07:00"),
+							Bear:      "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput{
+					ctx: context.Background(),
+					input: db.GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput{
+						StartingAt: &models.ThingWithMatchingKeys{
+							AssocType: "string1",
+							AssocID:   "string1",
+							Created:   mustTime("2018-03-11T15:04:01+07:00"),
+							Bear:      "string1",
+						},
+						Limit: &limit,
+					},
+				},
+				output: getThingWithMatchingKeyssByAssocTypeIDAndCreatedBearOutput{
+					thingWithMatchingKeyss: []models.ThingWithMatchingKeys{
+						models.ThingWithMatchingKeys{
+							AssocType: "string1",
+							AssocID:   "string1",
+							Created:   mustTime("2018-03-11T15:04:01+07:00"),
+							Bear:      "string1",
+						},
+						models.ThingWithMatchingKeys{
+							AssocType: "string1",
+							AssocID:   "string1",
+							Created:   mustTime("2018-03-11T15:04:02+07:00"),
+							Bear:      "string2",
+						},
+						models.ThingWithMatchingKeys{
+							AssocType: "string1",
+							AssocID:   "string1",
+							Created:   mustTime("2018-03-11T15:04:03+07:00"),
+							Bear:      "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
 	}
 }
 

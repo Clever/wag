@@ -44,6 +44,8 @@ type Config struct {
 	ThingWithDateRangeTable ThingWithDateRangeTable
 	// ThingWithDateTimeCompositeTable configuration.
 	ThingWithDateTimeCompositeTable ThingWithDateTimeCompositeTable
+	// ThingWithMatchingKeysTable configuration.
+	ThingWithMatchingKeysTable ThingWithMatchingKeysTable
 	// ThingWithRequiredFieldsTable configuration.
 	ThingWithRequiredFieldsTable ThingWithRequiredFieldsTable
 	// ThingWithRequiredFields2Table configuration.
@@ -179,6 +181,20 @@ func New(config Config) (*DB, error) {
 	if thingWithDateTimeCompositeTable.WriteCapacityUnits == 0 {
 		thingWithDateTimeCompositeTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	// configure ThingWithMatchingKeys table
+	thingWithMatchingKeysTable := config.ThingWithMatchingKeysTable
+	if thingWithMatchingKeysTable.DynamoDBAPI == nil {
+		thingWithMatchingKeysTable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if thingWithMatchingKeysTable.Prefix == "" {
+		thingWithMatchingKeysTable.Prefix = config.DefaultPrefix
+	}
+	if thingWithMatchingKeysTable.ReadCapacityUnits == 0 {
+		thingWithMatchingKeysTable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if thingWithMatchingKeysTable.WriteCapacityUnits == 0 {
+		thingWithMatchingKeysTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
 	// configure ThingWithRequiredFields table
 	thingWithRequiredFieldsTable := config.ThingWithRequiredFieldsTable
 	if thingWithRequiredFieldsTable.DynamoDBAPI == nil {
@@ -231,6 +247,7 @@ func New(config Config) (*DB, error) {
 		thingWithCompositeEnumAttributesTable:    thingWithCompositeEnumAttributesTable,
 		thingWithDateRangeTable:                  thingWithDateRangeTable,
 		thingWithDateTimeCompositeTable:          thingWithDateTimeCompositeTable,
+		thingWithMatchingKeysTable:               thingWithMatchingKeysTable,
 		thingWithRequiredFieldsTable:             thingWithRequiredFieldsTable,
 		thingWithRequiredFields2Table:            thingWithRequiredFields2Table,
 		thingWithUnderscoresTable:                thingWithUnderscoresTable,
@@ -247,6 +264,7 @@ type DB struct {
 	thingWithCompositeEnumAttributesTable    ThingWithCompositeEnumAttributesTable
 	thingWithDateRangeTable                  ThingWithDateRangeTable
 	thingWithDateTimeCompositeTable          ThingWithDateTimeCompositeTable
+	thingWithMatchingKeysTable               ThingWithMatchingKeysTable
 	thingWithRequiredFieldsTable             ThingWithRequiredFieldsTable
 	thingWithRequiredFields2Table            ThingWithRequiredFields2Table
 	thingWithUnderscoresTable                ThingWithUnderscoresTable
@@ -278,6 +296,9 @@ func (d DB) CreateTables(ctx context.Context) error {
 		return err
 	}
 	if err := d.thingWithDateTimeCompositeTable.create(ctx); err != nil {
+		return err
+	}
+	if err := d.thingWithMatchingKeysTable.create(ctx); err != nil {
 		return err
 	}
 	if err := d.thingWithRequiredFieldsTable.create(ctx); err != nil {
@@ -470,6 +491,31 @@ func (d DB) GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx context
 // DeleteThingWithDateTimeComposite deletes a ThingWithDateTimeComposite from the database.
 func (d DB) DeleteThingWithDateTimeComposite(ctx context.Context, typeVar string, id string, created strfmt.DateTime, resource string) error {
 	return d.thingWithDateTimeCompositeTable.deleteThingWithDateTimeComposite(ctx, typeVar, id, created, resource)
+}
+
+// SaveThingWithMatchingKeys saves a ThingWithMatchingKeys to the database.
+func (d DB) SaveThingWithMatchingKeys(ctx context.Context, m models.ThingWithMatchingKeys) error {
+	return d.thingWithMatchingKeysTable.saveThingWithMatchingKeys(ctx, m)
+}
+
+// GetThingWithMatchingKeys retrieves a ThingWithMatchingKeys from the database.
+func (d DB) GetThingWithMatchingKeys(ctx context.Context, bear string, assocType string, assocID string) (*models.ThingWithMatchingKeys, error) {
+	return d.thingWithMatchingKeysTable.getThingWithMatchingKeys(ctx, bear, assocType, assocID)
+}
+
+// GetThingWithMatchingKeyssByBearAndAssocTypeID retrieves a page of ThingWithMatchingKeyss from the database.
+func (d DB) GetThingWithMatchingKeyssByBearAndAssocTypeID(ctx context.Context, input db.GetThingWithMatchingKeyssByBearAndAssocTypeIDInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error {
+	return d.thingWithMatchingKeysTable.getThingWithMatchingKeyssByBearAndAssocTypeID(ctx, input, fn)
+}
+
+// DeleteThingWithMatchingKeys deletes a ThingWithMatchingKeys from the database.
+func (d DB) DeleteThingWithMatchingKeys(ctx context.Context, bear string, assocType string, assocID string) error {
+	return d.thingWithMatchingKeysTable.deleteThingWithMatchingKeys(ctx, bear, assocType, assocID)
+}
+
+// GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear retrieves a page of ThingWithMatchingKeyss from the database.
+func (d DB) GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Context, input db.GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error {
+	return d.thingWithMatchingKeysTable.getThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx, input, fn)
 }
 
 // SaveThingWithRequiredFields saves a ThingWithRequiredFields to the database.
