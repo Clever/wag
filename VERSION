@@ -1,2 +1,2 @@
-v2.0.0
-- DynamoDB pagination
+v2.0.1
+- Fix secondary index code generation bug
