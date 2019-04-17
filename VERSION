@@ -1,2 +1,2 @@
-v2.0.2
-- Add test for no range on primary index and secondary index with range
+v2.0.3
+- Add test for hash + range required
