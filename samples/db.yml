@@ -364,3 +364,42 @@ definitions:
       date:
         type: string
         format: date-time
+
+  ThingWithMatchingKeys:
+    type: object
+    x-db:
+      AllowOverwrites: true
+      AllowPrimaryIndexScan: false
+      CompositeAttributes:
+      - AttributeName: assocTypeID
+        Properties: [ assocType, assocID ]
+        Separator: "^"
+      - AttributeName: createdBear
+        Properties: [ created, bear ]
+        Separator: "^"
+      DynamoDB:
+        KeySchema:
+        - AttributeName: bear
+          KeyType: HASH
+        - AttributeName: assocTypeID
+          KeyType: RANGE
+        GlobalSecondaryIndexes:
+        - IndexName: byAssoc
+          Projection:
+            ProjectionType: ALL
+          KeySchema:
+          - AttributeName: assocTypeID
+            KeyType: HASH
+          - AttributeName: createdBear
+            KeyType: RANGE
+    properties:
+      assocType:
+        type: string
+      assocID:
+        type: string
+      created:
+        type: string
+        format: date-time
+      bear:
+        type: string
+

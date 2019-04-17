@@ -92,6 +92,17 @@ type Interface interface {
 	// DeleteThingWithDateTimeComposite deletes a ThingWithDateTimeComposite from the database.
 	DeleteThingWithDateTimeComposite(ctx context.Context, typeVar string, id string, created strfmt.DateTime, resource string) error
 
+	// SaveThingWithMatchingKeys saves a ThingWithMatchingKeys to the database.
+	SaveThingWithMatchingKeys(ctx context.Context, m models.ThingWithMatchingKeys) error
+	// GetThingWithMatchingKeys retrieves a ThingWithMatchingKeys from the database.
+	GetThingWithMatchingKeys(ctx context.Context, bear string, assocType string, assocID string) (*models.ThingWithMatchingKeys, error)
+	// GetThingWithMatchingKeyssByBearAndAssocTypeID retrieves a page of ThingWithMatchingKeyss from the database.
+	GetThingWithMatchingKeyssByBearAndAssocTypeID(ctx context.Context, input GetThingWithMatchingKeyssByBearAndAssocTypeIDInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error
+	// DeleteThingWithMatchingKeys deletes a ThingWithMatchingKeys from the database.
+	DeleteThingWithMatchingKeys(ctx context.Context, bear string, assocType string, assocID string) error
+	// GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear retrieves a page of ThingWithMatchingKeyss from the database.
+	GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Context, input GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error
+
 	// SaveThingWithRequiredFields saves a ThingWithRequiredFields to the database.
 	SaveThingWithRequiredFields(ctx context.Context, m models.ThingWithRequiredFields) error
 	// GetThingWithRequiredFields retrieves a ThingWithRequiredFields from the database.
@@ -513,6 +524,71 @@ var _ error = ErrThingWithDateTimeCompositeNotFound{}
 // Error returns a description of the error.
 func (e ErrThingWithDateTimeCompositeNotFound) Error() string {
 	return "could not find ThingWithDateTimeComposite"
+}
+
+// GetThingWithMatchingKeyssByBearAndAssocTypeIDInput is the query input to GetThingWithMatchingKeyssByBearAndAssocTypeID.
+type GetThingWithMatchingKeyssByBearAndAssocTypeIDInput struct {
+	// StartingAt is a required specification of an (exclusive) starting point.
+	StartingAt *models.ThingWithMatchingKeys
+	// Exclusive toggles whether results include the start point
+	Exclusive bool
+	// Limit is a required limit on how many items to evaluate.
+	Limit *int64
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	Descending            bool
+}
+
+// AssocTypeAssocID struct.
+type AssocTypeAssocID struct {
+	AssocType string
+	AssocID   string
+}
+
+// ErrThingWithMatchingKeysNotFound is returned when the database fails to find a ThingWithMatchingKeys.
+type ErrThingWithMatchingKeysNotFound struct {
+	Bear      string
+	AssocType string
+	AssocID   string
+}
+
+var _ error = ErrThingWithMatchingKeysNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithMatchingKeysNotFound) Error() string {
+	return "could not find ThingWithMatchingKeys"
+}
+
+// GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput is the query input to GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear.
+type GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput struct {
+	// StartingAt is a required specification of an (exclusive) starting point.
+	StartingAt *models.ThingWithMatchingKeys
+	// Exclusive toggles whether results include the start point
+	Exclusive bool
+	// Limit is a required limit on how many items to evaluate.
+	Limit      *int64
+	Descending bool
+}
+
+// CreatedBear struct.
+type CreatedBear struct {
+	Created strfmt.DateTime
+	Bear    string
+}
+
+// ErrThingWithMatchingKeysByAssocTypeIDAndCreatedBearNotFound is returned when the database fails to find a ThingWithMatchingKeys.
+type ErrThingWithMatchingKeysByAssocTypeIDAndCreatedBearNotFound struct {
+	AssocType string
+	AssocID   string
+	Created   strfmt.DateTime
+	Bear      string
+}
+
+var _ error = ErrThingWithMatchingKeysByAssocTypeIDAndCreatedBearNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithMatchingKeysByAssocTypeIDAndCreatedBearNotFound) Error() string {
+	return "could not find ThingWithMatchingKeys"
 }
 
 // ErrThingWithRequiredFieldsNotFound is returned when the database fails to find a ThingWithRequiredFields.

@@ -476,6 +476,67 @@ func (mr *MockInterfaceMockRecorder) DeleteThingWithDateTimeComposite(ctx, typeV
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithDateTimeComposite", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithDateTimeComposite), ctx, typeVar, id, created, resource)
 }
 
+// SaveThingWithMatchingKeys mocks base method
+func (m_2 *MockInterface) SaveThingWithMatchingKeys(ctx context.Context, m models.ThingWithMatchingKeys) error {
+	ret := m_2.ctrl.Call(m_2, "SaveThingWithMatchingKeys", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveThingWithMatchingKeys indicates an expected call of SaveThingWithMatchingKeys
+func (mr *MockInterfaceMockRecorder) SaveThingWithMatchingKeys(ctx, m interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithMatchingKeys", reflect.TypeOf((*MockInterface)(nil).SaveThingWithMatchingKeys), ctx, m)
+}
+
+// GetThingWithMatchingKeys mocks base method
+func (m *MockInterface) GetThingWithMatchingKeys(ctx context.Context, bear, assocType, assocID string) (*models.ThingWithMatchingKeys, error) {
+	ret := m.ctrl.Call(m, "GetThingWithMatchingKeys", ctx, bear, assocType, assocID)
+	ret0, _ := ret[0].(*models.ThingWithMatchingKeys)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingWithMatchingKeys indicates an expected call of GetThingWithMatchingKeys
+func (mr *MockInterfaceMockRecorder) GetThingWithMatchingKeys(ctx, bear, assocType, assocID interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithMatchingKeys", reflect.TypeOf((*MockInterface)(nil).GetThingWithMatchingKeys), ctx, bear, assocType, assocID)
+}
+
+// GetThingWithMatchingKeyssByBearAndAssocTypeID mocks base method
+func (m *MockInterface) GetThingWithMatchingKeyssByBearAndAssocTypeID(ctx context.Context, input GetThingWithMatchingKeyssByBearAndAssocTypeIDInput, fn func(*models.ThingWithMatchingKeys, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetThingWithMatchingKeyssByBearAndAssocTypeID", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingWithMatchingKeyssByBearAndAssocTypeID indicates an expected call of GetThingWithMatchingKeyssByBearAndAssocTypeID
+func (mr *MockInterfaceMockRecorder) GetThingWithMatchingKeyssByBearAndAssocTypeID(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithMatchingKeyssByBearAndAssocTypeID", reflect.TypeOf((*MockInterface)(nil).GetThingWithMatchingKeyssByBearAndAssocTypeID), ctx, input, fn)
+}
+
+// DeleteThingWithMatchingKeys mocks base method
+func (m *MockInterface) DeleteThingWithMatchingKeys(ctx context.Context, bear, assocType, assocID string) error {
+	ret := m.ctrl.Call(m, "DeleteThingWithMatchingKeys", ctx, bear, assocType, assocID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteThingWithMatchingKeys indicates an expected call of DeleteThingWithMatchingKeys
+func (mr *MockInterfaceMockRecorder) DeleteThingWithMatchingKeys(ctx, bear, assocType, assocID interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithMatchingKeys", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithMatchingKeys), ctx, bear, assocType, assocID)
+}
+
+// GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear mocks base method
+func (m *MockInterface) GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Context, input GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput, fn func(*models.ThingWithMatchingKeys, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear indicates an expected call of GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear
+func (mr *MockInterfaceMockRecorder) GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear", reflect.TypeOf((*MockInterface)(nil).GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear), ctx, input, fn)
+}
+
 // SaveThingWithRequiredFields mocks base method
 func (m_2 *MockInterface) SaveThingWithRequiredFields(ctx context.Context, m models.ThingWithRequiredFields) error {
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithRequiredFields", ctx, m)
