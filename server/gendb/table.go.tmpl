@@ -278,14 +278,14 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
 			":{{ camelize $hashKey.AttributeName }}": &dynamodb.AttributeValue{
                         	{{- $dynamoDBType := dynamoDBTypeForAttribute $xdbConfig $hashKey.AttributeName }}
                         	{{- if eq $dynamoDBType "S" }}
-                        	    S: aws.String({{ if isComposite $xdbConfig $hashKey.AttributeName }}{{ compositeValuePage $xdbConfig $hashKey.AttributeName "input.StartingAt" }}{{ else }}input.StartingAt.{{ pascalize $hashKey.AttributeName }}{{ end }}),
+                        	    S: aws.String({{ if isComposite $xdbConfig $hashKey.AttributeName }}{{ compositeValuePage $xdbConfig $hashKey.AttributeName "input.StartingAt" }}{{ else }}{{if attributeIsPointer $xdbConfig $hashKey.AttributeName }}*{{end}}input.StartingAt.{{ pascalize $hashKey.AttributeName }}{{ end }}),
                           {{- else if eq $dynamoDBType "N" }}
 			                        N: aws.String(fmt.Sprintf("%d", input.{{ pascalize $hashKey.AttributeName }})),
                           {{- end }}
       },
       ":{{ camelize $rangeKey.AttributeName }}": &dynamodb.AttributeValue{
                           {{- if gt $lenRangeKeyAttributes 1 }}
-                              S: aws.String({{- if isComposite $xdbConfig $rangeKey.AttributeName }}{{ compositeValuePage $xdbConfig $rangeKey.AttributeName "input.StartingAt" }}{{ else }}input.StartingAt.{{ pascalize $rangeKey.AttributeName }}{{ end }}),
+                              S: aws.String({{- if isComposite $xdbConfig $rangeKey.AttributeName }}{{ compositeValuePage $xdbConfig $rangeKey.AttributeName "input.StartingAt" }}{{ else }}{{if attributeIsPointer $xdbConfig $rangeKey.AttributeName }}*{{end}}input.StartingAt.{{ pascalize $rangeKey.AttributeName }}{{ end }}),
                           {{- else }}
                           {{- $attrGoType := goTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
                           {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
@@ -297,7 +297,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
                             S: aws.String(toDynamoTimeString(input.StartingAt.{{ pascalize $rangeKey.AttributeName }})),
                           {{- end}}
                           {{- else }}
-                              S: aws.String(input.StartingAt.{{ pascalize $rangeKey.AttributeName }}),
+                              S: aws.String({{if attributeIsPointer $xdbConfig $rangeKey.AttributeName }}*{{end}}input.StartingAt.{{ pascalize $rangeKey.AttributeName }}),
                           {{- end }}
                           {{- else if eq $attrDynamoDBType "N" }}
                               N: aws.String(fmt.Sprintf("%%d", input.StartingAt.{{ pascalize $rangeKey.AttributeName }})),
@@ -346,7 +346,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
             S: aws.String(toDynamoTimeString(input.StartingAt.{{ pascalize $hashKey.AttributeName }})),
           {{- end}}
           {{- else }}
-			S: aws.String(input.StartingAt.{{ pascalize $hashKey.AttributeName }}),
+			S: aws.String({{if attributeIsPointer $xdbConfig $hashKey.AttributeName }}*{{end}}input.StartingAt.{{ pascalize $hashKey.AttributeName }}),
           {{- end }}
         {{- else if eq $attrDynamoDBType "N" }}
 			N: aws.String(fmt.Sprintf("%%d", *input.StartingAt.{{ pascalize $hashKey.AttributeName }})),
@@ -444,14 +444,14 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
 			":{{ camelize $hashKey.AttributeName }}": &dynamodb.AttributeValue{
                         	{{- $dynamoDBType := dynamoDBTypeForAttribute $xdbConfig $hashKey.AttributeName }}
                         	{{- if eq $dynamoDBType "S" }}
-                        	    S: aws.String({{ if isComposite $xdbConfig $hashKey.AttributeName }}{{ compositeValuePage $xdbConfig $hashKey.AttributeName "input.StartingAt" }}{{ else }}input.StartingAt.{{ pascalize $hashKey.AttributeName }}{{ end }}),
+                        	    S: aws.String({{ if isComposite $xdbConfig $hashKey.AttributeName }}{{ compositeValuePage $xdbConfig $hashKey.AttributeName "input.StartingAt" }}{{ else }}{{if attributeIsPointer $xdbConfig $hashKey.AttributeName }}*{{end}}input.StartingAt.{{ pascalize $hashKey.AttributeName }}{{ end }}),
                           {{- else if eq $dynamoDBType "N" }}
 			                        N: aws.String(fmt.Sprintf("%d", input.{{ pascalize $hashKey.AttributeName }})),
                           {{- end }}
       },
       ":{{ camelize $rangeKey.AttributeName }}": &dynamodb.AttributeValue{
                           {{- if gt $lenRangeKeyAttributes 1 }}
-                              S: aws.String({{- if isComposite $xdbConfig $rangeKey.AttributeName }}{{ compositeValuePage $xdbConfig $rangeKey.AttributeName "input.StartingAt" }}{{ else }}input.StartingAt.{{ pascalize $rangeKey.AttributeName }}{{ end }}),
+                              S: aws.String({{- if isComposite $xdbConfig $rangeKey.AttributeName }}{{ compositeValuePage $xdbConfig $rangeKey.AttributeName "input.StartingAt" }}{{ else }}{{if attributeIsPointer $xdbConfig $rangeKey.AttributeName }}*{{end}}input.StartingAt.{{ pascalize $rangeKey.AttributeName }}{{ end }}),
                           {{- else }}
                           {{- $attrGoType := goTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
                           {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
@@ -463,7 +463,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
                             S: aws.String(toDynamoTimeString(input.StartingAt.{{ pascalize $rangeKey.AttributeName }})),
                           {{- end}}
                           {{- else }}
-                              S: aws.String(input.StartingAt.{{ pascalize $rangeKey.AttributeName }}),
+                              S: aws.String({{if attributeIsPointer $xdbConfig $rangeKey.AttributeName }}*{{end}}input.StartingAt.{{ pascalize $rangeKey.AttributeName }}),
                           {{- end }}
                           {{- else if eq $attrDynamoDBType "N" }}
                               N: aws.String(fmt.Sprintf("%%d", input.StartingAt.{{ pascalize $rangeKey.AttributeName }})),
@@ -512,7 +512,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
             S: aws.String(toDynamoTimeString(input.StartingAt.{{ pascalize $hashKey.AttributeName }})),
           {{- end}}
           {{- else }}
-			S: aws.String(input.StartingAt.{{ pascalize $hashKey.AttributeName }}),
+			S: aws.String({{if attributeIsPointer $xdbConfig $hashKey.AttributeName }}*{{end}}input.StartingAt.{{ pascalize $hashKey.AttributeName }}),
           {{- end }}
         {{- else if eq $attrDynamoDBType "N" }}
 			N: aws.String(fmt.Sprintf("%%d", *input.StartingAt.{{ pascalize $hashKey.AttributeName }})),
@@ -564,7 +564,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
             S: aws.String(toDynamoTimeString(input.StartingAt.{{ pascalize $primaryHashKey.AttributeName }})),
           {{- end}}
           {{- else }}
-			S: aws.String(input.StartingAt.{{ pascalize $primaryHashKey.AttributeName }}),
+			S: aws.String({{if attributeIsPointer $xdbConfig $primaryHashKey.AttributeName }}*{{end}}input.StartingAt.{{ pascalize $primaryHashKey.AttributeName }}),
           {{- end }}
         {{- else if eq $attrDynamoDBType "N" }}
 			N: aws.String(fmt.Sprintf("%%d", *input.StartingAt.{{ pascalize $primaryHashKey.AttributeName }})),

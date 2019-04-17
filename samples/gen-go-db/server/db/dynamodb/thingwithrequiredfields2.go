@@ -144,10 +144,10 @@ func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2sByNameAndID(c
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":name": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAt.Name),
+				S: aws.String(*input.StartingAt.Name),
 			},
 			":id": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAt.ID),
+				S: aws.String(*input.StartingAt.ID),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
@@ -160,7 +160,7 @@ func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2sByNameAndID(c
 				S: aws.String(*input.StartingAt.ID),
 			},
 			"name": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAt.Name),
+				S: aws.String(*input.StartingAt.Name),
 			},
 		}
 	}
