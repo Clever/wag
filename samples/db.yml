@@ -305,3 +305,43 @@ definitions:
         format: date-time
       resource:
         type: string
+
+  # Composite hash keys - no primary range key
+  NoRangeThingWithCompositeAttributes:
+    x-db:
+      AllowOverwrites: false
+      CompositeAttributes:
+      - AttributeName: name_branch
+        Properties: [ name, branch ]
+        Separator: "@"
+      - AttributeName: name_version
+        Properties: [ name, version ]
+        Separator: ":"
+      DynamoDB:
+        KeySchema:
+        - AttributeName: name_branch
+          KeyType: HASH
+        GlobalSecondaryIndexes:
+        - IndexName: nameVersion
+          Projection:
+            ProjectionType: ALL
+          KeySchema:
+          - AttributeName: name_version
+            KeyType: HASH
+          - AttributeName: date
+            KeyType: RANGE
+    type: object
+    required:
+    - name
+    - branch
+    - date
+    properties:
+      name:
+        type: string
+      branch:
+        type: string
+      version:
+        type: integer
+      date:
+        type: string
+        format: date-time

@@ -28,6 +28,8 @@ type Config struct {
 	// DefaultReadCapacityUnits configures a default read capacity when creating tables. It defaults to 1.
 	// It can be overriden on a table-by-table basis.
 	DefaultReadCapacityUnits int64
+	// NoRangeThingWithCompositeAttributesTable configuration.
+	NoRangeThingWithCompositeAttributesTable NoRangeThingWithCompositeAttributesTable
 	// SimpleThingTable configuration.
 	SimpleThingTable SimpleThingTable
 	// TeacherSharingRuleTable configuration.
@@ -62,6 +64,20 @@ func New(config Config) (*DB, error) {
 	}
 	if config.DefaultReadCapacityUnits == 0 {
 		config.DefaultReadCapacityUnits = 1
+	}
+	// configure NoRangeThingWithCompositeAttributes table
+	noRangeThingWithCompositeAttributesTable := config.NoRangeThingWithCompositeAttributesTable
+	if noRangeThingWithCompositeAttributesTable.DynamoDBAPI == nil {
+		noRangeThingWithCompositeAttributesTable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if noRangeThingWithCompositeAttributesTable.Prefix == "" {
+		noRangeThingWithCompositeAttributesTable.Prefix = config.DefaultPrefix
+	}
+	if noRangeThingWithCompositeAttributesTable.ReadCapacityUnits == 0 {
+		noRangeThingWithCompositeAttributesTable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if noRangeThingWithCompositeAttributesTable.WriteCapacityUnits == 0 {
+		noRangeThingWithCompositeAttributesTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
 	// configure SimpleThing table
 	simpleThingTable := config.SimpleThingTable
@@ -191,35 +207,40 @@ func New(config Config) (*DB, error) {
 	}
 
 	return &DB{
-		simpleThingTable:                      simpleThingTable,
-		teacherSharingRuleTable:               teacherSharingRuleTable,
-		thingTable:                            thingTable,
-		thingWithCompositeAttributesTable:     thingWithCompositeAttributesTable,
-		thingWithCompositeEnumAttributesTable: thingWithCompositeEnumAttributesTable,
-		thingWithDateRangeTable:               thingWithDateRangeTable,
-		thingWithDateTimeCompositeTable:       thingWithDateTimeCompositeTable,
-		thingWithRequiredFieldsTable:          thingWithRequiredFieldsTable,
-		thingWithUnderscoresTable:             thingWithUnderscoresTable,
+		noRangeThingWithCompositeAttributesTable: noRangeThingWithCompositeAttributesTable,
+		simpleThingTable:                         simpleThingTable,
+		teacherSharingRuleTable:                  teacherSharingRuleTable,
+		thingTable:                               thingTable,
+		thingWithCompositeAttributesTable:        thingWithCompositeAttributesTable,
+		thingWithCompositeEnumAttributesTable:    thingWithCompositeEnumAttributesTable,
+		thingWithDateRangeTable:                  thingWithDateRangeTable,
+		thingWithDateTimeCompositeTable:          thingWithDateTimeCompositeTable,
+		thingWithRequiredFieldsTable:             thingWithRequiredFieldsTable,
+		thingWithUnderscoresTable:                thingWithUnderscoresTable,
 	}, nil
 }
 
 // DB implements the database interface using DynamoDB to store data.
 type DB struct {
-	simpleThingTable                      SimpleThingTable
-	teacherSharingRuleTable               TeacherSharingRuleTable
-	thingTable                            ThingTable
-	thingWithCompositeAttributesTable     ThingWithCompositeAttributesTable
-	thingWithCompositeEnumAttributesTable ThingWithCompositeEnumAttributesTable
-	thingWithDateRangeTable               ThingWithDateRangeTable
-	thingWithDateTimeCompositeTable       ThingWithDateTimeCompositeTable
-	thingWithRequiredFieldsTable          ThingWithRequiredFieldsTable
-	thingWithUnderscoresTable             ThingWithUnderscoresTable
+	noRangeThingWithCompositeAttributesTable NoRangeThingWithCompositeAttributesTable
+	simpleThingTable                         SimpleThingTable
+	teacherSharingRuleTable                  TeacherSharingRuleTable
+	thingTable                               ThingTable
+	thingWithCompositeAttributesTable        ThingWithCompositeAttributesTable
+	thingWithCompositeEnumAttributesTable    ThingWithCompositeEnumAttributesTable
+	thingWithDateRangeTable                  ThingWithDateRangeTable
+	thingWithDateTimeCompositeTable          ThingWithDateTimeCompositeTable
+	thingWithRequiredFieldsTable             ThingWithRequiredFieldsTable
+	thingWithUnderscoresTable                ThingWithUnderscoresTable
 }
 
 var _ db.Interface = DB{}
 
 // CreateTables creates all tables.
 func (d DB) CreateTables(ctx context.Context) error {
+	if err := d.noRangeThingWithCompositeAttributesTable.create(ctx); err != nil {
+		return err
+	}
 	if err := d.simpleThingTable.create(ctx); err != nil {
 		return err
 	}
@@ -248,6 +269,26 @@ func (d DB) CreateTables(ctx context.Context) error {
 		return err
 	}
 	return nil
+}
+
+// SaveNoRangeThingWithCompositeAttributes saves a NoRangeThingWithCompositeAttributes to the database.
+func (d DB) SaveNoRangeThingWithCompositeAttributes(ctx context.Context, m models.NoRangeThingWithCompositeAttributes) error {
+	return d.noRangeThingWithCompositeAttributesTable.saveNoRangeThingWithCompositeAttributes(ctx, m)
+}
+
+// GetNoRangeThingWithCompositeAttributes retrieves a NoRangeThingWithCompositeAttributes from the database.
+func (d DB) GetNoRangeThingWithCompositeAttributes(ctx context.Context, name string, branch string) (*models.NoRangeThingWithCompositeAttributes, error) {
+	return d.noRangeThingWithCompositeAttributesTable.getNoRangeThingWithCompositeAttributes(ctx, name, branch)
+}
+
+// DeleteNoRangeThingWithCompositeAttributes deletes a NoRangeThingWithCompositeAttributes from the database.
+func (d DB) DeleteNoRangeThingWithCompositeAttributes(ctx context.Context, name string, branch string) error {
+	return d.noRangeThingWithCompositeAttributesTable.deleteNoRangeThingWithCompositeAttributes(ctx, name, branch)
+}
+
+// GetNoRangeThingWithCompositeAttributessByNameVersionAndDate retrieves a page of NoRangeThingWithCompositeAttributess from the database.
+func (d DB) GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input db.GetNoRangeThingWithCompositeAttributessByNameVersionAndDateInput, fn func(m *models.NoRangeThingWithCompositeAttributes, lastNoRangeThingWithCompositeAttributes bool) bool) error {
+	return d.noRangeThingWithCompositeAttributesTable.getNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx, input, fn)
 }
 
 // SaveSimpleThing saves a SimpleThing to the database.
