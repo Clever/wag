@@ -62,6 +62,10 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingWithRequiredFields", GetThingWithRequiredFields(dbFactory(), t))
 	t.Run("SaveThingWithRequiredFields", SaveThingWithRequiredFields(dbFactory(), t))
 	t.Run("DeleteThingWithRequiredFields", DeleteThingWithRequiredFields(dbFactory(), t))
+	t.Run("GetThingWithRequiredFields2", GetThingWithRequiredFields2(dbFactory(), t))
+	t.Run("GetThingWithRequiredFields2sByNameAndID", GetThingWithRequiredFields2sByNameAndID(dbFactory(), t))
+	t.Run("SaveThingWithRequiredFields2", SaveThingWithRequiredFields2(dbFactory(), t))
+	t.Run("DeleteThingWithRequiredFields2", DeleteThingWithRequiredFields2(dbFactory(), t))
 	t.Run("GetThingWithUnderscores", GetThingWithUnderscores(dbFactory(), t))
 	t.Run("SaveThingWithUnderscores", SaveThingWithUnderscores(dbFactory(), t))
 	t.Run("DeleteThingWithUnderscores", DeleteThingWithUnderscores(dbFactory(), t))
@@ -2626,6 +2630,228 @@ func DeleteThingWithRequiredFields(s db.Interface, t *testing.T) func(t *testing
 		}
 		require.Nil(t, s.SaveThingWithRequiredFields(ctx, m))
 		require.Nil(t, s.DeleteThingWithRequiredFields(ctx, *m.Name))
+	}
+}
+
+func GetThingWithRequiredFields2(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithRequiredFields2{
+			ID:   db.String("string1"),
+			Name: db.String("string1"),
+		}
+		require.Nil(t, s.SaveThingWithRequiredFields2(ctx, m))
+		m2, err := s.GetThingWithRequiredFields2(ctx, *m.Name, *m.ID)
+		require.Nil(t, err)
+		require.Equal(t, *m.Name, *m2.Name)
+		require.Equal(t, *m.ID, *m2.ID)
+
+		_, err = s.GetThingWithRequiredFields2(ctx, "string2", "string2")
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrThingWithRequiredFields2NotFound{})
+	}
+}
+
+type getThingWithRequiredFields2sByNameAndIDInput struct {
+	ctx   context.Context
+	input db.GetThingWithRequiredFields2sByNameAndIDInput
+}
+type getThingWithRequiredFields2sByNameAndIDOutput struct {
+	thingWithRequiredFields2s []models.ThingWithRequiredFields2
+	err                       error
+}
+type getThingWithRequiredFields2sByNameAndIDTest struct {
+	testName string
+	d        db.Interface
+	input    getThingWithRequiredFields2sByNameAndIDInput
+	output   getThingWithRequiredFields2sByNameAndIDOutput
+}
+
+func (g getThingWithRequiredFields2sByNameAndIDTest) run(t *testing.T) {
+	thingWithRequiredFields2s := []models.ThingWithRequiredFields2{}
+	fn := func(m *models.ThingWithRequiredFields2, lastThingWithRequiredFields2 bool) bool {
+		thingWithRequiredFields2s = append(thingWithRequiredFields2s, *m)
+		if lastThingWithRequiredFields2 {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingWithRequiredFields2sByNameAndID(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.thingWithRequiredFields2s, thingWithRequiredFields2s)
+}
+
+func GetThingWithRequiredFields2sByNameAndID(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithRequiredFields2(ctx, models.ThingWithRequiredFields2{
+			Name: db.String("string1"),
+			ID:   db.String("string1"),
+		}))
+		require.Nil(t, d.SaveThingWithRequiredFields2(ctx, models.ThingWithRequiredFields2{
+			Name: db.String("string1"),
+			ID:   db.String("string2"),
+		}))
+		require.Nil(t, d.SaveThingWithRequiredFields2(ctx, models.ThingWithRequiredFields2{
+			Name: db.String("string1"),
+			ID:   db.String("string3"),
+		}))
+		tests := []getThingWithRequiredFields2sByNameAndIDTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getThingWithRequiredFields2sByNameAndIDInput{
+					ctx: context.Background(),
+					input: db.GetThingWithRequiredFields2sByNameAndIDInput{
+						StartingAt: &models.ThingWithRequiredFields2{
+							Name: db.String("string1"),
+							ID:   db.String("string0"),
+						},
+						Exclusive: true,
+						Limit:     &limit,
+					},
+				},
+				output: getThingWithRequiredFields2sByNameAndIDOutput{
+					thingWithRequiredFields2s: []models.ThingWithRequiredFields2{
+						models.ThingWithRequiredFields2{
+							Name: db.String("string1"),
+							ID:   db.String("string1"),
+						},
+						models.ThingWithRequiredFields2{
+							Name: db.String("string1"),
+							ID:   db.String("string2"),
+						},
+						models.ThingWithRequiredFields2{
+							Name: db.String("string1"),
+							ID:   db.String("string3"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getThingWithRequiredFields2sByNameAndIDInput{
+					ctx: context.Background(),
+					input: db.GetThingWithRequiredFields2sByNameAndIDInput{
+						StartingAt: &models.ThingWithRequiredFields2{
+							Name: db.String("string1"),
+							ID:   db.String("string4"),
+						},
+						Exclusive:  true,
+						Descending: true,
+						Limit:      &limit,
+					},
+				},
+				output: getThingWithRequiredFields2sByNameAndIDOutput{
+					thingWithRequiredFields2s: []models.ThingWithRequiredFields2{
+						models.ThingWithRequiredFields2{
+							Name: db.String("string1"),
+							ID:   db.String("string3"),
+						},
+						models.ThingWithRequiredFields2{
+							Name: db.String("string1"),
+							ID:   db.String("string2"),
+						},
+						models.ThingWithRequiredFields2{
+							Name: db.String("string1"),
+							ID:   db.String("string1"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getThingWithRequiredFields2sByNameAndIDInput{
+					ctx: context.Background(),
+					input: db.GetThingWithRequiredFields2sByNameAndIDInput{
+						StartingAt: &models.ThingWithRequiredFields2{
+							Name: db.String("string1"),
+							ID:   db.String("string1"),
+						},
+						Exclusive: true,
+						Limit:     &limit,
+					},
+				},
+				output: getThingWithRequiredFields2sByNameAndIDOutput{
+					thingWithRequiredFields2s: []models.ThingWithRequiredFields2{
+						models.ThingWithRequiredFields2{
+							Name: db.String("string1"),
+							ID:   db.String("string2"),
+						},
+						models.ThingWithRequiredFields2{
+							Name: db.String("string1"),
+							ID:   db.String("string3"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingWithRequiredFields2sByNameAndIDInput{
+					ctx: context.Background(),
+					input: db.GetThingWithRequiredFields2sByNameAndIDInput{
+						StartingAt: &models.ThingWithRequiredFields2{
+							Name: db.String("string1"),
+							ID:   db.String("string1"),
+						},
+						Limit: &limit,
+					},
+				},
+				output: getThingWithRequiredFields2sByNameAndIDOutput{
+					thingWithRequiredFields2s: []models.ThingWithRequiredFields2{
+						models.ThingWithRequiredFields2{
+							Name: db.String("string1"),
+							ID:   db.String("string1"),
+						},
+						models.ThingWithRequiredFields2{
+							Name: db.String("string1"),
+							ID:   db.String("string2"),
+						},
+						models.ThingWithRequiredFields2{
+							Name: db.String("string1"),
+							ID:   db.String("string3"),
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+func SaveThingWithRequiredFields2(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithRequiredFields2{
+			ID:   db.String("string1"),
+			Name: db.String("string1"),
+		}
+		require.Nil(t, s.SaveThingWithRequiredFields2(ctx, m))
+		require.IsType(t, db.ErrThingWithRequiredFields2AlreadyExists{}, s.SaveThingWithRequiredFields2(ctx, m))
+	}
+}
+
+func DeleteThingWithRequiredFields2(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithRequiredFields2{
+			ID:   db.String("string1"),
+			Name: db.String("string1"),
+		}
+		require.Nil(t, s.SaveThingWithRequiredFields2(ctx, m))
+		require.Nil(t, s.DeleteThingWithRequiredFields2(ctx, *m.Name, *m.ID))
 	}
 }
 

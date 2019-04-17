@@ -46,6 +46,8 @@ type Config struct {
 	ThingWithDateTimeCompositeTable ThingWithDateTimeCompositeTable
 	// ThingWithRequiredFieldsTable configuration.
 	ThingWithRequiredFieldsTable ThingWithRequiredFieldsTable
+	// ThingWithRequiredFields2Table configuration.
+	ThingWithRequiredFields2Table ThingWithRequiredFields2Table
 	// ThingWithUnderscoresTable configuration.
 	ThingWithUnderscoresTable ThingWithUnderscoresTable
 }
@@ -191,6 +193,20 @@ func New(config Config) (*DB, error) {
 	if thingWithRequiredFieldsTable.WriteCapacityUnits == 0 {
 		thingWithRequiredFieldsTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	// configure ThingWithRequiredFields2 table
+	thingWithRequiredFields2Table := config.ThingWithRequiredFields2Table
+	if thingWithRequiredFields2Table.DynamoDBAPI == nil {
+		thingWithRequiredFields2Table.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if thingWithRequiredFields2Table.Prefix == "" {
+		thingWithRequiredFields2Table.Prefix = config.DefaultPrefix
+	}
+	if thingWithRequiredFields2Table.ReadCapacityUnits == 0 {
+		thingWithRequiredFields2Table.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if thingWithRequiredFields2Table.WriteCapacityUnits == 0 {
+		thingWithRequiredFields2Table.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
 	// configure ThingWithUnderscores table
 	thingWithUnderscoresTable := config.ThingWithUnderscoresTable
 	if thingWithUnderscoresTable.DynamoDBAPI == nil {
@@ -216,6 +232,7 @@ func New(config Config) (*DB, error) {
 		thingWithDateRangeTable:                  thingWithDateRangeTable,
 		thingWithDateTimeCompositeTable:          thingWithDateTimeCompositeTable,
 		thingWithRequiredFieldsTable:             thingWithRequiredFieldsTable,
+		thingWithRequiredFields2Table:            thingWithRequiredFields2Table,
 		thingWithUnderscoresTable:                thingWithUnderscoresTable,
 	}, nil
 }
@@ -231,6 +248,7 @@ type DB struct {
 	thingWithDateRangeTable                  ThingWithDateRangeTable
 	thingWithDateTimeCompositeTable          ThingWithDateTimeCompositeTable
 	thingWithRequiredFieldsTable             ThingWithRequiredFieldsTable
+	thingWithRequiredFields2Table            ThingWithRequiredFields2Table
 	thingWithUnderscoresTable                ThingWithUnderscoresTable
 }
 
@@ -263,6 +281,9 @@ func (d DB) CreateTables(ctx context.Context) error {
 		return err
 	}
 	if err := d.thingWithRequiredFieldsTable.create(ctx); err != nil {
+		return err
+	}
+	if err := d.thingWithRequiredFields2Table.create(ctx); err != nil {
 		return err
 	}
 	if err := d.thingWithUnderscoresTable.create(ctx); err != nil {
@@ -464,6 +485,26 @@ func (d DB) GetThingWithRequiredFields(ctx context.Context, name string) (*model
 // DeleteThingWithRequiredFields deletes a ThingWithRequiredFields from the database.
 func (d DB) DeleteThingWithRequiredFields(ctx context.Context, name string) error {
 	return d.thingWithRequiredFieldsTable.deleteThingWithRequiredFields(ctx, name)
+}
+
+// SaveThingWithRequiredFields2 saves a ThingWithRequiredFields2 to the database.
+func (d DB) SaveThingWithRequiredFields2(ctx context.Context, m models.ThingWithRequiredFields2) error {
+	return d.thingWithRequiredFields2Table.saveThingWithRequiredFields2(ctx, m)
+}
+
+// GetThingWithRequiredFields2 retrieves a ThingWithRequiredFields2 from the database.
+func (d DB) GetThingWithRequiredFields2(ctx context.Context, name string, id string) (*models.ThingWithRequiredFields2, error) {
+	return d.thingWithRequiredFields2Table.getThingWithRequiredFields2(ctx, name, id)
+}
+
+// GetThingWithRequiredFields2sByNameAndID retrieves a page of ThingWithRequiredFields2s from the database.
+func (d DB) GetThingWithRequiredFields2sByNameAndID(ctx context.Context, input db.GetThingWithRequiredFields2sByNameAndIDInput, fn func(m *models.ThingWithRequiredFields2, lastThingWithRequiredFields2 bool) bool) error {
+	return d.thingWithRequiredFields2Table.getThingWithRequiredFields2sByNameAndID(ctx, input, fn)
+}
+
+// DeleteThingWithRequiredFields2 deletes a ThingWithRequiredFields2 from the database.
+func (d DB) DeleteThingWithRequiredFields2(ctx context.Context, name string, id string) error {
+	return d.thingWithRequiredFields2Table.deleteThingWithRequiredFields2(ctx, name, id)
 }
 
 // SaveThingWithUnderscores saves a ThingWithUnderscores to the database.

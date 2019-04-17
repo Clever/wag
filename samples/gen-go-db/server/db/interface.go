@@ -99,6 +99,15 @@ type Interface interface {
 	// DeleteThingWithRequiredFields deletes a ThingWithRequiredFields from the database.
 	DeleteThingWithRequiredFields(ctx context.Context, name string) error
 
+	// SaveThingWithRequiredFields2 saves a ThingWithRequiredFields2 to the database.
+	SaveThingWithRequiredFields2(ctx context.Context, m models.ThingWithRequiredFields2) error
+	// GetThingWithRequiredFields2 retrieves a ThingWithRequiredFields2 from the database.
+	GetThingWithRequiredFields2(ctx context.Context, name string, id string) (*models.ThingWithRequiredFields2, error)
+	// GetThingWithRequiredFields2sByNameAndID retrieves a page of ThingWithRequiredFields2s from the database.
+	GetThingWithRequiredFields2sByNameAndID(ctx context.Context, input GetThingWithRequiredFields2sByNameAndIDInput, fn func(m *models.ThingWithRequiredFields2, lastThingWithRequiredFields2 bool) bool) error
+	// DeleteThingWithRequiredFields2 deletes a ThingWithRequiredFields2 from the database.
+	DeleteThingWithRequiredFields2(ctx context.Context, name string, id string) error
+
 	// SaveThingWithUnderscores saves a ThingWithUnderscores to the database.
 	SaveThingWithUnderscores(ctx context.Context, m models.ThingWithUnderscores) error
 	// GetThingWithUnderscores retrieves a ThingWithUnderscores from the database.
@@ -528,6 +537,45 @@ var _ error = ErrThingWithRequiredFieldsAlreadyExists{}
 // Error returns a description of the error.
 func (e ErrThingWithRequiredFieldsAlreadyExists) Error() string {
 	return "ThingWithRequiredFields already exists"
+}
+
+// GetThingWithRequiredFields2sByNameAndIDInput is the query input to GetThingWithRequiredFields2sByNameAndID.
+type GetThingWithRequiredFields2sByNameAndIDInput struct {
+	// StartingAt is a required specification of an (exclusive) starting point.
+	StartingAt *models.ThingWithRequiredFields2
+	// Exclusive toggles whether results include the start point
+	Exclusive bool
+	// Limit is a required limit on how many items to evaluate.
+	Limit *int64
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	Descending            bool
+}
+
+// ErrThingWithRequiredFields2NotFound is returned when the database fails to find a ThingWithRequiredFields2.
+type ErrThingWithRequiredFields2NotFound struct {
+	Name string
+	ID   string
+}
+
+var _ error = ErrThingWithRequiredFields2NotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithRequiredFields2NotFound) Error() string {
+	return "could not find ThingWithRequiredFields2"
+}
+
+// ErrThingWithRequiredFields2AlreadyExists is returned when trying to overwrite a ThingWithRequiredFields2.
+type ErrThingWithRequiredFields2AlreadyExists struct {
+	Name string
+	ID   string
+}
+
+var _ error = ErrThingWithRequiredFields2AlreadyExists{}
+
+// Error returns a description of the error.
+func (e ErrThingWithRequiredFields2AlreadyExists) Error() string {
+	return "ThingWithRequiredFields2 already exists"
 }
 
 // ErrThingWithUnderscoresNotFound is returned when the database fails to find a ThingWithUnderscores.

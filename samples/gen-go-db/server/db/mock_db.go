@@ -513,6 +513,55 @@ func (mr *MockInterfaceMockRecorder) DeleteThingWithRequiredFields(ctx, name int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithRequiredFields", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithRequiredFields), ctx, name)
 }
 
+// SaveThingWithRequiredFields2 mocks base method
+func (m_2 *MockInterface) SaveThingWithRequiredFields2(ctx context.Context, m models.ThingWithRequiredFields2) error {
+	ret := m_2.ctrl.Call(m_2, "SaveThingWithRequiredFields2", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveThingWithRequiredFields2 indicates an expected call of SaveThingWithRequiredFields2
+func (mr *MockInterfaceMockRecorder) SaveThingWithRequiredFields2(ctx, m interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithRequiredFields2", reflect.TypeOf((*MockInterface)(nil).SaveThingWithRequiredFields2), ctx, m)
+}
+
+// GetThingWithRequiredFields2 mocks base method
+func (m *MockInterface) GetThingWithRequiredFields2(ctx context.Context, name, id string) (*models.ThingWithRequiredFields2, error) {
+	ret := m.ctrl.Call(m, "GetThingWithRequiredFields2", ctx, name, id)
+	ret0, _ := ret[0].(*models.ThingWithRequiredFields2)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingWithRequiredFields2 indicates an expected call of GetThingWithRequiredFields2
+func (mr *MockInterfaceMockRecorder) GetThingWithRequiredFields2(ctx, name, id interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithRequiredFields2", reflect.TypeOf((*MockInterface)(nil).GetThingWithRequiredFields2), ctx, name, id)
+}
+
+// GetThingWithRequiredFields2sByNameAndID mocks base method
+func (m *MockInterface) GetThingWithRequiredFields2sByNameAndID(ctx context.Context, input GetThingWithRequiredFields2sByNameAndIDInput, fn func(*models.ThingWithRequiredFields2, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetThingWithRequiredFields2sByNameAndID", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingWithRequiredFields2sByNameAndID indicates an expected call of GetThingWithRequiredFields2sByNameAndID
+func (mr *MockInterfaceMockRecorder) GetThingWithRequiredFields2sByNameAndID(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithRequiredFields2sByNameAndID", reflect.TypeOf((*MockInterface)(nil).GetThingWithRequiredFields2sByNameAndID), ctx, input, fn)
+}
+
+// DeleteThingWithRequiredFields2 mocks base method
+func (m *MockInterface) DeleteThingWithRequiredFields2(ctx context.Context, name, id string) error {
+	ret := m.ctrl.Call(m, "DeleteThingWithRequiredFields2", ctx, name, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteThingWithRequiredFields2 indicates an expected call of DeleteThingWithRequiredFields2
+func (mr *MockInterfaceMockRecorder) DeleteThingWithRequiredFields2(ctx, name, id interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithRequiredFields2", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithRequiredFields2), ctx, name, id)
+}
+
 // SaveThingWithUnderscores mocks base method
 func (m_2 *MockInterface) SaveThingWithUnderscores(ctx context.Context, m models.ThingWithUnderscores) error {
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithUnderscores", ctx, m)
