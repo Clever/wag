@@ -12,6 +12,15 @@ import (
 
 // Interface for interacting with the swagger-test database.
 type Interface interface {
+	// SaveNoRangeThingWithCompositeAttributes saves a NoRangeThingWithCompositeAttributes to the database.
+	SaveNoRangeThingWithCompositeAttributes(ctx context.Context, m models.NoRangeThingWithCompositeAttributes) error
+	// GetNoRangeThingWithCompositeAttributes retrieves a NoRangeThingWithCompositeAttributes from the database.
+	GetNoRangeThingWithCompositeAttributes(ctx context.Context, name string, branch string) (*models.NoRangeThingWithCompositeAttributes, error)
+	// DeleteNoRangeThingWithCompositeAttributes deletes a NoRangeThingWithCompositeAttributes from the database.
+	DeleteNoRangeThingWithCompositeAttributes(ctx context.Context, name string, branch string) error
+	// GetNoRangeThingWithCompositeAttributessByNameVersionAndDate retrieves a page of NoRangeThingWithCompositeAttributess from the database.
+	GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input GetNoRangeThingWithCompositeAttributessByNameVersionAndDateInput, fn func(m *models.NoRangeThingWithCompositeAttributes, lastNoRangeThingWithCompositeAttributes bool) bool) error
+
 	// SaveSimpleThing saves a SimpleThing to the database.
 	SaveSimpleThing(ctx context.Context, m models.SimpleThing) error
 	// GetSimpleThing retrieves a SimpleThing from the database.
@@ -106,6 +115,56 @@ func String(s string) *string { return &s }
 
 // DateTime returns a pointer to the strfmt.DateTime value passed in.
 func DateTime(d strfmt.DateTime) *strfmt.DateTime { return &d }
+
+// ErrNoRangeThingWithCompositeAttributesNotFound is returned when the database fails to find a NoRangeThingWithCompositeAttributes.
+type ErrNoRangeThingWithCompositeAttributesNotFound struct {
+	Name   string
+	Branch string
+}
+
+var _ error = ErrNoRangeThingWithCompositeAttributesNotFound{}
+
+// Error returns a description of the error.
+func (e ErrNoRangeThingWithCompositeAttributesNotFound) Error() string {
+	return "could not find NoRangeThingWithCompositeAttributes"
+}
+
+// GetNoRangeThingWithCompositeAttributessByNameVersionAndDateInput is the query input to GetNoRangeThingWithCompositeAttributessByNameVersionAndDate.
+type GetNoRangeThingWithCompositeAttributessByNameVersionAndDateInput struct {
+	// StartingAt is a required specification of an (exclusive) starting point.
+	StartingAt *models.NoRangeThingWithCompositeAttributes
+	// Exclusive toggles whether results include the start point
+	Exclusive bool
+	// Limit is a required limit on how many items to evaluate.
+	Limit      *int64
+	Descending bool
+}
+
+// ErrNoRangeThingWithCompositeAttributesByNameVersionAndDateNotFound is returned when the database fails to find a NoRangeThingWithCompositeAttributes.
+type ErrNoRangeThingWithCompositeAttributesByNameVersionAndDateNotFound struct {
+	Name    string
+	Version int64
+	Date    strfmt.DateTime
+}
+
+var _ error = ErrNoRangeThingWithCompositeAttributesByNameVersionAndDateNotFound{}
+
+// Error returns a description of the error.
+func (e ErrNoRangeThingWithCompositeAttributesByNameVersionAndDateNotFound) Error() string {
+	return "could not find NoRangeThingWithCompositeAttributes"
+}
+
+// ErrNoRangeThingWithCompositeAttributesAlreadyExists is returned when trying to overwrite a NoRangeThingWithCompositeAttributes.
+type ErrNoRangeThingWithCompositeAttributesAlreadyExists struct {
+	NameBranch string
+}
+
+var _ error = ErrNoRangeThingWithCompositeAttributesAlreadyExists{}
+
+// Error returns a description of the error.
+func (e ErrNoRangeThingWithCompositeAttributesAlreadyExists) Error() string {
+	return "NoRangeThingWithCompositeAttributes already exists"
+}
 
 // ErrSimpleThingNotFound is returned when the database fails to find a SimpleThing.
 type ErrSimpleThingNotFound struct {

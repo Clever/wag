@@ -35,6 +35,55 @@ func (m *MockInterface) EXPECT() *MockInterfaceMockRecorder {
 	return m.recorder
 }
 
+// SaveNoRangeThingWithCompositeAttributes mocks base method
+func (m_2 *MockInterface) SaveNoRangeThingWithCompositeAttributes(ctx context.Context, m models.NoRangeThingWithCompositeAttributes) error {
+	ret := m_2.ctrl.Call(m_2, "SaveNoRangeThingWithCompositeAttributes", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveNoRangeThingWithCompositeAttributes indicates an expected call of SaveNoRangeThingWithCompositeAttributes
+func (mr *MockInterfaceMockRecorder) SaveNoRangeThingWithCompositeAttributes(ctx, m interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveNoRangeThingWithCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).SaveNoRangeThingWithCompositeAttributes), ctx, m)
+}
+
+// GetNoRangeThingWithCompositeAttributes mocks base method
+func (m *MockInterface) GetNoRangeThingWithCompositeAttributes(ctx context.Context, name, branch string) (*models.NoRangeThingWithCompositeAttributes, error) {
+	ret := m.ctrl.Call(m, "GetNoRangeThingWithCompositeAttributes", ctx, name, branch)
+	ret0, _ := ret[0].(*models.NoRangeThingWithCompositeAttributes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetNoRangeThingWithCompositeAttributes indicates an expected call of GetNoRangeThingWithCompositeAttributes
+func (mr *MockInterfaceMockRecorder) GetNoRangeThingWithCompositeAttributes(ctx, name, branch interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNoRangeThingWithCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).GetNoRangeThingWithCompositeAttributes), ctx, name, branch)
+}
+
+// DeleteNoRangeThingWithCompositeAttributes mocks base method
+func (m *MockInterface) DeleteNoRangeThingWithCompositeAttributes(ctx context.Context, name, branch string) error {
+	ret := m.ctrl.Call(m, "DeleteNoRangeThingWithCompositeAttributes", ctx, name, branch)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteNoRangeThingWithCompositeAttributes indicates an expected call of DeleteNoRangeThingWithCompositeAttributes
+func (mr *MockInterfaceMockRecorder) DeleteNoRangeThingWithCompositeAttributes(ctx, name, branch interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNoRangeThingWithCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).DeleteNoRangeThingWithCompositeAttributes), ctx, name, branch)
+}
+
+// GetNoRangeThingWithCompositeAttributessByNameVersionAndDate mocks base method
+func (m *MockInterface) GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input GetNoRangeThingWithCompositeAttributessByNameVersionAndDateInput, fn func(*models.NoRangeThingWithCompositeAttributes, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetNoRangeThingWithCompositeAttributessByNameVersionAndDate", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetNoRangeThingWithCompositeAttributessByNameVersionAndDate indicates an expected call of GetNoRangeThingWithCompositeAttributessByNameVersionAndDate
+func (mr *MockInterfaceMockRecorder) GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNoRangeThingWithCompositeAttributessByNameVersionAndDate", reflect.TypeOf((*MockInterface)(nil).GetNoRangeThingWithCompositeAttributessByNameVersionAndDate), ctx, input, fn)
+}
+
 // SaveSimpleThing mocks base method
 func (m_2 *MockInterface) SaveSimpleThing(ctx context.Context, m models.SimpleThing) error {
 	ret := m_2.ctrl.Call(m_2, "SaveSimpleThing", ctx, m)

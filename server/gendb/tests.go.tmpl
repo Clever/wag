@@ -60,17 +60,9 @@ func Get{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
        		ctx := context.Background()
 		m := models.{{ $modelName }}{
-			{{- range $attributeName := $pkModelAttributeNames }}
+			{{- range $attributeName := modelAttributeNames $xdbConfig }}
 			{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
 			{{- end }}
-                        {{- if len $nonPKSecondaryStringProperties }}
-			// must specify non-empty string values for attributes
-			// in secondary indexes, since dynamodb doesn't support
-			// empty strings:
-                        {{- range $attr := $nonPKSecondaryStringProperties }}
-                        {{ pascalize $attr }}: "{{ $attr }}",
-                        {{- end }}
-                        {{- end }}
 		}
 		require.Nil(t, s.Save{{ $modelName }}(ctx, m))
 		m2, err := s.Get{{ $modelName }}(ctx, {{ range $attributeName := $pkModelAttributeNames }}{{ attributeToModelValue $xdbConfig $attributeName "m." }},{{ end }})
@@ -629,17 +621,9 @@ func Save{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m := models.{{ $modelName }}{
-			{{- range $attributeName := $pkModelAttributeNames }}
-			{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+      {{- range $attributeName := modelAttributeNames $xdbConfig }}
+			{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
 			{{- end }}
-                        {{- if len $nonPKSecondaryStringProperties }}
-			// must specify non-empty string values for attributes
-			// in secondary indexes, since dynamodb doesn't support
-			// empty strings:
-                        {{- range $attr := $nonPKSecondaryStringProperties }}
-                        {{ pascalize $attr }}: "{{ $attr }}",
-                        {{- end }}
-                        {{- end }}
 		}
 		require.Nil(t, s.Save{{ $modelName }}(ctx, m))
                 {{- if not $xdbConfig.AllowOverwrites }}
@@ -652,17 +636,9 @@ func Delete{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m := models.{{ $modelName }}{
-			{{- range $attributeName := $pkModelAttributeNames }}
-			{{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+			{{- range $attributeName := modelAttributeNames $xdbConfig }}
+			{{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
 			{{- end }}
-                        {{- if len $nonPKSecondaryStringProperties }}
-			// must specify non-empty string values for attributes
-			// in secondary indexes, since dynamodb doesn't support
-			// empty strings:
-                        {{- range $attr := $nonPKSecondaryStringProperties }}
-                        {{ pascalize $attr }}: "{{ $attr }}",
-                        {{- end }}
-                        {{- end }}
 		}
 		require.Nil(t, s.Save{{ $modelName }}(ctx, m))
 		require.Nil(t, s.Delete{{ $modelName }}(ctx, {{- range $attributeName := $pkModelAttributeNames }}{{ attributeToModelValue $xdbConfig $attributeName "m." }},{{- end -}}))
