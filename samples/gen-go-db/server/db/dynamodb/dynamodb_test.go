@@ -1,13 +1,12 @@
 package dynamodb
 
 import (
-	"bufio"
 	"context"
-	"io"
-	"os"
+	"net"
 	"os/exec"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Clever/wag/samples/gen-go-db/server/db"
 	"github.com/Clever/wag/samples/gen-go-db/server/db/tests"
@@ -22,20 +21,24 @@ func TestDynamoDBStore(t *testing.T) {
 	testCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	cmd := exec.CommandContext(testCtx, "./dynamodb-local.sh")
-	ddbLocalOutputReader, ddbLocalOutputWriter := io.Pipe()
-	cmd.Stdout = io.MultiWriter(os.Stdout, ddbLocalOutputWriter)
-	cmd.Stderr = io.MultiWriter(os.Stderr, ddbLocalOutputWriter)
 	if err := cmd.Start(); err != nil {
 		t.Fatal(err)
 	}
 
-	// wait for dynamodb local to output the correct startup log
-	scanner := bufio.NewScanner(ddbLocalOutputReader)
-	for scanner.Scan() {
-		if strings.Contains(scanner.Text(), "Initializing DynamoDB Local with the following configuration") {
+	end := time.Now().Add(60 * time.Second)
+	var c net.Conn
+	var err error
+	for time.Now().Before(end) {
+		c, err = net.Dial("tcp", "localhost:8002")
+		if err == nil {
 			break
 		}
+		time.Sleep(time.Second)
 	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	c.Close()
 
 	dynamoDBAPI := dynamodb.New(session.Must(session.NewSessionWithOptions(session.Options{
 		Config: aws.Config{

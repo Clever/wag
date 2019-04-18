@@ -1,2 +1,2 @@
-v2.0.4
-- Add test + fix for indexes with matching keys
+v2.0.5
+- Change test db connection check
