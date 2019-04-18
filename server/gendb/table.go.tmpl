@@ -160,13 +160,16 @@ func (t {{ $modelName }}Table) save{{ $modelName }}(ctx context.Context, m model
                         "),
 	})
 	if err != nil {
-		if awsErr, ok := err.(awserr.Error); ok {
-			if awsErr.Code() == dynamodb.ErrCodeConditionalCheckFailedException {
-				return db.Err{{ $modelName }}AlreadyExists{
-					{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-					{{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValue $xdbConfig $pk.AttributeName "m" }}{{ else }}{{ attributeToModelValue $xdbConfig $pk.AttributeName "m." }}{{ end }},
-					{{- end }}
-				}
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+				case dynamodb.ErrCodeConditionalCheckFailedException:
+					return db.Err{{ $modelName }}AlreadyExists{
+						{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+						{{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValue $xdbConfig $pk.AttributeName "m" }}{{ else }}{{ attributeToModelValue $xdbConfig $pk.AttributeName "m." }}{{ end }},
+						{{- end }}
+					}
+				case dynamodb.ErrCodeResourceNotFoundException:
+					return fmt.Errorf("table or index not found: %%s", t.name())
 			}
 		}
 		return err
@@ -193,9 +196,21 @@ func (t {{ $modelName }}Table) get{{ $modelName }}(ctx context.Context,
 		Key:       key,
 		TableName: aws.String(t.name()),
 	})
+	{{- if $xdbConfig.AllowOverwrites }}
 	if err != nil {
 		return nil, err
 	}
+	{{- else }}
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+				case dynamodb.ErrCodeResourceNotFoundException:
+					return nil, fmt.Errorf("table or index not found: %%s", t.name())
+			}
+		}
+		return nil, err
+	}
+	{{- end }}
 
 	if len(res.Item) == 0 {
 		return nil, db.Err{{ $modelName }}NotFound{
@@ -362,9 +377,21 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
   }
 
 	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	{{- if $xdbConfig.AllowOverwrites }}
 	if err != nil {
 		return err
 	}
+	{{- else }}
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+				case dynamodb.ErrCodeResourceNotFoundException:
+					return fmt.Errorf("table or index not found: %%s", t.name())
+			}
+		}
+		return err
+	}
+	{{- end }}
 	if len(queryOutput.Items) == 0 {
 		return nil
 	}
@@ -407,9 +434,22 @@ func (t {{ $modelName }}Table) delete{{ $modelName }}(ctx context.Context,
 		Key:       key,
 		TableName: aws.String(t.name()),
 	})
+	{{- if $xdbConfig.AllowOverwrites }}
 	if err != nil {
 		return err
 	}
+	{{- else }}
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+				case dynamodb.ErrCodeResourceNotFoundException:
+					return fmt.Errorf("table or index not found: %%s", t.name())
+			}
+		}
+		return err
+	}
+	{{- end }}
+
 	return nil
 }
 
@@ -587,9 +627,21 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
   }
 
 	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	{{- if $xdbConfig.AllowOverwrites }}
 	if err != nil {
 		return err
 	}
+	{{- else }}
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+				case dynamodb.ErrCodeResourceNotFoundException:
+					return fmt.Errorf("table or index not found: %%s", t.name())
+			}
+		}
+		return err
+	}
+	{{- end }}
 	if len(queryOutput.Items) == 0 {
 		return nil
 	}
@@ -637,9 +689,21 @@ func (t {{ $modelName}}Table) get{{ $modelName }}By{{ $computedIndexName }}(ctx 
 	}
 
 	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	{{- if $xdbConfig.AllowOverwrites }}
 	if err != nil {
 		return nil, err
 	}
+	{{- else }}
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+				case dynamodb.ErrCodeResourceNotFoundException:
+					return nil, fmt.Errorf("table or index not found: %%s", t.name())
+			}
+		}
+		return nil, err
+	}
+	{{- end }}
 	if len(queryOutput.Items) == 0 {
 		return nil, db.Err{{ $modelName }}By{{ $computedIndexName }}NotFound{
                 {{- pascalize $ks.AttributeName }}: {{ varname $ks.AttributeName -}}
