@@ -91,12 +91,15 @@ func (t ThingWithRequiredFields2Table) saveThingWithRequiredFields2(ctx context.
 		ConditionExpression: aws.String("attribute_not_exists(#NAME) AND attribute_not_exists(#ID)"),
 	})
 	if err != nil {
-		if awsErr, ok := err.(awserr.Error); ok {
-			if awsErr.Code() == dynamodb.ErrCodeConditionalCheckFailedException {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case dynamodb.ErrCodeConditionalCheckFailedException:
 				return db.ErrThingWithRequiredFields2AlreadyExists{
 					Name: *m.Name,
 					ID:   *m.ID,
 				}
+			case dynamodb.ErrCodeResourceNotFoundException:
+				return fmt.Errorf("table or index not found: %s", t.name())
 			}
 		}
 		return err
@@ -117,6 +120,12 @@ func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2(ctx context.C
 		TableName: aws.String(t.name()),
 	})
 	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case dynamodb.ErrCodeResourceNotFoundException:
+				return nil, fmt.Errorf("table or index not found: %s", t.name())
+			}
+		}
 		return nil, err
 	}
 
@@ -172,6 +181,12 @@ func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2sByNameAndID(c
 
 	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
 	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case dynamodb.ErrCodeResourceNotFoundException:
+				return fmt.Errorf("table or index not found: %s", t.name())
+			}
+		}
 		return err
 	}
 	if len(queryOutput.Items) == 0 {
@@ -211,8 +226,15 @@ func (t ThingWithRequiredFields2Table) deleteThingWithRequiredFields2(ctx contex
 		TableName: aws.String(t.name()),
 	})
 	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case dynamodb.ErrCodeResourceNotFoundException:
+				return fmt.Errorf("table or index not found: %s", t.name())
+			}
+		}
 		return err
 	}
+
 	return nil
 }
 

@@ -199,6 +199,7 @@ func (t ThingWithDateTimeCompositeTable) deleteThingWithDateTimeComposite(ctx co
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 

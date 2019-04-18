@@ -148,12 +148,15 @@ func (t ThingTable) saveThing(ctx context.Context, m models.Thing) error {
 		ConditionExpression: aws.String("attribute_not_exists(#NAME) AND attribute_not_exists(#VERSION)"),
 	})
 	if err != nil {
-		if awsErr, ok := err.(awserr.Error); ok {
-			if awsErr.Code() == dynamodb.ErrCodeConditionalCheckFailedException {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case dynamodb.ErrCodeConditionalCheckFailedException:
 				return db.ErrThingAlreadyExists{
 					Name:    m.Name,
 					Version: m.Version,
 				}
+			case dynamodb.ErrCodeResourceNotFoundException:
+				return fmt.Errorf("table or index not found: %s", t.name())
 			}
 		}
 		return err
@@ -174,6 +177,12 @@ func (t ThingTable) getThing(ctx context.Context, name string, version int64) (*
 		TableName: aws.String(t.name()),
 	})
 	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case dynamodb.ErrCodeResourceNotFoundException:
+				return nil, fmt.Errorf("table or index not found: %s", t.name())
+			}
+		}
 		return nil, err
 	}
 
@@ -272,6 +281,12 @@ func (t ThingTable) getThingsByNameAndVersion(ctx context.Context, input db.GetT
 
 	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
 	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case dynamodb.ErrCodeResourceNotFoundException:
+				return fmt.Errorf("table or index not found: %s", t.name())
+			}
+		}
 		return err
 	}
 	if len(queryOutput.Items) == 0 {
@@ -311,8 +326,15 @@ func (t ThingTable) deleteThing(ctx context.Context, name string, version int64)
 		TableName: aws.String(t.name()),
 	})
 	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case dynamodb.ErrCodeResourceNotFoundException:
+				return fmt.Errorf("table or index not found: %s", t.name())
+			}
+		}
 		return err
 	}
+
 	return nil
 }
 
@@ -333,6 +355,12 @@ func (t ThingTable) getThingByID(ctx context.Context, id string) (*models.Thing,
 
 	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
 	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case dynamodb.ErrCodeResourceNotFoundException:
+				return nil, fmt.Errorf("table or index not found: %s", t.name())
+			}
+		}
 		return nil, err
 	}
 	if len(queryOutput.Items) == 0 {
@@ -380,6 +408,7 @@ func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.Ge
 			"name": &dynamodb.AttributeValue{
 				S: aws.String(input.StartingAt.Name),
 			},
+
 			"version": &dynamodb.AttributeValue{
 				N: aws.String(fmt.Sprintf("%d", input.StartingAt.Version)),
 			},
@@ -393,6 +422,12 @@ func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.Ge
 
 	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
 	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case dynamodb.ErrCodeResourceNotFoundException:
+				return fmt.Errorf("table or index not found: %s", t.name())
+			}
+		}
 		return err
 	}
 	if len(queryOutput.Items) == 0 {

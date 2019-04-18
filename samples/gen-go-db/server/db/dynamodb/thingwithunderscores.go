@@ -121,6 +121,7 @@ func (t ThingWithUnderscoresTable) deleteThingWithUnderscores(ctx context.Contex
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 

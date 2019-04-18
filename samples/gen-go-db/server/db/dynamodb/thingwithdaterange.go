@@ -196,6 +196,7 @@ func (t ThingWithDateRangeTable) deleteThingWithDateRange(ctx context.Context, n
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
