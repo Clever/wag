@@ -272,11 +272,9 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeache
 			"district": &dynamodb.AttributeValue{
 				S: aws.String(input.StartingAt.District),
 			},
-
 			"school_app": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s_%s", input.StartingAt.School, input.StartingAt.App)),
 			},
-
 			"teacher": &dynamodb.AttributeValue{
 				S: aws.String(input.StartingAt.Teacher),
 			},

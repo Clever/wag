@@ -408,7 +408,6 @@ func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.Ge
 			"name": &dynamodb.AttributeValue{
 				S: aws.String(input.StartingAt.Name),
 			},
-
 			"version": &dynamodb.AttributeValue{
 				N: aws.String(fmt.Sprintf("%d", input.StartingAt.Version)),
 			},

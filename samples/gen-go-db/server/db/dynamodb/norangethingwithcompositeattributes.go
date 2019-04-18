@@ -227,7 +227,6 @@ func (t NoRangeThingWithCompositeAttributesTable) getNoRangeThingWithCompositeAt
 			"name_version": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s:%d", *input.StartingAt.Name, input.StartingAt.Version)),
 			},
-
 			"name_branch": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAt.Name, *input.StartingAt.Branch)),
 			},
