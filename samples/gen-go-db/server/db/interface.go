@@ -12,6 +12,21 @@ import (
 
 // Interface for interacting with the swagger-test database.
 type Interface interface {
+	// SaveDeployment saves a Deployment to the database.
+	SaveDeployment(ctx context.Context, m models.Deployment) error
+	// GetDeployment retrieves a Deployment from the database.
+	GetDeployment(ctx context.Context, environment string, application string, version string) (*models.Deployment, error)
+	// GetDeploymentsByEnvAppAndVersion retrieves a page of Deployments from the database.
+	GetDeploymentsByEnvAppAndVersion(ctx context.Context, input GetDeploymentsByEnvAppAndVersionInput, fn func(m *models.Deployment, lastDeployment bool) bool) error
+	// DeleteDeployment deletes a Deployment from the database.
+	DeleteDeployment(ctx context.Context, environment string, application string, version string) error
+	// GetDeploymentsByEnvAppAndDate retrieves a page of Deployments from the database.
+	GetDeploymentsByEnvAppAndDate(ctx context.Context, input GetDeploymentsByEnvAppAndDateInput, fn func(m *models.Deployment, lastDeployment bool) bool) error
+	// GetDeploymentsByEnvironmentAndDate retrieves a page of Deployments from the database.
+	GetDeploymentsByEnvironmentAndDate(ctx context.Context, input GetDeploymentsByEnvironmentAndDateInput, fn func(m *models.Deployment, lastDeployment bool) bool) error
+	// GetDeploymentByVersion retrieves a Deployment from the database.
+	GetDeploymentByVersion(ctx context.Context, version string) (*models.Deployment, error)
+
 	// SaveNoRangeThingWithCompositeAttributes saves a NoRangeThingWithCompositeAttributes to the database.
 	SaveNoRangeThingWithCompositeAttributes(ctx context.Context, m models.NoRangeThingWithCompositeAttributes) error
 	// GetNoRangeThingWithCompositeAttributes retrieves a NoRangeThingWithCompositeAttributes from the database.
@@ -136,6 +151,94 @@ func String(s string) *string { return &s }
 // DateTime returns a pointer to the strfmt.DateTime value passed in.
 func DateTime(d strfmt.DateTime) *strfmt.DateTime { return &d }
 
+// GetDeploymentsByEnvAppAndVersionInput is the query input to GetDeploymentsByEnvAppAndVersion.
+type GetDeploymentsByEnvAppAndVersionInput struct {
+	Environment       string
+	Application       string
+	VersionStartingAt *string
+	// StartingAfter is a required specification of an exclusive starting point.
+	StartingAfter *models.Deployment
+	Descending    bool
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit on how many items to evaluate.
+	Limit *int64
+}
+
+// ErrDeploymentNotFound is returned when the database fails to find a Deployment.
+type ErrDeploymentNotFound struct {
+	Environment string
+	Application string
+	Version     string
+}
+
+var _ error = ErrDeploymentNotFound{}
+
+// Error returns a description of the error.
+func (e ErrDeploymentNotFound) Error() string {
+	return "could not find Deployment"
+}
+
+// GetDeploymentsByEnvAppAndDateInput is the query input to GetDeploymentsByEnvAppAndDate.
+type GetDeploymentsByEnvAppAndDateInput struct {
+	Environment    string
+	Application    string
+	DateStartingAt *strfmt.DateTime
+	StartingAfter  *models.Deployment
+	Descending     bool
+	// Limit is an optional limit on how many items to evaluate.
+	Limit *int64
+}
+
+// ErrDeploymentByEnvAppAndDateNotFound is returned when the database fails to find a Deployment.
+type ErrDeploymentByEnvAppAndDateNotFound struct {
+	Environment string
+	Application string
+	Date        strfmt.DateTime
+}
+
+var _ error = ErrDeploymentByEnvAppAndDateNotFound{}
+
+// Error returns a description of the error.
+func (e ErrDeploymentByEnvAppAndDateNotFound) Error() string {
+	return "could not find Deployment"
+}
+
+// GetDeploymentsByEnvironmentAndDateInput is the query input to GetDeploymentsByEnvironmentAndDate.
+type GetDeploymentsByEnvironmentAndDateInput struct {
+	Environment    string
+	DateStartingAt *strfmt.DateTime
+	StartingAfter  *models.Deployment
+	Descending     bool
+	// Limit is an optional limit on how many items to evaluate.
+	Limit *int64
+}
+
+// ErrDeploymentByEnvironmentAndDateNotFound is returned when the database fails to find a Deployment.
+type ErrDeploymentByEnvironmentAndDateNotFound struct {
+	Environment string
+	Date        strfmt.DateTime
+}
+
+var _ error = ErrDeploymentByEnvironmentAndDateNotFound{}
+
+// Error returns a description of the error.
+func (e ErrDeploymentByEnvironmentAndDateNotFound) Error() string {
+	return "could not find Deployment"
+}
+
+// ErrDeploymentByVersionNotFound is returned when the database fails to find a Deployment.
+type ErrDeploymentByVersionNotFound struct {
+	Version string
+}
+
+var _ error = ErrDeploymentByVersionNotFound{}
+
+// Error returns a description of the error.
+func (e ErrDeploymentByVersionNotFound) Error() string {
+	return "could not find Deployment"
+}
+
 // ErrNoRangeThingWithCompositeAttributesNotFound is returned when the database fails to find a NoRangeThingWithCompositeAttributes.
 type ErrNoRangeThingWithCompositeAttributesNotFound struct {
 	Name   string
@@ -151,13 +254,13 @@ func (e ErrNoRangeThingWithCompositeAttributesNotFound) Error() string {
 
 // GetNoRangeThingWithCompositeAttributessByNameVersionAndDateInput is the query input to GetNoRangeThingWithCompositeAttributessByNameVersionAndDate.
 type GetNoRangeThingWithCompositeAttributessByNameVersionAndDateInput struct {
-	// StartingAt is a required specification of an (exclusive) starting point.
-	StartingAt *models.NoRangeThingWithCompositeAttributes
-	// Exclusive toggles whether results include the start point
-	Exclusive bool
-	// Limit is a required limit on how many items to evaluate.
-	Limit      *int64
-	Descending bool
+	Name           string
+	Version        int64
+	DateStartingAt *strfmt.DateTime
+	StartingAfter  *models.NoRangeThingWithCompositeAttributes
+	Descending     bool
+	// Limit is an optional limit on how many items to evaluate.
+	Limit *int64
 }
 
 // ErrNoRangeThingWithCompositeAttributesByNameVersionAndDateNotFound is returned when the database fails to find a NoRangeThingWithCompositeAttributes.
@@ -212,15 +315,15 @@ func (e ErrSimpleThingAlreadyExists) Error() string {
 
 // GetTeacherSharingRulesByTeacherAndSchoolAppInput is the query input to GetTeacherSharingRulesByTeacherAndSchoolApp.
 type GetTeacherSharingRulesByTeacherAndSchoolAppInput struct {
-	// StartingAt is a required specification of an (exclusive) starting point.
-	StartingAt *models.TeacherSharingRule
-	// Exclusive toggles whether results include the start point
-	Exclusive bool
-	// Limit is a required limit on how many items to evaluate.
-	Limit *int64
+	Teacher    string
+	StartingAt *SchoolApp
+	// StartingAfter is a required specification of an exclusive starting point.
+	StartingAfter *models.TeacherSharingRule
+	Descending    bool
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
-	Descending            bool
+	// Limit is an optional limit on how many items to evaluate.
+	Limit *int64
 }
 
 // SchoolApp struct.
@@ -245,13 +348,12 @@ func (e ErrTeacherSharingRuleNotFound) Error() string {
 
 // GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput is the query input to GetTeacherSharingRulesByDistrictAndSchoolTeacherApp.
 type GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput struct {
-	// StartingAt is a required specification of an (exclusive) starting point.
-	StartingAt *models.TeacherSharingRule
-	// Exclusive toggles whether results include the start point
-	Exclusive bool
-	// Limit is a required limit on how many items to evaluate.
-	Limit      *int64
-	Descending bool
+	District      string
+	StartingAt    *SchoolTeacherApp
+	StartingAfter *models.TeacherSharingRule
+	Descending    bool
+	// Limit is an optional limit on how many items to evaluate.
+	Limit *int64
 }
 
 // SchoolTeacherApp struct.
@@ -288,15 +390,15 @@ type ScanThingsInput struct {
 
 // GetThingsByNameAndVersionInput is the query input to GetThingsByNameAndVersion.
 type GetThingsByNameAndVersionInput struct {
-	// StartingAt is a required specification of an (exclusive) starting point.
-	StartingAt *models.Thing
-	// Exclusive toggles whether results include the start point
-	Exclusive bool
-	// Limit is a required limit on how many items to evaluate.
-	Limit *int64
+	Name              string
+	VersionStartingAt *int64
+	// StartingAfter is a required specification of an exclusive starting point.
+	StartingAfter *models.Thing
+	Descending    bool
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
-	Descending            bool
+	// Limit is an optional limit on how many items to evaluate.
+	Limit *int64
 }
 
 // ErrThingNotFound is returned when the database fails to find a Thing.
@@ -326,13 +428,12 @@ func (e ErrThingByIDNotFound) Error() string {
 
 // GetThingsByNameAndCreatedAtInput is the query input to GetThingsByNameAndCreatedAt.
 type GetThingsByNameAndCreatedAtInput struct {
-	// StartingAt is a required specification of an (exclusive) starting point.
-	StartingAt *models.Thing
-	// Exclusive toggles whether results include the start point
-	Exclusive bool
-	// Limit is a required limit on how many items to evaluate.
-	Limit      *int64
-	Descending bool
+	Name                string
+	CreatedAtStartingAt *strfmt.DateTime
+	StartingAfter       *models.Thing
+	Descending          bool
+	// Limit is an optional limit on how many items to evaluate.
+	Limit *int64
 }
 
 // ErrThingByNameAndCreatedAtNotFound is returned when the database fails to find a Thing.
@@ -363,15 +464,16 @@ func (e ErrThingAlreadyExists) Error() string {
 
 // GetThingWithCompositeAttributessByNameBranchAndDateInput is the query input to GetThingWithCompositeAttributessByNameBranchAndDate.
 type GetThingWithCompositeAttributessByNameBranchAndDateInput struct {
-	// StartingAt is a required specification of an (exclusive) starting point.
-	StartingAt *models.ThingWithCompositeAttributes
-	// Exclusive toggles whether results include the start point
-	Exclusive bool
-	// Limit is a required limit on how many items to evaluate.
-	Limit *int64
+	Name           string
+	Branch         string
+	DateStartingAt *strfmt.DateTime
+	// StartingAfter is a required specification of an exclusive starting point.
+	StartingAfter *models.ThingWithCompositeAttributes
+	Descending    bool
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
-	Descending            bool
+	// Limit is an optional limit on how many items to evaluate.
+	Limit *int64
 }
 
 // ErrThingWithCompositeAttributesNotFound is returned when the database fails to find a ThingWithCompositeAttributes.
@@ -390,13 +492,13 @@ func (e ErrThingWithCompositeAttributesNotFound) Error() string {
 
 // GetThingWithCompositeAttributessByNameVersionAndDateInput is the query input to GetThingWithCompositeAttributessByNameVersionAndDate.
 type GetThingWithCompositeAttributessByNameVersionAndDateInput struct {
-	// StartingAt is a required specification of an (exclusive) starting point.
-	StartingAt *models.ThingWithCompositeAttributes
-	// Exclusive toggles whether results include the start point
-	Exclusive bool
-	// Limit is a required limit on how many items to evaluate.
-	Limit      *int64
-	Descending bool
+	Name           string
+	Version        int64
+	DateStartingAt *strfmt.DateTime
+	StartingAfter  *models.ThingWithCompositeAttributes
+	Descending     bool
+	// Limit is an optional limit on how many items to evaluate.
+	Limit *int64
 }
 
 // ErrThingWithCompositeAttributesByNameVersionAndDateNotFound is returned when the database fails to find a ThingWithCompositeAttributes.
@@ -428,15 +530,16 @@ func (e ErrThingWithCompositeAttributesAlreadyExists) Error() string {
 
 // GetThingWithCompositeEnumAttributessByNameBranchAndDateInput is the query input to GetThingWithCompositeEnumAttributessByNameBranchAndDate.
 type GetThingWithCompositeEnumAttributessByNameBranchAndDateInput struct {
-	// StartingAt is a required specification of an (exclusive) starting point.
-	StartingAt *models.ThingWithCompositeEnumAttributes
-	// Exclusive toggles whether results include the start point
-	Exclusive bool
-	// Limit is a required limit on how many items to evaluate.
-	Limit *int64
+	Name           string
+	BranchID       models.Branch
+	DateStartingAt *strfmt.DateTime
+	// StartingAfter is a required specification of an exclusive starting point.
+	StartingAfter *models.ThingWithCompositeEnumAttributes
+	Descending    bool
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
-	Descending            bool
+	// Limit is an optional limit on how many items to evaluate.
+	Limit *int64
 }
 
 // ErrThingWithCompositeEnumAttributesNotFound is returned when the database fails to find a ThingWithCompositeEnumAttributes.
@@ -468,15 +571,15 @@ func (e ErrThingWithCompositeEnumAttributesAlreadyExists) Error() string {
 
 // GetThingWithDateRangesByNameAndDateInput is the query input to GetThingWithDateRangesByNameAndDate.
 type GetThingWithDateRangesByNameAndDateInput struct {
-	// StartingAt is a required specification of an (exclusive) starting point.
-	StartingAt *models.ThingWithDateRange
-	// Exclusive toggles whether results include the start point
-	Exclusive bool
-	// Limit is a required limit on how many items to evaluate.
-	Limit *int64
+	Name           string
+	DateStartingAt *strfmt.DateTime
+	// StartingAfter is a required specification of an exclusive starting point.
+	StartingAfter *models.ThingWithDateRange
+	Descending    bool
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
-	Descending            bool
+	// Limit is an optional limit on how many items to evaluate.
+	Limit *int64
 }
 
 // ErrThingWithDateRangeNotFound is returned when the database fails to find a ThingWithDateRange.
@@ -494,15 +597,16 @@ func (e ErrThingWithDateRangeNotFound) Error() string {
 
 // GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput is the query input to GetThingWithDateTimeCompositesByTypeIDAndCreatedResource.
 type GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput struct {
-	// StartingAt is a required specification of an (exclusive) starting point.
-	StartingAt *models.ThingWithDateTimeComposite
-	// Exclusive toggles whether results include the start point
-	Exclusive bool
-	// Limit is a required limit on how many items to evaluate.
-	Limit *int64
+	Type       string
+	ID         string
+	StartingAt *CreatedResource
+	// StartingAfter is a required specification of an exclusive starting point.
+	StartingAfter *models.ThingWithDateTimeComposite
+	Descending    bool
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
-	Descending            bool
+	// Limit is an optional limit on how many items to evaluate.
+	Limit *int64
 }
 
 // CreatedResource struct.
@@ -528,15 +632,15 @@ func (e ErrThingWithDateTimeCompositeNotFound) Error() string {
 
 // GetThingWithMatchingKeyssByBearAndAssocTypeIDInput is the query input to GetThingWithMatchingKeyssByBearAndAssocTypeID.
 type GetThingWithMatchingKeyssByBearAndAssocTypeIDInput struct {
-	// StartingAt is a required specification of an (exclusive) starting point.
-	StartingAt *models.ThingWithMatchingKeys
-	// Exclusive toggles whether results include the start point
-	Exclusive bool
-	// Limit is a required limit on how many items to evaluate.
-	Limit *int64
+	Bear       string
+	StartingAt *AssocTypeAssocID
+	// StartingAfter is a required specification of an exclusive starting point.
+	StartingAfter *models.ThingWithMatchingKeys
+	Descending    bool
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
-	Descending            bool
+	// Limit is an optional limit on how many items to evaluate.
+	Limit *int64
 }
 
 // AssocTypeAssocID struct.
@@ -561,13 +665,13 @@ func (e ErrThingWithMatchingKeysNotFound) Error() string {
 
 // GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput is the query input to GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear.
 type GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput struct {
-	// StartingAt is a required specification of an (exclusive) starting point.
-	StartingAt *models.ThingWithMatchingKeys
-	// Exclusive toggles whether results include the start point
-	Exclusive bool
-	// Limit is a required limit on how many items to evaluate.
-	Limit      *int64
-	Descending bool
+	AssocType     string
+	AssocID       string
+	StartingAt    *CreatedBear
+	StartingAfter *models.ThingWithMatchingKeys
+	Descending    bool
+	// Limit is an optional limit on how many items to evaluate.
+	Limit *int64
 }
 
 // CreatedBear struct.
@@ -617,15 +721,15 @@ func (e ErrThingWithRequiredFieldsAlreadyExists) Error() string {
 
 // GetThingWithRequiredFields2sByNameAndIDInput is the query input to GetThingWithRequiredFields2sByNameAndID.
 type GetThingWithRequiredFields2sByNameAndIDInput struct {
-	// StartingAt is a required specification of an (exclusive) starting point.
-	StartingAt *models.ThingWithRequiredFields2
-	// Exclusive toggles whether results include the start point
-	Exclusive bool
-	// Limit is a required limit on how many items to evaluate.
-	Limit *int64
+	Name         string
+	IDStartingAt *string
+	// StartingAfter is a required specification of an exclusive starting point.
+	StartingAfter *models.ThingWithRequiredFields2
+	Descending    bool
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
-	Descending            bool
+	// Limit is an optional limit on how many items to evaluate.
+	Limit *int64
 }
 
 // ErrThingWithRequiredFields2NotFound is returned when the database fails to find a ThingWithRequiredFields2.

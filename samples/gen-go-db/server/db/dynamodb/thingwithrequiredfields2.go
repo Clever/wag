@@ -145,38 +145,56 @@ func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2(ctx context.C
 }
 
 func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2sByNameAndID(ctx context.Context, input db.GetThingWithRequiredFields2sByNameAndIDInput, fn func(m *models.ThingWithRequiredFields2, lastThingWithRequiredFields2 bool) bool) error {
+	if input.IDStartingAt != nil && input.StartingAfter != nil {
+		return fmt.Errorf("Must specify one of input.IDStartingAt or input.StartingAfter")
+	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		ExpressionAttributeNames: map[string]*string{
 			"#NAME": aws.String("name"),
-			"#ID":   aws.String("id"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":name": &dynamodb.AttributeValue{
-				S: aws.String(*input.StartingAt.Name),
-			},
-			":id": &dynamodb.AttributeValue{
-				S: aws.String(*input.StartingAt.ID),
+				S: aws.String(input.Name),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
-		Limit:            input.Limit,
 	}
-	if input.Exclusive {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"id": &dynamodb.AttributeValue{
-				S: aws.String(*input.StartingAt.ID),
-			},
-			"name": &dynamodb.AttributeValue{
-				S: aws.String(*input.StartingAt.Name),
-			},
+	if input.Limit != nil {
+		queryInput.Limit = input.Limit
+	}
+	if input.IDStartingAt == nil {
+		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
+	} else {
+		queryInput.ExpressionAttributeNames["#ID"] = aws.String("id")
+		queryInput.ExpressionAttributeValues[":id"] = &dynamodb.AttributeValue{
+			S: aws.String(*input.IDStartingAt),
+		}
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #ID <= :id")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #ID >= :id")
 		}
 	}
-	if input.Descending {
-		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #ID <= :id")
-	} else {
-		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #ID >= :id")
+	if input.StartingAfter != nil {
+		queryInput.ExpressionAttributeNames["#ID"] = aws.String("id")
+		queryInput.ExpressionAttributeValues[":id"] = &dynamodb.AttributeValue{
+			S: aws.String(*input.StartingAfter.ID),
+		}
+		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"id": &dynamodb.AttributeValue{
+				S: aws.String(*input.StartingAfter.ID),
+			},
+			"name": &dynamodb.AttributeValue{
+				S: aws.String(*input.StartingAfter.Name),
+			},
+		}
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #ID <= :id")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #ID >= :id")
+		}
 	}
 
 	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)

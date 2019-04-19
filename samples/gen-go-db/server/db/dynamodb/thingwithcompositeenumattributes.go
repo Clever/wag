@@ -147,38 +147,56 @@ func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttribut
 }
 
 func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttributessByNameBranchAndDate(ctx context.Context, input db.GetThingWithCompositeEnumAttributessByNameBranchAndDateInput, fn func(m *models.ThingWithCompositeEnumAttributes, lastThingWithCompositeEnumAttributes bool) bool) error {
+	if input.DateStartingAt != nil && input.StartingAfter != nil {
+		return fmt.Errorf("Must specify one of input.DateStartingAt or input.StartingAfter")
+	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		ExpressionAttributeNames: map[string]*string{
 			"#NAME_BRANCH": aws.String("name_branch"),
-			"#DATE":        aws.String("date"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":nameBranch": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAt.Name, input.StartingAt.BranchID)),
-			},
-			":date": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeStringPtr(input.StartingAt.Date)),
+				S: aws.String(fmt.Sprintf("%s@%s", input.Name, input.BranchID)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
-		Limit:            input.Limit,
 	}
-	if input.Exclusive {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"date": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeStringPtr(input.StartingAt.Date)),
-			},
-			"name_branch": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAt.Name, input.StartingAt.BranchID)),
-			},
+	if input.Limit != nil {
+		queryInput.Limit = input.Limit
+	}
+	if input.DateStartingAt == nil {
+		queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch")
+	} else {
+		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
+		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
+			S: aws.String(toDynamoTimeString(*input.DateStartingAt)),
+		}
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE <= :date")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE >= :date")
 		}
 	}
-	if input.Descending {
-		queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE <= :date")
-	} else {
-		queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE >= :date")
+	if input.StartingAfter != nil {
+		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
+		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
+			S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.Date)),
+		}
+		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"date": &dynamodb.AttributeValue{
+				S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.Date)),
+			},
+			"name_branch": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, input.StartingAfter.BranchID)),
+			},
+		}
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE <= :date")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE >= :date")
+		}
 	}
 
 	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)

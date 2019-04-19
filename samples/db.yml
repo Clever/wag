@@ -403,3 +403,51 @@ definitions:
       bear:
         type: string
 
+  Deployment:
+    x-db:
+      AllowOverwrites: true
+      CompositeAttributes:
+      - AttributeName: envApp
+        Properties: [ environment, application ]
+        Separator: "--"
+      DynamoDB:
+        KeySchema:
+        - AttributeName: envApp
+          KeyType: HASH
+        - AttributeName: version
+          KeyType: RANGE
+        GlobalSecondaryIndexes:
+        - IndexName: byDate
+          Projection:
+            ProjectionType: ALL
+          KeySchema:
+          - AttributeName: envApp
+            KeyType: HASH
+          - AttributeName: date
+            KeyType: RANGE
+        - IndexName: byEnvironment
+          Projection:
+            ProjectionType: ALL
+          KeySchema:
+          - AttributeName: environment
+            KeyType: HASH
+          - AttributeName: date
+            KeyType: RANGE
+        - IndexName: byVersion
+          Projection:
+            ProjectionType: ALL
+          KeySchema:
+          - AttributeName: version
+            KeyType: HASH
+    type: object
+    properties:
+      application:
+        type: string
+      date:
+        type: string
+        format: date-time
+      environment:
+        type: string
+        format: "^[a-zA-Z0-9-]+$"
+      version:
+        type: string

@@ -194,48 +194,60 @@ func (t NoRangeThingWithCompositeAttributesTable) deleteNoRangeThingWithComposit
 }
 
 func (t NoRangeThingWithCompositeAttributesTable) getNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input db.GetNoRangeThingWithCompositeAttributessByNameVersionAndDateInput, fn func(m *models.NoRangeThingWithCompositeAttributes, lastNoRangeThingWithCompositeAttributes bool) bool) error {
-	if input.StartingAt == nil {
-		return fmt.Errorf("StartingAt cannot be nil")
-	}
-	if input.Limit == nil {
-		return fmt.Errorf("Limit cannot be nil")
+	if input.DateStartingAt != nil && input.StartingAfter != nil {
+		return fmt.Errorf("Must specify one of input.DateStartingAt or input.StartingAfter")
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		IndexName: aws.String("nameVersion"),
 		ExpressionAttributeNames: map[string]*string{
 			"#NAME_VERSION": aws.String("name_version"),
-			"#DATE":         aws.String("date"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":nameVersion": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s:%d", *input.StartingAt.Name, input.StartingAt.Version)),
-			},
-			":date": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeStringPtr(input.StartingAt.Date)),
+				S: aws.String(fmt.Sprintf("%s:%d", input.Name, input.Version)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
-		Limit:            input.Limit,
 	}
-	if input.Exclusive {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"date": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeStringPtr(input.StartingAt.Date)),
-			},
-			"name_version": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s:%d", *input.StartingAt.Name, input.StartingAt.Version)),
-			},
-			"name_branch": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAt.Name, *input.StartingAt.Branch)),
-			},
+	if input.Limit != nil {
+		queryInput.Limit = input.Limit
+	}
+	if input.DateStartingAt == nil {
+		queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion")
+	} else {
+		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
+		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
+			S: aws.String(toDynamoTimeString(*input.DateStartingAt)),
+		}
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion AND #DATE <= :date")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion AND #DATE >= :date")
 		}
 	}
-	if input.Descending {
-		queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion AND #DATE <= :date")
-	} else {
-		queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion AND #DATE >= :date")
+	if input.StartingAfter != nil {
+		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
+		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
+			S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.Date)),
+		}
+		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"date": &dynamodb.AttributeValue{
+				S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.Date)),
+			},
+			"name_version": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s:%d", *input.StartingAfter.Name, input.StartingAfter.Version)),
+			},
+			"name_branch": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
+			},
+		}
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion AND #DATE <= :date")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion AND #DATE >= :date")
+		}
 	}
 
 	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)

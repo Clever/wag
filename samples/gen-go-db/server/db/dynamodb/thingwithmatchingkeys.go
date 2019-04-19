@@ -153,38 +153,56 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeys(ctx context.Context
 }
 
 func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByBearAndAssocTypeID(ctx context.Context, input db.GetThingWithMatchingKeyssByBearAndAssocTypeIDInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error {
+	if input.StartingAt != nil && input.StartingAfter != nil {
+		return fmt.Errorf("Must specify one of StartingAt or StartingAfter")
+	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		ExpressionAttributeNames: map[string]*string{
-			"#BEAR":        aws.String("bear"),
-			"#ASSOCTYPEID": aws.String("assocTypeID"),
+			"#BEAR": aws.String("bear"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":bear": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAt.Bear),
-			},
-			":assocTypeId": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAt.AssocType, input.StartingAt.AssocID)),
+				S: aws.String(input.Bear),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
-		Limit:            input.Limit,
 	}
-	if input.Exclusive {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"assocTypeID": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAt.AssocType, input.StartingAt.AssocID)),
-			},
-			"bear": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAt.Bear),
-			},
+	if input.Limit != nil {
+		queryInput.Limit = input.Limit
+	}
+	if input.StartingAt == nil {
+		queryInput.KeyConditionExpression = aws.String("#BEAR = :bear")
+	} else {
+		queryInput.ExpressionAttributeNames["#ASSOCTYPEID"] = aws.String("assocTypeID")
+		queryInput.ExpressionAttributeValues[":assocTypeId"] = &dynamodb.AttributeValue{
+			S: aws.String(fmt.Sprintf("%s^%s", input.StartingAt.AssocType, input.StartingAt.AssocID)),
+		}
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#BEAR = :bear AND #ASSOCTYPEID <= :assocTypeId")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#BEAR = :bear AND #ASSOCTYPEID >= :assocTypeId")
 		}
 	}
-	if input.Descending {
-		queryInput.KeyConditionExpression = aws.String("#BEAR = :bear AND #ASSOCTYPEID <= :assocTypeId")
-	} else {
-		queryInput.KeyConditionExpression = aws.String("#BEAR = :bear AND #ASSOCTYPEID >= :assocTypeId")
+	if input.StartingAfter != nil {
+		queryInput.ExpressionAttributeNames["#ASSOCTYPEID"] = aws.String("assocTypeID")
+		queryInput.ExpressionAttributeValues[":assocTypeId"] = &dynamodb.AttributeValue{
+			S: aws.String(fmt.Sprintf("%s^%s", input.StartingAfter.AssocType, input.StartingAfter.AssocID)),
+		}
+		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"assocTypeID": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAfter.AssocType, input.StartingAfter.AssocID)),
+			},
+			"bear": &dynamodb.AttributeValue{
+				S: aws.String(input.StartingAfter.Bear),
+			},
+		}
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#BEAR = :bear AND #ASSOCTYPEID <= :assocTypeId")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#BEAR = :bear AND #ASSOCTYPEID >= :assocTypeId")
+		}
 	}
 
 	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
@@ -235,48 +253,60 @@ func (t ThingWithMatchingKeysTable) deleteThingWithMatchingKeys(ctx context.Cont
 }
 
 func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Context, input db.GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error {
-	if input.StartingAt == nil {
-		return fmt.Errorf("StartingAt cannot be nil")
-	}
-	if input.Limit == nil {
-		return fmt.Errorf("Limit cannot be nil")
+	if input.StartingAt != nil && input.StartingAfter != nil {
+		return fmt.Errorf("Must specify one of input.StartingAt or input.StartingAfter")
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		IndexName: aws.String("byAssoc"),
 		ExpressionAttributeNames: map[string]*string{
 			"#ASSOCTYPEID": aws.String("assocTypeID"),
-			"#CREATEDBEAR": aws.String("createdBear"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":assocTypeId": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAt.AssocType, input.StartingAt.AssocID)),
-			},
-			":createdBear": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAt.Created, input.StartingAt.Bear)),
+				S: aws.String(fmt.Sprintf("%s^%s", input.AssocType, input.AssocID)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
-		Limit:            input.Limit,
 	}
-	if input.Exclusive {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"createdBear": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAt.Created, input.StartingAt.Bear)),
-			},
-			"assocTypeID": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAt.AssocType, input.StartingAt.AssocID)),
-			},
-			"bear": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAt.Bear),
-			},
+	if input.Limit != nil {
+		queryInput.Limit = input.Limit
+	}
+	if input.StartingAt == nil {
+		queryInput.KeyConditionExpression = aws.String("#ASSOCTYPEID = :assocTypeId")
+	} else {
+		queryInput.ExpressionAttributeNames["#CREATEDBEAR"] = aws.String("createdBear")
+		queryInput.ExpressionAttributeValues[":createdBear"] = &dynamodb.AttributeValue{
+			S: aws.String(fmt.Sprintf("%s^%s", input.StartingAt.Created, input.StartingAt.Bear)),
+		}
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#ASSOCTYPEID = :assocTypeId AND #CREATEDBEAR <= :createdBear")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#ASSOCTYPEID = :assocTypeId AND #CREATEDBEAR >= :createdBear")
 		}
 	}
-	if input.Descending {
-		queryInput.KeyConditionExpression = aws.String("#ASSOCTYPEID = :assocTypeId AND #CREATEDBEAR <= :createdBear")
-	} else {
-		queryInput.KeyConditionExpression = aws.String("#ASSOCTYPEID = :assocTypeId AND #CREATEDBEAR >= :createdBear")
+	if input.StartingAfter != nil {
+		queryInput.ExpressionAttributeNames["#CREATEDBEAR"] = aws.String("createdBear")
+		queryInput.ExpressionAttributeValues[":createdBear"] = &dynamodb.AttributeValue{
+			S: aws.String(fmt.Sprintf("%s^%s", input.StartingAfter.Created, input.StartingAfter.Bear)),
+		}
+		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"createdBear": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAfter.Created, input.StartingAfter.Bear)),
+			},
+			"assocTypeID": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAfter.AssocType, input.StartingAfter.AssocID)),
+			},
+			"bear": &dynamodb.AttributeValue{
+				S: aws.String(input.StartingAfter.Bear),
+			},
+		}
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#ASSOCTYPEID = :assocTypeId AND #CREATEDBEAR <= :createdBear")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#ASSOCTYPEID = :assocTypeId AND #CREATEDBEAR >= :createdBear")
+		}
 	}
 
 	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)

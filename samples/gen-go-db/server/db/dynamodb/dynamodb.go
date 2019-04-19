@@ -28,6 +28,8 @@ type Config struct {
 	// DefaultReadCapacityUnits configures a default read capacity when creating tables. It defaults to 1.
 	// It can be overriden on a table-by-table basis.
 	DefaultReadCapacityUnits int64
+	// DeploymentTable configuration.
+	DeploymentTable DeploymentTable
 	// NoRangeThingWithCompositeAttributesTable configuration.
 	NoRangeThingWithCompositeAttributesTable NoRangeThingWithCompositeAttributesTable
 	// SimpleThingTable configuration.
@@ -68,6 +70,20 @@ func New(config Config) (*DB, error) {
 	}
 	if config.DefaultReadCapacityUnits == 0 {
 		config.DefaultReadCapacityUnits = 1
+	}
+	// configure Deployment table
+	deploymentTable := config.DeploymentTable
+	if deploymentTable.DynamoDBAPI == nil {
+		deploymentTable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if deploymentTable.Prefix == "" {
+		deploymentTable.Prefix = config.DefaultPrefix
+	}
+	if deploymentTable.ReadCapacityUnits == 0 {
+		deploymentTable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if deploymentTable.WriteCapacityUnits == 0 {
+		deploymentTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
 	// configure NoRangeThingWithCompositeAttributes table
 	noRangeThingWithCompositeAttributesTable := config.NoRangeThingWithCompositeAttributesTable
@@ -239,6 +255,7 @@ func New(config Config) (*DB, error) {
 	}
 
 	return &DB{
+		deploymentTable:                          deploymentTable,
 		noRangeThingWithCompositeAttributesTable: noRangeThingWithCompositeAttributesTable,
 		simpleThingTable:                         simpleThingTable,
 		teacherSharingRuleTable:                  teacherSharingRuleTable,
@@ -256,6 +273,7 @@ func New(config Config) (*DB, error) {
 
 // DB implements the database interface using DynamoDB to store data.
 type DB struct {
+	deploymentTable                          DeploymentTable
 	noRangeThingWithCompositeAttributesTable NoRangeThingWithCompositeAttributesTable
 	simpleThingTable                         SimpleThingTable
 	teacherSharingRuleTable                  TeacherSharingRuleTable
@@ -274,6 +292,9 @@ var _ db.Interface = DB{}
 
 // CreateTables creates all tables.
 func (d DB) CreateTables(ctx context.Context) error {
+	if err := d.deploymentTable.create(ctx); err != nil {
+		return err
+	}
 	if err := d.noRangeThingWithCompositeAttributesTable.create(ctx); err != nil {
 		return err
 	}
@@ -311,6 +332,41 @@ func (d DB) CreateTables(ctx context.Context) error {
 		return err
 	}
 	return nil
+}
+
+// SaveDeployment saves a Deployment to the database.
+func (d DB) SaveDeployment(ctx context.Context, m models.Deployment) error {
+	return d.deploymentTable.saveDeployment(ctx, m)
+}
+
+// GetDeployment retrieves a Deployment from the database.
+func (d DB) GetDeployment(ctx context.Context, environment string, application string, version string) (*models.Deployment, error) {
+	return d.deploymentTable.getDeployment(ctx, environment, application, version)
+}
+
+// GetDeploymentsByEnvAppAndVersion retrieves a page of Deployments from the database.
+func (d DB) GetDeploymentsByEnvAppAndVersion(ctx context.Context, input db.GetDeploymentsByEnvAppAndVersionInput, fn func(m *models.Deployment, lastDeployment bool) bool) error {
+	return d.deploymentTable.getDeploymentsByEnvAppAndVersion(ctx, input, fn)
+}
+
+// DeleteDeployment deletes a Deployment from the database.
+func (d DB) DeleteDeployment(ctx context.Context, environment string, application string, version string) error {
+	return d.deploymentTable.deleteDeployment(ctx, environment, application, version)
+}
+
+// GetDeploymentsByEnvAppAndDate retrieves a page of Deployments from the database.
+func (d DB) GetDeploymentsByEnvAppAndDate(ctx context.Context, input db.GetDeploymentsByEnvAppAndDateInput, fn func(m *models.Deployment, lastDeployment bool) bool) error {
+	return d.deploymentTable.getDeploymentsByEnvAppAndDate(ctx, input, fn)
+}
+
+// GetDeploymentsByEnvironmentAndDate retrieves a page of Deployments from the database.
+func (d DB) GetDeploymentsByEnvironmentAndDate(ctx context.Context, input db.GetDeploymentsByEnvironmentAndDateInput, fn func(m *models.Deployment, lastDeployment bool) bool) error {
+	return d.deploymentTable.getDeploymentsByEnvironmentAndDate(ctx, input, fn)
+}
+
+// GetDeploymentByVersion retrieves a Deployment from the database.
+func (d DB) GetDeploymentByVersion(ctx context.Context, version string) (*models.Deployment, error) {
+	return d.deploymentTable.getDeploymentByVersion(ctx, version)
 }
 
 // SaveNoRangeThingWithCompositeAttributes saves a NoRangeThingWithCompositeAttributes to the database.

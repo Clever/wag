@@ -119,38 +119,56 @@ func (t ThingWithDateRangeTable) getThingWithDateRange(ctx context.Context, name
 }
 
 func (t ThingWithDateRangeTable) getThingWithDateRangesByNameAndDate(ctx context.Context, input db.GetThingWithDateRangesByNameAndDateInput, fn func(m *models.ThingWithDateRange, lastThingWithDateRange bool) bool) error {
+	if input.DateStartingAt != nil && input.StartingAfter != nil {
+		return fmt.Errorf("Must specify one of input.DateStartingAt or input.StartingAfter")
+	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		ExpressionAttributeNames: map[string]*string{
 			"#NAME": aws.String("name"),
-			"#DATE": aws.String("date"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":name": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAt.Name),
-			},
-			":date": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeString(input.StartingAt.Date)),
+				S: aws.String(input.Name),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
-		Limit:            input.Limit,
 	}
-	if input.Exclusive {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"date": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeString(input.StartingAt.Date)),
-			},
-			"name": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAt.Name),
-			},
+	if input.Limit != nil {
+		queryInput.Limit = input.Limit
+	}
+	if input.DateStartingAt == nil {
+		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
+	} else {
+		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
+		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
+			S: aws.String(toDynamoTimeString(*input.DateStartingAt)),
+		}
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #DATE <= :date")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #DATE >= :date")
 		}
 	}
-	if input.Descending {
-		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #DATE <= :date")
-	} else {
-		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #DATE >= :date")
+	if input.StartingAfter != nil {
+		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
+		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
+			S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
+		}
+		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"date": &dynamodb.AttributeValue{
+				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
+			},
+			"name": &dynamodb.AttributeValue{
+				S: aws.String(input.StartingAfter.Name),
+			},
+		}
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #DATE <= :date")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #DATE >= :date")
+		}
 	}
 
 	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
