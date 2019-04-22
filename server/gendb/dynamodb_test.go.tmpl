@@ -24,6 +24,7 @@ func TestDynamoDBStore(t *testing.T) {
   if err := cmd.Start(); err != nil {
     t.Fatal(err)
   }
+  cmd.Wait()
 
   end := time.Now().Add(60 * time.Second)
   var err error
