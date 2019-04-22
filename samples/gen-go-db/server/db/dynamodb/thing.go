@@ -288,14 +288,14 @@ func (t ThingTable) getThingsByNameAndVersion(ctx context.Context, input db.GetT
 		}
 	}
 
-	var decodeErr error
-	var items []models.Thing
+	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
 			return false
 		}
-		items, decodeErr = decodeThings(queryOutput.Items)
-		if decodeErr != nil {
+		items, err := decodeThings(queryOutput.Items)
+		if err != nil {
+			pageFnErr = err
 			return false
 		}
 		hasMore := true
@@ -320,8 +320,8 @@ func (t ThingTable) getThingsByNameAndVersion(ctx context.Context, input db.GetT
 		}
 		return err
 	}
-	if decodeErr != nil {
-		return decodeErr
+	if pageFnErr != nil {
+		return pageFnErr
 	}
 
 	return nil
@@ -436,14 +436,14 @@ func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.Ge
 		}
 	}
 
-	var decodeErr error
-	var items []models.Thing
+	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
 			return false
 		}
-		items, decodeErr = decodeThings(queryOutput.Items)
-		if decodeErr != nil {
+		items, err := decodeThings(queryOutput.Items)
+		if err != nil {
+			pageFnErr = err
 			return false
 		}
 		hasMore := true
@@ -468,8 +468,8 @@ func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.Ge
 		}
 		return err
 	}
-	if decodeErr != nil {
-		return decodeErr
+	if pageFnErr != nil {
+		return pageFnErr
 	}
 
 	return nil

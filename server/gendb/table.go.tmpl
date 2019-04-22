@@ -391,16 +391,18 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
     }
   }
 
-  var decodeErr error
-	var items []models.{{ $modelName }}
+
+
+  var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
 			return false
 		}
-		items, decodeErr = decode{{ $modelName }}s(queryOutput.Items)
-		if decodeErr != nil {
-			return false
-		}
+		items, err := decode{{ $modelName }}s(queryOutput.Items)
+    if err != nil {
+      pageFnErr = err
+      return false
+    }
 		hasMore := true
 		for i, item := range items {
 			if lastPage == true {
@@ -429,8 +431,8 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
 		return err
 	}
 	{{- end }}
-	if decodeErr != nil {
-		return decodeErr
+	if pageFnErr != nil {
+		return pageFnErr
 	}
 
   return nil
@@ -655,16 +657,16 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
     }
   }
 
-  var decodeErr error
-	var items []models.{{ $modelName }}
+  var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
 			return false
 		}
-		items, decodeErr = decode{{ $modelName }}s(queryOutput.Items)
-		if decodeErr != nil {
-			return false
-		}
+		items, err := decode{{ $modelName }}s(queryOutput.Items)
+    if err != nil {
+      pageFnErr = err
+      return false
+    }
 		hasMore := true
 		for i, item := range items {
 			if lastPage == true {
@@ -693,8 +695,8 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
 		return err
 	}
 	{{- end }}
-	if decodeErr != nil {
-		return decodeErr
+	if pageFnErr != nil {
+		return pageFnErr
 	}
 
   return nil

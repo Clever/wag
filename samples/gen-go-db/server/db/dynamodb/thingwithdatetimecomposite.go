@@ -165,14 +165,14 @@ func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDA
 		}
 	}
 
-	var decodeErr error
-	var items []models.ThingWithDateTimeComposite
+	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
 			return false
 		}
-		items, decodeErr = decodeThingWithDateTimeComposites(queryOutput.Items)
-		if decodeErr != nil {
+		items, err := decodeThingWithDateTimeComposites(queryOutput.Items)
+		if err != nil {
+			pageFnErr = err
 			return false
 		}
 		hasMore := true
@@ -191,8 +191,8 @@ func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDA
 	if err != nil {
 		return err
 	}
-	if decodeErr != nil {
-		return decodeErr
+	if pageFnErr != nil {
+		return pageFnErr
 	}
 
 	return nil

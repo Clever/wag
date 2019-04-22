@@ -247,14 +247,14 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, i
 		}
 	}
 
-	var decodeErr error
-	var items []models.Deployment
+	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
 			return false
 		}
-		items, decodeErr = decodeDeployments(queryOutput.Items)
-		if decodeErr != nil {
+		items, err := decodeDeployments(queryOutput.Items)
+		if err != nil {
+			pageFnErr = err
 			return false
 		}
 		hasMore := true
@@ -273,8 +273,8 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, i
 	if err != nil {
 		return err
 	}
-	if decodeErr != nil {
-		return decodeErr
+	if pageFnErr != nil {
+		return pageFnErr
 	}
 
 	return nil
@@ -347,14 +347,14 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndDate(ctx context.Context, inpu
 		}
 	}
 
-	var decodeErr error
-	var items []models.Deployment
+	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
 			return false
 		}
-		items, decodeErr = decodeDeployments(queryOutput.Items)
-		if decodeErr != nil {
+		items, err := decodeDeployments(queryOutput.Items)
+		if err != nil {
+			pageFnErr = err
 			return false
 		}
 		hasMore := true
@@ -373,8 +373,8 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndDate(ctx context.Context, inpu
 	if err != nil {
 		return err
 	}
-	if decodeErr != nil {
-		return decodeErr
+	if pageFnErr != nil {
+		return pageFnErr
 	}
 
 	return nil
@@ -431,14 +431,14 @@ func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context,
 		}
 	}
 
-	var decodeErr error
-	var items []models.Deployment
+	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
 			return false
 		}
-		items, decodeErr = decodeDeployments(queryOutput.Items)
-		if decodeErr != nil {
+		items, err := decodeDeployments(queryOutput.Items)
+		if err != nil {
+			pageFnErr = err
 			return false
 		}
 		hasMore := true
@@ -457,8 +457,8 @@ func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context,
 	if err != nil {
 		return err
 	}
-	if decodeErr != nil {
-		return decodeErr
+	if pageFnErr != nil {
+		return pageFnErr
 	}
 
 	return nil

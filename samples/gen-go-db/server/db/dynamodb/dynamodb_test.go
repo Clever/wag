@@ -2,6 +2,7 @@ package dynamodb
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"os/exec"
 	"strings"
@@ -22,9 +23,7 @@ func TestDynamoDBStore(t *testing.T) {
 	defer cancel()
 
 	// restart test db if it gets killed before tests are completed.
-	testsDone := make(chan struct{})
-	defer close(testsDone)
-	go func(doneC chan struct{}) {
+	go func(doneC <-chan struct{}, t *testing.T) {
 		cmd := exec.CommandContext(testCtx, "./dynamodb-local.sh")
 		if err := cmd.Start(); err != nil {
 			t.Fatal(err)
@@ -35,26 +34,29 @@ func TestDynamoDBStore(t *testing.T) {
 				return
 			default:
 				if err := cmd.Wait(); err != nil {
+					fmt.Printf("Test DB crashed: %v\n", err.Error())
 					cmd = exec.CommandContext(testCtx, "./dynamodb-local.sh")
-					cmd.Start()
+					if err := cmd.Start(); err != nil && t != nil {
+						if err.Error() != "context canceled" {
+							t.Fatal(err)
+						}
+					}
 				}
 			}
 		}
-	}(testsDone)
+	}(testCtx.Done(), t)
 
-	var err error
-	end := time.Now().Add(60 * time.Second)
-	for time.Now().Before(end) {
-		var c net.Conn
-		c, err = net.Dial("tcp", "localhost:8002")
-		if err == nil {
+	// loop for 60s trying to establish a connection
+	connected := false
+	for start := time.Now(); start.Before(start.Add(60 * time.Second)); time.Sleep(1 * time.Second) {
+		if c, err := net.Dial("tcp", "localhost:8002"); err == nil {
 			c.Close()
+			connected = true
 			break
 		}
-		time.Sleep(time.Second)
 	}
-	if err != nil {
-		t.Fatal(err)
+	if connected == false {
+		t.Fatal("failed to connect within 60 seconds")
 	}
 
 	dynamoDBAPI := dynamodb.New(session.Must(session.NewSessionWithOptions(session.Options{

@@ -200,14 +200,14 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByTeacherAndSchoolApp(ctx
 		}
 	}
 
-	var decodeErr error
-	var items []models.TeacherSharingRule
+	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
 			return false
 		}
-		items, decodeErr = decodeTeacherSharingRules(queryOutput.Items)
-		if decodeErr != nil {
+		items, err := decodeTeacherSharingRules(queryOutput.Items)
+		if err != nil {
+			pageFnErr = err
 			return false
 		}
 		hasMore := true
@@ -226,8 +226,8 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByTeacherAndSchoolApp(ctx
 	if err != nil {
 		return err
 	}
-	if decodeErr != nil {
-		return decodeErr
+	if pageFnErr != nil {
+		return pageFnErr
 	}
 
 	return nil
@@ -303,14 +303,14 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeache
 		}
 	}
 
-	var decodeErr error
-	var items []models.TeacherSharingRule
+	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
 			return false
 		}
-		items, decodeErr = decodeTeacherSharingRules(queryOutput.Items)
-		if decodeErr != nil {
+		items, err := decodeTeacherSharingRules(queryOutput.Items)
+		if err != nil {
+			pageFnErr = err
 			return false
 		}
 		hasMore := true
@@ -329,8 +329,8 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeache
 	if err != nil {
 		return err
 	}
-	if decodeErr != nil {
-		return decodeErr
+	if pageFnErr != nil {
+		return pageFnErr
 	}
 
 	return nil

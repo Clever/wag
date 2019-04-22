@@ -188,14 +188,14 @@ func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2sByNameAndID(c
 		}
 	}
 
-	var decodeErr error
-	var items []models.ThingWithRequiredFields2
+	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
 			return false
 		}
-		items, decodeErr = decodeThingWithRequiredFields2s(queryOutput.Items)
-		if decodeErr != nil {
+		items, err := decodeThingWithRequiredFields2s(queryOutput.Items)
+		if err != nil {
+			pageFnErr = err
 			return false
 		}
 		hasMore := true
@@ -220,8 +220,8 @@ func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2sByNameAndID(c
 		}
 		return err
 	}
-	if decodeErr != nil {
-		return decodeErr
+	if pageFnErr != nil {
+		return pageFnErr
 	}
 
 	return nil
