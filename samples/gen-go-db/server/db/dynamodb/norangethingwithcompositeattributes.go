@@ -118,11 +118,14 @@ func (t NoRangeThingWithCompositeAttributesTable) saveNoRangeThingWithCompositeA
 		ConditionExpression: aws.String("attribute_not_exists(#NAME_BRANCH)"),
 	})
 	if err != nil {
-		if awsErr, ok := err.(awserr.Error); ok {
-			if awsErr.Code() == dynamodb.ErrCodeConditionalCheckFailedException {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case dynamodb.ErrCodeConditionalCheckFailedException:
 				return db.ErrNoRangeThingWithCompositeAttributesAlreadyExists{
 					NameBranch: fmt.Sprintf("%s@%s", *m.Name, *m.Branch),
 				}
+			case dynamodb.ErrCodeResourceNotFoundException:
+				return fmt.Errorf("table or index not found: %s", t.name())
 			}
 		}
 		return err
@@ -142,6 +145,12 @@ func (t NoRangeThingWithCompositeAttributesTable) getNoRangeThingWithCompositeAt
 		TableName: aws.String(t.name()),
 	})
 	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case dynamodb.ErrCodeResourceNotFoundException:
+				return nil, fmt.Errorf("table or index not found: %s", t.name())
+			}
+		}
 		return nil, err
 	}
 
@@ -172,8 +181,15 @@ func (t NoRangeThingWithCompositeAttributesTable) deleteNoRangeThingWithComposit
 		TableName: aws.String(t.name()),
 	})
 	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case dynamodb.ErrCodeResourceNotFoundException:
+				return fmt.Errorf("table or index not found: %s", t.name())
+			}
+		}
 		return err
 	}
+
 	return nil
 }
 
@@ -211,6 +227,7 @@ func (t NoRangeThingWithCompositeAttributesTable) getNoRangeThingWithCompositeAt
 			"name_version": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s:%d", *input.StartingAt.Name, input.StartingAt.Version)),
 			},
+
 			"name_branch": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAt.Name, *input.StartingAt.Branch)),
 			},
@@ -224,6 +241,12 @@ func (t NoRangeThingWithCompositeAttributesTable) getNoRangeThingWithCompositeAt
 
 	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
 	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case dynamodb.ErrCodeResourceNotFoundException:
+				return fmt.Errorf("table or index not found: %s", t.name())
+			}
+		}
 		return err
 	}
 	if len(queryOutput.Items) == 0 {

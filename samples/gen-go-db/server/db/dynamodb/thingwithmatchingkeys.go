@@ -230,6 +230,7 @@ func (t ThingWithMatchingKeysTable) deleteThingWithMatchingKeys(ctx context.Cont
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -267,6 +268,7 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByAssocTypeIDAndCre
 			"assocTypeID": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAt.AssocType, input.StartingAt.AssocID)),
 			},
+
 			"bear": &dynamodb.AttributeValue{
 				S: aws.String(input.StartingAt.Bear),
 			},
