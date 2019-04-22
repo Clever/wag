@@ -18,4 +18,4 @@ then
     tar -zxvf /tmp/dynamodb_local_latest.tar.gz -C /tmp/
 fi
 
-exec java -jar "$jar" -sharedDb -inMemory -port 8002
+exec java -jar "$jar" -sharedDb -port 8002
