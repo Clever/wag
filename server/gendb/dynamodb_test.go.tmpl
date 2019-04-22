@@ -1,78 +1,79 @@
 package dynamodb
 
 import (
-	"context"
-	"net"
-	"os/exec"
-	"strings"
-	"testing"
-	"time"
+  "context"
+  "net"
+  "os/exec"
+  "strings"
+  "testing"
+  "time"
 
-	"{{ .PackageName }}/server/db"
-	"{{ .PackageName }}/server/db/tests"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+  "{{ .PackageName }}/server/db"
+  "{{ .PackageName }}/server/db/tests"
+  "github.com/aws/aws-sdk-go/aws"
+  "github.com/aws/aws-sdk-go/aws/credentials"
+  "github.com/aws/aws-sdk-go/aws/session"
+  "github.com/aws/aws-sdk-go/service/dynamodb"
 )
 
 func TestDynamoDBStore(t *testing.T) {
-	// spin up dynamodb local
-	testCtx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	cmd := exec.CommandContext(testCtx, "./dynamodb-local.sh")
-	if err := cmd.Start(); err != nil {
-		t.Fatal(err)
-	}
+  // spin up dynamodb local
+  testCtx, cancel := context.WithCancel(context.Background())
+  defer cancel()
+  cmd := exec.CommandContext(testCtx, "./dynamodb-local.sh")
+  if err := cmd.Start(); err != nil {
+    t.Fatal(err)
+  }
 
-	end := time.Now().Add(60 * time.Second)
-	var c net.Conn
-	var err error
-	for time.Now().Before(end) {
-		c, err = net.Dial("tcp", "localhost:8002")
-		if err == nil {
-			break
-		}
-		time.Sleep(time.Second)
-	}
-	if err != nil {
-		t.Fatal(err)
-	}
-	c.Close()
+  end := time.Now().Add(60 * time.Second)
+  var err error
+  for time.Now().Before(end) {
+    var c net.Conn
+    c, err = net.Dial("tcp", "localhost:8002")
+    if err == nil {
+      c.Close()
+      break
+    }
+    time.Sleep(time.Second)
+  }
+  if err != nil {
+    t.Fatal(err)
+  }
 
-	dynamoDBAPI := dynamodb.New(session.Must(session.NewSessionWithOptions(session.Options{
-		Config: aws.Config{
-			Region:      aws.String("doesntmatter"),
-			Endpoint:    aws.String("http://localhost:8002" /* default dynamodb-local port */),
-			Credentials: credentials.NewStaticCredentials("id", "secret", "token"),
-		},
-	})))
 
-	tests.RunDBTests(t, func() db.Interface {
-		prefix := "automated-testing"
-		listTablesOutput, err := dynamoDBAPI.ListTablesWithContext(testCtx, &dynamodb.ListTablesInput{})
-		if err != nil {
-			t.Fatal(err)
-		}
-		for _, tableName := range listTablesOutput.TableNames {
-			if strings.HasPrefix(*tableName, prefix) {
-				dynamoDBAPI.DeleteTableWithContext(testCtx, &dynamodb.DeleteTableInput{
-					TableName: tableName,
-				})
-			}
-		}
-		d, err := New(Config{
-			DynamoDBAPI:               dynamoDBAPI,
-			DefaultPrefix:             prefix,
-			DefaultReadCapacityUnits:  10,
-			DefaultWriteCapacityUnits: 10,
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		if err := d.CreateTables(testCtx); err != nil {
-			t.Fatal(err)
-		}
-		return d
-	})
+  dynamoDBAPI := dynamodb.New(session.Must(session.NewSessionWithOptions(session.Options{
+    Config: aws.Config{
+      Region:      aws.String("doesntmatter"),
+      Endpoint:    aws.String("http://localhost:8002" /* default dynamodb-local port */),
+      Credentials: credentials.NewStaticCredentials("id", "secret", "token"),
+    },
+  })))
+
+  tests.RunDBTests(t, func() db.Interface {
+    prefix := "automated-testing"
+    listTablesOutput, err := dynamoDBAPI.ListTablesWithContext(testCtx, &dynamodb.ListTablesInput{})
+    if err != nil {
+      t.Fatal(err)
+    }
+    for _, tableName := range listTablesOutput.TableNames {
+      if strings.HasPrefix(*tableName, prefix) {
+        dynamoDBAPI.DeleteTableWithContext(testCtx, &dynamodb.DeleteTableInput{
+          TableName: tableName,
+        })
+      }
+    }
+    d, err := New(Config{
+      DynamoDBAPI:               dynamoDBAPI,
+      DefaultPrefix:             prefix,
+      DefaultReadCapacityUnits:  10,
+      DefaultWriteCapacityUnits: 10,
+    })
+    if err != nil {
+      t.Fatal(err)
+    }
+    if err := d.CreateTables(testCtx); err != nil {
+      t.Fatal(err)
+    }
+    return d
+  })
 }

@@ -123,7 +123,7 @@ func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeComposite(ctx conte
 
 func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx context.Context, input db.GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput, fn func(m *models.ThingWithDateTimeComposite, lastThingWithDateTimeComposite bool) bool) error {
 	if input.StartingAt != nil && input.StartingAfter != nil {
-		return fmt.Errorf("Must specify one of StartingAt or StartingAfter")
+		return fmt.Errorf("Can specify only one of StartingAt or StartingAfter")
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
@@ -155,10 +155,6 @@ func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDA
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExpressionAttributeNames["#CREATEDRESOURCE"] = aws.String("createdResource")
-		queryInput.ExpressionAttributeValues[":createdResource"] = &dynamodb.AttributeValue{
-			S: aws.String(fmt.Sprintf("%s|%s", input.StartingAfter.Created, input.StartingAfter.Resource)),
-		}
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"createdResource": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAfter.Created, input.StartingAfter.Resource)),
@@ -167,36 +163,36 @@ func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDA
 				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAfter.Type, input.StartingAfter.ID)),
 			},
 		}
-		if input.Descending {
-			queryInput.KeyConditionExpression = aws.String("#TYPEID = :typeId AND #CREATEDRESOURCE <= :createdResource")
-		} else {
-			queryInput.KeyConditionExpression = aws.String("#TYPEID = :typeId AND #CREATEDRESOURCE >= :createdResource")
-		}
 	}
 
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	var decodeErr error
+	var items []models.ThingWithDateTimeComposite
+	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
+		if len(queryOutput.Items) == 0 {
+			return false
+		}
+		items, decodeErr = decodeThingWithDateTimeComposites(queryOutput.Items)
+		if decodeErr != nil {
+			return false
+		}
+		hasMore := true
+		for i, item := range items {
+			if lastPage == true {
+				hasMore = i < len(items)-1
+			}
+			if !fn(&item, !hasMore) {
+				return false
+			}
+		}
+		return true
+	}
+
+	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
 	if err != nil {
 		return err
 	}
-	if len(queryOutput.Items) == 0 {
-		return nil
-	}
-
-	items, err := decodeThingWithDateTimeComposites(queryOutput.Items)
-	if err != nil {
-		return err
-	}
-
-	for i, item := range items {
-		hasMore := false
-		if len(queryOutput.LastEvaluatedKey) > 0 {
-			hasMore = true
-		} else {
-			hasMore = i < len(items)-1
-		}
-		if !fn(&item, !hasMore) {
-			break
-		}
+	if decodeErr != nil {
+		return decodeErr
 	}
 
 	return nil

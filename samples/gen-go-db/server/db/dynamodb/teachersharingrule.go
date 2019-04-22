@@ -158,7 +158,7 @@ func (t TeacherSharingRuleTable) getTeacherSharingRule(ctx context.Context, teac
 
 func (t TeacherSharingRuleTable) getTeacherSharingRulesByTeacherAndSchoolApp(ctx context.Context, input db.GetTeacherSharingRulesByTeacherAndSchoolAppInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error {
 	if input.StartingAt != nil && input.StartingAfter != nil {
-		return fmt.Errorf("Must specify one of StartingAt or StartingAfter")
+		return fmt.Errorf("Can specify only one of StartingAt or StartingAfter")
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
@@ -190,10 +190,6 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByTeacherAndSchoolApp(ctx
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExpressionAttributeNames["#SCHOOL_APP"] = aws.String("school_app")
-		queryInput.ExpressionAttributeValues[":schoolApp"] = &dynamodb.AttributeValue{
-			S: aws.String(fmt.Sprintf("%s_%s", input.StartingAfter.School, input.StartingAfter.App)),
-		}
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"school_app": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s_%s", input.StartingAfter.School, input.StartingAfter.App)),
@@ -202,36 +198,36 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByTeacherAndSchoolApp(ctx
 				S: aws.String(input.StartingAfter.Teacher),
 			},
 		}
-		if input.Descending {
-			queryInput.KeyConditionExpression = aws.String("#TEACHER = :teacher AND #SCHOOL_APP <= :schoolApp")
-		} else {
-			queryInput.KeyConditionExpression = aws.String("#TEACHER = :teacher AND #SCHOOL_APP >= :schoolApp")
-		}
 	}
 
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	var decodeErr error
+	var items []models.TeacherSharingRule
+	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
+		if len(queryOutput.Items) == 0 {
+			return false
+		}
+		items, decodeErr = decodeTeacherSharingRules(queryOutput.Items)
+		if decodeErr != nil {
+			return false
+		}
+		hasMore := true
+		for i, item := range items {
+			if lastPage == true {
+				hasMore = i < len(items)-1
+			}
+			if !fn(&item, !hasMore) {
+				return false
+			}
+		}
+		return true
+	}
+
+	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
 	if err != nil {
 		return err
 	}
-	if len(queryOutput.Items) == 0 {
-		return nil
-	}
-
-	items, err := decodeTeacherSharingRules(queryOutput.Items)
-	if err != nil {
-		return err
-	}
-
-	for i, item := range items {
-		hasMore := false
-		if len(queryOutput.LastEvaluatedKey) > 0 {
-			hasMore = true
-		} else {
-			hasMore = i < len(items)-1
-		}
-		if !fn(&item, !hasMore) {
-			break
-		}
+	if decodeErr != nil {
+		return decodeErr
 	}
 
 	return nil
@@ -258,7 +254,7 @@ func (t TeacherSharingRuleTable) deleteTeacherSharingRule(ctx context.Context, t
 
 func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx context.Context, input db.GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error {
 	if input.StartingAt != nil && input.StartingAfter != nil {
-		return fmt.Errorf("Must specify one of input.StartingAt or input.StartingAfter")
+		return fmt.Errorf("Can specify only one of input.StartingAt or input.StartingAfter")
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
@@ -291,10 +287,6 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeache
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExpressionAttributeNames["#SCHOOL_TEACHER_APP"] = aws.String("school_teacher_app")
-		queryInput.ExpressionAttributeValues[":schoolTeacherApp"] = &dynamodb.AttributeValue{
-			S: aws.String(fmt.Sprintf("%s_%s_%s", input.StartingAfter.School, input.StartingAfter.Teacher, input.StartingAfter.App)),
-		}
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"school_teacher_app": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s_%s_%s", input.StartingAfter.School, input.StartingAfter.Teacher, input.StartingAfter.App)),
@@ -309,36 +301,36 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeache
 				S: aws.String(input.StartingAfter.Teacher),
 			},
 		}
-		if input.Descending {
-			queryInput.KeyConditionExpression = aws.String("#DISTRICT = :district AND #SCHOOL_TEACHER_APP <= :schoolTeacherApp")
-		} else {
-			queryInput.KeyConditionExpression = aws.String("#DISTRICT = :district AND #SCHOOL_TEACHER_APP >= :schoolTeacherApp")
-		}
 	}
 
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	var decodeErr error
+	var items []models.TeacherSharingRule
+	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
+		if len(queryOutput.Items) == 0 {
+			return false
+		}
+		items, decodeErr = decodeTeacherSharingRules(queryOutput.Items)
+		if decodeErr != nil {
+			return false
+		}
+		hasMore := true
+		for i, item := range items {
+			if lastPage == true {
+				hasMore = i < len(items)-1
+			}
+			if !fn(&item, !hasMore) {
+				return false
+			}
+		}
+		return true
+	}
+
+	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
 	if err != nil {
 		return err
 	}
-	if len(queryOutput.Items) == 0 {
-		return nil
-	}
-
-	items, err := decodeTeacherSharingRules(queryOutput.Items)
-	if err != nil {
-		return err
-	}
-
-	for i, item := range items {
-		hasMore := false
-		if len(queryOutput.LastEvaluatedKey) > 0 {
-			hasMore = true
-		} else {
-			hasMore = i < len(items)-1
-		}
-		if !fn(&item, !hasMore) {
-			break
-		}
+	if decodeErr != nil {
+		return decodeErr
 	}
 
 	return nil

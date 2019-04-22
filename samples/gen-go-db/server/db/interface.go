@@ -161,7 +161,7 @@ type GetDeploymentsByEnvAppAndVersionInput struct {
 	Descending    bool
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
-	// Limit is an optional limit on how many items to evaluate.
+	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
 }
 
@@ -186,7 +186,7 @@ type GetDeploymentsByEnvAppAndDateInput struct {
 	DateStartingAt *strfmt.DateTime
 	StartingAfter  *models.Deployment
 	Descending     bool
-	// Limit is an optional limit on how many items to evaluate.
+	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
 }
 
@@ -210,7 +210,7 @@ type GetDeploymentsByEnvironmentAndDateInput struct {
 	DateStartingAt *strfmt.DateTime
 	StartingAfter  *models.Deployment
 	Descending     bool
-	// Limit is an optional limit on how many items to evaluate.
+	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
 }
 
@@ -259,7 +259,7 @@ type GetNoRangeThingWithCompositeAttributessByNameVersionAndDateInput struct {
 	DateStartingAt *strfmt.DateTime
 	StartingAfter  *models.NoRangeThingWithCompositeAttributes
 	Descending     bool
-	// Limit is an optional limit on how many items to evaluate.
+	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
 }
 
@@ -322,7 +322,7 @@ type GetTeacherSharingRulesByTeacherAndSchoolAppInput struct {
 	Descending    bool
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
-	// Limit is an optional limit on how many items to evaluate.
+	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
 }
 
@@ -352,7 +352,7 @@ type GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput struct {
 	StartingAt    *SchoolTeacherApp
 	StartingAfter *models.TeacherSharingRule
 	Descending    bool
-	// Limit is an optional limit on how many items to evaluate.
+	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
 }
 
@@ -397,7 +397,7 @@ type GetThingsByNameAndVersionInput struct {
 	Descending    bool
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
-	// Limit is an optional limit on how many items to evaluate.
+	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
 }
 
@@ -432,7 +432,7 @@ type GetThingsByNameAndCreatedAtInput struct {
 	CreatedAtStartingAt *strfmt.DateTime
 	StartingAfter       *models.Thing
 	Descending          bool
-	// Limit is an optional limit on how many items to evaluate.
+	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
 }
 
@@ -472,7 +472,7 @@ type GetThingWithCompositeAttributessByNameBranchAndDateInput struct {
 	Descending    bool
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
-	// Limit is an optional limit on how many items to evaluate.
+	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
 }
 
@@ -497,7 +497,7 @@ type GetThingWithCompositeAttributessByNameVersionAndDateInput struct {
 	DateStartingAt *strfmt.DateTime
 	StartingAfter  *models.ThingWithCompositeAttributes
 	Descending     bool
-	// Limit is an optional limit on how many items to evaluate.
+	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
 }
 
@@ -538,7 +538,7 @@ type GetThingWithCompositeEnumAttributessByNameBranchAndDateInput struct {
 	Descending    bool
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
-	// Limit is an optional limit on how many items to evaluate.
+	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
 }
 
@@ -578,7 +578,7 @@ type GetThingWithDateRangesByNameAndDateInput struct {
 	Descending    bool
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
-	// Limit is an optional limit on how many items to evaluate.
+	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
 }
 
@@ -605,7 +605,7 @@ type GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput struct {
 	Descending    bool
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
-	// Limit is an optional limit on how many items to evaluate.
+	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
 }
 
@@ -639,7 +639,7 @@ type GetThingWithMatchingKeyssByBearAndAssocTypeIDInput struct {
 	Descending    bool
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
-	// Limit is an optional limit on how many items to evaluate.
+	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
 }
 
@@ -670,7 +670,7 @@ type GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput struct {
 	StartingAt    *CreatedBear
 	StartingAfter *models.ThingWithMatchingKeys
 	Descending    bool
-	// Limit is an optional limit on how many items to evaluate.
+	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
 }
 
@@ -728,7 +728,7 @@ type GetThingWithRequiredFields2sByNameAndIDInput struct {
 	Descending    bool
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
-	// Limit is an optional limit on how many items to evaluate.
+	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
 }
 

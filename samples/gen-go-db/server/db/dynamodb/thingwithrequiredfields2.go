@@ -146,7 +146,7 @@ func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2(ctx context.C
 
 func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2sByNameAndID(ctx context.Context, input db.GetThingWithRequiredFields2sByNameAndIDInput, fn func(m *models.ThingWithRequiredFields2, lastThingWithRequiredFields2 bool) bool) error {
 	if input.IDStartingAt != nil && input.StartingAfter != nil {
-		return fmt.Errorf("Must specify one of input.IDStartingAt or input.StartingAfter")
+		return fmt.Errorf("Can specify only one of input.IDStartingAt or input.StartingAfter")
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
@@ -178,10 +178,6 @@ func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2sByNameAndID(c
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExpressionAttributeNames["#ID"] = aws.String("id")
-		queryInput.ExpressionAttributeValues[":id"] = &dynamodb.AttributeValue{
-			S: aws.String(*input.StartingAfter.ID),
-		}
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"id": &dynamodb.AttributeValue{
 				S: aws.String(*input.StartingAfter.ID),
@@ -190,14 +186,31 @@ func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2sByNameAndID(c
 				S: aws.String(*input.StartingAfter.Name),
 			},
 		}
-		if input.Descending {
-			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #ID <= :id")
-		} else {
-			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #ID >= :id")
-		}
 	}
 
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	var decodeErr error
+	var items []models.ThingWithRequiredFields2
+	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
+		if len(queryOutput.Items) == 0 {
+			return false
+		}
+		items, decodeErr = decodeThingWithRequiredFields2s(queryOutput.Items)
+		if decodeErr != nil {
+			return false
+		}
+		hasMore := true
+		for i, item := range items {
+			if lastPage == true {
+				hasMore = i < len(items)-1
+			}
+			if !fn(&item, !hasMore) {
+				return false
+			}
+		}
+		return true
+	}
+
+	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
@@ -207,25 +220,8 @@ func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2sByNameAndID(c
 		}
 		return err
 	}
-	if len(queryOutput.Items) == 0 {
-		return nil
-	}
-
-	items, err := decodeThingWithRequiredFields2s(queryOutput.Items)
-	if err != nil {
-		return err
-	}
-
-	for i, item := range items {
-		hasMore := false
-		if len(queryOutput.LastEvaluatedKey) > 0 {
-			hasMore = true
-		} else {
-			hasMore = i < len(items)-1
-		}
-		if !fn(&item, !hasMore) {
-			break
-		}
+	if decodeErr != nil {
+		return decodeErr
 	}
 
 	return nil

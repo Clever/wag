@@ -154,7 +154,7 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeys(ctx context.Context
 
 func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByBearAndAssocTypeID(ctx context.Context, input db.GetThingWithMatchingKeyssByBearAndAssocTypeIDInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error {
 	if input.StartingAt != nil && input.StartingAfter != nil {
-		return fmt.Errorf("Must specify one of StartingAt or StartingAfter")
+		return fmt.Errorf("Can specify only one of StartingAt or StartingAfter")
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
@@ -186,10 +186,6 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByBearAndAssocTypeI
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExpressionAttributeNames["#ASSOCTYPEID"] = aws.String("assocTypeID")
-		queryInput.ExpressionAttributeValues[":assocTypeId"] = &dynamodb.AttributeValue{
-			S: aws.String(fmt.Sprintf("%s^%s", input.StartingAfter.AssocType, input.StartingAfter.AssocID)),
-		}
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"assocTypeID": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAfter.AssocType, input.StartingAfter.AssocID)),
@@ -198,36 +194,36 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByBearAndAssocTypeI
 				S: aws.String(input.StartingAfter.Bear),
 			},
 		}
-		if input.Descending {
-			queryInput.KeyConditionExpression = aws.String("#BEAR = :bear AND #ASSOCTYPEID <= :assocTypeId")
-		} else {
-			queryInput.KeyConditionExpression = aws.String("#BEAR = :bear AND #ASSOCTYPEID >= :assocTypeId")
-		}
 	}
 
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	var decodeErr error
+	var items []models.ThingWithMatchingKeys
+	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
+		if len(queryOutput.Items) == 0 {
+			return false
+		}
+		items, decodeErr = decodeThingWithMatchingKeyss(queryOutput.Items)
+		if decodeErr != nil {
+			return false
+		}
+		hasMore := true
+		for i, item := range items {
+			if lastPage == true {
+				hasMore = i < len(items)-1
+			}
+			if !fn(&item, !hasMore) {
+				return false
+			}
+		}
+		return true
+	}
+
+	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
 	if err != nil {
 		return err
 	}
-	if len(queryOutput.Items) == 0 {
-		return nil
-	}
-
-	items, err := decodeThingWithMatchingKeyss(queryOutput.Items)
-	if err != nil {
-		return err
-	}
-
-	for i, item := range items {
-		hasMore := false
-		if len(queryOutput.LastEvaluatedKey) > 0 {
-			hasMore = true
-		} else {
-			hasMore = i < len(items)-1
-		}
-		if !fn(&item, !hasMore) {
-			break
-		}
+	if decodeErr != nil {
+		return decodeErr
 	}
 
 	return nil
@@ -254,7 +250,7 @@ func (t ThingWithMatchingKeysTable) deleteThingWithMatchingKeys(ctx context.Cont
 
 func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Context, input db.GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error {
 	if input.StartingAt != nil && input.StartingAfter != nil {
-		return fmt.Errorf("Must specify one of input.StartingAt or input.StartingAfter")
+		return fmt.Errorf("Can specify only one of input.StartingAt or input.StartingAfter")
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
@@ -287,10 +283,6 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByAssocTypeIDAndCre
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExpressionAttributeNames["#CREATEDBEAR"] = aws.String("createdBear")
-		queryInput.ExpressionAttributeValues[":createdBear"] = &dynamodb.AttributeValue{
-			S: aws.String(fmt.Sprintf("%s^%s", input.StartingAfter.Created, input.StartingAfter.Bear)),
-		}
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"createdBear": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAfter.Created, input.StartingAfter.Bear)),
@@ -302,36 +294,36 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByAssocTypeIDAndCre
 				S: aws.String(input.StartingAfter.Bear),
 			},
 		}
-		if input.Descending {
-			queryInput.KeyConditionExpression = aws.String("#ASSOCTYPEID = :assocTypeId AND #CREATEDBEAR <= :createdBear")
-		} else {
-			queryInput.KeyConditionExpression = aws.String("#ASSOCTYPEID = :assocTypeId AND #CREATEDBEAR >= :createdBear")
-		}
 	}
 
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	var decodeErr error
+	var items []models.ThingWithMatchingKeys
+	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
+		if len(queryOutput.Items) == 0 {
+			return false
+		}
+		items, decodeErr = decodeThingWithMatchingKeyss(queryOutput.Items)
+		if decodeErr != nil {
+			return false
+		}
+		hasMore := true
+		for i, item := range items {
+			if lastPage == true {
+				hasMore = i < len(items)-1
+			}
+			if !fn(&item, !hasMore) {
+				return false
+			}
+		}
+		return true
+	}
+
+	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
 	if err != nil {
 		return err
 	}
-	if len(queryOutput.Items) == 0 {
-		return nil
-	}
-
-	items, err := decodeThingWithMatchingKeyss(queryOutput.Items)
-	if err != nil {
-		return err
-	}
-
-	for i, item := range items {
-		hasMore := false
-		if len(queryOutput.LastEvaluatedKey) > 0 {
-			hasMore = true
-		} else {
-			hasMore = i < len(items)-1
-		}
-		if !fn(&item, !hasMore) {
-			break
-		}
+	if decodeErr != nil {
+		return decodeErr
 	}
 
 	return nil

@@ -205,7 +205,7 @@ func (t DeploymentTable) getDeployment(ctx context.Context, environment string, 
 
 func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, input db.GetDeploymentsByEnvAppAndVersionInput, fn func(m *models.Deployment, lastDeployment bool) bool) error {
 	if input.VersionStartingAt != nil && input.StartingAfter != nil {
-		return fmt.Errorf("Must specify one of input.VersionStartingAt or input.StartingAfter")
+		return fmt.Errorf("Can specify only one of input.VersionStartingAt or input.StartingAfter")
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
@@ -237,10 +237,6 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, i
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExpressionAttributeNames["#VERSION"] = aws.String("version")
-		queryInput.ExpressionAttributeValues[":version"] = &dynamodb.AttributeValue{
-			S: aws.String(input.StartingAfter.Version),
-		}
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"version": &dynamodb.AttributeValue{
 				S: aws.String(input.StartingAfter.Version),
@@ -249,36 +245,36 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, i
 				S: aws.String(fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application)),
 			},
 		}
-		if input.Descending {
-			queryInput.KeyConditionExpression = aws.String("#ENVAPP = :envApp AND #VERSION <= :version")
-		} else {
-			queryInput.KeyConditionExpression = aws.String("#ENVAPP = :envApp AND #VERSION >= :version")
-		}
 	}
 
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	var decodeErr error
+	var items []models.Deployment
+	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
+		if len(queryOutput.Items) == 0 {
+			return false
+		}
+		items, decodeErr = decodeDeployments(queryOutput.Items)
+		if decodeErr != nil {
+			return false
+		}
+		hasMore := true
+		for i, item := range items {
+			if lastPage == true {
+				hasMore = i < len(items)-1
+			}
+			if !fn(&item, !hasMore) {
+				return false
+			}
+		}
+		return true
+	}
+
+	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
 	if err != nil {
 		return err
 	}
-	if len(queryOutput.Items) == 0 {
-		return nil
-	}
-
-	items, err := decodeDeployments(queryOutput.Items)
-	if err != nil {
-		return err
-	}
-
-	for i, item := range items {
-		hasMore := false
-		if len(queryOutput.LastEvaluatedKey) > 0 {
-			hasMore = true
-		} else {
-			hasMore = i < len(items)-1
-		}
-		if !fn(&item, !hasMore) {
-			break
-		}
+	if decodeErr != nil {
+		return decodeErr
 	}
 
 	return nil
@@ -305,7 +301,7 @@ func (t DeploymentTable) deleteDeployment(ctx context.Context, environment strin
 
 func (t DeploymentTable) getDeploymentsByEnvAppAndDate(ctx context.Context, input db.GetDeploymentsByEnvAppAndDateInput, fn func(m *models.Deployment, lastDeployment bool) bool) error {
 	if input.DateStartingAt != nil && input.StartingAfter != nil {
-		return fmt.Errorf("Must specify one of input.DateStartingAt or input.StartingAfter")
+		return fmt.Errorf("Can specify only one of input.DateStartingAt or input.StartingAfter")
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
@@ -338,10 +334,6 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndDate(ctx context.Context, inpu
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
-		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
-			S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
-		}
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"date": &dynamodb.AttributeValue{
 				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
@@ -353,36 +345,36 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndDate(ctx context.Context, inpu
 				S: aws.String(input.StartingAfter.Version),
 			},
 		}
-		if input.Descending {
-			queryInput.KeyConditionExpression = aws.String("#ENVAPP = :envApp AND #DATE <= :date")
-		} else {
-			queryInput.KeyConditionExpression = aws.String("#ENVAPP = :envApp AND #DATE >= :date")
-		}
 	}
 
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	var decodeErr error
+	var items []models.Deployment
+	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
+		if len(queryOutput.Items) == 0 {
+			return false
+		}
+		items, decodeErr = decodeDeployments(queryOutput.Items)
+		if decodeErr != nil {
+			return false
+		}
+		hasMore := true
+		for i, item := range items {
+			if lastPage == true {
+				hasMore = i < len(items)-1
+			}
+			if !fn(&item, !hasMore) {
+				return false
+			}
+		}
+		return true
+	}
+
+	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
 	if err != nil {
 		return err
 	}
-	if len(queryOutput.Items) == 0 {
-		return nil
-	}
-
-	items, err := decodeDeployments(queryOutput.Items)
-	if err != nil {
-		return err
-	}
-
-	for i, item := range items {
-		hasMore := false
-		if len(queryOutput.LastEvaluatedKey) > 0 {
-			hasMore = true
-		} else {
-			hasMore = i < len(items)-1
-		}
-		if !fn(&item, !hasMore) {
-			break
-		}
+	if decodeErr != nil {
+		return decodeErr
 	}
 
 	return nil
@@ -390,7 +382,7 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndDate(ctx context.Context, inpu
 
 func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context, input db.GetDeploymentsByEnvironmentAndDateInput, fn func(m *models.Deployment, lastDeployment bool) bool) error {
 	if input.DateStartingAt != nil && input.StartingAfter != nil {
-		return fmt.Errorf("Must specify one of input.DateStartingAt or input.StartingAfter")
+		return fmt.Errorf("Can specify only one of input.DateStartingAt or input.StartingAfter")
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
@@ -423,10 +415,6 @@ func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context,
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
-		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
-			S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
-		}
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"date": &dynamodb.AttributeValue{
 				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
@@ -441,36 +429,36 @@ func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context,
 				S: aws.String(fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application)),
 			},
 		}
-		if input.Descending {
-			queryInput.KeyConditionExpression = aws.String("#ENVIRONMENT = :environment AND #DATE <= :date")
-		} else {
-			queryInput.KeyConditionExpression = aws.String("#ENVIRONMENT = :environment AND #DATE >= :date")
-		}
 	}
 
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	var decodeErr error
+	var items []models.Deployment
+	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
+		if len(queryOutput.Items) == 0 {
+			return false
+		}
+		items, decodeErr = decodeDeployments(queryOutput.Items)
+		if decodeErr != nil {
+			return false
+		}
+		hasMore := true
+		for i, item := range items {
+			if lastPage == true {
+				hasMore = i < len(items)-1
+			}
+			if !fn(&item, !hasMore) {
+				return false
+			}
+		}
+		return true
+	}
+
+	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
 	if err != nil {
 		return err
 	}
-	if len(queryOutput.Items) == 0 {
-		return nil
-	}
-
-	items, err := decodeDeployments(queryOutput.Items)
-	if err != nil {
-		return err
-	}
-
-	for i, item := range items {
-		hasMore := false
-		if len(queryOutput.LastEvaluatedKey) > 0 {
-			hasMore = true
-		} else {
-			hasMore = i < len(items)-1
-		}
-		if !fn(&item, !hasMore) {
-			break
-		}
+	if decodeErr != nil {
+		return decodeErr
 	}
 
 	return nil

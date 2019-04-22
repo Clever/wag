@@ -26,11 +26,12 @@ func TestDynamoDBStore(t *testing.T) {
 	}
 
 	end := time.Now().Add(60 * time.Second)
-	var c net.Conn
 	var err error
 	for time.Now().Before(end) {
+		var c net.Conn
 		c, err = net.Dial("tcp", "localhost:8002")
 		if err == nil {
+			c.Close()
 			break
 		}
 		time.Sleep(time.Second)
@@ -38,7 +39,6 @@ func TestDynamoDBStore(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	c.Close()
 
 	dynamoDBAPI := dynamodb.New(session.Must(session.NewSessionWithOptions(session.Options{
 		Config: aws.Config{

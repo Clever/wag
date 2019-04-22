@@ -107,7 +107,7 @@ type Get{{ $modelName }}sBy{{ $indexName }}Input struct {
   Descending bool
   // DisableConsistentRead turns off the default behavior of running a consistent read.
   DisableConsistentRead bool
-  // Limit is an optional limit on how many items to evaluate.
+  // Limit is an optional limit of how many items to evaluate.
 	Limit  *int64
 }
 {{- if gt $lenRangeKeyAttributes 1 }}
@@ -154,7 +154,7 @@ type Get{{ $modelName }}sBy{{ $computedIndexName }}Input struct {
   {{- end }}
 	StartingAfter *models.{{ $modelName }}
   Descending bool
-  // Limit is an optional limit on how many items to evaluate.
+  // Limit is an optional limit of how many items to evaluate.
 	Limit  *int64
 }
 {{- if gt $lenRangeKeyAttributes 1 }}

@@ -148,7 +148,7 @@ func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttribut
 
 func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttributessByNameBranchAndDate(ctx context.Context, input db.GetThingWithCompositeEnumAttributessByNameBranchAndDateInput, fn func(m *models.ThingWithCompositeEnumAttributes, lastThingWithCompositeEnumAttributes bool) bool) error {
 	if input.DateStartingAt != nil && input.StartingAfter != nil {
-		return fmt.Errorf("Must specify one of input.DateStartingAt or input.StartingAfter")
+		return fmt.Errorf("Can specify only one of input.DateStartingAt or input.StartingAfter")
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
@@ -180,10 +180,6 @@ func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttribut
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
-		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
-			S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.Date)),
-		}
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"date": &dynamodb.AttributeValue{
 				S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.Date)),
@@ -192,14 +188,31 @@ func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttribut
 				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, input.StartingAfter.BranchID)),
 			},
 		}
-		if input.Descending {
-			queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE <= :date")
-		} else {
-			queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE >= :date")
-		}
 	}
 
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	var decodeErr error
+	var items []models.ThingWithCompositeEnumAttributes
+	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
+		if len(queryOutput.Items) == 0 {
+			return false
+		}
+		items, decodeErr = decodeThingWithCompositeEnumAttributess(queryOutput.Items)
+		if decodeErr != nil {
+			return false
+		}
+		hasMore := true
+		for i, item := range items {
+			if lastPage == true {
+				hasMore = i < len(items)-1
+			}
+			if !fn(&item, !hasMore) {
+				return false
+			}
+		}
+		return true
+	}
+
+	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
@@ -209,25 +222,8 @@ func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttribut
 		}
 		return err
 	}
-	if len(queryOutput.Items) == 0 {
-		return nil
-	}
-
-	items, err := decodeThingWithCompositeEnumAttributess(queryOutput.Items)
-	if err != nil {
-		return err
-	}
-
-	for i, item := range items {
-		hasMore := false
-		if len(queryOutput.LastEvaluatedKey) > 0 {
-			hasMore = true
-		} else {
-			hasMore = i < len(items)-1
-		}
-		if !fn(&item, !hasMore) {
-			break
-		}
+	if decodeErr != nil {
+		return decodeErr
 	}
 
 	return nil

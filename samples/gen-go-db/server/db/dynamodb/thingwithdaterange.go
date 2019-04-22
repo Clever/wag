@@ -120,7 +120,7 @@ func (t ThingWithDateRangeTable) getThingWithDateRange(ctx context.Context, name
 
 func (t ThingWithDateRangeTable) getThingWithDateRangesByNameAndDate(ctx context.Context, input db.GetThingWithDateRangesByNameAndDateInput, fn func(m *models.ThingWithDateRange, lastThingWithDateRange bool) bool) error {
 	if input.DateStartingAt != nil && input.StartingAfter != nil {
-		return fmt.Errorf("Must specify one of input.DateStartingAt or input.StartingAfter")
+		return fmt.Errorf("Can specify only one of input.DateStartingAt or input.StartingAfter")
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
@@ -152,10 +152,6 @@ func (t ThingWithDateRangeTable) getThingWithDateRangesByNameAndDate(ctx context
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
-		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
-			S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
-		}
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"date": &dynamodb.AttributeValue{
 				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
@@ -164,36 +160,36 @@ func (t ThingWithDateRangeTable) getThingWithDateRangesByNameAndDate(ctx context
 				S: aws.String(input.StartingAfter.Name),
 			},
 		}
-		if input.Descending {
-			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #DATE <= :date")
-		} else {
-			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #DATE >= :date")
-		}
 	}
 
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	var decodeErr error
+	var items []models.ThingWithDateRange
+	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
+		if len(queryOutput.Items) == 0 {
+			return false
+		}
+		items, decodeErr = decodeThingWithDateRanges(queryOutput.Items)
+		if decodeErr != nil {
+			return false
+		}
+		hasMore := true
+		for i, item := range items {
+			if lastPage == true {
+				hasMore = i < len(items)-1
+			}
+			if !fn(&item, !hasMore) {
+				return false
+			}
+		}
+		return true
+	}
+
+	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
 	if err != nil {
 		return err
 	}
-	if len(queryOutput.Items) == 0 {
-		return nil
-	}
-
-	items, err := decodeThingWithDateRanges(queryOutput.Items)
-	if err != nil {
-		return err
-	}
-
-	for i, item := range items {
-		hasMore := false
-		if len(queryOutput.LastEvaluatedKey) > 0 {
-			hasMore = true
-		} else {
-			hasMore = i < len(items)-1
-		}
-		if !fn(&item, !hasMore) {
-			break
-		}
+	if decodeErr != nil {
+		return decodeErr
 	}
 
 	return nil
