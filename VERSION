@@ -1,2 +1,2 @@
 v3.0.1
-- Comment required fields in DynamoDB input
+- Check empty hash key in DynamoDB input

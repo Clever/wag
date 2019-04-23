@@ -207,6 +207,12 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, i
 	if input.VersionStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.VersionStartingAt or input.StartingAfter")
 	}
+	if input.Environment == "" {
+		return fmt.Errorf("Hash key input.Environment cannot be empty")
+	}
+	if input.Application == "" {
+		return fmt.Errorf("Hash key input.Application cannot be empty")
+	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		ExpressionAttributeNames: map[string]*string{
@@ -303,6 +309,12 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndDate(ctx context.Context, inpu
 	if input.DateStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.DateStartingAt or input.StartingAfter")
 	}
+	if input.Environment == "" {
+		return fmt.Errorf("Hash key input.Environment cannot be empty")
+	}
+	if input.Application == "" {
+		return fmt.Errorf("Hash key input.Application cannot be empty")
+	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		IndexName: aws.String("byDate"),
@@ -383,6 +395,9 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndDate(ctx context.Context, inpu
 func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context, input db.GetDeploymentsByEnvironmentAndDateInput, fn func(m *models.Deployment, lastDeployment bool) bool) error {
 	if input.DateStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.DateStartingAt or input.StartingAfter")
+	}
+	if input.Environment == "" {
+		return fmt.Errorf("Hash key input.Environment cannot be empty")
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),

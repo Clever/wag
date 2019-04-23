@@ -125,6 +125,12 @@ func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDA
 	if input.StartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of StartingAt or StartingAfter")
 	}
+	if input.Type == "" {
+		return fmt.Errorf("Hash key input.Type cannot be empty")
+	}
+	if input.ID == "" {
+		return fmt.Errorf("Hash key input.ID cannot be empty")
+	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		ExpressionAttributeNames: map[string]*string{

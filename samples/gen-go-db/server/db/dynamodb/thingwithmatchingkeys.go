@@ -156,6 +156,9 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByBearAndAssocTypeI
 	if input.StartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of StartingAt or StartingAfter")
 	}
+	if input.Bear == "" {
+		return fmt.Errorf("Hash key input.Bear cannot be empty")
+	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		ExpressionAttributeNames: map[string]*string{
@@ -251,6 +254,12 @@ func (t ThingWithMatchingKeysTable) deleteThingWithMatchingKeys(ctx context.Cont
 func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Context, input db.GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error {
 	if input.StartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.StartingAt or input.StartingAfter")
+	}
+	if input.AssocType == "" {
+		return fmt.Errorf("Hash key input.AssocType cannot be empty")
+	}
+	if input.AssocID == "" {
+		return fmt.Errorf("Hash key input.AssocID cannot be empty")
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
