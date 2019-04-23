@@ -292,6 +292,14 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
       return fmt.Errorf("Can specify only one of input.{{ pascalize $rangeKey.AttributeName }}StartingAt or input.StartingAfter")
     }
   {{- end }}
+  {{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
+    {{- $dynamoDBType := dynamoDBTypeForAttribute $xdbConfig $attributeName }}
+    {{- if eq $dynamoDBType "S" }}
+      if input.{{ pascalize $attributeName }} == "" {
+        return fmt.Errorf("Hash key input.{{ pascalize $attributeName }} cannot be empty")
+      }
+    {{- end }}
+  {{- end }}
   queryInput := &dynamodb.QueryInput{
     TableName: aws.String(t.name()),
     ExpressionAttributeNames: map[string]*string{
@@ -497,6 +505,14 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
     if input.{{ pascalize $rangeKey.AttributeName }}StartingAt != nil && input.StartingAfter != nil {
       return fmt.Errorf("Can specify only one of input.{{ pascalize $rangeKey.AttributeName }}StartingAt or input.StartingAfter")
     }
+  {{- end }}
+  {{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema  "HASH" }}
+    {{- $dynamoDBType := dynamoDBTypeForAttribute $xdbConfig $attributeName }}
+    {{- if eq $dynamoDBType "S" }}
+      if input.{{ pascalize $attributeName }} == "" {
+        return fmt.Errorf("Hash key input.{{ pascalize $attributeName }} cannot be empty")
+      }
+    {{- end }}
   {{- end }}
   queryInput := &dynamodb.QueryInput{
     TableName: aws.String(t.name()),

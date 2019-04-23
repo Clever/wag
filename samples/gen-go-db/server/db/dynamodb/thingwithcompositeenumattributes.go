@@ -150,6 +150,12 @@ func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttribut
 	if input.DateStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.DateStartingAt or input.StartingAfter")
 	}
+	if input.Name == "" {
+		return fmt.Errorf("Hash key input.Name cannot be empty")
+	}
+	if input.BranchID == "" {
+		return fmt.Errorf("Hash key input.BranchID cannot be empty")
+	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		ExpressionAttributeNames: map[string]*string{

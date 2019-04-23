@@ -248,6 +248,9 @@ func (t ThingTable) getThingsByNameAndVersion(ctx context.Context, input db.GetT
 	if input.VersionStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.VersionStartingAt or input.StartingAfter")
 	}
+	if input.Name == "" {
+		return fmt.Errorf("Hash key input.Name cannot be empty")
+	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		ExpressionAttributeNames: map[string]*string{
@@ -391,6 +394,9 @@ func (t ThingTable) getThingByID(ctx context.Context, id string) (*models.Thing,
 func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.GetThingsByNameAndCreatedAtInput, fn func(m *models.Thing, lastThing bool) bool) error {
 	if input.CreatedAtStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.CreatedAtStartingAt or input.StartingAfter")
+	}
+	if input.Name == "" {
+		return fmt.Errorf("Hash key input.Name cannot be empty")
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),

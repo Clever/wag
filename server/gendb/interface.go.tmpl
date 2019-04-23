@@ -94,6 +94,7 @@ type Scan{{ $modelName }}sInput struct {
 // Get{{ $modelName }}sBy{{ $indexName }}Input is the query input to Get{{ $modelName }}sBy{{ $indexName }}.
 type Get{{ $modelName }}sBy{{ $indexName }}Input struct {
   {{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
+    // {{ pascalize $attributeName }} is required
 	  {{ pascalize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }}
   {{- end }}
   {{- if gt $lenRangeKeyAttributes 1 }}
@@ -144,6 +145,7 @@ func (e Err{{ $modelName}}NotFound) Error() string {
 // Get{{ $modelName }}sBy{{ $computedIndexName }}Input is the query input to Get{{ $modelName }}sBy{{ $computedIndexName }}.
 type Get{{ $modelName }}sBy{{ $computedIndexName }}Input struct {
   {{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "HASH" }}
+    // {{ pascalize $attributeName }} is required
 	  {{ pascalize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }}
   {{- end }}
   {{- if gt $lenRangeKeyAttributes 1 }}

@@ -182,6 +182,12 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 	if input.DateStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.DateStartingAt or input.StartingAfter")
 	}
+	if input.Name == "" {
+		return fmt.Errorf("Hash key input.Name cannot be empty")
+	}
+	if input.Branch == "" {
+		return fmt.Errorf("Hash key input.Branch cannot be empty")
+	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		ExpressionAttributeNames: map[string]*string{
@@ -289,6 +295,9 @@ func (t ThingWithCompositeAttributesTable) deleteThingWithCompositeAttributes(ct
 func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input db.GetThingWithCompositeAttributessByNameVersionAndDateInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error {
 	if input.DateStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.DateStartingAt or input.StartingAfter")
+	}
+	if input.Name == "" {
+		return fmt.Errorf("Hash key input.Name cannot be empty")
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
