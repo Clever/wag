@@ -1,2 +1,2 @@
-v2.0.5
-- DynamoDB: translate resource not found to table not found error
+v3.0.0
+- Support optional range key for Dynamo queries

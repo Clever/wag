@@ -1,13 +1,13 @@
 package dynamodb
 
 import (
-	"bufio"
 	"context"
-	"io"
-	"os"
+	"fmt"
+	"net"
 	"os/exec"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Clever/wag/samples/gen-go-db/server/db"
 	"github.com/Clever/wag/samples/gen-go-db/server/db/tests"
@@ -21,20 +21,42 @@ func TestDynamoDBStore(t *testing.T) {
 	// spin up dynamodb local
 	testCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	cmd := exec.CommandContext(testCtx, "./dynamodb-local.sh")
-	ddbLocalOutputReader, ddbLocalOutputWriter := io.Pipe()
-	cmd.Stdout = io.MultiWriter(os.Stdout, ddbLocalOutputWriter)
-	cmd.Stderr = io.MultiWriter(os.Stderr, ddbLocalOutputWriter)
-	if err := cmd.Start(); err != nil {
-		t.Fatal(err)
-	}
 
-	// wait for dynamodb local to output the correct startup log
-	scanner := bufio.NewScanner(ddbLocalOutputReader)
-	for scanner.Scan() {
-		if strings.Contains(scanner.Text(), "Initializing DynamoDB Local with the following configuration") {
+	// restart test db if it gets killed before tests are completed.
+	go func(doneC <-chan struct{}, t *testing.T) {
+		cmd := exec.CommandContext(testCtx, "./dynamodb-local.sh")
+		if err := cmd.Start(); err != nil {
+			t.Fatal(err)
+		}
+		for {
+			select {
+			case <-doneC:
+				return
+			default:
+				if err := cmd.Wait(); err != nil {
+					fmt.Printf("Test DB crashed: %v\n", err.Error())
+					cmd = exec.CommandContext(testCtx, "./dynamodb-local.sh")
+					if err := cmd.Start(); err != nil && t != nil {
+						if err.Error() != "context canceled" {
+							t.Fatal(err)
+						}
+					}
+				}
+			}
+		}
+	}(testCtx.Done(), t)
+
+	// loop for 60s trying to establish a connection
+	connected := false
+	for start := time.Now(); start.Before(start.Add(60 * time.Second)); time.Sleep(1 * time.Second) {
+		if c, err := net.Dial("tcp", "localhost:8002"); err == nil {
+			c.Close()
+			connected = true
 			break
 		}
+	}
+	if connected == false {
+		t.Fatal("failed to connect within 60 seconds")
 	}
 
 	dynamoDBAPI := dynamodb.New(session.Must(session.NewSessionWithOptions(session.Options{

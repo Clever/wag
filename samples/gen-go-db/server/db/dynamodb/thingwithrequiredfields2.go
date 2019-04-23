@@ -145,41 +145,72 @@ func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2(ctx context.C
 }
 
 func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2sByNameAndID(ctx context.Context, input db.GetThingWithRequiredFields2sByNameAndIDInput, fn func(m *models.ThingWithRequiredFields2, lastThingWithRequiredFields2 bool) bool) error {
+	if input.IDStartingAt != nil && input.StartingAfter != nil {
+		return fmt.Errorf("Can specify only one of input.IDStartingAt or input.StartingAfter")
+	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		ExpressionAttributeNames: map[string]*string{
 			"#NAME": aws.String("name"),
-			"#ID":   aws.String("id"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":name": &dynamodb.AttributeValue{
-				S: aws.String(*input.StartingAt.Name),
-			},
-			":id": &dynamodb.AttributeValue{
-				S: aws.String(*input.StartingAt.ID),
+				S: aws.String(input.Name),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
-		Limit:            input.Limit,
 	}
-	if input.Exclusive {
+	if input.Limit != nil {
+		queryInput.Limit = input.Limit
+	}
+	if input.IDStartingAt == nil {
+		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
+	} else {
+		queryInput.ExpressionAttributeNames["#ID"] = aws.String("id")
+		queryInput.ExpressionAttributeValues[":id"] = &dynamodb.AttributeValue{
+			S: aws.String(*input.IDStartingAt),
+		}
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #ID <= :id")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #ID >= :id")
+		}
+	}
+	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"id": &dynamodb.AttributeValue{
-				S: aws.String(*input.StartingAt.ID),
+				S: aws.String(*input.StartingAfter.ID),
 			},
 			"name": &dynamodb.AttributeValue{
-				S: aws.String(*input.StartingAt.Name),
+				S: aws.String(*input.StartingAfter.Name),
 			},
 		}
 	}
-	if input.Descending {
-		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #ID <= :id")
-	} else {
-		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #ID >= :id")
+
+	var pageFnErr error
+	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
+		if len(queryOutput.Items) == 0 {
+			return false
+		}
+		items, err := decodeThingWithRequiredFields2s(queryOutput.Items)
+		if err != nil {
+			pageFnErr = err
+			return false
+		}
+		hasMore := true
+		for i, item := range items {
+			if lastPage == true {
+				hasMore = i < len(items)-1
+			}
+			if !fn(&item, !hasMore) {
+				return false
+			}
+		}
+		return true
 	}
 
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
@@ -189,25 +220,8 @@ func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2sByNameAndID(c
 		}
 		return err
 	}
-	if len(queryOutput.Items) == 0 {
-		return nil
-	}
-
-	items, err := decodeThingWithRequiredFields2s(queryOutput.Items)
-	if err != nil {
-		return err
-	}
-
-	for i, item := range items {
-		hasMore := false
-		if len(queryOutput.LastEvaluatedKey) > 0 {
-			hasMore = true
-		} else {
-			hasMore = i < len(items)-1
-		}
-		if !fn(&item, !hasMore) {
-			break
-		}
+	if pageFnErr != nil {
+		return pageFnErr
 	}
 
 	return nil

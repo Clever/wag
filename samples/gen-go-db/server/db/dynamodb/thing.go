@@ -245,41 +245,72 @@ func (t ThingTable) scanThings(ctx context.Context, input db.ScanThingsInput, fn
 }
 
 func (t ThingTable) getThingsByNameAndVersion(ctx context.Context, input db.GetThingsByNameAndVersionInput, fn func(m *models.Thing, lastThing bool) bool) error {
+	if input.VersionStartingAt != nil && input.StartingAfter != nil {
+		return fmt.Errorf("Can specify only one of input.VersionStartingAt or input.StartingAfter")
+	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		ExpressionAttributeNames: map[string]*string{
-			"#NAME":    aws.String("name"),
-			"#VERSION": aws.String("version"),
+			"#NAME": aws.String("name"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":name": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAt.Name),
-			},
-			":version": &dynamodb.AttributeValue{
-				N: aws.String(fmt.Sprintf("%d", input.StartingAt.Version)),
+				S: aws.String(input.Name),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
-		Limit:            input.Limit,
 	}
-	if input.Exclusive {
+	if input.Limit != nil {
+		queryInput.Limit = input.Limit
+	}
+	if input.VersionStartingAt == nil {
+		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
+	} else {
+		queryInput.ExpressionAttributeNames["#VERSION"] = aws.String("version")
+		queryInput.ExpressionAttributeValues[":version"] = &dynamodb.AttributeValue{
+			N: aws.String(fmt.Sprintf("%d", *input.VersionStartingAt)),
+		}
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #VERSION <= :version")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #VERSION >= :version")
+		}
+	}
+	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"version": &dynamodb.AttributeValue{
-				N: aws.String(fmt.Sprintf("%d", input.StartingAt.Version)),
+				N: aws.String(fmt.Sprintf("%d", input.StartingAfter.Version)),
 			},
 			"name": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAt.Name),
+				S: aws.String(input.StartingAfter.Name),
 			},
 		}
 	}
-	if input.Descending {
-		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #VERSION <= :version")
-	} else {
-		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #VERSION >= :version")
+
+	var pageFnErr error
+	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
+		if len(queryOutput.Items) == 0 {
+			return false
+		}
+		items, err := decodeThings(queryOutput.Items)
+		if err != nil {
+			pageFnErr = err
+			return false
+		}
+		hasMore := true
+		for i, item := range items {
+			if lastPage == true {
+				hasMore = i < len(items)-1
+			}
+			if !fn(&item, !hasMore) {
+				return false
+			}
+		}
+		return true
 	}
 
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
@@ -289,25 +320,8 @@ func (t ThingTable) getThingsByNameAndVersion(ctx context.Context, input db.GetT
 		}
 		return err
 	}
-	if len(queryOutput.Items) == 0 {
-		return nil
-	}
-
-	items, err := decodeThings(queryOutput.Items)
-	if err != nil {
-		return err
-	}
-
-	for i, item := range items {
-		hasMore := false
-		if len(queryOutput.LastEvaluatedKey) > 0 {
-			hasMore = true
-		} else {
-			hasMore = i < len(items)-1
-		}
-		if !fn(&item, !hasMore) {
-			break
-		}
+	if pageFnErr != nil {
+		return pageFnErr
 	}
 
 	return nil
@@ -375,52 +389,76 @@ func (t ThingTable) getThingByID(ctx context.Context, id string) (*models.Thing,
 }
 
 func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.GetThingsByNameAndCreatedAtInput, fn func(m *models.Thing, lastThing bool) bool) error {
-	if input.StartingAt == nil {
-		return fmt.Errorf("StartingAt cannot be nil")
-	}
-	if input.Limit == nil {
-		return fmt.Errorf("Limit cannot be nil")
+	if input.CreatedAtStartingAt != nil && input.StartingAfter != nil {
+		return fmt.Errorf("Can specify only one of input.CreatedAtStartingAt or input.StartingAfter")
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		IndexName: aws.String("name-createdAt"),
 		ExpressionAttributeNames: map[string]*string{
-			"#NAME":      aws.String("name"),
-			"#CREATEDAT": aws.String("createdAt"),
+			"#NAME": aws.String("name"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":name": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAt.Name),
-			},
-			":createdAt": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeString(input.StartingAt.CreatedAt)),
+				S: aws.String(input.Name),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
-		Limit:            input.Limit,
 	}
-	if input.Exclusive {
+	if input.Limit != nil {
+		queryInput.Limit = input.Limit
+	}
+	if input.CreatedAtStartingAt == nil {
+		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
+	} else {
+		queryInput.ExpressionAttributeNames["#CREATEDAT"] = aws.String("createdAt")
+		queryInput.ExpressionAttributeValues[":createdAt"] = &dynamodb.AttributeValue{
+			S: aws.String(toDynamoTimeString(*input.CreatedAtStartingAt)),
+		}
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #CREATEDAT <= :createdAt")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #CREATEDAT >= :createdAt")
+		}
+	}
+	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"createdAt": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeString(input.StartingAt.CreatedAt)),
+				S: aws.String(toDynamoTimeString(input.StartingAfter.CreatedAt)),
 			},
 			"name": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAt.Name),
+				S: aws.String(input.StartingAfter.Name),
 			},
-
 			"version": &dynamodb.AttributeValue{
-				N: aws.String(fmt.Sprintf("%d", input.StartingAt.Version)),
+				N: aws.String(fmt.Sprintf("%d", input.StartingAfter.Version)),
 			},
 		}
 	}
-	if input.Descending {
-		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #CREATEDAT <= :createdAt")
-	} else {
-		queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #CREATEDAT >= :createdAt")
+
+	var pageFnErr error
+	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
+		if len(queryOutput.Items) == 0 {
+			return false
+		}
+		items, err := decodeThings(queryOutput.Items)
+		if err != nil {
+			pageFnErr = err
+			return false
+		}
+		hasMore := true
+		for i, item := range items {
+			if lastPage == true {
+				hasMore = i < len(items)-1
+			}
+			if !fn(&item, !hasMore) {
+				return false
+			}
+		}
+		return true
 	}
 
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
@@ -430,25 +468,8 @@ func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.Ge
 		}
 		return err
 	}
-	if len(queryOutput.Items) == 0 {
-		return nil
-	}
-
-	items, err := decodeThings(queryOutput.Items)
-	if err != nil {
-		return err
-	}
-
-	for i, item := range items {
-		hasMore := false
-		if len(queryOutput.LastEvaluatedKey) > 0 {
-			hasMore = true
-		} else {
-			hasMore = i < len(items)-1
-		}
-		if !fn(&item, !hasMore) {
-			break
-		}
+	if pageFnErr != nil {
+		return pageFnErr
 	}
 
 	return nil

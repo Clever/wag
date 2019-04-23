@@ -35,6 +35,92 @@ func (m *MockInterface) EXPECT() *MockInterfaceMockRecorder {
 	return m.recorder
 }
 
+// SaveDeployment mocks base method
+func (m_2 *MockInterface) SaveDeployment(ctx context.Context, m models.Deployment) error {
+	ret := m_2.ctrl.Call(m_2, "SaveDeployment", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveDeployment indicates an expected call of SaveDeployment
+func (mr *MockInterfaceMockRecorder) SaveDeployment(ctx, m interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveDeployment", reflect.TypeOf((*MockInterface)(nil).SaveDeployment), ctx, m)
+}
+
+// GetDeployment mocks base method
+func (m *MockInterface) GetDeployment(ctx context.Context, environment, application, version string) (*models.Deployment, error) {
+	ret := m.ctrl.Call(m, "GetDeployment", ctx, environment, application, version)
+	ret0, _ := ret[0].(*models.Deployment)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDeployment indicates an expected call of GetDeployment
+func (mr *MockInterfaceMockRecorder) GetDeployment(ctx, environment, application, version interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeployment", reflect.TypeOf((*MockInterface)(nil).GetDeployment), ctx, environment, application, version)
+}
+
+// GetDeploymentsByEnvAppAndVersion mocks base method
+func (m *MockInterface) GetDeploymentsByEnvAppAndVersion(ctx context.Context, input GetDeploymentsByEnvAppAndVersionInput, fn func(*models.Deployment, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetDeploymentsByEnvAppAndVersion", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetDeploymentsByEnvAppAndVersion indicates an expected call of GetDeploymentsByEnvAppAndVersion
+func (mr *MockInterfaceMockRecorder) GetDeploymentsByEnvAppAndVersion(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeploymentsByEnvAppAndVersion", reflect.TypeOf((*MockInterface)(nil).GetDeploymentsByEnvAppAndVersion), ctx, input, fn)
+}
+
+// DeleteDeployment mocks base method
+func (m *MockInterface) DeleteDeployment(ctx context.Context, environment, application, version string) error {
+	ret := m.ctrl.Call(m, "DeleteDeployment", ctx, environment, application, version)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteDeployment indicates an expected call of DeleteDeployment
+func (mr *MockInterfaceMockRecorder) DeleteDeployment(ctx, environment, application, version interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDeployment", reflect.TypeOf((*MockInterface)(nil).DeleteDeployment), ctx, environment, application, version)
+}
+
+// GetDeploymentsByEnvAppAndDate mocks base method
+func (m *MockInterface) GetDeploymentsByEnvAppAndDate(ctx context.Context, input GetDeploymentsByEnvAppAndDateInput, fn func(*models.Deployment, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetDeploymentsByEnvAppAndDate", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetDeploymentsByEnvAppAndDate indicates an expected call of GetDeploymentsByEnvAppAndDate
+func (mr *MockInterfaceMockRecorder) GetDeploymentsByEnvAppAndDate(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeploymentsByEnvAppAndDate", reflect.TypeOf((*MockInterface)(nil).GetDeploymentsByEnvAppAndDate), ctx, input, fn)
+}
+
+// GetDeploymentsByEnvironmentAndDate mocks base method
+func (m *MockInterface) GetDeploymentsByEnvironmentAndDate(ctx context.Context, input GetDeploymentsByEnvironmentAndDateInput, fn func(*models.Deployment, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetDeploymentsByEnvironmentAndDate", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetDeploymentsByEnvironmentAndDate indicates an expected call of GetDeploymentsByEnvironmentAndDate
+func (mr *MockInterfaceMockRecorder) GetDeploymentsByEnvironmentAndDate(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeploymentsByEnvironmentAndDate", reflect.TypeOf((*MockInterface)(nil).GetDeploymentsByEnvironmentAndDate), ctx, input, fn)
+}
+
+// GetDeploymentByVersion mocks base method
+func (m *MockInterface) GetDeploymentByVersion(ctx context.Context, version string) (*models.Deployment, error) {
+	ret := m.ctrl.Call(m, "GetDeploymentByVersion", ctx, version)
+	ret0, _ := ret[0].(*models.Deployment)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDeploymentByVersion indicates an expected call of GetDeploymentByVersion
+func (mr *MockInterfaceMockRecorder) GetDeploymentByVersion(ctx, version interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeploymentByVersion", reflect.TypeOf((*MockInterface)(nil).GetDeploymentByVersion), ctx, version)
+}
+
 // SaveNoRangeThingWithCompositeAttributes mocks base method
 func (m_2 *MockInterface) SaveNoRangeThingWithCompositeAttributes(ctx context.Context, m models.NoRangeThingWithCompositeAttributes) error {
 	ret := m_2.ctrl.Call(m_2, "SaveNoRangeThingWithCompositeAttributes", ctx, m)

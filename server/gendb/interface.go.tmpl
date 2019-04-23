@@ -93,15 +93,22 @@ type Scan{{ $modelName }}sInput struct {
 {{- $lenRangeKeyAttributes := len $rangeKeyAttributes }}
 // Get{{ $modelName }}sBy{{ $indexName }}Input is the query input to Get{{ $modelName }}sBy{{ $indexName }}.
 type Get{{ $modelName }}sBy{{ $indexName }}Input struct {
-  // StartingAt is a required specification of an (exclusive) starting point.
-	StartingAt *models.{{ $modelName }}
-  // Exclusive toggles whether results include the start point
-  Exclusive bool
-	// Limit is a required limit on how many items to evaluate.
-	Limit  *int64
+  {{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
+	  {{ pascalize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }}
+  {{- end }}
+  {{- if gt $lenRangeKeyAttributes 1 }}
+	  StartingAt *{{ pascalizeAndJoin $rangeKeyAttributes }}
+  {{- else }}
+    {{- $attributeName := index $rangeKeyAttributes 0 }}
+    {{ pascalize $attributeName }}StartingAt *{{ goTypeForAttribute $xdbConfig $attributeName }}
+  {{- end }}
+  // StartingAfter is a required specification of an exclusive starting point.
+	StartingAfter *models.{{ $modelName }}
+  Descending bool
   // DisableConsistentRead turns off the default behavior of running a consistent read.
   DisableConsistentRead bool
-  Descending bool
+  // Limit is an optional limit of how many items to evaluate.
+	Limit  *int64
 }
 {{- if gt $lenRangeKeyAttributes 1 }}
 // {{ pascalizeAndJoin $rangeKeyAttributes }} struct.
@@ -136,13 +143,19 @@ func (e Err{{ $modelName}}NotFound) Error() string {
 {{- $lenRangeKeyAttributes := len $rangeKeyAttributes }}
 // Get{{ $modelName }}sBy{{ $computedIndexName }}Input is the query input to Get{{ $modelName }}sBy{{ $computedIndexName }}.
 type Get{{ $modelName }}sBy{{ $computedIndexName }}Input struct {
-  // StartingAt is a required specification of an (exclusive) starting point.
-	StartingAt *models.{{ $modelName }}
-  // Exclusive toggles whether results include the start point
-  Exclusive bool
-	// Limit is a required limit on how many items to evaluate.
-	Limit  *int64
+  {{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "HASH" }}
+	  {{ pascalize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }}
+  {{- end }}
+  {{- if gt $lenRangeKeyAttributes 1 }}
+	  StartingAt *{{ pascalizeAndJoin $rangeKeyAttributes }}
+  {{- else }}
+    {{- $attributeName := index $rangeKeyAttributes 0 }}
+    {{ pascalize $attributeName }}StartingAt *{{ goTypeForAttribute $xdbConfig $attributeName }}
+  {{- end }}
+	StartingAfter *models.{{ $modelName }}
   Descending bool
+  // Limit is an optional limit of how many items to evaluate.
+	Limit  *int64
 }
 {{- if gt $lenRangeKeyAttributes 1 }}
 // {{ pascalizeAndJoin $rangeKeyAttributes }} struct.

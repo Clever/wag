@@ -122,63 +122,77 @@ func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeComposite(ctx conte
 }
 
 func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx context.Context, input db.GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput, fn func(m *models.ThingWithDateTimeComposite, lastThingWithDateTimeComposite bool) bool) error {
+	if input.StartingAt != nil && input.StartingAfter != nil {
+		return fmt.Errorf("Can specify only one of StartingAt or StartingAfter")
+	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		ExpressionAttributeNames: map[string]*string{
-			"#TYPEID":          aws.String("typeID"),
-			"#CREATEDRESOURCE": aws.String("createdResource"),
+			"#TYPEID": aws.String("typeID"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":typeId": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAt.Type, input.StartingAt.ID)),
-			},
-			":createdResource": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAt.Created, input.StartingAt.Resource)),
+				S: aws.String(fmt.Sprintf("%s|%s", input.Type, input.ID)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
-		Limit:            input.Limit,
 	}
-	if input.Exclusive {
+	if input.Limit != nil {
+		queryInput.Limit = input.Limit
+	}
+	if input.StartingAt == nil {
+		queryInput.KeyConditionExpression = aws.String("#TYPEID = :typeId")
+	} else {
+		queryInput.ExpressionAttributeNames["#CREATEDRESOURCE"] = aws.String("createdResource")
+		queryInput.ExpressionAttributeValues[":createdResource"] = &dynamodb.AttributeValue{
+			S: aws.String(fmt.Sprintf("%s|%s", input.StartingAt.Created, input.StartingAt.Resource)),
+		}
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#TYPEID = :typeId AND #CREATEDRESOURCE <= :createdResource")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#TYPEID = :typeId AND #CREATEDRESOURCE >= :createdResource")
+		}
+	}
+	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"createdResource": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAt.Created, input.StartingAt.Resource)),
+				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAfter.Created, input.StartingAfter.Resource)),
 			},
 			"typeID": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAt.Type, input.StartingAt.ID)),
+				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAfter.Type, input.StartingAfter.ID)),
 			},
 		}
 	}
-	if input.Descending {
-		queryInput.KeyConditionExpression = aws.String("#TYPEID = :typeId AND #CREATEDRESOURCE <= :createdResource")
-	} else {
-		queryInput.KeyConditionExpression = aws.String("#TYPEID = :typeId AND #CREATEDRESOURCE >= :createdResource")
+
+	var pageFnErr error
+	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
+		if len(queryOutput.Items) == 0 {
+			return false
+		}
+		items, err := decodeThingWithDateTimeComposites(queryOutput.Items)
+		if err != nil {
+			pageFnErr = err
+			return false
+		}
+		hasMore := true
+		for i, item := range items {
+			if lastPage == true {
+				hasMore = i < len(items)-1
+			}
+			if !fn(&item, !hasMore) {
+				return false
+			}
+		}
+		return true
 	}
 
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
 	if err != nil {
 		return err
 	}
-	if len(queryOutput.Items) == 0 {
-		return nil
-	}
-
-	items, err := decodeThingWithDateTimeComposites(queryOutput.Items)
-	if err != nil {
-		return err
-	}
-
-	for i, item := range items {
-		hasMore := false
-		if len(queryOutput.LastEvaluatedKey) > 0 {
-			hasMore = true
-		} else {
-			hasMore = i < len(items)-1
-		}
-		if !fn(&item, !hasMore) {
-			break
-		}
+	if pageFnErr != nil {
+		return pageFnErr
 	}
 
 	return nil
