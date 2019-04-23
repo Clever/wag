@@ -1,2 +1,2 @@
-v3.0.0
-- Support optional range key for Dynamo queries
+v3.0.1
+- Comment required fields in DynamoDB input

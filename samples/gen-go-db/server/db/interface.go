@@ -153,7 +153,9 @@ func DateTime(d strfmt.DateTime) *strfmt.DateTime { return &d }
 
 // GetDeploymentsByEnvAppAndVersionInput is the query input to GetDeploymentsByEnvAppAndVersion.
 type GetDeploymentsByEnvAppAndVersionInput struct {
-	Environment       string
+	// Environment is required
+	Environment string
+	// Application is required
 	Application       string
 	VersionStartingAt *string
 	// StartingAfter is a required specification of an exclusive starting point.
@@ -181,7 +183,9 @@ func (e ErrDeploymentNotFound) Error() string {
 
 // GetDeploymentsByEnvAppAndDateInput is the query input to GetDeploymentsByEnvAppAndDate.
 type GetDeploymentsByEnvAppAndDateInput struct {
-	Environment    string
+	// Environment is required
+	Environment string
+	// Application is required
 	Application    string
 	DateStartingAt *strfmt.DateTime
 	StartingAfter  *models.Deployment
@@ -206,6 +210,7 @@ func (e ErrDeploymentByEnvAppAndDateNotFound) Error() string {
 
 // GetDeploymentsByEnvironmentAndDateInput is the query input to GetDeploymentsByEnvironmentAndDate.
 type GetDeploymentsByEnvironmentAndDateInput struct {
+	// Environment is required
 	Environment    string
 	DateStartingAt *strfmt.DateTime
 	StartingAfter  *models.Deployment
@@ -254,7 +259,9 @@ func (e ErrNoRangeThingWithCompositeAttributesNotFound) Error() string {
 
 // GetNoRangeThingWithCompositeAttributessByNameVersionAndDateInput is the query input to GetNoRangeThingWithCompositeAttributessByNameVersionAndDate.
 type GetNoRangeThingWithCompositeAttributessByNameVersionAndDateInput struct {
-	Name           string
+	// Name is required
+	Name string
+	// Version is required
 	Version        int64
 	DateStartingAt *strfmt.DateTime
 	StartingAfter  *models.NoRangeThingWithCompositeAttributes
@@ -315,6 +322,7 @@ func (e ErrSimpleThingAlreadyExists) Error() string {
 
 // GetTeacherSharingRulesByTeacherAndSchoolAppInput is the query input to GetTeacherSharingRulesByTeacherAndSchoolApp.
 type GetTeacherSharingRulesByTeacherAndSchoolAppInput struct {
+	// Teacher is required
 	Teacher    string
 	StartingAt *SchoolApp
 	// StartingAfter is a required specification of an exclusive starting point.
@@ -348,6 +356,7 @@ func (e ErrTeacherSharingRuleNotFound) Error() string {
 
 // GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput is the query input to GetTeacherSharingRulesByDistrictAndSchoolTeacherApp.
 type GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput struct {
+	// District is required
 	District      string
 	StartingAt    *SchoolTeacherApp
 	StartingAfter *models.TeacherSharingRule
@@ -390,6 +399,7 @@ type ScanThingsInput struct {
 
 // GetThingsByNameAndVersionInput is the query input to GetThingsByNameAndVersion.
 type GetThingsByNameAndVersionInput struct {
+	// Name is required
 	Name              string
 	VersionStartingAt *int64
 	// StartingAfter is a required specification of an exclusive starting point.
@@ -428,6 +438,7 @@ func (e ErrThingByIDNotFound) Error() string {
 
 // GetThingsByNameAndCreatedAtInput is the query input to GetThingsByNameAndCreatedAt.
 type GetThingsByNameAndCreatedAtInput struct {
+	// Name is required
 	Name                string
 	CreatedAtStartingAt *strfmt.DateTime
 	StartingAfter       *models.Thing
@@ -464,7 +475,9 @@ func (e ErrThingAlreadyExists) Error() string {
 
 // GetThingWithCompositeAttributessByNameBranchAndDateInput is the query input to GetThingWithCompositeAttributessByNameBranchAndDate.
 type GetThingWithCompositeAttributessByNameBranchAndDateInput struct {
-	Name           string
+	// Name is required
+	Name string
+	// Branch is required
 	Branch         string
 	DateStartingAt *strfmt.DateTime
 	// StartingAfter is a required specification of an exclusive starting point.
@@ -492,7 +505,9 @@ func (e ErrThingWithCompositeAttributesNotFound) Error() string {
 
 // GetThingWithCompositeAttributessByNameVersionAndDateInput is the query input to GetThingWithCompositeAttributessByNameVersionAndDate.
 type GetThingWithCompositeAttributessByNameVersionAndDateInput struct {
-	Name           string
+	// Name is required
+	Name string
+	// Version is required
 	Version        int64
 	DateStartingAt *strfmt.DateTime
 	StartingAfter  *models.ThingWithCompositeAttributes
@@ -530,7 +545,9 @@ func (e ErrThingWithCompositeAttributesAlreadyExists) Error() string {
 
 // GetThingWithCompositeEnumAttributessByNameBranchAndDateInput is the query input to GetThingWithCompositeEnumAttributessByNameBranchAndDate.
 type GetThingWithCompositeEnumAttributessByNameBranchAndDateInput struct {
-	Name           string
+	// Name is required
+	Name string
+	// BranchID is required
 	BranchID       models.Branch
 	DateStartingAt *strfmt.DateTime
 	// StartingAfter is a required specification of an exclusive starting point.
@@ -571,6 +588,7 @@ func (e ErrThingWithCompositeEnumAttributesAlreadyExists) Error() string {
 
 // GetThingWithDateRangesByNameAndDateInput is the query input to GetThingWithDateRangesByNameAndDate.
 type GetThingWithDateRangesByNameAndDateInput struct {
+	// Name is required
 	Name           string
 	DateStartingAt *strfmt.DateTime
 	// StartingAfter is a required specification of an exclusive starting point.
@@ -597,7 +615,9 @@ func (e ErrThingWithDateRangeNotFound) Error() string {
 
 // GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput is the query input to GetThingWithDateTimeCompositesByTypeIDAndCreatedResource.
 type GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput struct {
-	Type       string
+	// Type is required
+	Type string
+	// ID is required
 	ID         string
 	StartingAt *CreatedResource
 	// StartingAfter is a required specification of an exclusive starting point.
@@ -632,6 +652,7 @@ func (e ErrThingWithDateTimeCompositeNotFound) Error() string {
 
 // GetThingWithMatchingKeyssByBearAndAssocTypeIDInput is the query input to GetThingWithMatchingKeyssByBearAndAssocTypeID.
 type GetThingWithMatchingKeyssByBearAndAssocTypeIDInput struct {
+	// Bear is required
 	Bear       string
 	StartingAt *AssocTypeAssocID
 	// StartingAfter is a required specification of an exclusive starting point.
@@ -665,7 +686,9 @@ func (e ErrThingWithMatchingKeysNotFound) Error() string {
 
 // GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput is the query input to GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear.
 type GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput struct {
-	AssocType     string
+	// AssocType is required
+	AssocType string
+	// AssocID is required
 	AssocID       string
 	StartingAt    *CreatedBear
 	StartingAfter *models.ThingWithMatchingKeys
@@ -721,6 +744,7 @@ func (e ErrThingWithRequiredFieldsAlreadyExists) Error() string {
 
 // GetThingWithRequiredFields2sByNameAndIDInput is the query input to GetThingWithRequiredFields2sByNameAndID.
 type GetThingWithRequiredFields2sByNameAndIDInput struct {
+	// Name is required
 	Name         string
 	IDStartingAt *string
 	// StartingAfter is a required specification of an exclusive starting point.
