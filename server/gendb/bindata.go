@@ -152,7 +152,7 @@ var _bindata = map[string]*asset{
 			"\x33\xa7\x74\xfe\x0a\x00\x00\xff\xff",
 		size: 6881,
 		mode: 0644,
-		time: time.Unix(1554749541, 185964234),
+		time: time.Unix(1555097078, 579255380),
 	},
 	"dynamodb_test.go.tmpl": &asset{
 		name: "dynamodb_test.go.tmpl",
@@ -270,7 +270,7 @@ var _bindata = map[string]*asset{
 			"\x68\x54\xfb\xad\x23\xee\xdf\x00\x00\x00\xff\xff",
 		size: 8625,
 		mode: 0644,
-		time: time.Unix(1545088981, 980886839),
+		time: time.Unix(1555097078, 579948236),
 	},
 	"table.go.tmpl": &asset{
 		name: "table.go.tmpl",
@@ -438,7 +438,7 @@ var _bindata = map[string]*asset{
 			"\x48\xee\x7c\x6f\x36\x42\xba\x91\x14\x8d\x90\xff\x06\x00\x00\xff\xff",
 		size: 24397,
 		mode: 0644,
-		time: time.Unix(1554749541, 187082651),
+		time: time.Unix(1555097078, 580286857),
 	},
 	"tests.go.tmpl": &asset{
 		name: "tests.go.tmpl",
@@ -560,7 +560,7 @@ var _bindata = map[string]*asset{
 			"\x00\x00\xff\xff",
 		size: 39868,
 		mode: 0644,
-		time: time.Unix(1545088981, 983713238),
+		time: time.Unix(1555097078, 581080947),
 	},
 }
 
