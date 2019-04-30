@@ -178,6 +178,21 @@ function responseLog(logger, req, res, err) {
 }
 
 /**
+ * Takes a promise and uses the provided callback (if any) to handle promise
+ * resolutions and rejections
+ */
+function applyCallback(promise, cb) {
+  if (!cb) {
+    return promise;
+  }
+  return promise.then((result) => {
+    cb(null, result);
+  }).catch((err) => {
+    cb(err);
+  });
+}
+
+/**
  * Default circuit breaker options.
  * @alias module:{{.ServiceName}}.DefaultCircuitOptions
  */
@@ -359,29 +374,14 @@ var packageJSONTmplStr = `{
 var methodTmplStr = `
   {{.MethodDefinition}}
     {{if .IterMethod -}}
-    const it = (f, saveResults, cb) => new Promise((resolve, reject) => {
+    const it = (f, saveResults) => new Promise((resolve, reject) => {
     {{- else -}}
     if (!cb && typeof options === "function") {
-      cb = options;
       options = undefined;
     }
 
     return new Promise((resolve, reject) => {
     {{- end}}
-      const rejecter = (err) => {
-        reject(err);
-        if (cb) {
-          cb(err);
-        }
-      };
-      const resolver = (data) => {
-        resolve(data);
-        if (cb) {
-          cb(null, data);
-        }
-      };
-
-
       if (!options) {
         options = {};
       }
@@ -393,7 +393,7 @@ var methodTmplStr = `
       const headers = {};
       {{- range $param := .PathParams}}
       if (!params.{{$param.JSName}}) {
-        rejecter(new Error("{{$param.JSName}} must be non-empty because it's a path parameter"));
+        reject(new Error("{{$param.JSName}} must be non-empty because it's a path parameter"));
         return;
       }
       {{- end -}}
@@ -420,7 +420,7 @@ var methodTmplStr = `
         span.setTag("span.kind", "client");
       }
 
-	  const requestOptions = {
+      const requestOptions = {
         method: "{{.Method}}",
         uri: this.address + "{{.PathCode}}",
         json: true,
@@ -462,7 +462,7 @@ var methodTmplStr = `
             err._fromRequest = true;
             responseLog(logger, requestOptions, response, err)
             {{- if not .IterMethod}}
-            rejecter(err);
+            reject(err);
             {{- else}}
             cbW(err);
             {{- end}}
@@ -474,13 +474,13 @@ var methodTmplStr = `
               var err = new Errors.{{ $response.Name }}(body || {});
               responseLog(logger, requestOptions, response, err);
               {{- if not $.IterMethod}}
-              rejecter(err);
+              reject(err);
               {{- else}}
               cbW(err);
               {{- end}}
               return;
             {{else}}{{if $response.IsNoData}}
-              resolver();
+              resolve();
               break;
             {{else}}
               {{if $.IterMethod -}}
@@ -490,7 +490,7 @@ var methodTmplStr = `
                 body{{$.IterResourceAccessString}}.forEach(f);
               }
               {{- else -}}
-              resolver(body);
+              resolve(body);
               {{- end}}
               break;
             {{end}}{{end}}
@@ -498,7 +498,7 @@ var methodTmplStr = `
               var err = new Error("Received unexpected statusCode " + response.statusCode);
               responseLog(logger, requestOptions, response, err);
               {{- if not .IterMethod}}
-              rejecter(err);
+              reject(err);
               {{- else}}
               cbW(err);
               {{- end}}
@@ -522,13 +522,13 @@ var methodTmplStr = `
         },
         err => {
           if (err) {
-            rejecter(err);
+            reject(err);
             return;
           }
           if (saveResults) {
-            resolver(results);
+            resolve(results);
           } else {
-            resolver();
+            resolve();
           }
         }
       );
@@ -538,9 +538,9 @@ var methodTmplStr = `
     {{- if .IterMethod}}
 
     return {
-      map: (f, cb) => this._hystrixCommand.execute(it, [f, true, cb]),
-      toArray: cb => this._hystrixCommand.execute(it, [x => x, true, cb]),
-      forEach: (f, cb) => this._hystrixCommand.execute(it, [f, false, cb]),
+      map: (f, cb) => applyCallback(this._hystrixCommand.execute(it, [f, true]), cb),
+      toArray: cb => applyCallback(this._hystrixCommand.execute(it, [x => x, true]), cb),
+      forEach: (f, cb) => applyCallback(this._hystrixCommand.execute(it, [f, false]), cb),
     };
     {{- end}}
   }
@@ -569,8 +569,13 @@ var singleParamMethodDefinitionTemplateString = `/**{{if .Description}}
   {{.MethodName}}({{range $param := .Params}}{{$param.JSName}}, {{end}}options) {
   {{- else}}
   {{.MethodName}}({{range $param := .Params}}{{$param.JSName}}, {{end}}options, cb) {
-    return this._hystrixCommand.execute(this._{{.MethodName}}, arguments);
+    let callback = cb;
+    if (!cb && typeof options === "function") {
+      callback = options;
+    }
+    return applyCallback(this._hystrixCommand.execute(this._{{.MethodName}}, arguments), callback);
   }
+
   _{{.MethodName}}({{range $param := .Params}}{{$param.JSName}}, {{end}}options, cb) {
   {{- end}}
     const params = {};{{range $param := .Params}}
@@ -601,8 +606,13 @@ var pluralParamMethodDefinitionTemplateString = `/**{{if .Description}}
   {{.MethodName}}(params, options) {
   {{- else}}
   {{.MethodName}}(params, options, cb) {
-    return this._hystrixCommand.execute(this._{{.MethodName}}, arguments);
+    let callback = cb;
+    if (!cb && typeof options === "function") {
+      callback = options;
+    }
+    return applyCallback(this._hystrixCommand.execute(this._{{.MethodName}}, arguments), callback);
   }
+
   _{{.MethodName}}(params, options, cb) {
   {{- end}}`
 
