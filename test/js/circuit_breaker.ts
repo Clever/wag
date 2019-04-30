@@ -13,7 +13,7 @@ async function sleep(ms) { return new Promise((resolve) => {
 });};
 
 describe("circuit", function() {
-  beforeEach(() => {
+  afterEach(() => {
     metricsFactory.resetCache();
     circuitFactory.resetCache();
     commandFactory.resetCache();
@@ -176,5 +176,36 @@ describe("circuit", function() {
     await sleep(1500);
     assert.equal(loggerCalls, 1);
   });
-});
 
+  it("applies callback, if provided, to circuit-breaker error", async () => {
+    const c = new Client({
+      address: mockAddress,
+      circuit: {
+        forceClosed: false,
+        requestVolumeThreshold: 5,
+      },
+      logger: {
+        errorD: () => {},
+        infoD: () => {},
+      },
+      retryPolicy: RetryPolicies.None,
+    });
+
+    for (let i = 0; i < 10; i++) {
+      const mockApi = nock(mockAddress).get("/v1/authors").replyWithError("Yikes");
+      // The `await` here is necessary to surface assertion errors in the callback. Without the
+      // `await`, assertion errors will generate unhandled promise rejections and be swallowed
+      await c.getAuthors({}, (err) => {
+        if (i < 5) {
+          assert.equal(
+            true, mockApi.isDone(), "Expected first 5 client calls to result in API calls");
+          assert.equal("Yikes", err.message);
+        } else {
+          assert.equal(
+            false, mockApi.isDone(), "Expected circuit breaker to kick in after 5 API calls");
+          assert.equal("OpenCircuitError", err.message);
+        }
+      });
+    }
+  });
+});
