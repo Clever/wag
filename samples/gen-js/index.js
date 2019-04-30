@@ -74,6 +74,7 @@ const noRetryPolicy = {
  * Request status log is used to
  * to output the status of a request returned
  * by the client.
+ * @private
  */
 function responseLog(logger, req, res, err) {
   var res = res || { };
@@ -91,6 +92,22 @@ function responseLog(logger, req, res, err) {
   } else {
     logger.infoD("client-request-finished", logData);
   }
+}
+
+/**
+ * Takes a promise and uses the provided callback (if any) to handle promise
+ * resolutions and rejections
+ * @private
+ */
+function applyCallback(promise, cb) {
+  if (!cb) {
+    return promise;
+  }
+  return promise.then((result) => {
+    cb(null, result);
+  }).catch((err) => {
+    cb(err);
+  });
 }
 
 /**
@@ -250,29 +267,19 @@ class SwaggerTest {
    * @reject {Error}
    */
   getAuthors(params, options, cb) {
-    return this._hystrixCommand.execute(this._getAuthors, arguments);
+    let callback = cb;
+    if (!cb && typeof options === "function") {
+      callback = options;
+    }
+    return applyCallback(this._hystrixCommand.execute(this._getAuthors, arguments), callback);
   }
+
   _getAuthors(params, options, cb) {
     if (!cb && typeof options === "function") {
-      cb = options;
       options = undefined;
     }
 
     return new Promise((resolve, reject) => {
-      const rejecter = (err) => {
-        reject(err);
-        if (cb) {
-          cb(err);
-        }
-      };
-      const resolver = (data) => {
-        resolve(data);
-        if (cb) {
-          cb(null, data);
-        }
-      };
-
-
       if (!options) {
         options = {};
       }
@@ -300,7 +307,7 @@ class SwaggerTest {
         span.setTag("span.kind", "client");
       }
 
-	  const requestOptions = {
+      const requestOptions = {
         method: "GET",
         uri: this.address + "/v1/authors",
         json: true,
@@ -330,31 +337,31 @@ class SwaggerTest {
           if (err) {
             err._fromRequest = true;
             responseLog(logger, requestOptions, response, err)
-            rejecter(err);
+            reject(err);
             return;
           }
 
           switch (response.statusCode) {
             case 200:
-              resolver(body);
+              resolve(body);
               break;
             
             case 400:
               var err = new Errors.BadRequest(body || {});
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
             
             case 500:
               var err = new Errors.InternalError(body || {});
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
             
             default:
               var err = new Error("Received unexpected statusCode " + response.statusCode);
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
           }
         });
@@ -378,21 +385,7 @@ class SwaggerTest {
    * @returns {function} iter.forEach - takes in a function, applies it to each resource
    */
   getAuthorsIter(params, options) {
-    const it = (f, saveResults, cb) => new Promise((resolve, reject) => {
-      const rejecter = (err) => {
-        reject(err);
-        if (cb) {
-          cb(err);
-        }
-      };
-      const resolver = (data) => {
-        resolve(data);
-        if (cb) {
-          cb(null, data);
-        }
-      };
-
-
+    const it = (f, saveResults) => new Promise((resolve, reject) => {
       if (!options) {
         options = {};
       }
@@ -419,7 +412,7 @@ class SwaggerTest {
         span.setTag("span.kind", "client");
       }
 
-	  const requestOptions = {
+      const requestOptions = {
         method: "GET",
         uri: this.address + "/v1/authors",
         json: true,
@@ -501,22 +494,22 @@ class SwaggerTest {
         },
         err => {
           if (err) {
-            rejecter(err);
+            reject(err);
             return;
           }
           if (saveResults) {
-            resolver(results);
+            resolve(results);
           } else {
-            resolver();
+            resolve();
           }
         }
       );
     });
 
     return {
-      map: (f, cb) => this._hystrixCommand.execute(it, [f, true, cb]),
-      toArray: cb => this._hystrixCommand.execute(it, [x => x, true, cb]),
-      forEach: (f, cb) => this._hystrixCommand.execute(it, [f, false, cb]),
+      map: (f, cb) => applyCallback(this._hystrixCommand.execute(it, [f, true]), cb),
+      toArray: cb => applyCallback(this._hystrixCommand.execute(it, [x => x, true]), cb),
+      forEach: (f, cb) => applyCallback(this._hystrixCommand.execute(it, [f, false]), cb),
     };
   }
 
@@ -538,29 +531,19 @@ class SwaggerTest {
    * @reject {Error}
    */
   getAuthorsWithPut(params, options, cb) {
-    return this._hystrixCommand.execute(this._getAuthorsWithPut, arguments);
+    let callback = cb;
+    if (!cb && typeof options === "function") {
+      callback = options;
+    }
+    return applyCallback(this._hystrixCommand.execute(this._getAuthorsWithPut, arguments), callback);
   }
+
   _getAuthorsWithPut(params, options, cb) {
     if (!cb && typeof options === "function") {
-      cb = options;
       options = undefined;
     }
 
     return new Promise((resolve, reject) => {
-      const rejecter = (err) => {
-        reject(err);
-        if (cb) {
-          cb(err);
-        }
-      };
-      const resolver = (data) => {
-        resolve(data);
-        if (cb) {
-          cb(null, data);
-        }
-      };
-
-
       if (!options) {
         options = {};
       }
@@ -588,7 +571,7 @@ class SwaggerTest {
         span.setTag("span.kind", "client");
       }
 
-	  const requestOptions = {
+      const requestOptions = {
         method: "PUT",
         uri: this.address + "/v1/authors",
         json: true,
@@ -620,31 +603,31 @@ class SwaggerTest {
           if (err) {
             err._fromRequest = true;
             responseLog(logger, requestOptions, response, err)
-            rejecter(err);
+            reject(err);
             return;
           }
 
           switch (response.statusCode) {
             case 200:
-              resolver(body);
+              resolve(body);
               break;
             
             case 400:
               var err = new Errors.BadRequest(body || {});
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
             
             case 500:
               var err = new Errors.InternalError(body || {});
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
             
             default:
               var err = new Error("Received unexpected statusCode " + response.statusCode);
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
           }
         });
@@ -669,21 +652,7 @@ class SwaggerTest {
    * @returns {function} iter.forEach - takes in a function, applies it to each resource
    */
   getAuthorsWithPutIter(params, options) {
-    const it = (f, saveResults, cb) => new Promise((resolve, reject) => {
-      const rejecter = (err) => {
-        reject(err);
-        if (cb) {
-          cb(err);
-        }
-      };
-      const resolver = (data) => {
-        resolve(data);
-        if (cb) {
-          cb(null, data);
-        }
-      };
-
-
+    const it = (f, saveResults) => new Promise((resolve, reject) => {
       if (!options) {
         options = {};
       }
@@ -710,7 +679,7 @@ class SwaggerTest {
         span.setTag("span.kind", "client");
       }
 
-	  const requestOptions = {
+      const requestOptions = {
         method: "PUT",
         uri: this.address + "/v1/authors",
         json: true,
@@ -794,22 +763,22 @@ class SwaggerTest {
         },
         err => {
           if (err) {
-            rejecter(err);
+            reject(err);
             return;
           }
           if (saveResults) {
-            resolver(results);
+            resolve(results);
           } else {
-            resolver();
+            resolve();
           }
         }
       );
     });
 
     return {
-      map: (f, cb) => this._hystrixCommand.execute(it, [f, true, cb]),
-      toArray: cb => this._hystrixCommand.execute(it, [x => x, true, cb]),
-      forEach: (f, cb) => this._hystrixCommand.execute(it, [f, false, cb]),
+      map: (f, cb) => applyCallback(this._hystrixCommand.execute(it, [f, true]), cb),
+      toArray: cb => applyCallback(this._hystrixCommand.execute(it, [x => x, true]), cb),
+      forEach: (f, cb) => applyCallback(this._hystrixCommand.execute(it, [f, false]), cb),
     };
   }
 
@@ -839,29 +808,19 @@ class SwaggerTest {
    * @reject {Error}
    */
   getBooks(params, options, cb) {
-    return this._hystrixCommand.execute(this._getBooks, arguments);
+    let callback = cb;
+    if (!cb && typeof options === "function") {
+      callback = options;
+    }
+    return applyCallback(this._hystrixCommand.execute(this._getBooks, arguments), callback);
   }
+
   _getBooks(params, options, cb) {
     if (!cb && typeof options === "function") {
-      cb = options;
       options = undefined;
     }
 
     return new Promise((resolve, reject) => {
-      const rejecter = (err) => {
-        reject(err);
-        if (cb) {
-          cb(err);
-        }
-      };
-      const resolver = (data) => {
-        resolve(data);
-        if (cb) {
-          cb(null, data);
-        }
-      };
-
-
       if (!options) {
         options = {};
       }
@@ -922,7 +881,7 @@ class SwaggerTest {
         span.setTag("span.kind", "client");
       }
 
-	  const requestOptions = {
+      const requestOptions = {
         method: "GET",
         uri: this.address + "/v1/books",
         json: true,
@@ -952,31 +911,31 @@ class SwaggerTest {
           if (err) {
             err._fromRequest = true;
             responseLog(logger, requestOptions, response, err)
-            rejecter(err);
+            reject(err);
             return;
           }
 
           switch (response.statusCode) {
             case 200:
-              resolver(body);
+              resolve(body);
               break;
             
             case 400:
               var err = new Errors.BadRequest(body || {});
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
             
             case 500:
               var err = new Errors.InternalError(body || {});
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
             
             default:
               var err = new Error("Received unexpected statusCode " + response.statusCode);
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
           }
         });
@@ -1009,21 +968,7 @@ class SwaggerTest {
    * @returns {function} iter.forEach - takes in a function, applies it to each resource
    */
   getBooksIter(params, options) {
-    const it = (f, saveResults, cb) => new Promise((resolve, reject) => {
-      const rejecter = (err) => {
-        reject(err);
-        if (cb) {
-          cb(err);
-        }
-      };
-      const resolver = (data) => {
-        resolve(data);
-        if (cb) {
-          cb(null, data);
-        }
-      };
-
-
+    const it = (f, saveResults) => new Promise((resolve, reject) => {
       if (!options) {
         options = {};
       }
@@ -1083,7 +1028,7 @@ class SwaggerTest {
         span.setTag("span.kind", "client");
       }
 
-	  const requestOptions = {
+      const requestOptions = {
         method: "GET",
         uri: this.address + "/v1/books",
         json: true,
@@ -1165,22 +1110,22 @@ class SwaggerTest {
         },
         err => {
           if (err) {
-            rejecter(err);
+            reject(err);
             return;
           }
           if (saveResults) {
-            resolver(results);
+            resolve(results);
           } else {
-            resolver();
+            resolve();
           }
         }
       );
     });
 
     return {
-      map: (f, cb) => this._hystrixCommand.execute(it, [f, true, cb]),
-      toArray: cb => this._hystrixCommand.execute(it, [x => x, true, cb]),
-      forEach: (f, cb) => this._hystrixCommand.execute(it, [f, false, cb]),
+      map: (f, cb) => applyCallback(this._hystrixCommand.execute(it, [f, true]), cb),
+      toArray: cb => applyCallback(this._hystrixCommand.execute(it, [x => x, true]), cb),
+      forEach: (f, cb) => applyCallback(this._hystrixCommand.execute(it, [f, false]), cb),
     };
   }
 
@@ -1199,32 +1144,22 @@ class SwaggerTest {
    * @reject {Error}
    */
   createBook(newBook, options, cb) {
-    return this._hystrixCommand.execute(this._createBook, arguments);
+    let callback = cb;
+    if (!cb && typeof options === "function") {
+      callback = options;
+    }
+    return applyCallback(this._hystrixCommand.execute(this._createBook, arguments), callback);
   }
+
   _createBook(newBook, options, cb) {
     const params = {};
     params["newBook"] = newBook;
 
     if (!cb && typeof options === "function") {
-      cb = options;
       options = undefined;
     }
 
     return new Promise((resolve, reject) => {
-      const rejecter = (err) => {
-        reject(err);
-        if (cb) {
-          cb(err);
-        }
-      };
-      const resolver = (data) => {
-        resolve(data);
-        if (cb) {
-          cb(null, data);
-        }
-      };
-
-
       if (!options) {
         options = {};
       }
@@ -1244,7 +1179,7 @@ class SwaggerTest {
         span.setTag("span.kind", "client");
       }
 
-	  const requestOptions = {
+      const requestOptions = {
         method: "POST",
         uri: this.address + "/v1/books",
         json: true,
@@ -1276,31 +1211,31 @@ class SwaggerTest {
           if (err) {
             err._fromRequest = true;
             responseLog(logger, requestOptions, response, err)
-            rejecter(err);
+            reject(err);
             return;
           }
 
           switch (response.statusCode) {
             case 200:
-              resolver(body);
+              resolve(body);
               break;
             
             case 400:
               var err = new Errors.BadRequest(body || {});
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
             
             case 500:
               var err = new Errors.InternalError(body || {});
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
             
             default:
               var err = new Error("Received unexpected statusCode " + response.statusCode);
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
           }
         });
@@ -1323,32 +1258,22 @@ class SwaggerTest {
    * @reject {Error}
    */
   putBook(newBook, options, cb) {
-    return this._hystrixCommand.execute(this._putBook, arguments);
+    let callback = cb;
+    if (!cb && typeof options === "function") {
+      callback = options;
+    }
+    return applyCallback(this._hystrixCommand.execute(this._putBook, arguments), callback);
   }
+
   _putBook(newBook, options, cb) {
     const params = {};
     params["newBook"] = newBook;
 
     if (!cb && typeof options === "function") {
-      cb = options;
       options = undefined;
     }
 
     return new Promise((resolve, reject) => {
-      const rejecter = (err) => {
-        reject(err);
-        if (cb) {
-          cb(err);
-        }
-      };
-      const resolver = (data) => {
-        resolve(data);
-        if (cb) {
-          cb(null, data);
-        }
-      };
-
-
       if (!options) {
         options = {};
       }
@@ -1368,7 +1293,7 @@ class SwaggerTest {
         span.setTag("span.kind", "client");
       }
 
-	  const requestOptions = {
+      const requestOptions = {
         method: "PUT",
         uri: this.address + "/v1/books",
         json: true,
@@ -1400,31 +1325,31 @@ class SwaggerTest {
           if (err) {
             err._fromRequest = true;
             responseLog(logger, requestOptions, response, err)
-            rejecter(err);
+            reject(err);
             return;
           }
 
           switch (response.statusCode) {
             case 200:
-              resolver(body);
+              resolve(body);
               break;
             
             case 400:
               var err = new Errors.BadRequest(body || {});
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
             
             case 500:
               var err = new Errors.InternalError(body || {});
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
             
             default:
               var err = new Error("Received unexpected statusCode " + response.statusCode);
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
           }
         });
@@ -1454,29 +1379,19 @@ class SwaggerTest {
    * @reject {Error}
    */
   getBookByID(params, options, cb) {
-    return this._hystrixCommand.execute(this._getBookByID, arguments);
+    let callback = cb;
+    if (!cb && typeof options === "function") {
+      callback = options;
+    }
+    return applyCallback(this._hystrixCommand.execute(this._getBookByID, arguments), callback);
   }
+
   _getBookByID(params, options, cb) {
     if (!cb && typeof options === "function") {
-      cb = options;
       options = undefined;
     }
 
     return new Promise((resolve, reject) => {
-      const rejecter = (err) => {
-        reject(err);
-        if (cb) {
-          cb(err);
-        }
-      };
-      const resolver = (data) => {
-        resolve(data);
-        if (cb) {
-          cb(null, data);
-        }
-      };
-
-
       if (!options) {
         options = {};
       }
@@ -1487,7 +1402,7 @@ class SwaggerTest {
 
       const headers = {};
       if (!params.bookID) {
-        rejecter(new Error("bookID must be non-empty because it's a path parameter"));
+        reject(new Error("bookID must be non-empty because it's a path parameter"));
         return;
       }
       headers["authorization"] = params.authorization;
@@ -1510,7 +1425,7 @@ class SwaggerTest {
         span.setTag("span.kind", "client");
       }
 
-	  const requestOptions = {
+      const requestOptions = {
         method: "GET",
         uri: this.address + "/v1/books/" + params.bookID + "",
         json: true,
@@ -1540,43 +1455,43 @@ class SwaggerTest {
           if (err) {
             err._fromRequest = true;
             responseLog(logger, requestOptions, response, err)
-            rejecter(err);
+            reject(err);
             return;
           }
 
           switch (response.statusCode) {
             case 200:
-              resolver(body);
+              resolve(body);
               break;
             
             case 400:
               var err = new Errors.BadRequest(body || {});
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
             
             case 401:
               var err = new Errors.Unathorized(body || {});
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
             
             case 404:
               var err = new Errors.Error(body || {});
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
             
             case 500:
               var err = new Errors.InternalError(body || {});
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
             
             default:
               var err = new Error("Received unexpected statusCode " + response.statusCode);
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
           }
         });
@@ -1600,32 +1515,22 @@ class SwaggerTest {
    * @reject {Error}
    */
   getBookByID2(id, options, cb) {
-    return this._hystrixCommand.execute(this._getBookByID2, arguments);
+    let callback = cb;
+    if (!cb && typeof options === "function") {
+      callback = options;
+    }
+    return applyCallback(this._hystrixCommand.execute(this._getBookByID2, arguments), callback);
   }
+
   _getBookByID2(id, options, cb) {
     const params = {};
     params["id"] = id;
 
     if (!cb && typeof options === "function") {
-      cb = options;
       options = undefined;
     }
 
     return new Promise((resolve, reject) => {
-      const rejecter = (err) => {
-        reject(err);
-        if (cb) {
-          cb(err);
-        }
-      };
-      const resolver = (data) => {
-        resolve(data);
-        if (cb) {
-          cb(null, data);
-        }
-      };
-
-
       if (!options) {
         options = {};
       }
@@ -1636,7 +1541,7 @@ class SwaggerTest {
 
       const headers = {};
       if (!params.id) {
-        rejecter(new Error("id must be non-empty because it's a path parameter"));
+        reject(new Error("id must be non-empty because it's a path parameter"));
         return;
       }
 
@@ -1649,7 +1554,7 @@ class SwaggerTest {
         span.setTag("span.kind", "client");
       }
 
-	  const requestOptions = {
+      const requestOptions = {
         method: "GET",
         uri: this.address + "/v1/books2/" + params.id + "",
         json: true,
@@ -1679,37 +1584,37 @@ class SwaggerTest {
           if (err) {
             err._fromRequest = true;
             responseLog(logger, requestOptions, response, err)
-            rejecter(err);
+            reject(err);
             return;
           }
 
           switch (response.statusCode) {
             case 200:
-              resolver(body);
+              resolve(body);
               break;
             
             case 400:
               var err = new Errors.BadRequest(body || {});
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
             
             case 404:
               var err = new Errors.Error(body || {});
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
             
             case 500:
               var err = new Errors.InternalError(body || {});
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
             
             default:
               var err = new Error("Received unexpected statusCode " + response.statusCode);
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
           }
         });
@@ -1730,31 +1635,21 @@ class SwaggerTest {
    * @reject {Error}
    */
   healthCheck(options, cb) {
-    return this._hystrixCommand.execute(this._healthCheck, arguments);
+    let callback = cb;
+    if (!cb && typeof options === "function") {
+      callback = options;
+    }
+    return applyCallback(this._hystrixCommand.execute(this._healthCheck, arguments), callback);
   }
+
   _healthCheck(options, cb) {
     const params = {};
 
     if (!cb && typeof options === "function") {
-      cb = options;
       options = undefined;
     }
 
     return new Promise((resolve, reject) => {
-      const rejecter = (err) => {
-        reject(err);
-        if (cb) {
-          cb(err);
-        }
-      };
-      const resolver = (data) => {
-        resolve(data);
-        if (cb) {
-          cb(null, data);
-        }
-      };
-
-
       if (!options) {
         options = {};
       }
@@ -1774,7 +1669,7 @@ class SwaggerTest {
         span.setTag("span.kind", "client");
       }
 
-	  const requestOptions = {
+      const requestOptions = {
         method: "GET",
         uri: this.address + "/v1/health/check",
         json: true,
@@ -1804,31 +1699,31 @@ class SwaggerTest {
           if (err) {
             err._fromRequest = true;
             responseLog(logger, requestOptions, response, err)
-            rejecter(err);
+            reject(err);
             return;
           }
 
           switch (response.statusCode) {
             case 200:
-              resolver();
+              resolve();
               break;
             
             case 400:
               var err = new Errors.BadRequest(body || {});
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
             
             case 500:
               var err = new Errors.InternalError(body || {});
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
             
             default:
               var err = new Error("Received unexpected statusCode " + response.statusCode);
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
           }
         });

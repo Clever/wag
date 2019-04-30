@@ -74,6 +74,7 @@ const noRetryPolicy = {
  * Request status log is used to
  * to output the status of a request returned
  * by the client.
+ * @private
  */
 function responseLog(logger, req, res, err) {
   var res = res || { };
@@ -91,6 +92,22 @@ function responseLog(logger, req, res, err) {
   } else {
     logger.infoD("client-request-finished", logData);
   }
+}
+
+/**
+ * Takes a promise and uses the provided callback (if any) to handle promise
+ * resolutions and rejections
+ * @private
+ */
+function applyCallback(promise, cb) {
+  if (!cb) {
+    return promise;
+  }
+  return promise.then((result) => {
+    cb(null, result);
+  }).catch((err) => {
+    cb(err);
+  });
 }
 
 /**
@@ -248,32 +265,22 @@ class SwaggerTest {
    * @reject {Error}
    */
   getBook(id, options, cb) {
-    return this._hystrixCommand.execute(this._getBook, arguments);
+    let callback = cb;
+    if (!cb && typeof options === "function") {
+      callback = options;
+    }
+    return applyCallback(this._hystrixCommand.execute(this._getBook, arguments), callback);
   }
+
   _getBook(id, options, cb) {
     const params = {};
     params["id"] = id;
 
     if (!cb && typeof options === "function") {
-      cb = options;
       options = undefined;
     }
 
     return new Promise((resolve, reject) => {
-      const rejecter = (err) => {
-        reject(err);
-        if (cb) {
-          cb(err);
-        }
-      };
-      const resolver = (data) => {
-        resolve(data);
-        if (cb) {
-          cb(null, data);
-        }
-      };
-
-
       if (!options) {
         options = {};
       }
@@ -284,7 +291,7 @@ class SwaggerTest {
 
       const headers = {};
       if (!params.id) {
-        rejecter(new Error("id must be non-empty because it's a path parameter"));
+        reject(new Error("id must be non-empty because it's a path parameter"));
         return;
       }
 
@@ -297,7 +304,7 @@ class SwaggerTest {
         span.setTag("span.kind", "client");
       }
 
-	  const requestOptions = {
+      const requestOptions = {
         method: "GET",
         uri: this.address + "/v1/books/" + params.id + "",
         json: true,
@@ -327,37 +334,37 @@ class SwaggerTest {
           if (err) {
             err._fromRequest = true;
             responseLog(logger, requestOptions, response, err)
-            rejecter(err);
+            reject(err);
             return;
           }
 
           switch (response.statusCode) {
             case 200:
-              resolver();
+              resolve();
               break;
             
             case 400:
               var err = new Errors.ExtendedError(body || {});
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
             
             case 404:
               var err = new Errors.NotFound(body || {});
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
             
             case 500:
               var err = new Errors.InternalError(body || {});
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
             
             default:
               var err = new Error("Received unexpected statusCode " + response.statusCode);
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
           }
         });

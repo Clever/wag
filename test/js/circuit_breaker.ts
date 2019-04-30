@@ -13,7 +13,7 @@ async function sleep(ms) { return new Promise((resolve) => {
 });};
 
 describe("circuit", function() {
-  beforeEach(() => {
+  afterEach(() => {
     metricsFactory.resetCache();
     circuitFactory.resetCache();
     commandFactory.resetCache();
@@ -176,5 +176,43 @@ describe("circuit", function() {
     await sleep(1500);
     assert.equal(loggerCalls, 1);
   });
-});
 
+  it("applies callback, if provided, to circuit-breaker error", (done) => {
+    const c = new Client({
+      address: mockAddress,
+      circuit: {
+        forceClosed: false,
+        maxConcurrentRequests: 5,
+        requestVolumeThreshold: 5,
+      },
+      logger: {
+        errorD: () => {},
+        infoD: () => {},
+      },
+      retryPolicy: RetryPolicies.None,
+    });
+
+    const promises = [];
+    for (let i = 0; i < 10; i++) {
+      const mockApi = nock(mockAddress).get("/v1/authors").reply(200, { authors: [] });
+      promises.push(c.getAuthors({}, (err, data) => {
+        if (i < 5) {
+          assert.equal(null, err, "Expected no error for first 5 client calls");
+          assert.deepEqual([], data.authors, "Expected data for first 5 client calls");
+          assert.equal(true, mockApi.isDone(), "Expected API call for first 5 client calls");
+        } else {
+          assert.equal(
+            "CommandRejected", err.message,
+            "Expected circuit breaker to short circuit last 5 client calls");
+          assert.equal(false, mockApi.isDone(), "Expected no API call for last 5 client calls");
+        }
+      }));
+    }
+
+    Promise.all(promises).then(() => {
+      done();
+    }).catch((err) => {
+      done(err);
+    });
+  });
+});
