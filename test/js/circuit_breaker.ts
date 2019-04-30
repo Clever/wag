@@ -177,11 +177,12 @@ describe("circuit", function() {
     assert.equal(loggerCalls, 1);
   });
 
-  it("applies callback, if provided, to circuit-breaker error", async () => {
+  it("applies callback, if provided, to circuit-breaker error", (done) => {
     const c = new Client({
       address: mockAddress,
       circuit: {
         forceClosed: false,
+        maxConcurrentRequests: 5,
         requestVolumeThreshold: 5,
       },
       logger: {
@@ -192,19 +193,25 @@ describe("circuit", function() {
     });
 
     for (let i = 0; i < 10; i++) {
-      const mockApi = nock(mockAddress).get("/v1/authors").replyWithError("Yikes");
-      // The `await` here is necessary to surface assertion errors in the callback. Without the
-      // `await`, assertion errors will generate unhandled promise rejections and be swallowed
-      await c.getAuthors({}, (err) => {
+      const mockApi = nock(mockAddress).get("/v1/authors").reply(200, { authors: [] });
+      c.getAuthors({}, (err) => {
         if (i < 5) {
-          assert.equal(
-            true, mockApi.isDone(), "Expected first 5 client calls to result in API calls");
-          assert.equal("Yikes", err.message);
+          assert.equal(null, err, "Expected no error for first 5 client calls");
+          assert.equal(true, mockApi.isDone(), "Expected API call for first 5 client calls");
         } else {
           assert.equal(
-            false, mockApi.isDone(), "Expected circuit breaker to kick in after 5 API calls");
-          assert.equal("OpenCircuitError", err.message);
+            "CommandRejected", err.message,
+            "Expected circuit breaker to short circuit last 5 client calls");
+          assert.equal(false, mockApi.isDone(), "Expected no API call for last 5 client calls");
         }
+      }).then(() => {
+        // Mark the test as a success if we've made it to the last client call
+        if (i === 9) {
+          done();
+        }
+      }).catch((err) => {
+        // Mark the test as a failure if any assertion fails
+        done(err);
       });
     }
   });
