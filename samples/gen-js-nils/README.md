@@ -1,25 +1,3 @@
-## Modules
-
-<dl>
-<dt><a href="#module_nil-test">nil-test</a></dt>
-<dd><p>nil-test client library.</p>
-</dd>
-</dl>
-
-## Functions
-
-<dl>
-<dt><a href="#responseLog">responseLog()</a></dt>
-<dd><p>Request status log is used to
-to output the status of a request returned
-by the client.</p>
-</dd>
-<dt><a href="#applyCallback">applyCallback()</a></dt>
-<dd><p>Takes a promise and uses the provided callback (if any) to handle promise
-resolutions and rejections</p>
-</dd>
-</dl>
-
 <a name="module_nil-test"></a>
 
 ## nil-test
@@ -167,18 +145,3 @@ InternalError
 Default circuit breaker options.
 
 **Kind**: static constant of <code>[NilTest](#exp_module_nil-test--NilTest)</code>  
-<a name="responseLog"></a>
-
-## responseLog()
-Request status log is used to
-to output the status of a request returned
-by the client.
-
-**Kind**: global function  
-<a name="applyCallback"></a>
-
-## applyCallback()
-Takes a promise and uses the provided callback (if any) to handle promise
-resolutions and rejections
-
-**Kind**: global function  
