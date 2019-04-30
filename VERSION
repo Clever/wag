@@ -1,2 +1,3 @@
-v3.0.1
-- Check empty hash key in DynamoDB input
+v3.0.2
+- [JS client code] Apply provided callback, if any, to circuit-breaker errors
+- [JS client code] Don't return a rejected promise if provided callback handles it
