@@ -94,6 +94,21 @@ function responseLog(logger, req, res, err) {
 }
 
 /**
+ * Takes a promise and uses the provided callback (if any) to handle promise
+ * resolutions and rejections
+ */
+function applyCallback(promise, cb) {
+  if (!cb) {
+    return promise;
+  }
+  return promise.then((result) => {
+    cb(null, result);
+  }).catch((err) => {
+    cb(err);
+  });
+}
+
+/**
  * Default circuit breaker options.
  * @alias module:blog.DefaultCircuitOptions
  */
@@ -248,32 +263,22 @@ class Blog {
    * @reject {Error}
    */
   getSectionsForStudent(studentID, options, cb) {
-    return this._hystrixCommand.execute(this._getSectionsForStudent, arguments);
+    let callback = cb;
+    if (!cb && typeof options === "function") {
+      callback = options;
+    }
+    return applyCallback(this._hystrixCommand.execute(this._getSectionsForStudent, arguments), callback);
   }
+
   _getSectionsForStudent(studentID, options, cb) {
     const params = {};
     params["studentID"] = studentID;
 
     if (!cb && typeof options === "function") {
-      cb = options;
       options = undefined;
     }
 
     return new Promise((resolve, reject) => {
-      const rejecter = (err) => {
-        reject(err);
-        if (cb) {
-          cb(err);
-        }
-      };
-      const resolver = (data) => {
-        resolve(data);
-        if (cb) {
-          cb(null, data);
-        }
-      };
-
-
       if (!options) {
         options = {};
       }
@@ -284,7 +289,7 @@ class Blog {
 
       const headers = {};
       if (!params.studentID) {
-        rejecter(new Error("studentID must be non-empty because it's a path parameter"));
+        reject(new Error("studentID must be non-empty because it's a path parameter"));
         return;
       }
 
@@ -297,7 +302,7 @@ class Blog {
         span.setTag("span.kind", "client");
       }
 
-	  const requestOptions = {
+      const requestOptions = {
         method: "GET",
         uri: this.address + "/students/" + params.studentID + "/sections",
         json: true,
@@ -327,31 +332,31 @@ class Blog {
           if (err) {
             err._fromRequest = true;
             responseLog(logger, requestOptions, response, err)
-            rejecter(err);
+            reject(err);
             return;
           }
 
           switch (response.statusCode) {
             case 200:
-              resolver(body);
+              resolve(body);
               break;
             
             case 400:
               var err = new Errors.BadRequest(body || {});
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
             
             case 500:
               var err = new Errors.InternalError(body || {});
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
             
             default:
               var err = new Error("Received unexpected statusCode " + response.statusCode);
               responseLog(logger, requestOptions, response, err);
-              rejecter(err);
+              reject(err);
               return;
           }
         });

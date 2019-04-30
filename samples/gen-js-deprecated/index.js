@@ -94,6 +94,21 @@ function responseLog(logger, req, res, err) {
 }
 
 /**
+ * Takes a promise and uses the provided callback (if any) to handle promise
+ * resolutions and rejections
+ */
+function applyCallback(promise, cb) {
+  if (!cb) {
+    return promise;
+  }
+  return promise.then((result) => {
+    cb(null, result);
+  }).catch((err) => {
+    cb(err);
+  });
+}
+
+/**
  * Default circuit breaker options.
  * @alias module:swagger-test.DefaultCircuitOptions
  */

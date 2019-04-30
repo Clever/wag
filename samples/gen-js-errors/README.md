@@ -14,6 +14,10 @@
 to output the status of a request returned
 by the client.</p>
 </dd>
+<dt><a href="#applyCallback">applyCallback()</a></dt>
+<dd><p>Takes a promise and uses the provided callback (if any) to handle promise
+resolutions and rejections</p>
+</dd>
 </dl>
 
 <a name="module_swagger-test"></a>
@@ -180,5 +184,12 @@ Default circuit breaker options.
 Request status log is used to
 to output the status of a request returned
 by the client.
+
+**Kind**: global function  
+<a name="applyCallback"></a>
+
+## applyCallback()
+Takes a promise and uses the provided callback (if any) to handle promise
+resolutions and rejections
 
 **Kind**: global function  
