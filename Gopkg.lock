@@ -115,6 +115,22 @@
   version = "v1.4.7"
 
 [[projects]]
+  name = "github.com/getkin/kin-openapi"
+  packages = [
+    "jsoninfo",
+    "openapi2",
+    "openapi3"
+  ]
+  revision = "db27d873292dcb033e3ce56f142dfb0ee65d55d4"
+  version = "v0.1.0"
+
+[[projects]]
+  name = "github.com/ghodss/yaml"
+  packages = ["."]
+  revision = "0ca9ea5df5451ffdf184b4428c902747c2c11cd7"
+  version = "v1.0.0"
+
+[[projects]]
   name = "github.com/go-errors/errors"
   packages = ["."]
   revision = "3afebba5a48dbc89b574d890b6b34d9ee10b4785"
@@ -507,6 +523,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f05a9a477ea276b2d4a052452924943326053b09fd2eaf5d92cf04478c9547e0"
+  inputs-digest = "c12eebc153d821eb6ce1f412b03c9c33794bdf5729475e0c88d948e306c5b312"
   solver-name = "gps-cdcl"
   solver-version = 1
