@@ -1,3 +1,6 @@
+v3.0.3
+- [Go server code] The PProf server listens on `localhost:port` instead of `:port`
+
 v3.0.2
 - [JS client code] Apply provided callback, if any, to circuit-breaker errors
 - [JS client code] Don't return a rejected promise if provided callback handles it

@@ -30,6 +30,7 @@ bin/
 vendor/
 badcode.txt
 release/
-.DS_Store
 
 node_modules/
+
+/samples/gen-go-db/server/db/dynamodb/shared-local-instance.db
