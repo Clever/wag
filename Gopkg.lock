@@ -473,6 +473,15 @@
   revision = "f8f2f88271bf2c23f28a09d288d26507a9503c97"
 
 [[projects]]
+  branch = "master"
+  name = "golang.org/x/xerrors"
+  packages = [
+    ".",
+    "internal"
+  ]
+  revision = "3ee3066db522c6628d440a3a91c4abdd7f5ef22f"
+
+[[projects]]
   name = "gopkg.in/Clever/kayvee-go.v6"
   packages = [
     ".",
@@ -507,6 +516,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f05a9a477ea276b2d4a052452924943326053b09fd2eaf5d92cf04478c9547e0"
+  inputs-digest = "525580093b115cbeeaf9b66811caaa8d8485c5be6147e7f4783911d3ddfd1ada"
   solver-name = "gps-cdcl"
   solver-version = 1

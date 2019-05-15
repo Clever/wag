@@ -225,7 +225,7 @@ func generateInterface(packageName string, s *spec.Swagger, serviceName string, 
 	g := swagger.Generator{PackageName: packageName}
 	g.Printf("package client\n\n")
 	g.Printf(swagger.ImportStatements([]string{"context", packageName + "/models"}))
-	g.Printf("//go:generate $GOPATH/bin/mockgen -source=$GOFILE -destination=mock_client.go -package=client\n\n")
+	g.Printf("//go:generate mockgen -source=$GOFILE -destination=mock_client.go -package=client\n\n")
 
 	if err := generateClientInterface(s, &g, serviceName, paths); err != nil {
 		return err
