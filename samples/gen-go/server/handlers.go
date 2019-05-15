@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -13,6 +14,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/gorilla/mux"
+	"golang.org/x/xerrors"
 	"gopkg.in/Clever/kayvee-go.v6/logger"
 )
 
@@ -118,6 +120,8 @@ func (h handler) GetAuthorsHandler(ctx context.Context, w http.ResponseWriter, r
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		if btErr, ok := err.(*errors.Error); ok {
 			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
+		} else if xerr, ok := err.(xerrors.Formatter); ok {
+			logger.FromContext(ctx).AddContext("frames", fmt.Sprintf("%+v", xerr))
 		}
 		statusCode := statusCodeForGetAuthors(err)
 		if statusCode == -1 {
@@ -238,6 +242,8 @@ func (h handler) GetAuthorsWithPutHandler(ctx context.Context, w http.ResponseWr
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		if btErr, ok := err.(*errors.Error); ok {
 			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
+		} else if xerr, ok := err.(xerrors.Formatter); ok {
+			logger.FromContext(ctx).AddContext("frames", fmt.Sprintf("%+v", xerr))
 		}
 		statusCode := statusCodeForGetAuthorsWithPut(err)
 		if statusCode == -1 {
@@ -375,6 +381,8 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		if btErr, ok := err.(*errors.Error); ok {
 			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
+		} else if xerr, ok := err.(xerrors.Formatter); ok {
+			logger.FromContext(ctx).AddContext("frames", fmt.Sprintf("%+v", xerr))
 		}
 		statusCode := statusCodeForGetBooks(err)
 		if statusCode == -1 {
@@ -605,6 +613,8 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		if btErr, ok := err.(*errors.Error); ok {
 			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
+		} else if xerr, ok := err.(xerrors.Formatter); ok {
+			logger.FromContext(ctx).AddContext("frames", fmt.Sprintf("%+v", xerr))
 		}
 		statusCode := statusCodeForCreateBook(err)
 		if statusCode == -1 {
@@ -705,6 +715,8 @@ func (h handler) PutBookHandler(ctx context.Context, w http.ResponseWriter, r *h
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		if btErr, ok := err.(*errors.Error); ok {
 			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
+		} else if xerr, ok := err.(xerrors.Formatter); ok {
+			logger.FromContext(ctx).AddContext("frames", fmt.Sprintf("%+v", xerr))
 		}
 		statusCode := statusCodeForPutBook(err)
 		if statusCode == -1 {
@@ -812,6 +824,8 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		if btErr, ok := err.(*errors.Error); ok {
 			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
+		} else if xerr, ok := err.(xerrors.Formatter); ok {
+			logger.FromContext(ctx).AddContext("frames", fmt.Sprintf("%+v", xerr))
 		}
 		statusCode := statusCodeForGetBookByID(err)
 		if statusCode == -1 {
@@ -959,6 +973,8 @@ func (h handler) GetBookByID2Handler(ctx context.Context, w http.ResponseWriter,
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		if btErr, ok := err.(*errors.Error); ok {
 			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
+		} else if xerr, ok := err.(xerrors.Formatter); ok {
+			logger.FromContext(ctx).AddContext("frames", fmt.Sprintf("%+v", xerr))
 		}
 		statusCode := statusCodeForGetBookByID2(err)
 		if statusCode == -1 {
@@ -1023,6 +1039,8 @@ func (h handler) HealthCheckHandler(ctx context.Context, w http.ResponseWriter, 
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		if btErr, ok := err.(*errors.Error); ok {
 			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
+		} else if xerr, ok := err.(xerrors.Formatter); ok {
+			logger.FromContext(ctx).AddContext("frames", fmt.Sprintf("%+v", xerr))
 		}
 		statusCode := statusCodeForHealthCheck(err)
 		if statusCode == -1 {

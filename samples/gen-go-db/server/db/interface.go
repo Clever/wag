@@ -8,7 +8,7 @@ import (
 	"golang.org/x/time/rate"
 )
 
-//go:generate $GOPATH/bin/mockgen -source=$GOFILE -destination=mock_db.go -package=db
+//go:generate mockgen -source=$GOFILE -destination=mock_db.go -package=db
 
 // Interface for interacting with the swagger-test database.
 type Interface interface {

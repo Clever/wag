@@ -6,7 +6,7 @@ import (
 	"github.com/Clever/wag/samples/gen-go-nils/models"
 )
 
-//go:generate $GOPATH/bin/mockgen -source=$GOFILE -destination=mock_controller.go -package=server
+//go:generate mockgen -source=$GOFILE -destination=mock_controller.go -package=server
 
 // Controller defines the interface for the nil-test service.
 type Controller interface {
