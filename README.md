@@ -1,5 +1,9 @@
 # wag
-sWAGger - Web API Generator
+
+sWAGger - Web API Generator.
+A custom Web API Generator written by Clever.
+Despite the presence of a `swagger.yml` file, WAG does not support all of the Swagger standard.
+WAG is a custom re-implementation of a subset of the Swagger version `2.0` standard.
 
 ## Usage
 Wag requires Go 1.7+.
