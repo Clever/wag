@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -13,6 +14,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/gorilla/mux"
+	"golang.org/x/xerrors"
 	"gopkg.in/Clever/kayvee-go.v6/logger"
 )
 
@@ -97,6 +99,8 @@ func (h handler) HealthCheckHandler(ctx context.Context, w http.ResponseWriter, 
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		if btErr, ok := err.(*errors.Error); ok {
 			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
+		} else if xerr, ok := err.(xerrors.Formatter); ok {
+			logger.FromContext(ctx).AddContext("frames", fmt.Sprintf("%+v", xerr))
 		}
 		statusCode := statusCodeForHealthCheck(err)
 		if statusCode == -1 {

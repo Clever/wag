@@ -1,5 +1,6 @@
 include golang.mk
 .DEFAULT_GOAL := test # override default goal set in library makefile
+export PATH := $(PWD)/bin:$(PATH)
 PKG := github.com/Clever/wag
 PKGS := $(shell go list ./... | grep -v /vendor | grep -v /samples/gen* | grep -v /hardcoded)
 VERSION := $(shell head -n 1 VERSION)
@@ -61,7 +62,5 @@ install_deps: golang-dep-vendor-deps
 	$(call golang-dep-vendor)
 	go build -o bin/go-bindata ./vendor/github.com/tmthrgd/go-bindata/go-bindata
 	go build -o bin/mockgen    ./vendor/github.com/golang/mock/mockgen
-	# cp to gopath/bin in order to avoid breaking go:generate directives that use $(GOPATH)/bin/mockgen
-	# TODO: change these directives to bin/mockgen, release as major version, deal with breakage
 	mkdir -p $(GOPATH)/bin
 	cp bin/mockgen $(GOPATH)/bin/mockgen

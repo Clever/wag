@@ -237,7 +237,7 @@ package server
 
 {{.ImportStatements}}
 
-//go:generate $GOPATH/bin/mockgen -source=$GOFILE -destination=mock_controller.go -package=server
+//go:generate mockgen -source=$GOFILE -destination=mock_controller.go -package=server
 
 // Controller defines the interface for the {{.ServiceName}} service.
 type Controller interface {
@@ -324,9 +324,9 @@ func generateHandlers(packageName string, s *spec.Swagger, paths *spec.Paths) er
 
 	tmpl := handlerFileTemplate{
 		ImportStatements: swagger.ImportStatements([]string{"context", "github.com/gorilla/mux", "gopkg.in/Clever/kayvee-go.v6/logger",
-			"net/http", "strconv", "encoding/json", "strconv", packageName + "/models",
+			"net/http", "strconv", "encoding/json", "strconv", "fmt", packageName + "/models",
 			"github.com/go-openapi/strfmt", "github.com/go-openapi/swag", "io/ioutil", "bytes",
-			"github.com/go-errors/errors"}),
+			"github.com/go-errors/errors", "golang.org/x/xerrors"}),
 		BaseStringToTypeCode: swagger.BaseStringToTypeCode(),
 	}
 
@@ -507,6 +507,8 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		if btErr, ok := err.(*errors.Error); ok {
 			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
+		} else if xerr, ok := err.(xerrors.Formatter); ok {
+			logger.FromContext(ctx).AddContext("frames", fmt.Sprintf("%%+v", xerr))
 		}
 		statusCode := statusCodeFor{{.Op}}(err)
 		if statusCode == -1 {
