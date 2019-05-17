@@ -1,6 +1,7 @@
 package jsclient
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -916,19 +917,30 @@ func generateErrorsFile(s spec.Swagger) (string, error) {
 	return templates.WriteTemplate(typeTmplString, typesTmpl)
 }
 
+// JSType is a wrapper type for things that represent a TypeScript type
 type JSType string
+
+// JSTypeMap is a representation of a TypeScript object
 type JSTypeMap map[string]JSType
 
 type typescriptTypes struct {
 	ServiceName   string
 	IncludedTypes []string
 	MethodDecls   []string
+	ErrorTypes    []string
 }
 
-var isDefaultIncludedType = map[string]bool {
-	"BadRequest": true,
+var isDefaultIncludedType = map[string]bool{
+	"BadRequest":    true,
 	"InternalError": true,
-	"NotFound": true,
+	"NotFound":      true,
+}
+
+var primitiveTypes = map[string]string{
+	"string":  "string",
+	"integer": "number",
+	"number":  "number",
+	"boolean": "boolean",
 }
 
 func generateTypescriptTypes(s spec.Swagger) (string, error) {
@@ -977,10 +989,15 @@ func generateTypescriptTypes(s spec.Swagger) (string, error) {
 
 	includedTypes := []string{}
 	for _, typeName := range keys {
-		includedTypes = append(includedTypes, string(includedTypeMap[typeName]))
+		includedTypes = append(includedTypes, fmt.Sprintf("type %s = %s;", typeName, includedTypeMap[typeName]))
 	}
-
 	tt.IncludedTypes = includedTypes
+
+	errorTypes, err := getErrorTypes(s)
+	if err != nil {
+		return "", err
+	}
+	tt.ErrorTypes = errorTypes
 
 	types, err := templates.WriteTemplate(typescriptTmplStr, tt)
 	if err != nil {
@@ -988,6 +1005,44 @@ func generateTypescriptTypes(s spec.Swagger) (string, error) {
 	}
 
 	return types, nil
+}
+
+func getErrorTypes(s spec.Swagger) ([]string, error) {
+	typeNames := map[string]struct{}{}
+	errorTypes := []string{}
+
+	for _, pathKey := range swagger.SortedPathItemKeys(s.Paths.Paths) {
+		path := s.Paths.Paths[pathKey]
+		pathItemOps := swagger.PathItemOperations(path)
+		for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
+			op := pathItemOps[opKey]
+			for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
+				if statusCode < 400 {
+					continue
+				}
+				typeName, _ := swagger.OutputType(&s, op, statusCode)
+				if strings.HasPrefix(typeName, "models.") {
+					typeName = typeName[7:]
+				}
+
+				if _, exists := typeNames[typeName]; exists {
+					continue
+				}
+				typeNames[typeName] = struct{}{}
+
+				if schema, ok := s.Definitions[typeName]; !ok {
+					errorTypes = append(errorTypes, fmt.Sprintf("class %s {}", typeName))
+				} else if len(schema.Properties) > 0 {
+					errorType, err := asJSType(&schema)
+					if err != nil {
+						return errorTypes, err
+					}
+					errorTypes = append(errorTypes, fmt.Sprintf("class %s %s", typeName, errorType))
+				}
+			}
+		}
+	}
+	return errorTypes, nil
 }
 
 func methodDecl(s spec.Swagger, op *spec.Operation, path, method string) (string, error) {
@@ -1002,34 +1057,43 @@ func methodDecl(s spec.Swagger, op *spec.Operation, path, method string) (string
 		params = ""
 	} else if len(op.Parameters) == 1 {
 		paramName := op.Parameters[0].Name
-		paramType, err := asJSType(op.Parameters[0].ParamProps.Schema)
+		var paramType JSType
+		if op.Parameters[0].ParamProps.Schema != nil {
+			paramType, err = asJSType(op.Parameters[0].ParamProps.Schema)
+		} else {
+			paramType, err = asJSTypeSimple(op.Parameters[0].SimpleSchema)
+		}
 		if err != nil {
 			return "", err
 		}
-		params = fmt.Sprintf("%s: %s, ", paramName, paramType)
+		if op.Parameters[0].Required {
+			params = fmt.Sprintf("%s: %s, ", paramName, paramType)
+		} else {
+			params = fmt.Sprintf("%s?: %s, ", paramName, paramType)
+		}
 	} else {
 		paramType := fmt.Sprintf("%sParams", utils.CamelCase(methodName, true))
 		params = fmt.Sprintf("params: %s, ", paramType)
 	}
-	methodDecl = fmt.Sprintf("%s(%soptions: RequestOptions, cb: Callback<%s>): %s",
+	methodDecl = fmt.Sprintf("%s(%soptions?: RequestOptions, cb?: Callback<%s>): Promise<%s>",
 		methodName, params, returnType, returnType)
 
 	if _, hasPaging := swagger.PagingParam(op); hasPaging {
-		methodDecl += fmt.Sprintf("\n  %s(%soptions: RequestOptions): %s", "Iter"+methodName, params, returnType)
+		methodDecl += fmt.Sprintf("\n  %s(%soptions: RequestOptions): IterResult<%s>", methodName+"Iter", params, returnType)
 	}
 	return methodDecl, nil
 }
 
 type paramDeclTmpl struct {
 	TypeName string
-	Fields string
+	Fields   string
 }
 
 func addInputType(jsTypeMap *JSTypeMap, op *spec.Operation) error {
 	if len(op.Parameters) <= 1 {
 		return nil
 	}
-	typeName := utils.CamelCase(op.ID + "Params", true)
+	typeName := utils.CamelCase(op.ID+"Params", true)
 	paramNames := []string{}
 	fields := JSTypeMap{}
 	for _, param := range op.Parameters {
@@ -1040,19 +1104,19 @@ func addInputType(jsTypeMap *JSTypeMap, op *spec.Operation) error {
 		if err != nil {
 			return err
 		}
+		paramType = ": " + paramType
+		if !param.Required {
+			paramType = "?" + paramType
+		}
 		paramNames = append(paramNames, param.Name)
 		fields[param.Name] = paramType
 	}
 	fieldsStrings := []string{}
 	for _, paramName := range paramNames {
-		fieldsStrings = append(fieldsStrings, fmt.Sprintf("%s: %s,", paramName, fields[paramName]))
+		jsName := utils.CamelCase(paramName, false)
+		fieldsStrings = append(fieldsStrings, fmt.Sprintf("%s%s;", jsName, fields[paramName]))
 	}
-	inputType, err := templates.WriteTemplate(paramDeclTmlpStr,
-		paramDeclTmpl{ TypeName: typeName, Fields: strings.Join(fieldsStrings, "\n  ")})
-	if err != nil {
-		return err
-	}
-	(*jsTypeMap)[typeName] = JSType(inputType)
+	(*jsTypeMap)[typeName] = JSType(fmt.Sprintf("{\n  %s\n}", strings.Join(fieldsStrings, "\n  ")))
 	return nil
 }
 
@@ -1071,7 +1135,7 @@ func ReturnType(s spec.Swagger, op *spec.Operation) (JSType, error) {
 		}
 	}
 	if len(successCodes) == 0 {
-		return "void", nil
+		return "never", nil
 	} else if len(successCodes) == 1 {
 		return typeOf(s, op, successCodes[0])
 	}
@@ -1080,43 +1144,11 @@ func ReturnType(s spec.Swagger, op *spec.Operation) (JSType, error) {
 
 func typeOf(s spec.Swagger, op *spec.Operation, statusCode int) (JSType, error) {
 	schema := swagger.OutputSchema(&s, op, statusCode)
-	return asJSType(schema)
-}
-
-// TypeFromSchema returns the JSType for a schema
-/*func TypeFromSchema(schema *spec.Schema) (JSType, error) {
-	emptyType := JSType("")
-	// We support one of two schemas:
-	// 1. A schema with one element, the $ref key
-	// 2. A schema with two elements. One a type with value 'array' and another items field
-	// referencing the $ref
 	if schema == nil {
 		return "void", nil
-	} else if schema.Ref.String() != "" {
-		def, err := defFromRef(schema.Ref.String())
-		if err != nil {
-			return emptyType, err
-		}
-		return JSType(def), nil
-	} else {
-		schemaType := schema.Type
-		if len(schemaType) != 1 || schemaType[0] != "array" {
-			return "", fmt.Errorf("Cannot define complex data types inline. They must be defined in " +
-				"the #/definitions section of the swagger yaml.")
-		}
-		items := schema.Items
-		if items == nil || items.Schema == nil || items.Schema.Ref.String() == "" {
-			return emptyType, fmt.Errorf("Cannot define complex data types inline. They must be defined in " +
-				"the #/definitions section of the swagger yaml.")
-		}
-		def, err := defFromRef(items.Schema.Ref.String())
-		if err != nil {
-			return emptyType, err
-		}
-		return JSType(def + "[]"), nil
 	}
+	return asJSType(schema)
 }
-*/
 
 func paramToJSType(param spec.Parameter) (JSType, error) {
 	if param.In == "body" {
@@ -1148,32 +1180,116 @@ func paramToJSType(param spec.Parameter) (JSType, error) {
 	return JSType(typeName), nil
 }
 
+func asJSTypeSimple(simpleSchema spec.SimpleSchema) (JSType, error) {
+	if jsType, ok := primitiveTypes[simpleSchema.Type]; ok {
+		return JSType(jsType), nil
+	}
+
+	if simpleSchema.Type == "array" {
+		return JSType("any[]"), nil
+	}
+
+	if simpleSchema.Type == "object" {
+		return JSType("any"), nil
+	}
+
+	return JSType(""), fmt.Errorf("Unknown type '%v'", simpleSchema.Type)
+}
+
 func asJSType(schema *spec.Schema) (JSType, error) {
 	if schema == nil {
-		return JSType(""), nil
-	} else if schema.Ref.String() != "" {
+		return JSType(""), fmt.Errorf("No schema")
+	}
+
+	if schema.Ref.String() != "" {
 		def, err := defFromRef(schema.Ref.String())
 		if err != nil {
-			return JSType(""), nil
+			return JSType(""), err
 		}
 		return JSType(def), nil
 	}
-	schemaType := schema.Type
-	fmt.Printf("%s\n", strings.Join(schemaType, ", "))
-	if len(schemaType) != 1 || schemaType[0] != "array" {
-		return "", fmt.Errorf("Cannot define complex data types inline. They must be defined in " +
-			"the #/definitions section of the swagger yaml.")
+
+	if len(schema.Type) == 0 {
+		if schema.AdditionalProperties != nil {
+			if schema.AdditionalProperties.Schema != nil {
+				innerType, err := asJSType(schema.AdditionalProperties.Schema)
+				if err != nil {
+					return JSType(""), err
+				}
+				return "{ [key: string]: " + innerType + " }", nil
+			}
+			if schema.AdditionalProperties.Allows {
+				return "{ [key: string]: any }", nil
+			}
+		}
+		return JSType("any"), nil
 	}
-	items := schema.Items
-	if items == nil || items.Schema == nil || items.Schema.Ref.String() == "" {
-		return "", fmt.Errorf("Cannot define complex data types inline. They must be defined in " +
-			"the #/definitions section of the swagger yaml.")
+
+	if len(schema.Enum) > 0 {
+		enums := []string{}
+		for _, enum := range schema.Enum {
+			e, err := json.Marshal(enum)
+			if err != nil {
+				return JSType(""), err
+			}
+			enums = append(enums, string(e))
+		}
+		return JSType("(" + strings.Join(enums, " | ") + ")"), nil
 	}
-	def, err := defFromRef(items.Schema.Ref.String())
-	if err != nil {
-		return "", err
+
+	if len(schema.Type) > 1 {
+		return JSType(""), fmt.Errorf("Having mltiple types in schema is not supported")
 	}
-	return JSType(def + "[]"), nil
+	if jsType, ok := primitiveTypes[schema.Type[0]]; ok {
+		return JSType(jsType), nil
+	}
+
+	if schema.Type[0] == "array" {
+		innerType, err := asJSType(schema.Items.Schema)
+		return innerType + "[]", err
+	}
+
+	if schema.Type[0] == "object" || len(schema.Properties) > 0 {
+		requiredFields := map[string]struct{}{}
+		for _, requiredField := range schema.Required {
+			requiredFields[requiredField] = struct{}{}
+		}
+
+		var keys []string
+		for k := range schema.Properties {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		fieldsStrings := []string{}
+		for _, k := range keys {
+			fieldSchema := schema.Properties[k]
+			t, err := asJSType(&fieldSchema)
+			if err != nil {
+				return JSType(""), err
+			}
+			jsKey := utils.CamelCase(k, false)
+			if _, ok := requiredFields[k]; ok {
+				fieldsStrings = append(fieldsStrings, fmt.Sprintf("%s: %s;", jsKey, t))
+			} else {
+				fieldsStrings = append(fieldsStrings, fmt.Sprintf("%s?: %s;", jsKey, t))
+			}
+		}
+
+		if schema.AdditionalProperties != nil {
+			if schema.AdditionalProperties.Schema != nil {
+				innerType, err := asJSType(schema.AdditionalProperties.Schema)
+				if err != nil {
+					return JSType(""), err
+				}
+				fieldsStrings = append(fieldsStrings, "[key: string]: "+string(innerType)+";")
+			} else if schema.AdditionalProperties.Allows {
+				fieldsStrings = append(fieldsStrings, "[key: string]: any;")
+			}
+		}
+		return JSType(fmt.Sprintf("{\n  %s\n}", strings.Join(fieldsStrings, "\n  "))), nil
+	}
+
+	return JSType(""), fmt.Errorf("Unknown type '%v'", schema.Type[0])
 }
 
 func defFromRef(ref string) (string, error) {
@@ -1204,7 +1320,13 @@ interface RequestOptions {
   retryPolicy?: RetryPolicy
 }
 
-type Callback<R> = (Error, R) => void;
+type Callback<R> = (err: Error, result: R) => void;
+
+interface IterResult<R> {
+	map<T>(f: (r: R) => T, cb?: Callback<T[]>): Promise<T[]>;
+	toArray(cb?: Callback<R[]>): Promise<R[]>;
+	forEach(f: (r: R) => void, cb?: Callback<void>): Promise<void>;
+}
 
 interface CallOptions {
   timeout?: number,
@@ -1241,7 +1363,6 @@ type {{.ServiceName}}Options = (DiscoveryOptions | AddressOptions) & GenericOpti
 
 {{range .IncludedTypes}}
 {{.}}
-
 {{end}}
 declare class {{.ServiceName}} {
   constructor(options: {{.ServiceName}}Options);
@@ -1252,13 +1373,12 @@ declare class {{.ServiceName}} {
 }
 
 declare namespace {{.ServiceName}} {
-  export Errors interface {
-    BadRequest: Error,
-    InternalError: Error,
-    NotFound: Error,
+  namespace Errors {
+		{{range .ErrorTypes}}
+		{{.}}
+		{{end}}
   }
 }
 
 export = {{.ServiceName}};
-
 `

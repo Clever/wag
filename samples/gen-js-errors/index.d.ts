@@ -1,4 +1,5 @@
 import { Span } from "opentracing";
+import { Logger } from "kayvee";
 
 interface RetryPolicy {
   backoffs(): number[],
@@ -11,13 +12,19 @@ interface RetryPolicies {
   None: RetryPolicy,
 }
 
-interface CallOptions {
+interface RequestOptions {
   timeout?: number,
   span?: Span,
   retryPolicy?: RetryPolicy
 }
 
-type Callback<R> = (Error, R) => void;
+type Callback<R> = (err: Error, result: R) => void;
+
+interface IterResult<R> {
+	map<T>(f: (r: R) => T, cb?: Callback<T[]>): Promise<T[]>;
+	toArray(cb?: Callback<R[]>): Promise<R[]>;
+	forEach(f: (r: R) => void, cb?: Callback<void>): Promise<void>;
+}
 
 interface CallOptions {
   timeout?: number,
@@ -50,24 +57,40 @@ interface AddressOptions {
   address: string;
 }
 
-type swagger-testOptions = (DiscoveryOptions | AddressOptions) & GenericOptions; 
+type SwaggerTestOptions = (DiscoveryOptions | AddressOptions) & GenericOptions; 
 
 
-declare class swagger-test {
-  constructor(options: swagger-testOptions);
+type ExtendedError = {
+  code?: number;
+  message?: string;
+};
+
+declare class SwaggerTest {
+  constructor(options: SwaggerTestOptions);
 
   
-  .
+  getBook(id: number, options?: RequestOptions, cb?: Callback<void>): Promise<void>
   
 }
 
-declare namespace swagger-test {
-  Errors: interface {
-    BadRequest: Error,
-    InternalError: Error,
-    NotFound: Error,
+declare namespace SwaggerTest {
+  namespace Errors {
+		
+		class ExtendedError {
+  code?: number;
+  message?: string;
+}
+		
+		class NotFound {
+  message?: string;
+}
+		
+		class InternalError {
+  code?: number;
+  message?: string;
+}
+		
   }
 }
 
-export = swagger-test;
-
+export = SwaggerTest;

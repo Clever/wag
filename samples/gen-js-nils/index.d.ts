@@ -1,4 +1,5 @@
 import { Span } from "opentracing";
+import { Logger } from "kayvee";
 
 interface RetryPolicy {
   backoffs(): number[],
@@ -11,13 +12,19 @@ interface RetryPolicies {
   None: RetryPolicy,
 }
 
-interface CallOptions {
+interface RequestOptions {
   timeout?: number,
   span?: Span,
   retryPolicy?: RetryPolicy
 }
 
-type Callback<R> = (Error, R) => void;
+type Callback<R> = (err: Error, result: R) => void;
+
+interface IterResult<R> {
+	map<T>(f: (r: R) => T, cb?: Callback<T[]>): Promise<T[]>;
+	toArray(cb?: Callback<R[]>): Promise<R[]>;
+	forEach(f: (r: R) => void, cb?: Callback<void>): Promise<void>;
+}
 
 interface CallOptions {
   timeout?: number,
@@ -50,24 +57,42 @@ interface AddressOptions {
   address: string;
 }
 
-type nil-testOptions = (DiscoveryOptions | AddressOptions) & GenericOptions; 
+type NilTestOptions = (DiscoveryOptions | AddressOptions) & GenericOptions; 
 
 
-declare class nil-test {
-  constructor(options: nil-testOptions);
+type NilCheckParams = {
+  id: string;
+  query?: string;
+  header?: string;
+  array?: string[];
+  body?: NilFields;
+};
+
+type NilFields = {
+  id?: string;
+  optional?: string;
+};
+
+declare class NilTest {
+  constructor(options: NilTestOptions);
 
   
-  .
+  nilCheck(params: NilCheckParams, options?: RequestOptions, cb?: Callback<void>): Promise<void>
   
 }
 
-declare namespace nil-test {
-  Errors: interface {
-    BadRequest: Error,
-    InternalError: Error,
-    NotFound: Error,
+declare namespace NilTest {
+  namespace Errors {
+		
+		class BadRequest {
+  message?: string;
+}
+		
+		class InternalError {
+  message?: string;
+}
+		
   }
 }
 
-export = nil-test;
-
+export = NilTest;

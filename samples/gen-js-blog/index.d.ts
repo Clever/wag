@@ -1,4 +1,5 @@
 import { Span } from "opentracing";
+import { Logger } from "kayvee";
 
 interface RetryPolicy {
   backoffs(): number[],
@@ -11,13 +12,19 @@ interface RetryPolicies {
   None: RetryPolicy,
 }
 
-interface CallOptions {
+interface RequestOptions {
   timeout?: number,
   span?: Span,
   retryPolicy?: RetryPolicy
 }
 
-type Callback<R> = (Error, R) => void;
+type Callback<R> = (err: Error, result: R) => void;
+
+interface IterResult<R> {
+	map<T>(f: (r: R) => T, cb?: Callback<T[]>): Promise<T[]>;
+	toArray(cb?: Callback<R[]>): Promise<R[]>;
+	forEach(f: (r: R) => void, cb?: Callback<void>): Promise<void>;
+}
 
 interface CallOptions {
   timeout?: number,
@@ -50,24 +57,35 @@ interface AddressOptions {
   address: string;
 }
 
-type blogOptions = (DiscoveryOptions | AddressOptions) & GenericOptions; 
+type BlogOptions = (DiscoveryOptions | AddressOptions) & GenericOptions; 
 
 
-declare class blog {
-  constructor(options: blogOptions);
+type Section = {
+  id?: string;
+  name?: string;
+  period?: string;
+};
+
+declare class Blog {
+  constructor(options: BlogOptions);
 
   
-  .
+  getSectionsForStudent(student_id: string, options?: RequestOptions, cb?: Callback<Section[]>): Promise<Section[]>
   
 }
 
-declare namespace blog {
-  Errors: interface {
-    BadRequest: Error,
-    InternalError: Error,
-    NotFound: Error,
+declare namespace Blog {
+  namespace Errors {
+		
+		class BadRequest {
+  message?: string;
+}
+		
+		class InternalError {
+  message?: string;
+}
+		
   }
 }
 
-export = blog;
-
+export = Blog;

@@ -1,4 +1,5 @@
 import { Span } from "opentracing";
+import { Logger } from "kayvee";
 
 interface RetryPolicy {
   backoffs(): number[],
@@ -11,13 +12,19 @@ interface RetryPolicies {
   None: RetryPolicy,
 }
 
-interface CallOptions {
+interface RequestOptions {
   timeout?: number,
   span?: Span,
   retryPolicy?: RetryPolicy
 }
 
-type Callback<R> = (Error, R) => void;
+type Callback<R> = (err: Error, result: R) => void;
+
+interface IterResult<R> {
+	map<T>(f: (r: R) => T, cb?: Callback<T[]>): Promise<T[]>;
+	toArray(cb?: Callback<R[]>): Promise<R[]>;
+	forEach(f: (r: R) => void, cb?: Callback<void>): Promise<void>;
+}
 
 interface CallOptions {
   timeout?: number,
@@ -50,24 +57,121 @@ interface AddressOptions {
   address: string;
 }
 
-type swagger-testOptions = (DiscoveryOptions | AddressOptions) & GenericOptions; 
+type SwaggerTestOptions = (DiscoveryOptions | AddressOptions) & GenericOptions; 
 
 
-declare class swagger-test {
-  constructor(options: swagger-testOptions);
+type Branch = ("master" | "DEV_BRANCH" | "test");
+
+type Category = ("a" | "b");
+
+type Deployment = {
+  application?: string;
+  date?: string;
+  environment?: string;
+  version?: string;
+};
+
+type NoRangeThingWithCompositeAttributes = {
+  branch: string;
+  date: string;
+  name: string;
+  version?: number;
+};
+
+type Object = {
+  bar?: string;
+  foo?: string;
+};
+
+type SimpleThing = {
+  id?: string;
+  name?: string;
+};
+
+type TeacherSharingRule = {
+  app?: string;
+  district?: string;
+  id?: string;
+  school?: string;
+  sections?: string[];
+  teacher?: string;
+};
+
+type Thing = {
+  category?: Category;
+  createdAt?: string;
+  id?: string;
+  name?: string;
+  nestedObject?: Object;
+  version?: number;
+};
+
+type ThingWithCompositeAttributes = {
+  branch: string;
+  date: string;
+  name: string;
+  version?: number;
+};
+
+type ThingWithCompositeEnumAttributes = {
+  branchID: Branch;
+  date: string;
+  name: string;
+};
+
+type ThingWithDateRange = {
+  date?: string;
+  name?: string;
+};
+
+type ThingWithDateTimeComposite = {
+  created?: string;
+  id?: string;
+  resource?: string;
+  type?: string;
+};
+
+type ThingWithMatchingKeys = {
+  assocID?: string;
+  assocType?: string;
+  bear?: string;
+  created?: string;
+};
+
+type ThingWithRequiredFields = {
+  id: string;
+  name: string;
+};
+
+type ThingWithRequiredFields2 = {
+  id: string;
+  name: string;
+};
+
+type ThingWithUnderscores = {
+  idApp?: string;
+};
+
+declare class SwaggerTest {
+  constructor(options: SwaggerTestOptions);
 
   
-  .
+  healthCheck(options?: RequestOptions, cb?: Callback<void>): Promise<void>
   
 }
 
-declare namespace swagger-test {
-  Errors: interface {
-    BadRequest: Error,
-    InternalError: Error,
-    NotFound: Error,
+declare namespace SwaggerTest {
+  namespace Errors {
+		
+		class BadRequest {
+  message?: string;
+}
+		
+		class InternalError {
+  message?: string;
+}
+		
   }
 }
 
-export = swagger-test;
-
+export = SwaggerTest;
