@@ -9,7 +9,7 @@ import (
 	"text/template"
 
 	"github.com/Clever/wag/swagger"
-	"github.com/awslabs/goformation/cloudformation"
+	"github.com/awslabs/goformation/cloudformation/resources"
 	"github.com/go-openapi/spec"
 	"github.com/go-swagger/go-swagger/generator"
 )
@@ -81,8 +81,8 @@ func (config XDBConfig) attributeNameIsDefined(attributeName string) error {
 // - GlobalSecondaryIndexes
 // - TableName (if you want something other than pascalized model name)
 type AWSDynamoDBTable struct {
-	KeySchema              []cloudformation.AWSDynamoDBTable_KeySchema            `json:"KeySchema,omitempty"`
-	GlobalSecondaryIndexes []cloudformation.AWSDynamoDBTable_GlobalSecondaryIndex `json:"GlobalSecondaryIndexes,omitempty"`
+	KeySchema              []resources.AWSDynamoDBTable_KeySchema            `json:"KeySchema,omitempty"`
+	GlobalSecondaryIndexes []resources.AWSDynamoDBTable_GlobalSecondaryIndex `json:"GlobalSecondaryIndexes,omitempty"`
 }
 
 // DecodeConfig extracts a db configuration from the schema definition, if one exists.

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/awslabs/goformation/cloudformation"
+	"github.com/awslabs/goformation/cloudformation/resources"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
 	"github.com/go-swagger/go-swagger/generator"
@@ -31,25 +31,25 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		}
 		return false
 	},
-	"indexHasRangeKey": func(index []cloudformation.AWSDynamoDBTable_KeySchema) bool {
+	"indexHasRangeKey": func(index []resources.AWSDynamoDBTable_KeySchema) bool {
 		return len(index) == 2 && index[1].KeyType == "RANGE"
 	},
-	"indexes": func(config XDBConfig) [][]cloudformation.AWSDynamoDBTable_KeySchema {
-		indexes := [][]cloudformation.AWSDynamoDBTable_KeySchema{config.DynamoDB.KeySchema}
+	"indexes": func(config XDBConfig) [][]resources.AWSDynamoDBTable_KeySchema {
+		indexes := [][]resources.AWSDynamoDBTable_KeySchema{config.DynamoDB.KeySchema}
 		for _, gsi := range config.DynamoDB.GlobalSecondaryIndexes {
 			indexes = append(indexes, gsi.KeySchema)
 		}
 		return indexes
 	},
-	"secondaryIndexes": func(config XDBConfig) [][]cloudformation.AWSDynamoDBTable_KeySchema {
-		indexes := [][]cloudformation.AWSDynamoDBTable_KeySchema{}
+	"secondaryIndexes": func(config XDBConfig) [][]resources.AWSDynamoDBTable_KeySchema {
+		indexes := [][]resources.AWSDynamoDBTable_KeySchema{}
 		for _, gsi := range config.DynamoDB.GlobalSecondaryIndexes {
 			indexes = append(indexes, gsi.KeySchema)
 		}
 		return indexes
 	},
-	"projectedIndexesWithCompositeAttributes": func(config XDBConfig) [][]cloudformation.AWSDynamoDBTable_KeySchema {
-		indexes := [][]cloudformation.AWSDynamoDBTable_KeySchema{}
+	"projectedIndexesWithCompositeAttributes": func(config XDBConfig) [][]resources.AWSDynamoDBTable_KeySchema {
+		indexes := [][]resources.AWSDynamoDBTable_KeySchema{}
 		for _, gsi := range config.DynamoDB.GlobalSecondaryIndexes {
 			if gsi.Projection == nil || gsi.Projection.ProjectionType == "ALL" ||
 				!indexContainsCompositeAttribute(config, gsi.KeySchema) {
@@ -59,8 +59,8 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		}
 		return indexes
 	},
-	"unionKeySchemas": func(a, b []cloudformation.AWSDynamoDBTable_KeySchema) []cloudformation.AWSDynamoDBTable_KeySchema {
-		ret := []cloudformation.AWSDynamoDBTable_KeySchema{}
+	"unionKeySchemas": func(a, b []resources.AWSDynamoDBTable_KeySchema) []resources.AWSDynamoDBTable_KeySchema {
+		ret := []resources.AWSDynamoDBTable_KeySchema{}
 		seen := map[string]struct{}{}
 		for _, ks := range append(a, b...) {
 			if _, ok := seen[ks.AttributeName]; ok {
@@ -72,8 +72,8 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		}
 		return ret
 	},
-	"differenceKeySchemas": func(a, b []cloudformation.AWSDynamoDBTable_KeySchema) []cloudformation.AWSDynamoDBTable_KeySchema {
-		ret := []cloudformation.AWSDynamoDBTable_KeySchema{}
+	"differenceKeySchemas": func(a, b []resources.AWSDynamoDBTable_KeySchema) []resources.AWSDynamoDBTable_KeySchema {
+		ret := []resources.AWSDynamoDBTable_KeySchema{}
 		inB := map[string]struct{}{}
 		for _, ks := range b {
 			inB[ks.AttributeName] = struct{}{}
@@ -87,7 +87,7 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		}
 		return ret
 	},
-	"indexName": func(index []cloudformation.AWSDynamoDBTable_KeySchema) string {
+	"indexName": func(index []resources.AWSDynamoDBTable_KeySchema) string {
 		pascalize := generator.FuncMap["pascalize"].(func(string) string)
 		if len(index) == 1 {
 			return pascalize(index[0].AttributeName)
@@ -240,7 +240,7 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		return attrs
 	},
 	"modelAttributeNamesForIndex": modelAttributeNamesForIndex,
-	"modelAttributeNamesForKeyType": func(config XDBConfig, keySchema []cloudformation.AWSDynamoDBTable_KeySchema, keyType string) []string {
+	"modelAttributeNamesForKeyType": func(config XDBConfig, keySchema []resources.AWSDynamoDBTable_KeySchema, keyType string) []string {
 		attributeNames := []string{}
 		for _, ks := range keySchema {
 			if ks.KeyType != keyType {
@@ -328,7 +328,7 @@ func goTypeForAttribute(config XDBConfig, attributeName string) string {
 	return "unknownType"
 }
 
-func indexContainsCompositeAttribute(config XDBConfig, keySchema []cloudformation.AWSDynamoDBTable_KeySchema) bool {
+func indexContainsCompositeAttribute(config XDBConfig, keySchema []resources.AWSDynamoDBTable_KeySchema) bool {
 	for _, ks := range keySchema {
 		if ca := findCompositeAttribute(config, ks.AttributeName); ca != nil {
 			return true
@@ -366,7 +366,7 @@ func dynamoDBTypeForAttribute(config XDBConfig, attributeName string) string {
 	return "unknownType"
 }
 
-func modelAttributeNamesForIndex(config XDBConfig, keySchema []cloudformation.AWSDynamoDBTable_KeySchema) []string {
+func modelAttributeNamesForIndex(config XDBConfig, keySchema []resources.AWSDynamoDBTable_KeySchema) []string {
 	attributeNames := []string{}
 	for _, ks := range keySchema {
 		if _, ok := config.Schema.Properties[ks.AttributeName]; ok {

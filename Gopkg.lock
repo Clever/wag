@@ -102,11 +102,16 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:d408c1325232c6ea492ceab7e304cd731190e71569369860ea91b88b88b45606"
+  digest = "1:ce94620c11095a867f0ad235767767ff1b2458bed8af4e1f78d6b2c31664a933"
   name = "github.com/awslabs/goformation"
-  packages = ["cloudformation"]
+  packages = [
+    "cloudformation",
+    "cloudformation/policies",
+    "cloudformation/resources",
+    "intrinsics",
+  ]
   pruneopts = ""
-  revision = "6b6bb4f2ae8f85e805aa695b8f18db881234effd"
+  revision = "4c9158b21dce759adde6c6cd49628764834ea390"
 
 [[projects]]
   branch = "master"
@@ -303,6 +308,14 @@
   revision = "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8"
 
 [[projects]]
+  digest = "1:31bfd110d31505e9ffbc9478e31773bf05bf02adcaeb9b139af42684f9294c13"
+  name = "github.com/imdario/mergo"
+  packages = ["."]
+  pruneopts = ""
+  revision = "7c29201646fa3de8506f701213473dd407f19646"
+  version = "v0.3.7"
+
+[[projects]]
   digest = "1:6f49eae0c1e5dab1dafafee34b207aeb7a42303105960944828c2079b92fc88e"
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
@@ -396,6 +409,14 @@
   pruneopts = ""
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
   version = "v1.0.0"
+
+[[projects]]
+  branch = "v2"
+  digest = "1:7568f79067cb0c23544a5f970fd70c4497d75a28f9f0dec3fbc9aa8d1b35760d"
+  name = "github.com/sanathkr/go-yaml"
+  packages = ["."]
+  pruneopts = ""
+  revision = "ed9d249f429b3f5a69f80a7abef6bfce81fef894"
 
 [[projects]]
   digest = "1:b13707423743d41665fd23f0c36b2f37bb49c30e94adb813319c44188a51ba22"
