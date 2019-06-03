@@ -253,12 +253,12 @@
   revision = "180bba53b98899f743a112e568bed9e2ef31aa20"
 
 [[projects]]
-  digest = "1:f64be68abbc3e6c4c4196d7d6f1a6eb6b37a2c7ef5745860d7e2906892ce9cfc"
+  digest = "1:c9e06dc98d30e5ba69af9f659ad5a4e108f904606ce82a5993639a7fe6a2bef0"
   name = "github.com/go-swagger/go-swagger"
   packages = ["generator"]
   pruneopts = ""
-  revision = "b015bda48dfc648fdd95e7bc81dbb5cefc17c975"
-  version = "0.13.0"
+  revision = "51061fa3be377b2ef34c70d14d2058b467009eb4"
+  version = "v0.19.0"
 
 [[projects]]
   branch = "master"
