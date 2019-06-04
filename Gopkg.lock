@@ -171,11 +171,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:d555eeb1913f41ba95a0493c07154dbae62d9d54f5624dd24f1809059cce6129"
+  digest = "1:75a2e2c375fc9ec767aca92c903a3a18c8f0f88ae54cae24c94b37f466c5a27f"
   name = "github.com/go-openapi/errors"
   packages = ["."]
   pruneopts = ""
-  revision = "7bcb96a367bac6b76e6e42fa84155bb5581dcff8"
+  revision = "df3fda67a4c851b789d9b34a92cb0edef5734e2c"
 
 [[projects]]
   branch = "master"
