@@ -146,6 +146,17 @@
   version = "v1.4.7"
 
 [[projects]]
+  branch = "master"
+  digest = "1:e9ffb9315dce0051beb757d0f0fc25db57c4da654efc4eada4ea109c2d9da815"
+  name = "github.com/globalsign/mgo"
+  packages = [
+    "bson",
+    "internal/json",
+  ]
+  pruneopts = ""
+  revision = "eeefdecb41b842af6dc652aaea4026e8403e62df"
+
+[[projects]]
   digest = "1:e424c4e8ca4d251ecec17ae6520040812a204ad934bd5e11a6d8cc088a004e68"
   name = "github.com/go-errors/errors"
   packages = ["."]
@@ -230,11 +241,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:6e3b82c0852d549bb711623b7a3e71d586912fc7fa3642d9b4d9f983b219d204"
+  digest = "1:f3fea4557fe2b627cfd435d3108ed084c7c2978bacf02f08ebc6f27b1a5f3e9f"
   name = "github.com/go-openapi/strfmt"
   packages = ["."]
   pruneopts = ""
-  revision = "6d1a47fad79c81e8cd732889cb80e91123951860"
+  revision = "e87a5af342a82041de4ee5ee9a6b306db7cb1d3b"
 
 [[projects]]
   branch = "master"
