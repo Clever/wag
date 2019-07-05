@@ -230,11 +230,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:6e3b82c0852d549bb711623b7a3e71d586912fc7fa3642d9b4d9f983b219d204"
+  digest = "1:35dabc22cec2c6b23b0a446b34c2bcff40f72b64e0d5ed1c9ee06729d7d0e100"
   name = "github.com/go-openapi/strfmt"
   packages = ["."]
   pruneopts = ""
-  revision = "6d1a47fad79c81e8cd732889cb80e91123951860"
+  revision = "6faa644e1cdafc07f7b38eb06c1af5f92128f289"
 
 [[projects]]
   branch = "master"
@@ -251,6 +251,14 @@
   packages = ["."]
   pruneopts = ""
   revision = "180bba53b98899f743a112e568bed9e2ef31aa20"
+
+[[projects]]
+  digest = "1:a01080d20c45c031c13f3828c56e58f4f51d926a482ad10cc0316225097eb7ea"
+  name = "github.com/go-stack/stack"
+  packages = ["."]
+  pruneopts = ""
+  revision = "2fee6af1a9795aafbe0253a0cfbdf668e1fb8a9a"
+  version = "v1.8.0"
 
 [[projects]]
   digest = "1:f64be68abbc3e6c4c4196d7d6f1a6eb6b37a2c7ef5745860d7e2906892ce9cfc"
@@ -549,6 +557,21 @@
   packages = ["."]
   pruneopts = ""
   revision = "8bcffc811467a5f691810420385be6e66b35a317"
+
+[[projects]]
+  digest = "1:52376909e3b93cfc66ff439bdf9a7bf88783a0017ceded23c3f1c76b9f7e10ee"
+  name = "go.mongodb.org/mongo-driver"
+  packages = [
+    "bson",
+    "bson/bsoncodec",
+    "bson/bsonrw",
+    "bson/bsontype",
+    "bson/primitive",
+    "x/bsonx/bsoncore",
+  ]
+  pruneopts = ""
+  revision = "582ff343271e8893d785ff094855498c285bce0a"
+  version = "v1.0.3"
 
 [[projects]]
   branch = "master"
