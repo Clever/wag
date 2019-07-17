@@ -1300,24 +1300,18 @@ func defFromRef(ref string) (string, error) {
 		"Must start with #/definitions or #/responses.", ref)
 }
 
-const typescriptTmplStr = `import { Span } from "opentracing";
+const typescriptTmplStr = `import { Span, Tracer } from "opentracing";
 import { Logger } from "kayvee";
 
 interface RetryPolicy {
-  backoffs(): number[],
-  retry(requestOptions: {method: string}, err: Error, res: {statusCode: number}): boolean,
-}
-
-interface RetryPolicies {
-  Single: RetryPolicy,
-  Exponential: RetryPolicy,
-  None: RetryPolicy,
+  backoffs(): number[];
+  retry(requestOptions: {method: string}, err: Error, res: {statusCode: number}): boolean;
 }
 
 interface RequestOptions {
-  timeout?: number,
-  span?: Span,
-  retryPolicy?: RetryPolicy
+  timeout?: number;
+  span?: Span;
+  retryPolicy?: RetryPolicy;
 }
 
 type Callback<R> = (err: Error, result: R) => void;
@@ -1329,24 +1323,26 @@ interface IterResult<R> {
 }
 
 interface CallOptions {
-  timeout?: number,
-  span?: Span,
-  retryPolicy?: RetryPolicy,
+  timeout?: number;
+  span?: Span;
+  retryPolicy?: RetryPolicy;
 }
 
 interface CircuitOptions {
-  forceClosed: boolean;
-  maxConcurrentRequests: number;
-  requestVolumeThreshold: number;
-  sleepWindow: number;
-  errorPercentThreshold: number;
+  forceClosed?: boolean;
+  maxConcurrentRequests?: number;
+  requestVolumeThreshold?: number;
+  sleepWindow?: number;
+  errorPercentThreshold?: number;
 }
 
 interface GenericOptions {
-  timeout: number;
-  keepalive: boolean;
-  retryPolicy: RetryPolicy;
-  logger: Logger;
+  timeout?: number;
+  keepalive?: boolean;
+  retryPolicy?: RetryPolicy;
+	logger?: Logger;
+	tracer?: Tracer;
+	circuit?: CircuitOptions;
 }
 
 interface DiscoveryOptions {
@@ -1373,6 +1369,14 @@ declare class {{.ServiceName}} {
 }
 
 declare namespace {{.ServiceName}} {
+  const RetryPolicies: {
+    Single: RetryPolicy;
+    Exponential: RetryPolicy;
+    None: RetryPolicy;
+  }
+
+  const DefaultCircuitOptions: CircuitOptions;
+
   namespace Errors {
 		{{range .ErrorTypes}}
 		{{.}}
