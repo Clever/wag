@@ -69,7 +69,7 @@ func Generate(modulePath string, s spec.Swagger) error {
 		return err
 	}
 
-	if err = ioutil.WriteFile(filepath.Join(modulePath, "errors.js"), []byte(errorsJS), 0644); err != nil {
+	if err = ioutil.WriteFile(filepath.Join(modulePath, "types.js"), []byte(errorsJS), 0644); err != nil {
 		return err
 	}
 
@@ -106,7 +106,7 @@ const RollingNumberEvent = require("hystrixjs/lib/metrics/RollingNumberEvent");
  * @see {@link https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html}
  */
 
-const { Errors } = require("./errors");
+const { Errors } = require("./types");
 
 /**
  * The exponential retry policy will retry five times with an exponential backoff.
