@@ -1079,6 +1079,11 @@ func methodDecl(s spec.Swagger, op *spec.Operation, path, method string) (string
 		methodName, params, returnType, returnType)
 
 	if _, hasPaging := swagger.PagingParam(op); hasPaging {
+		resourcePath := swagger.PagingResourcePath(op)
+		for _, ident := range resourcePath {
+			returnType += JSType(fmt.Sprintf("[\"%s\"]", ident))
+		}
+		returnType = "ArrayInner<" + returnType + ">"
 		methodDecl += fmt.Sprintf("\n  %s(%soptions: RequestOptions): IterResult<%s>", methodName+"Iter", params, returnType)
 	}
 	return methodDecl, nil
@@ -1303,6 +1308,9 @@ func defFromRef(ref string) (string, error) {
 const typescriptTmplStr = `import { Span, Tracer } from "opentracing";
 import { Logger } from "kayvee";
 
+type Callback<R> = (err: Error, result: R) => void;
+type ArrayInner<R> = R extends (infer T)[] ? T : never;
+
 interface RetryPolicy {
   backoffs(): number[];
   retry(requestOptions: {method: string}, err: Error, res: {statusCode: number}): boolean;
@@ -1313,8 +1321,6 @@ interface RequestOptions {
   span?: Span;
   retryPolicy?: RetryPolicy;
 }
-
-type Callback<R> = (err: Error, result: R) => void;
 
 interface IterResult<R> {
 	map<T>(f: (r: R) => T, cb?: Callback<T[]>): Promise<T[]>;

@@ -1,6 +1,9 @@
 import { Span, Tracer } from "opentracing";
 import { Logger } from "kayvee";
 
+type Callback<R> = (err: Error, result: R) => void;
+type ArrayInner<R> = R extends (infer T)[] ? T : never;
+
 interface RetryPolicy {
   backoffs(): number[];
   retry(requestOptions: {method: string}, err: Error, res: {statusCode: number}): boolean;
@@ -11,8 +14,6 @@ interface RequestOptions {
   span?: Span;
   retryPolicy?: RetryPolicy;
 }
-
-type Callback<R> = (err: Error, result: R) => void;
 
 interface IterResult<R> {
 	map<T>(f: (r: R) => T, cb?: Callback<T[]>): Promise<T[]>;

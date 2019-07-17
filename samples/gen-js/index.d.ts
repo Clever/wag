@@ -1,6 +1,9 @@
 import { Span, Tracer } from "opentracing";
 import { Logger } from "kayvee";
 
+type Callback<R> = (err: Error, result: R) => void;
+type ArrayInner<R> = R extends (infer T)[] ? T : never;
+
 interface RetryPolicy {
   backoffs(): number[];
   retry(requestOptions: {method: string}, err: Error, res: {statusCode: number}): boolean;
@@ -11,8 +14,6 @@ interface RequestOptions {
   span?: Span;
   retryPolicy?: RetryPolicy;
 }
-
-type Callback<R> = (err: Error, result: R) => void;
 
 interface IterResult<R> {
 	map<T>(f: (r: R) => T, cb?: Callback<T[]>): Promise<T[]>;
@@ -138,13 +139,13 @@ declare class SwaggerTest {
 
   
   getAuthors(params: GetAuthorsParams, options?: RequestOptions, cb?: Callback<AuthorsResponse>): Promise<AuthorsResponse>
-  getAuthorsIter(params: GetAuthorsParams, options: RequestOptions): IterResult<AuthorsResponse>
+  getAuthorsIter(params: GetAuthorsParams, options: RequestOptions): IterResult<ArrayInner<AuthorsResponse["authorSet"]["results"]>>
   
   getAuthorsWithPut(params: GetAuthorsWithPutParams, options?: RequestOptions, cb?: Callback<AuthorsResponse>): Promise<AuthorsResponse>
-  getAuthorsWithPutIter(params: GetAuthorsWithPutParams, options: RequestOptions): IterResult<AuthorsResponse>
+  getAuthorsWithPutIter(params: GetAuthorsWithPutParams, options: RequestOptions): IterResult<ArrayInner<AuthorsResponse["authorSet"]["results"]>>
   
   getBooks(params: GetBooksParams, options?: RequestOptions, cb?: Callback<Book[]>): Promise<Book[]>
-  getBooksIter(params: GetBooksParams, options: RequestOptions): IterResult<Book[]>
+  getBooksIter(params: GetBooksParams, options: RequestOptions): IterResult<ArrayInner<Book[]>>
   
   createBook(newBook: Book, options?: RequestOptions, cb?: Callback<Book>): Promise<Book>
   
