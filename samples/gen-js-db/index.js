@@ -11,7 +11,7 @@ const RollingNumberEvent = require("hystrixjs/lib/metrics/RollingNumberEvent");
  * @see {@link https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html}
  */
 
-const { Errors } = require("./errors");
+const { Errors } = require("./types");
 
 /**
  * The exponential retry policy will retry five times with an exponential backoff.
