@@ -146,7 +146,7 @@ type ThingWithRequiredFields2 = {
 };
 
 type ThingWithUnderscores = {
-  idApp?: string;
+  id_app?: string;
 };
 
 declare class SwaggerTest {

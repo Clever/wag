@@ -1272,11 +1272,10 @@ func asJSType(schema *spec.Schema) (JSType, error) {
 			if err != nil {
 				return JSType(""), err
 			}
-			jsKey := utils.CamelCase(k, false)
 			if _, ok := requiredFields[k]; ok {
-				fieldsStrings = append(fieldsStrings, fmt.Sprintf("%s: %s;", jsKey, t))
+				fieldsStrings = append(fieldsStrings, fmt.Sprintf("%s: %s;", k, t))
 			} else {
-				fieldsStrings = append(fieldsStrings, fmt.Sprintf("%s?: %s;", jsKey, t))
+				fieldsStrings = append(fieldsStrings, fmt.Sprintf("%s?: %s;", k, t))
 			}
 		}
 
