@@ -73,7 +73,7 @@ required = ["github.com/tmthrgd/go-bindata", "github.com/golang/mock/mockgen"]
 
 [[constraint]]
   name = "github.com/uber/jaeger-client-go"
-  branch = "master"
+  version = "2.16.0"
 
 [[constraint]]
   name = "github.com/opentracing/opentracing-go"
@@ -89,7 +89,7 @@ required = ["github.com/tmthrgd/go-bindata", "github.com/golang/mock/mockgen"]
 
 [[constraint]]
   name = "gopkg.in/Clever/kayvee-go.v6"
-  version = "6.0.0"
+  version = "^6.17.0"
 
 [[constraint]]
   name = "gopkg.in/mgo.v2"
