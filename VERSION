@@ -1,3 +1,4 @@
-v3.1.0
+v3.2.0
+- wag servers will now send traces to a local jaeger daemon when executing locally
 - request-finished logs now include error frames if using xerrors
 - wag.mk no longer installs mockgen and generates mocks, this is now up to users

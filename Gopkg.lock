@@ -105,21 +105,11 @@
   digest = "1:ce94620c11095a867f0ad235767767ff1b2458bed8af4e1f78d6b2c31664a933"
   name = "github.com/awslabs/goformation"
   packages = [
-    "cloudformation",
     "cloudformation/policies",
     "cloudformation/resources",
-    "intrinsics",
   ]
   pruneopts = ""
   revision = "4c9158b21dce759adde6c6cd49628764834ea390"
-
-[[projects]]
-  branch = "master"
-  digest = "1:c46fd324e7902268373e1b337436a6377c196e2dbd7b35624c6256d29d494e78"
-  name = "github.com/codahale/hdrhistogram"
-  packages = ["."]
-  pruneopts = ""
-  revision = "3a0bb77429bd3a61596f5e8a3172445844342120"
 
 [[projects]]
   digest = "1:56c130d885a4aacae1dd9c7b71cfe39912c7ebc1ff7d2b46083c8812996dc43b"
@@ -316,14 +306,6 @@
   revision = "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8"
 
 [[projects]]
-  digest = "1:31bfd110d31505e9ffbc9478e31773bf05bf02adcaeb9b139af42684f9294c13"
-  name = "github.com/imdario/mergo"
-  packages = ["."]
-  pruneopts = ""
-  revision = "7c29201646fa3de8506f701213473dd407f19646"
-  version = "v0.3.7"
-
-[[projects]]
   digest = "1:6f49eae0c1e5dab1dafafee34b207aeb7a42303105960944828c2079b92fc88e"
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
@@ -419,22 +401,6 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "v2"
-  digest = "1:7568f79067cb0c23544a5f970fd70c4497d75a28f9f0dec3fbc9aa8d1b35760d"
-  name = "github.com/sanathkr/go-yaml"
-  packages = ["."]
-  pruneopts = ""
-  revision = "ed9d249f429b3f5a69f80a7abef6bfce81fef894"
-
-[[projects]]
-  digest = "1:b13707423743d41665fd23f0c36b2f37bb49c30e94adb813319c44188a51ba22"
-  name = "github.com/sanathkr/yaml"
-  packages = ["."]
-  pruneopts = ""
-  revision = "0ca9ea5df5451ffdf184b4428c902747c2c11cd7"
-  version = "v1.0.0"
-
-[[projects]]
   digest = "1:dae0d7dd55563fd389e7263a32d2030022ef29cceff941336e53f6520e0308c0"
   name = "github.com/spf13/afero"
   packages = [
@@ -501,8 +467,7 @@
   revision = "6fbf6c8bd45cf2d4189179ca4e92bb7438db4a93"
 
 [[projects]]
-  branch = "master"
-  digest = "1:ac499437c67827082d1921fc4801d9e1ec48390e1c5df95b3d52581e41540651"
+  digest = "1:92c0006b9a06518452bad6275babc396a0b9afcdfe870d5494fe67a2beb6c2be"
   name = "github.com/uber/jaeger-client-go"
   packages = [
     ".",
@@ -524,15 +489,16 @@
     "utils",
   ]
   pruneopts = ""
-  revision = "84fe9bc9ad17d9a4bcf8e4387026088ac55664e2"
+  revision = "2f47546e3facd43297739439600bcf43f44cce5d"
+  version = "v2.16.0"
 
 [[projects]]
-  digest = "1:aa1598d34009b45ce74fdabdd25e4258d7923d1e1b418d4c98482e79607cb9b0"
+  digest = "1:2e2e1bf63381476d203354c0c3c4692d103e8d02ea2bfafe8e3f80a04c925b87"
   name = "github.com/uber/jaeger-lib"
   packages = ["metrics"]
   pruneopts = ""
-  revision = "ed3a127ec5fef7ae9ea95b01b542c47fbd999ce5"
-  version = "v1.5.0"
+  revision = "0e30338a695636fe5bcf7301e8030ce8dd2a8530"
+  version = "v2.0.0"
 
 [[projects]]
   branch = "master"
@@ -648,7 +614,7 @@
   revision = "3ee3066db522c6628d440a3a91c4abdd7f5ef22f"
 
 [[projects]]
-  digest = "1:a4def2c682400fa6cbe31fd23cd3a698114b09fdfddb9f88b0c193245178ac47"
+  digest = "1:ebe5a08de85b249031c22bdf7ea4120be2b8e4751cb647ef8aa829774aa87225"
   name = "gopkg.in/Clever/kayvee-go.v6"
   packages = [
     ".",
@@ -657,8 +623,8 @@
     "router",
   ]
   pruneopts = ""
-  revision = "e1e6fd8184162847c1123645e7058347a2fd3959"
-  version = "v6.10.0"
+  revision = "1e2557bcbd6982e6303c364505d1c129ede8f2ee"
+  version = "v6.17.0"
 
 [[projects]]
   branch = "v2"
@@ -694,54 +660,21 @@
     "github.com/Clever/discovery-go",
     "github.com/Clever/go-process-metrics/metrics",
     "github.com/Clever/go-utils/stringset",
-    "github.com/PuerkitoBio/purell",
-    "github.com/PuerkitoBio/urlesc",
     "github.com/afex/hystrix-go/hystrix",
-    "github.com/afex/hystrix-go/hystrix/metric_collector",
-    "github.com/afex/hystrix-go/hystrix/rolling",
-    "github.com/asaskevich/govalidator",
     "github.com/aws/aws-sdk-go/aws",
     "github.com/aws/aws-sdk-go/aws/awserr",
-    "github.com/aws/aws-sdk-go/aws/awsutil",
-    "github.com/aws/aws-sdk-go/aws/client",
-    "github.com/aws/aws-sdk-go/aws/client/metadata",
-    "github.com/aws/aws-sdk-go/aws/corehandlers",
     "github.com/aws/aws-sdk-go/aws/credentials",
-    "github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds",
-    "github.com/aws/aws-sdk-go/aws/credentials/endpointcreds",
-    "github.com/aws/aws-sdk-go/aws/credentials/stscreds",
-    "github.com/aws/aws-sdk-go/aws/defaults",
-    "github.com/aws/aws-sdk-go/aws/ec2metadata",
-    "github.com/aws/aws-sdk-go/aws/endpoints",
-    "github.com/aws/aws-sdk-go/aws/request",
     "github.com/aws/aws-sdk-go/aws/session",
-    "github.com/aws/aws-sdk-go/aws/signer/v4",
-    "github.com/aws/aws-sdk-go/private/protocol",
-    "github.com/aws/aws-sdk-go/private/protocol/json/jsonutil",
-    "github.com/aws/aws-sdk-go/private/protocol/jsonrpc",
-    "github.com/aws/aws-sdk-go/private/protocol/query",
-    "github.com/aws/aws-sdk-go/private/protocol/query/queryutil",
-    "github.com/aws/aws-sdk-go/private/protocol/rest",
-    "github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil",
     "github.com/aws/aws-sdk-go/service/dynamodb",
     "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute",
     "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface",
-    "github.com/aws/aws-sdk-go/service/sts",
-    "github.com/awslabs/goformation/cloudformation",
-    "github.com/codahale/hdrhistogram",
-    "github.com/davecgh/go-spew/spew",
+    "github.com/awslabs/goformation/cloudformation/resources",
     "github.com/donovanhide/eventsource",
-    "github.com/fsnotify/fsnotify",
     "github.com/go-errors/errors",
-    "github.com/go-ini/ini",
-    "github.com/go-openapi/analysis",
     "github.com/go-openapi/errors",
-    "github.com/go-openapi/inflect",
-    "github.com/go-openapi/jsonpointer",
     "github.com/go-openapi/jsonreference",
     "github.com/go-openapi/loads",
     "github.com/go-openapi/loads/fmts",
-    "github.com/go-openapi/runtime",
     "github.com/go-openapi/spec",
     "github.com/go-openapi/strfmt",
     "github.com/go-openapi/swag",
@@ -749,83 +682,22 @@
     "github.com/go-swagger/go-swagger/generator",
     "github.com/golang/mock/gomock",
     "github.com/golang/mock/mockgen",
-    "github.com/golang/mock/mockgen/model",
-    "github.com/gorilla/context",
     "github.com/gorilla/mux",
-    "github.com/hashicorp/hcl",
-    "github.com/hashicorp/hcl/hcl/ast",
-    "github.com/hashicorp/hcl/hcl/parser",
-    "github.com/hashicorp/hcl/hcl/printer",
-    "github.com/hashicorp/hcl/hcl/scanner",
-    "github.com/hashicorp/hcl/hcl/strconv",
-    "github.com/hashicorp/hcl/hcl/token",
-    "github.com/hashicorp/hcl/json/parser",
-    "github.com/hashicorp/hcl/json/scanner",
-    "github.com/hashicorp/hcl/json/token",
-    "github.com/jmespath/go-jmespath",
     "github.com/kardianos/osext",
-    "github.com/kr/pretty",
-    "github.com/kr/text",
-    "github.com/magiconair/properties",
-    "github.com/mailru/easyjson/buffer",
-    "github.com/mailru/easyjson/jlexer",
-    "github.com/mailru/easyjson/jwriter",
-    "github.com/mitchellh/mapstructure",
     "github.com/opentracing/opentracing-go",
     "github.com/opentracing/opentracing-go/ext",
-    "github.com/opentracing/opentracing-go/log",
-    "github.com/pelletier/go-toml",
-    "github.com/pkg/errors",
-    "github.com/pmezard/go-difflib/difflib",
-    "github.com/sanathkr/yaml",
-    "github.com/spf13/afero",
-    "github.com/spf13/afero/mem",
-    "github.com/spf13/cast",
-    "github.com/spf13/jwalterweatherman",
-    "github.com/spf13/pflag",
-    "github.com/spf13/viper",
     "github.com/stretchr/testify/assert",
     "github.com/stretchr/testify/require",
     "github.com/tmthrgd/go-bindata",
     "github.com/tmthrgd/go-bindata/restore",
     "github.com/uber/jaeger-client-go",
     "github.com/uber/jaeger-client-go/config",
-    "github.com/uber/jaeger-client-go/log",
-    "github.com/uber/jaeger-client-go/rpcmetrics",
-    "github.com/uber/jaeger-client-go/thrift",
-    "github.com/uber/jaeger-client-go/thrift-gen/agent",
-    "github.com/uber/jaeger-client-go/thrift-gen/baggage",
-    "github.com/uber/jaeger-client-go/thrift-gen/jaeger",
-    "github.com/uber/jaeger-client-go/thrift-gen/sampling",
-    "github.com/uber/jaeger-client-go/thrift-gen/zipkincore",
     "github.com/uber/jaeger-client-go/transport",
-    "github.com/uber/jaeger-client-go/utils",
-    "github.com/uber/jaeger-lib/metrics",
-    "github.com/xeipuuv/gojsonpointer",
-    "github.com/xeipuuv/gojsonreference",
-    "github.com/xeipuuv/gojsonschema",
-    "golang.org/x/net/context",
     "golang.org/x/net/context/ctxhttp",
-    "golang.org/x/net/idna",
-    "golang.org/x/sys/unix",
-    "golang.org/x/text/collate",
-    "golang.org/x/text/collate/build",
-    "golang.org/x/text/language",
-    "golang.org/x/text/secure/bidirule",
-    "golang.org/x/text/transform",
-    "golang.org/x/text/unicode/bidi",
-    "golang.org/x/text/unicode/cldr",
-    "golang.org/x/text/unicode/norm",
-    "golang.org/x/text/unicode/rangetable",
-    "golang.org/x/text/width",
     "golang.org/x/time/rate",
-    "golang.org/x/tools/go/ast/astutil",
-    "golang.org/x/tools/imports",
     "golang.org/x/xerrors",
-    "gopkg.in/Clever/kayvee-go.v6",
     "gopkg.in/Clever/kayvee-go.v6/logger",
     "gopkg.in/Clever/kayvee-go.v6/middleware",
-    "gopkg.in/Clever/kayvee-go.v6/router",
     "gopkg.in/mgo.v2/bson",
     "gopkg.in/tylerb/graceful.v1",
     "gopkg.in/yaml.v2",

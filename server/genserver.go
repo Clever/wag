@@ -46,12 +46,15 @@ package server
 // Code auto-generated. Do not edit.
 
 import (
+	"io"
 	"log"
 	"net/http"
-	_ "net/http/pprof"
 	"os"
-	"time"
 	"path"
+	"time"
+
+	// register pprof listener
+	_ "net/http/pprof"
 
 	"github.com/gorilla/mux"
 	opentracing "github.com/opentracing/opentracing-go"
@@ -95,22 +98,16 @@ func (s *Server) Serve() error {
 		s.l.Info("please provide a kvconfig.yml file to enable app log routing")
 	}
 
-	if tracingToken := os.Getenv("TRACING_ACCESS_TOKEN"); tracingToken != "" {
-		ingestUrl := os.Getenv("TRACING_INGEST_URL")
-		if ingestUrl == "" {
-			ingestUrl = "https://ingest.signalfx.com/v1/trace"
-		}
-
-		// Create a Jaeger HTTP Thrift transport
-		transport := transport.NewHTTPTransport(ingestUrl,
-			transport.HTTPBasicAuth("auth", tracingToken))
-
+	tracingToken := os.Getenv("TRACING_ACCESS_TOKEN")
+	ingestURL := os.Getenv("TRACING_INGEST_URL")
+	isLocal := os.Getenv("_IS_LOCAL") == "true"
+	if (tracingToken != "" && ingestURL != "") || isLocal {
 		// Add rate limited sampling. We will only sample [Param] requests per second
 		// and [MaxOperations] different endpoints. Any endpoint above the [MaxOperations]
 		// limit will be probabilistically sampled.
 		cfgSampler := &jaegercfg.SamplerConfig{
-			Type: jaeger.SamplerTypeRateLimiting,
-			Param: 5,
+			Type:          jaeger.SamplerTypeRateLimiting,
+			Param:         5,
 			MaxOperations: 100,
 		}
 		cfgTags := []opentracing.Tag{
@@ -122,19 +119,33 @@ func (s *Server) Serve() error {
 
 		cfg := &jaegercfg.Configuration{
 			ServiceName: "{{.Title}}",
-			Sampler: cfgSampler,
-			Tags: cfgTags,
+			Sampler:     cfgSampler,
+			Tags:        cfgTags,
 		}
 
-		signalfxTracer, closer, err := cfg.NewTracer(jaegercfg.Reporter(jaeger.NewRemoteReporter(transport)))
+		var tracer opentracing.Tracer
+		var closer io.Closer
+		if isLocal {
+			// when local, send everything and use the default params for the Jaeger collector
+			cfg.Sampler = &jaegercfg.SamplerConfig{
+				Type:  "const",
+				Param: 1.0,
+			}
+			tracer, closer, err = cfg.NewTracer()
+			s.l.InfoD("local-tracing", logger.M{"msg": "sending traces to default localhost jaeger address"})
+		} else {
+			// Create a Jaeger HTTP Thrift transport
+			transport := transport.NewHTTPTransport(ingestURL, transport.HTTPBasicAuth("auth", tracingToken))
+			tracer, closer, err = cfg.NewTracer(jaegercfg.Reporter(jaeger.NewRemoteReporter(transport)))
+		}
 		if err != nil {
-			log.Fatal("Could not initialize jaeger tracer: ", err.Error())
+			log.Fatalf("Could not initialize jaeger tracer: %s", err)
 		}
 		defer closer.Close()
 
-		opentracing.SetGlobalTracer(signalfxTracer)
+		opentracing.SetGlobalTracer(tracer)
 	} else {
-		s.l.Error("please set TRACING_ACCESS_TOKEN to enable tracing")
+		s.l.Error("please set TRACING_ACCESS_TOKEN & TRACING_INGEST_URL to enable tracing")
 	}
 
 	s.l.Counter("server-started")
