@@ -99,13 +99,9 @@ func (s *Server) Serve() error {
 	}
 
 	tracingToken := os.Getenv("TRACING_ACCESS_TOKEN")
+	ingestURL := os.Getenv("TRACING_INGEST_URL")
 	isLocal := os.Getenv("_IS_LOCAL") == "true"
-	if tracingToken != "" || isLocal {
-		ingestURL := os.Getenv("TRACING_INGEST_URL")
-		if ingestURL == "" {
-			ingestURL = "https://ingest.signalfx.com/v1/trace"
-		}
-
+	if (tracingToken != "" && ingestURL != "") || isLocal {
 		// Add rate limited sampling. We will only sample [Param] requests per second
 		// and [MaxOperations] different endpoints. Any endpoint above the [MaxOperations]
 		// limit will be probabilistically sampled.
@@ -149,7 +145,7 @@ func (s *Server) Serve() error {
 
 		opentracing.SetGlobalTracer(tracer)
 	} else {
-		s.l.Error("please set TRACING_ACCESS_TOKEN to enable tracing")
+		s.l.Error("please set TRACING_ACCESS_TOKEN & TRACING_INGEST_URL to enable tracing")
 	}
 
 	s.l.Counter("server-started")
