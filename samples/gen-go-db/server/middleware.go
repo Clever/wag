@@ -64,7 +64,7 @@ func WithTracingOpName(ctx context.Context, opName string) context.Context {
 	return ctx
 }
 
-// Tracing creates a new span named after the URL path of the request.
+// TracingMiddleware creates a new span named after the URL path of the request.
 // It places this span in the request context, for use by other handlers via opentracing.SpanFromContext()
 // If a span exists in request headers, the span created by this middleware will be a child of that span.
 func TracingMiddleware(h http.Handler) http.Handler {

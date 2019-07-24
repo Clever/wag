@@ -139,7 +139,7 @@ func (s *Server) Serve() error {
 			tracer, closer, err = cfg.NewTracer(jaegercfg.Reporter(jaeger.NewRemoteReporter(transport)))
 		}
 		if err != nil {
-			log.Fatalf("Could not initialize jaeger tracer: %s", err)
+			log.Fatalf("Could not initialize jaeger tracer: %%s", err)
 		}
 		defer closer.Close()
 
