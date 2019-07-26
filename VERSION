@@ -1,2 +1,3 @@
-v3.3.2
-- fix dynamodb paging to not pass loop variable
+v3.3.3
+- v3.3.3: include more tracing metadata
+- v3.3.2: fix dynamodb paging to not pass loop variable

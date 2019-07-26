@@ -115,10 +115,13 @@ func (s *Server) Serve() error {
 			opentracing.Tag{Key: "build_id", Value: os.Getenv("_BUILD_ID")},
 			opentracing.Tag{Key: "deploy_env", Value: os.Getenv("_DEPLOY_ENV")},
 			opentracing.Tag{Key: "team_owner", Value: os.Getenv("_TEAM_OWNER")},
+			opentracing.Tag{Key: "pod_id", Value: os.Getenv("_POD_ID")},
+			opentracing.Tag{Key: "pod_account", Value: os.Getenv("_POD_ACCOUNT")},
+			opentracing.Tag{Key: "pod_region", Value: os.Getenv("_POD_REGION")},
 		}
 
 		cfg := &jaegercfg.Configuration{
-			ServiceName: "{{.Title}}",
+			ServiceName: os.Getenv("_APP_NAME"),
 			Sampler:     cfgSampler,
 			Tags:        cfgTags,
 		}
@@ -314,6 +317,7 @@ var _ = errors.New
 var _ = mux.Vars
 var _ = bytes.Compare
 var _ = ioutil.ReadAll
+var _ = log.String
 
 {{.BaseStringToTypeCode}}
 
@@ -334,10 +338,14 @@ func jsonMarshalNoError(i interface{}) string {
 func generateHandlers(packageName string, s *spec.Swagger, paths *spec.Paths) error {
 
 	tmpl := handlerFileTemplate{
-		ImportStatements: swagger.ImportStatements([]string{"context", "github.com/gorilla/mux", "gopkg.in/Clever/kayvee-go.v6/logger",
+		ImportStatements: swagger.ImportStatements([]string{"context", "github.com/gorilla/mux",
+			"gopkg.in/Clever/kayvee-go.v6/logger",
 			"net/http", "strconv", "encoding/json", "strconv", "fmt", packageName + "/models",
 			"github.com/go-openapi/strfmt", "github.com/go-openapi/swag", "io/ioutil", "bytes",
-			"github.com/go-errors/errors", "golang.org/x/xerrors"}),
+			"github.com/go-errors/errors", "golang.org/x/xerrors",
+			"github.com/opentracing/opentracing-go",
+			"github.com/opentracing/opentracing-go/log",
+		}),
 		BaseStringToTypeCode: swagger.BaseStringToTypeCode(),
 	}
 
@@ -469,6 +477,8 @@ func statusCodeFor{{.Op}}(obj interface{}) int {
 }
 
 func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	sp := opentracing.SpanFromContext(ctx)
+	_ = sp
 {{if .HasParams}}
 	{{.InputVarName}}, err := new{{.Op}}Input(r)
 	if err != nil {
@@ -531,6 +541,9 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 	}
 
 {{if .SuccessReturnType}}
+	jsonSpan, _ := opentracing.StartSpanFromContext(ctx, "json-response-marshaling")
+	defer jsonSpan.Finish()
+
 	respBytes, err := json.MarshalIndent(resp, "", "\t")
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
@@ -551,6 +564,7 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 		}
 	{{end}}
 
+	sp.LogFields(log.Int("response-size-bytes", len(respBytes)))
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCodeFor{{.Op}}(resp))
 	w.Write(respBytes)
@@ -604,8 +618,11 @@ func generateNewInput(op *spec.Operation) (string, error) {
 		buf.WriteString(fmt.Sprintf("\tvar input models.%sInput\n\n", capOpID))
 	}
 
+	buf.WriteString(fmt.Sprintf("\tsp := opentracing.SpanFromContext(r.Context())\n"))
+	buf.WriteString(fmt.Sprintf("\t_ = sp\n\n"))
+
 	buf.WriteString(fmt.Sprintf("\tvar err error\n"))
-	buf.WriteString(fmt.Sprintf("\t_ = err\n\n"))
+	buf.WriteString(fmt.Sprintf("\t_ = err\n"))
 
 	for _, param := range op.Parameters {
 
@@ -750,8 +767,12 @@ var bodyParamTemplateStr = `
 	{{if .Required}} if len(data) == 0 {
 		return nil, errors.New("request body is required, but was empty")
 	}{{end}}
+	sp.LogFields(log.Int("request-size-bytes", len(data)))
 
 	if len(data) > 0 {
+		jsonSpan, _ := opentracing.StartSpanFromContext(r.Context(), "json-request-marshaling")
+		defer jsonSpan.Finish()
+
 		{{if eq (len .ParamField) 0}}
 			var input models.{{.TypeName}}
 			if err := json.NewDecoder(bytes.NewReader(data)).Decode(&input); err != nil {
