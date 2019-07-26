@@ -182,11 +182,11 @@ func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDA
 			return false
 		}
 		hasMore := true
-		for i, item := range items {
+		for i := range items {
 			if lastPage == true {
 				hasMore = i < len(items)-1
 			}
-			if !fn(&item, !hasMore) {
+			if !fn(&items[i], !hasMore) {
 				return false
 			}
 		}

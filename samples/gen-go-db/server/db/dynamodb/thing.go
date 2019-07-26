@@ -302,11 +302,11 @@ func (t ThingTable) getThingsByNameAndVersion(ctx context.Context, input db.GetT
 			return false
 		}
 		hasMore := true
-		for i, item := range items {
+		for i := range items {
 			if lastPage == true {
 				hasMore = i < len(items)-1
 			}
-			if !fn(&item, !hasMore) {
+			if !fn(&items[i], !hasMore) {
 				return false
 			}
 		}
@@ -453,11 +453,11 @@ func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.Ge
 			return false
 		}
 		hasMore := true
-		for i, item := range items {
+		for i := range items {
 			if lastPage == true {
 				hasMore = i < len(items)-1
 			}
-			if !fn(&item, !hasMore) {
+			if !fn(&items[i], !hasMore) {
 				return false
 			}
 		}
