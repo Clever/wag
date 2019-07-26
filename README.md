@@ -239,13 +239,17 @@ definitions:
 
 
 ### Tracing
-  `wag` instruments the context object with tracing-related metadata.
-  This is done via [opentracing](http://opentracing.io/).
-  In order for it to work, you are required to do two things:
 
-  * Add `TRACING_ACCESS_TOKEN` to your ark-config with the access token stored in the secret store. This will automatically report tracing data to [SignalFX](https://app.signalfx.com/#/trace/).
-  * By default we tag traces with `http.method`, `span.kind`, `http.url`, `http.status_code`, and `error`. For more information about what these tags mean see: https://github.com/opentracing/opentracing.io/blob/95b966bd6a6b2cf0f231260e3e1fa6206ede2151/_docs/pages/api/data-conventions.md#component-identification
-  * Pass the tracer as an option when initializing the client or on each API call to be traced
+`wag` instruments the context object with tracing-related metadata.
+This is done via [opentracing](http://opentracing.io/).
+In order for it to work, you are required to do two things:
+
+* Add `TRACING_ACCESS_TOKEN` & `TRACING_INGEST_URL` to your env config. This will automatically report tracing data to your tracing providor.
+* By default we tag traces with `http.method`, `span.kind`, `http.url`, `http.status_code`, and `error`. For more information about what these tags mean see: https://github.com/opentracing/opentracing.io/blob/95b966bd6a6b2cf0f231260e3e1fa6206ede2151/_docs/pages/api/data-conventions.md#component-identification
+* Pass the tracer as an option when initializing the client or on each API call to be traced
+
+You can edit the default sampling rate by including  a float value in the `TRACING_SAMPLING_RATE_PERCENT` env var.
+We sample 1% of requests by default.
 
 ## Using the Go Client
 Initialize the client with `New`
