@@ -8,6 +8,7 @@ import (
 
 	opentracing "github.com/opentracing/opentracing-go"
 	tags "github.com/opentracing/opentracing-go/ext"
+	opentracinglog "github.com/opentracing/opentracing-go/log"
 	"gopkg.in/Clever/kayvee-go.v6/logger"
 )
 
@@ -109,6 +110,7 @@ func TracingMiddleware(h http.Handler) http.Handler {
 		tags.HTTPMethod.Set(sp, r.Method)
 		tags.SpanKind.Set(sp, tags.SpanKindRPCServerEnum)
 		tags.HTTPUrl.Set(sp, r.URL.Path)
+		sp.LogFields(opentracinglog.String("url-query", r.URL.RawQuery))
 
 		defer func() {
 			tags.HTTPStatusCode.Set(sp, uint16(srw.status))

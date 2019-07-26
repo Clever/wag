@@ -14,6 +14,8 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/gorilla/mux"
+	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/log"
 	"golang.org/x/xerrors"
 	"gopkg.in/Clever/kayvee-go.v6/logger"
 )
@@ -25,6 +27,7 @@ var _ = errors.New
 var _ = mux.Vars
 var _ = bytes.Compare
 var _ = ioutil.ReadAll
+var _ = log.String
 
 var formats = strfmt.Default
 var _ = formats
@@ -92,6 +95,8 @@ func statusCodeForHealthCheck(obj interface{}) int {
 }
 
 func (h handler) HealthCheckHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	sp := opentracing.SpanFromContext(ctx)
+	_ = sp
 
 	err := h.HealthCheck(ctx)
 
@@ -119,6 +124,9 @@ func (h handler) HealthCheckHandler(ctx context.Context, w http.ResponseWriter, 
 // newHealthCheckInput takes in an http.Request an returns the input struct.
 func newHealthCheckInput(r *http.Request) (*models.HealthCheckInput, error) {
 	var input models.HealthCheckInput
+
+	sp := opentracing.SpanFromContext(r.Context())
+	_ = sp
 
 	var err error
 	_ = err

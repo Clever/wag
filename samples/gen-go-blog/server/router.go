@@ -72,10 +72,13 @@ func (s *Server) Serve() error {
 			opentracing.Tag{Key: "build_id", Value: os.Getenv("_BUILD_ID")},
 			opentracing.Tag{Key: "deploy_env", Value: os.Getenv("_DEPLOY_ENV")},
 			opentracing.Tag{Key: "team_owner", Value: os.Getenv("_TEAM_OWNER")},
+			opentracing.Tag{Key: "pod_id", Value: os.Getenv("_POD_ID")},
+			opentracing.Tag{Key: "pod_account", Value: os.Getenv("_POD_ACCOUNT")},
+			opentracing.Tag{Key: "pod_region", Value: os.Getenv("_POD_REGION")},
 		}
 
 		cfg := &jaegercfg.Configuration{
-			ServiceName: "blog",
+			ServiceName: os.Getenv("_APP_NAME"),
 			Sampler:     cfgSampler,
 			Tags:        cfgTags,
 		}
