@@ -70,6 +70,12 @@ import (
 	"github.com/uber/jaeger-client-go/transport"
 )
 
+const (
+	// lowerBoundRateLimiter determines the lower bound interval that we sample every operation.
+	// https://godoc.org/github.com/uber/jaeger-client-go#GuaranteedThroughputProbabilisticSampler
+	lowerBoundRateLimiter = 1.0 / 60 // 1 request/minute/operation
+)
+
 type contextKey struct{}
 
 // Server defines a HTTP server that implements the Controller interface.
@@ -105,7 +111,6 @@ func (s *Server) Serve() error {
 	isLocal := os.Getenv("_IS_LOCAL") == "true"
 	if (tracingToken != "" && ingestURL != "") || isLocal {
 		samplingRate := .01 // 1%% of requests
-		lowerBoundRateLimiter := 1.0 / 60 // 1 request/minute/operation
 
 		if samplingRateStr := os.Getenv("TRACING_SAMPLING_RATE_PERCENT"); samplingRateStr != "" {
 			samplingRateP, err := strconv.ParseFloat(samplingRateStr, 64)
