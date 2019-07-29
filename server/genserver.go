@@ -46,11 +46,13 @@ package server
 // Code auto-generated. Do not edit.
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"path"
+	"strconv"
 	"time"
 
 	// register pprof listener
@@ -63,9 +65,15 @@ import (
 	"gopkg.in/tylerb/graceful.v1"
 	"github.com/Clever/go-process-metrics/metrics"
 	"github.com/kardianos/osext"
-	"github.com/uber/jaeger-client-go"
+	jaeger "github.com/uber/jaeger-client-go"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
 	"github.com/uber/jaeger-client-go/transport"
+)
+
+const (
+	// lowerBoundRateLimiter determines the lower bound interval that we sample every operation.
+	// https://godoc.org/github.com/uber/jaeger-client-go#GuaranteedThroughputProbabilisticSampler
+	lowerBoundRateLimiter = 1.0 / 60 // 1 request/minute/operation
 )
 
 type contextKey struct{}
@@ -102,28 +110,39 @@ func (s *Server) Serve() error {
 	ingestURL := os.Getenv("TRACING_INGEST_URL")
 	isLocal := os.Getenv("_IS_LOCAL") == "true"
 	if (tracingToken != "" && ingestURL != "") || isLocal {
-		// Add rate limited sampling. We will only sample [Param] requests per second
-		// and [MaxOperations] different endpoints. Any endpoint above the [MaxOperations]
-		// limit will be probabilistically sampled.
-		cfgSampler := &jaegercfg.SamplerConfig{
-			Type:          jaeger.SamplerTypeRateLimiting,
-			Param:         5,
-			MaxOperations: 100,
+		samplingRate := .01 // 1%% of requests
+
+		if samplingRateStr := os.Getenv("TRACING_SAMPLING_RATE_PERCENT"); samplingRateStr != "" {
+			samplingRateP, err := strconv.ParseFloat(samplingRateStr, 64)
+			if err != nil {
+				s.l.ErrorD("tracing-sampling-override-failed", logger.M{
+					"msg": fmt.Sprintf("could not parse '%%s' to integer", samplingRateStr),
+				})
+			} else {
+				samplingRate = samplingRateP
+			}
+
+			s.l.InfoD("tracing-sampling-rate", logger.M{
+				"msg": fmt.Sprintf("sampling rate will be %%.3f", samplingRate),
+			})
 		}
-		cfgTags := []opentracing.Tag{
-			opentracing.Tag{Key: "app_name", Value: os.Getenv("_APP_NAME")},
-			opentracing.Tag{Key: "build_id", Value: os.Getenv("_BUILD_ID")},
-			opentracing.Tag{Key: "deploy_env", Value: os.Getenv("_DEPLOY_ENV")},
-			opentracing.Tag{Key: "team_owner", Value: os.Getenv("_TEAM_OWNER")},
-			opentracing.Tag{Key: "pod_id", Value: os.Getenv("_POD_ID")},
-			opentracing.Tag{Key: "pod_account", Value: os.Getenv("_POD_ACCOUNT")},
-			opentracing.Tag{Key: "pod_region", Value: os.Getenv("_POD_REGION")},
+
+		sampler, err := jaeger.NewGuaranteedThroughputProbabilisticSampler(lowerBoundRateLimiter, samplingRate)
+		if err != nil {
+			return fmt.Errorf("failed to build jaeger sampler: %%s", err)
 		}
 
 		cfg := &jaegercfg.Configuration{
 			ServiceName: os.Getenv("_APP_NAME"),
-			Sampler:     cfgSampler,
-			Tags:        cfgTags,
+			Tags:        []opentracing.Tag{
+				opentracing.Tag{Key: "app_name", Value: os.Getenv("_APP_NAME")},
+				opentracing.Tag{Key: "build_id", Value: os.Getenv("_BUILD_ID")},
+				opentracing.Tag{Key: "deploy_env", Value: os.Getenv("_DEPLOY_ENV")},
+				opentracing.Tag{Key: "team_owner", Value: os.Getenv("_TEAM_OWNER")},
+				opentracing.Tag{Key: "pod_id", Value: os.Getenv("_POD_ID")},
+				opentracing.Tag{Key: "pod_account", Value: os.Getenv("_POD_ACCOUNT")},
+				opentracing.Tag{Key: "pod_region", Value: os.Getenv("_POD_REGION")},
+			},
 		}
 
 		var tracer opentracing.Tracer
@@ -139,7 +158,9 @@ func (s *Server) Serve() error {
 		} else {
 			// Create a Jaeger HTTP Thrift transport
 			transport := transport.NewHTTPTransport(ingestURL, transport.HTTPBasicAuth("auth", tracingToken))
-			tracer, closer, err = cfg.NewTracer(jaegercfg.Reporter(jaeger.NewRemoteReporter(transport)))
+			tracer, closer, err = cfg.NewTracer(
+				jaegercfg.Reporter(jaeger.NewRemoteReporter(transport)),
+				jaegercfg.Sampler(sampler))
 		}
 		if err != nil {
 			log.Fatalf("Could not initialize jaeger tracer: %%s", err)
