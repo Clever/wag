@@ -195,7 +195,7 @@ func (t {{ $modelName }}Table) get{{ $modelName }}(ctx context.Context,
 	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
 		Key:       key,
 		TableName: aws.String(t.name()),
-    ConsistentRead: aws.Bool(true),
+		ConsistentRead: aws.Bool(true),
 	})
 	{{- if $xdbConfig.AllowOverwrites }}
 	if err != nil {
