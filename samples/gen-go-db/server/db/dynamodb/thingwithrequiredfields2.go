@@ -116,8 +116,9 @@ func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2(ctx context.C
 		return nil, err
 	}
 	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
-		Key:       key,
-		TableName: aws.String(t.name()),
+		Key:            key,
+		TableName:      aws.String(t.name()),
+		ConsistentRead: aws.Bool(true),
 	})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {

@@ -96,8 +96,9 @@ func (t ThingWithDateRangeTable) getThingWithDateRange(ctx context.Context, name
 		return nil, err
 	}
 	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
-		Key:       key,
-		TableName: aws.String(t.name()),
+		Key:            key,
+		TableName:      aws.String(t.name()),
+		ConsistentRead: aws.Bool(true),
 	})
 	if err != nil {
 		return nil, err
