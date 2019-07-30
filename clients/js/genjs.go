@@ -1084,7 +1084,7 @@ func methodDecl(s spec.Swagger, op *spec.Operation, path, method string) (string
 			returnType += JSType(fmt.Sprintf("[\"%s\"]", ident))
 		}
 		returnType = "ArrayInner<" + returnType + ">"
-		methodDecl += fmt.Sprintf("\n  %s(%soptions: RequestOptions): IterResult<%s>", methodName+"Iter", params, returnType)
+		methodDecl += fmt.Sprintf("\n  %s(%soptions?: RequestOptions): IterResult<%s>", methodName+"Iter", params, returnType)
 	}
 	return methodDecl, nil
 }
@@ -1322,9 +1322,9 @@ interface RequestOptions {
 }
 
 interface IterResult<R> {
-	map<T>(f: (r: R) => T, cb?: Callback<T[]>): Promise<T[]>;
-	toArray(cb?: Callback<R[]>): Promise<R[]>;
-	forEach(f: (r: R) => void, cb?: Callback<void>): Promise<void>;
+  map<T>(f: (r: R) => T, cb?: Callback<T[]>): Promise<T[]>;
+  toArray(cb?: Callback<R[]>): Promise<R[]>;
+  forEach(f: (r: R) => void, cb?: Callback<void>): Promise<void>;
 }
 
 interface CallOptions {
@@ -1345,9 +1345,9 @@ interface GenericOptions {
   timeout?: number;
   keepalive?: boolean;
   retryPolicy?: RetryPolicy;
-	logger?: Logger;
-	tracer?: Tracer;
-	circuit?: CircuitOptions;
+  logger?: Logger;
+  tracer?: Tracer;
+  circuit?: CircuitOptions;
 }
 
 interface DiscoveryOptions {
@@ -1383,9 +1383,9 @@ declare namespace {{.ServiceName}} {
   const DefaultCircuitOptions: CircuitOptions;
 
   namespace Errors {
-		{{range .ErrorTypes}}
-		{{.}}
-		{{end}}
+    {{range .ErrorTypes}}
+    {{.}}
+    {{end}}
   }
 }
 

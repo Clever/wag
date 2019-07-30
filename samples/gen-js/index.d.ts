@@ -16,9 +16,9 @@ interface RequestOptions {
 }
 
 interface IterResult<R> {
-	map<T>(f: (r: R) => T, cb?: Callback<T[]>): Promise<T[]>;
-	toArray(cb?: Callback<R[]>): Promise<R[]>;
-	forEach(f: (r: R) => void, cb?: Callback<void>): Promise<void>;
+  map<T>(f: (r: R) => T, cb?: Callback<T[]>): Promise<T[]>;
+  toArray(cb?: Callback<R[]>): Promise<R[]>;
+  forEach(f: (r: R) => void, cb?: Callback<void>): Promise<void>;
 }
 
 interface CallOptions {
@@ -39,9 +39,9 @@ interface GenericOptions {
   timeout?: number;
   keepalive?: boolean;
   retryPolicy?: RetryPolicy;
-	logger?: Logger;
-	tracer?: Tracer;
-	circuit?: CircuitOptions;
+  logger?: Logger;
+  tracer?: Tracer;
+  circuit?: CircuitOptions;
 }
 
 interface DiscoveryOptions {
@@ -139,13 +139,13 @@ declare class SwaggerTest {
 
   
   getAuthors(params: GetAuthorsParams, options?: RequestOptions, cb?: Callback<AuthorsResponse>): Promise<AuthorsResponse>
-  getAuthorsIter(params: GetAuthorsParams, options: RequestOptions): IterResult<ArrayInner<AuthorsResponse["authorSet"]["results"]>>
+  getAuthorsIter(params: GetAuthorsParams, options?: RequestOptions): IterResult<ArrayInner<AuthorsResponse["authorSet"]["results"]>>
   
   getAuthorsWithPut(params: GetAuthorsWithPutParams, options?: RequestOptions, cb?: Callback<AuthorsResponse>): Promise<AuthorsResponse>
-  getAuthorsWithPutIter(params: GetAuthorsWithPutParams, options: RequestOptions): IterResult<ArrayInner<AuthorsResponse["authorSet"]["results"]>>
+  getAuthorsWithPutIter(params: GetAuthorsWithPutParams, options?: RequestOptions): IterResult<ArrayInner<AuthorsResponse["authorSet"]["results"]>>
   
   getBooks(params: GetBooksParams, options?: RequestOptions, cb?: Callback<Book[]>): Promise<Book[]>
-  getBooksIter(params: GetBooksParams, options: RequestOptions): IterResult<ArrayInner<Book[]>>
+  getBooksIter(params: GetBooksParams, options?: RequestOptions): IterResult<ArrayInner<Book[]>>
   
   createBook(newBook: Book, options?: RequestOptions, cb?: Callback<Book>): Promise<Book>
   
@@ -169,24 +169,24 @@ declare namespace SwaggerTest {
   const DefaultCircuitOptions: CircuitOptions;
 
   namespace Errors {
-		
-		class BadRequest {
+    
+    class BadRequest {
   message?: string;
 }
-		
-		class InternalError {
+    
+    class InternalError {
   message?: string;
 }
-		
-		class Unathorized {
+    
+    class Unathorized {
   message?: string;
 }
-		
-		class Error {
+    
+    class Error {
   code?: number;
   message?: string;
 }
-		
+    
   }
 }
 

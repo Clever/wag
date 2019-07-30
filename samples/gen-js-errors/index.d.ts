@@ -16,9 +16,9 @@ interface RequestOptions {
 }
 
 interface IterResult<R> {
-	map<T>(f: (r: R) => T, cb?: Callback<T[]>): Promise<T[]>;
-	toArray(cb?: Callback<R[]>): Promise<R[]>;
-	forEach(f: (r: R) => void, cb?: Callback<void>): Promise<void>;
+  map<T>(f: (r: R) => T, cb?: Callback<T[]>): Promise<T[]>;
+  toArray(cb?: Callback<R[]>): Promise<R[]>;
+  forEach(f: (r: R) => void, cb?: Callback<void>): Promise<void>;
 }
 
 interface CallOptions {
@@ -39,9 +39,9 @@ interface GenericOptions {
   timeout?: number;
   keepalive?: boolean;
   retryPolicy?: RetryPolicy;
-	logger?: Logger;
-	tracer?: Tracer;
-	circuit?: CircuitOptions;
+  logger?: Logger;
+  tracer?: Tracer;
+  circuit?: CircuitOptions;
 }
 
 interface DiscoveryOptions {
@@ -80,21 +80,21 @@ declare namespace SwaggerTest {
   const DefaultCircuitOptions: CircuitOptions;
 
   namespace Errors {
-		
-		class ExtendedError {
+    
+    class ExtendedError {
   code?: number;
   message?: string;
 }
-		
-		class NotFound {
+    
+    class NotFound {
   message?: string;
 }
-		
-		class InternalError {
+    
+    class InternalError {
   code?: number;
   message?: string;
 }
-		
+    
   }
 }
 
