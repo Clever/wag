@@ -365,6 +365,14 @@
   revision = "00c29f56e2386353d58c599509e8dc3801b0d716"
 
 [[projects]]
+  branch = "master"
+  digest = "1:7212f24f983f7619f191d92bfcde4f78c0ceb116526342341845131e6375ec9c"
+  name = "github.com/opentracing-contrib/go-aws-sdk"
+  packages = ["."]
+  pruneopts = ""
+  revision = "9c29407076c0bd904a31258c4e881282aeb95cff"
+
+[[projects]]
   digest = "1:1fc4897d3cc482d070651563c16a51489296cd9150e6d53fb7ff4d59a24334bc"
   name = "github.com/opentracing/opentracing-go"
   packages = [
@@ -684,8 +692,10 @@
     "github.com/golang/mock/mockgen",
     "github.com/gorilla/mux",
     "github.com/kardianos/osext",
+    "github.com/opentracing-contrib/go-aws-sdk",
     "github.com/opentracing/opentracing-go",
     "github.com/opentracing/opentracing-go/ext",
+    "github.com/opentracing/opentracing-go/log",
     "github.com/stretchr/testify/assert",
     "github.com/stretchr/testify/require",
     "github.com/tmthrgd/go-bindata",
