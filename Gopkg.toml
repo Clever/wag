@@ -110,3 +110,7 @@ required = ["github.com/tmthrgd/go-bindata", "github.com/golang/mock/mockgen"]
 [[constraint]]
   branch = "master"
   name = "golang.org/x/time"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/opentracing-contrib/go-aws-sdk"
