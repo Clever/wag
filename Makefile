@@ -1,5 +1,9 @@
 include golang.mk
+include node.mk
 .DEFAULT_GOAL := test # override default goal set in library makefile
+NODE_VERSION := "v6"
+$(eval $(call node-version-check,$(NODE_VERSION)))
+
 export PATH := $(PWD)/bin:$(PATH)
 PKG := github.com/Clever/wag
 PKGS := $(shell go list ./... | grep -v /vendor | grep -v /samples/gen* | grep -v /hardcoded)
