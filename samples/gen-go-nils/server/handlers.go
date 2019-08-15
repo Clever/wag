@@ -95,8 +95,6 @@ func statusCodeForNilCheck(obj interface{}) int {
 }
 
 func (h handler) NilCheckHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	sp := opentracing.SpanFromContext(ctx)
-	_ = sp
 
 	input, err := newNilCheckInput(r)
 	if err != nil {

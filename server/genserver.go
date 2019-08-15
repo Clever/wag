@@ -498,8 +498,9 @@ func statusCodeFor{{.Op}}(obj interface{}) int {
 }
 
 func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+{{if .SuccessReturnType}}
 	sp := opentracing.SpanFromContext(ctx)
-	_ = sp
+{{end}}
 {{if .HasParams}}
 	{{.InputVarName}}, err := new{{.Op}}Input(r)
 	if err != nil {

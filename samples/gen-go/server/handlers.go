@@ -101,8 +101,8 @@ func statusCodeForGetAuthors(obj interface{}) int {
 }
 
 func (h handler) GetAuthorsHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+
 	sp := opentracing.SpanFromContext(ctx)
-	_ = sp
 
 	input, err := newGetAuthorsInput(r)
 	if err != nil {
@@ -232,8 +232,8 @@ func statusCodeForGetAuthorsWithPut(obj interface{}) int {
 }
 
 func (h handler) GetAuthorsWithPutHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+
 	sp := opentracing.SpanFromContext(ctx)
-	_ = sp
 
 	input, err := newGetAuthorsWithPutInput(r)
 	if err != nil {
@@ -378,8 +378,8 @@ func statusCodeForGetBooks(obj interface{}) int {
 }
 
 func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+
 	sp := opentracing.SpanFromContext(ctx)
-	_ = sp
 
 	input, err := newGetBooksInput(r)
 	if err != nil {
@@ -622,8 +622,8 @@ func statusCodeForCreateBook(obj interface{}) int {
 }
 
 func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+
 	sp := opentracing.SpanFromContext(ctx)
-	_ = sp
 
 	input, err := newCreateBookInput(r)
 	if err != nil {
@@ -736,8 +736,8 @@ func statusCodeForPutBook(obj interface{}) int {
 }
 
 func (h handler) PutBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+
 	sp := opentracing.SpanFromContext(ctx)
-	_ = sp
 
 	input, err := newPutBookInput(r)
 	if err != nil {
@@ -860,8 +860,8 @@ func statusCodeForGetBookByID(obj interface{}) int {
 }
 
 func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+
 	sp := opentracing.SpanFromContext(ctx)
-	_ = sp
 
 	input, err := newGetBookByIDInput(r)
 	if err != nil {
@@ -1018,8 +1018,8 @@ func statusCodeForGetBookByID2(obj interface{}) int {
 }
 
 func (h handler) GetBookByID2Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+
 	sp := opentracing.SpanFromContext(ctx)
-	_ = sp
 
 	id, err := newGetBookByID2Input(r)
 	if err != nil {
@@ -1105,8 +1105,6 @@ func statusCodeForHealthCheck(obj interface{}) int {
 }
 
 func (h handler) HealthCheckHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	sp := opentracing.SpanFromContext(ctx)
-	_ = sp
 
 	err := h.HealthCheck(ctx)
 
