@@ -101,8 +101,6 @@ func statusCodeForGetBook(obj interface{}) int {
 }
 
 func (h handler) GetBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	sp := opentracing.SpanFromContext(ctx)
-	_ = sp
 
 	input, err := newGetBookInput(r)
 	if err != nil {

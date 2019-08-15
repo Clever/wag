@@ -157,7 +157,7 @@ var _bindata = map[string]*asset{
 			"\x79\x78\xf6\x75\x5c\xfc\x2b\x00\x00\xff\xff",
 		size: 7538,
 		mode: 0644,
-		time: time.Unix(1565203492, 737999995),
+		time: time.Unix(1565205373, 706395883),
 	},
 	"dynamodb_test.go.tmpl": &asset{
 		name: "dynamodb_test.go.tmpl",

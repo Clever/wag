@@ -101,8 +101,8 @@ func statusCodeForGetSectionsForStudent(obj interface{}) int {
 }
 
 func (h handler) GetSectionsForStudentHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+
 	sp := opentracing.SpanFromContext(ctx)
-	_ = sp
 
 	studentID, err := newGetSectionsForStudentInput(r)
 	if err != nil {

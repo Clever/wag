@@ -101,8 +101,6 @@ func statusCodeForHealth(obj interface{}) int {
 }
 
 func (h handler) HealthHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	sp := opentracing.SpanFromContext(ctx)
-	_ = sp
 
 	input, err := newHealthInput(r)
 	if err != nil {
