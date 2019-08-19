@@ -254,6 +254,7 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, i
 		}
 	}
 
+	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
@@ -270,6 +271,11 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, i
 				hasMore = i < len(items)-1
 			}
 			if !fn(&items[i], !hasMore) {
+				return false
+			}
+			totalRecordsProcessed++
+			// if the Limit of records have been passed to fn, don't pass anymore records.
+			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
 				return false
 			}
 		}
@@ -360,6 +366,7 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndDate(ctx context.Context, inpu
 		}
 	}
 
+	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
@@ -376,6 +383,11 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndDate(ctx context.Context, inpu
 				hasMore = i < len(items)-1
 			}
 			if !fn(&items[i], !hasMore) {
+				return false
+			}
+			totalRecordsProcessed++
+			// if the Limit of records have been passed to fn, don't pass anymore records.
+			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
 				return false
 			}
 		}
@@ -447,6 +459,7 @@ func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context,
 		}
 	}
 
+	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
@@ -463,6 +476,11 @@ func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context,
 				hasMore = i < len(items)-1
 			}
 			if !fn(&items[i], !hasMore) {
+				return false
+			}
+			totalRecordsProcessed++
+			// if the Limit of records have been passed to fn, don't pass anymore records.
+			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
 				return false
 			}
 		}

@@ -153,6 +153,7 @@ func GetDeploymentsByEnvAppAndVersion(d db.Interface, t *testing.T) func(t *test
 			Application: "string1",
 			Version:     "string3",
 		}))
+		limit := int64(3)
 		tests := []getDeploymentsByEnvAppAndVersionTest{
 			{
 				testName: "basic",
@@ -162,6 +163,7 @@ func GetDeploymentsByEnvAppAndVersion(d db.Interface, t *testing.T) func(t *test
 					input: db.GetDeploymentsByEnvAppAndVersionInput{
 						Environment: "string1",
 						Application: "string1",
+						Limit:       &limit,
 					},
 				},
 				output: getDeploymentsByEnvAppAndVersionOutput{
@@ -394,6 +396,7 @@ func GetDeploymentsByEnvAppAndDate(d db.Interface, t *testing.T) func(t *testing
 			Date:        mustTime("2018-03-11T15:04:03+07:00"),
 			Version:     "string2",
 		}))
+		limit := int64(3)
 		tests := []getDeploymentsByEnvAppAndDateTest{
 			{
 				testName: "basic",
@@ -403,6 +406,7 @@ func GetDeploymentsByEnvAppAndDate(d db.Interface, t *testing.T) func(t *testing
 					input: db.GetDeploymentsByEnvAppAndDateInput{
 						Environment: "string1",
 						Application: "string1",
+						Limit:       &limit,
 					},
 				},
 				output: getDeploymentsByEnvAppAndDateOutput{
@@ -622,6 +626,7 @@ func GetDeploymentsByEnvironmentAndDate(d db.Interface, t *testing.T) func(t *te
 			Application: "string2",
 			Version:     "string2",
 		}))
+		limit := int64(3)
 		tests := []getDeploymentsByEnvironmentAndDateTest{
 			{
 				testName: "basic",
@@ -630,6 +635,7 @@ func GetDeploymentsByEnvironmentAndDate(d db.Interface, t *testing.T) func(t *te
 					ctx: context.Background(),
 					input: db.GetDeploymentsByEnvironmentAndDateInput{
 						Environment: "string1",
+						Limit:       &limit,
 					},
 				},
 				output: getDeploymentsByEnvironmentAndDateOutput{
@@ -917,6 +923,7 @@ func GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface,
 			Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 			Branch:  db.String("string2"),
 		}))
+		limit := int64(3)
 		tests := []getNoRangeThingWithCompositeAttributessByNameVersionAndDateTest{
 			{
 				testName: "basic",
@@ -926,6 +933,7 @@ func GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface,
 					input: db.GetNoRangeThingWithCompositeAttributessByNameVersionAndDateInput{
 						Name:    "string1",
 						Version: 1,
+						Limit:   &limit,
 					},
 				},
 				output: getNoRangeThingWithCompositeAttributessByNameVersionAndDateOutput{
@@ -1206,6 +1214,7 @@ func GetTeacherSharingRulesByTeacherAndSchoolApp(d db.Interface, t *testing.T) f
 			App:      "string3",
 			District: "district",
 		}))
+		limit := int64(3)
 		tests := []getTeacherSharingRulesByTeacherAndSchoolAppTest{
 			{
 				testName: "basic",
@@ -1214,6 +1223,7 @@ func GetTeacherSharingRulesByTeacherAndSchoolApp(d db.Interface, t *testing.T) f
 					ctx: context.Background(),
 					input: db.GetTeacherSharingRulesByTeacherAndSchoolAppInput{
 						Teacher: "string1",
+						Limit:   &limit,
 					},
 				},
 				output: getTeacherSharingRulesByTeacherAndSchoolAppOutput{
@@ -1459,6 +1469,7 @@ func GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(d db.Interface, t *test
 			Teacher:  "string3",
 			App:      "string3",
 		}))
+		limit := int64(3)
 		tests := []getTeacherSharingRulesByDistrictAndSchoolTeacherAppTest{
 			{
 				testName: "basic",
@@ -1467,6 +1478,7 @@ func GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(d db.Interface, t *test
 					ctx: context.Background(),
 					input: db.GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput{
 						District: "string1",
+						Limit:    &limit,
 					},
 				},
 				output: getTeacherSharingRulesByDistrictAndSchoolTeacherAppOutput{
@@ -1701,6 +1713,7 @@ func GetThingsByNameAndVersion(d db.Interface, t *testing.T) func(t *testing.T) 
 			Name:    "string1",
 			Version: 3,
 		}))
+		limit := int64(3)
 		tests := []getThingsByNameAndVersionTest{
 			{
 				testName: "basic",
@@ -1708,7 +1721,8 @@ func GetThingsByNameAndVersion(d db.Interface, t *testing.T) func(t *testing.T) 
 				input: getThingsByNameAndVersionInput{
 					ctx: context.Background(),
 					input: db.GetThingsByNameAndVersionInput{
-						Name: "string1",
+						Name:  "string1",
+						Limit: &limit,
 					},
 				},
 				output: getThingsByNameAndVersionOutput{
@@ -2047,6 +2061,7 @@ func GetThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.T
 			CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
 			Version:   2,
 		}))
+		limit := int64(3)
 		tests := []getThingsByNameAndCreatedAtTest{
 			{
 				testName: "basic",
@@ -2054,7 +2069,8 @@ func GetThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.T
 				input: getThingsByNameAndCreatedAtInput{
 					ctx: context.Background(),
 					input: db.GetThingsByNameAndCreatedAtInput{
-						Name: "string1",
+						Name:  "string1",
+						Limit: &limit,
 					},
 				},
 				output: getThingsByNameAndCreatedAtOutput{
@@ -2275,6 +2291,7 @@ func GetThingWithCompositeAttributessByNameBranchAndDate(d db.Interface, t *test
 			Branch: db.String("string1"),
 			Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 		}))
+		limit := int64(3)
 		tests := []getThingWithCompositeAttributessByNameBranchAndDateTest{
 			{
 				testName: "basic",
@@ -2284,6 +2301,7 @@ func GetThingWithCompositeAttributessByNameBranchAndDate(d db.Interface, t *test
 					input: db.GetThingWithCompositeAttributessByNameBranchAndDateInput{
 						Name:   "string1",
 						Branch: "string1",
+						Limit:  &limit,
 					},
 				},
 				output: getThingWithCompositeAttributessByNameBranchAndDateOutput{
@@ -2517,6 +2535,7 @@ func GetThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *tes
 			Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 			Branch:  db.String("string2"),
 		}))
+		limit := int64(3)
 		tests := []getThingWithCompositeAttributessByNameVersionAndDateTest{
 			{
 				testName: "basic",
@@ -2526,6 +2545,7 @@ func GetThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *tes
 					input: db.GetThingWithCompositeAttributessByNameVersionAndDateInput{
 						Name:    "string1",
 						Version: 1,
+						Limit:   &limit,
 					},
 				},
 				output: getThingWithCompositeAttributessByNameVersionAndDateOutput{
@@ -2763,6 +2783,7 @@ func GetThingWithCompositeEnumAttributessByNameBranchAndDate(d db.Interface, t *
 			BranchID: models.BranchMaster,
 			Date:     db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 		}))
+		limit := int64(3)
 		tests := []getThingWithCompositeEnumAttributessByNameBranchAndDateTest{
 			{
 				testName: "basic",
@@ -2772,6 +2793,7 @@ func GetThingWithCompositeEnumAttributessByNameBranchAndDate(d db.Interface, t *
 					input: db.GetThingWithCompositeEnumAttributessByNameBranchAndDateInput{
 						Name:     "string1",
 						BranchID: models.BranchMaster,
+						Limit:    &limit,
 					},
 				},
 				output: getThingWithCompositeEnumAttributessByNameBranchAndDateOutput{
@@ -3016,6 +3038,7 @@ func GetThingWithDateRangesByNameAndDate(d db.Interface, t *testing.T) func(t *t
 			Name: "string1",
 			Date: mustTime("2018-03-11T15:04:03+07:00"),
 		}))
+		limit := int64(3)
 		tests := []getThingWithDateRangesByNameAndDateTest{
 			{
 				testName: "basic",
@@ -3023,7 +3046,8 @@ func GetThingWithDateRangesByNameAndDate(d db.Interface, t *testing.T) func(t *t
 				input: getThingWithDateRangesByNameAndDateInput{
 					ctx: context.Background(),
 					input: db.GetThingWithDateRangesByNameAndDateInput{
-						Name: "string1",
+						Name:  "string1",
+						Limit: &limit,
 					},
 				},
 				output: getThingWithDateRangesByNameAndDateOutput{
@@ -3257,6 +3281,7 @@ func GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(d db.Interface, t 
 			Created:  mustTime("2018-03-11T15:04:03+07:00"),
 			Resource: "string3",
 		}))
+		limit := int64(3)
 		tests := []getThingWithDateTimeCompositesByTypeIDAndCreatedResourceTest{
 			{
 				testName: "basic",
@@ -3264,8 +3289,9 @@ func GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(d db.Interface, t 
 				input: getThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput{
 					ctx: context.Background(),
 					input: db.GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput{
-						Type: "string1",
-						ID:   "string1",
+						Type:  "string1",
+						ID:    "string1",
+						Limit: &limit,
 					},
 				},
 				output: getThingWithDateTimeCompositesByTypeIDAndCreatedResourceOutput{
@@ -3534,6 +3560,7 @@ func GetThingWithMatchingKeyssByBearAndAssocTypeID(d db.Interface, t *testing.T)
 			AssocType: "string3",
 			AssocID:   "string3",
 		}))
+		limit := int64(3)
 		tests := []getThingWithMatchingKeyssByBearAndAssocTypeIDTest{
 			{
 				testName: "basic",
@@ -3541,7 +3568,8 @@ func GetThingWithMatchingKeyssByBearAndAssocTypeID(d db.Interface, t *testing.T)
 				input: getThingWithMatchingKeyssByBearAndAssocTypeIDInput{
 					ctx: context.Background(),
 					input: db.GetThingWithMatchingKeyssByBearAndAssocTypeIDInput{
-						Bear: "string1",
+						Bear:  "string1",
+						Limit: &limit,
 					},
 				},
 				output: getThingWithMatchingKeyssByBearAndAssocTypeIDOutput{
@@ -3773,6 +3801,7 @@ func GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(d db.Interface, t *tes
 			Created:   mustTime("2018-03-11T15:04:03+07:00"),
 			Bear:      "string3",
 		}))
+		limit := int64(3)
 		tests := []getThingWithMatchingKeyssByAssocTypeIDAndCreatedBearTest{
 			{
 				testName: "basic",
@@ -3782,6 +3811,7 @@ func GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(d db.Interface, t *tes
 					input: db.GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput{
 						AssocType: "string1",
 						AssocID:   "string1",
+						Limit:     &limit,
 					},
 				},
 				output: getThingWithMatchingKeyssByAssocTypeIDAndCreatedBearOutput{
@@ -4056,6 +4086,7 @@ func GetThingWithRequiredFields2sByNameAndID(d db.Interface, t *testing.T) func(
 			Name: db.String("string1"),
 			ID:   db.String("string3"),
 		}))
+		limit := int64(3)
 		tests := []getThingWithRequiredFields2sByNameAndIDTest{
 			{
 				testName: "basic",
@@ -4063,7 +4094,8 @@ func GetThingWithRequiredFields2sByNameAndID(d db.Interface, t *testing.T) func(
 				input: getThingWithRequiredFields2sByNameAndIDInput{
 					ctx: context.Background(),
 					input: db.GetThingWithRequiredFields2sByNameAndIDInput{
-						Name: "string1",
+						Name:  "string1",
+						Limit: &limit,
 					},
 				},
 				output: getThingWithRequiredFields2sByNameAndIDOutput{
