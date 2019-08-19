@@ -162,6 +162,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
                         {{- end }}
                         {{- end }}
     }))
+    limit := int64(3)
     tests := []get{{ $modelName }}sBy{{ $indexName }}Test{
       {
         testName: "basic",
@@ -169,9 +170,10 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
         input: get{{ $modelName }}sBy{{ $indexName }}Input{
           ctx: context.Background(),
           input: db.Get{{ $modelName }}sBy{{ $indexName }}Input{
-                  {{- range $attributeName := $hashKeyAttributes }}
-            {{ pascalize $attributeName }}: {{ exampleValueNotPtrForAttribute $xdbConfig $attributeName 1 }},
-                                                {{- end }}
+            {{- range $attributeName := $hashKeyAttributes }}
+              {{ pascalize $attributeName }}: {{ exampleValueNotPtrForAttribute $xdbConfig $attributeName 1 }},
+            {{- end }}
+            Limit: &limit,
           },
         },
         output: get{{ $modelName }}sBy{{ $indexName }}Output{
@@ -742,6 +744,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
       {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
       {{- end }}
     }))
+    limit := int64(3)
     tests := []get{{ $modelName }}sBy{{ $computedIndexName }}Test{
       {
         testName: "basic",
@@ -750,8 +753,9 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
           ctx: context.Background(),
           input: db.Get{{ $modelName }}sBy{{ $computedIndexName }}Input{
             {{- range $attributeName := $hashKeyAttributes }}
-            {{ pascalize $attributeName }}: {{ exampleValueNotPtrForAttribute $xdbConfig $attributeName 1 }},
-                                                {{- end }}
+              {{ pascalize $attributeName }}: {{ exampleValueNotPtrForAttribute $xdbConfig $attributeName 1 }},
+            {{- end }}
+            Limit: &limit,
           },
         },
         output: get{{ $modelName }}sBy{{ $computedIndexName }}Output{
