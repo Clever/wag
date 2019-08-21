@@ -161,14 +161,14 @@ func New(c Controller, addr string) *Server {
 	return NewWithMiddleware(c, addr, []func(http.Handler) http.Handler{})
 }
 
-// NewWithMiddleware returns a Server that implemenets the Controller interface. It runs the
-// middleware after the built-in middleware (e.g. logging), but before the controller methods.
-// The middleware is executed in the order specified. The server will start when "Serve" is called.
-func NewWithMiddleware(c Controller, addr string, m []func(http.Handler) http.Handler) *Server {
+// NewRouter returns a Handler (more specifically mux.Router) with no middleware
+func NewRouter(c Controller) http.Handler {
+	return newRouter(c)
+}
+
+func newRouter(c Controller) http.Handler {
 	router := mux.NewRouter()
 	h := handler{Controller: c}
-
-	l := logger.New("swagger-test")
 
 	router.Methods("GET").Path("/v1/books/{id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "getBook")
@@ -177,6 +177,22 @@ func NewWithMiddleware(c Controller, addr string, m []func(http.Handler) http.Ha
 		r = r.WithContext(ctx)
 	})
 
-	handler := withMiddleware("swagger-test", router, m)
+	return router
+}
+
+// NewWithMiddleware returns a Server that implemenets the Controller interface. It runs the
+// middleware after the built-in middleware (e.g. logging), but before the controller methods.
+// The middleware is executed in the order specified. The server will start when "Serve" is called.
+func NewWithMiddleware(c Controller, addr string, m []func(http.Handler) http.Handler) *Server {
+	router := newRouter(c)
+
+	return AttachMiddleware(router, addr, m)
+}
+
+// AttachMiddleware attaches the given middleware to the router
+func AttachMiddleware(router http.Handler, addr string, m []func(http.Handler) http.Handler) *Server {
+	l := logger.New("swagger-test")
+
+	handler := withMiddleware("home-auth", router, m)
 	return &Server{Handler: handler, addr: addr, l: l}
 }
