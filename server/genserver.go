@@ -205,12 +205,13 @@ func New(c Controller, addr string) *Server {
 	return NewWithMiddleware(c, addr, []func(http.Handler) http.Handler{})
 }
 
-// NewRouter returns a Handler (more specifically mux.Router) with no middleware
-func NewRouter(c Controller) http.Handler {
+// NewRouter returns a mux.Router with no middleware. This is so we can attach additional routes to the
+// router if necessary
+func NewRouter(c Controller) *mux.Router {
 	return newRouter(c)
 }
 
-func newRouter(c Controller) http.Handler {
+func newRouter(c Controller) *mux.Router {
 	router := mux.NewRouter()
 	h := handler{Controller: c}
 
@@ -234,8 +235,11 @@ func NewWithMiddleware(c Controller, addr string, m []func(http.Handler) http.Ha
 	return AttachMiddleware(router, addr, m)
 }
 
-// AttachMiddleware attaches the given middleware to the router 
-func AttachMiddleware(router http.Handler, addr string, m []func(http.Handler) http.Handler) *Server {
+// AttachMiddleware attaches the given middleware to the router; this is to be used in conjunction with
+// NewServer. It attaches custom middleware passed as arguments as well as the built-in middleware for
+// logging, tracing, and handling panics. It should be noted that the built-in middleware executes first
+// followed by the passed in middleware (in the order specified).
+func AttachMiddleware(router *mux.Router, addr string, m []func(http.Handler) http.Handler) *Server {
 	l := logger.New("{{.Title}}")
 
 	handler := withMiddleware("home-auth", router, m)
