@@ -36,7 +36,6 @@ func (m *MockController) EXPECT() *MockControllerMockRecorder {
 
 // Health mocks base method
 func (m *MockController) Health(ctx context.Context, i *models.HealthInput) error {
-	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Health", ctx, i)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -44,6 +43,5 @@ func (m *MockController) Health(ctx context.Context, i *models.HealthInput) erro
 
 // Health indicates an expected call of Health
 func (mr *MockControllerMockRecorder) Health(ctx, i interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Health", reflect.TypeOf((*MockController)(nil).Health), ctx, i)
 }
