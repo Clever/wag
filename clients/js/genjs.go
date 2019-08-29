@@ -1327,12 +1327,6 @@ interface IterResult<R> {
   forEach(f: (r: R) => void, cb?: Callback<void>): Promise<void>;
 }
 
-interface CallOptions {
-  timeout?: number;
-  span?: Span;
-  retryPolicy?: RetryPolicy;
-}
-
 interface CircuitOptions {
   forceClosed?: boolean;
   maxConcurrentRequests?: number;
