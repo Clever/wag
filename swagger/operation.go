@@ -125,7 +125,8 @@ var interfaceCommentTmplStr = `
 // {{$code}}: {{$type}} {{end}}
 // default: client side HTTP errors, for example: context.DeadlineExceeded.`
 
-func outputSchema(s *spec.Swagger, op *spec.Operation, statusCode int) *spec.Schema {
+// OutputSchema returns the Swagger schema for an operation and statusCode
+func OutputSchema(s *spec.Swagger, op *spec.Operation, statusCode int) *spec.Schema {
 	resp := op.Responses.StatusCodeResponses[statusCode]
 	if !strings.HasPrefix(resp.Ref.String(), "#/responses") {
 		return resp.Schema
@@ -146,7 +147,7 @@ func outputSchema(s *spec.Swagger, op *spec.Operation, statusCode int) *spec.Sch
 // OutputType returns the output type for a given status code of an operation and whether it
 // is a pointer in the interface.
 func OutputType(s *spec.Swagger, op *spec.Operation, statusCode int) (string, bool) {
-	schema := outputSchema(s, op, statusCode)
+	schema := OutputSchema(s, op, statusCode)
 
 	successType, err := TypeFromSchema(schema, true)
 	if err != nil {
@@ -232,7 +233,7 @@ func PagingResourceType(s *spec.Swagger, op *spec.Operation) (string, bool, erro
 	var schema *spec.Schema
 	for statusCode := range op.Responses.StatusCodeResponses {
 		if statusCode < 400 {
-			schema = outputSchema(s, op, statusCode)
+			schema = OutputSchema(s, op, statusCode)
 			break
 		}
 	}

@@ -17,7 +17,7 @@ func TypeFromSchema(schema *spec.Schema, includeModels bool) (string, error) {
 	if schema == nil {
 		return "", nil
 	} else if schema.Ref.String() != "" {
-		def, err := defFromRef(schema.Ref.String())
+		def, err := DefFromRef(schema.Ref.String())
 		if err != nil {
 			return "", err
 		}
@@ -36,7 +36,7 @@ func TypeFromSchema(schema *spec.Schema, includeModels bool) (string, error) {
 			return "", fmt.Errorf("Cannot define complex data types inline. They must be defined in " +
 				"the #/definitions section of the swagger yaml.")
 		}
-		def, err := defFromRef(items.Schema.Ref.String())
+		def, err := DefFromRef(items.Schema.Ref.String())
 		if err != nil {
 			return "", err
 		}
@@ -47,7 +47,8 @@ func TypeFromSchema(schema *spec.Schema, includeModels bool) (string, error) {
 	}
 }
 
-func defFromRef(ref string) (string, error) {
+// DefFromRef returns the schema definition given the reference
+func DefFromRef(ref string) (string, error) {
 	if strings.HasPrefix(ref, "#/definitions/") {
 		return ref[len("#/definitions/"):], nil
 	}
