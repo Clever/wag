@@ -242,7 +242,7 @@ func NewWithMiddleware(c Controller, addr string, m []func(http.Handler) http.Ha
 func AttachMiddleware(router *mux.Router, addr string, m []func(http.Handler) http.Handler) *Server {
 	l := logger.New("{{.Title}}")
 
-	handler := withMiddleware("home-auth", router, m)
+	handler := withMiddleware("{{.Title}}", router, m)
 	return &Server{Handler: handler, addr: addr, l: l}
 }`
 
