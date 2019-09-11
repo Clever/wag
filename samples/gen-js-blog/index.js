@@ -168,9 +168,9 @@ class Blog {
 
     if (options.discovery) {
       try {
-        this.address = discovery("blog", "http").url();
+        this.address = discovery(options.serviceName || "blog", "http").url();
       } catch (e) {
-        this.address = discovery("blog", "default").url();
+        this.address = discovery(options.serviceName || "blog", "default").url();
       }
     } else if (options.address) {
       this.address = options.address;
@@ -193,7 +193,7 @@ class Blog {
     if (options.logger) {
       this.logger = options.logger;
     } else {
-      this.logger =  new kayvee.logger("blog-wagclient");
+      this.logger = new kayvee.logger((options.serviceName || "blog") + "-wagclient");
     }
     if (options.tracer) {
       this.tracer = options.tracer;
@@ -202,7 +202,7 @@ class Blog {
     }
 
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
-    this._hystrixCommand = commandFactory.getOrCreate("blog").
+    this._hystrixCommand = commandFactory.getOrCreate(options.serviceName || "blog").
       errorHandler(this._hystrixCommandErrorHandler).
       circuitBreakerForceClosed(circuitOptions.forceClosed).
       requestVolumeRejectionThreshold(circuitOptions.maxConcurrentRequests).

@@ -36,6 +36,7 @@ interface GenericOptions {
   logger?: Logger;
   tracer?: Tracer;
   circuit?: CircuitOptions;
+  serviceName?: string;
 }
 
 interface DiscoveryOptions {

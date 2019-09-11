@@ -168,9 +168,9 @@ class NilTest {
 
     if (options.discovery) {
       try {
-        this.address = discovery("nil-test", "http").url();
+        this.address = discovery(options.serviceName || "nil-test", "http").url();
       } catch (e) {
-        this.address = discovery("nil-test", "default").url();
+        this.address = discovery(options.serviceName || "nil-test", "default").url();
       }
     } else if (options.address) {
       this.address = options.address;
@@ -193,7 +193,7 @@ class NilTest {
     if (options.logger) {
       this.logger = options.logger;
     } else {
-      this.logger =  new kayvee.logger("nil-test-wagclient");
+      this.logger = new kayvee.logger((options.serviceName || "nil-test") + "-wagclient");
     }
     if (options.tracer) {
       this.tracer = options.tracer;
@@ -202,7 +202,7 @@ class NilTest {
     }
 
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
-    this._hystrixCommand = commandFactory.getOrCreate("nil-test").
+    this._hystrixCommand = commandFactory.getOrCreate(options.serviceName || "nil-test").
       errorHandler(this._hystrixCommandErrorHandler).
       circuitBreakerForceClosed(circuitOptions.forceClosed).
       requestVolumeRejectionThreshold(circuitOptions.maxConcurrentRequests).

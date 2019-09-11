@@ -4,6 +4,7 @@ const nock = require("nock");
 const Client = require("swagger-test");
 
 const mockAddress = "http://localhost:8000";
+const alternateMockAddress = "http://localhost:8001";
 
 describe("operations", function() {
   it("correctly fill out path, header and query params", function(done) {
@@ -23,6 +24,46 @@ describe("operations", function() {
       assert.ifError(err);
       assert.deepEqual(resp, mockResponse)
       done();
+    });
+  });
+
+  it("works with multiple clients as long as a different serviceName is used", function(done) {
+    let doneCount = 0;
+
+    const c = new Client({address: mockAddress});
+    const params = {
+      authorization: "Bearer YOGI",
+      bookID: "the-mediocre-gatsby",
+      randomBytes: "4" // Very random
+    };
+    const mockResponse = {hello: "world"};
+    const scope = nock(mockAddress, {reqheaders: {'authorization': params.authorization}})
+      .get(`/v1/books/${params.bookID}`)
+      .query({randomBytes: params.randomBytes})
+      .reply(200, mockResponse);
+    c.getBookByID(params, function(err, resp) {
+      assert(scope.isDone());
+      assert.ifError(err);
+      assert.deepEqual(resp, mockResponse)
+      doneCount++;
+      if (doneCount == 2) {
+        done();
+      }
+    });
+
+    const alternateClient = new Client({address: alternateMockAddress, serviceName: "alternate-swagger-test"});
+    const alternateScope = nock(alternateMockAddress, {reqheaders: {'authorization': params.authorization}})
+      .get(`/v1/books/${params.bookID}`)
+      .query({randomBytes: params.randomBytes})
+      .reply(200, mockResponse);
+    alternateClient.getBookByID(params, function(err, resp) {
+      assert(alternateScope.isDone());
+      assert.ifError(err);
+      assert.deepEqual(resp, mockResponse)
+      doneCount++;
+      if (doneCount == 2) {
+        done();
+      }
     });
   });
 
