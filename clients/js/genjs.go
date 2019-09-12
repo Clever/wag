@@ -263,9 +263,9 @@ class {{.ClassName}} {
 
     if (options.discovery) {
       try {
-        this.address = discovery("{{.ServiceName}}", "http").url();
+        this.address = discovery(options.serviceName || "{{.ServiceName}}", "http").url();
       } catch (e) {
-        this.address = discovery("{{.ServiceName}}", "default").url();
+        this.address = discovery(options.serviceName || "{{.ServiceName}}", "default").url();
       }
     } else if (options.address) {
       this.address = options.address;
@@ -288,7 +288,7 @@ class {{.ClassName}} {
     if (options.logger) {
       this.logger = options.logger;
     } else {
-      this.logger =  new kayvee.logger("{{.ServiceName}}-wagclient");
+      this.logger = new kayvee.logger((options.serviceName || "{{.ServiceName}}") + "-wagclient");
     }
     if (options.tracer) {
       this.tracer = options.tracer;
@@ -297,7 +297,7 @@ class {{.ClassName}} {
     }
 
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
-    this._hystrixCommand = commandFactory.getOrCreate("{{.ServiceName}}").
+    this._hystrixCommand = commandFactory.getOrCreate(options.serviceName || "{{.ServiceName}}").
       errorHandler(this._hystrixCommandErrorHandler).
       circuitBreakerForceClosed(circuitOptions.forceClosed).
       requestVolumeRejectionThreshold(circuitOptions.maxConcurrentRequests).
@@ -1342,6 +1342,7 @@ interface GenericOptions {
   logger?: Logger;
   tracer?: Tracer;
   circuit?: CircuitOptions;
+  serviceName?: string;
 }
 
 interface DiscoveryOptions {

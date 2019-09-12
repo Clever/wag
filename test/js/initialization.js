@@ -3,6 +3,7 @@ const assert = require("assert");
 const Client = require("swagger-test");
 
 const mockAddress = "http://localhost:8000";
+const alternateMockAddress = "http://localhost:8001";
 
 describe("initialization", function() {
   it("fails if not given address or discovery", function() {
@@ -18,12 +19,17 @@ describe("initialization", function() {
 
   describe("given `discovery`", function() {
     beforeEach(function() {
+      delete process.env.SERVICE_SWAGGER_TEST_HTTP_PROTO;
+      delete process.env.SERVICE_SWAGGER_TEST_HTTP_HOST;
+      delete process.env.SERVICE_SWAGGER_TEST_HTTP_PORT;
+
       delete process.env.SERVICE_SWAGGER_TEST_DEFAULT_PROTO;
       delete process.env.SERVICE_SWAGGER_TEST_DEFAULT_HOST;
       delete process.env.SERVICE_SWAGGER_TEST_DEFAULT_PORT;
-      delete process.env.SERVICE_SWAGGER_TEST_DEFAULT_PROTO;
-      delete process.env.SERVICE_SWAGGER_TEST_DEFAULT_HOST;
-      delete process.env.SERVICE_SWAGGER_TEST_DEFAULT_PORT;
+
+      delete process.env.SERVICE_ALTERNATE_SWAGGER_TEST_DEFAULT_PROTO;
+      delete process.env.SERVICE_ALTERNATE_SWAGGER_TEST_DEFAULT_HOST;
+      delete process.env.SERVICE_ALTERNATE_SWAGGER_TEST_DEFAULT_PORT;
     });
 
     it("fails with no env vars", function() {
@@ -47,5 +53,13 @@ describe("initialization", function() {
       const c = new Client({discovery: true});
       assert.equal(c.address, mockAddress);
     });
+
+    it("uses serviceName when one is passed in", function() {
+      process.env.SERVICE_ALTERNATE_SWAGGER_TEST_HTTP_PROTO = "http"
+      process.env.SERVICE_ALTERNATE_SWAGGER_TEST_HTTP_HOST = "localhost"
+      process.env.SERVICE_ALTERNATE_SWAGGER_TEST_HTTP_PORT = "8001"
+      const c = new Client({discovery: true, serviceName: "alternate-swagger-test"});
+      assert.equal(c.address, alternateMockAddress);
+    })
   });
 });
