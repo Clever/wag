@@ -1047,6 +1047,7 @@ func getErrorTypes(s spec.Swagger) ([]string, error) {
 
 func methodDecl(s spec.Swagger, op *spec.Operation, path, method string) (string, error) {
 	returnType, err := ReturnType(s, op)
+	returnType = JSType(fmt.Sprintf("models.%s", returnType))
 	if err != nil {
 		return "", err
 	}
@@ -1060,6 +1061,7 @@ func methodDecl(s spec.Swagger, op *spec.Operation, path, method string) (string
 		var paramType JSType
 		if op.Parameters[0].ParamProps.Schema != nil {
 			paramType, err = asJSType(op.Parameters[0].ParamProps.Schema)
+			paramType = JSType(fmt.Sprintf("models.%s", paramType))
 		} else {
 			paramType, err = asJSTypeSimple(op.Parameters[0].SimpleSchema)
 		}
@@ -1355,11 +1357,10 @@ interface AddressOptions {
   address: string;
 }
 
-type {{.ServiceName}}Options = (DiscoveryOptions | AddressOptions) & GenericOptions; 
+type {{.ServiceName}}Options = (DiscoveryOptions | AddressOptions) & GenericOptions;
 
-{{range .IncludedTypes}}
-{{.}}
-{{end}}
+import models = {{.ServiceName}}.Models
+
 declare class {{.ServiceName}} {
   constructor(options: {{.ServiceName}}Options);
 
@@ -1381,7 +1382,13 @@ declare namespace {{.ServiceName}} {
     {{range .ErrorTypes}}
     {{.}}
     {{end}}
-  }
+	}
+
+	namespace Models {
+		{{range .IncludedTypes}}
+		{{.}}
+		{{end}}
+	}
 }
 
 export = {{.ServiceName}};
