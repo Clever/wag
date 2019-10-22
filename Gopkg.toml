@@ -1,4 +1,4 @@
-required = ["github.com/tmthrgd/go-bindata", "github.com/golang/mock/mockgen"]
+required = ["github.com/tmthrgd/go-bindata", "github.com/golang/mock/mockgen", "github.com/go-openapi/jsonpointer"]
 [[constraint]]
   name = "github.com/Clever/discovery-go"
   branch = "master"
@@ -41,6 +41,10 @@ required = ["github.com/tmthrgd/go-bindata", "github.com/golang/mock/mockgen"]
 
 [[constraint]]
   name = "github.com/go-openapi/strfmt"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/go-openapi/jsonpointer"
   branch = "master"
 
 [[constraint]]
