@@ -177,11 +177,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:1287439f7765209116509fffff2b8f853845e4b35572b41a1aadda42cbcffcc2"
+  digest = "1:47688961daa2895c860642608d671822b7b53fed1e3e3e2d46506f01dcddaae3"
   name = "github.com/go-openapi/jsonpointer"
   packages = ["."]
   pruneopts = ""
-  revision = "779f45308c19820f1a69e9a4cd965f496e0da10f"
+  revision = "ed123515f087412cd7ef02e49b0b0a5e6a79a360"
 
 [[projects]]
   branch = "master"
@@ -680,6 +680,7 @@
     "github.com/donovanhide/eventsource",
     "github.com/go-errors/errors",
     "github.com/go-openapi/errors",
+    "github.com/go-openapi/jsonpointer",
     "github.com/go-openapi/jsonreference",
     "github.com/go-openapi/loads",
     "github.com/go-openapi/loads/fmts",
