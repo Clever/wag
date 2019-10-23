@@ -49,100 +49,9 @@ interface AddressOptions {
   address: string;
 }
 
-type SwaggerTestOptions = (DiscoveryOptions | AddressOptions) & GenericOptions; 
+type SwaggerTestOptions = (DiscoveryOptions | AddressOptions) & GenericOptions;
 
-
-type Branch = ("master" | "DEV_BRANCH" | "test");
-
-type Category = ("a" | "b");
-
-type Deployment = {
-  application?: string;
-  date?: string;
-  environment?: string;
-  version?: string;
-};
-
-type NoRangeThingWithCompositeAttributes = {
-  branch: string;
-  date: string;
-  name: string;
-  version?: number;
-};
-
-type Object = {
-  bar?: string;
-  foo?: string;
-};
-
-type SimpleThing = {
-  id?: string;
-  name?: string;
-};
-
-type TeacherSharingRule = {
-  app?: string;
-  district?: string;
-  id?: string;
-  school?: string;
-  sections?: string[];
-  teacher?: string;
-};
-
-type Thing = {
-  category?: Category;
-  createdAt?: string;
-  id?: string;
-  name?: string;
-  nestedObject?: Object;
-  version?: number;
-};
-
-type ThingWithCompositeAttributes = {
-  branch: string;
-  date: string;
-  name: string;
-  version?: number;
-};
-
-type ThingWithCompositeEnumAttributes = {
-  branchID: Branch;
-  date: string;
-  name: string;
-};
-
-type ThingWithDateRange = {
-  date?: string;
-  name?: string;
-};
-
-type ThingWithDateTimeComposite = {
-  created?: string;
-  id?: string;
-  resource?: string;
-  type?: string;
-};
-
-type ThingWithMatchingKeys = {
-  assocID?: string;
-  assocType?: string;
-  bear?: string;
-  created?: string;
-};
-
-type ThingWithRequiredFields = {
-  id: string;
-  name: string;
-};
-
-type ThingWithRequiredFields2 = {
-  id: string;
-  name: string;
-};
-
-type ThingWithUnderscores = {
-  id_app?: string;
-};
+import models = SwaggerTest.Models
 
 declare class SwaggerTest {
   constructor(options: SwaggerTestOptions);
@@ -171,7 +80,103 @@ declare namespace SwaggerTest {
   message?: string;
 }
     
-  }
+	}
+
+	namespace Models {
+		
+		type Branch = ("master" | "DEV_BRANCH" | "test");
+		
+		type Category = ("a" | "b");
+		
+		type Deployment = {
+  application?: string;
+  date?: string;
+  environment?: string;
+  version?: string;
+};
+		
+		type NoRangeThingWithCompositeAttributes = {
+  branch: string;
+  date: string;
+  name: string;
+  version?: number;
+};
+		
+		type Object = {
+  bar?: string;
+  foo?: string;
+};
+		
+		type SimpleThing = {
+  id?: string;
+  name?: string;
+};
+		
+		type TeacherSharingRule = {
+  app?: string;
+  district?: string;
+  id?: string;
+  school?: string;
+  sections?: string[];
+  teacher?: string;
+};
+		
+		type Thing = {
+  category?: Category;
+  createdAt?: string;
+  id?: string;
+  name?: string;
+  nestedObject?: Object;
+  version?: number;
+};
+		
+		type ThingWithCompositeAttributes = {
+  branch: string;
+  date: string;
+  name: string;
+  version?: number;
+};
+		
+		type ThingWithCompositeEnumAttributes = {
+  branchID: Branch;
+  date: string;
+  name: string;
+};
+		
+		type ThingWithDateRange = {
+  date?: string;
+  name?: string;
+};
+		
+		type ThingWithDateTimeComposite = {
+  created?: string;
+  id?: string;
+  resource?: string;
+  type?: string;
+};
+		
+		type ThingWithMatchingKeys = {
+  assocID?: string;
+  assocType?: string;
+  bear?: string;
+  created?: string;
+};
+		
+		type ThingWithRequiredFields = {
+  id: string;
+  name: string;
+};
+		
+		type ThingWithRequiredFields2 = {
+  id: string;
+  name: string;
+};
+		
+		type ThingWithUnderscores = {
+  id_app?: string;
+};
+		
+	}
 }
 
 export = SwaggerTest;

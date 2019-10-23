@@ -49,20 +49,15 @@ interface AddressOptions {
   address: string;
 }
 
-type BlogOptions = (DiscoveryOptions | AddressOptions) & GenericOptions; 
+type BlogOptions = (DiscoveryOptions | AddressOptions) & GenericOptions;
 
-
-type Section = {
-  id?: string;
-  name?: string;
-  period?: string;
-};
+import models = Blog.Models
 
 declare class Blog {
   constructor(options: BlogOptions);
 
   
-  getSectionsForStudent(student_id: string, options?: RequestOptions, cb?: Callback<Section[]>): Promise<Section[]>
+  getSectionsForStudent(student_id: string, options?: RequestOptions, cb?: Callback<models.Section[]>): Promise<models.Section[]>
   
 }
 
@@ -85,7 +80,17 @@ declare namespace Blog {
   message?: string;
 }
     
-  }
+	}
+
+	namespace Models {
+		
+		type Section = {
+  id?: string;
+  name?: string;
+  period?: string;
+};
+		
+	}
 }
 
 export = Blog;
