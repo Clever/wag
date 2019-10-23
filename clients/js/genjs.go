@@ -1387,13 +1387,13 @@ declare namespace {{.ServiceName}} {
     {{range .ErrorTypes}}
     {{.}}
     {{end}}
-	}
+  }
 
-	namespace Models {
-		{{range .IncludedTypes}}
-		{{.}}
-		{{end}}
-	}
+  namespace Models {
+    {{range .IncludedTypes}}
+    {{.}}
+    {{end}}
+  }
 }
 
 export = {{.ServiceName}};
