@@ -973,7 +973,7 @@ func generateTypescriptTypes(s spec.Swagger) (string, error) {
 
 	for name, schema := range s.Definitions {
 		if !isDefaultIncludedType[name] {
-			theType, err := asJSType(&schema)
+			theType, err := asJSType(&schema, "")
 			if err != nil {
 				return "", err
 			}
@@ -1033,7 +1033,7 @@ func getErrorTypes(s spec.Swagger) ([]string, error) {
 				if schema, ok := s.Definitions[typeName]; !ok {
 					errorTypes = append(errorTypes, fmt.Sprintf("class %s {}", typeName))
 				} else if len(schema.Properties) > 0 {
-					errorType, err := asJSType(&schema)
+					errorType, err := asJSType(&schema, "models.")
 					if err != nil {
 						return errorTypes, err
 					}
@@ -1047,7 +1047,9 @@ func getErrorTypes(s spec.Swagger) ([]string, error) {
 
 func methodDecl(s spec.Swagger, op *spec.Operation, path, method string) (string, error) {
 	returnType, err := ReturnType(s, op)
-	returnType = JSType(fmt.Sprintf("models.%s", returnType))
+	if returnType != "void" && returnType != "never" {
+		returnType = JSType(fmt.Sprintf("models.%s", returnType))
+	}
 	if err != nil {
 		return "", err
 	}
@@ -1060,7 +1062,7 @@ func methodDecl(s spec.Swagger, op *spec.Operation, path, method string) (string
 		paramName := op.Parameters[0].Name
 		var paramType JSType
 		if op.Parameters[0].ParamProps.Schema != nil {
-			paramType, err = asJSType(op.Parameters[0].ParamProps.Schema)
+			paramType, err = asJSType(op.Parameters[0].ParamProps.Schema, "")
 			paramType = JSType(fmt.Sprintf("models.%s", paramType))
 		} else {
 			paramType, err = asJSTypeSimple(op.Parameters[0].SimpleSchema)
@@ -1075,7 +1077,7 @@ func methodDecl(s spec.Swagger, op *spec.Operation, path, method string) (string
 		}
 	} else {
 		paramType := fmt.Sprintf("%sParams", utils.CamelCase(methodName, true))
-		params = fmt.Sprintf("params: %s, ", paramType)
+		params = fmt.Sprintf("params: models.%s, ", paramType)
 	}
 	methodDecl = fmt.Sprintf("%s(%soptions?: RequestOptions, cb?: Callback<%s>): Promise<%s>",
 		methodName, params, returnType, returnType)
@@ -1154,12 +1156,12 @@ func typeOf(s spec.Swagger, op *spec.Operation, statusCode int) (JSType, error) 
 	if schema == nil {
 		return "void", nil
 	}
-	return asJSType(schema)
+	return asJSType(schema, "")
 }
 
 func paramToJSType(param spec.Parameter) (JSType, error) {
 	if param.In == "body" {
-		typeName, err := asJSType(param.Schema)
+		typeName, err := asJSType(param.Schema, "")
 		if err != nil {
 			return "", err
 		}
@@ -1203,7 +1205,7 @@ func asJSTypeSimple(simpleSchema spec.SimpleSchema) (JSType, error) {
 	return JSType(""), fmt.Errorf("Unknown type '%v'", simpleSchema.Type)
 }
 
-func asJSType(schema *spec.Schema) (JSType, error) {
+func asJSType(schema *spec.Schema, refPrefix string) (JSType, error) {
 	if schema == nil {
 		return JSType(""), fmt.Errorf("No schema")
 	}
@@ -1213,13 +1215,16 @@ func asJSType(schema *spec.Schema) (JSType, error) {
 		if err != nil {
 			return JSType(""), err
 		}
+		if refPrefix != "" {
+			return JSType(fmt.Sprintf("%s%s", refPrefix, def)), nil
+		}
 		return JSType(def), nil
 	}
 
 	if len(schema.Type) == 0 {
 		if schema.AdditionalProperties != nil {
 			if schema.AdditionalProperties.Schema != nil {
-				innerType, err := asJSType(schema.AdditionalProperties.Schema)
+				innerType, err := asJSType(schema.AdditionalProperties.Schema, refPrefix)
 				if err != nil {
 					return JSType(""), err
 				}
@@ -1252,7 +1257,7 @@ func asJSType(schema *spec.Schema) (JSType, error) {
 	}
 
 	if schema.Type[0] == "array" {
-		innerType, err := asJSType(schema.Items.Schema)
+		innerType, err := asJSType(schema.Items.Schema, refPrefix)
 		return innerType + "[]", err
 	}
 
@@ -1270,7 +1275,7 @@ func asJSType(schema *spec.Schema) (JSType, error) {
 		fieldsStrings := []string{}
 		for _, k := range keys {
 			fieldSchema := schema.Properties[k]
-			t, err := asJSType(&fieldSchema)
+			t, err := asJSType(&fieldSchema, refPrefix)
 			if err != nil {
 				return JSType(""), err
 			}
@@ -1283,7 +1288,7 @@ func asJSType(schema *spec.Schema) (JSType, error) {
 
 		if schema.AdditionalProperties != nil {
 			if schema.AdditionalProperties.Schema != nil {
-				innerType, err := asJSType(schema.AdditionalProperties.Schema)
+				innerType, err := asJSType(schema.AdditionalProperties.Schema, refPrefix)
 				if err != nil {
 					return JSType(""), err
 				}
