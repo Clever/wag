@@ -8,7 +8,7 @@ module.exports.Errors = {};
  * @property {string} message
  */
 module.exports.Errors.BadRequest = class extends Error {
-  constructor(body) {
+  constructor(body = {}) {
     super(body.message);
     for (const k of Object.keys(body)) {
       this[k] = body[k];
@@ -24,7 +24,7 @@ module.exports.Errors.BadRequest = class extends Error {
  * @property {string} message
  */
 module.exports.Errors.NotFound = class extends Error {
-  constructor(body) {
+  constructor(body = {}) {
     super(body.message);
     for (const k of Object.keys(body)) {
       this[k] = body[k];
@@ -40,7 +40,7 @@ module.exports.Errors.NotFound = class extends Error {
  * @property {string} message
  */
 module.exports.Errors.InternalError = class extends Error {
-  constructor(body) {
+  constructor(body = {}) {
     super(body.message);
     for (const k of Object.keys(body)) {
       this[k] = body[k];
