@@ -837,7 +837,7 @@ var typeTmplString = `module.exports.Errors = {};
  * @property {{.Type}} {{.Name}}{{end}}
  */
 module.exports.Errors.{{ .Name }} = class extends Error {
-  constructor(body) {
+  constructor(body = {}) {
     super(body.message);
     for (const k of Object.keys(body)) {
       this[k] = body[k];
