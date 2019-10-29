@@ -80,39 +80,39 @@ declare namespace SwaggerTest {
   message?: string;
 }
     
-	}
+  }
 
-	namespace Models {
-		
-		type Branch = ("master" | "DEV_BRANCH" | "test");
-		
-		type Category = ("a" | "b");
-		
-		type Deployment = {
+  namespace Models {
+    
+    type Branch = ("master" | "DEV_BRANCH" | "test");
+    
+    type Category = ("a" | "b");
+    
+    type Deployment = {
   application?: string;
   date?: string;
   environment?: string;
   version?: string;
 };
-		
-		type NoRangeThingWithCompositeAttributes = {
+    
+    type NoRangeThingWithCompositeAttributes = {
   branch: string;
   date: string;
   name: string;
   version?: number;
 };
-		
-		type Object = {
+    
+    type Object = {
   bar?: string;
   foo?: string;
 };
-		
-		type SimpleThing = {
+    
+    type SimpleThing = {
   id?: string;
   name?: string;
 };
-		
-		type TeacherSharingRule = {
+    
+    type TeacherSharingRule = {
   app?: string;
   district?: string;
   id?: string;
@@ -120,8 +120,8 @@ declare namespace SwaggerTest {
   sections?: string[];
   teacher?: string;
 };
-		
-		type Thing = {
+    
+    type Thing = {
   category?: Category;
   createdAt?: string;
   id?: string;
@@ -129,54 +129,54 @@ declare namespace SwaggerTest {
   nestedObject?: Object;
   version?: number;
 };
-		
-		type ThingWithCompositeAttributes = {
+    
+    type ThingWithCompositeAttributes = {
   branch: string;
   date: string;
   name: string;
   version?: number;
 };
-		
-		type ThingWithCompositeEnumAttributes = {
+    
+    type ThingWithCompositeEnumAttributes = {
   branchID: Branch;
   date: string;
   name: string;
 };
-		
-		type ThingWithDateRange = {
+    
+    type ThingWithDateRange = {
   date?: string;
   name?: string;
 };
-		
-		type ThingWithDateTimeComposite = {
+    
+    type ThingWithDateTimeComposite = {
   created?: string;
   id?: string;
   resource?: string;
   type?: string;
 };
-		
-		type ThingWithMatchingKeys = {
+    
+    type ThingWithMatchingKeys = {
   assocID?: string;
   assocType?: string;
   bear?: string;
   created?: string;
 };
-		
-		type ThingWithRequiredFields = {
+    
+    type ThingWithRequiredFields = {
   id: string;
   name: string;
 };
-		
-		type ThingWithRequiredFields2 = {
+    
+    type ThingWithRequiredFields2 = {
   id: string;
   name: string;
 };
-		
-		type ThingWithUnderscores = {
+    
+    type ThingWithUnderscores = {
   id_app?: string;
 };
-		
-	}
+    
+  }
 }
 
 export = SwaggerTest;

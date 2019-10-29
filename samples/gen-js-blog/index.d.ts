@@ -80,17 +80,17 @@ declare namespace Blog {
   message?: string;
 }
     
-	}
+  }
 
-	namespace Models {
-		
-		type Section = {
+  namespace Models {
+    
+    type Section = {
   id?: string;
   name?: string;
   period?: string;
 };
-		
-	}
+    
+  }
 }
 
 export = Blog;

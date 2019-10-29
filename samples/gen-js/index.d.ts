@@ -106,32 +106,32 @@ declare namespace SwaggerTest {
   message?: string;
 }
     
-	}
+  }
 
-	namespace Models {
-		
-		type Author = {
+  namespace Models {
+    
+    type Author = {
   id?: string;
   name?: string;
 };
-		
-		type AuthorArray = Author[];
-		
-		type AuthorSet = {
+    
+    type AuthorArray = Author[];
+    
+    type AuthorSet = {
   randomProp?: number;
   results?: AuthorArray;
 };
-		
-		type AuthorsResponse = {
+    
+    type AuthorsResponse = {
   authorSet?: AuthorSet;
   metadata?: AuthorsResponseMetadata;
 };
-		
-		type AuthorsResponseMetadata = {
+    
+    type AuthorsResponseMetadata = {
   count?: number;
 };
-		
-		type Book = {
+    
+    type Book = {
   author?: string;
   genre?: ("scifi" | "mystery" | "horror");
   id?: number;
@@ -139,32 +139,32 @@ declare namespace SwaggerTest {
   other?: { [key: string]: string };
   otherArray?: { [key: string]: string[] };
 };
-		
-		type Error = {
+    
+    type Error = {
   code?: number;
   message?: string;
 };
-		
-		type GetAuthorsParams = {
+    
+    type GetAuthorsParams = {
   name?: string;
   startingAfter?: string;
 };
-		
-		type GetAuthorsWithPutParams = {
+    
+    type GetAuthorsWithPutParams = {
   name?: string;
   startingAfter?: string;
   favoriteBooks?: Book;
 };
-		
-		type GetBookByIDParams = {
+    
+    type GetBookByIDParams = {
   bookID: number;
   authorID?: string;
   authorization?: string;
   XDontRateLimitMeBro?: string;
   randomBytes?: string;
 };
-		
-		type GetBooksParams = {
+    
+    type GetBooksParams = {
   authors?: string[];
   available?: boolean;
   state?: string;
@@ -177,17 +177,17 @@ declare namespace SwaggerTest {
   authorization?: string;
   startingAfter?: number;
 };
-		
-		type OmitEmpty = {
+    
+    type OmitEmpty = {
   arrayFieldNotOmitted?: string[];
   arrayFieldOmitted?: string[];
 };
-		
-		type Unathorized = {
+    
+    type Unathorized = {
   message?: string;
 };
-		
-	}
+    
+  }
 }
 
 export = SwaggerTest;

@@ -241,7 +241,7 @@ class {{.ClassName}} {
    * @param {number} [options.timeout] - The timeout to use for all client requests,
    * in milliseconds. This can be overridden on a per-request basis. Default is 5000ms.
    * @param {bool} [options.keepalive] - Set keepalive to true for client requests. This sets the
-   * forever: true attribute in request. Defaults to false
+   * forever: true attribute in request. Defaults to true.
    * @param {module:{{.ServiceName}}.RetryPolicies} [options.retryPolicy=RetryPolicies.Single] - The logic to
    * determine which requests to retry, as well as how many times to retry.
    * @param {module:kayvee.Logger} [options.logger=logger.New("{{.ServiceName}}-wagclient")] - The Kayvee
@@ -272,10 +272,10 @@ class {{.ClassName}} {
     } else {
       throw new Error("Cannot initialize {{.ServiceName}} without discovery or address");
     }
-    if (options.keepalive) {
+    if (options.keepalive !== undefined) {
       this.keepalive = options.keepalive;
     } else {
-      this.keepalive = false;
+      this.keepalive = true;
     }
     if (options.timeout) {
       this.timeout = options.timeout;
