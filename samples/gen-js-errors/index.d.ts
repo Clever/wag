@@ -49,13 +49,9 @@ interface AddressOptions {
   address: string;
 }
 
-type SwaggerTestOptions = (DiscoveryOptions | AddressOptions) & GenericOptions; 
+type SwaggerTestOptions = (DiscoveryOptions | AddressOptions) & GenericOptions;
 
-
-type ExtendedError = {
-  code?: number;
-  message?: string;
-};
+import models = SwaggerTest.Models
 
 declare class SwaggerTest {
   constructor(options: SwaggerTestOptions);
@@ -90,7 +86,16 @@ declare namespace SwaggerTest {
   message?: string;
 }
     
-  }
+	}
+
+	namespace Models {
+		
+		type ExtendedError = {
+  code?: number;
+  message?: string;
+};
+		
+	}
 }
 
 export = SwaggerTest;

@@ -1,4 +1,5 @@
-v3.9.1
+v3.10.0
+- v3.10.0: Export typescript types for models
 - v3.9.1: Upgrade to go1.13
 - v3.9.0: Add pod shortname to tracing tags
 - v3.8.0: Add serviceName option to support using both an SSO and non-SSO client

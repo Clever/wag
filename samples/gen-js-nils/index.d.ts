@@ -49,27 +49,15 @@ interface AddressOptions {
   address: string;
 }
 
-type NilTestOptions = (DiscoveryOptions | AddressOptions) & GenericOptions; 
+type NilTestOptions = (DiscoveryOptions | AddressOptions) & GenericOptions;
 
-
-type NilCheckParams = {
-  id: string;
-  query?: string;
-  header?: string;
-  array?: string[];
-  body?: NilFields;
-};
-
-type NilFields = {
-  id?: string;
-  optional?: string;
-};
+import models = NilTest.Models
 
 declare class NilTest {
   constructor(options: NilTestOptions);
 
   
-  nilCheck(params: NilCheckParams, options?: RequestOptions, cb?: Callback<void>): Promise<void>
+  nilCheck(params: models.NilCheckParams, options?: RequestOptions, cb?: Callback<void>): Promise<void>
   
 }
 
@@ -92,7 +80,24 @@ declare namespace NilTest {
   message?: string;
 }
     
-  }
+	}
+
+	namespace Models {
+		
+		type NilCheckParams = {
+  id: string;
+  query?: string;
+  header?: string;
+  array?: string[];
+  body?: NilFields;
+};
+		
+		type NilFields = {
+  id?: string;
+  optional?: string;
+};
+		
+	}
 }
 
 export = NilTest;
