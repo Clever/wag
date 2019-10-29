@@ -80,24 +80,24 @@ declare namespace NilTest {
   message?: string;
 }
     
-	}
+  }
 
-	namespace Models {
-		
-		type NilCheckParams = {
+  namespace Models {
+    
+    type NilCheckParams = {
   id: string;
   query?: string;
   header?: string;
   array?: string[];
   body?: NilFields;
 };
-		
-		type NilFields = {
+    
+    type NilFields = {
   id?: string;
   optional?: string;
 };
-		
-	}
+    
+  }
 }
 
 export = NilTest;

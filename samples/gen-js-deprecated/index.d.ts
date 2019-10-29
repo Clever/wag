@@ -82,11 +82,11 @@ declare namespace SwaggerTest {
   message?: string;
 }
     
-	}
+  }
 
-	namespace Models {
-		
-	}
+  namespace Models {
+    
+  }
 }
 
 export = SwaggerTest;

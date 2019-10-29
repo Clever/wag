@@ -86,16 +86,16 @@ declare namespace SwaggerTest {
   message?: string;
 }
     
-	}
+  }
 
-	namespace Models {
-		
-		type ExtendedError = {
+  namespace Models {
+    
+    type ExtendedError = {
   code?: number;
   message?: string;
 };
-		
-	}
+    
+  }
 }
 
 export = SwaggerTest;
