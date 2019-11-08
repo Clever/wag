@@ -26,7 +26,7 @@ var _ = bytes.Compare
 type WagClient struct {
 	basePath    string
 	requestDoer doer
-	transport   http.RoundTripper
+	client      *http.Client
 	timeout     time.Duration
 	// Keep the retry doer around so that we can set the number of retries
 	retryDoer *retryDoer
@@ -56,12 +56,12 @@ func New(basePath string) *WagClient {
 	}
 	circuit.init()
 	client := &WagClient{
+		basePath:       basePath,
 		requestDoer:    circuit,
+		client:         &http.Client{Transport: http.DefaultTransport},
 		retryDoer:      &retry,
 		circuitDoer:    circuit,
 		defaultTimeout: 5 * time.Second,
-		transport:      &http.Transport{},
-		basePath:       basePath,
 		logger:         logger,
 	}
 	client.SetCircuitBreakerSettings(DefaultCircuitBreakerSettings)
@@ -144,7 +144,7 @@ func (c *WagClient) SetTimeout(timeout time.Duration) {
 
 // SetTransport sets the http transport used by the client.
 func (c *WagClient) SetTransport(t http.RoundTripper) {
-	c.transport = t
+	c.client.Transport = t
 }
 
 // GetSectionsForStudent makes a GET request to /students/{student_id}/sections
@@ -175,8 +175,6 @@ func (c *WagClient) GetSectionsForStudent(ctx context.Context, studentID string)
 }
 
 func (c *WagClient) doGetSectionsForStudentRequest(ctx context.Context, req *http.Request, headers map[string]string) ([]models.Section, error) {
-	client := &http.Client{Transport: c.transport}
-
 	req.Header.Set("Content-Type", "application/json")
 
 	for field, value := range headers {
@@ -194,7 +192,7 @@ func (c *WagClient) doGetSectionsForStudentRequest(ctx context.Context, req *htt
 		defer cancel()
 		req = req.WithContext(ctx)
 	}
-	resp, err := c.requestDoer.Do(client, req)
+	resp, err := c.requestDoer.Do(c.client, req)
 	retCode := 0
 	if resp != nil {
 		retCode = resp.StatusCode
