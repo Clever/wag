@@ -31,7 +31,7 @@ go-generate:
 	go generate ./hardcoded/
 	go generate ./server/gendb/
 
-generate: jsdoc2md
+generate: build jsdoc2md
 	./bin/wag -file samples/swagger.yml -go-package $(PKG)/samples/gen-go -js-path $(GOPATH)/src/$(PKG)/samples/gen-js
 	cd $(GOPATH)/src/$(PKG)/samples/gen-js && jsdoc2md index.js types.js > ./README.md
 	go generate $(PKG)/samples/gen-go...
