@@ -16,6 +16,7 @@ import (
 	_ "net/http/pprof"
 
 	"github.com/Clever/go-process-metrics/metrics"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/kardianos/osext"
 	opentracing "github.com/opentracing/opentracing-go"
@@ -142,6 +143,9 @@ type handler struct {
 
 func withMiddleware(serviceName string, router http.Handler, m []func(http.Handler) http.Handler) http.Handler {
 	handler := router
+
+	// compress everything
+	handler = handlers.CompressHandler(handler)
 
 	// Wrap the middleware in the opposite order specified so that when called then run
 	// in the order specified
