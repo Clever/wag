@@ -1,4 +1,5 @@
-v3.10.2
+v3.11.0
+- v3.11.0: Compress responses
 - v3.10.2: Default to http.DefaultTransport for go clients
 - v3.10.1: Default to keepalive: true for js clients.
 - v3.10.0: Export typescript types for models
@@ -14,4 +15,3 @@ v3.10.2
 - v3.4.1: make dynamodb gets strongly consistent
 - v3.4.0: migrate to GuaranteedThroughputProbabilisticSampler
 - v3.3.3: include more tracing metadata
-- v3.3.2: fix dynamodb paging to not pass loop variable
