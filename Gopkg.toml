@@ -122,3 +122,7 @@ required = ["github.com/tmthrgd/go-bindata", "github.com/golang/mock/mockgen", "
 [[constraint]]
   branch = "master"
   name = "golang.org/x/xerrors"
+
+[[constraint]]
+  name = "github.com/gorilla/handlers"
+  version = "1.4.2"
