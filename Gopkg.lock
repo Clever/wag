@@ -279,6 +279,14 @@
   version = "v1.1"
 
 [[projects]]
+  digest = "1:3e16b38456fa0dd6173c032e594cc070a0167755f5af89afcfd32ca92d7764e3"
+  name = "github.com/gorilla/handlers"
+  packages = ["."]
+  pruneopts = ""
+  revision = "8a3748addc242fc560bd6d4ff28b0374c010b1b4"
+  version = "v1.4.2"
+
+[[projects]]
   digest = "1:aa016bbb412f496a7baed9e02787a60cd15c9a3edfa72da9c4a95d6cea610334"
   name = "github.com/gorilla/mux"
   packages = ["."]
@@ -691,6 +699,7 @@
     "github.com/go-swagger/go-swagger/generator",
     "github.com/golang/mock/gomock",
     "github.com/golang/mock/mockgen",
+    "github.com/gorilla/handlers",
     "github.com/gorilla/mux",
     "github.com/kardianos/osext",
     "github.com/opentracing-contrib/go-aws-sdk",
