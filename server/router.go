@@ -54,7 +54,7 @@ func (s *Server) Serve() error {
 	isLocal := os.Getenv("_IS_LOCAL") == "true"
 
 	if !isLocal {
-		startLoggingProcessMetrics()
+		go startLoggingProcessMetrics()
 	}
 
 	go func() {
