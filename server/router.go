@@ -1,5 +1,8 @@
 package server
 
+var routerTemplateStr = `
+package server
+
 // Code auto-generated. Do not edit.
 
 import (
@@ -15,17 +18,17 @@ import (
 	// register pprof listener
 	_ "net/http/pprof"
 
-	"github.com/Clever/go-process-metrics/metrics"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/kardianos/osext"
 	opentracing "github.com/opentracing/opentracing-go"
-	jaeger "github.com/uber/jaeger-client-go"
-	jaegercfg "github.com/uber/jaeger-client-go/config"
-	"github.com/uber/jaeger-client-go/transport"
 	"gopkg.in/Clever/kayvee-go.v6/logger"
 	kvMiddleware "gopkg.in/Clever/kayvee-go.v6/middleware"
 	"gopkg.in/tylerb/graceful.v1"
+	"github.com/Clever/go-process-metrics/metrics"
+	"github.com/kardianos/osext"
+	jaeger "github.com/uber/jaeger-client-go"
+	jaegercfg "github.com/uber/jaeger-client-go/config"
+	"github.com/uber/jaeger-client-go/transport"
 )
 
 const (
@@ -40,8 +43,8 @@ type contextKey struct{}
 type Server struct {
 	// Handler should generally not be changed. It exposed to make testing easier.
 	Handler http.Handler
-	addr    string
-	l       logger.KayveeLogger
+	addr string
+	l logger.KayveeLogger
 }
 
 // Serve starts the server. It will return if an error occurs.
@@ -56,7 +59,7 @@ func (s *Server) Serve() error {
 
 	go func() {
 		// This should never return. Listen on the pprof port
-		log.Printf("PProf server crashed: %s", http.ListenAndServe("localhost:6060", nil))
+		log.Printf("PProf server crashed: %%s", http.ListenAndServe("localhost:6060", nil))
 	}()
 
 	dir, err := osext.ExecutableFolder()
@@ -68,31 +71,31 @@ func (s *Server) Serve() error {
 	}
 
 	if (tracingToken != "" && ingestURL != "") || isLocal {
-		samplingRate := .01 // 1% of requests
+		samplingRate := .01 // 1%% of requests
 
 		if samplingRateStr := os.Getenv("TRACING_SAMPLING_RATE_PERCENT"); samplingRateStr != "" {
 			samplingRateP, err := strconv.ParseFloat(samplingRateStr, 64)
 			if err != nil {
 				s.l.ErrorD("tracing-sampling-override-failed", logger.M{
-					"msg": fmt.Sprintf("could not parse '%s' to integer", samplingRateStr),
+					"msg": fmt.Sprintf("could not parse '%%s' to integer", samplingRateStr),
 				})
 			} else {
 				samplingRate = samplingRateP
 			}
 
 			s.l.InfoD("tracing-sampling-rate", logger.M{
-				"msg": fmt.Sprintf("sampling rate will be %.3f", samplingRate),
+				"msg": fmt.Sprintf("sampling rate will be %%.3f", samplingRate),
 			})
 		}
 
 		sampler, err := jaeger.NewGuaranteedThroughputProbabilisticSampler(lowerBoundRateLimiter, samplingRate)
 		if err != nil {
-			return fmt.Errorf("failed to build jaeger sampler: %s", err)
+			return fmt.Errorf("failed to build jaeger sampler: %%s", err)
 		}
 
 		cfg := &jaegercfg.Configuration{
 			ServiceName: os.Getenv("_APP_NAME"),
-			Tags: []opentracing.Tag{
+			Tags:        []opentracing.Tag{
 				opentracing.Tag{Key: "app_name", Value: os.Getenv("_APP_NAME")},
 				opentracing.Tag{Key: "build_id", Value: os.Getenv("_BUILD_ID")},
 				opentracing.Tag{Key: "deploy_env", Value: os.Getenv("_DEPLOY_ENV")},
@@ -122,7 +125,7 @@ func (s *Server) Serve() error {
 				jaegercfg.Sampler(sampler))
 		}
 		if err != nil {
-			log.Fatalf("Could not initialize jaeger tracer: %s", err)
+			log.Fatalf("Could not initialize jaeger tracer: %%s", err)
 		}
 		defer closer.Close()
 
@@ -134,7 +137,7 @@ func (s *Server) Serve() error {
 	s.l.Counter("server-started")
 
 	// Give the sever 30 seconds to shut down
-	return graceful.RunWithErr(s.addr, 30*time.Second, s.Handler)
+	return graceful.RunWithErr(s.addr,30*time.Second,s.Handler)
 }
 
 type handler struct {
@@ -142,7 +145,7 @@ type handler struct {
 }
 
 func startLoggingProcessMetrics() {
-	metrics.Log("swagger-test", 1*time.Minute)
+	metrics.Log("{{.Title}}", 1*time.Minute)
 }
 
 func withMiddleware(serviceName string, router http.Handler, m []func(http.Handler) http.Handler) http.Handler {
@@ -165,6 +168,7 @@ func withMiddleware(serviceName string, router http.Handler, m []func(http.Handl
 	return handler
 }
 
+
 // New returns a Server that implements the Controller interface. It will start when "Serve" is called.
 func New(c Controller, addr string) *Server {
 	return NewWithMiddleware(c, addr, []func(http.Handler) http.Handler{})
@@ -180,13 +184,14 @@ func newRouter(c Controller) *mux.Router {
 	router := mux.NewRouter()
 	h := handler{Controller: c}
 
-	router.Methods("GET").Path("/v1/books/{id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger.FromContext(r.Context()).AddContext("op", "getBook")
-		h.GetBookHandler(r.Context(), w, r)
-		ctx := WithTracingOpName(r.Context(), "getBook")
+	{{range $index, $val := .Functions}}
+	router.Methods("{{$val.Method}}").Path("{{$val.Path}}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger.FromContext(r.Context()).AddContext("op", "{{$val.OpID}}")
+		h.{{$val.HandlerName}}Handler(r.Context(), w, r)
+		ctx := WithTracingOpName(r.Context(), "{{$val.OpID}}")
 		r = r.WithContext(ctx)
 	})
-
+	{{end}}
 	return router
 }
 
@@ -204,8 +209,8 @@ func NewWithMiddleware(c Controller, addr string, m []func(http.Handler) http.Ha
 // logging, tracing, and handling panics. It should be noted that the built-in middleware executes first
 // followed by the passed in middleware (in the order specified).
 func AttachMiddleware(router *mux.Router, addr string, m []func(http.Handler) http.Handler) *Server {
-	l := logger.New("swagger-test")
+	l := logger.New("{{.Title}}")
 
-	handler := withMiddleware("swagger-test", router, m)
+	handler := withMiddleware("{{.Title}}", router, m)
 	return &Server{Handler: handler, addr: addr, l: l}
-}
+}`
