@@ -1,4 +1,5 @@
-v3.11.0
+v3.12.0
+- v3.12.0: Do not log process metrics when running locally
 - v3.11.0: Compress responses
 - v3.10.2: Default to http.DefaultTransport for go clients
 - v3.10.1: Default to keepalive: true for js clients.
