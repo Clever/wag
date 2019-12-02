@@ -46,10 +46,13 @@ type Server struct {
 
 // Serve starts the server. It will return if an error occurs.
 func (s *Server) Serve() error {
+	tracingToken := os.Getenv("TRACING_ACCESS_TOKEN")
+	ingestURL := os.Getenv("TRACING_INGEST_URL")
+	isLocal := os.Getenv("_IS_LOCAL") == "true"
 
-	go func() {
-		metrics.Log("nil-test", 1*time.Minute)
-	}()
+	if !isLocal {
+		startLoggingProcessMetrics()
+	}
 
 	go func() {
 		// This should never return. Listen on the pprof port
@@ -64,9 +67,6 @@ func (s *Server) Serve() error {
 		s.l.Info("please provide a kvconfig.yml file to enable app log routing")
 	}
 
-	tracingToken := os.Getenv("TRACING_ACCESS_TOKEN")
-	ingestURL := os.Getenv("TRACING_INGEST_URL")
-	isLocal := os.Getenv("_IS_LOCAL") == "true"
 	if (tracingToken != "" && ingestURL != "") || isLocal {
 		samplingRate := .01 // 1% of requests
 
@@ -139,6 +139,10 @@ func (s *Server) Serve() error {
 
 type handler struct {
 	Controller
+}
+
+func startLoggingProcessMetrics() {
+	metrics.Log("nil-test", 1*time.Minute)
 }
 
 func withMiddleware(serviceName string, router http.Handler, m []func(http.Handler) http.Handler) http.Handler {
