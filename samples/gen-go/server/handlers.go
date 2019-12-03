@@ -160,6 +160,7 @@ func (h handler) GetAuthorsHandler(ctx context.Context, w http.ResponseWriter, r
 
 	sp.LogFields(log.Int("response-size-bytes", len(respBytes)))
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Canonical-Resource", "GetAuthors")
 	w.WriteHeader(statusCodeForGetAuthors(resp))
 	w.Write(respBytes)
 
@@ -291,6 +292,7 @@ func (h handler) GetAuthorsWithPutHandler(ctx context.Context, w http.ResponseWr
 
 	sp.LogFields(log.Int("response-size-bytes", len(respBytes)))
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Canonical-Resource", "GetAuthorsWithPut")
 	w.WriteHeader(statusCodeForGetAuthorsWithPut(resp))
 	w.Write(respBytes)
 
@@ -443,6 +445,7 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 
 	sp.LogFields(log.Int("response-size-bytes", len(respBytes)))
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Canonical-Resource", "GetBooks")
 	w.WriteHeader(statusCodeForGetBooks(resp))
 	w.Write(respBytes)
 
@@ -672,6 +675,7 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 
 	sp.LogFields(log.Int("response-size-bytes", len(respBytes)))
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Canonical-Resource", "CreateBook")
 	w.WriteHeader(statusCodeForCreateBook(resp))
 	w.Write(respBytes)
 
@@ -786,6 +790,7 @@ func (h handler) PutBookHandler(ctx context.Context, w http.ResponseWriter, r *h
 
 	sp.LogFields(log.Int("response-size-bytes", len(respBytes)))
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Canonical-Resource", "PutBook")
 	w.WriteHeader(statusCodeForPutBook(resp))
 	w.Write(respBytes)
 
@@ -908,6 +913,7 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 
 	sp.LogFields(log.Int("response-size-bytes", len(respBytes)))
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Canonical-Resource", "GetBookByID")
 	w.WriteHeader(statusCodeForGetBookByID(resp))
 	w.Write(respBytes)
 
@@ -1066,6 +1072,7 @@ func (h handler) GetBookByID2Handler(ctx context.Context, w http.ResponseWriter,
 
 	sp.LogFields(log.Int("response-size-bytes", len(respBytes)))
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Canonical-Resource", "GetBookByID2")
 	w.WriteHeader(statusCodeForGetBookByID2(resp))
 	w.Write(respBytes)
 
