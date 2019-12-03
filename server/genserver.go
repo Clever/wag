@@ -404,6 +404,7 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 	w.WriteHeader(statusCodeFor{{.Op}}(resp))
 	w.Write(respBytes)
 {{else}}
+	w.Header().Set("Canonical-Resource", "{{.Op}}")
 	w.WriteHeader({{.EmptyStatusCode}})
 	w.Write([]byte(""))
 {{end}}

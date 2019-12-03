@@ -114,6 +114,7 @@ func (h handler) HealthCheckHandler(ctx context.Context, w http.ResponseWriter, 
 		return
 	}
 
+	w.Header().Set("Canonical-Resource", "HealthCheck")
 	w.WriteHeader(200)
 	w.Write([]byte(""))
 
