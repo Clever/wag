@@ -135,6 +135,7 @@ func (h handler) HealthHandler(ctx context.Context, w http.ResponseWriter, r *ht
 		return
 	}
 
+	w.Header().Set("Canonical-Resource", "Health")
 	w.WriteHeader(200)
 	w.Write([]byte(""))
 

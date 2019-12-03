@@ -129,6 +129,7 @@ func (h handler) NilCheckHandler(ctx context.Context, w http.ResponseWriter, r *
 		return
 	}
 
+	w.Header().Set("Canonical-Resource", "NilCheck")
 	w.WriteHeader(200)
 	w.Write([]byte(""))
 
