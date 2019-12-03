@@ -287,6 +287,7 @@ class SwaggerTest {
       const span = options.span;
 
       const headers = {};
+      headers["Canonical-Resource"] = "healthCheck";
 
       const query = {};
 

@@ -373,6 +373,7 @@ func methodDoerCode(s *spec.Swagger, op *spec.Operation) string {
 	buf.WriteString(fmt.Sprintf(`
 func (c *WagClient) do%sRequest(ctx context.Context, req *http.Request, headers map[string]string) %s {
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Canonical-Resource", "%s")
 
 	for field, value := range headers {
 		req.Header.Set(field, value)
@@ -412,7 +413,7 @@ func (c *WagClient) do%sRequest(ctx context.Context, req *http.Request, headers 
 		return %serr
 	}
 	defer resp.Body.Close()
-`, capOpID, returnType, op.ID, s.Info.InfoProps.Title, errReturn))
+`, capOpID, returnType, op.ID, op.ID, s.Info.InfoProps.Title, errReturn))
 
 	buf.WriteString(parseResponseCode(s, op, capOpID))
 

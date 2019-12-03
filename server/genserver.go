@@ -400,11 +400,9 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 
 	sp.LogFields(log.Int("response-size-bytes", len(respBytes)))
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Canonical-Resource", "{{.Op}}")
 	w.WriteHeader(statusCodeFor{{.Op}}(resp))
 	w.Write(respBytes)
 {{else}}
-	w.Header().Set("Canonical-Resource", "{{.Op}}")
 	w.WriteHeader({{.EmptyStatusCode}})
 	w.Write([]byte(""))
 {{end}}

@@ -290,6 +290,7 @@ class SwaggerTest {
       const span = options.span;
 
       const headers = {};
+      headers["Canonical-Resource"] = "getBook";
       if (!params.id) {
         reject(new Error("id must be non-empty because it's a path parameter"));
         return;

@@ -135,7 +135,6 @@ func (h handler) GetBookHandler(ctx context.Context, w http.ResponseWriter, r *h
 		return
 	}
 
-	w.Header().Set("Canonical-Resource", "GetBook")
 	w.WriteHeader(200)
 	w.Write([]byte(""))
 

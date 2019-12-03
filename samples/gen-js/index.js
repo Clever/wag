@@ -289,6 +289,7 @@ class SwaggerTest {
       const span = options.span;
 
       const headers = {};
+      headers["Canonical-Resource"] = "getAuthors";
 
       const query = {};
       if (typeof params.name !== "undefined") {
@@ -395,6 +396,7 @@ class SwaggerTest {
       const span = options.span;
 
       const headers = {};
+      headers["Canonical-Resource"] = "getAuthorsIter";
 
       const query = {};
       if (typeof params.name !== "undefined") {
@@ -553,6 +555,7 @@ class SwaggerTest {
       const span = options.span;
 
       const headers = {};
+      headers["Canonical-Resource"] = "getAuthorsWithPut";
 
       const query = {};
       if (typeof params.name !== "undefined") {
@@ -662,6 +665,7 @@ class SwaggerTest {
       const span = options.span;
 
       const headers = {};
+      headers["Canonical-Resource"] = "getAuthorsWithPutIter";
 
       const query = {};
       if (typeof params.name !== "undefined") {
@@ -830,6 +834,7 @@ class SwaggerTest {
       const span = options.span;
 
       const headers = {};
+      headers["Canonical-Resource"] = "getBooks";
       headers["authorization"] = params.authorization;
 
       const query = {};
@@ -978,6 +983,7 @@ class SwaggerTest {
       const span = options.span;
 
       const headers = {};
+      headers["Canonical-Resource"] = "getBooksIter";
       headers["authorization"] = params.authorization;
 
       const query = {};
@@ -1169,6 +1175,7 @@ class SwaggerTest {
       const span = options.span;
 
       const headers = {};
+      headers["Canonical-Resource"] = "createBook";
 
       const query = {};
 
@@ -1283,6 +1290,7 @@ class SwaggerTest {
       const span = options.span;
 
       const headers = {};
+      headers["Canonical-Resource"] = "putBook";
 
       const query = {};
 
@@ -1401,6 +1409,7 @@ class SwaggerTest {
       const span = options.span;
 
       const headers = {};
+      headers["Canonical-Resource"] = "getBookByID";
       if (!params.bookID) {
         reject(new Error("bookID must be non-empty because it's a path parameter"));
         return;
@@ -1540,6 +1549,7 @@ class SwaggerTest {
       const span = options.span;
 
       const headers = {};
+      headers["Canonical-Resource"] = "getBookByID2";
       if (!params.id) {
         reject(new Error("id must be non-empty because it's a path parameter"));
         return;
@@ -1659,6 +1669,7 @@ class SwaggerTest {
       const span = options.span;
 
       const headers = {};
+      headers["Canonical-Resource"] = "healthCheck";
 
       const query = {};
 

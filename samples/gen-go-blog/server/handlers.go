@@ -155,7 +155,6 @@ func (h handler) GetSectionsForStudentHandler(ctx context.Context, w http.Respon
 
 	sp.LogFields(log.Int("response-size-bytes", len(respBytes)))
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Canonical-Resource", "GetSectionsForStudent")
 	w.WriteHeader(statusCodeForGetSectionsForStudent(resp))
 	w.Write(respBytes)
 
