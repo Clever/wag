@@ -1262,28 +1262,9 @@ func asJSType(schema *spec.Schema, refPrefix string) (JSType, error) {
 	}
 
 	if schema.Type[0] == "object" || len(schema.Properties) > 0 {
-		requiredFields := map[string]struct{}{}
-		for _, requiredField := range schema.Required {
-			requiredFields[requiredField] = struct{}{}
-		}
-
-		var keys []string
-		for k := range schema.Properties {
-			keys = append(keys, k)
-		}
-		sort.Strings(keys)
-		fieldsStrings := []string{}
-		for _, k := range keys {
-			fieldSchema := schema.Properties[k]
-			t, err := asJSType(&fieldSchema, refPrefix)
-			if err != nil {
-				return JSType(""), err
-			}
-			if _, ok := requiredFields[k]; ok {
-				fieldsStrings = append(fieldsStrings, fmt.Sprintf("%s: %s;", k, t))
-			} else {
-				fieldsStrings = append(fieldsStrings, fmt.Sprintf("%s?: %s;", k, t))
-			}
+		fieldsStrings, err := generatePropertyDeclarations(schema, refPrefix)
+		if err != nil {
+			return JSType(""), err
 		}
 
 		if schema.AdditionalProperties != nil {
