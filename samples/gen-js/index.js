@@ -290,6 +290,7 @@ class SwaggerTest {
 
       const headers = {};
       headers["Canonical-Resource"] = "getAuthors";
+      headers["Accept-Encoding"] = "gzip";
 
       const query = {};
       if (typeof params.name !== "undefined") {
@@ -397,6 +398,7 @@ class SwaggerTest {
 
       const headers = {};
       headers["Canonical-Resource"] = "getAuthorsIter";
+      headers["Accept-Encoding"] = "gzip";
 
       const query = {};
       if (typeof params.name !== "undefined") {
@@ -556,6 +558,7 @@ class SwaggerTest {
 
       const headers = {};
       headers["Canonical-Resource"] = "getAuthorsWithPut";
+      headers["Accept-Encoding"] = "gzip";
 
       const query = {};
       if (typeof params.name !== "undefined") {
@@ -666,6 +669,7 @@ class SwaggerTest {
 
       const headers = {};
       headers["Canonical-Resource"] = "getAuthorsWithPutIter";
+      headers["Accept-Encoding"] = "gzip";
 
       const query = {};
       if (typeof params.name !== "undefined") {
@@ -835,6 +839,7 @@ class SwaggerTest {
 
       const headers = {};
       headers["Canonical-Resource"] = "getBooks";
+      headers["Accept-Encoding"] = "gzip";
       headers["authorization"] = params.authorization;
 
       const query = {};
@@ -984,6 +989,7 @@ class SwaggerTest {
 
       const headers = {};
       headers["Canonical-Resource"] = "getBooksIter";
+      headers["Accept-Encoding"] = "gzip";
       headers["authorization"] = params.authorization;
 
       const query = {};
@@ -1176,6 +1182,7 @@ class SwaggerTest {
 
       const headers = {};
       headers["Canonical-Resource"] = "createBook";
+      headers["Accept-Encoding"] = "gzip";
 
       const query = {};
 
@@ -1291,6 +1298,7 @@ class SwaggerTest {
 
       const headers = {};
       headers["Canonical-Resource"] = "putBook";
+      headers["Accept-Encoding"] = "gzip";
 
       const query = {};
 
@@ -1410,6 +1418,7 @@ class SwaggerTest {
 
       const headers = {};
       headers["Canonical-Resource"] = "getBookByID";
+      headers["Accept-Encoding"] = "gzip";
       if (!params.bookID) {
         reject(new Error("bookID must be non-empty because it's a path parameter"));
         return;
@@ -1550,6 +1559,7 @@ class SwaggerTest {
 
       const headers = {};
       headers["Canonical-Resource"] = "getBookByID2";
+      headers["Accept-Encoding"] = "gzip";
       if (!params.id) {
         reject(new Error("id must be non-empty because it's a path parameter"));
         return;
@@ -1670,6 +1680,7 @@ class SwaggerTest {
 
       const headers = {};
       headers["Canonical-Resource"] = "healthCheck";
+      headers["Accept-Encoding"] = "gzip";
 
       const query = {};
 

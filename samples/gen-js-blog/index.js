@@ -291,6 +291,7 @@ class Blog {
 
       const headers = {};
       headers["Canonical-Resource"] = "getSectionsForStudent";
+      headers["Accept-Encoding"] = "gzip";
       if (!params.studentID) {
         reject(new Error("studentID must be non-empty because it's a path parameter"));
         return;

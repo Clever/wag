@@ -291,6 +291,7 @@ class SwaggerTest {
 
       const headers = {};
       headers["Canonical-Resource"] = "getBook";
+      headers["Accept-Encoding"] = "gzip";
       if (!params.id) {
         reject(new Error("id must be non-empty because it's a path parameter"));
         return;

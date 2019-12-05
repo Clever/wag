@@ -288,6 +288,7 @@ class SwaggerTest {
 
       const headers = {};
       headers["Canonical-Resource"] = "healthCheck";
+      headers["Accept-Encoding"] = "gzip";
 
       const query = {};
 

@@ -293,6 +293,7 @@ class NilTest {
 
       const headers = {};
       headers["Canonical-Resource"] = "nilCheck";
+      headers["Accept-Encoding"] = "gzip";
       if (!params.id) {
         reject(new Error("id must be non-empty because it's a path parameter"));
         return;

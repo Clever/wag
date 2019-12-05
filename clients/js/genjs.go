@@ -408,6 +408,7 @@ const methodTmplStr = `
 
       const headers = {};
       headers["Canonical-Resource"] = "{{.MethodName}}";
+      headers["Accept-Encoding"] = "gzip";
       {{- range $param := .PathParams}}
       if (!params.{{$param.JSName}}) {
         reject(new Error("{{$param.JSName}} must be non-empty because it's a path parameter"));
