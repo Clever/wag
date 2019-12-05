@@ -1,4 +1,5 @@
-v3.13.2
+v3.14.0
+- v3.14.0: adds Accept-Encoding: gzip header to clients
 - v3.13.1: adds a Canonical-Resource header to clients
 - v3.12.0: Do not log process metrics when running locally
 - v3.11.0: Compress responses
@@ -15,4 +16,3 @@ v3.13.2
 - v3.5.1: only create trace obj in handler if it'll be used
 - v3.5.0: add tracing support to generated dynamodb pkg
 - v3.4.1: make dynamodb gets strongly consistent
-- v3.4.0: migrate to GuaranteedThroughputProbabilisticSampler
