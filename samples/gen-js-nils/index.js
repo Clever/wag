@@ -292,6 +292,7 @@ class NilTest {
       const span = options.span;
 
       const headers = {};
+      headers["Canonical-Resource"] = "nilCheck";
       if (!params.id) {
         reject(new Error("id must be non-empty because it's a path parameter"));
         return;

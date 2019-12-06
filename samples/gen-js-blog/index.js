@@ -290,6 +290,7 @@ class Blog {
       const span = options.span;
 
       const headers = {};
+      headers["Canonical-Resource"] = "getSectionsForStudent";
       if (!params.studentID) {
         reject(new Error("studentID must be non-empty because it's a path parameter"));
         return;

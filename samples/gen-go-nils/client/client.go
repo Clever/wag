@@ -189,6 +189,7 @@ func (c *WagClient) NilCheck(ctx context.Context, i *models.NilCheckInput) error
 
 func (c *WagClient) doNilCheckRequest(ctx context.Context, req *http.Request, headers map[string]string) error {
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Canonical-Resource", "nilCheck")
 
 	for field, value := range headers {
 		req.Header.Set(field, value)
