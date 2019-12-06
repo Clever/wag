@@ -1034,11 +1034,11 @@ func getErrorTypes(s spec.Swagger) ([]string, error) {
 				if schema, ok := s.Definitions[typeName]; !ok {
 					errorTypes = append(errorTypes, fmt.Sprintf("class %s {}", typeName))
 				} else if len(schema.Properties) > 0 {
-					errorType, err := asJSType(&schema, "models.")
+					declaration, err := generateErrorDeclaration(&schema, typeName, "models.")
 					if err != nil {
 						return errorTypes, err
 					}
-					errorTypes = append(errorTypes, fmt.Sprintf("class %s %s", typeName, errorType))
+					errorTypes = append(errorTypes, declaration)
 				}
 			}
 		}
@@ -1263,28 +1263,9 @@ func asJSType(schema *spec.Schema, refPrefix string) (JSType, error) {
 	}
 
 	if schema.Type[0] == "object" || len(schema.Properties) > 0 {
-		requiredFields := map[string]struct{}{}
-		for _, requiredField := range schema.Required {
-			requiredFields[requiredField] = struct{}{}
-		}
-
-		var keys []string
-		for k := range schema.Properties {
-			keys = append(keys, k)
-		}
-		sort.Strings(keys)
-		fieldsStrings := []string{}
-		for _, k := range keys {
-			fieldSchema := schema.Properties[k]
-			t, err := asJSType(&fieldSchema, refPrefix)
-			if err != nil {
-				return JSType(""), err
-			}
-			if _, ok := requiredFields[k]; ok {
-				fieldsStrings = append(fieldsStrings, fmt.Sprintf("%s: %s;", k, t))
-			} else {
-				fieldsStrings = append(fieldsStrings, fmt.Sprintf("%s?: %s;", k, t))
-			}
+		fieldsStrings, err := generatePropertyDeclarations(schema, refPrefix)
+		if err != nil {
+			return JSType(""), err
 		}
 
 		if schema.AdditionalProperties != nil {
@@ -1385,6 +1366,11 @@ declare namespace {{.ServiceName}} {
   const DefaultCircuitOptions: CircuitOptions;
 
   namespace Errors {
+    interface ErrorBody {
+      message: string;
+      [key: string]: any;
+    }
+
     {{range .ErrorTypes}}
     {{.}}
     {{end}}

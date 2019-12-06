@@ -71,19 +71,30 @@ declare namespace SwaggerTest {
   const DefaultCircuitOptions: CircuitOptions;
 
   namespace Errors {
+    interface ErrorBody {
+      message: string;
+      [key: string]: any;
+    }
+
     
     class ExtendedError {
   code?: number;
   message?: string;
+
+  constructor(body: ErrorBody);
 }
     
     class NotFound {
   message?: string;
+
+  constructor(body: ErrorBody);
 }
     
     class InternalError {
   code?: number;
   message?: string;
+
+  constructor(body: ErrorBody);
 }
     
   }

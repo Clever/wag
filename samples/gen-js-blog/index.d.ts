@@ -71,13 +71,22 @@ declare namespace Blog {
   const DefaultCircuitOptions: CircuitOptions;
 
   namespace Errors {
+    interface ErrorBody {
+      message: string;
+      [key: string]: any;
+    }
+
     
     class BadRequest {
   message?: string;
+
+  constructor(body: ErrorBody);
 }
     
     class InternalError {
   message?: string;
+
+  constructor(body: ErrorBody);
 }
     
   }
