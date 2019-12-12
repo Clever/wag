@@ -1,4 +1,5 @@
-v3.14.0
+v3.14.1
+- v3.14.1 Send client version as a header bugfix.
 - v3.14.0 Send client version as a header.
 - v3.13.3 Add constructor declarations to TypeScript error models
 - v3.13.1: adds a Canonical-Resource header to clients
@@ -16,4 +17,3 @@ v3.14.0
 - v3.5.2: End paginated queries when Limit is reached
 - v3.5.1: only create trace obj in handler if it'll be used
 - v3.5.0: add tracing support to generated dynamodb pkg
-- v3.4.1: make dynamodb gets strongly consistent
