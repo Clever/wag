@@ -291,6 +291,7 @@ class SwaggerTest {
 
       const headers = {};
       headers["Canonical-Resource"] = "getBook";
+      headers[versionHeader] = version;
       if (!params.id) {
         reject(new Error("id must be non-empty because it's a path parameter"));
         return;
@@ -317,12 +318,12 @@ class SwaggerTest {
       if (this.keepalive) {
         requestOptions.forever = true;
       }
-  
+
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
-  
+
       let retries = 0;
       (function requestOnce() {
         request(requestOptions, (err, response, body) => {
@@ -343,25 +344,25 @@ class SwaggerTest {
             case 200:
               resolve();
               break;
-            
+
             case 400:
               var err = new Errors.ExtendedError(body || {});
               responseLog(logger, requestOptions, response, err);
               reject(err);
               return;
-            
+
             case 404:
               var err = new Errors.NotFound(body || {});
               responseLog(logger, requestOptions, response, err);
               reject(err);
               return;
-            
+
             case 500:
               var err = new Errors.InternalError(body || {});
               responseLog(logger, requestOptions, response, err);
               reject(err);
               return;
-            
+
             default:
               var err = new Error("Received unexpected statusCode " + response.statusCode);
               responseLog(logger, requestOptions, response, err);
@@ -393,3 +394,8 @@ module.exports.RetryPolicies = {
 module.exports.Errors = Errors;
 
 module.exports.DefaultCircuitOptions = defaultCircuitOptions;
+
+const version = "0.1.0";
+const versionHeader = "X-Client-Version";
+module.exports.Version = version;
+module.exports.VersionHeader = versionHeader;

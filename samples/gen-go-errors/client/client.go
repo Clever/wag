@@ -22,6 +22,12 @@ var _ = strings.Replace
 var _ = strconv.FormatInt
 var _ = bytes.Compare
 
+// Version of the client.
+const Version = "0.1.0"
+
+// VersionHeader is sent with every request.
+const VersionHeader = "X-Client-Version"
+
 // WagClient is used to make requests to the swagger-test service.
 type WagClient struct {
 	basePath    string
@@ -178,6 +184,7 @@ func (c *WagClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
 func (c *WagClient) doGetBookRequest(ctx context.Context, req *http.Request, headers map[string]string) error {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Canonical-Resource", "getBook")
+	req.Header.Set(VersionHeader, Version)
 
 	for field, value := range headers {
 		req.Header.Set(field, value)

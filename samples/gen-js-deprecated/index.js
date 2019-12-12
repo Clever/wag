@@ -270,3 +270,8 @@ module.exports.RetryPolicies = {
 module.exports.Errors = Errors;
 
 module.exports.DefaultCircuitOptions = defaultCircuitOptions;
+
+const version = "0.1.0";
+const versionHeader = "X-Client-Version";
+module.exports.Version = version;
+module.exports.VersionHeader = versionHeader;
