@@ -25,6 +25,7 @@ type clientCodeTemplate struct {
 	ServiceName          string
 	FormattedServiceName string
 	Operations           []string
+	Version              string
 }
 
 var clientCodeTemplateStr = `
@@ -52,6 +53,12 @@ var _ = json.Marshal
 var _ = strings.Replace
 var _ = strconv.FormatInt
 var _ = bytes.Compare
+
+// Version of the client.
+const Version = "{{ .Version }}"
+
+// VersionHeader is sent with every request.
+const VersionHeader = "X-Client-Version"
 
 // WagClient is used to make requests to the {{.ServiceName}} service.
 type WagClient struct {
@@ -193,6 +200,7 @@ func generateClient(packageName string, s spec.Swagger) error {
 		PackageName:          packageName,
 		ServiceName:          s.Info.InfoProps.Title,
 		FormattedServiceName: strings.ToUpper(strings.Replace(s.Info.InfoProps.Title, "-", "_", -1)),
+		Version:              s.Info.InfoProps.Version,
 	}
 
 	for _, path := range swagger.SortedPathItemKeys(s.Paths.Paths) {
@@ -374,6 +382,7 @@ func methodDoerCode(s *spec.Swagger, op *spec.Operation) string {
 func (c *WagClient) do%sRequest(ctx context.Context, req *http.Request, headers map[string]string) %s {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Canonical-Resource", "%s")
+	req.Header.Set(VersionHeader, Version)
 
 	for field, value := range headers {
 		req.Header.Set(field, value)

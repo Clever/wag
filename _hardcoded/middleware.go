@@ -127,3 +127,19 @@ func TracingMiddleware(h http.Handler) http.Handler {
 		h.ServeHTTP(srw, r.WithContext(newCtx))
 	})
 }
+
+// VersionAccepter decides whether to accept a version.
+type VersionAccepter func(clientVersion string) bool
+
+// ClientVersionCheckMiddleware checks the client version.
+func ClientVersionCheckMiddleware(h http.Handler, accept VersionAccepter) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		version := r.Header.Get("X-Client-Version")
+		if !accept(version) {
+			w.WriteHeader(400)
+			w.Write([]byte(fmt.Sprintf(`{"message": "version '%s' not accepted"}`)))
+			return
+		}
+		h.ServeHTTP(w, r)
+	})
+}

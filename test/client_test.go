@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"net/http/httptest"
 	"net/http/httptrace"
 	"os"
@@ -617,4 +618,16 @@ func TestIteratorHeaders(t *testing.T) {
 	}
 	assert.NoError(t, iter.Err())
 	assert.Equal(t, 2, count)
+}
+
+func TestVersionHeader(t *testing.T) {
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get(client.VersionHeader) != client.Version {
+			t.Error("did not receive version header")
+		}
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer testServer.Close()
+	c := client.New(testServer.URL)
+	c.HealthCheck(context.Background())
 }

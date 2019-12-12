@@ -115,4 +115,17 @@ describe("operations", function() {
       done();
     });
   });
+
+  it("sends a version header", function(done) {
+    const c = new Client({address: mockAddress});
+    const scope = nock(mockAddress)
+          .get(`/v1/books`)
+      .reply(function(uri, requestBody) {
+        assert.equal(Client.Version, this.req.headers[Client.VersionHeader.toLowerCase()]);
+      }, 200);
+    c.getBooks({}, {}).then(function() {
+      assert(scope.isDone());
+      done();
+    });
+  });
 });

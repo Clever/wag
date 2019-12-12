@@ -290,16 +290,17 @@ class SwaggerTest {
 
       const headers = {};
       headers["Canonical-Resource"] = "getAuthors";
+      headers[versionHeader] = version;
 
       const query = {};
       if (typeof params.name !== "undefined") {
         query["name"] = params.name;
       }
-  
+
       if (typeof params.startingAfter !== "undefined") {
         query["startingAfter"] = params.startingAfter;
       }
-  
+
 
       if (span) {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
@@ -320,12 +321,12 @@ class SwaggerTest {
       if (this.keepalive) {
         requestOptions.forever = true;
       }
-  
+
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
-  
+
       let retries = 0;
       (function requestOnce() {
         request(requestOptions, (err, response, body) => {
@@ -346,19 +347,19 @@ class SwaggerTest {
             case 200:
               resolve(body);
               break;
-            
+
             case 400:
               var err = new Errors.BadRequest(body || {});
               responseLog(logger, requestOptions, response, err);
               reject(err);
               return;
-            
+
             case 500:
               var err = new Errors.InternalError(body || {});
               responseLog(logger, requestOptions, response, err);
               reject(err);
               return;
-            
+
             default:
               var err = new Error("Received unexpected statusCode " + response.statusCode);
               responseLog(logger, requestOptions, response, err);
@@ -396,17 +397,18 @@ class SwaggerTest {
       const span = options.span;
 
       const headers = {};
-      headers["Canonical-Resource"] = "getAuthorsIter";
+      headers["Canonical-Resource"] = "getAuthors";
+      headers[versionHeader] = version;
 
       const query = {};
       if (typeof params.name !== "undefined") {
         query["name"] = params.name;
       }
-  
+
       if (typeof params.startingAfter !== "undefined") {
         query["startingAfter"] = params.startingAfter;
       }
-  
+
 
       if (span) {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
@@ -426,12 +428,12 @@ class SwaggerTest {
       if (this.keepalive) {
         requestOptions.forever = true;
       }
-  
+
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
-  
+
       let results = [];
       async.whilst(
         () => requestOptions.uri !== "",
@@ -464,19 +466,19 @@ class SwaggerTest {
                 body.authorSet.results.forEach(f);
               }
               break;
-            
+
             case 400:
               var err = new Errors.BadRequest(body || {});
               responseLog(logger, requestOptions, response, err);
               cbW(err);
               return;
-            
+
             case 500:
               var err = new Errors.InternalError(body || {});
               responseLog(logger, requestOptions, response, err);
               cbW(err);
               return;
-            
+
             default:
               var err = new Error("Received unexpected statusCode " + response.statusCode);
               responseLog(logger, requestOptions, response, err);
@@ -556,16 +558,17 @@ class SwaggerTest {
 
       const headers = {};
       headers["Canonical-Resource"] = "getAuthorsWithPut";
+      headers[versionHeader] = version;
 
       const query = {};
       if (typeof params.name !== "undefined") {
         query["name"] = params.name;
       }
-  
+
       if (typeof params.startingAfter !== "undefined") {
         query["startingAfter"] = params.startingAfter;
       }
-  
+
 
       if (span) {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
@@ -586,14 +589,14 @@ class SwaggerTest {
       if (this.keepalive) {
         requestOptions.forever = true;
       }
-  
+
       requestOptions.body = params.favoriteBooks;
-  
+
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
-  
+
       let retries = 0;
       (function requestOnce() {
         request(requestOptions, (err, response, body) => {
@@ -614,19 +617,19 @@ class SwaggerTest {
             case 200:
               resolve(body);
               break;
-            
+
             case 400:
               var err = new Errors.BadRequest(body || {});
               responseLog(logger, requestOptions, response, err);
               reject(err);
               return;
-            
+
             case 500:
               var err = new Errors.InternalError(body || {});
               responseLog(logger, requestOptions, response, err);
               reject(err);
               return;
-            
+
             default:
               var err = new Error("Received unexpected statusCode " + response.statusCode);
               responseLog(logger, requestOptions, response, err);
@@ -665,17 +668,18 @@ class SwaggerTest {
       const span = options.span;
 
       const headers = {};
-      headers["Canonical-Resource"] = "getAuthorsWithPutIter";
+      headers["Canonical-Resource"] = "getAuthorsWithPut";
+      headers[versionHeader] = version;
 
       const query = {};
       if (typeof params.name !== "undefined") {
         query["name"] = params.name;
       }
-  
+
       if (typeof params.startingAfter !== "undefined") {
         query["startingAfter"] = params.startingAfter;
       }
-  
+
 
       if (span) {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
@@ -695,14 +699,14 @@ class SwaggerTest {
       if (this.keepalive) {
         requestOptions.forever = true;
       }
-  
+
       requestOptions.body = params.favoriteBooks;
-  
+
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
-  
+
       let results = [];
       async.whilst(
         () => requestOptions.uri !== "",
@@ -735,19 +739,19 @@ class SwaggerTest {
                 body.authorSet.results.forEach(f);
               }
               break;
-            
+
             case 400:
               var err = new Errors.BadRequest(body || {});
               responseLog(logger, requestOptions, response, err);
               cbW(err);
               return;
-            
+
             case 500:
               var err = new Errors.InternalError(body || {});
               responseLog(logger, requestOptions, response, err);
               cbW(err);
               return;
-            
+
             default:
               var err = new Error("Received unexpected statusCode " + response.statusCode);
               responseLog(logger, requestOptions, response, err);
@@ -835,49 +839,50 @@ class SwaggerTest {
 
       const headers = {};
       headers["Canonical-Resource"] = "getBooks";
+      headers[versionHeader] = version;
       headers["authorization"] = params.authorization;
 
       const query = {};
       if (typeof params.authors !== "undefined") {
         query["authors"] = params.authors;
       }
-  
+
       if (typeof params.available !== "undefined") {
         query["available"] = params.available;
       }
-  
+
       if (typeof params.state !== "undefined") {
         query["state"] = params.state;
       }
-  
+
       if (typeof params.published !== "undefined") {
         query["published"] = params.published;
       }
-  
+
       if (typeof params.snakeCase !== "undefined") {
         query["snake_case"] = params.snakeCase;
       }
-  
+
       if (typeof params.completed !== "undefined") {
         query["completed"] = params.completed;
       }
-  
+
       if (typeof params.maxPages !== "undefined") {
         query["maxPages"] = params.maxPages;
       }
-  
+
       if (typeof params.minPages !== "undefined") {
         query["min_pages"] = params.minPages;
       }
-  
+
       if (typeof params.pagesToTime !== "undefined") {
         query["pagesToTime"] = params.pagesToTime;
       }
-  
+
       if (typeof params.startingAfter !== "undefined") {
         query["startingAfter"] = params.startingAfter;
       }
-  
+
 
       if (span) {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
@@ -898,12 +903,12 @@ class SwaggerTest {
       if (this.keepalive) {
         requestOptions.forever = true;
       }
-  
+
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
-  
+
       let retries = 0;
       (function requestOnce() {
         request(requestOptions, (err, response, body) => {
@@ -924,19 +929,19 @@ class SwaggerTest {
             case 200:
               resolve(body);
               break;
-            
+
             case 400:
               var err = new Errors.BadRequest(body || {});
               responseLog(logger, requestOptions, response, err);
               reject(err);
               return;
-            
+
             case 500:
               var err = new Errors.InternalError(body || {});
               responseLog(logger, requestOptions, response, err);
               reject(err);
               return;
-            
+
             default:
               var err = new Error("Received unexpected statusCode " + response.statusCode);
               responseLog(logger, requestOptions, response, err);
@@ -983,50 +988,51 @@ class SwaggerTest {
       const span = options.span;
 
       const headers = {};
-      headers["Canonical-Resource"] = "getBooksIter";
+      headers["Canonical-Resource"] = "getBooks";
+      headers[versionHeader] = version;
       headers["authorization"] = params.authorization;
 
       const query = {};
       if (typeof params.authors !== "undefined") {
         query["authors"] = params.authors;
       }
-  
+
       if (typeof params.available !== "undefined") {
         query["available"] = params.available;
       }
-  
+
       if (typeof params.state !== "undefined") {
         query["state"] = params.state;
       }
-  
+
       if (typeof params.published !== "undefined") {
         query["published"] = params.published;
       }
-  
+
       if (typeof params.snakeCase !== "undefined") {
         query["snake_case"] = params.snakeCase;
       }
-  
+
       if (typeof params.completed !== "undefined") {
         query["completed"] = params.completed;
       }
-  
+
       if (typeof params.maxPages !== "undefined") {
         query["maxPages"] = params.maxPages;
       }
-  
+
       if (typeof params.minPages !== "undefined") {
         query["min_pages"] = params.minPages;
       }
-  
+
       if (typeof params.pagesToTime !== "undefined") {
         query["pagesToTime"] = params.pagesToTime;
       }
-  
+
       if (typeof params.startingAfter !== "undefined") {
         query["startingAfter"] = params.startingAfter;
       }
-  
+
 
       if (span) {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
@@ -1046,12 +1052,12 @@ class SwaggerTest {
       if (this.keepalive) {
         requestOptions.forever = true;
       }
-  
+
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
-  
+
       let results = [];
       async.whilst(
         () => requestOptions.uri !== "",
@@ -1084,19 +1090,19 @@ class SwaggerTest {
                 body.forEach(f);
               }
               break;
-            
+
             case 400:
               var err = new Errors.BadRequest(body || {});
               responseLog(logger, requestOptions, response, err);
               cbW(err);
               return;
-            
+
             case 500:
               var err = new Errors.InternalError(body || {});
               responseLog(logger, requestOptions, response, err);
               cbW(err);
               return;
-            
+
             default:
               var err = new Error("Received unexpected statusCode " + response.statusCode);
               responseLog(logger, requestOptions, response, err);
@@ -1176,6 +1182,7 @@ class SwaggerTest {
 
       const headers = {};
       headers["Canonical-Resource"] = "createBook";
+      headers[versionHeader] = version;
 
       const query = {};
 
@@ -1198,14 +1205,14 @@ class SwaggerTest {
       if (this.keepalive) {
         requestOptions.forever = true;
       }
-  
+
       requestOptions.body = params.newBook;
-  
+
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
-  
+
       let retries = 0;
       (function requestOnce() {
         request(requestOptions, (err, response, body) => {
@@ -1226,19 +1233,19 @@ class SwaggerTest {
             case 200:
               resolve(body);
               break;
-            
+
             case 400:
               var err = new Errors.BadRequest(body || {});
               responseLog(logger, requestOptions, response, err);
               reject(err);
               return;
-            
+
             case 500:
               var err = new Errors.InternalError(body || {});
               responseLog(logger, requestOptions, response, err);
               reject(err);
               return;
-            
+
             default:
               var err = new Error("Received unexpected statusCode " + response.statusCode);
               responseLog(logger, requestOptions, response, err);
@@ -1291,6 +1298,7 @@ class SwaggerTest {
 
       const headers = {};
       headers["Canonical-Resource"] = "putBook";
+      headers[versionHeader] = version;
 
       const query = {};
 
@@ -1313,14 +1321,14 @@ class SwaggerTest {
       if (this.keepalive) {
         requestOptions.forever = true;
       }
-  
+
       requestOptions.body = params.newBook;
-  
+
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
-  
+
       let retries = 0;
       (function requestOnce() {
         request(requestOptions, (err, response, body) => {
@@ -1341,19 +1349,19 @@ class SwaggerTest {
             case 200:
               resolve(body);
               break;
-            
+
             case 400:
               var err = new Errors.BadRequest(body || {});
               responseLog(logger, requestOptions, response, err);
               reject(err);
               return;
-            
+
             case 500:
               var err = new Errors.InternalError(body || {});
               responseLog(logger, requestOptions, response, err);
               reject(err);
               return;
-            
+
             default:
               var err = new Error("Received unexpected statusCode " + response.statusCode);
               responseLog(logger, requestOptions, response, err);
@@ -1410,6 +1418,7 @@ class SwaggerTest {
 
       const headers = {};
       headers["Canonical-Resource"] = "getBookByID";
+      headers[versionHeader] = version;
       if (!params.bookID) {
         reject(new Error("bookID must be non-empty because it's a path parameter"));
         return;
@@ -1421,11 +1430,11 @@ class SwaggerTest {
       if (typeof params.authorID !== "undefined") {
         query["authorID"] = params.authorID;
       }
-  
+
       if (typeof params.randomBytes !== "undefined") {
         query["randomBytes"] = params.randomBytes;
       }
-  
+
 
       if (span) {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
@@ -1446,12 +1455,12 @@ class SwaggerTest {
       if (this.keepalive) {
         requestOptions.forever = true;
       }
-  
+
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
-  
+
       let retries = 0;
       (function requestOnce() {
         request(requestOptions, (err, response, body) => {
@@ -1472,31 +1481,31 @@ class SwaggerTest {
             case 200:
               resolve(body);
               break;
-            
+
             case 400:
               var err = new Errors.BadRequest(body || {});
               responseLog(logger, requestOptions, response, err);
               reject(err);
               return;
-            
+
             case 401:
               var err = new Errors.Unathorized(body || {});
               responseLog(logger, requestOptions, response, err);
               reject(err);
               return;
-            
+
             case 404:
               var err = new Errors.Error(body || {});
               responseLog(logger, requestOptions, response, err);
               reject(err);
               return;
-            
+
             case 500:
               var err = new Errors.InternalError(body || {});
               responseLog(logger, requestOptions, response, err);
               reject(err);
               return;
-            
+
             default:
               var err = new Error("Received unexpected statusCode " + response.statusCode);
               responseLog(logger, requestOptions, response, err);
@@ -1550,6 +1559,7 @@ class SwaggerTest {
 
       const headers = {};
       headers["Canonical-Resource"] = "getBookByID2";
+      headers[versionHeader] = version;
       if (!params.id) {
         reject(new Error("id must be non-empty because it's a path parameter"));
         return;
@@ -1576,12 +1586,12 @@ class SwaggerTest {
       if (this.keepalive) {
         requestOptions.forever = true;
       }
-  
+
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
-  
+
       let retries = 0;
       (function requestOnce() {
         request(requestOptions, (err, response, body) => {
@@ -1602,25 +1612,25 @@ class SwaggerTest {
             case 200:
               resolve(body);
               break;
-            
+
             case 400:
               var err = new Errors.BadRequest(body || {});
               responseLog(logger, requestOptions, response, err);
               reject(err);
               return;
-            
+
             case 404:
               var err = new Errors.Error(body || {});
               responseLog(logger, requestOptions, response, err);
               reject(err);
               return;
-            
+
             case 500:
               var err = new Errors.InternalError(body || {});
               responseLog(logger, requestOptions, response, err);
               reject(err);
               return;
-            
+
             default:
               var err = new Error("Received unexpected statusCode " + response.statusCode);
               responseLog(logger, requestOptions, response, err);
@@ -1670,6 +1680,7 @@ class SwaggerTest {
 
       const headers = {};
       headers["Canonical-Resource"] = "healthCheck";
+      headers[versionHeader] = version;
 
       const query = {};
 
@@ -1692,12 +1703,12 @@ class SwaggerTest {
       if (this.keepalive) {
         requestOptions.forever = true;
       }
-  
+
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
-  
+
       let retries = 0;
       (function requestOnce() {
         request(requestOptions, (err, response, body) => {
@@ -1718,19 +1729,19 @@ class SwaggerTest {
             case 200:
               resolve();
               break;
-            
+
             case 400:
               var err = new Errors.BadRequest(body || {});
               responseLog(logger, requestOptions, response, err);
               reject(err);
               return;
-            
+
             case 500:
               var err = new Errors.InternalError(body || {});
               responseLog(logger, requestOptions, response, err);
               reject(err);
               return;
-            
+
             default:
               var err = new Error("Received unexpected statusCode " + response.statusCode);
               responseLog(logger, requestOptions, response, err);
@@ -1762,3 +1773,8 @@ module.exports.RetryPolicies = {
 module.exports.Errors = Errors;
 
 module.exports.DefaultCircuitOptions = defaultCircuitOptions;
+
+const version = "0.1.0";
+const versionHeader = "X-Client-Version";
+module.exports.Version = version;
+module.exports.VersionHeader = versionHeader;

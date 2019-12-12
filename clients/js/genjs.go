@@ -365,6 +365,11 @@ module.exports.RetryPolicies = {
 module.exports.Errors = Errors;
 
 module.exports.DefaultCircuitOptions = defaultCircuitOptions;
+
+const version = "{{.Version}}";
+const versionHeader = "X-Client-Version";
+module.exports.Version = version;
+module.exports.VersionHeader = versionHeader;
 `
 
 const packageJSONTmplStr = `{
@@ -407,7 +412,8 @@ const methodTmplStr = `
       const span = options.span;
 
       const headers = {};
-      headers["Canonical-Resource"] = "{{.MethodName}}";
+      headers["Canonical-Resource"] = "{{.Operation}}";
+      headers[versionHeader] = version;
       {{- range $param := .PathParams}}
       if (!params.{{$param.JSName}}) {
         reject(new Error("{{$param.JSName}} must be non-empty because it's a path parameter"));
@@ -422,11 +428,11 @@ const methodTmplStr = `
       {{- range $param := .QueryParams -}}
       {{- if $param.Required }}
       query["{{$param.WagName}}"] = params.{{$param.JSName}};
-  {{else}}
+{{else}}
       if (typeof params.{{$param.JSName}} !== "undefined") {
         query["{{$param.WagName}}"] = params.{{$param.JSName}};
       }
-  {{end}}{{end}}
+{{end}}{{end}}
 
       if (span) {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
@@ -449,14 +455,14 @@ const methodTmplStr = `
       if (this.keepalive) {
         requestOptions.forever = true;
       }
-  {{ if ne .BodyParam ""}}
+{{ if ne .BodyParam ""}}
       requestOptions.body = params.{{.BodyParam}};
-  {{ end }}
+{{ end }}
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
-  {{if .IterMethod}}
+{{if .IterMethod}}
       let results = [];
       async.whilst(
         () => requestOptions.uri !== "",
@@ -496,10 +502,10 @@ const methodTmplStr = `
               cbW(err);
               {{- end}}
               return;
-            {{else}}{{if $response.IsNoData}}
+{{else}}{{if $response.IsNoData}}
               resolve();
               break;
-            {{else}}
+{{else}}
               {{if $.IterMethod -}}
               if (saveResults) {
                 results = results.concat(body{{$.IterResourceAccessString}}.map(f));
@@ -510,7 +516,7 @@ const methodTmplStr = `
               resolve(body);
               {{- end}}
               break;
-            {{end}}{{end}}
+{{end}}{{end}}
             {{end}}default:
               var err = new Error("Received unexpected statusCode " + response.statusCode);
               responseLog(logger, requestOptions, response, err);
@@ -651,6 +657,7 @@ type responseMapping struct {
 
 type methodTemplate struct {
 	ServiceName              string
+	Operation                string
 	MethodName               string
 	IterMethod               bool
 	IterResourceAccessString string
@@ -684,7 +691,8 @@ func methodCode(s spec.Swagger, op *spec.Operation, method, path string) (string
 	basePath := s.BasePath
 	tmplInfo := methodTemplate{
 		ServiceName: s.Info.InfoProps.Title,
-		MethodName:  op.ID,
+		Operation:   op.ID,
+		MethodName:  op.ID, // might mutate to op.ID + "Iter" for paging methods
 		Description: op.Description,
 		Method:      method,
 		PathCode:    basePath + fillOutPath(path),
