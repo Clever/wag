@@ -46,13 +46,6 @@ func Test3xxError(t *testing.T) {
 	assert.True(t, strings.Contains(err.Error(), "cannot define 3XX status codes"), err.Error())
 }
 
-func TestMultiSuccessError(t *testing.T) {
-	s := loadTestFile(t, "testyml/multisuccess.yml")
-	err := ValidateResponses(s)
-	assert.Error(t, err)
-	assert.True(t, strings.Contains(err.Error(), "one success type"), err.Error())
-}
-
 func loadTestFile(t *testing.T, filename string) spec.Swagger {
 	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
 	doc, err := loads.Spec(filename)

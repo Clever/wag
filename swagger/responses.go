@@ -68,10 +68,6 @@ func ValidateResponses(s spec.Swagger) error {
 				}
 			}
 
-			if successResponseCount > 1 {
-				return fmt.Errorf("can only define one success type (statusCode < 400) for %s", op.ID)
-			}
-
 			if !has400 {
 				refResponse, err := createRefResponse("BadRequest", "#/responses/BadRequest")
 				if err != nil {
