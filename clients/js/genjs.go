@@ -434,7 +434,7 @@ const methodTmplStr = `
       }
 {{end}}{{end}}
 
-      if (span) {
+      if (span && typeof span.log === "function") {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
         tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
         {{- if not .IterMethod}}
@@ -467,7 +467,7 @@ const methodTmplStr = `
       async.whilst(
         () => requestOptions.uri !== "",
         cbW => {
-          if (span) {
+          if (span && typeof span.log === "function") {
             span.log({event: "{{.Method}} {{.Path}}"});
           }
       const address = this.address;
