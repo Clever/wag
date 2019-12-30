@@ -438,7 +438,7 @@ const methodTmplStr = `
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
         tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
         {{- if not .IterMethod}}
-        span.logEvent("{{.Method}} {{.Path}}");
+        span.log({event: "{{.Method}} {{.Path}}"});
         {{- end}}
         span.setTag("span.kind", "client");
       }
@@ -468,7 +468,7 @@ const methodTmplStr = `
         () => requestOptions.uri !== "",
         cbW => {
           if (span) {
-            span.logEvent("{{.Method}} {{.Path}}");
+            span.log({event: "{{.Method}} {{.Path}}"});
           }
       const address = this.address;
   {{- end}}
