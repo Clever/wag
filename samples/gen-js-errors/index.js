@@ -299,10 +299,10 @@ class SwaggerTest {
 
       const query = {};
 
-      if (span) {
+      if (span && typeof span.log === "function") {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
         tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        span.logEvent("GET /v1/books/{id}");
+        span.log({event: "GET /v1/books/{id}"});
         span.setTag("span.kind", "client");
       }
 

@@ -310,10 +310,10 @@ class NilTest {
       }
 
 
-      if (span) {
+      if (span && typeof span.log === "function") {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
         tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        span.logEvent("POST /v1/check/{id}");
+        span.log({event: "POST /v1/check/{id}"});
         span.setTag("span.kind", "client");
       }
 
