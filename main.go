@@ -13,8 +13,8 @@ import (
 	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/spec"
 
-	"github.com/Clever/wag/clients/go"
-	"github.com/Clever/wag/clients/js"
+	goclient "github.com/Clever/wag/clients/go"
+	jsclient "github.com/Clever/wag/clients/js"
 	"github.com/Clever/wag/hardcoded"
 	"github.com/Clever/wag/models"
 	"github.com/Clever/wag/server"

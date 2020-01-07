@@ -1,4 +1,5 @@
-v3.14.1
+v3.14.2
+- v3.14.2 Add a PR template
 - v3.14.1 Send client version as a header bugfix.
 - v3.14.0 Send client version as a header.
 - v3.13.3 Add constructor declarations to TypeScript error models
