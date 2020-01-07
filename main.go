@@ -6,25 +6,18 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"sort"
-	"strings"
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/loads/fmts"
-	"github.com/go-openapi/spec"
 
-	"github.com/Clever/wag/clients/go"
-	"github.com/Clever/wag/clients/js"
+	goclient "github.com/Clever/wag/clients/go"
+	jsclient "github.com/Clever/wag/clients/js"
 	"github.com/Clever/wag/hardcoded"
 	"github.com/Clever/wag/models"
 	"github.com/Clever/wag/server"
 	"github.com/Clever/wag/swagger"
 	"github.com/Clever/wag/validation"
 )
-
-func capitalize(input string) string {
-	return strings.ToUpper(input[0:1]) + input[1:]
-}
 
 var version string
 
@@ -126,44 +119,4 @@ func main() {
 	if err := doerGenerator.WriteFile("client/doer.go"); err != nil {
 		log.Fatalf("Failed to copy doer.go: %s", err)
 	}
-}
-
-func sortedPathItemKeys(m map[string]spec.PathItem) []string {
-	sortedKeys := []string{}
-	for k := range m {
-		sortedKeys = append(sortedKeys, k)
-	}
-	sort.Strings(sortedKeys)
-	return sortedKeys
-}
-
-func sortedOperationsKeys(m map[string]*spec.Operation) []string {
-	sortedKeys := []string{}
-	for k := range m {
-		sortedKeys = append(sortedKeys, k)
-	}
-	sort.Strings(sortedKeys)
-	return sortedKeys
-}
-
-func sortedStatusCodeKeys(m map[int]spec.Response) []int {
-	sortedKeys := []int{}
-	for k := range m {
-		sortedKeys = append(sortedKeys, k)
-	}
-	sort.Ints(sortedKeys)
-	return sortedKeys
-}
-
-// importStatements takes a list of import strings and converts them to a formatted imports
-func importStatements(imports []string) string {
-	if len(imports) == 0 {
-		return ""
-	}
-	output := "import (\n"
-	for _, importStr := range imports {
-		output += fmt.Sprintf("\t\"%s\"\n", importStr)
-	}
-	output += ")\n\n"
-	return output
 }
