@@ -1,5 +1,6 @@
 const assert = require("assert");
 const nock = require("nock");
+const opentracing = require("opentracing");
 
 const Client = require("swagger-test");
 
@@ -125,6 +126,38 @@ describe("operations", function() {
       }, 200);
     c.getBooks({}, {}).then(function() {
       assert(scope.isDone());
+      done();
+    });
+  });
+
+  it("works with an OpenTracing span, and adds tag to it", function(done) {
+    const tracer = new opentracing.MockTracer();
+    const c = new Client({address: mockAddress, tracer});
+    const span = tracer.startSpan("foo_span")
+    const scope = nock(mockAddress)
+      .get(`/v1/books`)
+      .reply(200);
+    c.getBooks({}, {span}).then(function() {
+      assert(scope.isDone());
+      const spans = tracer.report().spans;
+      assert.equal(spans.length, 1);
+      assert.deepEqual(spans[0].tags(), {"span.kind": "client"})
+      done();
+    });
+  });
+
+  it("doesn't error when passed a bad span", function(done) {
+    const tracer = new opentracing.MockTracer();
+    const c = new Client({address: mockAddress, tracer});
+    const span = {
+      foo: function() {}
+    }
+    const scope = nock(mockAddress)
+      .get(`/v1/books`)
+      .reply(200);
+    c.getBooks({}, {span}).then(function() {
+      assert(scope.isDone());
+      assert.equal(tracer.report().spans.length, 0);
       done();
     });
   });

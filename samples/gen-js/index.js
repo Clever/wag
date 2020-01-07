@@ -302,10 +302,10 @@ class SwaggerTest {
       }
 
 
-      if (span) {
+      if (span && typeof span.log === "function") {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
         tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        span.logEvent("GET /v1/authors");
+        span.log({event: "GET /v1/authors"});
         span.setTag("span.kind", "client");
       }
 
@@ -410,7 +410,7 @@ class SwaggerTest {
       }
 
 
-      if (span) {
+      if (span && typeof span.log === "function") {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
         tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
         span.setTag("span.kind", "client");
@@ -438,8 +438,8 @@ class SwaggerTest {
       async.whilst(
         () => requestOptions.uri !== "",
         cbW => {
-          if (span) {
-            span.logEvent("GET /v1/authors");
+          if (span && typeof span.log === "function") {
+            span.log({event: "GET /v1/authors"});
           }
       const address = this.address;
       let retries = 0;
@@ -570,10 +570,10 @@ class SwaggerTest {
       }
 
 
-      if (span) {
+      if (span && typeof span.log === "function") {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
         tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        span.logEvent("PUT /v1/authors");
+        span.log({event: "PUT /v1/authors"});
         span.setTag("span.kind", "client");
       }
 
@@ -681,7 +681,7 @@ class SwaggerTest {
       }
 
 
-      if (span) {
+      if (span && typeof span.log === "function") {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
         tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
         span.setTag("span.kind", "client");
@@ -711,8 +711,8 @@ class SwaggerTest {
       async.whilst(
         () => requestOptions.uri !== "",
         cbW => {
-          if (span) {
-            span.logEvent("PUT /v1/authors");
+          if (span && typeof span.log === "function") {
+            span.log({event: "PUT /v1/authors"});
           }
       const address = this.address;
       let retries = 0;
@@ -884,10 +884,10 @@ class SwaggerTest {
       }
 
 
-      if (span) {
+      if (span && typeof span.log === "function") {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
         tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        span.logEvent("GET /v1/books");
+        span.log({event: "GET /v1/books"});
         span.setTag("span.kind", "client");
       }
 
@@ -1034,7 +1034,7 @@ class SwaggerTest {
       }
 
 
-      if (span) {
+      if (span && typeof span.log === "function") {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
         tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
         span.setTag("span.kind", "client");
@@ -1062,8 +1062,8 @@ class SwaggerTest {
       async.whilst(
         () => requestOptions.uri !== "",
         cbW => {
-          if (span) {
-            span.logEvent("GET /v1/books");
+          if (span && typeof span.log === "function") {
+            span.log({event: "GET /v1/books"});
           }
       const address = this.address;
       let retries = 0;
@@ -1186,10 +1186,10 @@ class SwaggerTest {
 
       const query = {};
 
-      if (span) {
+      if (span && typeof span.log === "function") {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
         tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        span.logEvent("POST /v1/books");
+        span.log({event: "POST /v1/books"});
         span.setTag("span.kind", "client");
       }
 
@@ -1302,10 +1302,10 @@ class SwaggerTest {
 
       const query = {};
 
-      if (span) {
+      if (span && typeof span.log === "function") {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
         tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        span.logEvent("PUT /v1/books");
+        span.log({event: "PUT /v1/books"});
         span.setTag("span.kind", "client");
       }
 
@@ -1436,10 +1436,10 @@ class SwaggerTest {
       }
 
 
-      if (span) {
+      if (span && typeof span.log === "function") {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
         tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        span.logEvent("GET /v1/books/{book_id}");
+        span.log({event: "GET /v1/books/{book_id}"});
         span.setTag("span.kind", "client");
       }
 
@@ -1567,10 +1567,10 @@ class SwaggerTest {
 
       const query = {};
 
-      if (span) {
+      if (span && typeof span.log === "function") {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
         tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        span.logEvent("GET /v1/books2/{id}");
+        span.log({event: "GET /v1/books2/{id}"});
         span.setTag("span.kind", "client");
       }
 
@@ -1684,10 +1684,10 @@ class SwaggerTest {
 
       const query = {};
 
-      if (span) {
+      if (span && typeof span.log === "function") {
         // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
         tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        span.logEvent("GET /v1/health/check");
+        span.log({event: "GET /v1/health/check"});
         span.setTag("span.kind", "client");
       }
 
