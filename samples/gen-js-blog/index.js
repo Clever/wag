@@ -309,6 +309,7 @@ class Blog {
       const requestOptions = {
         method: "GET",
         uri: this.address + "/students/" + params.studentID + "/sections",
+        gzip: true,
         json: true,
         timeout,
         headers,
