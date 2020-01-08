@@ -446,6 +446,7 @@ const methodTmplStr = `
       const requestOptions = {
         method: "{{.Method}}",
         uri: this.address + "{{.PathCode}}",
+        gzip: true,
         json: true,
         timeout,
         headers,
