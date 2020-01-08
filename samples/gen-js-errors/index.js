@@ -309,6 +309,7 @@ class SwaggerTest {
       const requestOptions = {
         method: "GET",
         uri: this.address + "/v1/books/" + params.id + "",
+        gzip: true,
         json: true,
         timeout,
         headers,

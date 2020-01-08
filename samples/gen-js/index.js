@@ -312,6 +312,7 @@ class SwaggerTest {
       const requestOptions = {
         method: "GET",
         uri: this.address + "/v1/authors",
+        gzip: true,
         json: true,
         timeout,
         headers,
@@ -419,6 +420,7 @@ class SwaggerTest {
       const requestOptions = {
         method: "GET",
         uri: this.address + "/v1/authors",
+        gzip: true,
         json: true,
         timeout,
         headers,
@@ -580,6 +582,7 @@ class SwaggerTest {
       const requestOptions = {
         method: "PUT",
         uri: this.address + "/v1/authors",
+        gzip: true,
         json: true,
         timeout,
         headers,
@@ -690,6 +693,7 @@ class SwaggerTest {
       const requestOptions = {
         method: "PUT",
         uri: this.address + "/v1/authors",
+        gzip: true,
         json: true,
         timeout,
         headers,
@@ -894,6 +898,7 @@ class SwaggerTest {
       const requestOptions = {
         method: "GET",
         uri: this.address + "/v1/books",
+        gzip: true,
         json: true,
         timeout,
         headers,
@@ -1043,6 +1048,7 @@ class SwaggerTest {
       const requestOptions = {
         method: "GET",
         uri: this.address + "/v1/books",
+        gzip: true,
         json: true,
         timeout,
         headers,
@@ -1196,6 +1202,7 @@ class SwaggerTest {
       const requestOptions = {
         method: "POST",
         uri: this.address + "/v1/books",
+        gzip: true,
         json: true,
         timeout,
         headers,
@@ -1312,6 +1319,7 @@ class SwaggerTest {
       const requestOptions = {
         method: "PUT",
         uri: this.address + "/v1/books",
+        gzip: true,
         json: true,
         timeout,
         headers,
@@ -1446,6 +1454,7 @@ class SwaggerTest {
       const requestOptions = {
         method: "GET",
         uri: this.address + "/v1/books/" + params.bookID + "",
+        gzip: true,
         json: true,
         timeout,
         headers,
@@ -1577,6 +1586,7 @@ class SwaggerTest {
       const requestOptions = {
         method: "GET",
         uri: this.address + "/v1/books2/" + params.id + "",
+        gzip: true,
         json: true,
         timeout,
         headers,
@@ -1694,6 +1704,7 @@ class SwaggerTest {
       const requestOptions = {
         method: "GET",
         uri: this.address + "/v1/health/check",
+        gzip: true,
         json: true,
         timeout,
         headers,

@@ -320,6 +320,7 @@ class NilTest {
       const requestOptions = {
         method: "POST",
         uri: this.address + "/v1/check/" + params.id + "",
+        gzip: true,
         json: true,
         timeout,
         headers,
