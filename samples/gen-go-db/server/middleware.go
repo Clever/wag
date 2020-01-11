@@ -12,9 +12,9 @@ import (
 	"gopkg.in/Clever/kayvee-go.v6/logger"
 )
 
-// PanicMiddleware logs any panics. For now, we're continue throwing the panic up
-// the stack so this may crash the process.
-func PanicMiddleware(h http.Handler) http.Handler {
+// PanicMiddleware recovers, logs, and optionally suppresses any panics. Passing suppress=false
+// will continue through the panic up the stack so this may crash the process
+func PanicMiddleware(h http.Handler, suppress bool) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			panicErr := recover()
@@ -31,9 +31,12 @@ func PanicMiddleware(h http.Handler) http.Handler {
 			default:
 				err = fmt.Errorf("unknown panic %#v of type %T", panicErr, panicErr)
 			}
-
 			logger.FromContext(r.Context()).ErrorD("panic",
 				logger.M{"err": err, "stacktrace": string(debug.Stack())})
+
+			if suppress {
+				return
+			}
 			panic(panicErr)
 		}()
 		h.ServeHTTP(w, r)

@@ -145,9 +145,22 @@ func startLoggingProcessMetrics() {
 	metrics.Log("blog", 1*time.Minute)
 }
 
+// withMiddleware wraps the provided handler with preset and user defined middlewares. The middlewares are
+// added innermost -> outermost. Given an array of user defined middlewares (m=[m0, m1 , m2]) the order of execution
+// from the perspective of a request is as follows:
+// 1. kvMiddleware
+// 2. PanicMiddleware (outer is for logging panics thrown by middlewares)
+// 3. TracingMiddleware
+// 4. m0
+// 5. m1
+// 6. m2
+// 7. CompressHandler
+// 8. PanicMiddleware (inner is for recovering from panics thrown by route handlers)
 func withMiddleware(serviceName string, router http.Handler, m []func(http.Handler) http.Handler) http.Handler {
 	handler := router
 
+	// guarantees we recover from any panic thrown by route handlers
+	handler = PanicMiddleware(handler, true)
 	// compress everything
 	handler = handlers.CompressHandler(handler)
 
@@ -157,7 +170,8 @@ func withMiddleware(serviceName string, router http.Handler, m []func(http.Handl
 		handler = m[i](handler)
 	}
 	handler = TracingMiddleware(handler)
-	handler = PanicMiddleware(handler)
+	// logs any panics encountered in our middleware
+	handler = PanicMiddleware(handler, false)
 	// Logging middleware comes last, i.e. will be run first.
 	// This makes it so that other middleware has access to the logger
 	// that kvMiddleware injects into the request context.
