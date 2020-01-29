@@ -451,3 +451,42 @@ definitions:
         format: "^[a-zA-Z0-9-]+$"
       version:
         type: string
+
+  Event:
+    type: object
+    x-db:
+      AllowOverwrites: true
+      DynamoDB:
+        AttributeDefinitions:
+        - AttributeName: "pk"
+          AttributeType: "S"
+        - AttributeName: "sk"
+          AttributeType: "S"
+        - AttributeName: "data"
+          AttributeType: "B"
+        KeySchema:
+        - AttributeName: "pk"
+          KeyType: HASH
+        - AttributeName: "sk"
+          KeyType: RANGE
+        GlobalSecondaryIndexes:
+        - IndexName: bySK
+          Projection:
+            ProjectionType: ALL
+          KeySchema:
+          - AttributeName: sk
+            KeyType: HASH
+          - AttributeName: data
+            KeyType: RANGE
+        TimeToLiveSpecification:
+          AttributeName : ttl
+          Enabled: true
+    properties:
+      pk:
+        type: string
+      sk:
+        type: string
+      data:
+        additionalProperties: true
+      ttl:
+        type: integer

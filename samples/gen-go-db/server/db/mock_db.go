@@ -121,6 +121,67 @@ func (mr *MockInterfaceMockRecorder) GetDeploymentByVersion(ctx, version interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeploymentByVersion", reflect.TypeOf((*MockInterface)(nil).GetDeploymentByVersion), ctx, version)
 }
 
+// SaveEvent mocks base method
+func (m_2 *MockInterface) SaveEvent(ctx context.Context, m models.Event) error {
+	ret := m_2.ctrl.Call(m_2, "SaveEvent", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveEvent indicates an expected call of SaveEvent
+func (mr *MockInterfaceMockRecorder) SaveEvent(ctx, m interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveEvent", reflect.TypeOf((*MockInterface)(nil).SaveEvent), ctx, m)
+}
+
+// GetEvent mocks base method
+func (m *MockInterface) GetEvent(ctx context.Context, pk, sk string) (*models.Event, error) {
+	ret := m.ctrl.Call(m, "GetEvent", ctx, pk, sk)
+	ret0, _ := ret[0].(*models.Event)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetEvent indicates an expected call of GetEvent
+func (mr *MockInterfaceMockRecorder) GetEvent(ctx, pk, sk interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEvent", reflect.TypeOf((*MockInterface)(nil).GetEvent), ctx, pk, sk)
+}
+
+// GetEventsByPkAndSk mocks base method
+func (m *MockInterface) GetEventsByPkAndSk(ctx context.Context, input GetEventsByPkAndSkInput, fn func(*models.Event, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetEventsByPkAndSk", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetEventsByPkAndSk indicates an expected call of GetEventsByPkAndSk
+func (mr *MockInterfaceMockRecorder) GetEventsByPkAndSk(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEventsByPkAndSk", reflect.TypeOf((*MockInterface)(nil).GetEventsByPkAndSk), ctx, input, fn)
+}
+
+// DeleteEvent mocks base method
+func (m *MockInterface) DeleteEvent(ctx context.Context, pk, sk string) error {
+	ret := m.ctrl.Call(m, "DeleteEvent", ctx, pk, sk)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteEvent indicates an expected call of DeleteEvent
+func (mr *MockInterfaceMockRecorder) DeleteEvent(ctx, pk, sk interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteEvent", reflect.TypeOf((*MockInterface)(nil).DeleteEvent), ctx, pk, sk)
+}
+
+// GetEventsBySkAndData mocks base method
+func (m *MockInterface) GetEventsBySkAndData(ctx context.Context, input GetEventsBySkAndDataInput, fn func(*models.Event, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetEventsBySkAndData", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetEventsBySkAndData indicates an expected call of GetEventsBySkAndData
+func (mr *MockInterfaceMockRecorder) GetEventsBySkAndData(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEventsBySkAndData", reflect.TypeOf((*MockInterface)(nil).GetEventsBySkAndData), ctx, input, fn)
+}
+
 // SaveNoRangeThingWithCompositeAttributes mocks base method
 func (m_2 *MockInterface) SaveNoRangeThingWithCompositeAttributes(ctx context.Context, m models.NoRangeThingWithCompositeAttributes) error {
 	ret := m_2.ctrl.Call(m_2, "SaveNoRangeThingWithCompositeAttributes", ctx, m)

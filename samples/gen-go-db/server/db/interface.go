@@ -27,6 +27,17 @@ type Interface interface {
 	// GetDeploymentByVersion retrieves a Deployment from the database.
 	GetDeploymentByVersion(ctx context.Context, version string) (*models.Deployment, error)
 
+	// SaveEvent saves a Event to the database.
+	SaveEvent(ctx context.Context, m models.Event) error
+	// GetEvent retrieves a Event from the database.
+	GetEvent(ctx context.Context, pk string, sk string) (*models.Event, error)
+	// GetEventsByPkAndSk retrieves a page of Events from the database.
+	GetEventsByPkAndSk(ctx context.Context, input GetEventsByPkAndSkInput, fn func(m *models.Event, lastEvent bool) bool) error
+	// DeleteEvent deletes a Event from the database.
+	DeleteEvent(ctx context.Context, pk string, sk string) error
+	// GetEventsBySkAndData retrieves a page of Events from the database.
+	GetEventsBySkAndData(ctx context.Context, input GetEventsBySkAndDataInput, fn func(m *models.Event, lastEvent bool) bool) error
+
 	// SaveNoRangeThingWithCompositeAttributes saves a NoRangeThingWithCompositeAttributes to the database.
 	SaveNoRangeThingWithCompositeAttributes(ctx context.Context, m models.NoRangeThingWithCompositeAttributes) error
 	// GetNoRangeThingWithCompositeAttributes retrieves a NoRangeThingWithCompositeAttributes from the database.
@@ -242,6 +253,57 @@ var _ error = ErrDeploymentByVersionNotFound{}
 // Error returns a description of the error.
 func (e ErrDeploymentByVersionNotFound) Error() string {
 	return "could not find Deployment"
+}
+
+// GetEventsByPkAndSkInput is the query input to GetEventsByPkAndSk.
+type GetEventsByPkAndSkInput struct {
+	// Pk is required
+	Pk           string
+	SkStartingAt *string
+	// StartingAfter is a required specification of an exclusive starting point.
+	StartingAfter *models.Event
+	Descending    bool
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+}
+
+// ErrEventNotFound is returned when the database fails to find a Event.
+type ErrEventNotFound struct {
+	Pk string
+	Sk string
+}
+
+var _ error = ErrEventNotFound{}
+
+// Error returns a description of the error.
+func (e ErrEventNotFound) Error() string {
+	return "could not find Event"
+}
+
+// GetEventsBySkAndDataInput is the query input to GetEventsBySkAndData.
+type GetEventsBySkAndDataInput struct {
+	// Sk is required
+	Sk             string
+	DataStartingAt *unknownType
+	StartingAfter  *models.Event
+	Descending     bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+}
+
+// ErrEventBySkAndDataNotFound is returned when the database fails to find a Event.
+type ErrEventBySkAndDataNotFound struct {
+	Sk   string
+	Data unknownType
+}
+
+var _ error = ErrEventBySkAndDataNotFound{}
+
+// Error returns a description of the error.
+func (e ErrEventBySkAndDataNotFound) Error() string {
+	return "could not find Event"
 }
 
 // ErrNoRangeThingWithCompositeAttributesNotFound is returned when the database fails to find a NoRangeThingWithCompositeAttributes.

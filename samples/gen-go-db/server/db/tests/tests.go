@@ -28,6 +28,11 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetDeploymentsByEnvAppAndDate", GetDeploymentsByEnvAppAndDate(dbFactory(), t))
 	t.Run("GetDeploymentsByEnvironmentAndDate", GetDeploymentsByEnvironmentAndDate(dbFactory(), t))
 	t.Run("GetDeploymentByVersion", GetDeploymentByVersion(dbFactory(), t))
+	t.Run("GetEvent", GetEvent(dbFactory(), t))
+	t.Run("GetEventsByPkAndSk", GetEventsByPkAndSk(dbFactory(), t))
+	t.Run("SaveEvent", SaveEvent(dbFactory(), t))
+	t.Run("DeleteEvent", DeleteEvent(dbFactory(), t))
+	t.Run("GetEventsBySkAndData", GetEventsBySkAndData(dbFactory(), t))
 	t.Run("GetNoRangeThingWithCompositeAttributes", GetNoRangeThingWithCompositeAttributes(dbFactory(), t))
 	t.Run("SaveNoRangeThingWithCompositeAttributes", SaveNoRangeThingWithCompositeAttributes(dbFactory(), t))
 	t.Run("DeleteNoRangeThingWithCompositeAttributes", DeleteNoRangeThingWithCompositeAttributes(dbFactory(), t))
@@ -818,6 +823,450 @@ func GetDeploymentByVersion(s db.Interface, t *testing.T) func(t *testing.T) {
 		_, err = s.GetDeploymentByVersion(ctx, "string2")
 		require.NotNil(t, err)
 		require.IsType(t, err, db.ErrDeploymentByVersionNotFound{})
+	}
+}
+
+func GetEvent(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.Event{
+			Data: unknownType,
+			Pk:   "string1",
+			Sk:   "string1",
+		}
+		require.Nil(t, s.SaveEvent(ctx, m))
+		m2, err := s.GetEvent(ctx, m.Pk, m.Sk)
+		require.Nil(t, err)
+		require.Equal(t, m.Pk, m2.Pk)
+		require.Equal(t, m.Sk, m2.Sk)
+
+		_, err = s.GetEvent(ctx, "string2", "string2")
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrEventNotFound{})
+	}
+}
+
+type getEventsByPkAndSkInput struct {
+	ctx   context.Context
+	input db.GetEventsByPkAndSkInput
+}
+type getEventsByPkAndSkOutput struct {
+	events []models.Event
+	err    error
+}
+type getEventsByPkAndSkTest struct {
+	testName string
+	d        db.Interface
+	input    getEventsByPkAndSkInput
+	output   getEventsByPkAndSkOutput
+}
+
+func (g getEventsByPkAndSkTest) run(t *testing.T) {
+	events := []models.Event{}
+	fn := func(m *models.Event, lastEvent bool) bool {
+		events = append(events, *m)
+		if lastEvent {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetEventsByPkAndSk(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.events, events)
+}
+
+func GetEventsByPkAndSk(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveEvent(ctx, models.Event{
+			Pk: "string1",
+			Sk: "string1",
+		}))
+		require.Nil(t, d.SaveEvent(ctx, models.Event{
+			Pk: "string1",
+			Sk: "string2",
+		}))
+		require.Nil(t, d.SaveEvent(ctx, models.Event{
+			Pk: "string1",
+			Sk: "string3",
+		}))
+		limit := int64(3)
+		tests := []getEventsByPkAndSkTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getEventsByPkAndSkInput{
+					ctx: context.Background(),
+					input: db.GetEventsByPkAndSkInput{
+						Pk:    "string1",
+						Limit: &limit,
+					},
+				},
+				output: getEventsByPkAndSkOutput{
+					events: []models.Event{
+						models.Event{
+							Pk: "string1",
+							Sk: "string1",
+						},
+						models.Event{
+							Pk: "string1",
+							Sk: "string2",
+						},
+						models.Event{
+							Pk: "string1",
+							Sk: "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getEventsByPkAndSkInput{
+					ctx: context.Background(),
+					input: db.GetEventsByPkAndSkInput{
+						Pk:         "string1",
+						Descending: true,
+					},
+				},
+				output: getEventsByPkAndSkOutput{
+					events: []models.Event{
+						models.Event{
+							Pk: "string1",
+							Sk: "string3",
+						},
+						models.Event{
+							Pk: "string1",
+							Sk: "string2",
+						},
+						models.Event{
+							Pk: "string1",
+							Sk: "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getEventsByPkAndSkInput{
+					ctx: context.Background(),
+					input: db.GetEventsByPkAndSkInput{
+						Pk: "string1",
+						StartingAfter: &models.Event{
+							Pk: "string1",
+							Sk: "string1",
+						},
+					},
+				},
+				output: getEventsByPkAndSkOutput{
+					events: []models.Event{
+						models.Event{
+							Pk: "string1",
+							Sk: "string2",
+						},
+						models.Event{
+							Pk: "string1",
+							Sk: "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after descending",
+				d:        d,
+				input: getEventsByPkAndSkInput{
+					ctx: context.Background(),
+					input: db.GetEventsByPkAndSkInput{
+						Pk: "string1",
+						StartingAfter: &models.Event{
+							Pk: "string1",
+							Sk: "string3",
+						},
+						Descending: true,
+					},
+				},
+				output: getEventsByPkAndSkOutput{
+					events: []models.Event{
+						models.Event{
+							Pk: "string1",
+							Sk: "string2",
+						},
+						models.Event{
+							Pk: "string1",
+							Sk: "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getEventsByPkAndSkInput{
+					ctx: context.Background(),
+					input: db.GetEventsByPkAndSkInput{
+						Pk:           "string1",
+						SkStartingAt: db.String("string2"),
+					},
+				},
+				output: getEventsByPkAndSkOutput{
+					events: []models.Event{
+						models.Event{
+							Pk: "string1",
+							Sk: "string2",
+						},
+						models.Event{
+							Pk: "string1",
+							Sk: "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+func SaveEvent(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.Event{
+			Data: unknownType,
+			Pk:   "string1",
+			Sk:   "string1",
+		}
+		require.Nil(t, s.SaveEvent(ctx, m))
+	}
+}
+
+func DeleteEvent(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.Event{
+			Data: unknownType,
+			Pk:   "string1",
+			Sk:   "string1",
+		}
+		require.Nil(t, s.SaveEvent(ctx, m))
+		require.Nil(t, s.DeleteEvent(ctx, m.Pk, m.Sk))
+	}
+}
+
+type getEventsBySkAndDataInput struct {
+	ctx   context.Context
+	input db.GetEventsBySkAndDataInput
+}
+type getEventsBySkAndDataOutput struct {
+	events []models.Event
+	err    error
+}
+type getEventsBySkAndDataTest struct {
+	testName string
+	d        db.Interface
+	input    getEventsBySkAndDataInput
+	output   getEventsBySkAndDataOutput
+}
+
+func (g getEventsBySkAndDataTest) run(t *testing.T) {
+	events := []models.Event{}
+	fn := func(m *models.Event, lastEvent bool) bool {
+		events = append(events, *m)
+		if lastEvent {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetEventsBySkAndData(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.events, events)
+}
+
+func GetEventsBySkAndData(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveEvent(ctx, models.Event{
+			Sk:   "string1",
+			Data: unknownType,
+			Pk:   "string1",
+		}))
+		require.Nil(t, d.SaveEvent(ctx, models.Event{
+			Sk:   "string1",
+			Data: unknownType,
+			Pk:   "string3",
+		}))
+		require.Nil(t, d.SaveEvent(ctx, models.Event{
+			Sk:   "string1",
+			Data: unknownType,
+			Pk:   "string2",
+		}))
+		limit := int64(3)
+		tests := []getEventsBySkAndDataTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getEventsBySkAndDataInput{
+					ctx: context.Background(),
+					input: db.GetEventsBySkAndDataInput{
+						Sk:    "string1",
+						Limit: &limit,
+					},
+				},
+				output: getEventsBySkAndDataOutput{
+					events: []models.Event{
+						models.Event{
+							Sk:   "string1",
+							Data: unknownType,
+							Pk:   "string1",
+						},
+						models.Event{
+							Sk:   "string1",
+							Data: unknownType,
+							Pk:   "string3",
+						},
+						models.Event{
+							Sk:   "string1",
+							Data: unknownType,
+							Pk:   "string2",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getEventsBySkAndDataInput{
+					ctx: context.Background(),
+					input: db.GetEventsBySkAndDataInput{
+						Sk:         "string1",
+						Descending: true,
+					},
+				},
+				output: getEventsBySkAndDataOutput{
+					events: []models.Event{
+						models.Event{
+							Sk:   "string1",
+							Data: unknownType,
+							Pk:   "string2",
+						},
+						models.Event{
+							Sk:   "string1",
+							Data: unknownType,
+							Pk:   "string3",
+						},
+						models.Event{
+							Sk:   "string1",
+							Data: unknownType,
+							Pk:   "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getEventsBySkAndDataInput{
+					ctx: context.Background(),
+					input: db.GetEventsBySkAndDataInput{
+						Sk: "string1",
+						StartingAfter: &models.Event{
+							Sk:   "string1",
+							Data: unknownType,
+							Pk:   "string1",
+						},
+					},
+				},
+				output: getEventsBySkAndDataOutput{
+					events: []models.Event{
+						models.Event{
+							Sk:   "string1",
+							Data: unknownType,
+							Pk:   "string3",
+						},
+						models.Event{
+							Sk:   "string1",
+							Data: unknownType,
+							Pk:   "string2",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after descending",
+				d:        d,
+				input: getEventsBySkAndDataInput{
+					ctx: context.Background(),
+					input: db.GetEventsBySkAndDataInput{
+						Sk: "string1",
+						StartingAfter: &models.Event{
+							Sk:   "string1",
+							Data: unknownType,
+							Pk:   "string2",
+						},
+						Descending: true,
+					},
+				},
+				output: getEventsBySkAndDataOutput{
+					events: []models.Event{
+						models.Event{
+							Sk:   "string1",
+							Data: unknownType,
+							Pk:   "string3",
+						},
+						models.Event{
+							Sk:   "string1",
+							Data: unknownType,
+							Pk:   "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getEventsBySkAndDataInput{
+					ctx: context.Background(),
+					input: db.GetEventsBySkAndDataInput{
+						Sk:             "string1",
+						DataStartingAt: unknownType,
+					},
+				},
+				output: getEventsBySkAndDataOutput{
+					events: []models.Event{
+						models.Event{
+							Sk:   "string1",
+							Data: unknownType,
+							Pk:   "string3",
+						},
+						models.Event{
+							Sk:   "string1",
+							Data: unknownType,
+							Pk:   "string2",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
 	}
 }
 
