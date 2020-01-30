@@ -487,6 +487,7 @@ definitions:
       sk:
         type: string
       data:
-        additionalProperties: true
+        type: string
+        format: byte
       ttl:
         type: integer

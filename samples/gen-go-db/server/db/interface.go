@@ -286,7 +286,7 @@ func (e ErrEventNotFound) Error() string {
 type GetEventsBySkAndDataInput struct {
 	// Sk is required
 	Sk             string
-	DataStartingAt *unknownType
+	DataStartingAt []byte
 	StartingAfter  *models.Event
 	Descending     bool
 	// Limit is an optional limit of how many items to evaluate.
@@ -296,7 +296,7 @@ type GetEventsBySkAndDataInput struct {
 // ErrEventBySkAndDataNotFound is returned when the database fails to find a Event.
 type ErrEventBySkAndDataNotFound struct {
 	Sk   string
-	Data unknownType
+	Data []byte
 }
 
 var _ error = ErrEventBySkAndDataNotFound{}

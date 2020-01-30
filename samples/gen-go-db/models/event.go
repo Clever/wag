@@ -17,7 +17,7 @@ import (
 type Event struct {
 
 	// data
-	Data interface{} `json:"data,omitempty"`
+	Data strfmt.Base64 `json:"data,omitempty"`
 
 	// pk
 	Pk string `json:"pk,omitempty"`

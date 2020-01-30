@@ -32,8 +32,8 @@ type ddbEventPrimaryKey struct {
 
 // ddbEventGSIBySK represents the bySK GSI.
 type ddbEventGSIBySK struct {
-	Sk   string      `dynamodbav:"sk"`
-	Data unknownType `dynamodbav:"data"`
+	Sk   string `dynamodbav:"sk"`
+	Data []byte `dynamodbav:"data"`
 }
 
 // ddbEvent represents a Event as stored in DynamoDB.
@@ -53,7 +53,7 @@ func (t EventTable) create(ctx context.Context) error {
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
 			{
 				AttributeName: aws.String("data"),
-				AttributeType: aws.String("unknownType"),
+				AttributeType: aws.String("B"),
 			},
 			{
 				AttributeName: aws.String("pk"),
@@ -284,7 +284,9 @@ func (t EventTable) getEventsBySkAndData(ctx context.Context, input db.GetEvents
 		queryInput.KeyConditionExpression = aws.String("#SK = :sk")
 	} else {
 		queryInput.ExpressionAttributeNames["#DATA"] = aws.String("data")
-		queryInput.ExpressionAttributeValues[":data"] = &dynamodb.AttributeValue{}
+		queryInput.ExpressionAttributeValues[":data"] = &dynamodb.AttributeValue{
+			B: input.DataStartingAt,
+		}
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#SK = :sk AND #DATA <= :data")
 		} else {
@@ -293,7 +295,9 @@ func (t EventTable) getEventsBySkAndData(ctx context.Context, input db.GetEvents
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"data": &dynamodb.AttributeValue{},
+			"data": &dynamodb.AttributeValue{
+				B: input.StartingAfter.Data,
+			},
 			"sk": &dynamodb.AttributeValue{
 				S: aws.String(input.StartingAfter.Sk),
 			},
