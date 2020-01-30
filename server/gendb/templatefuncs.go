@@ -310,6 +310,8 @@ func goTypeForAttribute(config XDBConfig, attributeName string) string {
 	if propertySchema, ok := config.Schema.Properties[attributeName]; ok {
 		if isDateTimeFormat(propertySchema.Format) {
 			return "strfmt.DateTime"
+		} else if propertySchema.Format == "byte" {
+			return "[]byte"
 		} else if len(propertySchema.Type) > 0 {
 			if propertySchema.Type[0] == "string" {
 				return "string"
@@ -351,6 +353,9 @@ func dynamoDBTypeForAttribute(config XDBConfig, attributeName string) string {
 	if propertySchema, ok := config.Schema.Properties[attributeName]; ok {
 		if len(propertySchema.Type) > 0 {
 			if propertySchema.Type[0] == "string" {
+				if propertySchema.Format == "byte" {
+					return "B"
+				}
 				return "S"
 			} else if propertySchema.Type[0] == "integer" {
 				return "N"
@@ -416,6 +421,9 @@ func exampleValueNotPtrForAttribute(config XDBConfig, attributeName string, i in
 			return fmt.Sprintf(`mustTime("2018-03-11T15:04:0%d+07:00")`, i)
 		} else if len(propertySchema.Type) > 0 {
 			if propertySchema.Type[0] == "string" {
+				if propertySchema.Format == "byte" {
+					return fmt.Sprintf(`[]byte("string%d")`, i)
+				}
 				return fmt.Sprintf(`"string%d"`, i)
 			} else if propertySchema.Type[0] == "integer" {
 				return fmt.Sprintf("%d", i)
@@ -455,6 +463,9 @@ func exampleValuePtrForAttribute(config XDBConfig, attributeName string, i int) 
 			return fmt.Sprintf(`db.DateTime(mustTime("2018-03-11T15:04:0%d+07:00"))`, i)
 		} else if len(propertySchema.Type) > 0 {
 			if propertySchema.Type[0] == "string" {
+				if propertySchema.Format == "byte" {
+					return fmt.Sprintf(`[]byte("string%d")`, i)
+				}
 				return fmt.Sprintf(`db.String("string%d")`, i)
 			} else if propertySchema.Type[0] == "integer" {
 				return fmt.Sprintf("db.Int64(%d)", i)

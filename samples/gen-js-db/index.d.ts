@@ -105,7 +105,7 @@ declare namespace SwaggerTest {
 };
     
     type Event = {
-  data?: { [key: string]: any };
+  data?: string;
   pk?: string;
   sk?: string;
   ttl?: number;

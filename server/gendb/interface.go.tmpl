@@ -101,7 +101,12 @@ type Get{{ $modelName }}sBy{{ $indexName }}Input struct {
 	  StartingAt *{{ pascalizeAndJoin $rangeKeyAttributes }}
   {{- else }}
     {{- $attributeName := index $rangeKeyAttributes 0 }}
-    {{ pascalize $attributeName }}StartingAt *{{ goTypeForAttribute $xdbConfig $attributeName }}
+    {{- $attributeGoType := goTypeForAttribute $xdbConfig $attributeName }}
+    {{- if eq $attributeGoType "[]byte" }}
+    {{ pascalize $attributeName }}StartingAt {{ $attributeGoType }}
+    {{- else }}
+    {{ pascalize $attributeName }}StartingAt *{{ $attributeGoType }}
+    {{- end }}
   {{- end }}
   // StartingAfter is a required specification of an exclusive starting point.
 	StartingAfter *models.{{ $modelName }}
@@ -152,7 +157,12 @@ type Get{{ $modelName }}sBy{{ $computedIndexName }}Input struct {
 	  StartingAt *{{ pascalizeAndJoin $rangeKeyAttributes }}
   {{- else }}
     {{- $attributeName := index $rangeKeyAttributes 0 }}
-    {{ pascalize $attributeName }}StartingAt *{{ goTypeForAttribute $xdbConfig $attributeName }}
+    {{- $attributeGoType := goTypeForAttribute $xdbConfig $attributeName }}
+    {{- if eq $attributeGoType "[]byte" }}
+    {{ pascalize $attributeName }}StartingAt {{ $attributeGoType }}
+    {{- else }}
+    {{ pascalize $attributeName }}StartingAt *{{ $attributeGoType }}
+    {{- end }}
   {{- end }}
 	StartingAfter *models.{{ $modelName }}
   Descending bool
