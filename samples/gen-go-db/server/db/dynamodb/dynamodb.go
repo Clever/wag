@@ -32,6 +32,8 @@ type Config struct {
 	DefaultReadCapacityUnits int64
 	// DeploymentTable configuration.
 	DeploymentTable DeploymentTable
+	// EventTable configuration.
+	EventTable EventTable
 	// NoRangeThingWithCompositeAttributesTable configuration.
 	NoRangeThingWithCompositeAttributesTable NoRangeThingWithCompositeAttributesTable
 	// SimpleThingTable configuration.
@@ -91,6 +93,20 @@ func New(config Config) (*DB, error) {
 	}
 	if deploymentTable.WriteCapacityUnits == 0 {
 		deploymentTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
+	// configure Event table
+	eventTable := config.EventTable
+	if eventTable.DynamoDBAPI == nil {
+		eventTable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if eventTable.Prefix == "" {
+		eventTable.Prefix = config.DefaultPrefix
+	}
+	if eventTable.ReadCapacityUnits == 0 {
+		eventTable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if eventTable.WriteCapacityUnits == 0 {
+		eventTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
 	// configure NoRangeThingWithCompositeAttributes table
 	noRangeThingWithCompositeAttributesTable := config.NoRangeThingWithCompositeAttributesTable
@@ -263,6 +279,7 @@ func New(config Config) (*DB, error) {
 
 	return &DB{
 		deploymentTable:                          deploymentTable,
+		eventTable:                               eventTable,
 		noRangeThingWithCompositeAttributesTable: noRangeThingWithCompositeAttributesTable,
 		simpleThingTable:                         simpleThingTable,
 		teacherSharingRuleTable:                  teacherSharingRuleTable,
@@ -281,6 +298,7 @@ func New(config Config) (*DB, error) {
 // DB implements the database interface using DynamoDB to store data.
 type DB struct {
 	deploymentTable                          DeploymentTable
+	eventTable                               EventTable
 	noRangeThingWithCompositeAttributesTable NoRangeThingWithCompositeAttributesTable
 	simpleThingTable                         SimpleThingTable
 	teacherSharingRuleTable                  TeacherSharingRuleTable
@@ -300,6 +318,9 @@ var _ db.Interface = DB{}
 // CreateTables creates all tables.
 func (d DB) CreateTables(ctx context.Context) error {
 	if err := d.deploymentTable.create(ctx); err != nil {
+		return err
+	}
+	if err := d.eventTable.create(ctx); err != nil {
 		return err
 	}
 	if err := d.noRangeThingWithCompositeAttributesTable.create(ctx); err != nil {
@@ -374,6 +395,31 @@ func (d DB) GetDeploymentsByEnvironmentAndDate(ctx context.Context, input db.Get
 // GetDeploymentByVersion retrieves a Deployment from the database.
 func (d DB) GetDeploymentByVersion(ctx context.Context, version string) (*models.Deployment, error) {
 	return d.deploymentTable.getDeploymentByVersion(ctx, version)
+}
+
+// SaveEvent saves a Event to the database.
+func (d DB) SaveEvent(ctx context.Context, m models.Event) error {
+	return d.eventTable.saveEvent(ctx, m)
+}
+
+// GetEvent retrieves a Event from the database.
+func (d DB) GetEvent(ctx context.Context, pk string, sk string) (*models.Event, error) {
+	return d.eventTable.getEvent(ctx, pk, sk)
+}
+
+// GetEventsByPkAndSk retrieves a page of Events from the database.
+func (d DB) GetEventsByPkAndSk(ctx context.Context, input db.GetEventsByPkAndSkInput, fn func(m *models.Event, lastEvent bool) bool) error {
+	return d.eventTable.getEventsByPkAndSk(ctx, input, fn)
+}
+
+// DeleteEvent deletes a Event from the database.
+func (d DB) DeleteEvent(ctx context.Context, pk string, sk string) error {
+	return d.eventTable.deleteEvent(ctx, pk, sk)
+}
+
+// GetEventsBySkAndData retrieves a page of Events from the database.
+func (d DB) GetEventsBySkAndData(ctx context.Context, input db.GetEventsBySkAndDataInput, fn func(m *models.Event, lastEvent bool) bool) error {
+	return d.eventTable.getEventsBySkAndData(ctx, input, fn)
 }
 
 // SaveNoRangeThingWithCompositeAttributes saves a NoRangeThingWithCompositeAttributes to the database.

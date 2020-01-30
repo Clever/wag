@@ -344,6 +344,8 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
                       {{- end }}
                       {{- else if eq $attrDynamoDBType "N" }}
     N: aws.String(fmt.Sprintf("%%d", *input.{{ pascalize $rangeKey.AttributeName }}StartingAt)),
+                      {{- else if eq $attrDynamoDBType "B" }}
+    B: input.{{ pascalize $rangeKey.AttributeName }}StartingAt,
                       {{- end }}
                       {{- end }}
     }
@@ -373,6 +375,8 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
           {{- end }}
         {{- else if eq $attrDynamoDBType "N" }}
       N: aws.String(fmt.Sprintf("%%d", input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
+        {{- else if eq $attrDynamoDBType "B" }}
+      B: input.StartingAfter.{{ pascalize $rangeKey.AttributeName }},
         {{- end }}
       {{- end }}
       },
@@ -563,6 +567,8 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
                         {{- end }}
                          {{- else if eq $attrDynamoDBType "N" }}
       N: aws.String(fmt.Sprintf("%%d", *input.{{ pascalize $rangeKey.AttributeName }}StartingAt)),
+                         {{- else if eq $attrDynamoDBType "B" }}
+      B: input.{{ pascalize $rangeKey.AttributeName }}StartingAt,
                         {{- end }}
                         {{- end }}
     }
@@ -592,6 +598,8 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
           {{- end }}
         {{- else if eq $attrDynamoDBType "N" }}
       N: aws.String(fmt.Sprintf("%%d", input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
+        {{- else if eq $attrDynamoDBType "B" }}
+      B: input.StartingAfter.{{ pascalize $rangeKey.AttributeName }},
         {{- end }}
       {{- end }}
       },

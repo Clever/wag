@@ -1,4 +1,5 @@
-v3.15.0
+v3.16.0
+- v3.16.0: Support for binary fields.
 - v3.15.0: JS client enable compression
 - v3.14.3 Remove unused code.
 - v3.14.2 Stricter span checks to prevent tracing errors.
@@ -7,4 +8,3 @@ v3.15.0
 - v3.13.3 Add constructor declarations to TypeScript error models
 - v3.13.1: adds a Canonical-Resource header to clients
 - v3.12.0: Do not log process metrics when running locally
-- v3.11.0: Compress responses

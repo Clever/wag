@@ -1,11 +1,14 @@
 package dynamodb
 
 import (
+	"bufio"
 	"context"
-	"fmt"
 	"net"
+	"os"
 	"os/exec"
+	"os/signal"
 	"strings"
+	"syscall"
 	"testing"
 	"time"
 
@@ -18,41 +21,66 @@ import (
 )
 
 func TestDynamoDBStore(t *testing.T) {
-	// spin up dynamodb local
+	// make sure nothing is running 8002
+	if _, err := net.DialTimeout("tcp", "localhost:8002", 100*time.Millisecond); err == nil {
+		t.Fatal(`zombie ddb local process running. Kill it and try again: pgrep -f "java -jar /tmp/DynamoDBLocal.jar" | xargs kill`)
+	}
+
+	// spin up dynamodb local, making sure to kill it when
+	// - the test function is finished (defer cancel())
+	// - the test is sigkill'd
 	testCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-
-	// restart test db if it gets killed before tests are completed.
-	go func(doneC <-chan struct{}, t *testing.T) {
-		cmd := exec.CommandContext(testCtx, "./dynamodb-local.sh")
-		if err := cmd.Start(); err != nil {
-			t.Fatal(err)
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, os.Signal(syscall.SIGTERM))
+	go func() {
+		for range c {
+			t.Logf("ctrl-c received")
+			cancel()
 		}
-		for {
-			select {
-			case <-doneC:
-				return
-			default:
-				if err := cmd.Wait(); err != nil {
-					fmt.Printf("Test DB crashed: %v\n", err.Error())
-					cmd = exec.CommandContext(testCtx, "./dynamodb-local.sh")
-					if err := cmd.Start(); err != nil && t != nil {
-						if err.Error() != "context canceled" {
-							t.Fatal(err)
-						}
-					}
-				}
+	}()
+	cmd := exec.CommandContext(testCtx, "./dynamodb-local.sh")
+	stdout, _ := cmd.StdoutPipe()
+	stderr, _ := cmd.StderrPipe()
+	if err := cmd.Start(); err != nil {
+		t.Fatalf("cmd.Start: %v", err)
+	}
+
+	// relay stdout and stderr of the ddblocal process, and
+	// check for signs that it didn't start up correctly
+	outLines := bufio.NewScanner(stdout)
+	errLines := bufio.NewScanner(stderr)
+	go func() {
+		for outLines.Scan() {
+			t.Logf("ddblocal stdout: %s", outLines.Text())
+		}
+	}()
+	go func() {
+		for errLines.Scan() {
+			txt := errLines.Text()
+			t.Logf("ddblocal stderr: %s", txt)
+			if txt == "java.net.BindException: Address already in use" {
+				t.Fatal(`zombie ddb local process running. Kill it and try again: pgrep -f "java -jar /tmp/DynamoDBLocal.jar" | xargs kill`)
 			}
 		}
-	}(testCtx.Done(), t)
+	}()
 
-	// loop for 60s trying to establish a connection
+	// the ddblocal command should not exit with an error before the test is finished
+	go func() {
+		if err := cmd.Wait(); err != nil && testCtx.Err() == nil {
+			t.Fatalf("cmd.Wait: %s", err)
+		}
+	}()
+
+	// loop for 10s trying to establish a connection
 	connected := false
-	for start := time.Now(); start.Before(start.Add(60 * time.Second)); time.Sleep(1 * time.Second) {
-		if c, err := net.Dial("tcp", "localhost:8002"); err == nil {
+	for start := time.Now(); start.Before(start.Add(10 * time.Second)); time.Sleep(1 * time.Second) {
+		if c, err := net.DialTimeout("tcp", "localhost:8002", 100*time.Millisecond); err == nil {
 			c.Close()
 			connected = true
 			break
+		} else {
+			t.Logf("could not connect to ddb local, will retry: %s", err)
 		}
 	}
 	if connected == false {

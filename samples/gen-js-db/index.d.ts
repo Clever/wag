@@ -104,6 +104,13 @@ declare namespace SwaggerTest {
   version?: string;
 };
     
+    type Event = {
+  data?: string;
+  pk?: string;
+  sk?: string;
+  ttl?: number;
+};
+    
     type NoRangeThingWithCompositeAttributes = {
   branch: string;
   date: string;
