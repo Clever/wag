@@ -65,9 +65,9 @@ func TestDynamoDBStore(t *testing.T) {
 		}
 	}()
 
-	// the ddblocal command should not exit with an error
+	// the ddblocal command should not exit with an error before the test is finished
 	go func() {
-		if err := cmd.Wait(); err != nil {
+		if err := cmd.Wait(); err != nil && testCtx.Err() == nil {
 			t.Fatalf("cmd.Wait: %s", err)
 		}
 	}()
