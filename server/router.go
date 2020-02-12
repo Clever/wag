@@ -6,6 +6,7 @@ package server
 // Code auto-generated. Do not edit.
 
 import (
+	"compress/gzip"
 	"fmt"
 	"io"
 	"log"
@@ -45,6 +46,17 @@ type Server struct {
 	Handler http.Handler
 	addr string
 	l logger.KayveeLogger
+	config serverConfig
+}
+
+type serverConfig struct{
+	compressionLevel int
+}
+
+func CompressionLevel(level int) func(*serverConfig) {
+	return func(c *serverConfig) {
+		c.compressionLevel = level
+	}
 }
 
 // Serve starts the server. It will return if an error occurs.
@@ -148,11 +160,11 @@ func startLoggingProcessMetrics() {
 	metrics.Log("{{.Title}}", 1*time.Minute)
 }
 
-func withMiddleware(serviceName string, router http.Handler, m []func(http.Handler) http.Handler) http.Handler {
+func withMiddleware(serviceName string, router http.Handler, m []func(http.Handler) http.Handler, config serverConfig) http.Handler {
 	handler := router
 
 	// compress everything
-	handler = handlers.CompressHandler(handler)
+	handler = handlers.CompressHandlerLevel(handler, config.compressionLevel)
 
 	// Wrap the middleware in the opposite order specified so that when called then run
 	// in the order specified
@@ -170,8 +182,8 @@ func withMiddleware(serviceName string, router http.Handler, m []func(http.Handl
 
 
 // New returns a Server that implements the Controller interface. It will start when "Serve" is called.
-func New(c Controller, addr string) *Server {
-	return NewWithMiddleware(c, addr, []func(http.Handler) http.Handler{})
+func New(c Controller, addr string, options ...func(*serverConfig)) *Server {
+	return NewWithMiddleware(c, addr, []func(http.Handler) http.Handler{}, options...)
 }
 
 // NewRouter returns a mux.Router with no middleware. This is so we can attach additional routes to the
@@ -198,19 +210,30 @@ func newRouter(c Controller) *mux.Router {
 // NewWithMiddleware returns a Server that implemenets the Controller interface. It runs the
 // middleware after the built-in middleware (e.g. logging), but before the controller methods.
 // The middleware is executed in the order specified. The server will start when "Serve" is called.
-func NewWithMiddleware(c Controller, addr string, m []func(http.Handler) http.Handler) *Server {
+func NewWithMiddleware(c Controller, addr string, m []func(http.Handler) http.Handler, options ...func(*serverConfig)) *Server {
 	router := newRouter(c)
 
-	return AttachMiddleware(router, addr, m)
+	return AttachMiddleware(router, addr, m, options...)
 }
 
 // AttachMiddleware attaches the given middleware to the router; this is to be used in conjunction with
 // NewServer. It attaches custom middleware passed as arguments as well as the built-in middleware for
 // logging, tracing, and handling panics. It should be noted that the built-in middleware executes first
 // followed by the passed in middleware (in the order specified).
-func AttachMiddleware(router *mux.Router, addr string, m []func(http.Handler) http.Handler) *Server {
+func AttachMiddleware(router *mux.Router, addr string, m []func(http.Handler) http.Handler, options ...func(*serverConfig)) *Server {
+	// Set sane defaults, to be overriden by the varargs functions.
+	// This would probably be better done in NewWithMiddleware, but there are services that call
+	// AttachMiddleWare directly instead.
+	config := serverConfig {
+		compressionLevel: gzip.DefaultCompression,
+	}
+	for _, option := range options {
+		option(&config)
+	}
+
+
 	l := logger.New("{{.Title}}")
 
-	handler := withMiddleware("{{.Title}}", router, m)
-	return &Server{Handler: handler, addr: addr, l: l}
+	handler := withMiddleware("{{.Title}}", router, m, config)
+	return &Server{Handler: handler, addr: addr, l: l, config: config}
 }`

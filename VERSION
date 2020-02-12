@@ -1,4 +1,5 @@
-v3.16.0
+v3.17.0
+- v3.17.0: Add support for configuration options and paramatrized settings.
 - v3.16.0: Support for binary fields.
 - v3.15.0: JS client enable compression
 - v3.14.3 Remove unused code.
