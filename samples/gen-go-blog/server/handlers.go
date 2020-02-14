@@ -63,7 +63,7 @@ func convertDate(input string) (strfmt.Date, error) {
 }
 
 func jsonMarshalNoError(i interface{}) string {
-	bytes, err := json.MarshalIndent(i, "", "\t")
+	bytes, err := json.Marshal(i)
 	if err != nil {
 		// This should never happen
 		return ""
@@ -146,7 +146,7 @@ func (h handler) GetSectionsForStudentHandler(ctx context.Context, w http.Respon
 	jsonSpan, _ := opentracing.StartSpanFromContext(ctx, "json-response-marshaling")
 	defer jsonSpan.Finish()
 
-	respBytes, err := json.MarshalIndent(resp, "", "\t")
+	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.InternalError{Message: err.Error()}), http.StatusInternalServerError)
