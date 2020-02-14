@@ -63,7 +63,7 @@ func convertDate(input string) (strfmt.Date, error) {
 }
 
 func jsonMarshalNoError(i interface{}) string {
-	bytes, err := json.MarshalIndent(i, "", "\t")
+	bytes, err := json.Marshal(i)
 	if err != nil {
 		// This should never happen
 		return ""
