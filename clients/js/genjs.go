@@ -1178,6 +1178,10 @@ func paramToJSType(param spec.Parameter) (JSType, error) {
 		return typeName, nil
 	}
 
+	if len(param.Enum) > 0 {
+		return typeFromEnum(param.Enum)
+	}
+
 	var typeName string
 	switch param.Type {
 	case "string":
@@ -1248,15 +1252,7 @@ func asJSType(schema *spec.Schema, refPrefix string) (JSType, error) {
 	}
 
 	if len(schema.Enum) > 0 {
-		enums := []string{}
-		for _, enum := range schema.Enum {
-			e, err := json.Marshal(enum)
-			if err != nil {
-				return JSType(""), err
-			}
-			enums = append(enums, string(e))
-		}
-		return JSType("(" + strings.Join(enums, " | ") + ")"), nil
+		return typeFromEnum(schema.Enum)
 	}
 
 	if len(schema.Type) > 1 {
@@ -1292,6 +1288,18 @@ func asJSType(schema *spec.Schema, refPrefix string) (JSType, error) {
 	}
 
 	return JSType(""), fmt.Errorf("Unknown type '%v'", schema.Type[0])
+}
+
+func typeFromEnum(enum []interface{}) (JSType, error) {
+	enums := []string{}
+	for _, enum := range enum {
+		e, err := json.Marshal(enum)
+		if err != nil {
+			return JSType(""), err
+		}
+		enums = append(enums, string(e))
+	}
+	return JSType("(" + strings.Join(enums, " | ") + ")"), nil
 }
 
 func defFromRef(ref string) (string, error) {
