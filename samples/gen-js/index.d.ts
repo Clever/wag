@@ -180,7 +180,7 @@ declare namespace SwaggerTest {
     type GetBooksParams = {
   authors?: string[];
   available?: boolean;
-  state?: string;
+  state?: ("finished" | "inprogress");
   published?: string;
   snakeCase?: string;
   completed?: string;

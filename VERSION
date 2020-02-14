@@ -1,4 +1,5 @@
-v3.17.0
+v3.18.0
+- v3.18.0: Generate TypeScript string unions for inputs that are enums.
 - v3.17.0: Add support for configuration options and paramatrized settings.
 - v3.16.0: Support for binary fields.
 - v3.15.0: JS client enable compression
