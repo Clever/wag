@@ -113,7 +113,10 @@ func NewFromDiscovery() (*WagClient, error) {
 	if err != nil {
 		url, err = discovery.URL("{{.ServiceName}}", "http") // Added fallback to maintain reverse compatibility
 		if err != nil {
-			return nil, err
+			url, err = discovery.URL("{{.ServiceName}}", "{{.ServiceName}}") // Added fallback to maintain reverse compatibility
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 	return New(url), nil
