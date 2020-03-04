@@ -865,7 +865,7 @@ func decode{{ $modelName }}(m map[string]*dynamodb.AttributeValue, out *models.{
       return fmt.Errorf("expected {{ len $ca.Properties }} parts: '%%s'", *v.S)
     }
                 {{- range $i, $prop := $ca.Properties }}
-    out.{{ pascalize $prop }} = parts[{{ $i }}]
+    out.{{ pascalize $prop }} = {{if attributeIsPointer $xdbConfig $prop }}&{{end}}parts[{{ $i }}]
                 {{- end }}
   }
         {{- end }}
