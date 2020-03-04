@@ -292,8 +292,8 @@ func decodeThingWithRequiredCompositePropertiesAndKeysOnly(m map[string]*dynamod
 		if len(parts) != 2 {
 			return fmt.Errorf("expected 2 parts: '%s'", *v.S)
 		}
-		out.PropertyOne = parts[0]
-		out.PropertyTwo = parts[1]
+		out.PropertyOne = &parts[0]
+		out.PropertyTwo = &parts[1]
 	}
 	return nil
 }
