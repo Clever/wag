@@ -491,3 +491,36 @@ definitions:
         format: byte
       ttl:
         type: integer
+
+  ThingWithRequiredCompositePropertiesAndKeysOnly:
+    type: object
+    properties:
+      propertyOne:
+        type: string
+      propertyTwo:
+        type: string
+      propertyThree:
+        type: string
+    required:
+      - propertyOne
+      - propertyTwo
+      - propertyThree
+    x-db:
+      AllowOverwrites: true
+      CompositeAttributes:
+      - AttributeName: propertyOneAndTwo
+        Properties: [ propertyOne, propertyTwo ]
+        Separator: "_"      
+      DynamoDB:
+        KeySchema:
+        - AttributeName: propertyThree
+          KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: propertyOneAndTwo_PropertyThree
+            KeySchema:
+              - AttributeName: propertyOneAndTwo
+                KeyType: HASH
+              - AttributeName: propertyThree
+                KeyType: RANGE
+            Projection:
+              ProjectionType: KEYS_ONLY

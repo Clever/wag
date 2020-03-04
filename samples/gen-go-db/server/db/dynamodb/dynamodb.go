@@ -52,6 +52,8 @@ type Config struct {
 	ThingWithDateTimeCompositeTable ThingWithDateTimeCompositeTable
 	// ThingWithMatchingKeysTable configuration.
 	ThingWithMatchingKeysTable ThingWithMatchingKeysTable
+	// ThingWithRequiredCompositePropertiesAndKeysOnlyTable configuration.
+	ThingWithRequiredCompositePropertiesAndKeysOnlyTable ThingWithRequiredCompositePropertiesAndKeysOnlyTable
 	// ThingWithRequiredFieldsTable configuration.
 	ThingWithRequiredFieldsTable ThingWithRequiredFieldsTable
 	// ThingWithRequiredFields2Table configuration.
@@ -234,6 +236,20 @@ func New(config Config) (*DB, error) {
 	if thingWithMatchingKeysTable.WriteCapacityUnits == 0 {
 		thingWithMatchingKeysTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	// configure ThingWithRequiredCompositePropertiesAndKeysOnly table
+	thingWithRequiredCompositePropertiesAndKeysOnlyTable := config.ThingWithRequiredCompositePropertiesAndKeysOnlyTable
+	if thingWithRequiredCompositePropertiesAndKeysOnlyTable.DynamoDBAPI == nil {
+		thingWithRequiredCompositePropertiesAndKeysOnlyTable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if thingWithRequiredCompositePropertiesAndKeysOnlyTable.Prefix == "" {
+		thingWithRequiredCompositePropertiesAndKeysOnlyTable.Prefix = config.DefaultPrefix
+	}
+	if thingWithRequiredCompositePropertiesAndKeysOnlyTable.ReadCapacityUnits == 0 {
+		thingWithRequiredCompositePropertiesAndKeysOnlyTable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if thingWithRequiredCompositePropertiesAndKeysOnlyTable.WriteCapacityUnits == 0 {
+		thingWithRequiredCompositePropertiesAndKeysOnlyTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
 	// configure ThingWithRequiredFields table
 	thingWithRequiredFieldsTable := config.ThingWithRequiredFieldsTable
 	if thingWithRequiredFieldsTable.DynamoDBAPI == nil {
@@ -278,39 +294,41 @@ func New(config Config) (*DB, error) {
 	}
 
 	return &DB{
-		deploymentTable:                          deploymentTable,
-		eventTable:                               eventTable,
-		noRangeThingWithCompositeAttributesTable: noRangeThingWithCompositeAttributesTable,
-		simpleThingTable:                         simpleThingTable,
-		teacherSharingRuleTable:                  teacherSharingRuleTable,
-		thingTable:                               thingTable,
-		thingWithCompositeAttributesTable:        thingWithCompositeAttributesTable,
-		thingWithCompositeEnumAttributesTable:    thingWithCompositeEnumAttributesTable,
-		thingWithDateRangeTable:                  thingWithDateRangeTable,
-		thingWithDateTimeCompositeTable:          thingWithDateTimeCompositeTable,
-		thingWithMatchingKeysTable:               thingWithMatchingKeysTable,
-		thingWithRequiredFieldsTable:             thingWithRequiredFieldsTable,
-		thingWithRequiredFields2Table:            thingWithRequiredFields2Table,
-		thingWithUnderscoresTable:                thingWithUnderscoresTable,
+		deploymentTable:                                      deploymentTable,
+		eventTable:                                           eventTable,
+		noRangeThingWithCompositeAttributesTable:             noRangeThingWithCompositeAttributesTable,
+		simpleThingTable:                                     simpleThingTable,
+		teacherSharingRuleTable:                              teacherSharingRuleTable,
+		thingTable:                                           thingTable,
+		thingWithCompositeAttributesTable:                    thingWithCompositeAttributesTable,
+		thingWithCompositeEnumAttributesTable:                thingWithCompositeEnumAttributesTable,
+		thingWithDateRangeTable:                              thingWithDateRangeTable,
+		thingWithDateTimeCompositeTable:                      thingWithDateTimeCompositeTable,
+		thingWithMatchingKeysTable:                           thingWithMatchingKeysTable,
+		thingWithRequiredCompositePropertiesAndKeysOnlyTable: thingWithRequiredCompositePropertiesAndKeysOnlyTable,
+		thingWithRequiredFieldsTable:                         thingWithRequiredFieldsTable,
+		thingWithRequiredFields2Table:                        thingWithRequiredFields2Table,
+		thingWithUnderscoresTable:                            thingWithUnderscoresTable,
 	}, nil
 }
 
 // DB implements the database interface using DynamoDB to store data.
 type DB struct {
-	deploymentTable                          DeploymentTable
-	eventTable                               EventTable
-	noRangeThingWithCompositeAttributesTable NoRangeThingWithCompositeAttributesTable
-	simpleThingTable                         SimpleThingTable
-	teacherSharingRuleTable                  TeacherSharingRuleTable
-	thingTable                               ThingTable
-	thingWithCompositeAttributesTable        ThingWithCompositeAttributesTable
-	thingWithCompositeEnumAttributesTable    ThingWithCompositeEnumAttributesTable
-	thingWithDateRangeTable                  ThingWithDateRangeTable
-	thingWithDateTimeCompositeTable          ThingWithDateTimeCompositeTable
-	thingWithMatchingKeysTable               ThingWithMatchingKeysTable
-	thingWithRequiredFieldsTable             ThingWithRequiredFieldsTable
-	thingWithRequiredFields2Table            ThingWithRequiredFields2Table
-	thingWithUnderscoresTable                ThingWithUnderscoresTable
+	deploymentTable                                      DeploymentTable
+	eventTable                                           EventTable
+	noRangeThingWithCompositeAttributesTable             NoRangeThingWithCompositeAttributesTable
+	simpleThingTable                                     SimpleThingTable
+	teacherSharingRuleTable                              TeacherSharingRuleTable
+	thingTable                                           ThingTable
+	thingWithCompositeAttributesTable                    ThingWithCompositeAttributesTable
+	thingWithCompositeEnumAttributesTable                ThingWithCompositeEnumAttributesTable
+	thingWithDateRangeTable                              ThingWithDateRangeTable
+	thingWithDateTimeCompositeTable                      ThingWithDateTimeCompositeTable
+	thingWithMatchingKeysTable                           ThingWithMatchingKeysTable
+	thingWithRequiredCompositePropertiesAndKeysOnlyTable ThingWithRequiredCompositePropertiesAndKeysOnlyTable
+	thingWithRequiredFieldsTable                         ThingWithRequiredFieldsTable
+	thingWithRequiredFields2Table                        ThingWithRequiredFields2Table
+	thingWithUnderscoresTable                            ThingWithUnderscoresTable
 }
 
 var _ db.Interface = DB{}
@@ -348,6 +366,9 @@ func (d DB) CreateTables(ctx context.Context) error {
 		return err
 	}
 	if err := d.thingWithMatchingKeysTable.create(ctx); err != nil {
+		return err
+	}
+	if err := d.thingWithRequiredCompositePropertiesAndKeysOnlyTable.create(ctx); err != nil {
 		return err
 	}
 	if err := d.thingWithRequiredFieldsTable.create(ctx); err != nil {
@@ -625,6 +646,26 @@ func (d DB) DeleteThingWithMatchingKeys(ctx context.Context, bear string, assocT
 // GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear retrieves a page of ThingWithMatchingKeyss from the database.
 func (d DB) GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Context, input db.GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error {
 	return d.thingWithMatchingKeysTable.getThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx, input, fn)
+}
+
+// SaveThingWithRequiredCompositePropertiesAndKeysOnly saves a ThingWithRequiredCompositePropertiesAndKeysOnly to the database.
+func (d DB) SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, m models.ThingWithRequiredCompositePropertiesAndKeysOnly) error {
+	return d.thingWithRequiredCompositePropertiesAndKeysOnlyTable.saveThingWithRequiredCompositePropertiesAndKeysOnly(ctx, m)
+}
+
+// GetThingWithRequiredCompositePropertiesAndKeysOnly retrieves a ThingWithRequiredCompositePropertiesAndKeysOnly from the database.
+func (d DB) GetThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, propertyThree string) (*models.ThingWithRequiredCompositePropertiesAndKeysOnly, error) {
+	return d.thingWithRequiredCompositePropertiesAndKeysOnlyTable.getThingWithRequiredCompositePropertiesAndKeysOnly(ctx, propertyThree)
+}
+
+// DeleteThingWithRequiredCompositePropertiesAndKeysOnly deletes a ThingWithRequiredCompositePropertiesAndKeysOnly from the database.
+func (d DB) DeleteThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, propertyThree string) error {
+	return d.thingWithRequiredCompositePropertiesAndKeysOnlyTable.deleteThingWithRequiredCompositePropertiesAndKeysOnly(ctx, propertyThree)
+}
+
+// GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree retrieves a page of ThingWithRequiredCompositePropertiesAndKeysOnlys from the database.
+func (d DB) GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(ctx context.Context, input db.GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput, fn func(m *models.ThingWithRequiredCompositePropertiesAndKeysOnly, lastThingWithRequiredCompositePropertiesAndKeysOnly bool) bool) error {
+	return d.thingWithRequiredCompositePropertiesAndKeysOnlyTable.getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(ctx, input, fn)
 }
 
 // SaveThingWithRequiredFields saves a ThingWithRequiredFields to the database.

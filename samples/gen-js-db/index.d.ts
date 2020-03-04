@@ -178,6 +178,12 @@ declare namespace SwaggerTest {
   created?: string;
 };
     
+    type ThingWithRequiredCompositePropertiesAndKeysOnly = {
+  propertyOne: string;
+  propertyThree: string;
+  propertyTwo: string;
+};
+    
     type ThingWithRequiredFields = {
   id: string;
   name: string;

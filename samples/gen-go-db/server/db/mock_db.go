@@ -684,6 +684,55 @@ func (mr *MockInterfaceMockRecorder) GetThingWithMatchingKeyssByAssocTypeIDAndCr
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear", reflect.TypeOf((*MockInterface)(nil).GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear), ctx, input, fn)
 }
 
+// SaveThingWithRequiredCompositePropertiesAndKeysOnly mocks base method
+func (m_2 *MockInterface) SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, m models.ThingWithRequiredCompositePropertiesAndKeysOnly) error {
+	ret := m_2.ctrl.Call(m_2, "SaveThingWithRequiredCompositePropertiesAndKeysOnly", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveThingWithRequiredCompositePropertiesAndKeysOnly indicates an expected call of SaveThingWithRequiredCompositePropertiesAndKeysOnly
+func (mr *MockInterfaceMockRecorder) SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx, m interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithRequiredCompositePropertiesAndKeysOnly", reflect.TypeOf((*MockInterface)(nil).SaveThingWithRequiredCompositePropertiesAndKeysOnly), ctx, m)
+}
+
+// GetThingWithRequiredCompositePropertiesAndKeysOnly mocks base method
+func (m *MockInterface) GetThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, propertyThree string) (*models.ThingWithRequiredCompositePropertiesAndKeysOnly, error) {
+	ret := m.ctrl.Call(m, "GetThingWithRequiredCompositePropertiesAndKeysOnly", ctx, propertyThree)
+	ret0, _ := ret[0].(*models.ThingWithRequiredCompositePropertiesAndKeysOnly)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingWithRequiredCompositePropertiesAndKeysOnly indicates an expected call of GetThingWithRequiredCompositePropertiesAndKeysOnly
+func (mr *MockInterfaceMockRecorder) GetThingWithRequiredCompositePropertiesAndKeysOnly(ctx, propertyThree interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithRequiredCompositePropertiesAndKeysOnly", reflect.TypeOf((*MockInterface)(nil).GetThingWithRequiredCompositePropertiesAndKeysOnly), ctx, propertyThree)
+}
+
+// DeleteThingWithRequiredCompositePropertiesAndKeysOnly mocks base method
+func (m *MockInterface) DeleteThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, propertyThree string) error {
+	ret := m.ctrl.Call(m, "DeleteThingWithRequiredCompositePropertiesAndKeysOnly", ctx, propertyThree)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteThingWithRequiredCompositePropertiesAndKeysOnly indicates an expected call of DeleteThingWithRequiredCompositePropertiesAndKeysOnly
+func (mr *MockInterfaceMockRecorder) DeleteThingWithRequiredCompositePropertiesAndKeysOnly(ctx, propertyThree interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithRequiredCompositePropertiesAndKeysOnly", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithRequiredCompositePropertiesAndKeysOnly), ctx, propertyThree)
+}
+
+// GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree mocks base method
+func (m *MockInterface) GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(ctx context.Context, input GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput, fn func(*models.ThingWithRequiredCompositePropertiesAndKeysOnly, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree indicates an expected call of GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree
+func (mr *MockInterfaceMockRecorder) GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree", reflect.TypeOf((*MockInterface)(nil).GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree), ctx, input, fn)
+}
+
 // SaveThingWithRequiredFields mocks base method
 func (m_2 *MockInterface) SaveThingWithRequiredFields(ctx context.Context, m models.ThingWithRequiredFields) error {
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithRequiredFields", ctx, m)
