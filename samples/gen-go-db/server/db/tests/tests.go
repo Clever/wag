@@ -74,6 +74,10 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("SaveThingWithMatchingKeys", SaveThingWithMatchingKeys(dbFactory(), t))
 	t.Run("DeleteThingWithMatchingKeys", DeleteThingWithMatchingKeys(dbFactory(), t))
 	t.Run("GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear", GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(dbFactory(), t))
+	t.Run("GetThingWithRequiredCompositePropertiesAndKeysOnly", GetThingWithRequiredCompositePropertiesAndKeysOnly(dbFactory(), t))
+	t.Run("SaveThingWithRequiredCompositePropertiesAndKeysOnly", SaveThingWithRequiredCompositePropertiesAndKeysOnly(dbFactory(), t))
+	t.Run("DeleteThingWithRequiredCompositePropertiesAndKeysOnly", DeleteThingWithRequiredCompositePropertiesAndKeysOnly(dbFactory(), t))
+	t.Run("GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree", GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(dbFactory(), t))
 	t.Run("GetThingWithRequiredFields", GetThingWithRequiredFields(dbFactory(), t))
 	t.Run("SaveThingWithRequiredFields", SaveThingWithRequiredFields(dbFactory(), t))
 	t.Run("DeleteThingWithRequiredFields", DeleteThingWithRequiredFields(dbFactory(), t))
@@ -4418,6 +4422,263 @@ func GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(d db.Interface, t *tes
 							AssocID:   "string1",
 							Created:   mustTime("2018-03-11T15:04:03+07:00"),
 							Bear:      "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+func GetThingWithRequiredCompositePropertiesAndKeysOnly(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+			PropertyOne:   db.String("string1"),
+			PropertyThree: db.String("string1"),
+			PropertyTwo:   db.String("string1"),
+		}
+		require.Nil(t, s.SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx, m))
+		m2, err := s.GetThingWithRequiredCompositePropertiesAndKeysOnly(ctx, *m.PropertyThree)
+		require.Nil(t, err)
+		require.Equal(t, *m.PropertyThree, *m2.PropertyThree)
+
+		_, err = s.GetThingWithRequiredCompositePropertiesAndKeysOnly(ctx, "string2")
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrThingWithRequiredCompositePropertiesAndKeysOnlyNotFound{})
+	}
+}
+
+func SaveThingWithRequiredCompositePropertiesAndKeysOnly(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+			PropertyOne:   db.String("string1"),
+			PropertyThree: db.String("string1"),
+			PropertyTwo:   db.String("string1"),
+		}
+		require.Nil(t, s.SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx, m))
+	}
+}
+
+func DeleteThingWithRequiredCompositePropertiesAndKeysOnly(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+			PropertyOne:   db.String("string1"),
+			PropertyThree: db.String("string1"),
+			PropertyTwo:   db.String("string1"),
+		}
+		require.Nil(t, s.SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx, m))
+		require.Nil(t, s.DeleteThingWithRequiredCompositePropertiesAndKeysOnly(ctx, *m.PropertyThree))
+	}
+}
+
+type getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput struct {
+	ctx   context.Context
+	input db.GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput
+}
+type getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeOutput struct {
+	thingWithRequiredCompositePropertiesAndKeysOnlys []models.ThingWithRequiredCompositePropertiesAndKeysOnly
+	err                                              error
+}
+type getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeTest struct {
+	testName string
+	d        db.Interface
+	input    getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput
+	output   getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeOutput
+}
+
+func (g getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeTest) run(t *testing.T) {
+	thingWithRequiredCompositePropertiesAndKeysOnlys := []models.ThingWithRequiredCompositePropertiesAndKeysOnly{}
+	fn := func(m *models.ThingWithRequiredCompositePropertiesAndKeysOnly, lastThingWithRequiredCompositePropertiesAndKeysOnly bool) bool {
+		thingWithRequiredCompositePropertiesAndKeysOnlys = append(thingWithRequiredCompositePropertiesAndKeysOnlys, *m)
+		if lastThingWithRequiredCompositePropertiesAndKeysOnly {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.thingWithRequiredCompositePropertiesAndKeysOnlys, thingWithRequiredCompositePropertiesAndKeysOnlys)
+}
+
+func GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx, models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+			PropertyOne:   db.String("string1"),
+			PropertyTwo:   db.String("string1"),
+			PropertyThree: db.String("string1"),
+		}))
+		require.Nil(t, d.SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx, models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+			PropertyOne:   db.String("string1"),
+			PropertyTwo:   db.String("string1"),
+			PropertyThree: db.String("string2"),
+		}))
+		require.Nil(t, d.SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx, models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+			PropertyOne:   db.String("string1"),
+			PropertyTwo:   db.String("string1"),
+			PropertyThree: db.String("string3"),
+		}))
+		limit := int64(3)
+		tests := []getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput{
+					ctx: context.Background(),
+					input: db.GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput{
+						PropertyOne: "string1",
+						PropertyTwo: "string1",
+						Limit:       &limit,
+					},
+				},
+				output: getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeOutput{
+					thingWithRequiredCompositePropertiesAndKeysOnlys: []models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyOne:   db.String("string1"),
+							PropertyTwo:   db.String("string1"),
+							PropertyThree: db.String("string1"),
+						},
+						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyOne:   db.String("string1"),
+							PropertyTwo:   db.String("string1"),
+							PropertyThree: db.String("string2"),
+						},
+						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyOne:   db.String("string1"),
+							PropertyTwo:   db.String("string1"),
+							PropertyThree: db.String("string3"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput{
+					ctx: context.Background(),
+					input: db.GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput{
+						PropertyOne: "string1",
+						PropertyTwo: "string1",
+						Descending:  true,
+					},
+				},
+				output: getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeOutput{
+					thingWithRequiredCompositePropertiesAndKeysOnlys: []models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyOne:   db.String("string1"),
+							PropertyTwo:   db.String("string1"),
+							PropertyThree: db.String("string3"),
+						},
+						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyOne:   db.String("string1"),
+							PropertyTwo:   db.String("string1"),
+							PropertyThree: db.String("string2"),
+						},
+						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyOne:   db.String("string1"),
+							PropertyTwo:   db.String("string1"),
+							PropertyThree: db.String("string1"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput{
+					ctx: context.Background(),
+					input: db.GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput{
+						PropertyOne: "string1",
+						PropertyTwo: "string1",
+						StartingAfter: &models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyOne:   db.String("string1"),
+							PropertyTwo:   db.String("string1"),
+							PropertyThree: db.String("string1"),
+						},
+					},
+				},
+				output: getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeOutput{
+					thingWithRequiredCompositePropertiesAndKeysOnlys: []models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyOne:   db.String("string1"),
+							PropertyTwo:   db.String("string1"),
+							PropertyThree: db.String("string2"),
+						},
+						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyOne:   db.String("string1"),
+							PropertyTwo:   db.String("string1"),
+							PropertyThree: db.String("string3"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after descending",
+				d:        d,
+				input: getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput{
+					ctx: context.Background(),
+					input: db.GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput{
+						PropertyOne: "string1",
+						PropertyTwo: "string1",
+						StartingAfter: &models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyOne:   db.String("string1"),
+							PropertyTwo:   db.String("string1"),
+							PropertyThree: db.String("string3"),
+						},
+						Descending: true,
+					},
+				},
+				output: getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeOutput{
+					thingWithRequiredCompositePropertiesAndKeysOnlys: []models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyOne:   db.String("string1"),
+							PropertyTwo:   db.String("string1"),
+							PropertyThree: db.String("string2"),
+						},
+						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyOne:   db.String("string1"),
+							PropertyTwo:   db.String("string1"),
+							PropertyThree: db.String("string1"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput{
+					ctx: context.Background(),
+					input: db.GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput{
+						PropertyOne:             "string1",
+						PropertyTwo:             "string1",
+						PropertyThreeStartingAt: db.String("string2"),
+					},
+				},
+				output: getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeOutput{
+					thingWithRequiredCompositePropertiesAndKeysOnlys: []models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyOne:   db.String("string1"),
+							PropertyTwo:   db.String("string1"),
+							PropertyThree: db.String("string2"),
+						},
+						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyOne:   db.String("string1"),
+							PropertyTwo:   db.String("string1"),
+							PropertyThree: db.String("string3"),
 						},
 					},
 					err: nil,

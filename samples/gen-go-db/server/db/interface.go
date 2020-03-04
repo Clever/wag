@@ -129,6 +129,15 @@ type Interface interface {
 	// GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear retrieves a page of ThingWithMatchingKeyss from the database.
 	GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Context, input GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error
 
+	// SaveThingWithRequiredCompositePropertiesAndKeysOnly saves a ThingWithRequiredCompositePropertiesAndKeysOnly to the database.
+	SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, m models.ThingWithRequiredCompositePropertiesAndKeysOnly) error
+	// GetThingWithRequiredCompositePropertiesAndKeysOnly retrieves a ThingWithRequiredCompositePropertiesAndKeysOnly from the database.
+	GetThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, propertyThree string) (*models.ThingWithRequiredCompositePropertiesAndKeysOnly, error)
+	// DeleteThingWithRequiredCompositePropertiesAndKeysOnly deletes a ThingWithRequiredCompositePropertiesAndKeysOnly from the database.
+	DeleteThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, propertyThree string) error
+	// GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree retrieves a page of ThingWithRequiredCompositePropertiesAndKeysOnlys from the database.
+	GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(ctx context.Context, input GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput, fn func(m *models.ThingWithRequiredCompositePropertiesAndKeysOnly, lastThingWithRequiredCompositePropertiesAndKeysOnly bool) bool) error
+
 	// SaveThingWithRequiredFields saves a ThingWithRequiredFields to the database.
 	SaveThingWithRequiredFields(ctx context.Context, m models.ThingWithRequiredFields) error
 	// GetThingWithRequiredFields retrieves a ThingWithRequiredFields from the database.
@@ -778,6 +787,45 @@ var _ error = ErrThingWithMatchingKeysByAssocTypeIDAndCreatedBearNotFound{}
 // Error returns a description of the error.
 func (e ErrThingWithMatchingKeysByAssocTypeIDAndCreatedBearNotFound) Error() string {
 	return "could not find ThingWithMatchingKeys"
+}
+
+// ErrThingWithRequiredCompositePropertiesAndKeysOnlyNotFound is returned when the database fails to find a ThingWithRequiredCompositePropertiesAndKeysOnly.
+type ErrThingWithRequiredCompositePropertiesAndKeysOnlyNotFound struct {
+	PropertyThree string
+}
+
+var _ error = ErrThingWithRequiredCompositePropertiesAndKeysOnlyNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithRequiredCompositePropertiesAndKeysOnlyNotFound) Error() string {
+	return "could not find ThingWithRequiredCompositePropertiesAndKeysOnly"
+}
+
+// GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput is the query input to GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree.
+type GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput struct {
+	// PropertyOne is required
+	PropertyOne string
+	// PropertyTwo is required
+	PropertyTwo             string
+	PropertyThreeStartingAt *string
+	StartingAfter           *models.ThingWithRequiredCompositePropertiesAndKeysOnly
+	Descending              bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+}
+
+// ErrThingWithRequiredCompositePropertiesAndKeysOnlyByPropertyOneAndTwoAndPropertyThreeNotFound is returned when the database fails to find a ThingWithRequiredCompositePropertiesAndKeysOnly.
+type ErrThingWithRequiredCompositePropertiesAndKeysOnlyByPropertyOneAndTwoAndPropertyThreeNotFound struct {
+	PropertyOne   string
+	PropertyTwo   string
+	PropertyThree string
+}
+
+var _ error = ErrThingWithRequiredCompositePropertiesAndKeysOnlyByPropertyOneAndTwoAndPropertyThreeNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithRequiredCompositePropertiesAndKeysOnlyByPropertyOneAndTwoAndPropertyThreeNotFound) Error() string {
+	return "could not find ThingWithRequiredCompositePropertiesAndKeysOnly"
 }
 
 // ErrThingWithRequiredFieldsNotFound is returned when the database fails to find a ThingWithRequiredFields.
