@@ -158,7 +158,9 @@ declare namespace SwaggerTest {
   otherArray?: { [key: string]: string[] };
 };
     
-    type Dog = any;
+    type Dog = Pet & Identifiable & {
+  breed?: string;
+};
     
     type Error = {
   code?: number;
@@ -207,7 +209,9 @@ declare namespace SwaggerTest {
   arrayFieldOmitted?: string[];
 };
     
-    type Pet = any;
+    type Pet = Animal & {
+  name?: string;
+};
     
     type Unathorized = {
   message?: string;
