@@ -348,3 +348,34 @@ definitions:
         type: array
         items:
           type: string
+
+  Identifiable:
+    type: object
+    properties:
+      id:
+        type: string
+
+  Animal:
+    type: object
+    properties:
+      species:
+        type: string
+      age:
+        type: integer
+    
+  Pet:
+    allOf:
+      - $ref: "#/definitions/Animal"
+      - type: object
+        properties:
+          name:
+            type: string
+  
+  Dog:
+    allOf:
+      - $ref: "#/definitions/Pet"
+      - $ref: "#/definitions/Identifiable"
+      - type: object
+        properties:
+          breed:
+            type: string
