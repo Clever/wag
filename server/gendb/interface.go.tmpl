@@ -55,6 +55,10 @@ type Interface interface {
       {{- end -}}
     ) (*models.{{ $modelName }}, error)
     {{- end }}
+    {{- if indexAllowsScans $xdbConfig $gsi.IndexName }}
+    // Scan{{ $modelName }}sBy{{ $indexName }} runs a scan on the {{ $indexName }} index.
+    Scan{{ $modelName }}sBy{{ $indexName }}(ctx context.Context, input Scan{{ $modelName }}sBy{{ $indexName }}Input, fn func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool) error
+    {{- end }}
     {{- end }}
 
     {{ end }}
@@ -193,6 +197,19 @@ var _ error = Err{{ $modelName}}By{{ $computedIndexName }}NotFound{}
 func (e Err{{ $modelName}}By{{ $computedIndexName }}NotFound) Error() string {
 	return "could not find {{ $modelName}}"
 }
+
+{{- if indexAllowsScans $xdbConfig $gsi.IndexName }}
+// Scan{{ $modelName }}sBy{{ $computedIndexName }}Input is the input to the Scan{{ $modelName }}sByBy{{ $computedIndexName }} method.
+type Scan{{ $modelName }}sBy{{ $computedIndexName }}Input struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.{{ $modelName }}
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+{{- end }}
+
 {{ end }}
 
 {{- if not $xdbConfig.AllowOverwrites }}

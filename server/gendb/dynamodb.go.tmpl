@@ -181,6 +181,13 @@ func (d DB) Get{{ $modelName }}By{{ $indexName }}(ctx context.Context,
         )
 }
 {{- end }}
+{{- if indexAllowsScans $xdbConfig $gsi.IndexName }}
+
+// Scan{{ $modelName }}sBy{{ $indexName }} runs a scan on the {{ $indexName }} index.
+func (d DB) Scan{{ $modelName }}sBy{{ $indexName }}(ctx context.Context, input db.Scan{{ $modelName }}sBy{{ $indexName }}Input, fn func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool) error {
+  return d.{{ $modelNameCamel }}Table.scan{{ $modelName }}sBy{{ $indexName }}(ctx, input, fn)
+}
+{{- end }}
 {{- end }}
 {{- end }}
 
