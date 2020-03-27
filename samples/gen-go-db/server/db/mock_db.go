@@ -415,6 +415,18 @@ func (mr *MockInterfaceMockRecorder) GetThingsByNameAndCreatedAt(ctx, input, fn 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingsByNameAndCreatedAt", reflect.TypeOf((*MockInterface)(nil).GetThingsByNameAndCreatedAt), ctx, input, fn)
 }
 
+// ScanThingsByNameAndCreatedAt mocks base method
+func (m *MockInterface) ScanThingsByNameAndCreatedAt(ctx context.Context, input ScanThingsByNameAndCreatedAtInput, fn func(*models.Thing, bool) bool) error {
+	ret := m.ctrl.Call(m, "ScanThingsByNameAndCreatedAt", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ScanThingsByNameAndCreatedAt indicates an expected call of ScanThingsByNameAndCreatedAt
+func (mr *MockInterfaceMockRecorder) ScanThingsByNameAndCreatedAt(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingsByNameAndCreatedAt", reflect.TypeOf((*MockInterface)(nil).ScanThingsByNameAndCreatedAt), ctx, input, fn)
+}
+
 // SaveThingWithCompositeAttributes mocks base method
 func (m_2 *MockInterface) SaveThingWithCompositeAttributes(ctx context.Context, m models.ThingWithCompositeAttributes) error {
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithCompositeAttributes", ctx, m)

@@ -538,6 +538,11 @@ func (d DB) GetThingsByNameAndCreatedAt(ctx context.Context, input db.GetThingsB
 	return d.thingTable.getThingsByNameAndCreatedAt(ctx, input, fn)
 }
 
+// ScanThingsByNameAndCreatedAt runs a scan on the NameAndCreatedAt index.
+func (d DB) ScanThingsByNameAndCreatedAt(ctx context.Context, input db.ScanThingsByNameAndCreatedAtInput, fn func(m *models.Thing, lastThing bool) bool) error {
+	return d.thingTable.scanThingsByNameAndCreatedAt(ctx, input, fn)
+}
+
 // SaveThingWithCompositeAttributes saves a ThingWithCompositeAttributes to the database.
 func (d DB) SaveThingWithCompositeAttributes(ctx context.Context, m models.ThingWithCompositeAttributes) error {
 	return d.thingWithCompositeAttributesTable.saveThingWithCompositeAttributes(ctx, m)
