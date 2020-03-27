@@ -46,6 +46,8 @@ definitions:
     x-db:
       AllowOverwrites: false
       AllowPrimaryIndexScan: true
+      AllowSecondaryIndexScan:
+        - name-createdAt
       DynamoDB:
         KeySchema:
           - AttributeName: name
@@ -510,7 +512,7 @@ definitions:
       CompositeAttributes:
       - AttributeName: propertyOneAndTwo
         Properties: [ propertyOne, propertyTwo ]
-        Separator: "_"      
+        Separator: "_"
       DynamoDB:
         KeySchema:
         - AttributeName: propertyThree

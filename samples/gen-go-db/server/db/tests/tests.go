@@ -2672,6 +2672,109 @@ func GetThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.T
 	}
 }
 
+type scanThingsByNameAndCreatedAtInput struct {
+	ctx   context.Context
+	input db.ScanThingsByNameAndCreatedAtInput
+}
+type scanThingsByNameAndCreatedAtOutput struct {
+	things []models.Thing
+	err    error
+}
+type scanThingsByNameAndCreatedAtTest struct {
+	testName string
+	d        db.Interface
+	input    scanThingsByNameAndCreatedAtInput
+	output   scanThingsByNameAndCreatedAtOutput
+}
+
+func (g scanThingsByNameAndCreatedAtTest) run(t *testing.T) {
+	things := []models.Thing{}
+	err := g.d.ScanThingsByNameAndCreatedAt(g.input.ctx, g.input.input, func(m *models.Thing, last bool) bool {
+		things = append(things, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.things, things)
+}
+
+func ScanThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThing(ctx, models.Thing{
+			Name:    "string1",
+			Version: 1,
+		}))
+		require.Nil(t, d.SaveThing(ctx, models.Thing{
+			Name:    "string2",
+			Version: 2,
+		}))
+		require.Nil(t, d.SaveThing(ctx, models.Thing{
+			Name:    "string3",
+			Version: 3,
+		}))
+		tests := []scanThingsByNameAndCreatedAtTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanThingsByNameAndCreatedAtInput{
+					ctx:   context.Background(),
+					input: db.ScanThingsByNameAndCreatedAtInput{},
+				},
+				output: scanThingsByNameAndCreatedAtOutput{
+					things: []models.Thing{
+						models.Thing{
+							Name:    "string3",
+							Version: 3,
+						},
+						models.Thing{
+							Name:    "string2",
+							Version: 2,
+						},
+						models.Thing{
+							Name:    "string1",
+							Version: 1,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanThingsByNameAndCreatedAtInput{
+					ctx: context.Background(),
+					input: db.ScanThingsByNameAndCreatedAtInput{
+						StartingAfter: &models.Thing{
+							Name:    "string3",
+							Version: 3,
+						},
+					},
+				},
+				output: scanThingsByNameAndCreatedAtOutput{
+					things: []models.Thing{
+						models.Thing{
+							Name:    "string2",
+							Version: 2,
+						},
+						models.Thing{
+							Name:    "string1",
+							Version: 1,
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
 func GetThingWithCompositeAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()

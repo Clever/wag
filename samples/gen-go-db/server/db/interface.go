@@ -79,6 +79,8 @@ type Interface interface {
 	GetThingByID(ctx context.Context, id string) (*models.Thing, error)
 	// GetThingsByNameAndCreatedAt retrieves a page of Things from the database.
 	GetThingsByNameAndCreatedAt(ctx context.Context, input GetThingsByNameAndCreatedAtInput, fn func(m *models.Thing, lastThing bool) bool) error
+	// ScanThingsByNameAndCreatedAt runs a scan on the NameAndCreatedAt index.
+	ScanThingsByNameAndCreatedAt(ctx context.Context, input ScanThingsByNameAndCreatedAtInput, fn func(m *models.Thing, lastThing bool) bool) error
 
 	// SaveThingWithCompositeAttributes saves a ThingWithCompositeAttributes to the database.
 	SaveThingWithCompositeAttributes(ctx context.Context, m models.ThingWithCompositeAttributes) error
@@ -529,6 +531,16 @@ var _ error = ErrThingByNameAndCreatedAtNotFound{}
 // Error returns a description of the error.
 func (e ErrThingByNameAndCreatedAtNotFound) Error() string {
 	return "could not find Thing"
+}
+
+// ScanThingsByNameAndCreatedAtInput is the input to the ScanThingsByByNameAndCreatedAt method.
+type ScanThingsByNameAndCreatedAtInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.Thing
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
 }
 
 // ErrThingAlreadyExists is returned when trying to overwrite a Thing.

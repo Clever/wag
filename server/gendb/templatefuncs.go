@@ -31,6 +31,14 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		}
 		return false
 	},
+	"indexAllowsScans": func(config XDBConfig, index string) bool {
+		for _, ind := range config.AllowSecondaryIndexScan {
+			if ind == index {
+				return true
+			}
+		}
+		return false
+	},
 	"indexHasRangeKey": func(index []resources.AWSDynamoDBTable_KeySchema) bool {
 		return len(index) == 2 && index[1].KeyType == "RANGE"
 	},
@@ -526,5 +534,5 @@ func tableUsesDateTime(config XDBConfig) bool {
 }
 
 func tableAllowsScans(config XDBConfig) bool {
-	return config.AllowPrimaryIndexScan
+	return config.AllowPrimaryIndexScan || (len(config.AllowSecondaryIndexScan) > 0)
 }
