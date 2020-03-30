@@ -178,6 +178,13 @@ declare namespace SwaggerTest {
   created?: string;
 };
     
+    type ThingWithNullableAttrsInGSI = {
+  propertyFour?: string;
+  propertyOne?: string;
+  propertyThree?: string;
+  propertyTwo?: string;
+};
+    
     type ThingWithRequiredCompositePropertiesAndKeysOnly = {
   propertyOne: string;
   propertyThree: string;

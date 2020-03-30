@@ -696,6 +696,67 @@ func (mr *MockInterfaceMockRecorder) GetThingWithMatchingKeyssByAssocTypeIDAndCr
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear", reflect.TypeOf((*MockInterface)(nil).GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear), ctx, input, fn)
 }
 
+// SaveThingWithNullableAttrsInGSI mocks base method
+func (m_2 *MockInterface) SaveThingWithNullableAttrsInGSI(ctx context.Context, m models.ThingWithNullableAttrsInGSI) error {
+	ret := m_2.ctrl.Call(m_2, "SaveThingWithNullableAttrsInGSI", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveThingWithNullableAttrsInGSI indicates an expected call of SaveThingWithNullableAttrsInGSI
+func (mr *MockInterfaceMockRecorder) SaveThingWithNullableAttrsInGSI(ctx, m interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithNullableAttrsInGSI", reflect.TypeOf((*MockInterface)(nil).SaveThingWithNullableAttrsInGSI), ctx, m)
+}
+
+// GetThingWithNullableAttrsInGSI mocks base method
+func (m *MockInterface) GetThingWithNullableAttrsInGSI(ctx context.Context, propertyOne string) (*models.ThingWithNullableAttrsInGSI, error) {
+	ret := m.ctrl.Call(m, "GetThingWithNullableAttrsInGSI", ctx, propertyOne)
+	ret0, _ := ret[0].(*models.ThingWithNullableAttrsInGSI)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingWithNullableAttrsInGSI indicates an expected call of GetThingWithNullableAttrsInGSI
+func (mr *MockInterfaceMockRecorder) GetThingWithNullableAttrsInGSI(ctx, propertyOne interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithNullableAttrsInGSI", reflect.TypeOf((*MockInterface)(nil).GetThingWithNullableAttrsInGSI), ctx, propertyOne)
+}
+
+// DeleteThingWithNullableAttrsInGSI mocks base method
+func (m *MockInterface) DeleteThingWithNullableAttrsInGSI(ctx context.Context, propertyOne string) error {
+	ret := m.ctrl.Call(m, "DeleteThingWithNullableAttrsInGSI", ctx, propertyOne)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteThingWithNullableAttrsInGSI indicates an expected call of DeleteThingWithNullableAttrsInGSI
+func (mr *MockInterfaceMockRecorder) DeleteThingWithNullableAttrsInGSI(ctx, propertyOne interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithNullableAttrsInGSI", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithNullableAttrsInGSI), ctx, propertyOne)
+}
+
+// GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThree mocks base method
+func (m *MockInterface) GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThree(ctx context.Context, input GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeInput, fn func(*models.ThingWithNullableAttrsInGSI, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThree", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThree indicates an expected call of GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThree
+func (mr *MockInterfaceMockRecorder) GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThree(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThree", reflect.TypeOf((*MockInterface)(nil).GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThree), ctx, input, fn)
+}
+
+// GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThree mocks base method
+func (m *MockInterface) GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThree(ctx context.Context, input GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeInput, fn func(*models.ThingWithNullableAttrsInGSI, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThree", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThree indicates an expected call of GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThree
+func (mr *MockInterfaceMockRecorder) GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThree(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThree", reflect.TypeOf((*MockInterface)(nil).GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThree), ctx, input, fn)
+}
+
 // SaveThingWithRequiredCompositePropertiesAndKeysOnly mocks base method
 func (m_2 *MockInterface) SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, m models.ThingWithRequiredCompositePropertiesAndKeysOnly) error {
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithRequiredCompositePropertiesAndKeysOnly", ctx, m)

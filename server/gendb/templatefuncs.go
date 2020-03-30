@@ -414,7 +414,15 @@ func uniq(arr []string) []string {
 }
 
 func attributeIsPointer(config XDBConfig, attributeName string) bool {
+	// If the property has x-nullable, return the value of that.
+	// Else, if the property is a ref type, return false.
+	// Else, if the property is required, return true since required types are modeled as pointers.
 	if propertySchema, ok := config.Schema.Properties[attributeName]; ok {
+		if nullable, ok := propertySchema.Extensions["x-nullable"]; ok {
+			if nullableBool, ok := nullable.(bool); ok {
+				return nullableBool
+			}
+		}
 		if propertySchema.Ref.String() != "" {
 			// most ref types aren't pointers, for now treat all as non pointers
 			return false

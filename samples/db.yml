@@ -526,3 +526,43 @@ definitions:
                 KeyType: RANGE
             Projection:
               ProjectionType: KEYS_ONLY
+
+  ThingWithNullableAttrsInGSI:
+    type: object
+    properties:
+      propertyOne:
+        type: string
+      propertyTwo:
+        type: string
+      propertyThree:
+        type: string
+        x-nullable: true
+      propertyFour:
+        type: string
+    x-db:
+      AllowOverwrites: true
+      CompositeAttributes:
+      - AttributeName: propertyTwoAndFour
+        Properties: [ propertyTwo, propertyFour ]
+        Separator: "_"
+      DynamoDB:
+        KeySchema:
+        - AttributeName: propertyOne
+          KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: byPropertyTwoAndPropertyThree
+            KeySchema:
+              - AttributeName: propertyTwo
+                KeyType: HASH
+              - AttributeName: propertyThree
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: byPropertyTwoAndFourAndPropertyThree
+            KeySchema:
+              - AttributeName: propertyTwoAndFour
+                KeyType: HASH
+              - AttributeName: propertyThree
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL

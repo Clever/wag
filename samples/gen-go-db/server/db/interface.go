@@ -131,6 +131,17 @@ type Interface interface {
 	// GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear retrieves a page of ThingWithMatchingKeyss from the database.
 	GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Context, input GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error
 
+	// SaveThingWithNullableAttrsInGSI saves a ThingWithNullableAttrsInGSI to the database.
+	SaveThingWithNullableAttrsInGSI(ctx context.Context, m models.ThingWithNullableAttrsInGSI) error
+	// GetThingWithNullableAttrsInGSI retrieves a ThingWithNullableAttrsInGSI from the database.
+	GetThingWithNullableAttrsInGSI(ctx context.Context, propertyOne string) (*models.ThingWithNullableAttrsInGSI, error)
+	// DeleteThingWithNullableAttrsInGSI deletes a ThingWithNullableAttrsInGSI from the database.
+	DeleteThingWithNullableAttrsInGSI(ctx context.Context, propertyOne string) error
+	// GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThree retrieves a page of ThingWithNullableAttrsInGSIs from the database.
+	GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThree(ctx context.Context, input GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeInput, fn func(m *models.ThingWithNullableAttrsInGSI, lastThingWithNullableAttrsInGSI bool) bool) error
+	// GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThree retrieves a page of ThingWithNullableAttrsInGSIs from the database.
+	GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThree(ctx context.Context, input GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeInput, fn func(m *models.ThingWithNullableAttrsInGSI, lastThingWithNullableAttrsInGSI bool) bool) error
+
 	// SaveThingWithRequiredCompositePropertiesAndKeysOnly saves a ThingWithRequiredCompositePropertiesAndKeysOnly to the database.
 	SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, m models.ThingWithRequiredCompositePropertiesAndKeysOnly) error
 	// GetThingWithRequiredCompositePropertiesAndKeysOnly retrieves a ThingWithRequiredCompositePropertiesAndKeysOnly from the database.
@@ -799,6 +810,69 @@ var _ error = ErrThingWithMatchingKeysByAssocTypeIDAndCreatedBearNotFound{}
 // Error returns a description of the error.
 func (e ErrThingWithMatchingKeysByAssocTypeIDAndCreatedBearNotFound) Error() string {
 	return "could not find ThingWithMatchingKeys"
+}
+
+// ErrThingWithNullableAttrsInGSINotFound is returned when the database fails to find a ThingWithNullableAttrsInGSI.
+type ErrThingWithNullableAttrsInGSINotFound struct {
+	PropertyOne string
+}
+
+var _ error = ErrThingWithNullableAttrsInGSINotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithNullableAttrsInGSINotFound) Error() string {
+	return "could not find ThingWithNullableAttrsInGSI"
+}
+
+// GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeInput is the query input to GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThree.
+type GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeInput struct {
+	// PropertyTwo is required
+	PropertyTwo             string
+	PropertyThreeStartingAt *string
+	StartingAfter           *models.ThingWithNullableAttrsInGSI
+	Descending              bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+}
+
+// ErrThingWithNullableAttrsInGSIByPropertyTwoAndPropertyThreeNotFound is returned when the database fails to find a ThingWithNullableAttrsInGSI.
+type ErrThingWithNullableAttrsInGSIByPropertyTwoAndPropertyThreeNotFound struct {
+	PropertyTwo   string
+	PropertyThree string
+}
+
+var _ error = ErrThingWithNullableAttrsInGSIByPropertyTwoAndPropertyThreeNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithNullableAttrsInGSIByPropertyTwoAndPropertyThreeNotFound) Error() string {
+	return "could not find ThingWithNullableAttrsInGSI"
+}
+
+// GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeInput is the query input to GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThree.
+type GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeInput struct {
+	// PropertyTwo is required
+	PropertyTwo string
+	// PropertyFour is required
+	PropertyFour            string
+	PropertyThreeStartingAt *string
+	StartingAfter           *models.ThingWithNullableAttrsInGSI
+	Descending              bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+}
+
+// ErrThingWithNullableAttrsInGSIByPropertyTwoAndFourAndPropertyThreeNotFound is returned when the database fails to find a ThingWithNullableAttrsInGSI.
+type ErrThingWithNullableAttrsInGSIByPropertyTwoAndFourAndPropertyThreeNotFound struct {
+	PropertyTwo   string
+	PropertyFour  string
+	PropertyThree string
+}
+
+var _ error = ErrThingWithNullableAttrsInGSIByPropertyTwoAndFourAndPropertyThreeNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithNullableAttrsInGSIByPropertyTwoAndFourAndPropertyThreeNotFound) Error() string {
+	return "could not find ThingWithNullableAttrsInGSI"
 }
 
 // ErrThingWithRequiredCompositePropertiesAndKeysOnlyNotFound is returned when the database fails to find a ThingWithRequiredCompositePropertiesAndKeysOnly.

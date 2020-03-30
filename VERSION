@@ -1,4 +1,5 @@
-v3.20.0
+v3.21.0
+- v3.21.0: Add support x-nullable attributes in indexes in dynamodb codegen.
 - v3.20.0: Add dynamodb codegen support for scanning over global secondary indexes.
 - v3.19.1: Codegen fix for KEYS_ONLY index with composite property made of required properties
 - v3.19.0: JSON with Marshal() instead of MarshalIndent()

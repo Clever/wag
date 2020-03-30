@@ -74,6 +74,11 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("SaveThingWithMatchingKeys", SaveThingWithMatchingKeys(dbFactory(), t))
 	t.Run("DeleteThingWithMatchingKeys", DeleteThingWithMatchingKeys(dbFactory(), t))
 	t.Run("GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear", GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(dbFactory(), t))
+	t.Run("GetThingWithNullableAttrsInGSI", GetThingWithNullableAttrsInGSI(dbFactory(), t))
+	t.Run("SaveThingWithNullableAttrsInGSI", SaveThingWithNullableAttrsInGSI(dbFactory(), t))
+	t.Run("DeleteThingWithNullableAttrsInGSI", DeleteThingWithNullableAttrsInGSI(dbFactory(), t))
+	t.Run("GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThree", GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThree(dbFactory(), t))
+	t.Run("GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThree", GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThree(dbFactory(), t))
 	t.Run("GetThingWithRequiredCompositePropertiesAndKeysOnly", GetThingWithRequiredCompositePropertiesAndKeysOnly(dbFactory(), t))
 	t.Run("SaveThingWithRequiredCompositePropertiesAndKeysOnly", SaveThingWithRequiredCompositePropertiesAndKeysOnly(dbFactory(), t))
 	t.Run("DeleteThingWithRequiredCompositePropertiesAndKeysOnly", DeleteThingWithRequiredCompositePropertiesAndKeysOnly(dbFactory(), t))
@@ -4525,6 +4530,491 @@ func GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(d db.Interface, t *tes
 							AssocID:   "string1",
 							Created:   mustTime("2018-03-11T15:04:03+07:00"),
 							Bear:      "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+func GetThingWithNullableAttrsInGSI(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithNullableAttrsInGSI{
+			PropertyFour:  "string1",
+			PropertyOne:   "string1",
+			PropertyThree: db.String("string1"),
+			PropertyTwo:   "string1",
+		}
+		require.Nil(t, s.SaveThingWithNullableAttrsInGSI(ctx, m))
+		m2, err := s.GetThingWithNullableAttrsInGSI(ctx, m.PropertyOne)
+		require.Nil(t, err)
+		require.Equal(t, m.PropertyOne, m2.PropertyOne)
+
+		_, err = s.GetThingWithNullableAttrsInGSI(ctx, "string2")
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrThingWithNullableAttrsInGSINotFound{})
+	}
+}
+
+func SaveThingWithNullableAttrsInGSI(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithNullableAttrsInGSI{
+			PropertyFour:  "string1",
+			PropertyOne:   "string1",
+			PropertyThree: db.String("string1"),
+			PropertyTwo:   "string1",
+		}
+		require.Nil(t, s.SaveThingWithNullableAttrsInGSI(ctx, m))
+	}
+}
+
+func DeleteThingWithNullableAttrsInGSI(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithNullableAttrsInGSI{
+			PropertyFour:  "string1",
+			PropertyOne:   "string1",
+			PropertyThree: db.String("string1"),
+			PropertyTwo:   "string1",
+		}
+		require.Nil(t, s.SaveThingWithNullableAttrsInGSI(ctx, m))
+		require.Nil(t, s.DeleteThingWithNullableAttrsInGSI(ctx, m.PropertyOne))
+	}
+}
+
+type getThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeInput struct {
+	ctx   context.Context
+	input db.GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeInput
+}
+type getThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeOutput struct {
+	thingWithNullableAttrsInGSIs []models.ThingWithNullableAttrsInGSI
+	err                          error
+}
+type getThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeTest struct {
+	testName string
+	d        db.Interface
+	input    getThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeInput
+	output   getThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeOutput
+}
+
+func (g getThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeTest) run(t *testing.T) {
+	thingWithNullableAttrsInGSIs := []models.ThingWithNullableAttrsInGSI{}
+	fn := func(m *models.ThingWithNullableAttrsInGSI, lastThingWithNullableAttrsInGSI bool) bool {
+		thingWithNullableAttrsInGSIs = append(thingWithNullableAttrsInGSIs, *m)
+		if lastThingWithNullableAttrsInGSI {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThree(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.thingWithNullableAttrsInGSIs, thingWithNullableAttrsInGSIs)
+}
+
+func GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThree(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithNullableAttrsInGSI(ctx, models.ThingWithNullableAttrsInGSI{
+			PropertyTwo:   "string1",
+			PropertyThree: db.String("string1"),
+			PropertyOne:   "string1",
+		}))
+		require.Nil(t, d.SaveThingWithNullableAttrsInGSI(ctx, models.ThingWithNullableAttrsInGSI{
+			PropertyTwo:   "string1",
+			PropertyThree: db.String("string2"),
+			PropertyOne:   "string3",
+		}))
+		require.Nil(t, d.SaveThingWithNullableAttrsInGSI(ctx, models.ThingWithNullableAttrsInGSI{
+			PropertyTwo:   "string1",
+			PropertyThree: db.String("string3"),
+			PropertyOne:   "string2",
+		}))
+		limit := int64(3)
+		tests := []getThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeInput{
+					ctx: context.Background(),
+					input: db.GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeInput{
+						PropertyTwo: "string1",
+						Limit:       &limit,
+					},
+				},
+				output: getThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeOutput{
+					thingWithNullableAttrsInGSIs: []models.ThingWithNullableAttrsInGSI{
+						models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyThree: db.String("string1"),
+							PropertyOne:   "string1",
+						},
+						models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyThree: db.String("string2"),
+							PropertyOne:   "string3",
+						},
+						models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyThree: db.String("string3"),
+							PropertyOne:   "string2",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeInput{
+					ctx: context.Background(),
+					input: db.GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeInput{
+						PropertyTwo: "string1",
+						Descending:  true,
+					},
+				},
+				output: getThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeOutput{
+					thingWithNullableAttrsInGSIs: []models.ThingWithNullableAttrsInGSI{
+						models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyThree: db.String("string3"),
+							PropertyOne:   "string2",
+						},
+						models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyThree: db.String("string2"),
+							PropertyOne:   "string3",
+						},
+						models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyThree: db.String("string1"),
+							PropertyOne:   "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeInput{
+					ctx: context.Background(),
+					input: db.GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeInput{
+						PropertyTwo: "string1",
+						StartingAfter: &models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyThree: db.String("string1"),
+							PropertyOne:   "string1",
+						},
+					},
+				},
+				output: getThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeOutput{
+					thingWithNullableAttrsInGSIs: []models.ThingWithNullableAttrsInGSI{
+						models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyThree: db.String("string2"),
+							PropertyOne:   "string3",
+						},
+						models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyThree: db.String("string3"),
+							PropertyOne:   "string2",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after descending",
+				d:        d,
+				input: getThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeInput{
+					ctx: context.Background(),
+					input: db.GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeInput{
+						PropertyTwo: "string1",
+						StartingAfter: &models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyThree: db.String("string3"),
+							PropertyOne:   "string2",
+						},
+						Descending: true,
+					},
+				},
+				output: getThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeOutput{
+					thingWithNullableAttrsInGSIs: []models.ThingWithNullableAttrsInGSI{
+						models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyThree: db.String("string2"),
+							PropertyOne:   "string3",
+						},
+						models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyThree: db.String("string1"),
+							PropertyOne:   "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeInput{
+					ctx: context.Background(),
+					input: db.GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeInput{
+						PropertyTwo:             "string1",
+						PropertyThreeStartingAt: db.String("string2"),
+					},
+				},
+				output: getThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeOutput{
+					thingWithNullableAttrsInGSIs: []models.ThingWithNullableAttrsInGSI{
+						models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyThree: db.String("string2"),
+							PropertyOne:   "string3",
+						},
+						models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyThree: db.String("string3"),
+							PropertyOne:   "string2",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+type getThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeInput struct {
+	ctx   context.Context
+	input db.GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeInput
+}
+type getThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeOutput struct {
+	thingWithNullableAttrsInGSIs []models.ThingWithNullableAttrsInGSI
+	err                          error
+}
+type getThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeTest struct {
+	testName string
+	d        db.Interface
+	input    getThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeInput
+	output   getThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeOutput
+}
+
+func (g getThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeTest) run(t *testing.T) {
+	thingWithNullableAttrsInGSIs := []models.ThingWithNullableAttrsInGSI{}
+	fn := func(m *models.ThingWithNullableAttrsInGSI, lastThingWithNullableAttrsInGSI bool) bool {
+		thingWithNullableAttrsInGSIs = append(thingWithNullableAttrsInGSIs, *m)
+		if lastThingWithNullableAttrsInGSI {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThree(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.thingWithNullableAttrsInGSIs, thingWithNullableAttrsInGSIs)
+}
+
+func GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThree(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithNullableAttrsInGSI(ctx, models.ThingWithNullableAttrsInGSI{
+			PropertyTwo:   "string1",
+			PropertyFour:  "string1",
+			PropertyThree: db.String("string1"),
+			PropertyOne:   "string1",
+		}))
+		require.Nil(t, d.SaveThingWithNullableAttrsInGSI(ctx, models.ThingWithNullableAttrsInGSI{
+			PropertyTwo:   "string1",
+			PropertyFour:  "string1",
+			PropertyThree: db.String("string2"),
+			PropertyOne:   "string3",
+		}))
+		require.Nil(t, d.SaveThingWithNullableAttrsInGSI(ctx, models.ThingWithNullableAttrsInGSI{
+			PropertyTwo:   "string1",
+			PropertyFour:  "string1",
+			PropertyThree: db.String("string3"),
+			PropertyOne:   "string2",
+		}))
+		limit := int64(3)
+		tests := []getThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeInput{
+					ctx: context.Background(),
+					input: db.GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeInput{
+						PropertyTwo:  "string1",
+						PropertyFour: "string1",
+						Limit:        &limit,
+					},
+				},
+				output: getThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeOutput{
+					thingWithNullableAttrsInGSIs: []models.ThingWithNullableAttrsInGSI{
+						models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyFour:  "string1",
+							PropertyThree: db.String("string1"),
+							PropertyOne:   "string1",
+						},
+						models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyFour:  "string1",
+							PropertyThree: db.String("string2"),
+							PropertyOne:   "string3",
+						},
+						models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyFour:  "string1",
+							PropertyThree: db.String("string3"),
+							PropertyOne:   "string2",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeInput{
+					ctx: context.Background(),
+					input: db.GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeInput{
+						PropertyTwo:  "string1",
+						PropertyFour: "string1",
+						Descending:   true,
+					},
+				},
+				output: getThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeOutput{
+					thingWithNullableAttrsInGSIs: []models.ThingWithNullableAttrsInGSI{
+						models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyFour:  "string1",
+							PropertyThree: db.String("string3"),
+							PropertyOne:   "string2",
+						},
+						models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyFour:  "string1",
+							PropertyThree: db.String("string2"),
+							PropertyOne:   "string3",
+						},
+						models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyFour:  "string1",
+							PropertyThree: db.String("string1"),
+							PropertyOne:   "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeInput{
+					ctx: context.Background(),
+					input: db.GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeInput{
+						PropertyTwo:  "string1",
+						PropertyFour: "string1",
+						StartingAfter: &models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyFour:  "string1",
+							PropertyThree: db.String("string1"),
+							PropertyOne:   "string1",
+						},
+					},
+				},
+				output: getThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeOutput{
+					thingWithNullableAttrsInGSIs: []models.ThingWithNullableAttrsInGSI{
+						models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyFour:  "string1",
+							PropertyThree: db.String("string2"),
+							PropertyOne:   "string3",
+						},
+						models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyFour:  "string1",
+							PropertyThree: db.String("string3"),
+							PropertyOne:   "string2",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after descending",
+				d:        d,
+				input: getThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeInput{
+					ctx: context.Background(),
+					input: db.GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeInput{
+						PropertyTwo:  "string1",
+						PropertyFour: "string1",
+						StartingAfter: &models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyFour:  "string1",
+							PropertyThree: db.String("string3"),
+							PropertyOne:   "string2",
+						},
+						Descending: true,
+					},
+				},
+				output: getThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeOutput{
+					thingWithNullableAttrsInGSIs: []models.ThingWithNullableAttrsInGSI{
+						models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyFour:  "string1",
+							PropertyThree: db.String("string2"),
+							PropertyOne:   "string3",
+						},
+						models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyFour:  "string1",
+							PropertyThree: db.String("string1"),
+							PropertyOne:   "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeInput{
+					ctx: context.Background(),
+					input: db.GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeInput{
+						PropertyTwo:             "string1",
+						PropertyFour:            "string1",
+						PropertyThreeStartingAt: db.String("string2"),
+					},
+				},
+				output: getThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeOutput{
+					thingWithNullableAttrsInGSIs: []models.ThingWithNullableAttrsInGSI{
+						models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyFour:  "string1",
+							PropertyThree: db.String("string2"),
+							PropertyOne:   "string3",
+						},
+						models.ThingWithNullableAttrsInGSI{
+							PropertyTwo:   "string1",
+							PropertyFour:  "string1",
+							PropertyThree: db.String("string3"),
+							PropertyOne:   "string2",
 						},
 					},
 					err: nil,

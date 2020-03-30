@@ -52,6 +52,8 @@ type Config struct {
 	ThingWithDateTimeCompositeTable ThingWithDateTimeCompositeTable
 	// ThingWithMatchingKeysTable configuration.
 	ThingWithMatchingKeysTable ThingWithMatchingKeysTable
+	// ThingWithNullableAttrsInGSITable configuration.
+	ThingWithNullableAttrsInGSITable ThingWithNullableAttrsInGSITable
 	// ThingWithRequiredCompositePropertiesAndKeysOnlyTable configuration.
 	ThingWithRequiredCompositePropertiesAndKeysOnlyTable ThingWithRequiredCompositePropertiesAndKeysOnlyTable
 	// ThingWithRequiredFieldsTable configuration.
@@ -236,6 +238,20 @@ func New(config Config) (*DB, error) {
 	if thingWithMatchingKeysTable.WriteCapacityUnits == 0 {
 		thingWithMatchingKeysTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	// configure ThingWithNullableAttrsInGSI table
+	thingWithNullableAttrsInGSITable := config.ThingWithNullableAttrsInGSITable
+	if thingWithNullableAttrsInGSITable.DynamoDBAPI == nil {
+		thingWithNullableAttrsInGSITable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if thingWithNullableAttrsInGSITable.Prefix == "" {
+		thingWithNullableAttrsInGSITable.Prefix = config.DefaultPrefix
+	}
+	if thingWithNullableAttrsInGSITable.ReadCapacityUnits == 0 {
+		thingWithNullableAttrsInGSITable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if thingWithNullableAttrsInGSITable.WriteCapacityUnits == 0 {
+		thingWithNullableAttrsInGSITable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
 	// configure ThingWithRequiredCompositePropertiesAndKeysOnly table
 	thingWithRequiredCompositePropertiesAndKeysOnlyTable := config.ThingWithRequiredCompositePropertiesAndKeysOnlyTable
 	if thingWithRequiredCompositePropertiesAndKeysOnlyTable.DynamoDBAPI == nil {
@@ -305,6 +321,7 @@ func New(config Config) (*DB, error) {
 		thingWithDateRangeTable:                              thingWithDateRangeTable,
 		thingWithDateTimeCompositeTable:                      thingWithDateTimeCompositeTable,
 		thingWithMatchingKeysTable:                           thingWithMatchingKeysTable,
+		thingWithNullableAttrsInGSITable:                     thingWithNullableAttrsInGSITable,
 		thingWithRequiredCompositePropertiesAndKeysOnlyTable: thingWithRequiredCompositePropertiesAndKeysOnlyTable,
 		thingWithRequiredFieldsTable:                         thingWithRequiredFieldsTable,
 		thingWithRequiredFields2Table:                        thingWithRequiredFields2Table,
@@ -325,6 +342,7 @@ type DB struct {
 	thingWithDateRangeTable                              ThingWithDateRangeTable
 	thingWithDateTimeCompositeTable                      ThingWithDateTimeCompositeTable
 	thingWithMatchingKeysTable                           ThingWithMatchingKeysTable
+	thingWithNullableAttrsInGSITable                     ThingWithNullableAttrsInGSITable
 	thingWithRequiredCompositePropertiesAndKeysOnlyTable ThingWithRequiredCompositePropertiesAndKeysOnlyTable
 	thingWithRequiredFieldsTable                         ThingWithRequiredFieldsTable
 	thingWithRequiredFields2Table                        ThingWithRequiredFields2Table
@@ -366,6 +384,9 @@ func (d DB) CreateTables(ctx context.Context) error {
 		return err
 	}
 	if err := d.thingWithMatchingKeysTable.create(ctx); err != nil {
+		return err
+	}
+	if err := d.thingWithNullableAttrsInGSITable.create(ctx); err != nil {
 		return err
 	}
 	if err := d.thingWithRequiredCompositePropertiesAndKeysOnlyTable.create(ctx); err != nil {
@@ -651,6 +672,31 @@ func (d DB) DeleteThingWithMatchingKeys(ctx context.Context, bear string, assocT
 // GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear retrieves a page of ThingWithMatchingKeyss from the database.
 func (d DB) GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Context, input db.GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error {
 	return d.thingWithMatchingKeysTable.getThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx, input, fn)
+}
+
+// SaveThingWithNullableAttrsInGSI saves a ThingWithNullableAttrsInGSI to the database.
+func (d DB) SaveThingWithNullableAttrsInGSI(ctx context.Context, m models.ThingWithNullableAttrsInGSI) error {
+	return d.thingWithNullableAttrsInGSITable.saveThingWithNullableAttrsInGSI(ctx, m)
+}
+
+// GetThingWithNullableAttrsInGSI retrieves a ThingWithNullableAttrsInGSI from the database.
+func (d DB) GetThingWithNullableAttrsInGSI(ctx context.Context, propertyOne string) (*models.ThingWithNullableAttrsInGSI, error) {
+	return d.thingWithNullableAttrsInGSITable.getThingWithNullableAttrsInGSI(ctx, propertyOne)
+}
+
+// DeleteThingWithNullableAttrsInGSI deletes a ThingWithNullableAttrsInGSI from the database.
+func (d DB) DeleteThingWithNullableAttrsInGSI(ctx context.Context, propertyOne string) error {
+	return d.thingWithNullableAttrsInGSITable.deleteThingWithNullableAttrsInGSI(ctx, propertyOne)
+}
+
+// GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThree retrieves a page of ThingWithNullableAttrsInGSIs from the database.
+func (d DB) GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThree(ctx context.Context, input db.GetThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThreeInput, fn func(m *models.ThingWithNullableAttrsInGSI, lastThingWithNullableAttrsInGSI bool) bool) error {
+	return d.thingWithNullableAttrsInGSITable.getThingWithNullableAttrsInGSIsByPropertyTwoAndPropertyThree(ctx, input, fn)
+}
+
+// GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThree retrieves a page of ThingWithNullableAttrsInGSIs from the database.
+func (d DB) GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThree(ctx context.Context, input db.GetThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThreeInput, fn func(m *models.ThingWithNullableAttrsInGSI, lastThingWithNullableAttrsInGSI bool) bool) error {
+	return d.thingWithNullableAttrsInGSITable.getThingWithNullableAttrsInGSIsByPropertyTwoAndFourAndPropertyThree(ctx, input, fn)
 }
 
 // SaveThingWithRequiredCompositePropertiesAndKeysOnly saves a ThingWithRequiredCompositePropertiesAndKeysOnly to the database.
