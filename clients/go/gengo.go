@@ -479,7 +479,7 @@ func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string) string
 	buf.WriteString(buildBodyCode(s, op, method))
 
 	buf.WriteString(fmt.Sprintf(`
-	req, err := http.NewRequest("%s", path, bytes.NewBuffer(body))
+	req, err := http.NewRequestWithContext(ctx, "%s", path, bytes.NewBuffer(body))
 	%s
 `, strings.ToUpper(method), errorMessage(s, op)))
 
@@ -760,7 +760,7 @@ func (c *WagClient) New{{.CapOpID}}Iter(ctx context.Context, {{.Input}}) ({{.Cap
 }
 
 func (i *{{.OpID}}IterImpl) refresh() error {
-	req, err := http.NewRequest("{{.Method}}", i.nextURL, bytes.NewBuffer(i.body))
+	req, err := http.NewRequestWithContext(i.ctx, "{{.Method}}", i.nextURL, bytes.NewBuffer(i.body))
 
 	if err != nil {
 		i.err = err
