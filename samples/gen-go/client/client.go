@@ -171,7 +171,7 @@ func (c *WagClient) GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (
 
 	path = c.basePath + path
 
-	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
+	req, err := http.NewRequestWithContext(ctx, "GET", path, bytes.NewBuffer(body))
 
 	if err != nil {
 		return nil, err
@@ -218,7 +218,7 @@ func (c *WagClient) NewGetAuthorsIter(ctx context.Context, i *models.GetAuthorsI
 }
 
 func (i *getAuthorsIterImpl) refresh() error {
-	req, err := http.NewRequest("GET", i.nextURL, bytes.NewBuffer(i.body))
+	req, err := http.NewRequestWithContext(i.ctx, "GET", i.nextURL, bytes.NewBuffer(i.body))
 
 	if err != nil {
 		i.err = err
@@ -370,7 +370,7 @@ func (c *WagClient) GetAuthorsWithPut(ctx context.Context, i *models.GetAuthorsW
 
 	}
 
-	req, err := http.NewRequest("PUT", path, bytes.NewBuffer(body))
+	req, err := http.NewRequestWithContext(ctx, "PUT", path, bytes.NewBuffer(body))
 
 	if err != nil {
 		return nil, err
@@ -428,7 +428,7 @@ func (c *WagClient) NewGetAuthorsWithPutIter(ctx context.Context, i *models.GetA
 }
 
 func (i *getAuthorsWithPutIterImpl) refresh() error {
-	req, err := http.NewRequest("PUT", i.nextURL, bytes.NewBuffer(i.body))
+	req, err := http.NewRequestWithContext(i.ctx, "PUT", i.nextURL, bytes.NewBuffer(i.body))
 
 	if err != nil {
 		i.err = err
@@ -571,7 +571,7 @@ func (c *WagClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]mo
 
 	headers["authorization"] = i.Authorization
 
-	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
+	req, err := http.NewRequestWithContext(ctx, "GET", path, bytes.NewBuffer(body))
 
 	if err != nil {
 		return nil, err
@@ -620,7 +620,7 @@ func (c *WagClient) NewGetBooksIter(ctx context.Context, i *models.GetBooksInput
 }
 
 func (i *getBooksIterImpl) refresh() error {
-	req, err := http.NewRequest("GET", i.nextURL, bytes.NewBuffer(i.body))
+	req, err := http.NewRequestWithContext(i.ctx, "GET", i.nextURL, bytes.NewBuffer(i.body))
 
 	if err != nil {
 		i.err = err
@@ -766,7 +766,7 @@ func (c *WagClient) CreateBook(ctx context.Context, i *models.Book) (*models.Boo
 
 	}
 
-	req, err := http.NewRequest("POST", path, bytes.NewBuffer(body))
+	req, err := http.NewRequestWithContext(ctx, "POST", path, bytes.NewBuffer(body))
 
 	if err != nil {
 		return nil, err
@@ -873,7 +873,7 @@ func (c *WagClient) PutBook(ctx context.Context, i *models.Book) (*models.Book, 
 
 	}
 
-	req, err := http.NewRequest("PUT", path, bytes.NewBuffer(body))
+	req, err := http.NewRequestWithContext(ctx, "PUT", path, bytes.NewBuffer(body))
 
 	if err != nil {
 		return nil, err
@@ -981,7 +981,7 @@ func (c *WagClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput)
 
 	headers["X-Dont-Rate-Limit-Me-Bro"] = i.XDontRateLimitMeBro
 
-	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
+	req, err := http.NewRequestWithContext(ctx, "GET", path, bytes.NewBuffer(body))
 
 	if err != nil {
 		return nil, err
@@ -1100,7 +1100,7 @@ func (c *WagClient) GetBookByID2(ctx context.Context, id string) (*models.Book, 
 
 	path = c.basePath + path
 
-	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
+	req, err := http.NewRequestWithContext(ctx, "GET", path, bytes.NewBuffer(body))
 
 	if err != nil {
 		return nil, err
@@ -1204,7 +1204,7 @@ func (c *WagClient) HealthCheck(ctx context.Context) error {
 	var body []byte
 	path := c.basePath + "/v1/health/check"
 
-	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
+	req, err := http.NewRequestWithContext(ctx, "GET", path, bytes.NewBuffer(body))
 
 	if err != nil {
 		return err

@@ -171,7 +171,7 @@ func (c *WagClient) GetSectionsForStudent(ctx context.Context, studentID string)
 
 	path = c.basePath + path
 
-	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
+	req, err := http.NewRequestWithContext(ctx, "GET", path, bytes.NewBuffer(body))
 
 	if err != nil {
 		return nil, err
