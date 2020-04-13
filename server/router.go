@@ -225,7 +225,7 @@ func AttachMiddleware(router *mux.Router, addr string, m []func(http.Handler) ht
 	// This would probably be better done in NewWithMiddleware, but there are services that call
 	// AttachMiddleWare directly instead.
 	config := serverConfig {
-		compressionLevel: gzip.DefaultCompression,
+		compressionLevel: gzip.BestSpeed,
 	}
 	for _, option := range options {
 		option(&config)
