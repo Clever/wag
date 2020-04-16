@@ -6,7 +6,7 @@ Despite the presence of a `swagger.yml` file, WAG does not support all of the Sw
 WAG is a custom re-implementation of a subset of the Swagger version `2.0` standard.
 
 ## Usage
-Wag requires Go 1.7+.
+Wag requires Go 1.13+.
 ### Generating Code
 Create a swagger.yml file with your [service definition](http://editor.swagger.io/#/). Wag supports a [subset](https://github.com/Clever/wag#swagger-spec) of the Swagger spec.
 Copy the latest `wag.mk` from the [dev-handbook](https://github.com/Clever/dev-handbook/blob/master/make/wag.mk).

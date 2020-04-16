@@ -165,7 +165,7 @@ func (c *WagClient) HealthCheck(ctx context.Context) error {
 	var body []byte
 	path := c.basePath + "/v1/health/check"
 
-	req, err := http.NewRequest("GET", path, bytes.NewBuffer(body))
+	req, err := http.NewRequestWithContext(ctx, "GET", path, bytes.NewBuffer(body))
 
 	if err != nil {
 		return err

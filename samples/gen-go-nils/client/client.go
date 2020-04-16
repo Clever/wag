@@ -184,7 +184,7 @@ func (c *WagClient) NilCheck(ctx context.Context, i *models.NilCheckInput) error
 
 	}
 
-	req, err := http.NewRequest("POST", path, bytes.NewBuffer(body))
+	req, err := http.NewRequestWithContext(ctx, "POST", path, bytes.NewBuffer(body))
 
 	if err != nil {
 		return err
