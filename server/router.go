@@ -7,13 +7,16 @@ package server
 
 import (
 	"compress/gzip"
+	"context"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"path"
 	"strconv"
+	"syscall"
 	"time"
 
 	// register pprof listener
@@ -24,7 +27,6 @@ import (
 	opentracing "github.com/opentracing/opentracing-go"
 	"gopkg.in/Clever/kayvee-go.v6/logger"
 	kvMiddleware "gopkg.in/Clever/kayvee-go.v6/middleware"
-	"gopkg.in/tylerb/graceful.v1"
 	"github.com/Clever/go-process-metrics/metrics"
 	"github.com/kardianos/osext"
 	jaeger "github.com/uber/jaeger-client-go"
@@ -149,7 +151,35 @@ func (s *Server) Serve() error {
 	s.l.Counter("server-started")
 
 	// Give the sever 30 seconds to shut down
-	return graceful.RunWithErr(s.addr,30*time.Second,s.Handler)
+	server := &http.Server{
+		Addr:        s.addr,
+		Handler:     s.Handler,
+		IdleTimeout: 3 * time.Minute,
+	}
+	server.SetKeepAlivesEnabled(true)
+
+	// Give the server 30 seconds to shut down gracefully after it receives a signal
+	shutdown := make(chan struct{})
+	go func() {
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, os.Interrupt, os.Signal(syscall.SIGTERM))
+		sig := <-c
+		s.l.CriticalD("shutdown-initiated", logger.M{"signal": sig.String()})
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		defer close(shutdown)
+		if err := server.Shutdown(ctx); err != nil {
+			s.l.CriticalD("error-during-shutdown", logger.M{"error": err.Error()})
+		}
+	}()
+
+	if err := server.ListenAndServe(); err != http.ErrServerClosed {
+		return err
+	}
+	// ensure we wait for graceful shutdown
+	<-shutdown
+
+	return nil
 }
 
 type handler struct {

@@ -100,10 +100,6 @@ required = ["github.com/tmthrgd/go-bindata", "github.com/golang/mock/mockgen", "
   branch = "v2"
 
 [[constraint]]
-  name = "gopkg.in/tylerb/graceful.v1"
-  version = "1.0.0"
-
-[[constraint]]
   name = "gopkg.in/yaml.v2"
   branch = "v2"
 
