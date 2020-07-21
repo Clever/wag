@@ -297,6 +297,7 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		return ret
 	},
 	"attributeIsPointer":          attributeIsPointer,
+	"attributeIsEnum":             attributeIsEnum,
 	"attributeToModelValue":       attributeToModelValue,
 	"attributeToModelValueNotPtr": attributeToModelValueNotPtr,
 	"attributeToModelValuePtr":    attributeToModelValuePtr,
@@ -421,6 +422,25 @@ func attributeIsPointer(config XDBConfig, attributeName string) bool {
 		}
 	}
 	return contains(attributeName, config.Schema.Required)
+}
+
+func attributeIsEnum(config XDBConfig, attributeName string) bool {
+	if propertySchema, ok := config.Schema.Properties[attributeName]; ok {
+		if propertySchema.Ref.String() != "" {
+			schemaI, _, err := propertySchema.Ref.GetPointer().Get(config.SwaggerSpec)
+			if err != nil {
+				panic(err)
+			}
+			schema, ok := schemaI.(spec.Schema)
+			if !ok {
+				panic("expected spec.Schema")
+			}
+			if len(schema.SchemaProps.Enum) > 0 {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func exampleValueNotPtrForAttribute(config XDBConfig, attributeName string, i int) string {

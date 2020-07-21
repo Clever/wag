@@ -263,6 +263,24 @@ definitions:
         items:
           type: string
 
+  # enum hash key, regular range key
+  ThingWithEnumHashKey:
+    x-db:
+      AllowOverwrites: false
+      DynamoDB:
+        KeySchema:
+        - AttributeName: branch
+          KeyType: HASH
+        - AttributeName: date
+          KeyType: RANGE
+    type: object
+    properties:
+      branch:
+        $ref: "#/definitions/Branch"
+      date:
+        type: string
+        format: date-time
+
   # Composite enum hash keys
   ThingWithCompositeEnumAttributes:
     x-db:

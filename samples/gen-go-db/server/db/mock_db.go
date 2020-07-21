@@ -635,6 +635,55 @@ func (mr *MockInterfaceMockRecorder) DeleteThingWithDateTimeComposite(ctx, typeV
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithDateTimeComposite", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithDateTimeComposite), ctx, typeVar, id, created, resource)
 }
 
+// SaveThingWithEnumHashKey mocks base method
+func (m_2 *MockInterface) SaveThingWithEnumHashKey(ctx context.Context, m models.ThingWithEnumHashKey) error {
+	ret := m_2.ctrl.Call(m_2, "SaveThingWithEnumHashKey", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveThingWithEnumHashKey indicates an expected call of SaveThingWithEnumHashKey
+func (mr *MockInterfaceMockRecorder) SaveThingWithEnumHashKey(ctx, m interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithEnumHashKey", reflect.TypeOf((*MockInterface)(nil).SaveThingWithEnumHashKey), ctx, m)
+}
+
+// GetThingWithEnumHashKey mocks base method
+func (m *MockInterface) GetThingWithEnumHashKey(ctx context.Context, branch models.Branch, date strfmt.DateTime) (*models.ThingWithEnumHashKey, error) {
+	ret := m.ctrl.Call(m, "GetThingWithEnumHashKey", ctx, branch, date)
+	ret0, _ := ret[0].(*models.ThingWithEnumHashKey)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingWithEnumHashKey indicates an expected call of GetThingWithEnumHashKey
+func (mr *MockInterfaceMockRecorder) GetThingWithEnumHashKey(ctx, branch, date interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithEnumHashKey", reflect.TypeOf((*MockInterface)(nil).GetThingWithEnumHashKey), ctx, branch, date)
+}
+
+// GetThingWithEnumHashKeysByBranchAndDate mocks base method
+func (m *MockInterface) GetThingWithEnumHashKeysByBranchAndDate(ctx context.Context, input GetThingWithEnumHashKeysByBranchAndDateInput, fn func(*models.ThingWithEnumHashKey, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetThingWithEnumHashKeysByBranchAndDate", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingWithEnumHashKeysByBranchAndDate indicates an expected call of GetThingWithEnumHashKeysByBranchAndDate
+func (mr *MockInterfaceMockRecorder) GetThingWithEnumHashKeysByBranchAndDate(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithEnumHashKeysByBranchAndDate", reflect.TypeOf((*MockInterface)(nil).GetThingWithEnumHashKeysByBranchAndDate), ctx, input, fn)
+}
+
+// DeleteThingWithEnumHashKey mocks base method
+func (m *MockInterface) DeleteThingWithEnumHashKey(ctx context.Context, branch models.Branch, date strfmt.DateTime) error {
+	ret := m.ctrl.Call(m, "DeleteThingWithEnumHashKey", ctx, branch, date)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteThingWithEnumHashKey indicates an expected call of DeleteThingWithEnumHashKey
+func (mr *MockInterfaceMockRecorder) DeleteThingWithEnumHashKey(ctx, branch, date interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithEnumHashKey", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithEnumHashKey), ctx, branch, date)
+}
+
 // SaveThingWithMatchingKeys mocks base method
 func (m_2 *MockInterface) SaveThingWithMatchingKeys(ctx context.Context, m models.ThingWithMatchingKeys) error {
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithMatchingKeys", ctx, m)
