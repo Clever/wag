@@ -31,6 +31,12 @@ type ddbThingWithEnumHashKeyPrimaryKey struct {
 	Date   strfmt.DateTime `dynamodbav:"date"`
 }
 
+// ddbThingWithEnumHashKeyGSIByBranch represents the byBranch GSI.
+type ddbThingWithEnumHashKeyGSIByBranch struct {
+	Branch models.Branch   `dynamodbav:"branch"`
+	Date2  strfmt.DateTime `dynamodbav:"date2"`
+}
+
 // ddbThingWithEnumHashKey represents a ThingWithEnumHashKey as stored in DynamoDB.
 type ddbThingWithEnumHashKey struct {
 	models.ThingWithEnumHashKey
@@ -54,6 +60,10 @@ func (t ThingWithEnumHashKeyTable) create(ctx context.Context) error {
 				AttributeName: aws.String("date"),
 				AttributeType: aws.String("S"),
 			},
+			{
+				AttributeName: aws.String("date2"),
+				AttributeType: aws.String("S"),
+			},
 		},
 		KeySchema: []*dynamodb.KeySchemaElement{
 			{
@@ -63,6 +73,28 @@ func (t ThingWithEnumHashKeyTable) create(ctx context.Context) error {
 			{
 				AttributeName: aws.String("date"),
 				KeyType:       aws.String(dynamodb.KeyTypeRange),
+			},
+		},
+		GlobalSecondaryIndexes: []*dynamodb.GlobalSecondaryIndex{
+			{
+				IndexName: aws.String("byBranch"),
+				Projection: &dynamodb.Projection{
+					ProjectionType: aws.String("ALL"),
+				},
+				KeySchema: []*dynamodb.KeySchemaElement{
+					{
+						AttributeName: aws.String("branch"),
+						KeyType:       aws.String(dynamodb.KeyTypeHash),
+					},
+					{
+						AttributeName: aws.String("date2"),
+						KeyType:       aws.String(dynamodb.KeyTypeRange),
+					},
+				},
+				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
+					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
+				},
 			},
 		},
 		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
@@ -257,6 +289,102 @@ func (t ThingWithEnumHashKeyTable) deleteThingWithEnumHashKey(ctx context.Contex
 			}
 		}
 		return err
+	}
+
+	return nil
+}
+
+func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDate2(ctx context.Context, input db.GetThingWithEnumHashKeysByBranchAndDate2Input, fn func(m *models.ThingWithEnumHashKey, lastThingWithEnumHashKey bool) bool) error {
+	if input.Date2StartingAt != nil && input.StartingAfter != nil {
+		return fmt.Errorf("Can specify only one of input.Date2StartingAt or input.StartingAfter")
+	}
+	if input.Branch == "" {
+		return fmt.Errorf("Hash key input.Branch cannot be empty")
+	}
+	queryInput := &dynamodb.QueryInput{
+		TableName: aws.String(t.name()),
+		IndexName: aws.String("byBranch"),
+		ExpressionAttributeNames: map[string]*string{
+			"#BRANCH": aws.String("branch"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":branch": &dynamodb.AttributeValue{
+				S: aws.String(string(input.Branch)),
+			},
+		},
+		ScanIndexForward: aws.Bool(!input.Descending),
+		ConsistentRead:   aws.Bool(false),
+	}
+	if input.Limit != nil {
+		queryInput.Limit = input.Limit
+	}
+	if input.Date2StartingAt == nil {
+		queryInput.KeyConditionExpression = aws.String("#BRANCH = :branch")
+	} else {
+		queryInput.ExpressionAttributeNames["#DATE2"] = aws.String("date2")
+		queryInput.ExpressionAttributeValues[":date2"] = &dynamodb.AttributeValue{
+			S: aws.String(toDynamoTimeString(*input.Date2StartingAt)),
+		}
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#BRANCH = :branch AND #DATE2 <= :date2")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#BRANCH = :branch AND #DATE2 >= :date2")
+		}
+	}
+	if input.StartingAfter != nil {
+		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"date2": &dynamodb.AttributeValue{
+				S: aws.String(toDynamoTimeString(input.StartingAfter.Date2)),
+			},
+			"branch": &dynamodb.AttributeValue{
+				S: aws.String(string(input.StartingAfter.Branch)),
+			},
+			"date": &dynamodb.AttributeValue{
+				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
+			},
+		}
+	}
+
+	totalRecordsProcessed := int64(0)
+	var pageFnErr error
+	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
+		if len(queryOutput.Items) == 0 {
+			return false
+		}
+		items, err := decodeThingWithEnumHashKeys(queryOutput.Items)
+		if err != nil {
+			pageFnErr = err
+			return false
+		}
+		hasMore := true
+		for i := range items {
+			if lastPage == true {
+				hasMore = i < len(items)-1
+			}
+			if !fn(&items[i], !hasMore) {
+				return false
+			}
+			totalRecordsProcessed++
+			// if the Limit of records have been passed to fn, don't pass anymore records.
+			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
+				return false
+			}
+		}
+		return true
+	}
+
+	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case dynamodb.ErrCodeResourceNotFoundException:
+				return fmt.Errorf("table or index not found: %s", t.name())
+			}
+		}
+		return err
+	}
+	if pageFnErr != nil {
+		return pageFnErr
 	}
 
 	return nil

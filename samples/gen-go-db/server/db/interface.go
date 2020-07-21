@@ -128,6 +128,8 @@ type Interface interface {
 	GetThingWithEnumHashKeysByBranchAndDate(ctx context.Context, input GetThingWithEnumHashKeysByBranchAndDateInput, fn func(m *models.ThingWithEnumHashKey, lastThingWithEnumHashKey bool) bool) error
 	// DeleteThingWithEnumHashKey deletes a ThingWithEnumHashKey from the database.
 	DeleteThingWithEnumHashKey(ctx context.Context, branch models.Branch, date strfmt.DateTime) error
+	// GetThingWithEnumHashKeysByBranchAndDate2 retrieves a page of ThingWithEnumHashKeys from the database.
+	GetThingWithEnumHashKeysByBranchAndDate2(ctx context.Context, input GetThingWithEnumHashKeysByBranchAndDate2Input, fn func(m *models.ThingWithEnumHashKey, lastThingWithEnumHashKey bool) bool) error
 
 	// SaveThingWithMatchingKeys saves a ThingWithMatchingKeys to the database.
 	SaveThingWithMatchingKeys(ctx context.Context, m models.ThingWithMatchingKeys) error
@@ -766,6 +768,30 @@ var _ error = ErrThingWithEnumHashKeyNotFound{}
 
 // Error returns a description of the error.
 func (e ErrThingWithEnumHashKeyNotFound) Error() string {
+	return "could not find ThingWithEnumHashKey"
+}
+
+// GetThingWithEnumHashKeysByBranchAndDate2Input is the query input to GetThingWithEnumHashKeysByBranchAndDate2.
+type GetThingWithEnumHashKeysByBranchAndDate2Input struct {
+	// Branch is required
+	Branch          models.Branch
+	Date2StartingAt *strfmt.DateTime
+	StartingAfter   *models.ThingWithEnumHashKey
+	Descending      bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+}
+
+// ErrThingWithEnumHashKeyByBranchAndDate2NotFound is returned when the database fails to find a ThingWithEnumHashKey.
+type ErrThingWithEnumHashKeyByBranchAndDate2NotFound struct {
+	Branch models.Branch
+	Date2  strfmt.DateTime
+}
+
+var _ error = ErrThingWithEnumHashKeyByBranchAndDate2NotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithEnumHashKeyByBranchAndDate2NotFound) Error() string {
 	return "could not find ThingWithEnumHashKey"
 }
 

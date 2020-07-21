@@ -669,6 +669,11 @@ func (d DB) DeleteThingWithEnumHashKey(ctx context.Context, branch models.Branch
 	return d.thingWithEnumHashKeyTable.deleteThingWithEnumHashKey(ctx, branch, date)
 }
 
+// GetThingWithEnumHashKeysByBranchAndDate2 retrieves a page of ThingWithEnumHashKeys from the database.
+func (d DB) GetThingWithEnumHashKeysByBranchAndDate2(ctx context.Context, input db.GetThingWithEnumHashKeysByBranchAndDate2Input, fn func(m *models.ThingWithEnumHashKey, lastThingWithEnumHashKey bool) bool) error {
+	return d.thingWithEnumHashKeyTable.getThingWithEnumHashKeysByBranchAndDate2(ctx, input, fn)
+}
+
 // SaveThingWithMatchingKeys saves a ThingWithMatchingKeys to the database.
 func (d DB) SaveThingWithMatchingKeys(ctx context.Context, m models.ThingWithMatchingKeys) error {
 	return d.thingWithMatchingKeysTable.saveThingWithMatchingKeys(ctx, m)
