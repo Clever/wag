@@ -73,6 +73,7 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingWithEnumHashKeysByBranchAndDate", GetThingWithEnumHashKeysByBranchAndDate(dbFactory(), t))
 	t.Run("SaveThingWithEnumHashKey", SaveThingWithEnumHashKey(dbFactory(), t))
 	t.Run("DeleteThingWithEnumHashKey", DeleteThingWithEnumHashKey(dbFactory(), t))
+	t.Run("GetThingWithEnumHashKeysByBranchAndDate2", GetThingWithEnumHashKeysByBranchAndDate2(dbFactory(), t))
 	t.Run("GetThingWithMatchingKeys", GetThingWithMatchingKeys(dbFactory(), t))
 	t.Run("GetThingWithMatchingKeyssByBearAndAssocTypeID", GetThingWithMatchingKeyssByBearAndAssocTypeID(dbFactory(), t))
 	t.Run("SaveThingWithMatchingKeys", SaveThingWithMatchingKeys(dbFactory(), t))
@@ -4054,6 +4055,7 @@ func GetThingWithEnumHashKey(s db.Interface, t *testing.T) func(t *testing.T) {
 		m := models.ThingWithEnumHashKey{
 			Branch: models.BranchMaster,
 			Date:   mustTime("2018-03-11T15:04:01+07:00"),
+			Date2:  mustTime("2018-03-11T15:04:01+07:00"),
 		}
 		require.Nil(t, s.SaveThingWithEnumHashKey(ctx, m))
 		m2, err := s.GetThingWithEnumHashKey(ctx, m.Branch, m.Date)
@@ -4264,6 +4266,7 @@ func SaveThingWithEnumHashKey(s db.Interface, t *testing.T) func(t *testing.T) {
 		m := models.ThingWithEnumHashKey{
 			Branch: models.BranchMaster,
 			Date:   mustTime("2018-03-11T15:04:01+07:00"),
+			Date2:  mustTime("2018-03-11T15:04:01+07:00"),
 		}
 		require.Nil(t, s.SaveThingWithEnumHashKey(ctx, m))
 		require.IsType(t, db.ErrThingWithEnumHashKeyAlreadyExists{}, s.SaveThingWithEnumHashKey(ctx, m))
@@ -4276,9 +4279,218 @@ func DeleteThingWithEnumHashKey(s db.Interface, t *testing.T) func(t *testing.T)
 		m := models.ThingWithEnumHashKey{
 			Branch: models.BranchMaster,
 			Date:   mustTime("2018-03-11T15:04:01+07:00"),
+			Date2:  mustTime("2018-03-11T15:04:01+07:00"),
 		}
 		require.Nil(t, s.SaveThingWithEnumHashKey(ctx, m))
 		require.Nil(t, s.DeleteThingWithEnumHashKey(ctx, m.Branch, m.Date))
+	}
+}
+
+type getThingWithEnumHashKeysByBranchAndDate2Input struct {
+	ctx   context.Context
+	input db.GetThingWithEnumHashKeysByBranchAndDate2Input
+}
+type getThingWithEnumHashKeysByBranchAndDate2Output struct {
+	thingWithEnumHashKeys []models.ThingWithEnumHashKey
+	err                   error
+}
+type getThingWithEnumHashKeysByBranchAndDate2Test struct {
+	testName string
+	d        db.Interface
+	input    getThingWithEnumHashKeysByBranchAndDate2Input
+	output   getThingWithEnumHashKeysByBranchAndDate2Output
+}
+
+func (g getThingWithEnumHashKeysByBranchAndDate2Test) run(t *testing.T) {
+	thingWithEnumHashKeys := []models.ThingWithEnumHashKey{}
+	fn := func(m *models.ThingWithEnumHashKey, lastThingWithEnumHashKey bool) bool {
+		thingWithEnumHashKeys = append(thingWithEnumHashKeys, *m)
+		if lastThingWithEnumHashKey {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingWithEnumHashKeysByBranchAndDate2(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.thingWithEnumHashKeys, thingWithEnumHashKeys)
+}
+
+func GetThingWithEnumHashKeysByBranchAndDate2(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithEnumHashKey(ctx, models.ThingWithEnumHashKey{
+			Branch: models.BranchMaster,
+			Date2:  mustTime("2018-03-11T15:04:01+07:00"),
+			Date:   mustTime("2018-03-11T15:04:01+07:00"),
+		}))
+		require.Nil(t, d.SaveThingWithEnumHashKey(ctx, models.ThingWithEnumHashKey{
+			Branch: models.BranchMaster,
+			Date2:  mustTime("2018-03-11T15:04:02+07:00"),
+			Date:   mustTime("2018-03-11T15:04:03+07:00"),
+		}))
+		require.Nil(t, d.SaveThingWithEnumHashKey(ctx, models.ThingWithEnumHashKey{
+			Branch: models.BranchMaster,
+			Date2:  mustTime("2018-03-11T15:04:03+07:00"),
+			Date:   mustTime("2018-03-11T15:04:02+07:00"),
+		}))
+		limit := int64(3)
+		tests := []getThingWithEnumHashKeysByBranchAndDate2Test{
+			{
+				testName: "basic",
+				d:        d,
+				input: getThingWithEnumHashKeysByBranchAndDate2Input{
+					ctx: context.Background(),
+					input: db.GetThingWithEnumHashKeysByBranchAndDate2Input{
+						Branch: models.BranchMaster,
+						Limit:  &limit,
+					},
+				},
+				output: getThingWithEnumHashKeysByBranchAndDate2Output{
+					thingWithEnumHashKeys: []models.ThingWithEnumHashKey{
+						models.ThingWithEnumHashKey{
+							Branch: models.BranchMaster,
+							Date2:  mustTime("2018-03-11T15:04:01+07:00"),
+							Date:   mustTime("2018-03-11T15:04:01+07:00"),
+						},
+						models.ThingWithEnumHashKey{
+							Branch: models.BranchMaster,
+							Date2:  mustTime("2018-03-11T15:04:02+07:00"),
+							Date:   mustTime("2018-03-11T15:04:03+07:00"),
+						},
+						models.ThingWithEnumHashKey{
+							Branch: models.BranchMaster,
+							Date2:  mustTime("2018-03-11T15:04:03+07:00"),
+							Date:   mustTime("2018-03-11T15:04:02+07:00"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getThingWithEnumHashKeysByBranchAndDate2Input{
+					ctx: context.Background(),
+					input: db.GetThingWithEnumHashKeysByBranchAndDate2Input{
+						Branch:     models.BranchMaster,
+						Descending: true,
+					},
+				},
+				output: getThingWithEnumHashKeysByBranchAndDate2Output{
+					thingWithEnumHashKeys: []models.ThingWithEnumHashKey{
+						models.ThingWithEnumHashKey{
+							Branch: models.BranchMaster,
+							Date2:  mustTime("2018-03-11T15:04:03+07:00"),
+							Date:   mustTime("2018-03-11T15:04:02+07:00"),
+						},
+						models.ThingWithEnumHashKey{
+							Branch: models.BranchMaster,
+							Date2:  mustTime("2018-03-11T15:04:02+07:00"),
+							Date:   mustTime("2018-03-11T15:04:03+07:00"),
+						},
+						models.ThingWithEnumHashKey{
+							Branch: models.BranchMaster,
+							Date2:  mustTime("2018-03-11T15:04:01+07:00"),
+							Date:   mustTime("2018-03-11T15:04:01+07:00"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getThingWithEnumHashKeysByBranchAndDate2Input{
+					ctx: context.Background(),
+					input: db.GetThingWithEnumHashKeysByBranchAndDate2Input{
+						Branch: models.BranchMaster,
+						StartingAfter: &models.ThingWithEnumHashKey{
+							Branch: models.BranchMaster,
+							Date2:  mustTime("2018-03-11T15:04:01+07:00"),
+							Date:   mustTime("2018-03-11T15:04:01+07:00"),
+						},
+					},
+				},
+				output: getThingWithEnumHashKeysByBranchAndDate2Output{
+					thingWithEnumHashKeys: []models.ThingWithEnumHashKey{
+						models.ThingWithEnumHashKey{
+							Branch: models.BranchMaster,
+							Date2:  mustTime("2018-03-11T15:04:02+07:00"),
+							Date:   mustTime("2018-03-11T15:04:03+07:00"),
+						},
+						models.ThingWithEnumHashKey{
+							Branch: models.BranchMaster,
+							Date2:  mustTime("2018-03-11T15:04:03+07:00"),
+							Date:   mustTime("2018-03-11T15:04:02+07:00"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after descending",
+				d:        d,
+				input: getThingWithEnumHashKeysByBranchAndDate2Input{
+					ctx: context.Background(),
+					input: db.GetThingWithEnumHashKeysByBranchAndDate2Input{
+						Branch: models.BranchMaster,
+						StartingAfter: &models.ThingWithEnumHashKey{
+							Branch: models.BranchMaster,
+							Date2:  mustTime("2018-03-11T15:04:03+07:00"),
+							Date:   mustTime("2018-03-11T15:04:02+07:00"),
+						},
+						Descending: true,
+					},
+				},
+				output: getThingWithEnumHashKeysByBranchAndDate2Output{
+					thingWithEnumHashKeys: []models.ThingWithEnumHashKey{
+						models.ThingWithEnumHashKey{
+							Branch: models.BranchMaster,
+							Date2:  mustTime("2018-03-11T15:04:02+07:00"),
+							Date:   mustTime("2018-03-11T15:04:03+07:00"),
+						},
+						models.ThingWithEnumHashKey{
+							Branch: models.BranchMaster,
+							Date2:  mustTime("2018-03-11T15:04:01+07:00"),
+							Date:   mustTime("2018-03-11T15:04:01+07:00"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingWithEnumHashKeysByBranchAndDate2Input{
+					ctx: context.Background(),
+					input: db.GetThingWithEnumHashKeysByBranchAndDate2Input{
+						Branch:          models.BranchMaster,
+						Date2StartingAt: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+					},
+				},
+				output: getThingWithEnumHashKeysByBranchAndDate2Output{
+					thingWithEnumHashKeys: []models.ThingWithEnumHashKey{
+						models.ThingWithEnumHashKey{
+							Branch: models.BranchMaster,
+							Date2:  mustTime("2018-03-11T15:04:02+07:00"),
+							Date:   mustTime("2018-03-11T15:04:03+07:00"),
+						},
+						models.ThingWithEnumHashKey{
+							Branch: models.BranchMaster,
+							Date2:  mustTime("2018-03-11T15:04:03+07:00"),
+							Date:   mustTime("2018-03-11T15:04:02+07:00"),
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
 	}
 }
 

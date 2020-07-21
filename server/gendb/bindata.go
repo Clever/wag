@@ -532,7 +532,7 @@ var _bindata = map[string]*asset{
 			"\x8b\x1d\x4c\xbe\xa5\xf0\xef\x00\x00\x00\xff\xff",
 		size: 42119,
 		mode: 0664,
-		time: time.Unix(1595352641, 470037724),
+		time: time.Unix(1595359335, 207367039),
 	},
 	"tests.go.tmpl": &asset{
 		name: "tests.go.tmpl",

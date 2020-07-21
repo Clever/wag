@@ -174,6 +174,7 @@ declare namespace SwaggerTest {
     type ThingWithEnumHashKey = {
   branch?: Branch;
   date?: string;
+  date2?: string;
 };
     
     type ThingWithMatchingKeys = {

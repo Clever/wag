@@ -21,6 +21,9 @@ type ThingWithEnumHashKey struct {
 
 	// date
 	Date strfmt.DateTime `json:"date,omitempty"`
+
+	// date2
+	Date2 strfmt.DateTime `json:"date2,omitempty"`
 }
 
 // Validate validates this thing with enum hash key

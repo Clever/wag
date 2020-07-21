@@ -273,11 +273,23 @@ definitions:
           KeyType: HASH
         - AttributeName: date
           KeyType: RANGE
+        GlobalSecondaryIndexes:
+        - IndexName: byBranch
+          Projection:
+            ProjectionType: ALL
+          KeySchema:
+          - AttributeName: branch
+            KeyType: HASH
+          - AttributeName: date2
+            KeyType: RANGE
     type: object
     properties:
       branch:
         $ref: "#/definitions/Branch"
       date:
+        type: string
+        format: date-time
+      date2:
         type: string
         format: date-time
 
