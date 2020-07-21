@@ -120,6 +120,15 @@ type Interface interface {
 	// DeleteThingWithDateTimeComposite deletes a ThingWithDateTimeComposite from the database.
 	DeleteThingWithDateTimeComposite(ctx context.Context, typeVar string, id string, created strfmt.DateTime, resource string) error
 
+	// SaveThingWithEnumHashKey saves a ThingWithEnumHashKey to the database.
+	SaveThingWithEnumHashKey(ctx context.Context, m models.ThingWithEnumHashKey) error
+	// GetThingWithEnumHashKey retrieves a ThingWithEnumHashKey from the database.
+	GetThingWithEnumHashKey(ctx context.Context, branch models.Branch, date strfmt.DateTime) (*models.ThingWithEnumHashKey, error)
+	// GetThingWithEnumHashKeysByBranchAndDate retrieves a page of ThingWithEnumHashKeys from the database.
+	GetThingWithEnumHashKeysByBranchAndDate(ctx context.Context, input GetThingWithEnumHashKeysByBranchAndDateInput, fn func(m *models.ThingWithEnumHashKey, lastThingWithEnumHashKey bool) bool) error
+	// DeleteThingWithEnumHashKey deletes a ThingWithEnumHashKey from the database.
+	DeleteThingWithEnumHashKey(ctx context.Context, branch models.Branch, date strfmt.DateTime) error
+
 	// SaveThingWithMatchingKeys saves a ThingWithMatchingKeys to the database.
 	SaveThingWithMatchingKeys(ctx context.Context, m models.ThingWithMatchingKeys) error
 	// GetThingWithMatchingKeys retrieves a ThingWithMatchingKeys from the database.
@@ -731,6 +740,46 @@ var _ error = ErrThingWithDateTimeCompositeNotFound{}
 // Error returns a description of the error.
 func (e ErrThingWithDateTimeCompositeNotFound) Error() string {
 	return "could not find ThingWithDateTimeComposite"
+}
+
+// GetThingWithEnumHashKeysByBranchAndDateInput is the query input to GetThingWithEnumHashKeysByBranchAndDate.
+type GetThingWithEnumHashKeysByBranchAndDateInput struct {
+	// Branch is required
+	Branch         models.Branch
+	DateStartingAt *strfmt.DateTime
+	// StartingAfter is a required specification of an exclusive starting point.
+	StartingAfter *models.ThingWithEnumHashKey
+	Descending    bool
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+}
+
+// ErrThingWithEnumHashKeyNotFound is returned when the database fails to find a ThingWithEnumHashKey.
+type ErrThingWithEnumHashKeyNotFound struct {
+	Branch models.Branch
+	Date   strfmt.DateTime
+}
+
+var _ error = ErrThingWithEnumHashKeyNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithEnumHashKeyNotFound) Error() string {
+	return "could not find ThingWithEnumHashKey"
+}
+
+// ErrThingWithEnumHashKeyAlreadyExists is returned when trying to overwrite a ThingWithEnumHashKey.
+type ErrThingWithEnumHashKeyAlreadyExists struct {
+	Branch models.Branch
+	Date   strfmt.DateTime
+}
+
+var _ error = ErrThingWithEnumHashKeyAlreadyExists{}
+
+// Error returns a description of the error.
+func (e ErrThingWithEnumHashKeyAlreadyExists) Error() string {
+	return "ThingWithEnumHashKey already exists"
 }
 
 // GetThingWithMatchingKeyssByBearAndAssocTypeIDInput is the query input to GetThingWithMatchingKeyssByBearAndAssocTypeID.

@@ -50,6 +50,8 @@ type Config struct {
 	ThingWithDateRangeTable ThingWithDateRangeTable
 	// ThingWithDateTimeCompositeTable configuration.
 	ThingWithDateTimeCompositeTable ThingWithDateTimeCompositeTable
+	// ThingWithEnumHashKeyTable configuration.
+	ThingWithEnumHashKeyTable ThingWithEnumHashKeyTable
 	// ThingWithMatchingKeysTable configuration.
 	ThingWithMatchingKeysTable ThingWithMatchingKeysTable
 	// ThingWithRequiredCompositePropertiesAndKeysOnlyTable configuration.
@@ -222,6 +224,20 @@ func New(config Config) (*DB, error) {
 	if thingWithDateTimeCompositeTable.WriteCapacityUnits == 0 {
 		thingWithDateTimeCompositeTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	// configure ThingWithEnumHashKey table
+	thingWithEnumHashKeyTable := config.ThingWithEnumHashKeyTable
+	if thingWithEnumHashKeyTable.DynamoDBAPI == nil {
+		thingWithEnumHashKeyTable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if thingWithEnumHashKeyTable.Prefix == "" {
+		thingWithEnumHashKeyTable.Prefix = config.DefaultPrefix
+	}
+	if thingWithEnumHashKeyTable.ReadCapacityUnits == 0 {
+		thingWithEnumHashKeyTable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if thingWithEnumHashKeyTable.WriteCapacityUnits == 0 {
+		thingWithEnumHashKeyTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
 	// configure ThingWithMatchingKeys table
 	thingWithMatchingKeysTable := config.ThingWithMatchingKeysTable
 	if thingWithMatchingKeysTable.DynamoDBAPI == nil {
@@ -304,6 +320,7 @@ func New(config Config) (*DB, error) {
 		thingWithCompositeEnumAttributesTable:                thingWithCompositeEnumAttributesTable,
 		thingWithDateRangeTable:                              thingWithDateRangeTable,
 		thingWithDateTimeCompositeTable:                      thingWithDateTimeCompositeTable,
+		thingWithEnumHashKeyTable:                            thingWithEnumHashKeyTable,
 		thingWithMatchingKeysTable:                           thingWithMatchingKeysTable,
 		thingWithRequiredCompositePropertiesAndKeysOnlyTable: thingWithRequiredCompositePropertiesAndKeysOnlyTable,
 		thingWithRequiredFieldsTable:                         thingWithRequiredFieldsTable,
@@ -324,6 +341,7 @@ type DB struct {
 	thingWithCompositeEnumAttributesTable                ThingWithCompositeEnumAttributesTable
 	thingWithDateRangeTable                              ThingWithDateRangeTable
 	thingWithDateTimeCompositeTable                      ThingWithDateTimeCompositeTable
+	thingWithEnumHashKeyTable                            ThingWithEnumHashKeyTable
 	thingWithMatchingKeysTable                           ThingWithMatchingKeysTable
 	thingWithRequiredCompositePropertiesAndKeysOnlyTable ThingWithRequiredCompositePropertiesAndKeysOnlyTable
 	thingWithRequiredFieldsTable                         ThingWithRequiredFieldsTable
@@ -363,6 +381,9 @@ func (d DB) CreateTables(ctx context.Context) error {
 		return err
 	}
 	if err := d.thingWithDateTimeCompositeTable.create(ctx); err != nil {
+		return err
+	}
+	if err := d.thingWithEnumHashKeyTable.create(ctx); err != nil {
 		return err
 	}
 	if err := d.thingWithMatchingKeysTable.create(ctx); err != nil {
@@ -626,6 +647,26 @@ func (d DB) GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx context
 // DeleteThingWithDateTimeComposite deletes a ThingWithDateTimeComposite from the database.
 func (d DB) DeleteThingWithDateTimeComposite(ctx context.Context, typeVar string, id string, created strfmt.DateTime, resource string) error {
 	return d.thingWithDateTimeCompositeTable.deleteThingWithDateTimeComposite(ctx, typeVar, id, created, resource)
+}
+
+// SaveThingWithEnumHashKey saves a ThingWithEnumHashKey to the database.
+func (d DB) SaveThingWithEnumHashKey(ctx context.Context, m models.ThingWithEnumHashKey) error {
+	return d.thingWithEnumHashKeyTable.saveThingWithEnumHashKey(ctx, m)
+}
+
+// GetThingWithEnumHashKey retrieves a ThingWithEnumHashKey from the database.
+func (d DB) GetThingWithEnumHashKey(ctx context.Context, branch models.Branch, date strfmt.DateTime) (*models.ThingWithEnumHashKey, error) {
+	return d.thingWithEnumHashKeyTable.getThingWithEnumHashKey(ctx, branch, date)
+}
+
+// GetThingWithEnumHashKeysByBranchAndDate retrieves a page of ThingWithEnumHashKeys from the database.
+func (d DB) GetThingWithEnumHashKeysByBranchAndDate(ctx context.Context, input db.GetThingWithEnumHashKeysByBranchAndDateInput, fn func(m *models.ThingWithEnumHashKey, lastThingWithEnumHashKey bool) bool) error {
+	return d.thingWithEnumHashKeyTable.getThingWithEnumHashKeysByBranchAndDate(ctx, input, fn)
+}
+
+// DeleteThingWithEnumHashKey deletes a ThingWithEnumHashKey from the database.
+func (d DB) DeleteThingWithEnumHashKey(ctx context.Context, branch models.Branch, date strfmt.DateTime) error {
+	return d.thingWithEnumHashKeyTable.deleteThingWithEnumHashKey(ctx, branch, date)
 }
 
 // SaveThingWithMatchingKeys saves a ThingWithMatchingKeys to the database.
