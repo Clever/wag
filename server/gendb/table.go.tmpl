@@ -310,7 +310,13 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
       ":{{ camelize $hashKey.AttributeName }}": &dynamodb.AttributeValue{
                           {{- $dynamoDBType := dynamoDBTypeForAttribute $xdbConfig $hashKey.AttributeName }}
                           {{- if eq $dynamoDBType "S" }}
-                                S: aws.String({{ if isComposite $xdbConfig $hashKey.AttributeName }}{{ compositeValue $xdbConfig $hashKey.AttributeName "input" }}{{ else }}input.{{ pascalize $hashKey.AttributeName }}{{ end }}),
+                            {{- if isComposite $xdbConfig $hashKey.AttributeName }}
+                              S: aws.String({{ compositeValue $xdbConfig $hashKey.AttributeName "input" }}),
+                            {{- else if attributeIsEnum $xdbConfig $hashKey.AttributeName }}
+                              S: aws.String(string(input.{{ pascalize $hashKey.AttributeName }})),
+                            {{- else }}
+                              S: aws.String(input.{{ pascalize $hashKey.AttributeName }}),
+                            {{- end }}
                           {{- else if eq $dynamoDBType "N" }}
         N: aws.String(fmt.Sprintf("%d", input.{{ pascalize $hashKey.AttributeName }})),
                           {{- end }}
@@ -388,13 +394,15 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
               {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $hashKey.AttributeName }}
         {{- if eq $attrDynamoDBType "S" }}
           {{- if eq $attrGoType "strfmt.DateTime" }}
-          {{- if attributeIsPointer $xdbConfig $hashKey.AttributeName }}
-            S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.{{ pascalize $hashKey.AttributeName }})),
+            {{- if attributeIsPointer $xdbConfig $hashKey.AttributeName }}
+              S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.{{ pascalize $hashKey.AttributeName }})),
+            {{- else }}
+              S: aws.String(toDynamoTimeString(input.StartingAfter.{{ pascalize $hashKey.AttributeName }})),
+            {{- end}}
+          {{- else if attributeIsEnum $xdbConfig $hashKey.AttributeName }}
+            S: aws.String(string({{if attributeIsPointer $xdbConfig $hashKey.AttributeName }}*{{end}}input.StartingAfter.{{ pascalize $hashKey.AttributeName }})),
           {{- else }}
-            S: aws.String(toDynamoTimeString(input.StartingAfter.{{ pascalize $hashKey.AttributeName }})),
-          {{- end}}
-          {{- else }}
-      S: aws.String({{if attributeIsPointer $xdbConfig $hashKey.AttributeName }}*{{end}}input.StartingAfter.{{ pascalize $hashKey.AttributeName }}),
+            S: aws.String({{if attributeIsPointer $xdbConfig $hashKey.AttributeName }}*{{end}}input.StartingAfter.{{ pascalize $hashKey.AttributeName }}),
           {{- end }}
         {{- else if eq $attrDynamoDBType "N" }}
       N: aws.String(fmt.Sprintf("%%d", *input.StartingAfter.{{ pascalize $hashKey.AttributeName }})),
