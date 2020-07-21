@@ -309,7 +309,7 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDate2(ctx 
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":branch": &dynamodb.AttributeValue{
-				S: aws.String(input.Branch),
+				S: aws.String(string(input.Branch)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
@@ -337,7 +337,7 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDate2(ctx 
 				S: aws.String(toDynamoTimeString(input.StartingAfter.Date2)),
 			},
 			"branch": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.Branch),
+				S: aws.String(string(input.StartingAfter.Branch)),
 			},
 			"date": &dynamodb.AttributeValue{
 				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
