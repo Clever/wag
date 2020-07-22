@@ -25,7 +25,7 @@ js-tests:
 
 jsdoc2md:
 	hash npm 2>/dev/null || (echo "Could not run npm, please install node" && false)
-	hash jsdoc2md 2>/dev/null || npm install -g jsdoc-to-markdown@^6.0.0
+	hash jsdoc2md 2>/dev/null || npm install -g jsdoc-to-markdown@^4.0.0
 
 go-generate:
 	go generate ./hardcoded/
