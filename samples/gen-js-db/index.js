@@ -320,7 +320,7 @@ class SwaggerTest {
 
       let retries = 0;
       (function requestOnce() {
-        request(requestOptions, async (err, response, body) => {
+        request(requestOptions, (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
