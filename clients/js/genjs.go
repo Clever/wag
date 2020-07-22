@@ -475,7 +475,7 @@ const methodTmplStr = `
   {{- end}}
       let retries = 0;
       (function requestOnce() {
-        request(requestOptions, (err, response, body) => {
+        request(requestOptions, async (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
@@ -511,7 +511,13 @@ const methodTmplStr = `
               if (saveResults) {
                 results = results.concat(body{{$.IterResourceAccessString}}.map(f));
               } else {
-                body{{$.IterResourceAccessString}}.forEach(f);
+								for (let i = 0; i < body{{$.IterResourceAccessString}}.length; i++) {
+									try {
+										await f(body{{$.IterResourceAccessString}}[i], i, body);
+									} catch(err) {
+										reject(err);
+									}
+								}
               }
               {{- else -}}
               resolve(body);

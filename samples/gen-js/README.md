@@ -9,11 +9,11 @@ swagger-test client library.
         * [new SwaggerTest(options)](#new_module_swagger-test--SwaggerTest_new)
         * _instance_
             * [.getAuthors(params, [options], [cb])](#module_swagger-test--SwaggerTest+getAuthors) ⇒ <code>Promise</code>
-            * [.getAuthorsIter(params, [options])](#module_swagger-test--SwaggerTest+getAuthorsIter) ⇒ <code>Object</code> &#124; <code>function</code> &#124; <code>function</code> &#124; <code>function</code>
+            * [.getAuthorsIter(params, [options])](#module_swagger-test--SwaggerTest+getAuthorsIter) ⇒ <code>Object</code> \| <code>function</code> \| <code>function</code> \| <code>function</code>
             * [.getAuthorsWithPut(params, [options], [cb])](#module_swagger-test--SwaggerTest+getAuthorsWithPut) ⇒ <code>Promise</code>
-            * [.getAuthorsWithPutIter(params, [options])](#module_swagger-test--SwaggerTest+getAuthorsWithPutIter) ⇒ <code>Object</code> &#124; <code>function</code> &#124; <code>function</code> &#124; <code>function</code>
+            * [.getAuthorsWithPutIter(params, [options])](#module_swagger-test--SwaggerTest+getAuthorsWithPutIter) ⇒ <code>Object</code> \| <code>function</code> \| <code>function</code> \| <code>function</code>
             * [.getBooks(params, [options], [cb])](#module_swagger-test--SwaggerTest+getBooks) ⇒ <code>Promise</code>
-            * [.getBooksIter(params, [options])](#module_swagger-test--SwaggerTest+getBooksIter) ⇒ <code>Object</code> &#124; <code>function</code> &#124; <code>function</code> &#124; <code>function</code>
+            * [.getBooksIter(params, [options])](#module_swagger-test--SwaggerTest+getBooksIter) ⇒ <code>Object</code> \| <code>function</code> \| <code>function</code> \| <code>function</code>
             * [.createBook(newBook, [options], [cb])](#module_swagger-test--SwaggerTest+createBook) ⇒ <code>Promise</code>
             * [.putBook(newBook, [options], [cb])](#module_swagger-test--SwaggerTest+putBook) ⇒ <code>Promise</code>
             * [.getBookByID(params, [options], [cb])](#module_swagger-test--SwaggerTest+getBookByID) ⇒ <code>Promise</code>
@@ -50,7 +50,7 @@ Create a new client object.
 | [options.discovery] | <code>bool</code> |  | Use clever-discovery to locate the server. Must provide this or the address argument |
 | [options.timeout] | <code>number</code> |  | The timeout to use for all client requests, in milliseconds. This can be overridden on a per-request basis. Default is 5000ms. |
 | [options.keepalive] | <code>bool</code> |  | Set keepalive to true for client requests. This sets the forever: true attribute in request. Defaults to true. |
-| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | <code>RetryPolicies.Single</code> | The logic to determine which requests to retry, as well as how many times to retry. |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | <code>RetryPolicies.Single</code> | The logic to determine which requests to retry, as well as how many times to retry. |
 | [options.logger] | <code>module:kayvee.Logger</code> | <code>logger.New(&quot;swagger-test-wagclient&quot;)</code> | The Kayvee logger to use in the client. |
 | [options.circuit] | <code>Object</code> |  | Options for constructing the client's circuit breaker. |
 | [options.circuit.forceClosed] | <code>bool</code> |  | When set to true the circuit will always be closed. Default: true. |
@@ -64,10 +64,10 @@ Create a new client object.
 #### swaggerTest.getAuthors(params, [options], [cb]) ⇒ <code>Promise</code>
 Gets authors
 
-**Kind**: instance method of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
+**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 **Fulfill**: <code>Object</code>  
-**Reject**: <code>[BadRequest](#module_swagger-test--SwaggerTest.Errors.BadRequest)</code>  
-**Reject**: <code>[InternalError](#module_swagger-test--SwaggerTest.Errors.InternalError)</code>  
+**Reject**: [<code>BadRequest</code>](#module_swagger-test--SwaggerTest.Errors.BadRequest)  
+**Reject**: [<code>InternalError</code>](#module_swagger-test--SwaggerTest.Errors.InternalError)  
 **Reject**: <code>Error</code>  
 
 | Param | Type | Description |
@@ -77,16 +77,16 @@ Gets authors
 | [params.startingAfter] | <code>string</code> |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.span] | <code>[Span](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html)</code> | An OpenTracing span - For example from the parent request |
-| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | A request specific retryPolicy |
+| [options.span] | [<code>Span</code>](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html) | An OpenTracing span - For example from the parent request |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
 <a name="module_swagger-test--SwaggerTest+getAuthorsIter"></a>
 
-#### swaggerTest.getAuthorsIter(params, [options]) ⇒ <code>Object</code> &#124; <code>function</code> &#124; <code>function</code> &#124; <code>function</code>
+#### swaggerTest.getAuthorsIter(params, [options]) ⇒ <code>Object</code> \| <code>function</code> \| <code>function</code> \| <code>function</code>
 Gets authors
 
-**Kind**: instance method of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
+**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 **Returns**: <code>Object</code> - iter<code>function</code> - iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array<code>function</code> - iter.toArray - returns a promise to the resources as an array<code>function</code> - iter.forEach - takes in a function, applies it to each resource  
 
 | Param | Type | Description |
@@ -96,18 +96,18 @@ Gets authors
 | [params.startingAfter] | <code>string</code> |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.span] | <code>[Span](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html)</code> | An OpenTracing span - For example from the parent request |
-| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | A request specific retryPolicy |
+| [options.span] | [<code>Span</code>](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html) | An OpenTracing span - For example from the parent request |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 
 <a name="module_swagger-test--SwaggerTest+getAuthorsWithPut"></a>
 
 #### swaggerTest.getAuthorsWithPut(params, [options], [cb]) ⇒ <code>Promise</code>
 Gets authors, but needs to use the body so it's a PUT
 
-**Kind**: instance method of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
+**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 **Fulfill**: <code>Object</code>  
-**Reject**: <code>[BadRequest](#module_swagger-test--SwaggerTest.Errors.BadRequest)</code>  
-**Reject**: <code>[InternalError](#module_swagger-test--SwaggerTest.Errors.InternalError)</code>  
+**Reject**: [<code>BadRequest</code>](#module_swagger-test--SwaggerTest.Errors.BadRequest)  
+**Reject**: [<code>InternalError</code>](#module_swagger-test--SwaggerTest.Errors.InternalError)  
 **Reject**: <code>Error</code>  
 
 | Param | Type | Description |
@@ -118,16 +118,16 @@ Gets authors, but needs to use the body so it's a PUT
 | [params.favoriteBooks] |  |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.span] | <code>[Span](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html)</code> | An OpenTracing span - For example from the parent request |
-| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | A request specific retryPolicy |
+| [options.span] | [<code>Span</code>](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html) | An OpenTracing span - For example from the parent request |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
 <a name="module_swagger-test--SwaggerTest+getAuthorsWithPutIter"></a>
 
-#### swaggerTest.getAuthorsWithPutIter(params, [options]) ⇒ <code>Object</code> &#124; <code>function</code> &#124; <code>function</code> &#124; <code>function</code>
+#### swaggerTest.getAuthorsWithPutIter(params, [options]) ⇒ <code>Object</code> \| <code>function</code> \| <code>function</code> \| <code>function</code>
 Gets authors, but needs to use the body so it's a PUT
 
-**Kind**: instance method of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
+**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 **Returns**: <code>Object</code> - iter<code>function</code> - iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array<code>function</code> - iter.toArray - returns a promise to the resources as an array<code>function</code> - iter.forEach - takes in a function, applies it to each resource  
 
 | Param | Type | Description |
@@ -138,18 +138,18 @@ Gets authors, but needs to use the body so it's a PUT
 | [params.favoriteBooks] |  |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.span] | <code>[Span](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html)</code> | An OpenTracing span - For example from the parent request |
-| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | A request specific retryPolicy |
+| [options.span] | [<code>Span</code>](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html) | An OpenTracing span - For example from the parent request |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 
 <a name="module_swagger-test--SwaggerTest+getBooks"></a>
 
 #### swaggerTest.getBooks(params, [options], [cb]) ⇒ <code>Promise</code>
 Returns a list of books
 
-**Kind**: instance method of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
+**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 **Fulfill**: <code>Object[]</code>  
-**Reject**: <code>[BadRequest](#module_swagger-test--SwaggerTest.Errors.BadRequest)</code>  
-**Reject**: <code>[InternalError](#module_swagger-test--SwaggerTest.Errors.InternalError)</code>  
+**Reject**: [<code>BadRequest</code>](#module_swagger-test--SwaggerTest.Errors.BadRequest)  
+**Reject**: [<code>InternalError</code>](#module_swagger-test--SwaggerTest.Errors.InternalError)  
 **Reject**: <code>Error</code>  
 
 | Param | Type | Default | Description |
@@ -168,16 +168,16 @@ Returns a list of books
 | [params.startingAfter] | <code>number</code> |  |  |
 | [options] | <code>object</code> |  |  |
 | [options.timeout] | <code>number</code> |  | A request specific timeout |
-| [options.span] | <code>[Span](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html)</code> |  | An OpenTracing span - For example from the parent request |
-| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> |  | A request specific retryPolicy |
+| [options.span] | [<code>Span</code>](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html) |  | An OpenTracing span - For example from the parent request |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) |  | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |  |
 
 <a name="module_swagger-test--SwaggerTest+getBooksIter"></a>
 
-#### swaggerTest.getBooksIter(params, [options]) ⇒ <code>Object</code> &#124; <code>function</code> &#124; <code>function</code> &#124; <code>function</code>
+#### swaggerTest.getBooksIter(params, [options]) ⇒ <code>Object</code> \| <code>function</code> \| <code>function</code> \| <code>function</code>
 Returns a list of books
 
-**Kind**: instance method of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
+**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 **Returns**: <code>Object</code> - iter<code>function</code> - iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array<code>function</code> - iter.toArray - returns a promise to the resources as an array<code>function</code> - iter.forEach - takes in a function, applies it to each resource  
 
 | Param | Type | Default | Description |
@@ -196,18 +196,18 @@ Returns a list of books
 | [params.startingAfter] | <code>number</code> |  |  |
 | [options] | <code>object</code> |  |  |
 | [options.timeout] | <code>number</code> |  | A request specific timeout |
-| [options.span] | <code>[Span](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html)</code> |  | An OpenTracing span - For example from the parent request |
-| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> |  | A request specific retryPolicy |
+| [options.span] | [<code>Span</code>](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html) |  | An OpenTracing span - For example from the parent request |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) |  | A request specific retryPolicy |
 
 <a name="module_swagger-test--SwaggerTest+createBook"></a>
 
 #### swaggerTest.createBook(newBook, [options], [cb]) ⇒ <code>Promise</code>
 Creates a book
 
-**Kind**: instance method of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
+**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 **Fulfill**: <code>Object</code>  
-**Reject**: <code>[BadRequest](#module_swagger-test--SwaggerTest.Errors.BadRequest)</code>  
-**Reject**: <code>[InternalError](#module_swagger-test--SwaggerTest.Errors.InternalError)</code>  
+**Reject**: [<code>BadRequest</code>](#module_swagger-test--SwaggerTest.Errors.BadRequest)  
+**Reject**: [<code>InternalError</code>](#module_swagger-test--SwaggerTest.Errors.InternalError)  
 **Reject**: <code>Error</code>  
 
 | Param | Type | Description |
@@ -215,8 +215,8 @@ Creates a book
 | newBook |  |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.span] | <code>[Span](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html)</code> | An OpenTracing span - For example from the parent request |
-| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | A request specific retryPolicy |
+| [options.span] | [<code>Span</code>](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html) | An OpenTracing span - For example from the parent request |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
 <a name="module_swagger-test--SwaggerTest+putBook"></a>
@@ -224,10 +224,10 @@ Creates a book
 #### swaggerTest.putBook(newBook, [options], [cb]) ⇒ <code>Promise</code>
 Puts a book
 
-**Kind**: instance method of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
+**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 **Fulfill**: <code>Object</code>  
-**Reject**: <code>[BadRequest](#module_swagger-test--SwaggerTest.Errors.BadRequest)</code>  
-**Reject**: <code>[InternalError](#module_swagger-test--SwaggerTest.Errors.InternalError)</code>  
+**Reject**: [<code>BadRequest</code>](#module_swagger-test--SwaggerTest.Errors.BadRequest)  
+**Reject**: [<code>InternalError</code>](#module_swagger-test--SwaggerTest.Errors.InternalError)  
 **Reject**: <code>Error</code>  
 
 | Param | Type | Description |
@@ -235,8 +235,8 @@ Puts a book
 | newBook |  |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.span] | <code>[Span](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html)</code> | An OpenTracing span - For example from the parent request |
-| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | A request specific retryPolicy |
+| [options.span] | [<code>Span</code>](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html) | An OpenTracing span - For example from the parent request |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
 <a name="module_swagger-test--SwaggerTest+getBookByID"></a>
@@ -244,12 +244,12 @@ Puts a book
 #### swaggerTest.getBookByID(params, [options], [cb]) ⇒ <code>Promise</code>
 Returns a book
 
-**Kind**: instance method of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
+**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 **Fulfill**: <code>Object</code>  
-**Reject**: <code>[BadRequest](#module_swagger-test--SwaggerTest.Errors.BadRequest)</code>  
-**Reject**: <code>[Unathorized](#module_swagger-test--SwaggerTest.Errors.Unathorized)</code>  
-**Reject**: <code>[Error](#module_swagger-test--SwaggerTest.Errors.Error)</code>  
-**Reject**: <code>[InternalError](#module_swagger-test--SwaggerTest.Errors.InternalError)</code>  
+**Reject**: [<code>BadRequest</code>](#module_swagger-test--SwaggerTest.Errors.BadRequest)  
+**Reject**: [<code>Unathorized</code>](#module_swagger-test--SwaggerTest.Errors.Unathorized)  
+**Reject**: [<code>Error</code>](#module_swagger-test--SwaggerTest.Errors.Error)  
+**Reject**: [<code>InternalError</code>](#module_swagger-test--SwaggerTest.Errors.InternalError)  
 **Reject**: <code>Error</code>  
 
 | Param | Type | Description |
@@ -262,8 +262,8 @@ Returns a book
 | [params.randomBytes] | <code>string</code> |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.span] | <code>[Span](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html)</code> | An OpenTracing span - For example from the parent request |
-| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | A request specific retryPolicy |
+| [options.span] | [<code>Span</code>](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html) | An OpenTracing span - For example from the parent request |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
 <a name="module_swagger-test--SwaggerTest+getBookByID2"></a>
@@ -271,11 +271,11 @@ Returns a book
 #### swaggerTest.getBookByID2(id, [options], [cb]) ⇒ <code>Promise</code>
 Retrieve a book
 
-**Kind**: instance method of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
+**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 **Fulfill**: <code>Object</code>  
-**Reject**: <code>[BadRequest](#module_swagger-test--SwaggerTest.Errors.BadRequest)</code>  
-**Reject**: <code>[Error](#module_swagger-test--SwaggerTest.Errors.Error)</code>  
-**Reject**: <code>[InternalError](#module_swagger-test--SwaggerTest.Errors.InternalError)</code>  
+**Reject**: [<code>BadRequest</code>](#module_swagger-test--SwaggerTest.Errors.BadRequest)  
+**Reject**: [<code>Error</code>](#module_swagger-test--SwaggerTest.Errors.Error)  
+**Reject**: [<code>InternalError</code>](#module_swagger-test--SwaggerTest.Errors.InternalError)  
 **Reject**: <code>Error</code>  
 
 | Param | Type | Description |
@@ -283,25 +283,25 @@ Retrieve a book
 | id | <code>string</code> |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.span] | <code>[Span](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html)</code> | An OpenTracing span - For example from the parent request |
-| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | A request specific retryPolicy |
+| [options.span] | [<code>Span</code>](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html) | An OpenTracing span - For example from the parent request |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
 <a name="module_swagger-test--SwaggerTest+healthCheck"></a>
 
 #### swaggerTest.healthCheck([options], [cb]) ⇒ <code>Promise</code>
-**Kind**: instance method of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
+**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 **Fulfill**: <code>undefined</code>  
-**Reject**: <code>[BadRequest](#module_swagger-test--SwaggerTest.Errors.BadRequest)</code>  
-**Reject**: <code>[InternalError](#module_swagger-test--SwaggerTest.Errors.InternalError)</code>  
+**Reject**: [<code>BadRequest</code>](#module_swagger-test--SwaggerTest.Errors.BadRequest)  
+**Reject**: [<code>InternalError</code>](#module_swagger-test--SwaggerTest.Errors.InternalError)  
 **Reject**: <code>Error</code>  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.span] | <code>[Span](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html)</code> | An OpenTracing span - For example from the parent request |
-| [options.retryPolicy] | <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code> | A request specific retryPolicy |
+| [options.span] | [<code>Span</code>](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html) | An OpenTracing span - For example from the parent request |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
 <a name="module_swagger-test--SwaggerTest.RetryPolicies"></a>
@@ -309,7 +309,7 @@ Retrieve a book
 #### SwaggerTest.RetryPolicies
 Retry policies available to use.
 
-**Kind**: static property of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
+**Kind**: static property of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 
 * [.RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)
     * [.Exponential](#module_swagger-test--SwaggerTest.RetryPolicies.Exponential)
@@ -321,25 +321,25 @@ Retry policies available to use.
 ##### RetryPolicies.Exponential
 The exponential retry policy will retry five times with an exponential backoff.
 
-**Kind**: static constant of <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code>  
+**Kind**: static constant of [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies)  
 <a name="module_swagger-test--SwaggerTest.RetryPolicies.Single"></a>
 
 ##### RetryPolicies.Single
 Use this retry policy to retry a request once.
 
-**Kind**: static constant of <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code>  
+**Kind**: static constant of [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies)  
 <a name="module_swagger-test--SwaggerTest.RetryPolicies.None"></a>
 
 ##### RetryPolicies.None
 Use this retry policy to turn off retries.
 
-**Kind**: static constant of <code>[RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)</code>  
+**Kind**: static constant of [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies)  
 <a name="module_swagger-test--SwaggerTest.Errors"></a>
 
 #### SwaggerTest.Errors
 Errors returned by methods.
 
-**Kind**: static property of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
+**Kind**: static property of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 
 * [.Errors](#module_swagger-test--SwaggerTest.Errors)
     * [.BadRequest](#module_swagger-test--SwaggerTest.Errors.BadRequest) ⇐ <code>Error</code>
@@ -352,8 +352,8 @@ Errors returned by methods.
 ##### Errors.BadRequest ⇐ <code>Error</code>
 BadRequest
 
-**Kind**: static class of <code>[Errors](#module_swagger-test--SwaggerTest.Errors)</code>  
-**Extends:** <code>Error</code>  
+**Kind**: static class of [<code>Errors</code>](#module_swagger-test--SwaggerTest.Errors)  
+**Extends**: <code>Error</code>  
 **Properties**
 
 | Name | Type |
@@ -365,8 +365,8 @@ BadRequest
 ##### Errors.InternalError ⇐ <code>Error</code>
 InternalError
 
-**Kind**: static class of <code>[Errors](#module_swagger-test--SwaggerTest.Errors)</code>  
-**Extends:** <code>Error</code>  
+**Kind**: static class of [<code>Errors</code>](#module_swagger-test--SwaggerTest.Errors)  
+**Extends**: <code>Error</code>  
 **Properties**
 
 | Name | Type |
@@ -378,8 +378,8 @@ InternalError
 ##### Errors.Unathorized ⇐ <code>Error</code>
 Unathorized
 
-**Kind**: static class of <code>[Errors](#module_swagger-test--SwaggerTest.Errors)</code>  
-**Extends:** <code>Error</code>  
+**Kind**: static class of [<code>Errors</code>](#module_swagger-test--SwaggerTest.Errors)  
+**Extends**: <code>Error</code>  
 **Properties**
 
 | Name | Type |
@@ -391,8 +391,8 @@ Unathorized
 ##### Errors.Error ⇐ <code>Error</code>
 Error
 
-**Kind**: static class of <code>[Errors](#module_swagger-test--SwaggerTest.Errors)</code>  
-**Extends:** <code>Error</code>  
+**Kind**: static class of [<code>Errors</code>](#module_swagger-test--SwaggerTest.Errors)  
+**Extends**: <code>Error</code>  
 **Properties**
 
 | Name | Type |
@@ -405,4 +405,4 @@ Error
 #### SwaggerTest.DefaultCircuitOptions
 Default circuit breaker options.
 
-**Kind**: static constant of <code>[SwaggerTest](#exp_module_swagger-test--SwaggerTest)</code>  
+**Kind**: static constant of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  

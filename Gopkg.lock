@@ -654,14 +654,6 @@
   revision = "9856a29383ce1c59f308dd1cf0363a79b5bef6b5"
 
 [[projects]]
-  digest = "1:8143ea52154df4cf52589d780ad447f625978a4c29713200842ccaa7c532350a"
-  name = "gopkg.in/tylerb/graceful.v1"
-  packages = ["."]
-  pruneopts = ""
-  revision = "4654dfbb6ad53cb5e27f37d99b02e16c1872fbbb"
-  version = "v1.2.15"
-
-[[projects]]
   branch = "v2"
   digest = "1:4b4e5848dfe7f316f95f754df071bebfb40cf4482da62e17e7e1aebdf11f4918"
   name = "gopkg.in/yaml.v2"
@@ -719,7 +711,6 @@
     "gopkg.in/Clever/kayvee-go.v6/logger",
     "gopkg.in/Clever/kayvee-go.v6/middleware",
     "gopkg.in/mgo.v2/bson",
-    "gopkg.in/tylerb/graceful.v1",
     "gopkg.in/yaml.v2",
   ]
   solver-name = "gps-cdcl"

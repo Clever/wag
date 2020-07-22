@@ -330,7 +330,7 @@ class SwaggerTest {
 
       let retries = 0;
       (function requestOnce() {
-        request(requestOptions, (err, response, body) => {
+        request(requestOptions, async (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
@@ -446,7 +446,7 @@ class SwaggerTest {
       const address = this.address;
       let retries = 0;
       (function requestOnce() {
-        request(requestOptions, (err, response, body) => {
+        request(requestOptions, async (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
@@ -465,7 +465,13 @@ class SwaggerTest {
               if (saveResults) {
                 results = results.concat(body.authorSet.results.map(f));
               } else {
-                body.authorSet.results.forEach(f);
+								for (let i = 0; i < body.authorSet.results.length; i++) {
+									try {
+										await f(body.authorSet.results[i], i, body);
+									} catch(err) {
+										reject(err);
+									}
+								}
               }
               break;
 
@@ -602,7 +608,7 @@ class SwaggerTest {
 
       let retries = 0;
       (function requestOnce() {
-        request(requestOptions, (err, response, body) => {
+        request(requestOptions, async (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
@@ -721,7 +727,7 @@ class SwaggerTest {
       const address = this.address;
       let retries = 0;
       (function requestOnce() {
-        request(requestOptions, (err, response, body) => {
+        request(requestOptions, async (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
@@ -740,7 +746,13 @@ class SwaggerTest {
               if (saveResults) {
                 results = results.concat(body.authorSet.results.map(f));
               } else {
-                body.authorSet.results.forEach(f);
+								for (let i = 0; i < body.authorSet.results.length; i++) {
+									try {
+										await f(body.authorSet.results[i], i, body);
+									} catch(err) {
+										reject(err);
+									}
+								}
               }
               break;
 
@@ -916,7 +928,7 @@ class SwaggerTest {
 
       let retries = 0;
       (function requestOnce() {
-        request(requestOptions, (err, response, body) => {
+        request(requestOptions, async (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
@@ -1074,7 +1086,7 @@ class SwaggerTest {
       const address = this.address;
       let retries = 0;
       (function requestOnce() {
-        request(requestOptions, (err, response, body) => {
+        request(requestOptions, async (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
@@ -1093,7 +1105,13 @@ class SwaggerTest {
               if (saveResults) {
                 results = results.concat(body.map(f));
               } else {
-                body.forEach(f);
+								for (let i = 0; i < body.length; i++) {
+									try {
+										await f(body[i], i, body);
+									} catch(err) {
+										reject(err);
+									}
+								}
               }
               break;
 
@@ -1222,7 +1240,7 @@ class SwaggerTest {
 
       let retries = 0;
       (function requestOnce() {
-        request(requestOptions, (err, response, body) => {
+        request(requestOptions, async (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
@@ -1339,7 +1357,7 @@ class SwaggerTest {
 
       let retries = 0;
       (function requestOnce() {
-        request(requestOptions, (err, response, body) => {
+        request(requestOptions, async (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
@@ -1472,7 +1490,7 @@ class SwaggerTest {
 
       let retries = 0;
       (function requestOnce() {
-        request(requestOptions, (err, response, body) => {
+        request(requestOptions, async (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
@@ -1604,7 +1622,7 @@ class SwaggerTest {
 
       let retries = 0;
       (function requestOnce() {
-        request(requestOptions, (err, response, body) => {
+        request(requestOptions, async (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
@@ -1722,7 +1740,7 @@ class SwaggerTest {
 
       let retries = 0;
       (function requestOnce() {
-        request(requestOptions, (err, response, body) => {
+        request(requestOptions, async (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
