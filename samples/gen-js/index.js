@@ -465,13 +465,13 @@ class SwaggerTest {
               if (saveResults) {
                 results = results.concat(body.authorSet.results.map(f));
               } else {
-								for (let i = 0; i < body.authorSet.results.length; i++) {
-									try {
-										await f(body.authorSet.results[i], i, body);
-									} catch(err) {
-										reject(err);
-									}
-								}
+                for (let i = 0; i < body.authorSet.results.length; i++) {
+                  try {
+                    await f(body.authorSet.results[i], i, body);
+                  } catch(err) {
+                    reject(err);
+                  }
+                }
               }
               break;
 
@@ -746,13 +746,13 @@ class SwaggerTest {
               if (saveResults) {
                 results = results.concat(body.authorSet.results.map(f));
               } else {
-								for (let i = 0; i < body.authorSet.results.length; i++) {
-									try {
-										await f(body.authorSet.results[i], i, body);
-									} catch(err) {
-										reject(err);
-									}
-								}
+                for (let i = 0; i < body.authorSet.results.length; i++) {
+                  try {
+                    await f(body.authorSet.results[i], i, body);
+                  } catch(err) {
+                    reject(err);
+                  }
+                }
               }
               break;
 
@@ -1105,13 +1105,13 @@ class SwaggerTest {
               if (saveResults) {
                 results = results.concat(body.map(f));
               } else {
-								for (let i = 0; i < body.length; i++) {
-									try {
-										await f(body[i], i, body);
-									} catch(err) {
-										reject(err);
-									}
-								}
+                for (let i = 0; i < body.length; i++) {
+                  try {
+                    await f(body[i], i, body);
+                  } catch(err) {
+                    reject(err);
+                  }
+                }
               }
               break;
 

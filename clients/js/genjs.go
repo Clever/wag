@@ -511,13 +511,13 @@ const methodTmplStr = `
               if (saveResults) {
                 results = results.concat(body{{$.IterResourceAccessString}}.map(f));
               } else {
-								for (let i = 0; i < body{{$.IterResourceAccessString}}.length; i++) {
-									try {
-										await f(body{{$.IterResourceAccessString}}[i], i, body);
-									} catch(err) {
-										reject(err);
-									}
-								}
+                for (let i = 0; i < body{{$.IterResourceAccessString}}.length; i++) {
+                  try {
+                    await f(body{{$.IterResourceAccessString}}[i], i, body);
+                  } catch(err) {
+                    reject(err);
+                  }
+                }
               }
               {{- else -}}
               resolve(body);
