@@ -1,5 +1,5 @@
-v3.22.3
-- v3.22.3: fix client iterator forEach method to work with async functions
+v3.23.0
+- v3.23.0: add forEachAsync method for JS clients
 - v3.22.2: Fix for enum hash keys in GSIs
 - v3.22.1: Fix for enum hash keys
 - v3.22.0: Use http.Server.Shutdown for graceful end of life handling
