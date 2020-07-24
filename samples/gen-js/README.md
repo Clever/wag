@@ -87,7 +87,7 @@ Gets authors
 Gets authors
 
 **Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
-**Returns**: <code>Object</code> - iter<code>function</code> - iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array<code>function</code> - iter.toArray - returns a promise to the resources as an array<code>function</code> - iter.forEach - takes in a function, applies it to each resource<code>function</code> - iter.forEachAsync - takes in a, async function, applies it to each resource  
+**Returns**: <code>Object</code> - iter<code>function</code> - iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array<code>function</code> - iter.toArray - returns a promise to the resources as an array<code>function</code> - iter.forEach - takes in a function, applies it to each resource<code>function</code> - iter.forEachAsync - takes in an async function, applies it to each resource  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -128,7 +128,7 @@ Gets authors, but needs to use the body so it's a PUT
 Gets authors, but needs to use the body so it's a PUT
 
 **Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
-**Returns**: <code>Object</code> - iter<code>function</code> - iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array<code>function</code> - iter.toArray - returns a promise to the resources as an array<code>function</code> - iter.forEach - takes in a function, applies it to each resource<code>function</code> - iter.forEachAsync - takes in a, async function, applies it to each resource  
+**Returns**: <code>Object</code> - iter<code>function</code> - iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array<code>function</code> - iter.toArray - returns a promise to the resources as an array<code>function</code> - iter.forEach - takes in a function, applies it to each resource<code>function</code> - iter.forEachAsync - takes in an async function, applies it to each resource  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -178,7 +178,7 @@ Returns a list of books
 Returns a list of books
 
 **Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
-**Returns**: <code>Object</code> - iter<code>function</code> - iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array<code>function</code> - iter.toArray - returns a promise to the resources as an array<code>function</code> - iter.forEach - takes in a function, applies it to each resource<code>function</code> - iter.forEachAsync - takes in a, async function, applies it to each resource  
+**Returns**: <code>Object</code> - iter<code>function</code> - iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array<code>function</code> - iter.toArray - returns a promise to the resources as an array<code>function</code> - iter.forEach - takes in a function, applies it to each resource<code>function</code> - iter.forEachAsync - takes in an async function, applies it to each resource  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |

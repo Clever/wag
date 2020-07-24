@@ -386,7 +386,7 @@ class SwaggerTest {
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
    * @returns {function} iter.toArray - returns a promise to the resources as an array
    * @returns {function} iter.forEach - takes in a function, applies it to each resource
-   * @returns {function} iter.forEachAsync - takes in a, async function, applies it to each resource
+   * @returns {function} iter.forEachAsync - takes in an async function, applies it to each resource
    */
   getAuthorsIter(params, options) {
     const it = (f, saveResults, isAsync) => new Promise((resolve, reject) => {
@@ -671,7 +671,7 @@ class SwaggerTest {
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
    * @returns {function} iter.toArray - returns a promise to the resources as an array
    * @returns {function} iter.forEach - takes in a function, applies it to each resource
-   * @returns {function} iter.forEachAsync - takes in a, async function, applies it to each resource
+   * @returns {function} iter.forEachAsync - takes in an async function, applies it to each resource
    */
   getAuthorsWithPutIter(params, options) {
     const it = (f, saveResults, isAsync) => new Promise((resolve, reject) => {
@@ -1005,7 +1005,7 @@ class SwaggerTest {
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
    * @returns {function} iter.toArray - returns a promise to the resources as an array
    * @returns {function} iter.forEach - takes in a function, applies it to each resource
-   * @returns {function} iter.forEachAsync - takes in a, async function, applies it to each resource
+   * @returns {function} iter.forEachAsync - takes in an async function, applies it to each resource
    */
   getBooksIter(params, options) {
     const it = (f, saveResults, isAsync) => new Promise((resolve, reject) => {

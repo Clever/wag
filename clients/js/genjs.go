@@ -631,7 +631,7 @@ const pluralParamMethodDefinitionTemplateString = `/**{{if .Description}}
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
    * @returns {function} iter.toArray - returns a promise to the resources as an array
    * @returns {function} iter.forEach - takes in a function, applies it to each resource
-   * @returns {function} iter.forEachAsync - takes in a, async function, applies it to each resource
+   * @returns {function} iter.forEachAsync - takes in an async function, applies it to each resource
    {{- else}}
    * @param {function} [cb]
    * @returns {Promise}
