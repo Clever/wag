@@ -38,7 +38,7 @@ Create a new client object.
 | [options.discovery] | <code>bool</code> |  | Use clever-discovery to locate the server. Must provide this or the address argument |
 | [options.timeout] | <code>number</code> |  | The timeout to use for all client requests, in milliseconds. This can be overridden on a per-request basis. Default is 5000ms. |
 | [options.keepalive] | <code>bool</code> |  | Set keepalive to true for client requests. This sets the forever: true attribute in request. Defaults to true. |
-| [options.retryPolicy] | <code>[RetryPolicies](#module_blog--Blog.RetryPolicies)</code> | <code>RetryPolicies.Single</code> | The logic to determine which requests to retry, as well as how many times to retry. |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_blog--Blog.RetryPolicies) | <code>RetryPolicies.Single</code> | The logic to determine which requests to retry, as well as how many times to retry. |
 | [options.logger] | <code>module:kayvee.Logger</code> | <code>logger.New(&quot;blog-wagclient&quot;)</code> | The Kayvee logger to use in the client. |
 | [options.circuit] | <code>Object</code> |  | Options for constructing the client's circuit breaker. |
 | [options.circuit.forceClosed] | <code>bool</code> |  | When set to true the circuit will always be closed. Default: true. |
@@ -52,10 +52,10 @@ Create a new client object.
 #### blog.getSectionsForStudent(studentID, [options], [cb]) ⇒ <code>Promise</code>
 Gets the sections for the specified student
 
-**Kind**: instance method of <code>[Blog](#exp_module_blog--Blog)</code>  
+**Kind**: instance method of [<code>Blog</code>](#exp_module_blog--Blog)  
 **Fulfill**: <code>Object[]</code>  
-**Reject**: <code>[BadRequest](#module_blog--Blog.Errors.BadRequest)</code>  
-**Reject**: <code>[InternalError](#module_blog--Blog.Errors.InternalError)</code>  
+**Reject**: [<code>BadRequest</code>](#module_blog--Blog.Errors.BadRequest)  
+**Reject**: [<code>InternalError</code>](#module_blog--Blog.Errors.InternalError)  
 **Reject**: <code>Error</code>  
 
 | Param | Type | Description |
@@ -63,8 +63,8 @@ Gets the sections for the specified student
 | studentID | <code>string</code> |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.span] | <code>[Span](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html)</code> | An OpenTracing span - For example from the parent request |
-| [options.retryPolicy] | <code>[RetryPolicies](#module_blog--Blog.RetryPolicies)</code> | A request specific retryPolicy |
+| [options.span] | [<code>Span</code>](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html) | An OpenTracing span - For example from the parent request |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_blog--Blog.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
 <a name="module_blog--Blog.RetryPolicies"></a>
@@ -72,7 +72,7 @@ Gets the sections for the specified student
 #### Blog.RetryPolicies
 Retry policies available to use.
 
-**Kind**: static property of <code>[Blog](#exp_module_blog--Blog)</code>  
+**Kind**: static property of [<code>Blog</code>](#exp_module_blog--Blog)  
 
 * [.RetryPolicies](#module_blog--Blog.RetryPolicies)
     * [.Exponential](#module_blog--Blog.RetryPolicies.Exponential)
@@ -84,25 +84,25 @@ Retry policies available to use.
 ##### RetryPolicies.Exponential
 The exponential retry policy will retry five times with an exponential backoff.
 
-**Kind**: static constant of <code>[RetryPolicies](#module_blog--Blog.RetryPolicies)</code>  
+**Kind**: static constant of [<code>RetryPolicies</code>](#module_blog--Blog.RetryPolicies)  
 <a name="module_blog--Blog.RetryPolicies.Single"></a>
 
 ##### RetryPolicies.Single
 Use this retry policy to retry a request once.
 
-**Kind**: static constant of <code>[RetryPolicies](#module_blog--Blog.RetryPolicies)</code>  
+**Kind**: static constant of [<code>RetryPolicies</code>](#module_blog--Blog.RetryPolicies)  
 <a name="module_blog--Blog.RetryPolicies.None"></a>
 
 ##### RetryPolicies.None
 Use this retry policy to turn off retries.
 
-**Kind**: static constant of <code>[RetryPolicies](#module_blog--Blog.RetryPolicies)</code>  
+**Kind**: static constant of [<code>RetryPolicies</code>](#module_blog--Blog.RetryPolicies)  
 <a name="module_blog--Blog.Errors"></a>
 
 #### Blog.Errors
 Errors returned by methods.
 
-**Kind**: static property of <code>[Blog](#exp_module_blog--Blog)</code>  
+**Kind**: static property of [<code>Blog</code>](#exp_module_blog--Blog)  
 
 * [.Errors](#module_blog--Blog.Errors)
     * [.BadRequest](#module_blog--Blog.Errors.BadRequest) ⇐ <code>Error</code>
@@ -113,8 +113,8 @@ Errors returned by methods.
 ##### Errors.BadRequest ⇐ <code>Error</code>
 BadRequest
 
-**Kind**: static class of <code>[Errors](#module_blog--Blog.Errors)</code>  
-**Extends:** <code>Error</code>  
+**Kind**: static class of [<code>Errors</code>](#module_blog--Blog.Errors)  
+**Extends**: <code>Error</code>  
 **Properties**
 
 | Name | Type |
@@ -126,8 +126,8 @@ BadRequest
 ##### Errors.InternalError ⇐ <code>Error</code>
 InternalError
 
-**Kind**: static class of <code>[Errors](#module_blog--Blog.Errors)</code>  
-**Extends:** <code>Error</code>  
+**Kind**: static class of [<code>Errors</code>](#module_blog--Blog.Errors)  
+**Extends**: <code>Error</code>  
 **Properties**
 
 | Name | Type |
@@ -139,4 +139,4 @@ InternalError
 #### Blog.DefaultCircuitOptions
 Default circuit breaker options.
 
-**Kind**: static constant of <code>[Blog](#exp_module_blog--Blog)</code>  
+**Kind**: static constant of [<code>Blog</code>](#exp_module_blog--Blog)  

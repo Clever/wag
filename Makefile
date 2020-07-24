@@ -1,7 +1,7 @@
 include golang.mk
 include node.mk
 .DEFAULT_GOAL := test # override default goal set in library makefile
-NODE_VERSION := "v6"
+NODE_VERSION := "v7"
 $(eval $(call node-version-check,$(NODE_VERSION)))
 
 export PATH := $(PWD)/bin:$(PATH)
@@ -25,7 +25,7 @@ js-tests:
 
 jsdoc2md:
 	hash npm 2>/dev/null || (echo "Could not run npm, please install node" && false)
-	hash jsdoc2md 2>/dev/null || npm install -g jsdoc-to-markdown@^2.0.0
+	hash jsdoc2md 2>/dev/null || npm install -g jsdoc-to-markdown@^4.0.0
 
 go-generate:
 	go generate ./hardcoded/

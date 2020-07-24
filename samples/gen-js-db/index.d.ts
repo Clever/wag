@@ -19,6 +19,7 @@ interface IterResult<R> {
   map<T>(f: (r: R) => T, cb?: Callback<T[]>): Promise<T[]>;
   toArray(cb?: Callback<R[]>): Promise<R[]>;
   forEach(f: (r: R) => void, cb?: Callback<void>): Promise<void>;
+  forEachAsync(f: (r: R) => void, cb?: Callback<void>): Promise<void>;
 }
 
 interface CircuitOptions {

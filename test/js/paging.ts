@@ -48,6 +48,58 @@ describe("paging", function() {
     assert(scopeSecond.isDone());
   });
 
+  it("iterators forEach does not support async callback", async () => {
+    const sleep = (ms: any) => new Promise((resolve) => setTimeout(resolve, ms));
+    const c = new Client({address: mockAddress});
+    const scopeFirst = nock(mockAddress)
+      .get("/v1/books")
+      .reply(
+        200,
+        [{id: 1, name: "first"}, {id: 2, name: "second"}],
+        {"X-Next-Page-Path": "/v1/books?startingAfter=2"},
+      );
+    const scopeSecond = nock(mockAddress)
+      .get("/v1/books")
+      .query({startingAfter: "2"})
+      .reply(200, [{id: 3, name: "third"}]);
+
+    // do a manual map
+    const results = [];
+    await c.getBooksIter({}, {}).forEach(async b =>  {
+      await sleep(100)
+      results.push(b.name)
+    });
+    assert.deepEqual(results, []);
+    assert(scopeFirst.isDone());
+    assert(scopeSecond.isDone());
+  });
+
+  it("iterators support forEachAsync", async () => {
+    const sleep = (ms: any) => new Promise((resolve) => setTimeout(resolve, ms));
+    const c = new Client({address: mockAddress});
+    const scopeFirst = nock(mockAddress)
+      .get("/v1/books")
+      .reply(
+        200,
+        [{id: 1, name: "first"}, {id: 2, name: "second"}],
+        {"X-Next-Page-Path": "/v1/books?startingAfter=2"},
+      );
+    const scopeSecond = nock(mockAddress)
+      .get("/v1/books")
+      .query({startingAfter: "2"})
+      .reply(200, [{id: 3, name: "third"}]);
+
+    // do a manual map
+    const results = [];
+    await c.getBooksIter({}, {}).forEachAsync(async b =>  {
+      await sleep(100)
+      results.push(b.name)
+    });
+    assert.deepEqual(results, ["first", "second", "third"]);
+    assert(scopeFirst.isDone());
+    assert(scopeSecond.isDone());
+  });
+
   it("iterators support resource path", async () => {
     const c = new Client({address: mockAddress});
     const scope = nock(mockAddress)

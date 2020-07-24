@@ -395,7 +395,7 @@ const packageJSONTmplStr = `{
 const methodTmplStr = `
   {{.MethodDefinition}}
     {{if .IterMethod -}}
-    const it = (f, saveResults) => new Promise((resolve, reject) => {
+    const it = (f, saveResults, isAsync) => new Promise((resolve, reject) => {
     {{- else -}}
     if (!cb && typeof options === "function") {
       options = undefined;
@@ -475,7 +475,7 @@ const methodTmplStr = `
   {{- end}}
       let retries = 0;
       (function requestOnce() {
-        request(requestOptions, (err, response, body) => {
+        request(requestOptions, {{if $.IterMethod}}async {{end}}(err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
@@ -511,7 +511,17 @@ const methodTmplStr = `
               if (saveResults) {
                 results = results.concat(body{{$.IterResourceAccessString}}.map(f));
               } else {
-                body{{$.IterResourceAccessString}}.forEach(f);
+                if (isAsync) {
+                  for (let i = 0; i < body{{$.IterResourceAccessString}}.length; i++) {
+                    try {
+                      await f(body{{$.IterResourceAccessString}}[i], i, body);
+                    } catch(err) {
+                      reject(err);
+                    }
+                  }
+                } else {
+                  body.forEach(f)
+                }
               }
               {{- else -}}
               resolve(body);
@@ -562,9 +572,10 @@ const methodTmplStr = `
     {{- if .IterMethod}}
 
     return {
-      map: (f, cb) => applyCallback(this._hystrixCommand.execute(it, [f, true]), cb),
-      toArray: cb => applyCallback(this._hystrixCommand.execute(it, [x => x, true]), cb),
-      forEach: (f, cb) => applyCallback(this._hystrixCommand.execute(it, [f, false]), cb),
+      map: (f, cb) => applyCallback(this._hystrixCommand.execute(it, [f, true, false]), cb),
+      toArray: cb => applyCallback(this._hystrixCommand.execute(it, [x => x, true, false]), cb),
+      forEach: (f, cb) => applyCallback(this._hystrixCommand.execute(it, [f, false, false]), cb),
+      forEachAsync: (f, cb) => applyCallback(this._hystrixCommand.execute(it, [f, false, true]), cb),
     };
     {{- end}}
   }
@@ -582,6 +593,7 @@ const singleParamMethodDefinitionTemplateString = `/**{{if .Description}}
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
    * @returns {function} iter.toArray - returns a promise to the resources as an array
    * @returns {function} iter.forEach - takes in a function, applies it to each resource
+   * @returns {function} iter.forEachAsync - takes in an async function, applies it to each resource
    {{- else}}
    * @param {function} [cb]
    * @returns {Promise}
@@ -619,6 +631,7 @@ const pluralParamMethodDefinitionTemplateString = `/**{{if .Description}}
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
    * @returns {function} iter.toArray - returns a promise to the resources as an array
    * @returns {function} iter.forEach - takes in a function, applies it to each resource
+   * @returns {function} iter.forEachAsync - takes in an async function, applies it to each resource
    {{- else}}
    * @param {function} [cb]
    * @returns {Promise}
@@ -1331,6 +1344,7 @@ interface IterResult<R> {
   map<T>(f: (r: R) => T, cb?: Callback<T[]>): Promise<T[]>;
   toArray(cb?: Callback<R[]>): Promise<R[]>;
   forEach(f: (r: R) => void, cb?: Callback<void>): Promise<void>;
+  forEachAsync(f: (r: R) => void, cb?: Callback<void>): Promise<void>;
 }
 
 interface CircuitOptions {
