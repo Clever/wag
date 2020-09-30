@@ -11,7 +11,6 @@ import (
 	"github.com/Clever/wag/swagger"
 	"github.com/awslabs/goformation/cloudformation/resources"
 	"github.com/go-openapi/spec"
-	"github.com/go-swagger/go-swagger/generator"
 )
 
 //go:generate go-bindata -ignore .*\.go$ -pkg gendb -prefix $PWD/server/gendb/ $PWD/server/gendb/
@@ -142,7 +141,7 @@ func GenerateDB(packageName string, s *spec.Swagger, serviceName string, paths *
 
 	writeTemplate := func(tmplFilename, outputFilename string, data interface{}) error {
 		tmpl, err := template.New(tmplFilename).
-			Funcs(generator.FuncMap).
+			Funcs(DefaultFuncMap).
 			Funcs(funcMap).
 			Parse(string(MustAsset(tmplFilename)))
 		if err != nil {

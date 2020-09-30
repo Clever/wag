@@ -12,6 +12,8 @@ import (
 	"github.com/go-swagger/go-swagger/generator"
 )
 
+var DefaultFuncMap = generator.DefaultFuncMap(generator.GoLangOpts())
+
 // funcMap contains useful functions to use in templates
 var funcMap = template.FuncMap(map[string]interface{}{
 	"anyTableUsesDateTime": func(configs []XDBConfig) bool {
@@ -96,7 +98,7 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		return ret
 	},
 	"indexName": func(index []resources.AWSDynamoDBTable_KeySchema) string {
-		pascalize := generator.FuncMap["pascalize"].(func(string) string)
+		pascalize := DefaultFuncMap["pascalize"].(func(string) string)
 		if len(index) == 1 {
 			return pascalize(index[0].AttributeName)
 		} else if len(index) == 2 {
@@ -523,7 +525,7 @@ func attributeToModelValueNotPtr(config XDBConfig, attributeName string, prefix 
 	goName := swag.ToGoName(attributeName)
 	if prefix == "" {
 		goName = strings.ToLower(goName)[0:1] + goName[1:]
-		goName = generator.FuncMap["varname"].(func(string) string)(goName)
+		goName = DefaultFuncMap["varname"].(func(string) string)(goName)
 	}
 	return prefix + goName
 }
