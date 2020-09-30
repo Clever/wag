@@ -152,12 +152,15 @@
   version = "v1.33.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:36bffd81f856a41b63ae2248936609d3a95afaf3c2d56fa8732e949be79bbd87"
+  digest = "1:054826e85cdd63dda4d85a6add6a093c52127b733ea85c836c9461ae5be4e74f"
   name = "github.com/go-openapi/analysis"
-  packages = ["."]
+  packages = [
+    ".",
+    "internal",
+  ]
   pruneopts = ""
-  revision = "f59a71f0ece6f9dfb438be7f45148f006cbad88e"
+  revision = "421cb960388d1c41b1d4f0eee5300257ac289c97"
+  version = "v0.19.10"
 
 [[projects]]
   digest = "1:190bc5dcd1bc4ab61f8ec0d2140366dfff614dd6584b01f55b46ad20f965e98b"
