@@ -25,39 +25,39 @@ required = ["github.com/tmthrgd/go-bindata", "github.com/golang/mock/mockgen", "
 
 [[constraint]]
   name = "github.com/go-openapi/errors"
-  branch = "master"
+  version = "0.19.7"
 
 [[constraint]]
   name = "github.com/go-openapi/jsonreference"
-  branch = "master"
+  version = "0.19.4"
 
 [[constraint]]
   name = "github.com/go-openapi/loads"
-  branch = "master"
+  version = "0.19.5"
 
 [[constraint]]
   name = "github.com/go-openapi/spec"
-  branch = "master"
+  version = "0.19.9"
 
 [[constraint]]
   name = "github.com/go-openapi/strfmt"
-  branch = "master"
+  version = "0.19.5"
 
 [[constraint]]
   name = "github.com/go-openapi/jsonpointer"
-  branch = "master"
+  version = "0.19.3"
 
 [[constraint]]
   name = "github.com/go-openapi/swag"
-  branch = "master"
+  version = "0.19.9"
 
 [[constraint]]
   name = "github.com/go-openapi/validate"
-  branch = "master"
+  version = "0.19.11"
 
 [[constraint]]
   name = "github.com/go-swagger/go-swagger"
-  version = "0.13.0"
+  version = "0.25.0"
 
 [[constraint]]
   name = "github.com/golang/mock"

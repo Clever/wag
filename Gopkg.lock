@@ -160,12 +160,12 @@
   revision = "f59a71f0ece6f9dfb438be7f45148f006cbad88e"
 
 [[projects]]
-  branch = "master"
-  digest = "1:75a2e2c375fc9ec767aca92c903a3a18c8f0f88ae54cae24c94b37f466c5a27f"
+  digest = "1:190bc5dcd1bc4ab61f8ec0d2140366dfff614dd6584b01f55b46ad20f965e98b"
   name = "github.com/go-openapi/errors"
   packages = ["."]
   pruneopts = ""
-  revision = "df3fda67a4c851b789d9b34a92cb0edef5734e2c"
+  revision = "00a6ebeed93c5f2279dd7369d76c41682ad9c86a"
+  version = "v0.19.7"
 
 [[projects]]
   branch = "master"
@@ -176,31 +176,31 @@
   revision = "b1f6470ffb9c552dc105dd869f16e36ba86ba7d0"
 
 [[projects]]
-  branch = "master"
   digest = "1:47688961daa2895c860642608d671822b7b53fed1e3e3e2d46506f01dcddaae3"
   name = "github.com/go-openapi/jsonpointer"
   packages = ["."]
   pruneopts = ""
   revision = "ed123515f087412cd7ef02e49b0b0a5e6a79a360"
+  version = "v0.19.3"
 
 [[projects]]
-  branch = "master"
-  digest = "1:07ac8ac445f68b0bc063d11845d479fb7e09c906ead7a8c4165b59777df09d74"
+  digest = "1:bf297f4800d1a670cf0081091c086bdc3439ce3e3793df9a17be47213818147e"
   name = "github.com/go-openapi/jsonreference"
   packages = ["."]
   pruneopts = ""
-  revision = "36d33bfe519efae5632669801b180bf1a245da3b"
+  revision = "7775307885f903b5e6808c24d81ead7eb136915f"
+  version = "v0.19.4"
 
 [[projects]]
-  branch = "master"
-  digest = "1:c4a8c916364abeda1c5cf36684320298bbf4d87718b0b2bd9c4ca663157fdc75"
+  digest = "1:a01f55d5e2ea7013fe1077bcb759f5bfa0d8e3be82b362c25b71baac2cc2f39c"
   name = "github.com/go-openapi/loads"
   packages = [
     ".",
     "fmts",
   ]
   pruneopts = ""
-  revision = "2a2b323bab96e6b1fdee110e57d959322446e9c9"
+  revision = "18bb1f3437c08e833e5f629003bafc2a3884d19f"
+  version = "v0.19.5"
 
 [[projects]]
   branch = "master"
@@ -211,36 +211,36 @@
   revision = "09fac855d8504674b22594470227bd94e5005025"
 
 [[projects]]
-  branch = "master"
-  digest = "1:fd4008f8283b993180f0626d0c7b2f48880e9dbb6bd92a91cac7ded30dc66777"
+  digest = "1:4f1411b7c4ab63592cce935c8e59c3b49cf232b4b43fe864e2b3f2de6b269271"
   name = "github.com/go-openapi/spec"
   packages = ["."]
   pruneopts = ""
-  revision = "1de3e0542de65ad8d75452a595886fdd0befb363"
+  revision = "e7bc266bd09139be98b222b2ef8fbca0ffdb933d"
+  version = "v0.19.9"
 
 [[projects]]
-  branch = "master"
-  digest = "1:35dabc22cec2c6b23b0a446b34c2bcff40f72b64e0d5ed1c9ee06729d7d0e100"
+  digest = "1:84be9ca34f8749b7427db74c2958548bb532127c1057254e31e199c49dc75856"
   name = "github.com/go-openapi/strfmt"
   packages = ["."]
   pruneopts = ""
-  revision = "6faa644e1cdafc07f7b38eb06c1af5f92128f289"
+  revision = "2887e74ed0fe2aea628affe322b19fc3112f98cd"
+  version = "v0.19.5"
 
 [[projects]]
-  branch = "master"
-  digest = "1:366052ef634d344217d6720719c9f8e95de13a94d211f09785b0ba3c4c181b06"
+  digest = "1:7f89974c92a751207c7b0eac0a728dc86f2d1e004c40a18554065d058d21a122"
   name = "github.com/go-openapi/swag"
   packages = ["."]
   pruneopts = ""
-  revision = "84f4bee7c0a6db40e3166044c7983c1c32125429"
+  revision = "ab98f8e6456407f6afd63e441c5304d6ef60cb7f"
+  version = "v0.19.9"
 
 [[projects]]
-  branch = "master"
-  digest = "1:c5d15d070f17a258062f488a586e24c129047f2aaba6c595a2a5ad33e76fb2fa"
+  digest = "1:80f9597b8b21586f7fc19be05d68db7e4e220364c3fbda4e301433189e29e4ac"
   name = "github.com/go-openapi/validate"
   packages = ["."]
   pruneopts = ""
-  revision = "180bba53b98899f743a112e568bed9e2ef31aa20"
+  revision = "ac0948fa48617c7997417abdce2afe33ceca1084"
+  version = "v0.19.11"
 
 [[projects]]
   digest = "1:a01080d20c45c031c13f3828c56e58f4f51d926a482ad10cc0316225097eb7ea"
@@ -251,12 +251,12 @@
   version = "v1.8.0"
 
 [[projects]]
-  digest = "1:f64be68abbc3e6c4c4196d7d6f1a6eb6b37a2c7ef5745860d7e2906892ce9cfc"
+  digest = "1:32320b1d2a168f6aa010a41c6e22f898b2f4640ce133f2f697c9b69a42de2b6d"
   name = "github.com/go-swagger/go-swagger"
   packages = ["generator"]
   pruneopts = ""
-  revision = "b015bda48dfc648fdd95e7bc81dbb5cefc17c975"
-  version = "0.13.0"
+  revision = "f032690aab0634d97e2861a708d8fd9365ba77d2"
+  version = "v0.25.0"
 
 [[projects]]
   branch = "master"
