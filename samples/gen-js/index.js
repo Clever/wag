@@ -266,7 +266,7 @@ class SwaggerTest {
    * @reject {module:swagger-test.Errors.InternalError}
    * @reject {Error}
    */
-  getAuthors(params, options, cb) {
+  getAuthors(options, params, cb) {
     let callback = cb;
     if (!cb && typeof options === "function") {
       callback = options;
@@ -274,7 +274,7 @@ class SwaggerTest {
     return applyCallback(this._hystrixCommand.execute(this._getAuthors, arguments), callback);
   }
 
-  _getAuthors(params, options, cb) {
+  _getAuthors(options, params, cb) {
     if (!cb && typeof options === "function") {
       options = undefined;
     }
@@ -388,7 +388,7 @@ class SwaggerTest {
    * @returns {function} iter.forEach - takes in a function, applies it to each resource
    * @returns {function} iter.forEachAsync - takes in an async function, applies it to each resource
    */
-  getAuthorsIter(params, options) {
+  getAuthorsIter(options, params) {
     const it = (f, saveResults, isAsync) => new Promise((resolve, reject) => {
       if (!options) {
         options = {};
@@ -548,7 +548,7 @@ class SwaggerTest {
    * @reject {module:swagger-test.Errors.InternalError}
    * @reject {Error}
    */
-  getAuthorsWithPut(params, options, cb) {
+  getAuthorsWithPut(options, params, cb) {
     let callback = cb;
     if (!cb && typeof options === "function") {
       callback = options;
@@ -556,7 +556,7 @@ class SwaggerTest {
     return applyCallback(this._hystrixCommand.execute(this._getAuthorsWithPut, arguments), callback);
   }
 
-  _getAuthorsWithPut(params, options, cb) {
+  _getAuthorsWithPut(options, params, cb) {
     if (!cb && typeof options === "function") {
       options = undefined;
     }
@@ -673,7 +673,7 @@ class SwaggerTest {
    * @returns {function} iter.forEach - takes in a function, applies it to each resource
    * @returns {function} iter.forEachAsync - takes in an async function, applies it to each resource
    */
-  getAuthorsWithPutIter(params, options) {
+  getAuthorsWithPutIter(options, params) {
     const it = (f, saveResults, isAsync) => new Promise((resolve, reject) => {
       if (!options) {
         options = {};
@@ -843,7 +843,7 @@ class SwaggerTest {
    * @reject {module:swagger-test.Errors.InternalError}
    * @reject {Error}
    */
-  getBooks(params, options, cb) {
+  getBooks(options, params, cb) {
     let callback = cb;
     if (!cb && typeof options === "function") {
       callback = options;
@@ -851,7 +851,7 @@ class SwaggerTest {
     return applyCallback(this._hystrixCommand.execute(this._getBooks, arguments), callback);
   }
 
-  _getBooks(params, options, cb) {
+  _getBooks(options, params, cb) {
     if (!cb && typeof options === "function") {
       options = undefined;
     }
@@ -1007,7 +1007,7 @@ class SwaggerTest {
    * @returns {function} iter.forEach - takes in a function, applies it to each resource
    * @returns {function} iter.forEachAsync - takes in an async function, applies it to each resource
    */
-  getBooksIter(params, options) {
+  getBooksIter(options, params) {
     const it = (f, saveResults, isAsync) => new Promise((resolve, reject) => {
       if (!options) {
         options = {};
@@ -1197,7 +1197,7 @@ class SwaggerTest {
    * @reject {module:swagger-test.Errors.InternalError}
    * @reject {Error}
    */
-  createBook(newBook, options, cb) {
+  createBook(options, newBook, cb) {
     let callback = cb;
     if (!cb && typeof options === "function") {
       callback = options;
@@ -1205,7 +1205,7 @@ class SwaggerTest {
     return applyCallback(this._hystrixCommand.execute(this._createBook, arguments), callback);
   }
 
-  _createBook(newBook, options, cb) {
+  _createBook(options, newBook, cb) {
     const params = {};
     params["newBook"] = newBook;
 
@@ -1314,7 +1314,7 @@ class SwaggerTest {
    * @reject {module:swagger-test.Errors.InternalError}
    * @reject {Error}
    */
-  putBook(newBook, options, cb) {
+  putBook(options, newBook, cb) {
     let callback = cb;
     if (!cb && typeof options === "function") {
       callback = options;
@@ -1322,7 +1322,7 @@ class SwaggerTest {
     return applyCallback(this._hystrixCommand.execute(this._putBook, arguments), callback);
   }
 
-  _putBook(newBook, options, cb) {
+  _putBook(options, newBook, cb) {
     const params = {};
     params["newBook"] = newBook;
 
@@ -1438,7 +1438,7 @@ class SwaggerTest {
    * @reject {module:swagger-test.Errors.InternalError}
    * @reject {Error}
    */
-  getBookByID(params, options, cb) {
+  getBookByID(options, params, cb) {
     let callback = cb;
     if (!cb && typeof options === "function") {
       callback = options;
@@ -1446,7 +1446,7 @@ class SwaggerTest {
     return applyCallback(this._hystrixCommand.execute(this._getBookByID, arguments), callback);
   }
 
-  _getBookByID(params, options, cb) {
+  _getBookByID(options, params, cb) {
     if (!cb && typeof options === "function") {
       options = undefined;
     }
@@ -1577,7 +1577,7 @@ class SwaggerTest {
    * @reject {module:swagger-test.Errors.InternalError}
    * @reject {Error}
    */
-  getBookByID2(id, options, cb) {
+  getBookByID2(options, id, cb) {
     let callback = cb;
     if (!cb && typeof options === "function") {
       callback = options;
@@ -1585,7 +1585,7 @@ class SwaggerTest {
     return applyCallback(this._hystrixCommand.execute(this._getBookByID2, arguments), callback);
   }
 
-  _getBookByID2(id, options, cb) {
+  _getBookByID2(options, id, cb) {
     const params = {};
     params["id"] = id;
 

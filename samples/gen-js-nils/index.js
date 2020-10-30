@@ -269,7 +269,7 @@ class NilTest {
    * @reject {module:nil-test.Errors.InternalError}
    * @reject {Error}
    */
-  nilCheck(params, options, cb) {
+  nilCheck(options, params, cb) {
     let callback = cb;
     if (!cb && typeof options === "function") {
       callback = options;
@@ -277,7 +277,7 @@ class NilTest {
     return applyCallback(this._hystrixCommand.execute(this._nilCheck, arguments), callback);
   }
 
-  _nilCheck(params, options, cb) {
+  _nilCheck(options, params, cb) {
     if (!cb && typeof options === "function") {
       options = undefined;
     }

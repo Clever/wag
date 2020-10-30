@@ -19,7 +19,7 @@ import (
 )
 
 // Generate generates a client
-func Generate(modulePath string, s spec.Swagger) error {
+func Generate(modulePath string, s spec.Swagger, jsRequiredContext bool) error {
 	pkgName, ok := s.Info.Extensions.GetString("x-npm-package")
 	if !ok {
 		return errors.New("must provide 'x-npm-package' in the 'info' section of the swagger.yml")
@@ -41,7 +41,7 @@ func Generate(modulePath string, s spec.Swagger) error {
 			if op.Deprecated {
 				continue
 			}
-			methodCode, err := methodCode(s, op, method, path)
+			methodCode, err := methodCode(s, op, method, path, jsRequiredContext)
 			if err != nil {
 				return err
 			}
@@ -49,7 +49,7 @@ func Generate(modulePath string, s spec.Swagger) error {
 		}
 	}
 
-	indexDTS, err := generateTypescriptTypes(s)
+	indexDTS, err := generateTypescriptTypes(s, jsRequiredContext)
 	if err != nil {
 		return err
 	}
@@ -601,10 +601,17 @@ const singleParamMethodDefinitionTemplateString = `/**{{if .Description}}
    * @reject {module:{{$ServiceName}}.Errors.{{$response.Name}}}{{end}}{{end}}
    * @reject {Error}{{end}}
    */
+  {{- define "params" -}}
+  {{- if .RequiredContext -}}
+  options{{range $param := .Params}}, {{$param.JSName}}{{end}}
+  {{- else -}}
+  {{range $param := .Params}}{{$param.JSName}}, {{end}}options
+  {{- end -}}
+  {{- end}}
   {{- if .IterMethod}}
-  {{.MethodName}}({{range $param := .Params}}{{$param.JSName}}, {{end}}options) {
+  {{.MethodName}}({{ template "params" . }}) {
   {{- else}}
-  {{.MethodName}}({{range $param := .Params}}{{$param.JSName}}, {{end}}options, cb) {
+  {{.MethodName}}({{ template "params" . }}, cb) {
     let callback = cb;
     if (!cb && typeof options === "function") {
       callback = options;
@@ -612,7 +619,7 @@ const singleParamMethodDefinitionTemplateString = `/**{{if .Description}}
     return applyCallback(this._hystrixCommand.execute(this._{{.MethodName}}, arguments), callback);
   }
 
-  _{{.MethodName}}({{range $param := .Params}}{{$param.JSName}}, {{end}}options, cb) {
+  _{{.MethodName}}({{ template "params" . }}, cb) {
   {{- end}}
     const params = {};{{range $param := .Params}}
     params["{{$param.JSName}}"] = {{$param.JSName}};{{end}}
@@ -639,10 +646,17 @@ const pluralParamMethodDefinitionTemplateString = `/**{{if .Description}}
    * @reject {module:{{$ServiceName}}.Errors.{{$response.Name}}}{{end}}{{end}}
    * @reject {Error}{{end}}
    */
+  {{- define "params" -}}
+  {{- if .RequiredContext -}}
+  options, params
+  {{- else -}}
+  params, options
+  {{- end -}}
+  {{- end}}
   {{- if .IterMethod}}
-  {{.MethodName}}(params, options) {
+  {{.MethodName}}({{ template "params" . }}) {
   {{- else}}
-  {{.MethodName}}(params, options, cb) {
+  {{.MethodName}}({{ template "params" . }}, cb) {
     let callback = cb;
     if (!cb && typeof options === "function") {
       callback = options;
@@ -650,7 +664,7 @@ const pluralParamMethodDefinitionTemplateString = `/**{{if .Description}}
     return applyCallback(this._hystrixCommand.execute(this._{{.MethodName}}, arguments), callback);
   }
 
-  _{{.MethodName}}(params, options, cb) {
+  _{{.MethodName}}({{ template "params" . }}, cb) {
   {{- end}}`
 
 type paramMapping struct {
@@ -687,6 +701,7 @@ type methodTemplate struct {
 	BodyParam                string
 	Responses                []responseMapping
 	JSDocSuccessReturnType   string
+	RequiredContext          bool
 }
 
 // This function takes in a swagger path such as "/path/goes/to/{location}/and/to/{other_Location}"
@@ -701,16 +716,17 @@ func fillOutPath(path string) string {
 	})
 }
 
-func methodCode(s spec.Swagger, op *spec.Operation, method, path string) (string, error) {
+func methodCode(s spec.Swagger, op *spec.Operation, method, path string, jsRequiredContext bool) (string, error) {
 	basePath := s.BasePath
 	tmplInfo := methodTemplate{
-		ServiceName: s.Info.InfoProps.Title,
-		Operation:   op.ID,
-		MethodName:  op.ID, // might mutate to op.ID + "Iter" for paging methods
-		Description: op.Description,
-		Method:      method,
-		PathCode:    basePath + fillOutPath(path),
-		Path:        basePath + path,
+		ServiceName:     s.Info.InfoProps.Title,
+		Operation:       op.ID,
+		MethodName:      op.ID, // might mutate to op.ID + "Iter" for paging methods
+		Description:     op.Description,
+		Method:          method,
+		PathCode:        basePath + fillOutPath(path),
+		Path:            basePath + path,
+		RequiredContext: jsRequiredContext,
 	}
 
 	var successResponse *spec.Response
@@ -966,7 +982,7 @@ var primitiveTypes = map[string]string{
 	"boolean": "boolean",
 }
 
-func generateTypescriptTypes(s spec.Swagger) (string, error) {
+func generateTypescriptTypes(s spec.Swagger, jsRequiredContext bool) (string, error) {
 	tt := typescriptTypes{
 		ServiceName:   utils.CamelCase(s.Info.InfoProps.Title, true),
 		IncludedTypes: []string{},
@@ -982,7 +998,7 @@ func generateTypescriptTypes(s spec.Swagger) (string, error) {
 			if op.Deprecated {
 				continue
 			}
-			methodDecl, err := methodDecl(s, op, path, method)
+			methodDecl, err := methodDecl(s, op, path, method, jsRequiredContext)
 			if err != nil {
 				return "", err
 			}
@@ -1068,7 +1084,7 @@ func getErrorTypes(s spec.Swagger) ([]string, error) {
 	return errorTypes, nil
 }
 
-func methodDecl(s spec.Swagger, op *spec.Operation, path, method string) (string, error) {
+func methodDecl(s spec.Swagger, op *spec.Operation, path, method string, requiredContext bool) (string, error) {
 	returnType, err := ReturnType(s, op)
 	if returnType != "void" && returnType != "never" {
 		returnType = JSType(fmt.Sprintf("models.%s", returnType))
@@ -1102,9 +1118,15 @@ func methodDecl(s spec.Swagger, op *spec.Operation, path, method string) (string
 		paramType := fmt.Sprintf("%sParams", utils.CamelCase(methodName, true))
 		params = fmt.Sprintf("params: models.%s, ", paramType)
 	}
-	methodDecl = fmt.Sprintf("%s(%soptions?: RequestOptions, cb?: Callback<%s>): Promise<%s>",
-		methodName, params, returnType, returnType)
+	// TODO this is where the options vs params goes
+	if !requiredContext {
+		methodDecl = fmt.Sprintf("%s(%soptions?: RequestOptions, cb?: Callback<%s>): Promise<%s>",
+			methodName, params, returnType, returnType)
+	} else {
+		methodDecl = fmt.Sprintf("%s(options: RequestOptions, %scb?: Callback<%s>): Promise<%s>",
+			methodName, params, returnType, returnType)
 
+	}
 	if _, hasPaging := swagger.PagingParam(op); hasPaging {
 		resourcePath := swagger.PagingResourcePath(op)
 		for _, ident := range resourcePath {

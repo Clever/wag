@@ -58,7 +58,7 @@ declare class Blog {
   constructor(options: BlogOptions);
 
   
-  getSectionsForStudent(student_id: string, options?: RequestOptions, cb?: Callback<models.Section[]>): Promise<models.Section[]>
+  getSectionsForStudent(options: RequestOptions, student_id: string, cb?: Callback<models.Section[]>): Promise<models.Section[]>
   
 }
 

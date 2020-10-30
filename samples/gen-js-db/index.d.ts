@@ -58,7 +58,7 @@ declare class SwaggerTest {
   constructor(options: SwaggerTestOptions);
 
   
-  healthCheck(options?: RequestOptions, cb?: Callback<void>): Promise<void>
+  healthCheck(options: RequestOptions, cb?: Callback<void>): Promise<void>
   
 }
 

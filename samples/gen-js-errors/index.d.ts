@@ -58,7 +58,7 @@ declare class SwaggerTest {
   constructor(options: SwaggerTestOptions);
 
   
-  getBook(id: number, options?: RequestOptions, cb?: Callback<void>): Promise<void>
+  getBook(options: RequestOptions, id: number, cb?: Callback<void>): Promise<void>
   
 }
 

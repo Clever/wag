@@ -264,7 +264,7 @@ class SwaggerTest {
    * @reject {module:swagger-test.Errors.InternalError}
    * @reject {Error}
    */
-  getBook(id, options, cb) {
+  getBook(options, id, cb) {
     let callback = cb;
     if (!cb && typeof options === "function") {
       callback = options;
@@ -272,7 +272,7 @@ class SwaggerTest {
     return applyCallback(this._hystrixCommand.execute(this._getBook, arguments), callback);
   }
 
-  _getBook(id, options, cb) {
+  _getBook(options, id, cb) {
     const params = {};
     params["id"] = id;
 

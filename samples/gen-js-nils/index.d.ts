@@ -58,7 +58,7 @@ declare class NilTest {
   constructor(options: NilTestOptions);
 
   
-  nilCheck(params: models.NilCheckParams, options?: RequestOptions, cb?: Callback<void>): Promise<void>
+  nilCheck(options: RequestOptions, params: models.NilCheckParams, cb?: Callback<void>): Promise<void>
   
 }
 

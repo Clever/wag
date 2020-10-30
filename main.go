@@ -39,6 +39,8 @@ func main() {
 		log.Fatal("js-path is required")
 	}
 
+	jsRequiredContext := true
+
 	// Check if glide.yaml and glide.lock files are up to date
 	// Ignore validation if the files don't yet exist
 	glideYAMLFile, err := os.Open("glide.yaml")
@@ -104,7 +106,7 @@ func main() {
 		log.Fatalf("Failed generating go client %s", err)
 	}
 
-	if err := jsclient.Generate(*jsModulePath, swaggerSpec); err != nil {
+	if err := jsclient.Generate(*jsModulePath, swaggerSpec, jsRequiredContext); err != nil {
 		log.Fatalf("Failed generating js client %s", err)
 	}
 

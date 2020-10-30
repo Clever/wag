@@ -264,7 +264,7 @@ class Blog {
    * @reject {module:blog.Errors.InternalError}
    * @reject {Error}
    */
-  getSectionsForStudent(studentID, options, cb) {
+  getSectionsForStudent(options, studentID, cb) {
     let callback = cb;
     if (!cb && typeof options === "function") {
       callback = options;
@@ -272,7 +272,7 @@ class Blog {
     return applyCallback(this._hystrixCommand.execute(this._getSectionsForStudent, arguments), callback);
   }
 
-  _getSectionsForStudent(studentID, options, cb) {
+  _getSectionsForStudent(options, studentID, cb) {
     const params = {};
     params["studentID"] = studentID;
 

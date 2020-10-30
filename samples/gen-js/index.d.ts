@@ -58,24 +58,24 @@ declare class SwaggerTest {
   constructor(options: SwaggerTestOptions);
 
   
-  getAuthors(params: models.GetAuthorsParams, options?: RequestOptions, cb?: Callback<models.AuthorsResponse>): Promise<models.AuthorsResponse>
+  getAuthors(options: RequestOptions, params: models.GetAuthorsParams, cb?: Callback<models.AuthorsResponse>): Promise<models.AuthorsResponse>
   getAuthorsIter(params: models.GetAuthorsParams, options?: RequestOptions): IterResult<ArrayInner<models.AuthorsResponse["authorSet"]["results"]>>
   
-  getAuthorsWithPut(params: models.GetAuthorsWithPutParams, options?: RequestOptions, cb?: Callback<models.AuthorsResponse>): Promise<models.AuthorsResponse>
+  getAuthorsWithPut(options: RequestOptions, params: models.GetAuthorsWithPutParams, cb?: Callback<models.AuthorsResponse>): Promise<models.AuthorsResponse>
   getAuthorsWithPutIter(params: models.GetAuthorsWithPutParams, options?: RequestOptions): IterResult<ArrayInner<models.AuthorsResponse["authorSet"]["results"]>>
   
-  getBooks(params: models.GetBooksParams, options?: RequestOptions, cb?: Callback<models.Book[]>): Promise<models.Book[]>
+  getBooks(options: RequestOptions, params: models.GetBooksParams, cb?: Callback<models.Book[]>): Promise<models.Book[]>
   getBooksIter(params: models.GetBooksParams, options?: RequestOptions): IterResult<ArrayInner<models.Book[]>>
   
-  createBook(newBook: models.Book, options?: RequestOptions, cb?: Callback<models.Book>): Promise<models.Book>
+  createBook(options: RequestOptions, newBook: models.Book, cb?: Callback<models.Book>): Promise<models.Book>
   
-  putBook(newBook?: models.Book, options?: RequestOptions, cb?: Callback<models.Book>): Promise<models.Book>
+  putBook(options: RequestOptions, newBook?: models.Book, cb?: Callback<models.Book>): Promise<models.Book>
   
-  getBookByID(params: models.GetBookByIDParams, options?: RequestOptions, cb?: Callback<models.Book>): Promise<models.Book>
+  getBookByID(options: RequestOptions, params: models.GetBookByIDParams, cb?: Callback<models.Book>): Promise<models.Book>
   
-  getBookByID2(id: string, options?: RequestOptions, cb?: Callback<models.Book>): Promise<models.Book>
+  getBookByID2(options: RequestOptions, id: string, cb?: Callback<models.Book>): Promise<models.Book>
   
-  healthCheck(options?: RequestOptions, cb?: Callback<void>): Promise<void>
+  healthCheck(options: RequestOptions, cb?: Callback<void>): Promise<void>
   
 }
 
