@@ -97,6 +97,11 @@ paths:
   /books:
     get:
       operationId: getBooks
+      summary: >
+        For a given district:app pair, provides boolean on whether the user exists.
+        This endpoint is preferred over an alternative getUser endpoint if existence
+        confirmation is all that's needed, as this provides significant performance
+        improvements.
       description: Returns a list of books
       x-paging:
         pageParameter: startingAfter
@@ -118,6 +123,7 @@ paths:
           in: query
           type: string
           required: false
+          description: "The state of the thing"
           enum:
             - finished
             - inprogress

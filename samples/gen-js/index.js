@@ -823,7 +823,7 @@ class SwaggerTest {
    * @param {Object} params
    * @param {string[]} [params.authors] - A list of authors. Must specify at least one and at most two
    * @param {boolean} [params.available=true]
-   * @param {string} [params.state=finished]
+   * @param {string} [params.state=finished] - The state of the thing
    * @param {string} [params.published]
    * @param {string} [params.snakeCase]
    * @param {string} [params.completed]
@@ -988,7 +988,7 @@ class SwaggerTest {
    * @param {Object} params
    * @param {string[]} [params.authors] - A list of authors. Must specify at least one and at most two
    * @param {boolean} [params.available=true]
-   * @param {string} [params.state=finished]
+   * @param {string} [params.state=finished] - The state of the thing
    * @param {string} [params.published]
    * @param {string} [params.snakeCase]
    * @param {string} [params.completed]

@@ -157,7 +157,7 @@ Returns a list of books
 | params | <code>Object</code> |  |  |
 | [params.authors] | <code>Array.&lt;string&gt;</code> |  | A list of authors. Must specify at least one and at most two |
 | [params.available] | <code>boolean</code> | <code>true</code> |  |
-| [params.state] | <code>string</code> | <code>&quot;finished&quot;</code> |  |
+| [params.state] | <code>string</code> | <code>&quot;finished&quot;</code> | The state of the thing |
 | [params.published] | <code>string</code> |  |  |
 | [params.snakeCase] | <code>string</code> |  |  |
 | [params.completed] | <code>string</code> |  |  |
@@ -185,7 +185,7 @@ Returns a list of books
 | params | <code>Object</code> |  |  |
 | [params.authors] | <code>Array.&lt;string&gt;</code> |  | A list of authors. Must specify at least one and at most two |
 | [params.available] | <code>boolean</code> | <code>true</code> |  |
-| [params.state] | <code>string</code> | <code>&quot;finished&quot;</code> |  |
+| [params.state] | <code>string</code> | <code>&quot;finished&quot;</code> | The state of the thing |
 | [params.published] | <code>string</code> |  |  |
 | [params.snakeCase] | <code>string</code> |  |  |
 | [params.completed] | <code>string</code> |  |  |

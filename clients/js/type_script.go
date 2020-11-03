@@ -11,11 +11,12 @@ import (
 
 // TypeScriptErrorDeclaration holds attributes for an Error Type Decclaration
 type TypeScriptErrorDeclaration struct {
-	Name       string
-	Properties []string
+	Name          string
+	Properties    []string
+	Documentation string
 }
 
-const errorDeclarationTemplate = `class {{.Name}} {
+const errorDeclarationTemplate = `{{.Documentation}}class {{.Name}} {
   {{- range $property := .Properties}}
   {{$property}}
   {{- end}}
@@ -42,8 +43,9 @@ func generateErrorDeclaration(schema *spec.Schema, typeName, refPrefix string) (
 	}
 
 	declaration := TypeScriptErrorDeclaration{
-		Name:       typeName,
-		Properties: properties,
+		Name:          typeName,
+		Properties:    properties,
+		Documentation: documentationForType(*schema),
 	}
 
 	err = t.ExecuteTemplate(&builder, "ErrorTypeDeclaration", declaration)
@@ -78,7 +80,7 @@ func generatePropertyDeclarations(schema *spec.Schema, refPrefix string) (
 			return []string{}, fmt.Errorf("Error getting type for key '%s': %w", key, err)
 		}
 
-		declaration := generatePropertyDeclaration(key, typeForKey, required)
+		declaration := documentationForProperty(propertySchema) + generatePropertyDeclaration(key, typeForKey, required)
 		typeDeclarations = append(typeDeclarations, declaration)
 	}
 
@@ -103,4 +105,50 @@ func extractRequiredFields(required []string) map[string]bool {
 	}
 
 	return requiredFields
+}
+
+func formatDocumentation(documentation string) string {
+	if documentation == "" {
+		return ""
+	}
+
+	linesOfDocumentation := strings.Split(documentation, "\n")
+	if len(linesOfDocumentation) == 1 {
+		return fmt.Sprintf(`/** %s */`, linesOfDocumentation[0]) + "\n"
+	}
+
+	return fmt.Sprintf(`/**
+	%s
+	*/
+	`, documentation)
+}
+
+func documentationForProperty(propertySchema spec.Schema) string {
+	return formatDocumentation(propertySchema.Description)
+}
+
+func documentationForType(typeSchema spec.Schema) string {
+	return formatDocumentation(typeSchema.Description)
+}
+
+func documentationForMethod(s spec.Swagger, op *spec.Operation) string {
+	documentation := ""
+	if op.Summary != "" && op.Description != "" {
+		documentation += fmt.Sprintf(`  %s
+		
+		%s`, op.Summary, op.Description)
+	} else {
+		documentation += "  " + op.Summary + op.Description
+	}
+	_, responses := responsesForOperation(s, op)
+	for _, response := range responses {
+		if response.IsError {
+			documentation += fmt.Sprintf("\n@throws %s", response.Name)
+		}
+	}
+	return formatDocumentation(documentation)
+}
+
+func documentationForInputParam(param spec.Parameter) string {
+	return formatDocumentation(param.Description)
 }

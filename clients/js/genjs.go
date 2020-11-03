@@ -701,19 +701,7 @@ func fillOutPath(path string) string {
 	})
 }
 
-func methodCode(s spec.Swagger, op *spec.Operation, method, path string) (string, error) {
-	basePath := s.BasePath
-	tmplInfo := methodTemplate{
-		ServiceName: s.Info.InfoProps.Title,
-		Operation:   op.ID,
-		MethodName:  op.ID, // might mutate to op.ID + "Iter" for paging methods
-		Description: op.Description,
-		Method:      method,
-		PathCode:    basePath + fillOutPath(path),
-		Path:        basePath + path,
-	}
-
-	var successResponse *spec.Response
+func responsesForOperation(s spec.Swagger, op *spec.Operation) (successResponse *spec.Response, allResponses []responseMapping) {
 	for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
 		if successResponse == nil && statusCode >= 200 && statusCode < 400 {
 			r := op.Responses.StatusCodeResponses[statusCode]
@@ -731,8 +719,25 @@ func methodCode(s spec.Swagger, op *spec.Operation, method, path string) (string
 		if typeName == "" {
 			response.IsNoData = true
 		}
-		tmplInfo.Responses = append(tmplInfo.Responses, response)
+		allResponses = append(allResponses, response)
 	}
+	return
+}
+
+func methodCode(s spec.Swagger, op *spec.Operation, method, path string) (string, error) {
+	basePath := s.BasePath
+	tmplInfo := methodTemplate{
+		ServiceName: s.Info.InfoProps.Title,
+		Operation:   op.ID,
+		MethodName:  op.ID, // might mutate to op.ID + "Iter" for paging methods
+		Description: op.Description,
+		Method:      method,
+		PathCode:    basePath + fillOutPath(path),
+		Path:        basePath + path,
+	}
+
+	successResponse, allResponses := responsesForOperation(s, op)
+	tmplInfo.Responses = allResponses
 	tmplInfo.JSDocSuccessReturnType = responseToJSDocReturnType(successResponse)
 
 	for _, wagParam := range op.Parameters {
@@ -994,6 +999,8 @@ func generateTypescriptTypes(s spec.Swagger) (string, error) {
 		}
 	}
 
+	schemaForName := map[string]spec.Schema{}
+
 	for name, schema := range s.Definitions {
 		if !isDefaultIncludedType[name] {
 			theType, err := asJSType(&schema, "")
@@ -1001,6 +1008,7 @@ func generateTypescriptTypes(s spec.Swagger) (string, error) {
 				return "", err
 			}
 			includedTypeMap[name] = theType
+			schemaForName[name] = schema
 		}
 	}
 
@@ -1012,7 +1020,8 @@ func generateTypescriptTypes(s spec.Swagger) (string, error) {
 
 	includedTypes := []string{}
 	for _, typeName := range keys {
-		includedTypes = append(includedTypes, fmt.Sprintf("type %s = %s;", typeName, includedTypeMap[typeName]))
+		documentation := documentationForType(schemaForName[typeName])
+		includedTypes = append(includedTypes, fmt.Sprintf("%stype %s = %s;", documentation, typeName, includedTypeMap[typeName]))
 	}
 	tt.IncludedTypes = includedTypes
 
@@ -1102,8 +1111,9 @@ func methodDecl(s spec.Swagger, op *spec.Operation, path, method string) (string
 		paramType := fmt.Sprintf("%sParams", utils.CamelCase(methodName, true))
 		params = fmt.Sprintf("params: models.%s, ", paramType)
 	}
-	methodDecl = fmt.Sprintf("%s(%soptions?: RequestOptions, cb?: Callback<%s>): Promise<%s>",
-		methodName, params, returnType, returnType)
+	documentation := documentationForMethod(s, op)
+	methodDecl = fmt.Sprintf("%s%s(%soptions?: RequestOptions, cb?: Callback<%s>): Promise<%s>",
+		documentation, methodName, params, returnType, returnType)
 
 	if _, hasPaging := swagger.PagingParam(op); hasPaging {
 		resourcePath := swagger.PagingResourcePath(op)
@@ -1111,7 +1121,7 @@ func methodDecl(s spec.Swagger, op *spec.Operation, path, method string) (string
 			returnType += JSType(fmt.Sprintf("[\"%s\"]", ident))
 		}
 		returnType = "ArrayInner<" + returnType + ">"
-		methodDecl += fmt.Sprintf("\n  %s(%soptions?: RequestOptions): IterResult<%s>", methodName+"Iter", params, returnType)
+		methodDecl += fmt.Sprintf("\n  %s%s(%soptions?: RequestOptions): IterResult<%s>", documentation, methodName+"Iter", params, returnType)
 	}
 	return methodDecl, nil
 }
@@ -1121,13 +1131,18 @@ type paramDeclTmpl struct {
 	Fields   string
 }
 
+type inputParam struct {
+	paramType     JSType
+	documentation string
+}
+
 func addInputType(jsTypeMap *JSTypeMap, op *spec.Operation) error {
 	if len(op.Parameters) <= 1 {
 		return nil
 	}
 	typeName := utils.CamelCase(op.ID+"Params", true)
 	paramNames := []string{}
-	fields := JSTypeMap{}
+	fields := map[string]inputParam{}
 	for _, param := range op.Parameters {
 		if param.In == "formData" {
 			return fmt.Errorf("input parameters with 'In' formData are not supported")
@@ -1141,12 +1156,13 @@ func addInputType(jsTypeMap *JSTypeMap, op *spec.Operation) error {
 			paramType = "?" + paramType
 		}
 		paramNames = append(paramNames, param.Name)
-		fields[param.Name] = paramType
+		documentation := documentationForInputParam(param)
+		fields[param.Name] = inputParam{paramType: paramType, documentation: documentation}
 	}
 	fieldsStrings := []string{}
 	for _, paramName := range paramNames {
 		jsName := utils.CamelCase(paramName, false)
-		fieldsStrings = append(fieldsStrings, fmt.Sprintf("%s%s;", jsName, fields[paramName]))
+		fieldsStrings = append(fieldsStrings, fmt.Sprintf("%s%s%s;", fields[paramName].documentation, jsName, fields[paramName].paramType))
 	}
 	(*jsTypeMap)[typeName] = JSType(fmt.Sprintf("{\n  %s\n}", strings.Join(fieldsStrings, "\n  ")))
 	return nil

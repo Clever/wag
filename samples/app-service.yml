@@ -1,0 +1,2762 @@
+swagger: '2.0'
+info:
+  title: app-service
+  description: Manages applications and application admins
+  # when changing the version here, make sure to
+  # 1. re-run `make generate` to generate clients and server
+  # 2. commit the new clients
+  version: 12.15.1
+  x-npm-package: "@clever/app-service"
+schemes:
+  - http
+produces:
+  - application/json
+
+responses:
+  BadRequest:
+    description: Bad Request
+    schema:
+      $ref: "#/definitions/BadRequest"
+
+  UnprocessableEntity:
+    description: Unprocessable Entity
+    schema:
+      $ref: "#/definitions/UnprocessableEntity"
+
+  InternalError:
+    description: Internal Error
+    schema:
+      $ref: "#/definitions/InternalError"
+
+  Forbidden:
+    description: Forbidden
+    schema:
+      $ref: "#/definitions/Forbidden"
+
+  NotFound:
+    description: Entity Not Found
+    schema:
+      $ref: "#/definitions/NotFound"
+
+paths:
+  /_health:
+    get:
+      operationId: healthCheck
+      description: Checks if the service is healthy
+      responses:
+        200:
+          description: OK response
+
+  /v1/apps:
+    get:
+      summary: Gets applications filtered by the parameters
+      operationId: getApps
+      description: The server takes in the intersection of input parameters
+      parameters:
+        - name: ids
+          in: query
+          type: array
+          items:
+            type: string
+        - name: clientId
+          in: query
+          type: string
+        - name: clientSecret
+          in: query
+          type: string
+        - name: shortname
+          in: query
+          type: string
+        - name: businessToken
+          in: query
+          type: string
+        - name: tags
+          in: query
+          type: array
+          items:
+            type: string
+        - name: skipTags
+          in: query
+          type: array
+          items:
+            type: string
+      responses:
+        200:
+          description: Array of apps that satisfy the criteria
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/App"
+
+  /v1/apps/{appID}:
+    put:
+      summary: Creates an app
+      operationId: createApp
+      parameters:
+        - name: app
+          in: body
+          schema:
+            $ref: "#/definitions/App"
+        # Generate the id client-side to allow idempotent create options
+        - &appIdParam
+          name: appID
+          in: path
+          required: true
+          type: string
+          format: mongo-id
+      responses:
+        200:
+          description: The created app
+          schema:
+            $ref: "#/definitions/App"
+
+    get:
+      summary: Get application by ID
+      operationId: getAppByID
+      parameters:
+        - *appIdParam
+      responses:
+        200:
+          description: Application
+          schema:
+            $ref: "#/definitions/App"
+        404:
+          $ref: "#/responses/NotFound"
+
+    patch:
+      summary: Update an application
+      operationId: updateApp
+      parameters:
+        - *appIdParam
+        - name: withSchemaPropagation
+          description: >
+            If scopes change, then the app schema will be updated.
+            This flag will propagate app schema updates to all connection schemas as well
+          in: query
+          type: boolean
+        - name: app
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/PatchAppRequest"
+      responses:
+        200:
+          description: OK response
+          schema:
+            $ref: "#/definitions/App"
+        404:
+          $ref: "#/responses/NotFound"
+
+    delete:
+      summary: Delete an application
+      operationId: deleteApp
+      parameters:
+        - *appIdParam
+      responses:
+        200:
+          description: OK response
+        404:
+          $ref: "#/responses/NotFound"
+
+  /v1/apps/{appID}/business_token:
+    post:
+      summary: "Generate a new business token and immediately revoke the previous one (if it exists)."
+      operationId: generateNewBusinessToken
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: Client secret information
+          schema:
+            $ref: "#/definitions/SecretConfig"
+        404:
+          $ref: "#/responses/NotFound"
+
+
+  /v1/apps/{appID}/update_icon:
+    post:
+      summary: "Update icon"
+      operationId: updateAppIcon
+      parameters:
+        - *appIdParam
+        - &updateIconPayload
+          name: app
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/UpdateAppIconRequest"
+      responses:
+        200:
+          description: icon was updated
+          schema:
+            $ref: "#/definitions/Image"
+        404:
+          $ref: "#/responses/NotFound"
+        422:
+          description: >-
+            Unable to update app icon with the given parameters
+          schema:
+            $ref: "#/definitions/UnprocessableEntity"
+
+  /v1/apps/{appID}/secrets:
+    post:
+      summary: "Generate a new client secret. This creates a new client secret, but retains the previous
+      secret so that clients can migrate their code to the secret."
+      operationId: generateNewClientSecret
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: Client secret information
+          schema:
+            $ref: "#/definitions/SecretConfig"
+        404:
+          $ref: "#/responses/NotFound"
+
+
+    put:
+      summary: Hard resets the client secret
+      operationId: resetClientSecret
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: Client secret information
+          schema:
+            $ref: "#/definitions/SecretConfig"
+        404:
+          $ref: "#/responses/NotFound"
+
+
+    patch:
+      # It's somewhat arbitrary that this is a patch.
+      summary: Revokes the old client secret
+      operationId: revokeOldClientSecret
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: Client secret information
+          schema:
+            $ref: "#/definitions/SecretConfig"
+        404:
+          $ref: "#/responses/NotFound"
+
+
+    get:
+      summary: Get secret information
+      operationId: getSecrets
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: Client secret information
+          schema:
+            $ref: "#/definitions/SecretConfig"
+        404:
+          $ref: "#/responses/NotFound"
+
+
+  /v1/categories:
+    get:
+      summary: All valid categories an app can belong to
+      operationId: getAllCategories
+      responses:
+        200:
+          description: All categories
+          schema:
+            $ref: "#/definitions/Categories"
+
+  /v1/apps/{appID}/data_rules:
+    get:
+      summary: Get data rules
+      operationId: getDataRules
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: Data rules
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/DataRule"
+        404:
+          $ref: "#/responses/NotFound"
+
+    put:
+      summary: Set data rules
+      operationId: setDataRules
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          required: true
+        - name: rules
+          in: body
+          schema:
+            $ref: "#/definitions/SetDataRulesRequest"
+      responses:
+        200:
+          description: OK Response
+        404:
+          $ref: "#/responses/NotFound"
+
+
+  /v1/apps/{appID}/schema:
+    post:
+      summary: Creates the schema for an app. Will propagate app schema changes to all connections associated with this app
+      operationId: createAppSchema
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          format: mongo-id
+          required: true
+        - name: skipPropagation
+          description: Skip propagation to connection schemas
+          in: query
+          type: boolean
+        - name: updateDataRules
+          description: Update data warnings when app schema changes
+          in: query
+          type: boolean
+      responses:
+        200:
+          description: App Schema
+          schema:
+            $ref: "#/definitions/AppSchema"
+        404:
+          $ref: "#/responses/NotFound"
+
+    get:
+      summary: Get field settings specified by the app
+      operationId: getAppSchema
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          format: mongo-id
+          required: true
+      responses:
+        200:
+          description: App Schema
+          schema:
+            $ref: "#/definitions/AppSchema"
+        404:
+          $ref: "#/responses/NotFound"
+
+    put:
+      summary: Set field settings for an app. Will propagate app schema changes to all connections associated with this app
+      operationId: setAppSchema
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          format: mongo-id
+          required: true
+        - name: skipPropagation
+          description: Skip propagation to connection schemas
+          in: query
+          type: boolean
+        - name: updateDataRules
+          description: Update data warnings when app schema changes
+          in: query
+          type: boolean
+        - name: appSchema
+          in: body
+          schema:
+            $ref: "#/definitions/AppSchema"
+      responses:
+        200:
+          description: OK Response
+          schema:
+            $ref: "#/definitions/AppSchema"
+        404:
+          $ref: "#/responses/NotFound"
+
+    delete:
+      summary: Delete field settings specified by the app
+      operationId: deleteAppSchema
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          format: mongo-id
+          required: true
+        - name: deleteDataRules
+          description: Delete field setting-style data warnings when app schema is deleted
+          in: query
+          type: boolean
+      responses:
+        200:
+          description: OK response
+        404:
+          $ref: "#/responses/NotFound"
+
+  /v1/apps/{appID}/managers:
+    get:
+      summary: Get account and relationship managers
+      operationId: getManagers
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: Managers
+          schema:
+            $ref: "#/definitions/Managers"
+        404:
+          $ref: "#/responses/NotFound"
+
+  /v1/admins:
+    get:
+      summary: Gets app admins
+      operationId: getAdmins
+      parameters:
+        - name: email
+          in: query
+          type: string
+        # If password is specified, email must be specified too
+        - name: password
+          in: query
+          type: string
+      responses:
+        200:
+          description: Array of app admins that satisfy the input parameters
+          schema:
+            type: array
+            items:
+                $ref: "#/definitions/Admin"
+
+  /v1/admins/{adminID}:
+    put:
+      summary: Creates an app admin
+      operationId: createAdmin
+      parameters:
+        - name: createAdmin
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/CreateAdminRequest"
+        # Generate ids on the client side to allow idempotent creates
+        - name: adminID
+          in: path
+          required: true
+          type: string
+          format: mongo-id
+      responses:
+        200:
+          description: An admin
+          schema:
+            $ref: "#/definitions/Admin"
+
+    get:
+      summary: Get admin by ID
+      operationId: getAdminByID
+      parameters:
+        - name: adminID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: Admin
+          schema:
+            $ref: "#/definitions/Admin"
+        404:
+          $ref: "#/responses/NotFound"
+
+    patch:
+      summary: Update an admin
+      operationId: updateAdmin
+      parameters:
+        - name: adminID
+          in: path
+          type: string
+          required: true
+        - name: admin
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/PatchAdminRequest"
+      responses:
+        200:
+          description: OK response
+          schema:
+            $ref: "#/definitions/Admin"
+        404:
+          $ref: "#/responses/NotFound"
+
+    delete:
+      summary: Delete an admin
+      operationId: deleteAdmin
+      parameters:
+        - name: adminID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK response
+        404:
+          $ref: "#/responses/NotFound"
+
+  /v1/admins/{adminID}/verify_email:
+    post:
+      operationId: verifyAdminEmail
+      description: set the verified email of an admin
+      parameters:
+        - name: adminID
+          in: path
+          type: string
+          required: true
+        - name: request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/VerifyAdminEmailRequest"
+      responses:
+        200:
+          description: OK response
+        404:
+          $ref: "#/responses/NotFound"
+        400:
+          $ref: "#/responses/BadRequest"
+
+  /v1/admins/{adminID}/apps:
+    get:
+      summary: Apps an admin is associated with
+      operationId: getAppsForAdminDeprecated
+      deprecated: true
+      parameters:
+        - name: adminID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: Apps
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/App"
+        404:
+          $ref: "#/responses/NotFound"
+
+  /v2/admins/{adminID}/apps:
+    get:
+      summary: Apps an admin is associated with
+      operationId: getAppsForAdmin
+      parameters:
+        - name: adminID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: Apps
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/AppForAdminResponse"
+        404:
+          $ref: "#/responses/NotFound"
+
+  /v1/permissions:
+    get:
+      summary: Get all valid permissions.
+      operationId: getValidPermissions
+      responses:
+        200:
+          description: Permissions
+          schema:
+            $ref: "#/definitions/GetValidPermissionsResponse"
+
+
+  /v1/knownhosts:
+    get:
+      summary: Get a list of known hosts for apps
+      operationId: getKnownHosts
+      responses:
+        200:
+          description: List of known hosts
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/KnownHost"
+
+  /v1/apps/{appID}/admins/{adminID}/permissions:
+    get:
+      summary: Permissions for an app admin.
+      operationId: getPermissionsForAdmin
+      parameters:
+        - name: adminID
+          in: path
+          type: string
+          required: true
+        - name: appID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: Permissions
+          schema:
+            $ref: "#/definitions/PermissionList"
+        404:
+          $ref: "#/responses/NotFound"
+
+  /v1/apps/{appID}/admins:
+    get:
+      summary: Admins for an app
+      operationId: getAdminsForApp
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: The admins for the app
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/AppAdminResponse"
+        404:
+          $ref: "#/responses/NotFound"
+
+  /v1/apps/{appID}/admins/{adminID}:
+    put:
+      summary: Add an admin to an app
+      operationId: linkAppAdmin
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          required: true
+        - name: adminID
+          in: path
+          type: string
+          required: true
+        - name: permissions
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/PermissionList"
+      responses:
+        200:
+          description: OK response
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+
+    delete:
+      summary: Remove an admin from an app
+      operationId: unlinkAppAdmin
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          required: true
+        - name: adminID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK response
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+
+  /v1/apps/{appID}/admins/{adminID}/verify:
+    post:
+      summary: Updates an admin's verification for an app
+      operationId: verifyAppAdmin
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          required: true
+        - name: adminID
+          in: path
+          type: string
+          required: true
+        - name: verified
+          in: query
+          type: boolean
+          required: true
+      responses:
+        200:
+          description: OK response
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+
+  /v1/apps/{appID}/admins/{adminID}/guides/{guideID}:
+    put:
+      summary: Add a guide for an admin for an app
+      operationId: setGuideConfig
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          format: mongo-id
+          required: true
+        - name: adminID
+          in: path
+          type: string
+          format: mongo-id
+          required: true
+        - name: guideID
+          in: path
+          type: string
+          required: true
+        - name: guideConfig
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/GuideConfig"
+      responses:
+        200:
+          description: The guide config for the updated admin, app, and guide
+          schema:
+              $ref: "#/definitions/GuideConfig"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+
+    get:
+      summary: Get a guide for an admin for an app
+      operationId: getGuideConfig
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          format: mongo-id
+          required: true
+        - name: adminID
+          in: path
+          type: string
+          format: mongo-id
+          required: true
+        - name: guideID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: The guide config for the given admin, app, and guide
+          schema:
+              $ref: "#/definitions/GuideConfig"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+
+  /v1/admins/{adminID}/confirmation_code:
+    put:
+      summary: Create verification code
+      operationId: createVerificationCode
+      parameters:
+        - name: duration
+          in: query
+          type: integer
+          format: int32
+          required: true
+        - name: adminID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK response
+          schema:
+            $ref: "#/definitions/VerificationCodeResponse"
+        404:
+          $ref: "#/responses/NotFound"
+
+    post:
+      summary: Verify and possibly remove the verification code
+      operationId: verifyCode
+      parameters:
+        - name: code
+          in: query
+          type: string
+          required: true
+        - name: invalidate
+          in: query
+          type: boolean
+        - name: adminID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK response
+        404:
+          $ref: "#/responses/NotFound"
+
+  /v1/apps/{appID}/sharing:
+    get:
+      summary: Get recommended sharing settings
+      operationId: getRecommendedSharing
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: Sharing settings
+          schema:
+            $ref: "#/definitions/SharingRecommendations"
+        404:
+          $ref: "#/responses/NotFound"
+
+    put:
+      summary: Set recommended sharing settings
+      operationId: setRecommendedSharing
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          required: true
+        - name: recommendations
+          in: body
+          schema:
+            $ref: "#/definitions/SharingRecommendations"
+      responses:
+        200:
+          description: OK response
+        404:
+          $ref: "#/responses/NotFound"
+
+  /v1/platforms:
+    get:
+      summary: Gets platforms filtered by the parameters
+      operationId: getPlatforms
+      description: The server takes in the intersection of input parameters
+      parameters:
+        - name: appIds
+          in: query
+          type: array
+          items:
+            type: string
+        - name: name
+          in: query
+          type: string
+      responses:
+        200:
+          description: Array of platforms that satisfy the criteria
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Platform"
+
+  /v1/apps/{appID}/platforms:
+    get:
+      summary: Returns list of platforms for an application
+      operationId: getPlatformsByAppID
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: Array of platforms belonging to the app
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Platform"
+        404:
+          $ref: "#/responses/NotFound"
+
+    put:
+      summary: Creates a platform
+      operationId: createPlatform
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          required: true
+        - name: request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/CreatePlatformRequest"
+      responses:
+        200:
+          description: The created platform
+          schema:
+            $ref: "#/definitions/Platform"
+        404:
+          $ref: "#/responses/NotFound"
+
+  /v1/apps/{appID}/platform/{clientID}:
+    patch:
+      summary: Update a platform
+      operationId: updatePlatform
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          required: true
+        - name: clientID
+          in: path
+          type: string
+          required: true
+        - name: request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/PatchPlatformRequest"
+      responses:
+        200:
+          description: OK response
+          schema:
+            $ref: "#/definitions/Platform"
+        404:
+          $ref: "#/responses/NotFound"
+
+    delete:
+      summary: Delete a platform
+      operationId: deletePlatform
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          required: true
+        - name: clientID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK response
+        404:
+          $ref: "#/responses/NotFound"
+
+  /v1/platforms/{clientID}:
+    get:
+      summary: Get platform by client ID
+      operationId: getPlatformByClientID
+      parameters:
+        - name: clientID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: Platform
+          schema:
+            $ref: "#/definitions/Platform"
+        404:
+          $ref: "#/responses/NotFound"
+
+  /v1/apps/{appID}/onboarding:
+    get:
+      summary: Returns an app's onboarding progress
+      operationId: getOnboarding
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: The app's onboarding progress
+          schema:
+            $ref: "#/definitions/Onboarding"
+        404:
+          $ref: "#/responses/NotFound"
+
+    put:
+      summary: Initializes an app's onboarding progress
+      operationId: initializeOnboarding
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK response
+        404:
+          $ref: "#/responses/NotFound"
+
+    patch:
+      summary: Updates an app's onboarding progress
+      operationId: updateOnboarding
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          required: true
+        - name: update
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/UpdateOnboardingRequest"
+      responses:
+        200:
+          description: OK response
+        404:
+          $ref: "#/responses/NotFound"
+
+  /v1/apps/{appID}/certifications/{schoolYearStart}:
+    get:
+      summary: Returns the given app's certifications for the given school year.
+      operationId: getCertifications
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          required: true
+        - name: schoolYearStart
+          in: path
+          type: integer
+          format: int32
+          required: true
+      responses:
+        200:
+          description: The app's onboarding progress
+          schema:
+            $ref: "#/definitions/Certifications"
+        404:
+          $ref: "#/responses/NotFound"
+    post:
+      summary: Sets the given app's certifications for the given school year.
+      operationId: setCertifications
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          required: true
+        - name: schoolYearStart
+          in: path
+          type: integer
+          format: int32
+          required: true
+        - name: certifications
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/SetCertificationsRequest"
+      responses:
+        200:
+          description: The app's onboarding progress
+          schema:
+            $ref: "#/definitions/Certifications"
+        404:
+          $ref: "#/responses/NotFound"
+
+  /v1/libraryResources:
+    get:
+      summary: Returns all library resources
+      operationId: getAllLibraryResources
+      parameters:
+        - name: category
+          in: query
+          type: string
+        - name: includeDevApps
+          in: query
+          type: boolean
+        - name: includeLinks
+          in: query
+          type: boolean
+      responses:
+        200:
+          description: All library resources
+          schema:
+            $ref: "#/definitions/LibraryResources"
+
+  /v1/libraryResources/{shortname}:
+    get:
+      summary: Returns a library resource with a given shortname
+      operationId: getLibraryResourceByShortname
+      parameters:
+        - name: shortname
+          in: path
+          type: string
+          required: true
+        - name: includeDevApps
+          in: query
+          type: boolean
+        - name: includeLinks
+          in: query
+          type: boolean
+      responses:
+        200:
+          description: The matching library resource
+          schema:
+            $ref: "#/definitions/LibraryResource"
+        404:
+          $ref: "#/responses/NotFound"
+
+    post:
+      summary: Creates a library resource with the given shortname
+      operationId: createLibraryResource
+      parameters:
+        - name: shortname
+          in: path
+          type: string
+          required: true
+        - name: libraryResource
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/CreateLibraryResourceRequest"
+      responses:
+        200:
+          description: The created library resource
+          schema:
+            $ref: "#/definitions/LibraryResource"
+        404:
+          $ref: "#/responses/NotFound"
+
+    patch:
+      summary: Updates the library resource with a given shortname
+      operationId: updateLibraryResourceByShortname
+      parameters:
+        - name: shortname
+          in: path
+          type: string
+          required: true
+        - name: libraryResource
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/PatchLibraryResourceRequest"
+      responses:
+        200:
+          description: OK response
+          schema:
+            $ref: "#/definitions/LibraryResource"
+        404:
+          $ref: "#/responses/NotFound"
+
+  /v1/libraryResources/{shortname}/link:
+    delete:
+      summary: Deletes a library link with a given shortname
+      operationId: deleteLibraryResourceLink
+      parameters:
+        - name: shortname
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK response
+        404:
+          $ref: "#/responses/NotFound"
+
+  /v1/libraryResources/search:
+    get:
+      summary: Returns a list of library resource matching a given query
+      operationId: searchLibraryResource
+      parameters:
+        - name: searchTerm
+          in: query
+          type: string
+          required: true
+        - name: showInLibraryOnly
+          in: query
+          type: boolean
+        - name: includeLinks
+          in: query
+          type: boolean
+      responses:
+        200:
+          description: The matching library resources
+          schema:
+            $ref: "#/definitions/LibraryResources"
+
+  /v1/analytics/apps:
+    get:
+      summary: Returns all apps that are not found in district or library data (for p4a)
+      operationId: getAllAnalyticsApps
+      responses:
+        200:
+          description: All apps
+          schema:
+            $ref: "#/definitions/AnalyticsApps"
+        404:
+          $ref: "#/responses/NotFound"
+
+  /v1/analytics/apps/{shortname}:
+    get:
+      summary: Returns an analytics app matching the shortname
+      operationId: getAnalyticsAppByShortname
+      parameters:
+        - name: shortname
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: The matching app
+          schema:
+            $ref: "#/definitions/AnalyticsApp"
+        404:
+          $ref: "#/responses/NotFound"
+
+
+  # DEPRECATED in favor of /v1/analytics/usageUrls
+  /v1/appUniverse/usageUrls:
+    get:
+      summary: Returns all usage urls
+      operationId: getAllUsageUrls
+      responses:
+        200:
+          description: All usage urls
+          schema:
+            $ref: "#/definitions/UsageUrls"
+        404:
+          $ref: "#/responses/NotFound"
+
+  /v1/analytics/trackable_apps:
+    get:
+      summary: Returns all apps that are used in analytics tracking
+      operationId: getAllTrackableApps
+      responses:
+        200:
+          description: All apps
+          schema:
+            $ref: "#/definitions/TrackableApps"
+        404:
+          $ref: "#/responses/NotFound"
+
+  /v1/analytics/usageUrls:
+    get:
+      summary: Returns all usage urls
+      operationId: getAnalyticsUsageUrls
+      responses:
+        200:
+          description: All usage urls
+          schema:
+            $ref: "#/definitions/UsageUrls"
+        404:
+          $ref: "#/responses/NotFound"
+
+  /v2/apps/{srcAppID}/override-config/{destAppID}:
+    post:
+      summary: Override one app's config with another's
+      operationId: overrideConfig
+      parameters:
+        - name: srcAppID
+          in: path
+          type: string
+          required: true
+        - name: destAppID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: App config successfully overridden
+        404:
+          $ref: "#/responses/NotFound"
+
+  /v1/apps/{appID}/customStep:
+    patch:
+      summary: Creates a new custom setup step
+      operationId: createSetupStep
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          required: true
+        - name: setup_step
+          in: body
+          schema:
+            $ref: "#/definitions/SetupStep"
+      responses:
+        200:
+          description: App custom step successfully created
+        404:
+          $ref: "#/responses/NotFound"
+    get:
+      summary: Returns an app-specific setup step
+      operationId: getSetupStep
+      parameters:
+        - name: appID
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: Setup Step object
+          schema:
+            $ref: "#/definitions/SetupStep"
+        404:
+          $ref: "#/responses/NotFound"
+            
+
+definitions:
+
+  App:
+    type: object
+    description: Represents an application returned by the app service.
+    properties:
+      altNames:
+        type: array
+        items:
+          type: string
+      categories:
+        type: array
+        items:
+          type: string
+          # Not making this an enum since the list of categories will be used for
+          # an API so I don't want to include the list two places
+      clientId:
+        type: string
+      created:
+        type: string
+        format: datetime
+      customerSolutionsNotes:
+        type: string
+      description:
+        type: string
+      edsurgeUrl:
+        type: string
+      id:
+        type: string
+      image:
+        $ref: "#/definitions/Image"
+      inviteMessage:
+        type: string
+        maxLength: 1000
+      iosRedirectUri:
+        type: string
+      name:
+        type: string
+        minLength: 1
+      nonOwnerImpersonationDisabled:
+        type: boolean
+      redirectUris:
+        type: array
+        items:
+          type: string
+      defaultAccessTier:
+        type: string
+      requiredScopes:
+        type: array
+        items:
+          type: string
+        minItems: 1
+      salesContact:
+        type: string
+      supportContact: # email
+        type: string
+      supportContactName:
+        type: string
+      shortname:
+        type: string
+        minLength: 1
+        pattern: "[0-9a-zA-Z_-]+"
+      supportedUserTypes:
+        type: array
+        items:
+          $ref: "#/definitions/UserType"
+      tags:
+        type: array
+        items:
+          type: string
+      versions:
+        $ref: "#/definitions/VersionSettings"
+      websiteUrl:
+        type: string
+        minLength: 1
+
+
+  PatchAppRequest:
+    type: object
+    description: An update to an app
+    properties:
+      altNames:
+        type: array
+        x-nullable: true
+        items:
+          type: string
+      categories:
+        type: array
+        x-nullable: true
+        items:
+          type: string
+          # Not making this an enum since the list of categories will be used for
+          # an API so I don't want to include the list two places
+      customerSolutionsNotes:
+        type: string
+        x-nullable: true
+      description:
+        type: string
+        x-nullable: true
+      edsurgeUrl:
+        type: string
+        x-nullable: true
+      image:
+        $ref: "#/definitions/Image"
+        x-nullable: true
+      inviteMessage:
+        type: string
+        maxLength: 1000
+        x-nullable: true
+      iosRedirectUri:
+        type: string
+        x-nullable: true
+      name:
+        type: string
+        x-nullable: true
+        minLength: 1
+      nonOwnerImpersonationDisabled:
+        type: boolean
+        x-nullable: true
+      redirectUris:
+        type: array
+        x-nullable: true
+        items:
+          type: string
+      defaultAccessTier:
+        x-nullable: true
+        type: string
+      requiredScopes:
+        type: array
+        x-nullable: true
+        items:
+          type: string
+        minItems: 1
+      salesContact:
+        type: string
+        x-nullable: true
+      supportContact: # email
+        type: string
+        x-nullable: true
+      supportContactName:
+        type: string
+        x-nullable: true
+      shortname:
+        type: string
+        x-nullable: true
+        minLength: 1
+        pattern: "[0-9a-zA-Z_-]+"
+      supportedUserTypes:
+        type: array
+        x-nullable: true
+        items:
+          $ref: "#/definitions/UserType"
+      tags:
+        type: array
+        x-nullable: true
+        items:
+          type: string
+      versions:
+        $ref: "#/definitions/VersionSettings"
+        x-nullable: true
+      websiteUrl:
+        type: string
+        x-nullable: true
+        minLength: 1
+
+  UpdateAppIconRequest:
+    type: object
+    description: The new S3 image to use for an app icon
+    properties:
+      newIcon:
+        type: string
+
+  VersionSettings:
+    type: object
+    description: "Version settings for an application"
+    properties:
+      allowed:
+        type: array
+        items:
+          $ref: "#/definitions/Version"
+      default:
+        $ref: "#/definitions/Version"
+
+  Version:
+    type: string
+    description: "Valid versions"
+    enum:
+      - "v1.1"
+      - "v1.2"
+      - "v2.0"
+      - "v2.1"
+
+  UserType:
+    description: "Valid user types"
+    type: string
+    enum:
+      - teachers
+      - students
+      - district_admins
+      - school_admins
+      - clever_users # For non-district-managed users
+
+  Image:
+    type: object
+    properties:
+      icon:
+        type: string
+      logo:
+        type: string
+
+  DataRule:
+    type: object
+    description: "DataRule represents a rule on district configured by an app. The results of the rule are
+    displayed on the data warnings page.
+    Requirements for Rule Validity:
+    - id is auto-generated by the app service when a rule is first created
+    - simple rules apply validation on a document by document basis for a single field. They
+     must have field set and can have field_required, max_length and regex set.
+    - uniqueness rules validate that a field is unique across the entire data set. They only
+     have a field set
+    - custom rules exist for a College Board special case and don't have any of the other fields set.
+    Severity of Rule Type:
+    - warn indicates data may be not correct, but failing records are passed as is to app.
+    - remove indicates app will not work for failing records and they will not be passed on to the app."
+    properties:
+      id:
+        type: string
+      collection:
+        type: string
+        enum:
+          - students
+          - teachers
+          - schools
+          - sections
+          - studentcontacts
+          - schooladmins
+          - courses
+          - contacts
+          - terms
+      severity:
+        type: string
+        enum:
+          - warn
+          - remove
+      ruleType:
+        type: string
+        enum:
+          - simple
+          - uniqueness
+          - custom
+          - custom_dob_valid
+          - custom_dob_range
+          - dualenrollments
+          - hasenrollments
+          - uniqueenrollments
+          - hasstudentcontacts
+          - emptyschools
+          - hascontacts
+          - unlinkedadmins
+          - teacher_staff_uniqueness
+          - sectionhasschool
+      field:
+        type: string
+      fieldRequired:
+        type: boolean
+      maxLength:
+        type: integer
+      regex:
+        type: string
+      description:
+        type: string
+      groupByFields:
+        type: array
+        items:
+          type: string
+
+  SetDataRules:
+    type: object
+    properties:
+      rules:
+        type: array
+        items:
+          $ref: "#/definitions/DataRule"
+
+  AppSchema:
+    type: object
+    properties:
+      collectionSchemas:
+        type: array
+        items:
+          $ref: "#/definitions/CollectionSchema"
+      # It's possible to update app schemas without propagating schema changes down to the connection schemas
+      # needsPropagation will indicate if app schema and related connection schemas are out of sync
+      needsPropagation:
+        type: boolean
+
+  CollectionSchema:
+    type: object
+    properties:
+      name:
+        type: string
+      # Opt-in status determines whether the app has chosen to opt-out of receiving the collection
+      # entirely. For collections that are marked "clever_required", we do not allow the app to
+      # ever opt out of receiving them.
+      optInStatus:
+        type: string
+        enum:
+          - in
+          - out
+          - clever_required
+      extensionFieldsStatus:
+        type: string
+        enum:
+          - none
+          - required
+          - optional
+      fieldSchemas:
+        type: array
+        items:
+          $ref: "#/definitions/FieldSchema"
+
+  FieldSchema:
+    type: object
+    properties:
+      name:
+        type: string
+      # Access Type determines which fields the app has marked as required, which ones as optional,
+      # and which fields are available to the app to move to required/optional in the future.
+      # Clever required fields are ones that an app cannot move to optional.
+      # Clever generated fields are ones that an app will always receive, the districts have no control
+      # in giving them to us, so we should not create data warnings or show them in the UI.
+      # A field can only be in one of the five categories at a given time.
+      accessType:
+        type: string
+        enum:
+          - required
+          - optional
+          - available
+          - clever_required
+          - clever_generated
+
+  Managers:
+    type: object
+    properties:
+      accountManager:
+        type: string
+      relationshipManager:
+        type: string
+
+  TwoFactor:
+    type: object
+    properties:
+      authyId:
+        type: string
+      confirmed:
+        type: boolean
+      authType:
+        type: string
+      rememberMeKey:
+        type: string
+
+  GuideConfig:
+    type: object
+    properties:
+      stage:
+        type: string
+      guideData:
+        $ref: "#/definitions/GuideData"
+
+  GuideData:
+    type: object
+    additionalProperties:
+      type: object
+
+  Admin:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+        minLength: 1
+      email:
+        type: string
+        minLength: 1
+      verifiedEmail:
+        type: string
+      phone:
+        type: string
+      twoFactor:
+        $ref: "#/definitions/TwoFactor"
+
+  KnownHost:
+    type: object
+    properties:
+      appId:
+        type: string
+        minLength: 1
+      url:
+        type: string
+        minLength: 1
+      ipAddress:
+        type: string
+        minLength: 1
+      connectType:
+        type: string
+        enum:
+          - ssh-rsa
+          - ecdsa-sha2-nistp256
+      key:
+        type: string
+        minLength: 1
+
+  PatchAdminRequest:
+    type: object
+    properties:
+      name:
+        type: string
+        minLength: 1
+        x-nullable: true
+      email:
+        type: string
+        minLength: 1
+        x-nullable: true
+      phone:
+        type: string
+        x-nullable: true
+      password:
+        type: string
+        x-nullable: true
+      twoFactor:
+        $ref: "#/definitions/TwoFactor"
+        x-nullable: true
+
+  VerifyAdminEmailRequest:
+    type: object
+    properties:
+      email:
+        type: string
+
+  # returned when getting admins for an app
+  AppAdminResponse:
+    type: object
+    description: Admin with the data specific to a particular app
+    properties:
+      admin:
+        $ref: "#/definitions/Admin"
+      isOwner:
+        type: boolean
+      permissions:
+        $ref: "#/definitions/PermissionList"
+      dateAdded:
+        type: string
+        format: datetime
+      verificationPending:
+        type: boolean
+
+  # returned when getting apps for an admin
+  AppForAdminResponse:
+    type: object
+    description: App with the data specific to a particular admin
+    properties:
+      app:
+        $ref: "#/definitions/App"
+      isOwner:
+        type: boolean
+      permissions:
+        $ref: "#/definitions/PermissionList"
+      dateAdded:
+        type: string
+        format: datetime
+      verificationPending:
+        type: boolean
+
+  Permission:
+    type: object
+    description: A permission for an app admin.
+    properties:
+      resource:
+        type: string
+        enum:
+          - admin
+          - disconnect_district
+          - district_requests
+          - data_tools
+          - app_settings
+          - app_secrets
+          - app_filters
+      action:
+        type: string
+        enum:
+          - view
+          - edit
+          - none
+
+  ValidPermission:
+    type: object
+    properties:
+      value:
+        $ref: "#/definitions/Permission"
+      description:
+        type: string
+
+  GetValidPermissionsResponse:
+    type: array
+    description: Set of valid permissions.
+    items:
+      $ref: "#/definitions/ValidPermission"
+
+  PermissionList:
+    type: array
+    items:
+      $ref: "#/definitions/Permission"
+
+  SecretConfig:
+    type: object
+    properties:
+      currentSecret:
+        type: string
+      oldSecret:
+        type: string
+      oldSecretExpires:
+        type: string
+        format: datetime
+      businessToken:
+        type: string
+
+  Categories:
+    type: array
+    items:
+      type: string
+
+  SetDataRulesRequest:
+    type: array
+    items:
+      $ref: "#/definitions/DataRule"
+
+  ErrorCode:
+    description: "Error Codes"
+    type: string
+    enum:
+      - Unknown
+      - AdminAlreadyExists
+      - AppNotFound
+      - DuplicateRedirectURI
+      - DuplicateShortname
+      - EmailExistsAsDistrictUser
+      - InvalidAccessTier
+      - InvalidCategory
+      - InvalidEmail
+      - InvalidIconURL
+      - InvalidID
+      - InvalidLogoURL
+      - InvalidPassword
+      - InvalidRedirectURI
+      - InvalidScope
+      - InvalidVersionSettings
+      - InvalidWebsiteURL
+      - LastAdminPermission
+      - OnboardingNotFound
+      - ScopeNotAllowedForAccessTier
+      - InvalidShortname
+      - InvalidAppSchema
+
+  InternalError:
+    type: object
+    properties:
+      message:
+        type: string
+
+  BadRequest:
+    type: object
+    description: "The request was bad..."
+    properties:
+      message:
+        type: string
+      code:
+        description: "The error code, if there is one"
+        $ref: "#/definitions/ErrorCode"
+
+  Forbidden:
+    type: object
+    properties:
+      message:
+        type: string
+
+  NotFound:
+    type: object
+    properties:
+      message:
+        type: string
+      code:
+        $ref: "#/definitions/ErrorCode"
+
+  UnprocessableEntity:
+    type: object
+    properties:
+      message:
+        type: string
+
+  CreateAdminRequest:
+    type: object
+    properties:
+      admin:
+        $ref: "#/definitions/Admin"
+      password:
+        type: string
+        minLength: 1
+
+  VerificationCodeResponse:
+    type: string
+
+  SharingConstraint:
+    type: object
+    properties:
+      collection:
+        type: string
+        enum:
+          - sections
+          - students
+          - teachers
+          - schooladmins
+      field:
+        type: string
+      operator:
+        type: string
+        enum:
+          - Contains
+          - EqualsAnyOf
+          - NotContains
+          - NotEqualsAnyOf
+          - StartsWith
+      values:
+        type: array
+        minLength: 1
+        items:
+          type: string
+          minLength: 1
+
+  SharingRule:
+    type: object
+    properties:
+      collection:
+        type: string
+        enum:
+          - sections
+          - students
+          - teachers
+          - schooladmins
+      constraints:
+        type: array
+        minLength: 1
+        items:
+          $ref: "#/definitions/SharingConstraint"
+
+  SharingRecommendations:
+    type: object
+    description: "The sharing recommendations for an application. Should match the schema used in
+    District Authorizations"
+    properties:
+      sharingType:
+        type: string
+        enum:
+          - none
+          - district
+          - schools
+          - sections
+          - rules
+      rules:
+        type: array
+        items:
+          $ref: "#/definitions/SharingRule"
+
+  Platform:
+    type: object
+    description: "Platforms are a way of distinguishing the different software clients of an app (e.g. iOS app, Desktop App, etc.)"
+    properties:
+      appId:
+        type: string
+      clientId:
+        type: string
+      redirectUris:
+        type: array
+        items:
+          $ref: "#/definitions/RedirectUri"
+      disabled:
+        type: boolean
+      name:
+        type: string
+        enum:
+          - ios
+          - android
+          - desktop
+
+  RedirectUri:
+    type: object
+    description: "Redirect URIs specify where codes and tokens should be sent in an OAuth flow."
+    properties:
+      uri:
+        type: string
+      tags:
+        type: array
+        description: "Tags describe the purpose of the redirect URI, to distinguish it from other redirect URIs for the platform."
+        items:
+          type: string
+
+  CreatePlatformRequest:
+    type: object
+    description: Used for the creation of a platform
+    properties:
+      name:
+        type: string
+      redirectUris:
+        type: array
+        x-nullable: true
+        items:
+          $ref: "#/definitions/RedirectUri"
+      disabled:
+        type: boolean
+
+  PatchPlatformRequest:
+    type: object
+    description: Used for an update to a platform
+    properties:
+      redirectUris:
+        type: array
+        x-nullable: true
+        items:
+          $ref: "#/definitions/RedirectUri"
+      disabled:
+        type: boolean
+
+  Onboarding:
+    type: object
+    description: "A data structure used to track an app's progress through the self-serve
+    onboarding flow"
+    properties:
+      instantLogin:
+        type: array
+        items:
+          $ref: "#/definitions/OnboardingEvent"
+      ios:
+        type: array
+        items:
+          $ref: "#/definitions/OnboardingEvent"
+      secureSyncLite:
+        type: array
+        items:
+          $ref: "#/definitions/OnboardingEvent"
+      secureSync:
+        type: array
+        items:
+          $ref: "#/definitions/OnboardingEvent"
+      events:
+        type: array
+        items:
+          $ref: "#/definitions/OnboardingEvent"
+
+  OnboardingEvent:
+    type: object
+    description: "An event representing one of the following: an app starting its integration, an
+    app submitting its integration for review, Clever approving an app's integration, or Clever
+    rejecting an app's integration"
+    properties:
+      eventType:
+        $ref: "#/definitions/OnboardingEventType"
+      timestamp:
+        type: string
+        format: datetime
+      survey:
+        type: array
+        items:
+          $ref: "#/definitions/OnboardingSurveyItem"
+
+  OnboardingEventType:
+    type: string
+    enum:
+      - started
+      - submitted
+      - approved
+      - rejected
+
+  OnboardingSurveyItem:
+    type: object
+    description: An app's response to a single onboarding survey question
+    properties:
+      question:
+        type: string
+      response:
+        type: string
+
+  UpdateOnboardingRequest:
+    type: object
+    description: An update to an app's onboarding progress
+    properties:
+      integrationType:
+        $ref: "#/definitions/OnboardingIntegrationType"
+      eventType:
+        $ref: "#/definitions/OnboardingEventType"
+      survey:
+        type: array
+        items:
+          $ref: "#/definitions/OnboardingSurveyItem"
+
+  OnboardingIntegrationType:
+    type: string
+    enum:
+      - instantLogin
+      - ios
+      - secureSyncLite
+      - secureSync
+      - events
+
+  SetCertificationsRequest:
+    type: object
+    description: Integration certifications for an app, for a specific school year.
+    properties:
+      certS3Path:
+        description:
+          DEPRECATED - use certS3PathIntegration and certS3PathTradeshow instead.
+          This field is mapped to certS3PathTradeshow.
+        type: string
+      certS3PathIntegration:
+        type: string
+      certS3PathTradeshow:
+        type: string
+      events:
+        type: boolean
+      generic:
+        type: boolean
+      goals:
+        type: boolean
+      instantLogin:
+        type: boolean
+      ios:
+        description:
+          DEPRECATED - use nativeMobile instead.
+          This field is mapped to nativeMobile for now.
+        type: boolean
+      nativeMobile:
+        type: boolean
+      secureSync:
+        type: boolean
+
+  Certifications:
+    type: object
+    description: Integration certifications for an app, for a specific school year.
+    properties:
+      appID:
+        type: string
+        format: mongo-id
+      certS3Path:
+        description:
+          DEPRECATED - use certS3PathIntegration and certS3PathTradeshow instead.
+          This field is mapped to certS3PathTradeshow.
+        type: string
+      certS3PathIntegration:
+        type: string
+      certS3PathTradeshow:
+        type: string
+      dateUpdated:
+        type: string
+        format: datetime
+      events:
+        type: boolean
+      generic:
+        type: boolean
+      goals:
+        type: boolean
+      instantLogin:
+        type: boolean
+      ios:
+        description:
+          DEPRECATED - use nativeMobile instead.
+          This field is mapped to nativeMobile for now.
+        type: boolean
+      nativeMobile:
+        type: boolean
+      schoolYearStart:
+        description: Start year for the school year.
+        type: integer
+        format: int32
+      secureSync:
+        type: boolean
+
+  AppOnboarding:
+    type: object
+    description: Tracks app onboarding data for library apps
+    properties:
+      announced:
+        type: string
+        enum:
+          - notScheduled
+          - scheduled
+          - announced
+
+  LibraryResource:
+    type: object
+    description: A resource to show in the Clever Library
+    properties:
+      id:
+        type: string
+      shortname:
+        type: string
+      cleverID:
+        type: string
+      name:
+        type: string
+      tagline:
+        type: string
+      description:
+        type: string
+      url:
+        type: string
+      iconURL:
+        type: string
+      bannerIconURL:
+        type: string
+      gradeLevels:
+        $ref: "#/definitions/ResourceGradeLevels"
+      categories:
+        $ref: "#/definitions/ResourceCategories"
+      devices:
+        $ref: "#/definitions/ResourceDevices"
+      features:
+        $ref: "#/definitions/ResourceFeatures"
+      libraryIntegration:
+        $ref: "#/definitions/LibraryIntegrationType"
+      pricing:
+        $ref: "#/definitions/ResourcePricing"
+      certifications:
+        $ref: "#/definitions/ResourceCertifications"
+      appOnboarding:
+        $ref: "#/definitions/AppOnboarding"
+      tosURL:
+        type: string
+      privacyPolicyURL:
+        type: string
+      featured:
+        type: integer
+        format: int32
+      installCount:
+        type: integer
+        format: int32
+      showInLibrary:
+        type: boolean
+      universalDSASignatory:
+        type: boolean
+      marketingCollateralStatus:
+        $ref: "#/definitions/MarketingCollateralStatus"
+        x-nullable: true
+      stripeUserID:
+        type: string
+      tiers:
+        $ref: "#/definitions/Tiers"
+      searchTags:
+        type: array
+        items:
+          type: string
+      insights:
+        $ref: "#/definitions/InsightsMetadata"
+      covidPromotion:
+        type: string
+      teacherSetupGuide:
+        $ref: "#/definitions/TeacherSetupGuide"
+      teacherSetupGuideStatus:
+        $ref: "#/definitions/TeacherSetupGuideStatus"
+
+  PatchLibraryResourceRequest:
+    type: object
+    properties:
+      shortname:
+        type: string
+        minLength: 1
+        x-nullable: true
+      cleverID:
+        type: string
+        minLength: 1
+        x-nullable: true
+      name:
+        type: string
+        minLength: 1
+        x-nullable: true
+      tagline:
+        type: string
+        minLength: 1
+        x-nullable: true
+      description:
+        type: string
+        minLength: 1
+        x-nullable: true
+      url:
+        type: string
+        minLength: 1
+        x-nullable: true
+      iconURL:
+        type: string
+        minLength: 1
+        x-nullable: true
+      bannerIconURL:
+        type: string
+        minLength: 1
+        x-nullable: true
+      gradeLevels:
+        $ref: "#/definitions/ResourceGradeLevels"
+        x-nullable: true
+      categories:
+        $ref: "#/definitions/ResourceCategories"
+        x-nullable: true
+      devices:
+        $ref: "#/definitions/ResourceDevices"
+        x-nullable: true
+      features:
+        $ref: "#/definitions/ResourceFeatures"
+        x-nullable: true
+      libraryIntegration:
+        $ref: "#/definitions/LibraryIntegrationType"
+        x-nullable: true
+      pricing:
+        $ref: "#/definitions/ResourcePricing"
+        x-nullable: true
+      certifications:
+        $ref: "#/definitions/ResourceCertifications"
+        x-nullable: true
+      appOnboarding:
+        $ref: "#/definitions/AppOnboarding"
+        x-nullable: true
+      tosURL:
+        type: string
+        minLength: 1
+        x-nullable: true
+      privacyPolicyURL:
+        type: string
+        minLength: 1
+        x-nullable: true
+      featured:
+        type: integer
+        format: int32
+        x-nullable: true
+      installCount:
+        type: integer
+        format: int32
+        x-nullable: true
+      showInLibrary:
+        type: boolean
+        x-nullable: true
+      universalDSASignatory:
+        type: boolean
+        x-nullable: true
+      marketingCollateralStatus:
+        $ref: "#/definitions/MarketingCollateralStatus"
+        x-nullable: true
+      stripeUserID:
+        type: string
+      searchTags:
+        type: array
+        maxItems: 10
+        uniqueItems: true
+        x-nullable: true
+        items:
+          type: string
+      insights:
+        $ref: "#/definitions/InsightsMetadata"
+        x-nullable: true
+      covidPromotion:
+        type: string
+        minLength: 1
+        x-nullable: true
+      teacherSetupGuide:
+        $ref: "#/definitions/TeacherSetupGuide"
+        x-nullable: true
+      teacherSetupGuideStatus:
+        $ref: "#/definitions/TeacherSetupGuideStatus"
+        x-nullable: true
+
+  CreateLibraryResourceRequest:
+    type: object
+    properties:
+      cleverID:
+        type: string
+        minLength: 1
+        x-nullable: true
+
+  MarketingCollateralStatus:
+    type: string
+    enum:
+      - notStarted
+      - started
+      - completed
+
+  LibraryIntegrationType:
+    type: string
+    enum:
+      - link
+      - partneredApplication
+
+  ResourceGradeLevels:
+    type: object
+    properties:
+      k2:
+        type: boolean
+      threeFive:
+        type: boolean
+      sixEight:
+        type: boolean
+      nineTwelve:
+        type: boolean
+      staff:
+        type: boolean
+
+  ResourceCategories:
+    type: object
+    properties:
+      english:
+        type: boolean
+      math:
+        type: boolean
+      science:
+        type: boolean
+      technology:
+        type: boolean
+      social_studies:
+        type: boolean
+      assessment:
+        type: boolean
+      classroom_management:
+        type: boolean
+      authoring:
+        type: boolean
+      presentation:
+        type: boolean
+      other:
+        type: boolean
+
+  ResourceDevices:
+    type: object
+    properties:
+      windows:
+        type: boolean
+      macOS:
+        type: boolean
+      iOS:
+        type: boolean
+      android:
+        type: boolean
+      browser:
+        type: boolean
+
+  ResourcePricing:
+    type: string
+    enum:
+      - free
+      - freemium
+      - free_trial
+      - subscription
+
+  ResourceCertifications:
+    type: object
+    properties:
+      student_privacy_pledge:
+        type: boolean
+      commonsensemedia_reviewed:
+        type: boolean
+      ikeepsafe_ferpa:
+        type: boolean
+      ikeepsafe_coppa:
+        type: boolean
+
+  ResourceFeatures:
+    type: array
+    items:
+      $ref: "#/definitions/ResourceFeature"
+
+  ResourceFeature:
+    type: object
+    properties:
+      screenshotURL:
+        type: string
+      description:
+        type: string
+
+  Tiers:
+    type: array
+    items:
+      $ref: "#/definitions/Tier"
+
+  Tier:
+    type: object
+    properties:
+      name:
+        type: string
+      price:
+        type: number
+        format: double
+      limit:
+        type: integer
+        format: int32
+      limitType:
+        type: string
+      studentLimit:
+        type: integer
+        format: int32
+      duration:
+        type: integer
+        format: int32
+      tierFeatures:
+        type: array
+        items:
+          type: string
+
+  LibraryResources:
+    type: array
+    items:
+      $ref: "#/definitions/LibraryResource"
+
+  AnalyticsApp:
+    type: object
+    description: App metadata for apps that don't exist on Clever (for p4a)
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      shortname:
+        type: string
+      cleverID:
+        type: string
+      libraryID:
+        type: string
+      name:
+        type: string
+      tagline:
+        type: string
+      description:
+        type: string
+      url:
+        type: string
+      iconURL:
+        type: string
+      bannerIconURL:
+        type: string
+      gradeLevels:
+        $ref: "#/definitions/ResourceGradeLevels"
+      categories:
+        $ref: "#/definitions/ResourceCategories"
+      devices:
+        $ref: "#/definitions/ResourceDevices"
+      features:
+        $ref: "#/definitions/ResourceFeatures"
+      libraryIntegration:
+        $ref: "#/definitions/LibraryIntegrationType"
+      pricing:
+        $ref: "#/definitions/ResourcePricing"
+      certifications:
+        $ref: "#/definitions/ResourceCertifications"
+      tosURL:
+        type: string
+      privacyPolicyURL:
+        type: string
+      featured:
+        type: integer
+        format: int32
+      installCount:
+        type: integer
+        format: int32
+      showInLibrary:
+        type: boolean
+      universalDSASignatory:
+        type: boolean
+      marketingCollateralStatus:
+        $ref: "#/definitions/MarketingCollateralStatus"
+        x-nullable: true
+      stripeUserID:
+        type: string
+      tiers:
+        $ref: "#/definitions/Tiers"
+      searchTags:
+        type: array
+        items:
+          type: string
+      insights:
+        $ref: "#/definitions/InsightsMetadata"
+
+  AnalyticsApps:
+    type: array
+    items:
+      $ref: "#/definitions/AnalyticsApp"
+
+  InsightsMetadata:
+    type: object
+    properties:
+      enabled:
+        type: boolean
+      usageUrls:
+        type: array
+        items:
+          type: string
+
+  TeacherSetupGuideStatus:
+    type: string
+    enum:
+      - notStarted
+      - started
+      - completed
+
+  TeacherSetupGuide:
+    type: object
+    properties:
+      steps:
+        type: array
+        items:
+          $ref: "#/definitions/TeacherSetupGuideStep"
+
+  TeacherSetupGuideStep:
+    type: object
+    properties:
+      header:
+        type: string
+      content:
+        type: string
+      type:
+        type: string
+        enum:
+          - accountSyncing
+          - howToUse
+      screenshotURL:
+        type: string
+
+  UsageUrls:
+    type: array
+    items:
+      type: string
+
+  TrackableApp:
+    type: object
+    description: An app being tracked for P4A
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      _name:
+        type: string
+      isAppGroup:
+        type: boolean
+      relatedApps:
+        $ref: "#/definitions/RelatedApps"
+      relatedAppsV2:
+        $ref: "#/definitions/RelatedAppsV2"
+      trackingWhitelist:
+        $ref: "#/definitions/TrackingWhitelist"
+
+  RelatedApps:
+    type: object
+    properties:
+      districtPartner:
+        type: string
+        x-nullable: true
+      library:
+        type: string
+        x-nullable: true
+      connector:
+        type: string
+        x-nullable: true
+      saml:
+        type: string
+        x-nullable: true
+      analytics:
+        type: string
+        x-nullable: true
+
+  RelatedAppsV2:
+    type: object
+    properties:
+      districtPartners:
+        type: array
+        items:
+          type: string
+      savedPasswords:
+        type: array
+        items:
+          type: string
+      library:
+        type: array
+        items:
+          type: string
+      saml:
+        type: array
+        items:
+          type: string
+      analytics:
+        type: string
+        x-nullable: true
+
+  RelatedApp:
+    type: object
+    properties:
+      cleverID:
+        type: string
+
+  TrackingWhitelist:
+    type: object
+    properties:
+      enableTracking:
+        type: boolean
+      hideInUI:
+        type: boolean
+      urlMatchers:
+        type: array
+        items:
+          type: string
+
+  TrackableApps:
+    type: object
+    additionalProperties:
+      $ref: "#/definitions/TrackableApp"
+
+  SetupStep:
+    x-db:
+      AllowOverwrites: true
+      DynamoDB:
+        KeySchema:
+          - AttributeName: app_id
+            KeyType: HASH
+          - AttributeName: id
+            KeyType: RANGE
+    type: object
+    properties:
+      id:
+        type: string
+      app_id: 
+        type: string
+      content:
+        type: string
+      title: 
+        type: string
+      edit_date:
+        type: string
+        x-nullable: true
+      creator:
+        type: string
+        x-nullable: true
