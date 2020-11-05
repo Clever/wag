@@ -17,7 +17,7 @@ import (
 )
 
 // Generate writes the files to the client directories
-func Generate(packageName string, s spec.Swagger) error {
+func Generate(packagePath string, s spec.Swagger) error {
 
 	tmpFile, err := swagger.WriteToFile(&s)
 	if err != nil {
@@ -29,7 +29,7 @@ func Generate(packageName string, s spec.Swagger) error {
 	if err := generator.GenerateServer("", []string{}, []string{}, &generator.GenOpts{
 		Spec:           tmpFile,
 		ModelPackage:   "models",
-		Target:         fmt.Sprintf("%s/src/%s/", os.Getenv("GOPATH"), packageName),
+		Target:         fmt.Sprintf("%s/src/%s/", os.Getenv("GOPATH"), packagePath),
 		IncludeModel:   true,
 		IncludeHandler: false,
 		IncludeSupport: false,
@@ -37,18 +37,18 @@ func Generate(packageName string, s spec.Swagger) error {
 		return fmt.Errorf("error generating go-swagger models: %s", err)
 	}
 
-	if err := generateOutputs(packageName, s); err != nil {
+	if err := generateOutputs(packagePath, s); err != nil {
 		return fmt.Errorf("error generating outputs: %s", err)
 	}
-	if err := generateInputs(packageName, s); err != nil {
+	if err := generateInputs(packagePath, s); err != nil {
 		return fmt.Errorf("error generating inputs: %s", err)
 	}
 	return nil
 }
 
-func generateInputs(packageName string, s spec.Swagger) error {
+func generateInputs(packagePath string, s spec.Swagger) error {
 
-	g := swagger.Generator{PackageName: packageName}
+	g := swagger.Generator{PackagePath: packagePath}
 
 	g.Printf(`
 package models
@@ -292,8 +292,8 @@ var queryParamStr = `
 	{{end}}
 `
 
-func generateOutputs(packageName string, s spec.Swagger) error {
-	g := swagger.Generator{PackageName: packageName}
+func generateOutputs(packagePath string, s spec.Swagger) error {
+	g := swagger.Generator{PackagePath: packagePath}
 
 	g.Printf("package models\n\n")
 

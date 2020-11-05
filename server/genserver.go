@@ -14,18 +14,18 @@ import (
 )
 
 // Generate server package for a swagger spec.
-func Generate(packageName string, s spec.Swagger) error {
+func Generate(packageName, packagePath string, s spec.Swagger) error {
 
-	if err := generateRouter(packageName, s, s.Paths); err != nil {
+	if err := generateRouter(packagePath, s, s.Paths); err != nil {
 		return err
 	}
-	if err := generateInterface(packageName, &s, s.Info.InfoProps.Title, s.Paths); err != nil {
+	if err := generateInterface(packageName, packagePath, &s, s.Info.InfoProps.Title, s.Paths); err != nil {
 		return err
 	}
-	if err := generateHandlers(packageName, &s, s.Paths); err != nil {
+	if err := generateHandlers(packageName, packagePath, &s, s.Paths); err != nil {
 		return err
 	}
-	return gendb.GenerateDB(packageName, &s, s.Info.InfoProps.Title, s.Paths)
+	return gendb.GenerateDB(packageName, packagePath, &s, s.Info.InfoProps.Title, s.Paths)
 }
 
 type routerFunction struct {
@@ -40,7 +40,7 @@ type routerTemplate struct {
 	Functions []routerFunction
 }
 
-func generateRouter(packageName string, s spec.Swagger, paths *spec.Paths) error {
+func generateRouter(packagePath string, s spec.Swagger, paths *spec.Paths) error {
 
 	var template routerTemplate
 	template.Title = s.Info.Title
@@ -63,7 +63,7 @@ func generateRouter(packageName string, s spec.Swagger, paths *spec.Paths) error
 	if err != nil {
 		return err
 	}
-	g := swagger.Generator{PackageName: packageName}
+	g := swagger.Generator{PackagePath: packagePath}
 	g.Printf(routerCode)
 	return g.WriteFile("server/router.go")
 }
@@ -96,7 +96,7 @@ type Controller interface {
 }
 `
 
-func generateInterface(packageName string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
+func generateInterface(packageName, packagePath string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
 
 	tmpl := interfaceFileTemplate{
 		ImportStatements: swagger.ImportStatements([]string{"context", packageName + "/models"}),
@@ -122,7 +122,7 @@ func generateInterface(packageName string, s *spec.Swagger, serviceName string, 
 	if err != nil {
 		return err
 	}
-	g := swagger.Generator{PackageName: packageName}
+	g := swagger.Generator{PackagePath: packagePath}
 	g.Printf(interfaceCode)
 	return g.WriteFile("server/interface.go")
 }
@@ -168,7 +168,7 @@ func jsonMarshalNoError(i interface{}) string {
 {{end}}
 `
 
-func generateHandlers(packageName string, s *spec.Swagger, paths *spec.Paths) error {
+func generateHandlers(packageName, packagePath string, s *spec.Swagger, paths *spec.Paths) error {
 
 	tmpl := handlerFileTemplate{
 		ImportStatements: swagger.ImportStatements([]string{"context", "github.com/gorilla/mux",
@@ -200,7 +200,7 @@ func generateHandlers(packageName string, s *spec.Swagger, paths *spec.Paths) er
 	if err != nil {
 		return err
 	}
-	g := swagger.Generator{PackageName: packageName}
+	g := swagger.Generator{PackagePath: packagePath}
 	g.Printf(handlerCode)
 	return g.WriteFile("server/handlers.go")
 }

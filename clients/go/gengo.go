@@ -13,11 +13,11 @@ import (
 )
 
 // Generate generates a client
-func Generate(packageName string, s spec.Swagger) error {
-	if err := generateClient(packageName, s); err != nil {
+func Generate(packageName, packagePath string, s spec.Swagger) error {
+	if err := generateClient(packageName, packagePath, s); err != nil {
 		return err
 	}
-	return generateInterface(packageName, &s, s.Info.InfoProps.Title, s.Paths)
+	return generateInterface(packageName, packagePath, &s, s.Info.InfoProps.Title, s.Paths)
 }
 
 type clientCodeTemplate struct {
@@ -194,7 +194,7 @@ func shortHash(s string) string {
 }
 `
 
-func generateClient(packageName string, s spec.Swagger) error {
+func generateClient(packageName, packagePath string, s spec.Swagger) error {
 
 	codeTemplate := clientCodeTemplate{
 		PackageName:          packageName,
@@ -224,13 +224,13 @@ func generateClient(packageName string, s spec.Swagger) error {
 		return err
 	}
 
-	g := swagger.Generator{PackageName: packageName}
+	g := swagger.Generator{PackagePath: packagePath}
 	g.Printf(clientCode)
 	return g.WriteFile("client/client.go")
 }
 
-func generateInterface(packageName string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
-	g := swagger.Generator{PackageName: packageName}
+func generateInterface(packageName, packagePath string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
+	g := swagger.Generator{PackagePath: packagePath}
 	g.Printf("package client\n\n")
 	g.Printf(swagger.ImportStatements([]string{"context", packageName + "/models"}))
 	g.Printf("//go:generate mockgen -source=$GOFILE -destination=mock_client.go -package=client\n\n")

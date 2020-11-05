@@ -557,6 +557,17 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:8f43dc0009ff80819c708856142830a099f260fd40c67fcffdd3a2779319f589"
+  name = "golang.org/x/mod"
+  packages = [
+    "module",
+    "semver",
+  ]
+  pruneopts = ""
+  revision = "ce943fd02449f621243c9ea6e64098e84752b92b"
+
+[[projects]]
+  branch = "master"
   digest = "1:b4ba046df563f56fe42b6270b20039107a37e1ab47c97aa47a16f848aa5b6d9a"
   name = "golang.org/x/net"
   packages = [
@@ -705,6 +716,7 @@
     "github.com/uber/jaeger-client-go",
     "github.com/uber/jaeger-client-go/config",
     "github.com/uber/jaeger-client-go/transport",
+    "golang.org/x/mod/module",
     "golang.org/x/net/context/ctxhttp",
     "golang.org/x/time/rate",
     "golang.org/x/xerrors",

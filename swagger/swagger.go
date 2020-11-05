@@ -15,7 +15,7 @@ import (
 
 // Generator handles common code generation operations when generating a file in a Go package.
 type Generator struct {
-	PackageName string
+	PackagePath string
 	buf         bytes.Buffer
 }
 
@@ -30,7 +30,7 @@ func (g *Generator) Write(p []byte) (n int, err error) {
 }
 
 // WriteFile writes the buffer to a gofmt-ed file.
-// The file will be located at $GOPATH/src/{PackageName}/{path}.
+// The file will be located at $GOPATH/src/{PackagePath}/{path}.
 func (g *Generator) WriteFile(path string) error {
 	if len(path) == 0 || path[0] == '/' {
 		return fmt.Errorf("path must be relative")
@@ -52,7 +52,7 @@ func (g *Generator) WriteFile(path string) error {
 		}
 		fileBytes = formattedFileBytes
 	}
-	absPath := filepath.Join(os.Getenv("GOPATH"), "src", g.PackageName, path)
+	absPath := filepath.Join(os.Getenv("GOPATH"), "src", g.PackagePath, path)
 	dir := filepath.Dir(absPath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err
