@@ -48,7 +48,7 @@ func main() {
 			log.Fatal("go-package is required")
 		}
 		goPackagePath = *goPackageName
-	} else if err == nil {
+	} else {
 		defer modFile.Close()
 		goPackagePath = getModulePackagePath(*outputPath)
 		*goPackageName = getModulePackageName(goPackagePath, modFile)
