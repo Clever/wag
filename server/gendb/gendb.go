@@ -123,7 +123,7 @@ func findCompositeAttribute(config XDBConfig, attributeName string) *CompositeAt
 }
 
 // GenerateDB generates DB code for schemas annotated with the x-db extension.
-func GenerateDB(packageName string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
+func GenerateDB(packageName, packagePath string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
 	var xdbConfigs []XDBConfig
 	for schemaName, schema := range s.Definitions {
 		if config, err := DecodeConfig(schemaName, schema, *s); err != nil {
@@ -155,7 +155,7 @@ func GenerateDB(packageName string, s *spec.Swagger, serviceName string, paths *
 			return err
 		}
 
-		g := swagger.Generator{PackageName: packageName}
+		g := swagger.Generator{PackagePath: packagePath}
 		g.Printf(tmpBuf.String())
 		return g.WriteFile(outputFilename)
 	}

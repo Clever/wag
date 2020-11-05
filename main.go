@@ -1,11 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/loads/fmts"
@@ -25,6 +28,7 @@ func main() {
 
 	swaggerFile := flag.String("file", "swagger.yml", "the spec file to use")
 	goPackageName := flag.String("go-package", "", "package of the generated go code")
+	outputPath := flag.String("output-path", "", "relative output path of the generated go code")
 	jsModulePath := flag.String("js-path", "", "path to put the js client")
 	versionFlag := flag.Bool("version", false, "print the wag version and exit")
 	flag.Parse()
@@ -32,9 +36,32 @@ func main() {
 		fmt.Println(version)
 		os.Exit(0)
 	}
-	if *goPackageName == "" {
-		log.Fatal("go-package is required")
+
+	var goPackagePath string
+	// check if the repo uses modules
+	if modFile, err := os.Open("go.mod"); err != nil {
+		if _, ok := err.(*os.PathError); !ok {
+			log.Fatalf("Error checking if the repo contains a go.mod file: %s", err.Error())
+		}
+		if *goPackageName == "" {
+			log.Fatal("go-package is required")
+		}
+		goPackagePath = *goPackageName
+	} else {
+		defer modFile.Close()
+
+		goPath := os.Getenv("GOPATH")
+		if goPath == "" {
+			log.Fatalf("GOPATH must be set")
+		}
+		if *outputPath == "" {
+			log.Fatal("output-path is required")
+		}
+
+		goPackagePath = getModulePackagePath(goPath, *outputPath)
+		*goPackageName = getModulePackageName(modFile, *outputPath)
 	}
+
 	if *jsModulePath == "" {
 		log.Fatal("js-path is required")
 	}
@@ -69,9 +96,9 @@ func main() {
 	}
 
 	dirs := []string{
-		filepath.Join(os.Getenv("GOPATH"), "src", *goPackageName, "server"),
-		filepath.Join(os.Getenv("GOPATH"), "src", *goPackageName, "client"),
-		filepath.Join(os.Getenv("GOPATH"), "src", *goPackageName, "models"),
+		filepath.Join(os.Getenv("GOPATH"), "src", goPackagePath, "server"),
+		filepath.Join(os.Getenv("GOPATH"), "src", goPackagePath, "client"),
+		filepath.Join(os.Getenv("GOPATH"), "src", goPackagePath, "models"),
 		*jsModulePath,
 	}
 
@@ -92,15 +119,15 @@ func main() {
 		log.Fatalf("Failed processing the swagger spec: %s", err)
 	}
 
-	if err := models.Generate(*goPackageName, swaggerSpec); err != nil {
+	if err := models.Generate(goPackagePath, swaggerSpec); err != nil {
 		log.Fatalf("Error generating models: %s", err)
 	}
 
-	if err := server.Generate(*goPackageName, swaggerSpec); err != nil {
+	if err := server.Generate(*goPackageName, goPackagePath, swaggerSpec); err != nil {
 		log.Fatalf("Failed to generate server: %s", err)
 	}
 
-	if err := goclient.Generate(*goPackageName, swaggerSpec); err != nil {
+	if err := goclient.Generate(*goPackageName, goPackagePath, swaggerSpec); err != nil {
 		log.Fatalf("Failed generating go client %s", err)
 	}
 
@@ -108,15 +135,43 @@ func main() {
 		log.Fatalf("Failed generating js client %s", err)
 	}
 
-	middlewareGenerator := swagger.Generator{PackageName: *goPackageName}
+	middlewareGenerator := swagger.Generator{PackagePath: goPackagePath}
 	middlewareGenerator.Write(hardcoded.MustAsset("../_hardcoded/middleware.go"))
 	if err := middlewareGenerator.WriteFile("server/middleware.go"); err != nil {
 		log.Fatalf("Failed to copy middleware.go: %s", err)
 	}
 
-	doerGenerator := swagger.Generator{PackageName: *goPackageName}
+	doerGenerator := swagger.Generator{PackagePath: goPackagePath}
 	doerGenerator.Write(hardcoded.MustAsset("../_hardcoded/doer.go"))
 	if err := doerGenerator.WriteFile("client/doer.go"); err != nil {
 		log.Fatalf("Failed to copy doer.go: %s", err)
 	}
+}
+
+func getModulePackagePath(goPath, outputPath string) string {
+	pwd, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("Error getting current directory: %s", err.Error())
+	}
+	goSrcPath := fmt.Sprintf("%v%v", goPath, "/src/")
+	return path.Join(strings.TrimPrefix(pwd, goSrcPath), outputPath)
+}
+
+// getModulePackageName gets the package name of the generated code
+// Example: if packagePath = github.com/Clever/wag/gen-go and the module name is github.com/Clever/wag/v2
+// the function will return github.com/Clever/wag/v2/gen-go
+// Example: if packagePath = github.com/Clever/wag/gen-go and the module name is github.com/Clever/wag
+// the function will return  github.com/Clever/wag/gen-go
+func getModulePackageName(modFile *os.File, outputPath string) string {
+	// read first line of module file
+	r := bufio.NewReader(modFile)
+	b, _, err := r.ReadLine()
+	if err != nil {
+		log.Fatalf("Error checking module name: %s", err.Error())
+	}
+
+	// parse module path
+	moduleName := strings.TrimPrefix(string(b), "module")
+	moduleName = strings.TrimSpace(moduleName)
+	return fmt.Sprintf("%v/%v", moduleName, outputPath)
 }
