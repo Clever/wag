@@ -12,7 +12,6 @@ import (
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/loads/fmts"
-	"golang.org/x/mod/module"
 
 	goclient "github.com/Clever/wag/clients/go"
 	jsclient "github.com/Clever/wag/clients/js"
@@ -60,7 +59,7 @@ func main() {
 		}
 
 		goPackagePath = getModulePackagePath(goPath, *outputPath)
-		*goPackageName = getModulePackageName(goPackagePath, modFile)
+		*goPackageName = getModulePackageName(modFile, *outputPath)
 	}
 
 	if *jsModulePath == "" {
@@ -163,7 +162,7 @@ func getModulePackagePath(goPath, outputPath string) string {
 // the function will return github.com/Clever/wag/v2/gen-go
 // Example: if packagePath = github.com/Clever/wag/gen-go and the module name is github.com/Clever/wag
 // the function will return  github.com/Clever/wag/gen-go
-func getModulePackageName(packagePath string, modFile *os.File) string {
+func getModulePackageName(modFile *os.File, outputPath string) string {
 	// read first line of module file
 	r := bufio.NewReader(modFile)
 	b, _, err := r.ReadLine()
@@ -171,19 +170,8 @@ func getModulePackageName(packagePath string, modFile *os.File) string {
 		log.Fatalf("Error checking module name: %s", err.Error())
 	}
 
-	// parse module version
+	// parse module path
 	moduleName := strings.TrimPrefix(string(b), "module")
 	moduleName = strings.TrimSpace(moduleName)
-	modulePath, pathMajor, ok := module.SplitPathVersion(moduleName)
-	if !ok {
-		log.Fatalf("invalid module path %q", modulePath)
-	}
-	pseudoMajor := module.PathMajorPrefix(pathMajor)
-
-	// add module version to package path
-	if pseudoMajor != "" {
-		suffix := strings.TrimPrefix(packagePath, modulePath)
-		return fmt.Sprintf("%v/%v%v", modulePath, pseudoMajor, suffix)
-	}
-	return modulePath
+	return fmt.Sprintf("%v/%v", moduleName, outputPath)
 }

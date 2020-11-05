@@ -48,10 +48,6 @@ required = ["github.com/tmthrgd/go-bindata", "github.com/golang/mock/mockgen", "
   branch = "master"
 
 [[constraint]]
-  name = "golang.org/x/mod"
-  branch = "master"
-
-[[constraint]]
   name = "github.com/go-openapi/swag"
   branch = "master"
 
