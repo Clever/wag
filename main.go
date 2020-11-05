@@ -158,6 +158,11 @@ func getModulePackagePath(goPath, outputPath string) string {
 	return path.Join(strings.TrimPrefix(pwd, goSrcPath), outputPath)
 }
 
+// getModulePackageName gets the package name of the generated code
+// Example: if packagePath = github.com/Clever/wag/gen-go and the module name is github.com/Clever/wag/v2
+// the function will return github.com/Clever/wag/v2/gen-go
+// Example: if packagePath = github.com/Clever/wag/gen-go and the module name is github.com/Clever/wag
+// the function will return  github.com/Clever/wag/gen-go
 func getModulePackageName(packagePath string, modFile *os.File) string {
 	// read first line of module file
 	r := bufio.NewReader(modFile)
