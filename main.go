@@ -165,7 +165,8 @@ func getModulePackageName(packagePath string, modFile *os.File) string {
 	}
 
 	// parse module version
-	moduleName := strings.TrimPrefix(string(b), "module ")
+	moduleName := strings.TrimPrefix(string(b), "module")
+	moduleName = strings.TrimSpace(moduleName)
 	modulePath, pathMajor, ok := module.SplitPathVersion(moduleName)
 	if !ok {
 		log.Fatalf("invalid module path %q", modulePath)
