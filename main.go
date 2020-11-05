@@ -50,7 +50,16 @@ func main() {
 		goPackagePath = *goPackageName
 	} else {
 		defer modFile.Close()
-		goPackagePath = getModulePackagePath(*outputPath)
+
+		goPath := os.Getenv("GOPATH")
+		if goPath == "" {
+			log.Fatalf("GOPATH must be set")
+		}
+		if *outputPath == "" {
+			log.Fatal("output-path is required")
+		}
+
+		goPackagePath = getModulePackagePath(goPath, *outputPath)
 		*goPackageName = getModulePackageName(goPackagePath, modFile)
 	}
 
@@ -140,17 +149,10 @@ func main() {
 	}
 }
 
-func getModulePackagePath(outputPath string) string {
+func getModulePackagePath(goPath, outputPath string) string {
 	pwd, err := os.Getwd()
 	if err != nil {
 		log.Fatalf("Error getting current directory: %s", err.Error())
-	}
-	goPath := os.Getenv("GOPATH")
-	if goPath == "" {
-		log.Fatalf("GOPATH must be set")
-	}
-	if outputPath == "" {
-		log.Fatal("output-path is required")
 	}
 	goSrcPath := fmt.Sprintf("%v%v", goPath, "/src/")
 	return path.Join(strings.TrimPrefix(pwd, goSrcPath), outputPath)
