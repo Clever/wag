@@ -242,9 +242,15 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
     }
     // must provide only the fields constituting the index
     scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-                  {{- range $ks := $xdbConfig.DynamoDB.KeySchema }}
-      "{{ $ks.AttributeName }}":    exclusiveStartKey["{{ $ks.AttributeName }}"],
-                        {{- end }}
+      {{- range $ks := $xdbConfig.DynamoDB.KeySchema }}
+        {{- if isComposite $xdbConfig $ks.AttributeName }}
+          "{{ $ks.AttributeName }}": &dynamodb.AttributeValue{
+            S: aws.String({{compositeValuePage $xdbConfig $ks.AttributeName "input.StartingAfter"}}),
+          },
+        {{- else}}
+          "{{ $ks.AttributeName }}":    exclusiveStartKey["{{ $ks.AttributeName }}"],
+        {{- end}}
+      {{- end }}
     }
   }
   var innerErr error
