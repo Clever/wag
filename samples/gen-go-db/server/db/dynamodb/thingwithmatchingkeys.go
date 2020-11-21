@@ -165,8 +165,10 @@ func (t ThingWithMatchingKeysTable) scanThingWithMatchingKeyss(ctx context.Conte
 		}
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"bear":        exclusiveStartKey["bear"],
-			"assocTypeID": exclusiveStartKey["assocTypeID"],
+			"bear": exclusiveStartKey["bear"],
+			"assocTypeID": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAfter.AssocType, input.StartingAfter.AssocID)),
+			},
 		}
 	}
 	var innerErr error
@@ -400,14 +402,14 @@ func (t ThingWithMatchingKeysTable) scanThingWithMatchingKeyssByAssocTypeIDAndCr
 		IndexName:      aws.String("byAssoc"),
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
-		if err != nil {
-			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
-		}
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"bear":        exclusiveStartKey["bear"],
-			"assocTypeID": exclusiveStartKey["assocTypeID"],
+			"assocTypeID": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAfter.AssocType, input.StartingAfter.AssocID)),
+			},
+			"createdBear": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAfter.Created, input.StartingAfter.Bear)),
+			},
 		}
 	}
 	var innerErr error

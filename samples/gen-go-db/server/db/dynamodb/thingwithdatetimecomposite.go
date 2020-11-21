@@ -128,14 +128,14 @@ func (t ThingWithDateTimeCompositeTable) scanThingWithDateTimeComposites(ctx con
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
-		if err != nil {
-			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
-		}
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"typeID":          exclusiveStartKey["typeID"],
-			"createdResource": exclusiveStartKey["createdResource"],
+			"typeID": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAfter.Type, input.StartingAfter.ID)),
+			},
+			"createdResource": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAfter.Created, input.StartingAfter.Resource)),
+			},
 		}
 	}
 	var innerErr error

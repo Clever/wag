@@ -401,8 +401,8 @@ func (t EventTable) scanEventsBySkAndData(ctx context.Context, input db.ScanEven
 		}
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"pk": exclusiveStartKey["pk"],
-			"sk": exclusiveStartKey["sk"],
+			"sk":   exclusiveStartKey["sk"],
+			"data": exclusiveStartKey["data"],
 		}
 	}
 	var innerErr error

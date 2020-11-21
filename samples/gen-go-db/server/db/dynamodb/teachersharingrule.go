@@ -169,8 +169,10 @@ func (t TeacherSharingRuleTable) scanTeacherSharingRules(ctx context.Context, in
 		}
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"teacher":    exclusiveStartKey["teacher"],
-			"school_app": exclusiveStartKey["school_app"],
+			"teacher": exclusiveStartKey["teacher"],
+			"school_app": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s_%s", input.StartingAfter.School, input.StartingAfter.App)),
+			},
 		}
 	}
 	var innerErr error
@@ -410,8 +412,10 @@ func (t TeacherSharingRuleTable) scanTeacherSharingRulesByDistrictAndSchoolTeach
 		}
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"teacher":    exclusiveStartKey["teacher"],
-			"school_app": exclusiveStartKey["school_app"],
+			"district": exclusiveStartKey["district"],
+			"school_teacher_app": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s_%s_%s", input.StartingAfter.School, input.StartingAfter.Teacher, input.StartingAfter.App)),
+			},
 		}
 	}
 	var innerErr error

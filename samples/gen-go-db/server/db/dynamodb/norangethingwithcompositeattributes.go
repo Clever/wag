@@ -176,13 +176,11 @@ func (t NoRangeThingWithCompositeAttributesTable) scanNoRangeThingWithCompositeA
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
-		if err != nil {
-			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
-		}
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"name_branch": exclusiveStartKey["name_branch"],
+			"name_branch": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
+			},
 		}
 	}
 	var innerErr error
@@ -344,7 +342,10 @@ func (t NoRangeThingWithCompositeAttributesTable) scanNoRangeThingWithCompositeA
 		}
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"name_branch": exclusiveStartKey["name_branch"],
+			"name_version": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s:%d", *input.StartingAfter.Name, input.StartingAfter.Version)),
+			},
+			"date": exclusiveStartKey["date"],
 		}
 	}
 	var innerErr error

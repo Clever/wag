@@ -410,8 +410,7 @@ func (t ThingTable) scanThingsByID(ctx context.Context, input db.ScanThingsByIDI
 		}
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"name":    exclusiveStartKey["name"],
-			"version": exclusiveStartKey["version"],
+			"id": exclusiveStartKey["id"],
 		}
 	}
 	var innerErr error
@@ -549,8 +548,8 @@ func (t ThingTable) scanThingsByNameAndCreatedAt(ctx context.Context, input db.S
 		}
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"name":    exclusiveStartKey["name"],
-			"version": exclusiveStartKey["version"],
+			"name":      exclusiveStartKey["name"],
+			"createdAt": exclusiveStartKey["createdAt"],
 		}
 	}
 	var innerErr error

@@ -303,6 +303,9 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) scanThingWithRequi
 		}
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"propertyOneAndTwo": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s_%s", *input.StartingAfter.PropertyOne, *input.StartingAfter.PropertyTwo)),
+			},
 			"propertyThree": exclusiveStartKey["propertyThree"],
 		}
 	}

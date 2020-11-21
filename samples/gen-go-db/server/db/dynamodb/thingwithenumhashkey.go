@@ -446,7 +446,7 @@ func (t ThingWithEnumHashKeyTable) scanThingWithEnumHashKeysByBranchAndDate2(ctx
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"branch": exclusiveStartKey["branch"],
-			"date":   exclusiveStartKey["date"],
+			"date2":  exclusiveStartKey["date2"],
 		}
 	}
 	var innerErr error

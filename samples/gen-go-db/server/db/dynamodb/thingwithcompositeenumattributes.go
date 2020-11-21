@@ -159,8 +159,10 @@ func (t ThingWithCompositeEnumAttributesTable) scanThingWithCompositeEnumAttribu
 		}
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"name_branch": exclusiveStartKey["name_branch"],
-			"date":        exclusiveStartKey["date"],
+			"name_branch": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, input.StartingAfter.BranchID)),
+			},
+			"date": exclusiveStartKey["date"],
 		}
 	}
 	var innerErr error

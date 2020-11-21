@@ -191,8 +191,10 @@ func (t ThingWithCompositeAttributesTable) scanThingWithCompositeAttributess(ctx
 		}
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"name_branch": exclusiveStartKey["name_branch"],
-			"date":        exclusiveStartKey["date"],
+			"name_branch": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
+			},
+			"date": exclusiveStartKey["date"],
 		}
 	}
 	var innerErr error
@@ -450,8 +452,10 @@ func (t ThingWithCompositeAttributesTable) scanThingWithCompositeAttributessByNa
 		}
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"name_branch": exclusiveStartKey["name_branch"],
-			"date":        exclusiveStartKey["date"],
+			"name_version": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s:%d", *input.StartingAfter.Name, input.StartingAfter.Version)),
+			},
+			"date": exclusiveStartKey["date"],
 		}
 	}
 	var innerErr error

@@ -216,7 +216,9 @@ func (t DeploymentTable) scanDeployments(ctx context.Context, input db.ScanDeplo
 		}
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"envApp":  exclusiveStartKey["envApp"],
+			"envApp": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application)),
+			},
 			"version": exclusiveStartKey["version"],
 		}
 	}
@@ -460,8 +462,10 @@ func (t DeploymentTable) scanDeploymentsByEnvAppAndDate(ctx context.Context, inp
 		}
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"envApp":  exclusiveStartKey["envApp"],
-			"version": exclusiveStartKey["version"],
+			"envApp": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application)),
+			},
+			"date": exclusiveStartKey["date"],
 		}
 	}
 	var innerErr error
@@ -626,7 +630,6 @@ func (t DeploymentTable) scanDeploymentsByVersion(ctx context.Context, input db.
 		}
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"envApp":  exclusiveStartKey["envApp"],
 			"version": exclusiveStartKey["version"],
 		}
 	}
