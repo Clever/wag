@@ -414,6 +414,11 @@ func (d DB) GetDeployment(ctx context.Context, environment string, application s
 	return d.deploymentTable.getDeployment(ctx, environment, application, version)
 }
 
+// ScanDeployments runs a scan on the Deployments table.
+func (d DB) ScanDeployments(ctx context.Context, input db.ScanDeploymentsInput, fn func(m *models.Deployment, lastDeployment bool) bool) error {
+	return d.deploymentTable.scanDeployments(ctx, input, fn)
+}
+
 // GetDeploymentsByEnvAppAndVersion retrieves a page of Deployments from the database.
 func (d DB) GetDeploymentsByEnvAppAndVersion(ctx context.Context, input db.GetDeploymentsByEnvAppAndVersionInput, fn func(m *models.Deployment, lastDeployment bool) bool) error {
 	return d.deploymentTable.getDeploymentsByEnvAppAndVersion(ctx, input, fn)
@@ -429,6 +434,11 @@ func (d DB) GetDeploymentsByEnvAppAndDate(ctx context.Context, input db.GetDeplo
 	return d.deploymentTable.getDeploymentsByEnvAppAndDate(ctx, input, fn)
 }
 
+// ScanDeploymentsByEnvAppAndDate runs a scan on the EnvAppAndDate index.
+func (d DB) ScanDeploymentsByEnvAppAndDate(ctx context.Context, input db.ScanDeploymentsByEnvAppAndDateInput, fn func(m *models.Deployment, lastDeployment bool) bool) error {
+	return d.deploymentTable.scanDeploymentsByEnvAppAndDate(ctx, input, fn)
+}
+
 // GetDeploymentsByEnvironmentAndDate retrieves a page of Deployments from the database.
 func (d DB) GetDeploymentsByEnvironmentAndDate(ctx context.Context, input db.GetDeploymentsByEnvironmentAndDateInput, fn func(m *models.Deployment, lastDeployment bool) bool) error {
 	return d.deploymentTable.getDeploymentsByEnvironmentAndDate(ctx, input, fn)
@@ -439,6 +449,11 @@ func (d DB) GetDeploymentByVersion(ctx context.Context, version string) (*models
 	return d.deploymentTable.getDeploymentByVersion(ctx, version)
 }
 
+// ScanDeploymentsByVersion runs a scan on the Version index.
+func (d DB) ScanDeploymentsByVersion(ctx context.Context, input db.ScanDeploymentsByVersionInput, fn func(m *models.Deployment, lastDeployment bool) bool) error {
+	return d.deploymentTable.scanDeploymentsByVersion(ctx, input, fn)
+}
+
 // SaveEvent saves a Event to the database.
 func (d DB) SaveEvent(ctx context.Context, m models.Event) error {
 	return d.eventTable.saveEvent(ctx, m)
@@ -447,6 +462,11 @@ func (d DB) SaveEvent(ctx context.Context, m models.Event) error {
 // GetEvent retrieves a Event from the database.
 func (d DB) GetEvent(ctx context.Context, pk string, sk string) (*models.Event, error) {
 	return d.eventTable.getEvent(ctx, pk, sk)
+}
+
+// ScanEvents runs a scan on the Events table.
+func (d DB) ScanEvents(ctx context.Context, input db.ScanEventsInput, fn func(m *models.Event, lastEvent bool) bool) error {
+	return d.eventTable.scanEvents(ctx, input, fn)
 }
 
 // GetEventsByPkAndSk retrieves a page of Events from the database.
@@ -464,6 +484,11 @@ func (d DB) GetEventsBySkAndData(ctx context.Context, input db.GetEventsBySkAndD
 	return d.eventTable.getEventsBySkAndData(ctx, input, fn)
 }
 
+// ScanEventsBySkAndData runs a scan on the SkAndData index.
+func (d DB) ScanEventsBySkAndData(ctx context.Context, input db.ScanEventsBySkAndDataInput, fn func(m *models.Event, lastEvent bool) bool) error {
+	return d.eventTable.scanEventsBySkAndData(ctx, input, fn)
+}
+
 // SaveNoRangeThingWithCompositeAttributes saves a NoRangeThingWithCompositeAttributes to the database.
 func (d DB) SaveNoRangeThingWithCompositeAttributes(ctx context.Context, m models.NoRangeThingWithCompositeAttributes) error {
 	return d.noRangeThingWithCompositeAttributesTable.saveNoRangeThingWithCompositeAttributes(ctx, m)
@@ -472,6 +497,11 @@ func (d DB) SaveNoRangeThingWithCompositeAttributes(ctx context.Context, m model
 // GetNoRangeThingWithCompositeAttributes retrieves a NoRangeThingWithCompositeAttributes from the database.
 func (d DB) GetNoRangeThingWithCompositeAttributes(ctx context.Context, name string, branch string) (*models.NoRangeThingWithCompositeAttributes, error) {
 	return d.noRangeThingWithCompositeAttributesTable.getNoRangeThingWithCompositeAttributes(ctx, name, branch)
+}
+
+// ScanNoRangeThingWithCompositeAttributess runs a scan on the NoRangeThingWithCompositeAttributess table.
+func (d DB) ScanNoRangeThingWithCompositeAttributess(ctx context.Context, input db.ScanNoRangeThingWithCompositeAttributessInput, fn func(m *models.NoRangeThingWithCompositeAttributes, lastNoRangeThingWithCompositeAttributes bool) bool) error {
+	return d.noRangeThingWithCompositeAttributesTable.scanNoRangeThingWithCompositeAttributess(ctx, input, fn)
 }
 
 // DeleteNoRangeThingWithCompositeAttributes deletes a NoRangeThingWithCompositeAttributes from the database.
@@ -484,6 +514,11 @@ func (d DB) GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx cont
 	return d.noRangeThingWithCompositeAttributesTable.getNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx, input, fn)
 }
 
+// ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate runs a scan on the NameVersionAndDate index.
+func (d DB) ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input db.ScanNoRangeThingWithCompositeAttributessByNameVersionAndDateInput, fn func(m *models.NoRangeThingWithCompositeAttributes, lastNoRangeThingWithCompositeAttributes bool) bool) error {
+	return d.noRangeThingWithCompositeAttributesTable.scanNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx, input, fn)
+}
+
 // SaveSimpleThing saves a SimpleThing to the database.
 func (d DB) SaveSimpleThing(ctx context.Context, m models.SimpleThing) error {
 	return d.simpleThingTable.saveSimpleThing(ctx, m)
@@ -492,6 +527,11 @@ func (d DB) SaveSimpleThing(ctx context.Context, m models.SimpleThing) error {
 // GetSimpleThing retrieves a SimpleThing from the database.
 func (d DB) GetSimpleThing(ctx context.Context, name string) (*models.SimpleThing, error) {
 	return d.simpleThingTable.getSimpleThing(ctx, name)
+}
+
+// ScanSimpleThings runs a scan on the SimpleThings table.
+func (d DB) ScanSimpleThings(ctx context.Context, input db.ScanSimpleThingsInput, fn func(m *models.SimpleThing, lastSimpleThing bool) bool) error {
+	return d.simpleThingTable.scanSimpleThings(ctx, input, fn)
 }
 
 // DeleteSimpleThing deletes a SimpleThing from the database.
@@ -509,6 +549,11 @@ func (d DB) GetTeacherSharingRule(ctx context.Context, teacher string, school st
 	return d.teacherSharingRuleTable.getTeacherSharingRule(ctx, teacher, school, app)
 }
 
+// ScanTeacherSharingRules runs a scan on the TeacherSharingRules table.
+func (d DB) ScanTeacherSharingRules(ctx context.Context, input db.ScanTeacherSharingRulesInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error {
+	return d.teacherSharingRuleTable.scanTeacherSharingRules(ctx, input, fn)
+}
+
 // GetTeacherSharingRulesByTeacherAndSchoolApp retrieves a page of TeacherSharingRules from the database.
 func (d DB) GetTeacherSharingRulesByTeacherAndSchoolApp(ctx context.Context, input db.GetTeacherSharingRulesByTeacherAndSchoolAppInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error {
 	return d.teacherSharingRuleTable.getTeacherSharingRulesByTeacherAndSchoolApp(ctx, input, fn)
@@ -522,6 +567,11 @@ func (d DB) DeleteTeacherSharingRule(ctx context.Context, teacher string, school
 // GetTeacherSharingRulesByDistrictAndSchoolTeacherApp retrieves a page of TeacherSharingRules from the database.
 func (d DB) GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx context.Context, input db.GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error {
 	return d.teacherSharingRuleTable.getTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx, input, fn)
+}
+
+// ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp runs a scan on the DistrictAndSchoolTeacherApp index.
+func (d DB) ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx context.Context, input db.ScanTeacherSharingRulesByDistrictAndSchoolTeacherAppInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error {
+	return d.teacherSharingRuleTable.scanTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx, input, fn)
 }
 
 // SaveThing saves a Thing to the database.
@@ -554,6 +604,11 @@ func (d DB) GetThingByID(ctx context.Context, id string) (*models.Thing, error) 
 	return d.thingTable.getThingByID(ctx, id)
 }
 
+// ScanThingsByID runs a scan on the ID index.
+func (d DB) ScanThingsByID(ctx context.Context, input db.ScanThingsByIDInput, fn func(m *models.Thing, lastThing bool) bool) error {
+	return d.thingTable.scanThingsByID(ctx, input, fn)
+}
+
 // GetThingsByNameAndCreatedAt retrieves a page of Things from the database.
 func (d DB) GetThingsByNameAndCreatedAt(ctx context.Context, input db.GetThingsByNameAndCreatedAtInput, fn func(m *models.Thing, lastThing bool) bool) error {
 	return d.thingTable.getThingsByNameAndCreatedAt(ctx, input, fn)
@@ -574,6 +629,11 @@ func (d DB) GetThingWithCompositeAttributes(ctx context.Context, name string, br
 	return d.thingWithCompositeAttributesTable.getThingWithCompositeAttributes(ctx, name, branch, date)
 }
 
+// ScanThingWithCompositeAttributess runs a scan on the ThingWithCompositeAttributess table.
+func (d DB) ScanThingWithCompositeAttributess(ctx context.Context, input db.ScanThingWithCompositeAttributessInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error {
+	return d.thingWithCompositeAttributesTable.scanThingWithCompositeAttributess(ctx, input, fn)
+}
+
 // GetThingWithCompositeAttributessByNameBranchAndDate retrieves a page of ThingWithCompositeAttributess from the database.
 func (d DB) GetThingWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input db.GetThingWithCompositeAttributessByNameBranchAndDateInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error {
 	return d.thingWithCompositeAttributesTable.getThingWithCompositeAttributessByNameBranchAndDate(ctx, input, fn)
@@ -589,6 +649,11 @@ func (d DB) GetThingWithCompositeAttributessByNameVersionAndDate(ctx context.Con
 	return d.thingWithCompositeAttributesTable.getThingWithCompositeAttributessByNameVersionAndDate(ctx, input, fn)
 }
 
+// ScanThingWithCompositeAttributessByNameVersionAndDate runs a scan on the NameVersionAndDate index.
+func (d DB) ScanThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input db.ScanThingWithCompositeAttributessByNameVersionAndDateInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error {
+	return d.thingWithCompositeAttributesTable.scanThingWithCompositeAttributessByNameVersionAndDate(ctx, input, fn)
+}
+
 // SaveThingWithCompositeEnumAttributes saves a ThingWithCompositeEnumAttributes to the database.
 func (d DB) SaveThingWithCompositeEnumAttributes(ctx context.Context, m models.ThingWithCompositeEnumAttributes) error {
 	return d.thingWithCompositeEnumAttributesTable.saveThingWithCompositeEnumAttributes(ctx, m)
@@ -597,6 +662,11 @@ func (d DB) SaveThingWithCompositeEnumAttributes(ctx context.Context, m models.T
 // GetThingWithCompositeEnumAttributes retrieves a ThingWithCompositeEnumAttributes from the database.
 func (d DB) GetThingWithCompositeEnumAttributes(ctx context.Context, name string, branchID models.Branch, date strfmt.DateTime) (*models.ThingWithCompositeEnumAttributes, error) {
 	return d.thingWithCompositeEnumAttributesTable.getThingWithCompositeEnumAttributes(ctx, name, branchID, date)
+}
+
+// ScanThingWithCompositeEnumAttributess runs a scan on the ThingWithCompositeEnumAttributess table.
+func (d DB) ScanThingWithCompositeEnumAttributess(ctx context.Context, input db.ScanThingWithCompositeEnumAttributessInput, fn func(m *models.ThingWithCompositeEnumAttributes, lastThingWithCompositeEnumAttributes bool) bool) error {
+	return d.thingWithCompositeEnumAttributesTable.scanThingWithCompositeEnumAttributess(ctx, input, fn)
 }
 
 // GetThingWithCompositeEnumAttributessByNameBranchAndDate retrieves a page of ThingWithCompositeEnumAttributess from the database.
@@ -619,6 +689,11 @@ func (d DB) GetThingWithDateRange(ctx context.Context, name string, date strfmt.
 	return d.thingWithDateRangeTable.getThingWithDateRange(ctx, name, date)
 }
 
+// ScanThingWithDateRanges runs a scan on the ThingWithDateRanges table.
+func (d DB) ScanThingWithDateRanges(ctx context.Context, input db.ScanThingWithDateRangesInput, fn func(m *models.ThingWithDateRange, lastThingWithDateRange bool) bool) error {
+	return d.thingWithDateRangeTable.scanThingWithDateRanges(ctx, input, fn)
+}
+
 // GetThingWithDateRangesByNameAndDate retrieves a page of ThingWithDateRanges from the database.
 func (d DB) GetThingWithDateRangesByNameAndDate(ctx context.Context, input db.GetThingWithDateRangesByNameAndDateInput, fn func(m *models.ThingWithDateRange, lastThingWithDateRange bool) bool) error {
 	return d.thingWithDateRangeTable.getThingWithDateRangesByNameAndDate(ctx, input, fn)
@@ -637,6 +712,11 @@ func (d DB) SaveThingWithDateTimeComposite(ctx context.Context, m models.ThingWi
 // GetThingWithDateTimeComposite retrieves a ThingWithDateTimeComposite from the database.
 func (d DB) GetThingWithDateTimeComposite(ctx context.Context, typeVar string, id string, created strfmt.DateTime, resource string) (*models.ThingWithDateTimeComposite, error) {
 	return d.thingWithDateTimeCompositeTable.getThingWithDateTimeComposite(ctx, typeVar, id, created, resource)
+}
+
+// ScanThingWithDateTimeComposites runs a scan on the ThingWithDateTimeComposites table.
+func (d DB) ScanThingWithDateTimeComposites(ctx context.Context, input db.ScanThingWithDateTimeCompositesInput, fn func(m *models.ThingWithDateTimeComposite, lastThingWithDateTimeComposite bool) bool) error {
+	return d.thingWithDateTimeCompositeTable.scanThingWithDateTimeComposites(ctx, input, fn)
 }
 
 // GetThingWithDateTimeCompositesByTypeIDAndCreatedResource retrieves a page of ThingWithDateTimeComposites from the database.
@@ -659,6 +739,11 @@ func (d DB) GetThingWithEnumHashKey(ctx context.Context, branch models.Branch, d
 	return d.thingWithEnumHashKeyTable.getThingWithEnumHashKey(ctx, branch, date)
 }
 
+// ScanThingWithEnumHashKeys runs a scan on the ThingWithEnumHashKeys table.
+func (d DB) ScanThingWithEnumHashKeys(ctx context.Context, input db.ScanThingWithEnumHashKeysInput, fn func(m *models.ThingWithEnumHashKey, lastThingWithEnumHashKey bool) bool) error {
+	return d.thingWithEnumHashKeyTable.scanThingWithEnumHashKeys(ctx, input, fn)
+}
+
 // GetThingWithEnumHashKeysByBranchAndDate retrieves a page of ThingWithEnumHashKeys from the database.
 func (d DB) GetThingWithEnumHashKeysByBranchAndDate(ctx context.Context, input db.GetThingWithEnumHashKeysByBranchAndDateInput, fn func(m *models.ThingWithEnumHashKey, lastThingWithEnumHashKey bool) bool) error {
 	return d.thingWithEnumHashKeyTable.getThingWithEnumHashKeysByBranchAndDate(ctx, input, fn)
@@ -674,6 +759,11 @@ func (d DB) GetThingWithEnumHashKeysByBranchAndDate2(ctx context.Context, input 
 	return d.thingWithEnumHashKeyTable.getThingWithEnumHashKeysByBranchAndDate2(ctx, input, fn)
 }
 
+// ScanThingWithEnumHashKeysByBranchAndDate2 runs a scan on the BranchAndDate2 index.
+func (d DB) ScanThingWithEnumHashKeysByBranchAndDate2(ctx context.Context, input db.ScanThingWithEnumHashKeysByBranchAndDate2Input, fn func(m *models.ThingWithEnumHashKey, lastThingWithEnumHashKey bool) bool) error {
+	return d.thingWithEnumHashKeyTable.scanThingWithEnumHashKeysByBranchAndDate2(ctx, input, fn)
+}
+
 // SaveThingWithMatchingKeys saves a ThingWithMatchingKeys to the database.
 func (d DB) SaveThingWithMatchingKeys(ctx context.Context, m models.ThingWithMatchingKeys) error {
 	return d.thingWithMatchingKeysTable.saveThingWithMatchingKeys(ctx, m)
@@ -682,6 +772,11 @@ func (d DB) SaveThingWithMatchingKeys(ctx context.Context, m models.ThingWithMat
 // GetThingWithMatchingKeys retrieves a ThingWithMatchingKeys from the database.
 func (d DB) GetThingWithMatchingKeys(ctx context.Context, bear string, assocType string, assocID string) (*models.ThingWithMatchingKeys, error) {
 	return d.thingWithMatchingKeysTable.getThingWithMatchingKeys(ctx, bear, assocType, assocID)
+}
+
+// ScanThingWithMatchingKeyss runs a scan on the ThingWithMatchingKeyss table.
+func (d DB) ScanThingWithMatchingKeyss(ctx context.Context, input db.ScanThingWithMatchingKeyssInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error {
+	return d.thingWithMatchingKeysTable.scanThingWithMatchingKeyss(ctx, input, fn)
 }
 
 // GetThingWithMatchingKeyssByBearAndAssocTypeID retrieves a page of ThingWithMatchingKeyss from the database.
@@ -699,6 +794,11 @@ func (d DB) GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Con
 	return d.thingWithMatchingKeysTable.getThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx, input, fn)
 }
 
+// ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear runs a scan on the AssocTypeIDAndCreatedBear index.
+func (d DB) ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Context, input db.ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error {
+	return d.thingWithMatchingKeysTable.scanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx, input, fn)
+}
+
 // SaveThingWithRequiredCompositePropertiesAndKeysOnly saves a ThingWithRequiredCompositePropertiesAndKeysOnly to the database.
 func (d DB) SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, m models.ThingWithRequiredCompositePropertiesAndKeysOnly) error {
 	return d.thingWithRequiredCompositePropertiesAndKeysOnlyTable.saveThingWithRequiredCompositePropertiesAndKeysOnly(ctx, m)
@@ -707,6 +807,11 @@ func (d DB) SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Cont
 // GetThingWithRequiredCompositePropertiesAndKeysOnly retrieves a ThingWithRequiredCompositePropertiesAndKeysOnly from the database.
 func (d DB) GetThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, propertyThree string) (*models.ThingWithRequiredCompositePropertiesAndKeysOnly, error) {
 	return d.thingWithRequiredCompositePropertiesAndKeysOnlyTable.getThingWithRequiredCompositePropertiesAndKeysOnly(ctx, propertyThree)
+}
+
+// ScanThingWithRequiredCompositePropertiesAndKeysOnlys runs a scan on the ThingWithRequiredCompositePropertiesAndKeysOnlys table.
+func (d DB) ScanThingWithRequiredCompositePropertiesAndKeysOnlys(ctx context.Context, input db.ScanThingWithRequiredCompositePropertiesAndKeysOnlysInput, fn func(m *models.ThingWithRequiredCompositePropertiesAndKeysOnly, lastThingWithRequiredCompositePropertiesAndKeysOnly bool) bool) error {
+	return d.thingWithRequiredCompositePropertiesAndKeysOnlyTable.scanThingWithRequiredCompositePropertiesAndKeysOnlys(ctx, input, fn)
 }
 
 // DeleteThingWithRequiredCompositePropertiesAndKeysOnly deletes a ThingWithRequiredCompositePropertiesAndKeysOnly from the database.
@@ -719,6 +824,11 @@ func (d DB) GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndT
 	return d.thingWithRequiredCompositePropertiesAndKeysOnlyTable.getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(ctx, input, fn)
 }
 
+// ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree runs a scan on the PropertyOneAndTwoAndPropertyThree index.
+func (d DB) ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(ctx context.Context, input db.ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput, fn func(m *models.ThingWithRequiredCompositePropertiesAndKeysOnly, lastThingWithRequiredCompositePropertiesAndKeysOnly bool) bool) error {
+	return d.thingWithRequiredCompositePropertiesAndKeysOnlyTable.scanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(ctx, input, fn)
+}
+
 // SaveThingWithRequiredFields saves a ThingWithRequiredFields to the database.
 func (d DB) SaveThingWithRequiredFields(ctx context.Context, m models.ThingWithRequiredFields) error {
 	return d.thingWithRequiredFieldsTable.saveThingWithRequiredFields(ctx, m)
@@ -727,6 +837,11 @@ func (d DB) SaveThingWithRequiredFields(ctx context.Context, m models.ThingWithR
 // GetThingWithRequiredFields retrieves a ThingWithRequiredFields from the database.
 func (d DB) GetThingWithRequiredFields(ctx context.Context, name string) (*models.ThingWithRequiredFields, error) {
 	return d.thingWithRequiredFieldsTable.getThingWithRequiredFields(ctx, name)
+}
+
+// ScanThingWithRequiredFieldss runs a scan on the ThingWithRequiredFieldss table.
+func (d DB) ScanThingWithRequiredFieldss(ctx context.Context, input db.ScanThingWithRequiredFieldssInput, fn func(m *models.ThingWithRequiredFields, lastThingWithRequiredFields bool) bool) error {
+	return d.thingWithRequiredFieldsTable.scanThingWithRequiredFieldss(ctx, input, fn)
 }
 
 // DeleteThingWithRequiredFields deletes a ThingWithRequiredFields from the database.
@@ -742,6 +857,11 @@ func (d DB) SaveThingWithRequiredFields2(ctx context.Context, m models.ThingWith
 // GetThingWithRequiredFields2 retrieves a ThingWithRequiredFields2 from the database.
 func (d DB) GetThingWithRequiredFields2(ctx context.Context, name string, id string) (*models.ThingWithRequiredFields2, error) {
 	return d.thingWithRequiredFields2Table.getThingWithRequiredFields2(ctx, name, id)
+}
+
+// ScanThingWithRequiredFields2s runs a scan on the ThingWithRequiredFields2s table.
+func (d DB) ScanThingWithRequiredFields2s(ctx context.Context, input db.ScanThingWithRequiredFields2sInput, fn func(m *models.ThingWithRequiredFields2, lastThingWithRequiredFields2 bool) bool) error {
+	return d.thingWithRequiredFields2Table.scanThingWithRequiredFields2s(ctx, input, fn)
 }
 
 // GetThingWithRequiredFields2sByNameAndID retrieves a page of ThingWithRequiredFields2s from the database.

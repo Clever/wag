@@ -177,6 +177,49 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKey(ctx context.Context, 
 	return &m, nil
 }
 
+func (t ThingWithEnumHashKeyTable) scanThingWithEnumHashKeys(ctx context.Context, input db.ScanThingWithEnumHashKeysInput, fn func(m *models.ThingWithEnumHashKey, lastThingWithEnumHashKey bool) bool) error {
+	scanInput := &dynamodb.ScanInput{
+		TableName:      aws.String(t.name()),
+		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+	}
+	if input.StartingAfter != nil {
+		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		if err != nil {
+			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
+		}
+		// must provide only the fields constituting the index
+		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"branch": exclusiveStartKey["branch"],
+			"date":   exclusiveStartKey["date"],
+		}
+	}
+	var innerErr error
+	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+		ms, err := decodeThingWithEnumHashKeys(out.Items)
+		if err != nil {
+			innerErr = fmt.Errorf("error decoding %s", err.Error())
+			return false
+		}
+		for i := range ms {
+			if input.Limiter != nil {
+				if err := input.Limiter.Wait(ctx); err != nil {
+					innerErr = err
+					return false
+				}
+			}
+			lastModel := lastPage && i == len(ms)-1
+			if continuee := fn(&ms[i], lastModel); !continuee {
+				return false
+			}
+		}
+		return true
+	})
+	if innerErr != nil {
+		return innerErr
+	}
+	return err
+}
+
 func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDate(ctx context.Context, input db.GetThingWithEnumHashKeysByBranchAndDateInput, fn func(m *models.ThingWithEnumHashKey, lastThingWithEnumHashKey bool) bool) error {
 	if input.DateStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.DateStartingAt or input.StartingAfter")
@@ -388,6 +431,49 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDate2(ctx 
 	}
 
 	return nil
+}
+func (t ThingWithEnumHashKeyTable) scanThingWithEnumHashKeysByBranchAndDate2(ctx context.Context, input db.ScanThingWithEnumHashKeysByBranchAndDate2Input, fn func(m *models.ThingWithEnumHashKey, lastThingWithEnumHashKey bool) bool) error {
+	scanInput := &dynamodb.ScanInput{
+		TableName:      aws.String(t.name()),
+		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+		IndexName:      aws.String("byBranch"),
+	}
+	if input.StartingAfter != nil {
+		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		if err != nil {
+			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
+		}
+		// must provide only the fields constituting the index
+		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"branch": exclusiveStartKey["branch"],
+			"date":   exclusiveStartKey["date"],
+		}
+	}
+	var innerErr error
+	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+		ms, err := decodeThingWithEnumHashKeys(out.Items)
+		if err != nil {
+			innerErr = fmt.Errorf("error decoding %s", err.Error())
+			return false
+		}
+		for i := range ms {
+			if input.Limiter != nil {
+				if err := input.Limiter.Wait(ctx); err != nil {
+					innerErr = err
+					return false
+				}
+			}
+			lastModel := lastPage && i == len(ms)-1
+			if continuee := fn(&ms[i], lastModel); !continuee {
+				return false
+			}
+		}
+		return true
+	})
+	if innerErr != nil {
+		return innerErr
+	}
+	return err
 }
 
 // encodeThingWithEnumHashKey encodes a ThingWithEnumHashKey as a DynamoDB map of attribute values.

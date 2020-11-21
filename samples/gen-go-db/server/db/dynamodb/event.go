@@ -151,6 +151,49 @@ func (t EventTable) getEvent(ctx context.Context, pk string, sk string) (*models
 	return &m, nil
 }
 
+func (t EventTable) scanEvents(ctx context.Context, input db.ScanEventsInput, fn func(m *models.Event, lastEvent bool) bool) error {
+	scanInput := &dynamodb.ScanInput{
+		TableName:      aws.String(t.name()),
+		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+	}
+	if input.StartingAfter != nil {
+		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		if err != nil {
+			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
+		}
+		// must provide only the fields constituting the index
+		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"pk": exclusiveStartKey["pk"],
+			"sk": exclusiveStartKey["sk"],
+		}
+	}
+	var innerErr error
+	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+		ms, err := decodeEvents(out.Items)
+		if err != nil {
+			innerErr = fmt.Errorf("error decoding %s", err.Error())
+			return false
+		}
+		for i := range ms {
+			if input.Limiter != nil {
+				if err := input.Limiter.Wait(ctx); err != nil {
+					innerErr = err
+					return false
+				}
+			}
+			lastModel := lastPage && i == len(ms)-1
+			if continuee := fn(&ms[i], lastModel); !continuee {
+				return false
+			}
+		}
+		return true
+	})
+	if innerErr != nil {
+		return innerErr
+	}
+	return err
+}
+
 func (t EventTable) getEventsByPkAndSk(ctx context.Context, input db.GetEventsByPkAndSkInput, fn func(m *models.Event, lastEvent bool) bool) error {
 	if input.SkStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.SkStartingAt or input.StartingAfter")
@@ -344,6 +387,49 @@ func (t EventTable) getEventsBySkAndData(ctx context.Context, input db.GetEvents
 	}
 
 	return nil
+}
+func (t EventTable) scanEventsBySkAndData(ctx context.Context, input db.ScanEventsBySkAndDataInput, fn func(m *models.Event, lastEvent bool) bool) error {
+	scanInput := &dynamodb.ScanInput{
+		TableName:      aws.String(t.name()),
+		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+		IndexName:      aws.String("bySK"),
+	}
+	if input.StartingAfter != nil {
+		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		if err != nil {
+			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
+		}
+		// must provide only the fields constituting the index
+		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"pk": exclusiveStartKey["pk"],
+			"sk": exclusiveStartKey["sk"],
+		}
+	}
+	var innerErr error
+	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+		ms, err := decodeEvents(out.Items)
+		if err != nil {
+			innerErr = fmt.Errorf("error decoding %s", err.Error())
+			return false
+		}
+		for i := range ms {
+			if input.Limiter != nil {
+				if err := input.Limiter.Wait(ctx); err != nil {
+					innerErr = err
+					return false
+				}
+			}
+			lastModel := lastPage && i == len(ms)-1
+			if continuee := fn(&ms[i], lastModel); !continuee {
+				return false
+			}
+		}
+		return true
+	})
+	if innerErr != nil {
+		return innerErr
+	}
+	return err
 }
 
 // encodeEvent encodes a Event as a DynamoDB map of attribute values.

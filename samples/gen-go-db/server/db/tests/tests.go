@@ -22,6 +22,7 @@ func mustTime(s string) strfmt.DateTime {
 
 func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetDeployment", GetDeployment(dbFactory(), t))
+	t.Run("ScanDeployments", ScanDeployments(dbFactory(), t))
 	t.Run("GetDeploymentsByEnvAppAndVersion", GetDeploymentsByEnvAppAndVersion(dbFactory(), t))
 	t.Run("SaveDeployment", SaveDeployment(dbFactory(), t))
 	t.Run("DeleteDeployment", DeleteDeployment(dbFactory(), t))
@@ -29,18 +30,22 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetDeploymentsByEnvironmentAndDate", GetDeploymentsByEnvironmentAndDate(dbFactory(), t))
 	t.Run("GetDeploymentByVersion", GetDeploymentByVersion(dbFactory(), t))
 	t.Run("GetEvent", GetEvent(dbFactory(), t))
+	t.Run("ScanEvents", ScanEvents(dbFactory(), t))
 	t.Run("GetEventsByPkAndSk", GetEventsByPkAndSk(dbFactory(), t))
 	t.Run("SaveEvent", SaveEvent(dbFactory(), t))
 	t.Run("DeleteEvent", DeleteEvent(dbFactory(), t))
 	t.Run("GetEventsBySkAndData", GetEventsBySkAndData(dbFactory(), t))
 	t.Run("GetNoRangeThingWithCompositeAttributes", GetNoRangeThingWithCompositeAttributes(dbFactory(), t))
+	t.Run("ScanNoRangeThingWithCompositeAttributess", ScanNoRangeThingWithCompositeAttributess(dbFactory(), t))
 	t.Run("SaveNoRangeThingWithCompositeAttributes", SaveNoRangeThingWithCompositeAttributes(dbFactory(), t))
 	t.Run("DeleteNoRangeThingWithCompositeAttributes", DeleteNoRangeThingWithCompositeAttributes(dbFactory(), t))
 	t.Run("GetNoRangeThingWithCompositeAttributessByNameVersionAndDate", GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(dbFactory(), t))
 	t.Run("GetSimpleThing", GetSimpleThing(dbFactory(), t))
+	t.Run("ScanSimpleThings", ScanSimpleThings(dbFactory(), t))
 	t.Run("SaveSimpleThing", SaveSimpleThing(dbFactory(), t))
 	t.Run("DeleteSimpleThing", DeleteSimpleThing(dbFactory(), t))
 	t.Run("GetTeacherSharingRule", GetTeacherSharingRule(dbFactory(), t))
+	t.Run("ScanTeacherSharingRules", ScanTeacherSharingRules(dbFactory(), t))
 	t.Run("GetTeacherSharingRulesByTeacherAndSchoolApp", GetTeacherSharingRulesByTeacherAndSchoolApp(dbFactory(), t))
 	t.Run("SaveTeacherSharingRule", SaveTeacherSharingRule(dbFactory(), t))
 	t.Run("DeleteTeacherSharingRule", DeleteTeacherSharingRule(dbFactory(), t))
@@ -53,40 +58,49 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingByID", GetThingByID(dbFactory(), t))
 	t.Run("GetThingsByNameAndCreatedAt", GetThingsByNameAndCreatedAt(dbFactory(), t))
 	t.Run("GetThingWithCompositeAttributes", GetThingWithCompositeAttributes(dbFactory(), t))
+	t.Run("ScanThingWithCompositeAttributess", ScanThingWithCompositeAttributess(dbFactory(), t))
 	t.Run("GetThingWithCompositeAttributessByNameBranchAndDate", GetThingWithCompositeAttributessByNameBranchAndDate(dbFactory(), t))
 	t.Run("SaveThingWithCompositeAttributes", SaveThingWithCompositeAttributes(dbFactory(), t))
 	t.Run("DeleteThingWithCompositeAttributes", DeleteThingWithCompositeAttributes(dbFactory(), t))
 	t.Run("GetThingWithCompositeAttributessByNameVersionAndDate", GetThingWithCompositeAttributessByNameVersionAndDate(dbFactory(), t))
 	t.Run("GetThingWithCompositeEnumAttributes", GetThingWithCompositeEnumAttributes(dbFactory(), t))
+	t.Run("ScanThingWithCompositeEnumAttributess", ScanThingWithCompositeEnumAttributess(dbFactory(), t))
 	t.Run("GetThingWithCompositeEnumAttributessByNameBranchAndDate", GetThingWithCompositeEnumAttributessByNameBranchAndDate(dbFactory(), t))
 	t.Run("SaveThingWithCompositeEnumAttributes", SaveThingWithCompositeEnumAttributes(dbFactory(), t))
 	t.Run("DeleteThingWithCompositeEnumAttributes", DeleteThingWithCompositeEnumAttributes(dbFactory(), t))
 	t.Run("GetThingWithDateRange", GetThingWithDateRange(dbFactory(), t))
+	t.Run("ScanThingWithDateRanges", ScanThingWithDateRanges(dbFactory(), t))
 	t.Run("GetThingWithDateRangesByNameAndDate", GetThingWithDateRangesByNameAndDate(dbFactory(), t))
 	t.Run("SaveThingWithDateRange", SaveThingWithDateRange(dbFactory(), t))
 	t.Run("DeleteThingWithDateRange", DeleteThingWithDateRange(dbFactory(), t))
 	t.Run("GetThingWithDateTimeComposite", GetThingWithDateTimeComposite(dbFactory(), t))
+	t.Run("ScanThingWithDateTimeComposites", ScanThingWithDateTimeComposites(dbFactory(), t))
 	t.Run("GetThingWithDateTimeCompositesByTypeIDAndCreatedResource", GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(dbFactory(), t))
 	t.Run("SaveThingWithDateTimeComposite", SaveThingWithDateTimeComposite(dbFactory(), t))
 	t.Run("DeleteThingWithDateTimeComposite", DeleteThingWithDateTimeComposite(dbFactory(), t))
 	t.Run("GetThingWithEnumHashKey", GetThingWithEnumHashKey(dbFactory(), t))
+	t.Run("ScanThingWithEnumHashKeys", ScanThingWithEnumHashKeys(dbFactory(), t))
 	t.Run("GetThingWithEnumHashKeysByBranchAndDate", GetThingWithEnumHashKeysByBranchAndDate(dbFactory(), t))
 	t.Run("SaveThingWithEnumHashKey", SaveThingWithEnumHashKey(dbFactory(), t))
 	t.Run("DeleteThingWithEnumHashKey", DeleteThingWithEnumHashKey(dbFactory(), t))
 	t.Run("GetThingWithEnumHashKeysByBranchAndDate2", GetThingWithEnumHashKeysByBranchAndDate2(dbFactory(), t))
 	t.Run("GetThingWithMatchingKeys", GetThingWithMatchingKeys(dbFactory(), t))
+	t.Run("ScanThingWithMatchingKeyss", ScanThingWithMatchingKeyss(dbFactory(), t))
 	t.Run("GetThingWithMatchingKeyssByBearAndAssocTypeID", GetThingWithMatchingKeyssByBearAndAssocTypeID(dbFactory(), t))
 	t.Run("SaveThingWithMatchingKeys", SaveThingWithMatchingKeys(dbFactory(), t))
 	t.Run("DeleteThingWithMatchingKeys", DeleteThingWithMatchingKeys(dbFactory(), t))
 	t.Run("GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear", GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(dbFactory(), t))
 	t.Run("GetThingWithRequiredCompositePropertiesAndKeysOnly", GetThingWithRequiredCompositePropertiesAndKeysOnly(dbFactory(), t))
+	t.Run("ScanThingWithRequiredCompositePropertiesAndKeysOnlys", ScanThingWithRequiredCompositePropertiesAndKeysOnlys(dbFactory(), t))
 	t.Run("SaveThingWithRequiredCompositePropertiesAndKeysOnly", SaveThingWithRequiredCompositePropertiesAndKeysOnly(dbFactory(), t))
 	t.Run("DeleteThingWithRequiredCompositePropertiesAndKeysOnly", DeleteThingWithRequiredCompositePropertiesAndKeysOnly(dbFactory(), t))
 	t.Run("GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree", GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(dbFactory(), t))
 	t.Run("GetThingWithRequiredFields", GetThingWithRequiredFields(dbFactory(), t))
+	t.Run("ScanThingWithRequiredFieldss", ScanThingWithRequiredFieldss(dbFactory(), t))
 	t.Run("SaveThingWithRequiredFields", SaveThingWithRequiredFields(dbFactory(), t))
 	t.Run("DeleteThingWithRequiredFields", DeleteThingWithRequiredFields(dbFactory(), t))
 	t.Run("GetThingWithRequiredFields2", GetThingWithRequiredFields2(dbFactory(), t))
+	t.Run("ScanThingWithRequiredFields2s", ScanThingWithRequiredFields2s(dbFactory(), t))
 	t.Run("GetThingWithRequiredFields2sByNameAndID", GetThingWithRequiredFields2sByNameAndID(dbFactory(), t))
 	t.Run("SaveThingWithRequiredFields2", SaveThingWithRequiredFields2(dbFactory(), t))
 	t.Run("DeleteThingWithRequiredFields2", DeleteThingWithRequiredFields2(dbFactory(), t))
@@ -318,6 +332,118 @@ func GetDeploymentsByEnvAppAndVersion(d db.Interface, t *testing.T) func(t *test
 							Environment: "string1",
 							Application: "string1",
 							Version:     "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+type scanDeploymentsInput struct {
+	ctx   context.Context
+	input db.ScanDeploymentsInput
+}
+type scanDeploymentsOutput struct {
+	deployments []models.Deployment
+	err         error
+}
+type scanDeploymentsTest struct {
+	testName string
+	d        db.Interface
+	input    scanDeploymentsInput
+	output   scanDeploymentsOutput
+}
+
+func (g scanDeploymentsTest) run(t *testing.T) {
+	deployments := []models.Deployment{}
+	err := g.d.ScanDeployments(g.input.ctx, g.input.input, func(m *models.Deployment, last bool) bool {
+		deployments = append(deployments, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.deployments, deployments)
+}
+
+func ScanDeployments(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveDeployment(ctx, models.Deployment{
+			Environment: "string1",
+			Application: "string1",
+			Version:     "string1",
+		}))
+		require.Nil(t, d.SaveDeployment(ctx, models.Deployment{
+			Environment: "string2",
+			Application: "string2",
+			Version:     "string2",
+		}))
+		require.Nil(t, d.SaveDeployment(ctx, models.Deployment{
+			Environment: "string3",
+			Application: "string3",
+			Version:     "string3",
+		}))
+		tests := []scanDeploymentsTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanDeploymentsInput{
+					ctx:   context.Background(),
+					input: db.ScanDeploymentsInput{},
+				},
+				output: scanDeploymentsOutput{
+					things: []models.Deployment{
+						models.Deployment{
+							Environment: "string3",
+							Application: "string3",
+							Version:     "string3",
+						},
+						models.Deployment{
+							Environment: "string2",
+							Application: "string2",
+							Version:     "string2",
+						},
+						models.Deployment{
+							Environment: "string1",
+							Application: "string1",
+							Version:     "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanDeploymentsInput{
+					ctx: context.Background(),
+					input: db.ScanDeploymentsInput{
+						StartingAfter: &models.Deployment{
+							Environment: "string3",
+							Application: "string3",
+							Version:     "string3",
+						},
+					},
+				},
+				output: scanDeploymentsOutput{
+					deployments: []models.Deployment{
+						models.Deployment{
+							Environment: "string2",
+							Application: "string2",
+							Version:     "string2",
+						},
+						models.Deployment{
+							Environment: "string1",
+							Application: "string1",
+							Version:     "string1",
 						},
 					},
 					err: nil,
@@ -587,6 +713,118 @@ func GetDeploymentsByEnvAppAndDate(d db.Interface, t *testing.T) func(t *testing
 	}
 }
 
+type scanDeploymentsByEnvAppAndDateInput struct {
+	ctx   context.Context
+	input db.ScanDeploymentsByEnvAppAndDateInput
+}
+type scanDeploymentsByEnvAppAndDateOutput struct {
+	deployments []models.Deployment
+	err         error
+}
+type scanDeploymentsByEnvAppAndDateTest struct {
+	testName string
+	d        db.Interface
+	input    scanDeploymentsByEnvAppAndDateInput
+	output   scanDeploymentsByEnvAppAndDateOutput
+}
+
+func (g scanDeploymentsByEnvAppAndDateTest) run(t *testing.T) {
+	deployments := []models.Deployment{}
+	err := g.d.ScanDeploymentsByEnvAppAndDate(g.input.ctx, g.input.input, func(m *models.Deployment, last bool) bool {
+		deployments = append(deployments, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.deployments, deployments)
+}
+
+func ScanDeploymentsByEnvAppAndDate(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveDeployment(ctx, models.Deployment{
+			Environment: "string1",
+			Application: "string1",
+			Version:     "string1",
+		}))
+		require.Nil(t, d.SaveDeployment(ctx, models.Deployment{
+			Environment: "string2",
+			Application: "string2",
+			Version:     "string2",
+		}))
+		require.Nil(t, d.SaveDeployment(ctx, models.Deployment{
+			Environment: "string3",
+			Application: "string3",
+			Version:     "string3",
+		}))
+		tests := []scanDeploymentsByEnvAppAndDateTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanDeploymentsByEnvAppAndDateInput{
+					ctx:   context.Background(),
+					input: db.ScanDeploymentsByEnvAppAndDateInput{},
+				},
+				output: scanDeploymentsByEnvAppAndDateOutput{
+					things: []models.Deployment{
+						models.Deployment{
+							Environment: "string3",
+							Application: "string3",
+							Version:     "string3",
+						},
+						models.Deployment{
+							Environment: "string2",
+							Application: "string2",
+							Version:     "string2",
+						},
+						models.Deployment{
+							Environment: "string1",
+							Application: "string1",
+							Version:     "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanDeploymentsByEnvAppAndDateInput{
+					ctx: context.Background(),
+					input: db.ScanDeploymentsByEnvAppAndDateInput{
+						StartingAfter: &models.Deployment{
+							Environment: "string3",
+							Application: "string3",
+							Version:     "string3",
+						},
+					},
+				},
+				output: scanDeploymentsByEnvAppAndDateOutput{
+					deployments: []models.Deployment{
+						models.Deployment{
+							Environment: "string2",
+							Application: "string2",
+							Version:     "string2",
+						},
+						models.Deployment{
+							Environment: "string1",
+							Application: "string1",
+							Version:     "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
 type getDeploymentsByEnvironmentAndDateInput struct {
 	ctx   context.Context
 	input db.GetDeploymentsByEnvironmentAndDateInput
@@ -835,6 +1073,118 @@ func GetDeploymentByVersion(s db.Interface, t *testing.T) func(t *testing.T) {
 	}
 }
 
+type scanDeploymentsByVersionInput struct {
+	ctx   context.Context
+	input db.ScanDeploymentsByVersionInput
+}
+type scanDeploymentsByVersionOutput struct {
+	deployments []models.Deployment
+	err         error
+}
+type scanDeploymentsByVersionTest struct {
+	testName string
+	d        db.Interface
+	input    scanDeploymentsByVersionInput
+	output   scanDeploymentsByVersionOutput
+}
+
+func (g scanDeploymentsByVersionTest) run(t *testing.T) {
+	deployments := []models.Deployment{}
+	err := g.d.ScanDeploymentsByVersion(g.input.ctx, g.input.input, func(m *models.Deployment, last bool) bool {
+		deployments = append(deployments, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.deployments, deployments)
+}
+
+func ScanDeploymentsByVersion(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveDeployment(ctx, models.Deployment{
+			Environment: "string1",
+			Application: "string1",
+			Version:     "string1",
+		}))
+		require.Nil(t, d.SaveDeployment(ctx, models.Deployment{
+			Environment: "string2",
+			Application: "string2",
+			Version:     "string2",
+		}))
+		require.Nil(t, d.SaveDeployment(ctx, models.Deployment{
+			Environment: "string3",
+			Application: "string3",
+			Version:     "string3",
+		}))
+		tests := []scanDeploymentsByVersionTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanDeploymentsByVersionInput{
+					ctx:   context.Background(),
+					input: db.ScanDeploymentsByVersionInput{},
+				},
+				output: scanDeploymentsByVersionOutput{
+					things: []models.Deployment{
+						models.Deployment{
+							Environment: "string3",
+							Application: "string3",
+							Version:     "string3",
+						},
+						models.Deployment{
+							Environment: "string2",
+							Application: "string2",
+							Version:     "string2",
+						},
+						models.Deployment{
+							Environment: "string1",
+							Application: "string1",
+							Version:     "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanDeploymentsByVersionInput{
+					ctx: context.Background(),
+					input: db.ScanDeploymentsByVersionInput{
+						StartingAfter: &models.Deployment{
+							Environment: "string3",
+							Application: "string3",
+							Version:     "string3",
+						},
+					},
+				},
+				output: scanDeploymentsByVersionOutput{
+					deployments: []models.Deployment{
+						models.Deployment{
+							Environment: "string2",
+							Application: "string2",
+							Version:     "string2",
+						},
+						models.Deployment{
+							Environment: "string1",
+							Application: "string1",
+							Version:     "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
 func GetEvent(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -1034,6 +1384,109 @@ func GetEventsByPkAndSk(d db.Interface, t *testing.T) func(t *testing.T) {
 						models.Event{
 							Pk: "string1",
 							Sk: "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+type scanEventsInput struct {
+	ctx   context.Context
+	input db.ScanEventsInput
+}
+type scanEventsOutput struct {
+	events []models.Event
+	err    error
+}
+type scanEventsTest struct {
+	testName string
+	d        db.Interface
+	input    scanEventsInput
+	output   scanEventsOutput
+}
+
+func (g scanEventsTest) run(t *testing.T) {
+	events := []models.Event{}
+	err := g.d.ScanEvents(g.input.ctx, g.input.input, func(m *models.Event, last bool) bool {
+		events = append(events, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.events, events)
+}
+
+func ScanEvents(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveEvent(ctx, models.Event{
+			Pk: "string1",
+			Sk: "string1",
+		}))
+		require.Nil(t, d.SaveEvent(ctx, models.Event{
+			Pk: "string2",
+			Sk: "string2",
+		}))
+		require.Nil(t, d.SaveEvent(ctx, models.Event{
+			Pk: "string3",
+			Sk: "string3",
+		}))
+		tests := []scanEventsTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanEventsInput{
+					ctx:   context.Background(),
+					input: db.ScanEventsInput{},
+				},
+				output: scanEventsOutput{
+					things: []models.Event{
+						models.Event{
+							Pk: "string3",
+							Sk: "string3",
+						},
+						models.Event{
+							Pk: "string2",
+							Sk: "string2",
+						},
+						models.Event{
+							Pk: "string1",
+							Sk: "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanEventsInput{
+					ctx: context.Background(),
+					input: db.ScanEventsInput{
+						StartingAfter: &models.Event{
+							Pk: "string3",
+							Sk: "string3",
+						},
+					},
+				},
+				output: scanEventsOutput{
+					events: []models.Event{
+						models.Event{
+							Pk: "string2",
+							Sk: "string2",
+						},
+						models.Event{
+							Pk: "string1",
+							Sk: "string1",
 						},
 					},
 					err: nil,
@@ -1279,6 +1732,109 @@ func GetEventsBySkAndData(d db.Interface, t *testing.T) func(t *testing.T) {
 	}
 }
 
+type scanEventsBySkAndDataInput struct {
+	ctx   context.Context
+	input db.ScanEventsBySkAndDataInput
+}
+type scanEventsBySkAndDataOutput struct {
+	events []models.Event
+	err    error
+}
+type scanEventsBySkAndDataTest struct {
+	testName string
+	d        db.Interface
+	input    scanEventsBySkAndDataInput
+	output   scanEventsBySkAndDataOutput
+}
+
+func (g scanEventsBySkAndDataTest) run(t *testing.T) {
+	events := []models.Event{}
+	err := g.d.ScanEventsBySkAndData(g.input.ctx, g.input.input, func(m *models.Event, last bool) bool {
+		events = append(events, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.events, events)
+}
+
+func ScanEventsBySkAndData(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveEvent(ctx, models.Event{
+			Pk: "string1",
+			Sk: "string1",
+		}))
+		require.Nil(t, d.SaveEvent(ctx, models.Event{
+			Pk: "string2",
+			Sk: "string2",
+		}))
+		require.Nil(t, d.SaveEvent(ctx, models.Event{
+			Pk: "string3",
+			Sk: "string3",
+		}))
+		tests := []scanEventsBySkAndDataTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanEventsBySkAndDataInput{
+					ctx:   context.Background(),
+					input: db.ScanEventsBySkAndDataInput{},
+				},
+				output: scanEventsBySkAndDataOutput{
+					things: []models.Event{
+						models.Event{
+							Pk: "string3",
+							Sk: "string3",
+						},
+						models.Event{
+							Pk: "string2",
+							Sk: "string2",
+						},
+						models.Event{
+							Pk: "string1",
+							Sk: "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanEventsBySkAndDataInput{
+					ctx: context.Background(),
+					input: db.ScanEventsBySkAndDataInput{
+						StartingAfter: &models.Event{
+							Pk: "string3",
+							Sk: "string3",
+						},
+					},
+				},
+				output: scanEventsBySkAndDataOutput{
+					events: []models.Event{
+						models.Event{
+							Pk: "string2",
+							Sk: "string2",
+						},
+						models.Event{
+							Pk: "string1",
+							Sk: "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
 func GetNoRangeThingWithCompositeAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -1297,6 +1853,109 @@ func GetNoRangeThingWithCompositeAttributes(s db.Interface, t *testing.T) func(t
 		_, err = s.GetNoRangeThingWithCompositeAttributes(ctx, "string2", "string2")
 		require.NotNil(t, err)
 		require.IsType(t, err, db.ErrNoRangeThingWithCompositeAttributesNotFound{})
+	}
+}
+
+type scanNoRangeThingWithCompositeAttributessInput struct {
+	ctx   context.Context
+	input db.ScanNoRangeThingWithCompositeAttributessInput
+}
+type scanNoRangeThingWithCompositeAttributessOutput struct {
+	noRangeThingWithCompositeAttributess []models.NoRangeThingWithCompositeAttributes
+	err                                  error
+}
+type scanNoRangeThingWithCompositeAttributessTest struct {
+	testName string
+	d        db.Interface
+	input    scanNoRangeThingWithCompositeAttributessInput
+	output   scanNoRangeThingWithCompositeAttributessOutput
+}
+
+func (g scanNoRangeThingWithCompositeAttributessTest) run(t *testing.T) {
+	noRangeThingWithCompositeAttributess := []models.NoRangeThingWithCompositeAttributes{}
+	err := g.d.ScanNoRangeThingWithCompositeAttributess(g.input.ctx, g.input.input, func(m *models.NoRangeThingWithCompositeAttributes, last bool) bool {
+		noRangeThingWithCompositeAttributess = append(noRangeThingWithCompositeAttributess, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.noRangeThingWithCompositeAttributess, noRangeThingWithCompositeAttributess)
+}
+
+func ScanNoRangeThingWithCompositeAttributess(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveNoRangeThingWithCompositeAttributes(ctx, models.NoRangeThingWithCompositeAttributes{
+			Name:   db.String("string1"),
+			Branch: db.String("string1"),
+		}))
+		require.Nil(t, d.SaveNoRangeThingWithCompositeAttributes(ctx, models.NoRangeThingWithCompositeAttributes{
+			Name:   db.String("string2"),
+			Branch: db.String("string2"),
+		}))
+		require.Nil(t, d.SaveNoRangeThingWithCompositeAttributes(ctx, models.NoRangeThingWithCompositeAttributes{
+			Name:   db.String("string3"),
+			Branch: db.String("string3"),
+		}))
+		tests := []scanNoRangeThingWithCompositeAttributessTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanNoRangeThingWithCompositeAttributessInput{
+					ctx:   context.Background(),
+					input: db.ScanNoRangeThingWithCompositeAttributessInput{},
+				},
+				output: scanNoRangeThingWithCompositeAttributessOutput{
+					things: []models.NoRangeThingWithCompositeAttributes{
+						models.NoRangeThingWithCompositeAttributes{
+							Name:   db.String("string3"),
+							Branch: db.String("string3"),
+						},
+						models.NoRangeThingWithCompositeAttributes{
+							Name:   db.String("string2"),
+							Branch: db.String("string2"),
+						},
+						models.NoRangeThingWithCompositeAttributes{
+							Name:   db.String("string1"),
+							Branch: db.String("string1"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanNoRangeThingWithCompositeAttributessInput{
+					ctx: context.Background(),
+					input: db.ScanNoRangeThingWithCompositeAttributessInput{
+						StartingAfter: &models.NoRangeThingWithCompositeAttributes{
+							Name:   db.String("string3"),
+							Branch: db.String("string3"),
+						},
+					},
+				},
+				output: scanNoRangeThingWithCompositeAttributessOutput{
+					noRangeThingWithCompositeAttributess: []models.NoRangeThingWithCompositeAttributes{
+						models.NoRangeThingWithCompositeAttributes{
+							Name:   db.String("string2"),
+							Branch: db.String("string2"),
+						},
+						models.NoRangeThingWithCompositeAttributes{
+							Name:   db.String("string1"),
+							Branch: db.String("string1"),
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
 	}
 }
 
@@ -1558,6 +2217,109 @@ func GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface,
 	}
 }
 
+type scanNoRangeThingWithCompositeAttributessByNameVersionAndDateInput struct {
+	ctx   context.Context
+	input db.ScanNoRangeThingWithCompositeAttributessByNameVersionAndDateInput
+}
+type scanNoRangeThingWithCompositeAttributessByNameVersionAndDateOutput struct {
+	noRangeThingWithCompositeAttributess []models.NoRangeThingWithCompositeAttributes
+	err                                  error
+}
+type scanNoRangeThingWithCompositeAttributessByNameVersionAndDateTest struct {
+	testName string
+	d        db.Interface
+	input    scanNoRangeThingWithCompositeAttributessByNameVersionAndDateInput
+	output   scanNoRangeThingWithCompositeAttributessByNameVersionAndDateOutput
+}
+
+func (g scanNoRangeThingWithCompositeAttributessByNameVersionAndDateTest) run(t *testing.T) {
+	noRangeThingWithCompositeAttributess := []models.NoRangeThingWithCompositeAttributes{}
+	err := g.d.ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate(g.input.ctx, g.input.input, func(m *models.NoRangeThingWithCompositeAttributes, last bool) bool {
+		noRangeThingWithCompositeAttributess = append(noRangeThingWithCompositeAttributess, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.noRangeThingWithCompositeAttributess, noRangeThingWithCompositeAttributess)
+}
+
+func ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveNoRangeThingWithCompositeAttributes(ctx, models.NoRangeThingWithCompositeAttributes{
+			Name:   db.String("string1"),
+			Branch: db.String("string1"),
+		}))
+		require.Nil(t, d.SaveNoRangeThingWithCompositeAttributes(ctx, models.NoRangeThingWithCompositeAttributes{
+			Name:   db.String("string2"),
+			Branch: db.String("string2"),
+		}))
+		require.Nil(t, d.SaveNoRangeThingWithCompositeAttributes(ctx, models.NoRangeThingWithCompositeAttributes{
+			Name:   db.String("string3"),
+			Branch: db.String("string3"),
+		}))
+		tests := []scanNoRangeThingWithCompositeAttributessByNameVersionAndDateTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanNoRangeThingWithCompositeAttributessByNameVersionAndDateInput{
+					ctx:   context.Background(),
+					input: db.ScanNoRangeThingWithCompositeAttributessByNameVersionAndDateInput{},
+				},
+				output: scanNoRangeThingWithCompositeAttributessByNameVersionAndDateOutput{
+					things: []models.NoRangeThingWithCompositeAttributes{
+						models.NoRangeThingWithCompositeAttributes{
+							Name:   db.String("string3"),
+							Branch: db.String("string3"),
+						},
+						models.NoRangeThingWithCompositeAttributes{
+							Name:   db.String("string2"),
+							Branch: db.String("string2"),
+						},
+						models.NoRangeThingWithCompositeAttributes{
+							Name:   db.String("string1"),
+							Branch: db.String("string1"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanNoRangeThingWithCompositeAttributessByNameVersionAndDateInput{
+					ctx: context.Background(),
+					input: db.ScanNoRangeThingWithCompositeAttributessByNameVersionAndDateInput{
+						StartingAfter: &models.NoRangeThingWithCompositeAttributes{
+							Name:   db.String("string3"),
+							Branch: db.String("string3"),
+						},
+					},
+				},
+				output: scanNoRangeThingWithCompositeAttributessByNameVersionAndDateOutput{
+					noRangeThingWithCompositeAttributess: []models.NoRangeThingWithCompositeAttributes{
+						models.NoRangeThingWithCompositeAttributes{
+							Name:   db.String("string2"),
+							Branch: db.String("string2"),
+						},
+						models.NoRangeThingWithCompositeAttributes{
+							Name:   db.String("string1"),
+							Branch: db.String("string1"),
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
 func GetSimpleThing(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -1572,6 +2334,100 @@ func GetSimpleThing(s db.Interface, t *testing.T) func(t *testing.T) {
 		_, err = s.GetSimpleThing(ctx, "string2")
 		require.NotNil(t, err)
 		require.IsType(t, err, db.ErrSimpleThingNotFound{})
+	}
+}
+
+type scanSimpleThingsInput struct {
+	ctx   context.Context
+	input db.ScanSimpleThingsInput
+}
+type scanSimpleThingsOutput struct {
+	simpleThings []models.SimpleThing
+	err          error
+}
+type scanSimpleThingsTest struct {
+	testName string
+	d        db.Interface
+	input    scanSimpleThingsInput
+	output   scanSimpleThingsOutput
+}
+
+func (g scanSimpleThingsTest) run(t *testing.T) {
+	simpleThings := []models.SimpleThing{}
+	err := g.d.ScanSimpleThings(g.input.ctx, g.input.input, func(m *models.SimpleThing, last bool) bool {
+		simpleThings = append(simpleThings, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.simpleThings, simpleThings)
+}
+
+func ScanSimpleThings(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveSimpleThing(ctx, models.SimpleThing{
+			Name: "string1",
+		}))
+		require.Nil(t, d.SaveSimpleThing(ctx, models.SimpleThing{
+			Name: "string2",
+		}))
+		require.Nil(t, d.SaveSimpleThing(ctx, models.SimpleThing{
+			Name: "string3",
+		}))
+		tests := []scanSimpleThingsTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanSimpleThingsInput{
+					ctx:   context.Background(),
+					input: db.ScanSimpleThingsInput{},
+				},
+				output: scanSimpleThingsOutput{
+					things: []models.SimpleThing{
+						models.SimpleThing{
+							Name: "string3",
+						},
+						models.SimpleThing{
+							Name: "string2",
+						},
+						models.SimpleThing{
+							Name: "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanSimpleThingsInput{
+					ctx: context.Background(),
+					input: db.ScanSimpleThingsInput{
+						StartingAfter: &models.SimpleThing{
+							Name: "string3",
+						},
+					},
+				},
+				output: scanSimpleThingsOutput{
+					simpleThings: []models.SimpleThing{
+						models.SimpleThing{
+							Name: "string2",
+						},
+						models.SimpleThing{
+							Name: "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
 	}
 }
 
@@ -1847,6 +2703,154 @@ func GetTeacherSharingRulesByTeacherAndSchoolApp(d db.Interface, t *testing.T) f
 	}
 }
 
+type scanTeacherSharingRulesInput struct {
+	ctx   context.Context
+	input db.ScanTeacherSharingRulesInput
+}
+type scanTeacherSharingRulesOutput struct {
+	teacherSharingRules []models.TeacherSharingRule
+	err                 error
+}
+type scanTeacherSharingRulesTest struct {
+	testName string
+	d        db.Interface
+	input    scanTeacherSharingRulesInput
+	output   scanTeacherSharingRulesOutput
+}
+
+func (g scanTeacherSharingRulesTest) run(t *testing.T) {
+	teacherSharingRules := []models.TeacherSharingRule{}
+	err := g.d.ScanTeacherSharingRules(g.input.ctx, g.input.input, func(m *models.TeacherSharingRule, last bool) bool {
+		teacherSharingRules = append(teacherSharingRules, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.teacherSharingRules, teacherSharingRules)
+}
+
+func ScanTeacherSharingRules(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveTeacherSharingRule(ctx, models.TeacherSharingRule{
+			Teacher: "string1",
+			School:  "string1",
+			App:     "string1",
+			// must specify non-empty string values for attributes
+			// in secondary indexes, since dynamodb doesn't support
+			// empty strings:
+			District: "district",
+		}))
+		require.Nil(t, d.SaveTeacherSharingRule(ctx, models.TeacherSharingRule{
+			Teacher: "string2",
+			School:  "string2",
+			App:     "string2",
+			// must specify non-empty string values for attributes
+			// in secondary indexes, since dynamodb doesn't support
+			// empty strings:
+			District: "district",
+		}))
+		require.Nil(t, d.SaveTeacherSharingRule(ctx, models.TeacherSharingRule{
+			Teacher: "string3",
+			School:  "string3",
+			App:     "string3",
+			// must specify non-empty string values for attributes
+			// in secondary indexes, since dynamodb doesn't support
+			// empty strings:
+			District: "district",
+		}))
+		tests := []scanTeacherSharingRulesTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanTeacherSharingRulesInput{
+					ctx:   context.Background(),
+					input: db.ScanTeacherSharingRulesInput{},
+				},
+				output: scanTeacherSharingRulesOutput{
+					things: []models.TeacherSharingRule{
+						models.TeacherSharingRule{
+							Teacher: "string3",
+							School:  "string3",
+							App:     "string3",
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+							District: "district",
+						},
+						models.TeacherSharingRule{
+							Teacher: "string2",
+							School:  "string2",
+							App:     "string2",
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+							District: "district",
+						},
+						models.TeacherSharingRule{
+							Teacher: "string1",
+							School:  "string1",
+							App:     "string1",
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+							District: "district",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanTeacherSharingRulesInput{
+					ctx: context.Background(),
+					input: db.ScanTeacherSharingRulesInput{
+						StartingAfter: &models.TeacherSharingRule{
+							Teacher: "string3",
+							School:  "string3",
+							App:     "string3",
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+							District: "district",
+						},
+					},
+				},
+				output: scanTeacherSharingRulesOutput{
+					teacherSharingRules: []models.TeacherSharingRule{
+						models.TeacherSharingRule{
+							Teacher: "string2",
+							School:  "string2",
+							App:     "string2",
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+							District: "district",
+						},
+						models.TeacherSharingRule{
+							Teacher: "string1",
+							School:  "string1",
+							App:     "string1",
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+							District: "district",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
 func SaveTeacherSharingRule(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -2091,6 +3095,154 @@ func GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(d db.Interface, t *test
 							School:   "string3",
 							Teacher:  "string3",
 							App:      "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+type scanTeacherSharingRulesByDistrictAndSchoolTeacherAppInput struct {
+	ctx   context.Context
+	input db.ScanTeacherSharingRulesByDistrictAndSchoolTeacherAppInput
+}
+type scanTeacherSharingRulesByDistrictAndSchoolTeacherAppOutput struct {
+	teacherSharingRules []models.TeacherSharingRule
+	err                 error
+}
+type scanTeacherSharingRulesByDistrictAndSchoolTeacherAppTest struct {
+	testName string
+	d        db.Interface
+	input    scanTeacherSharingRulesByDistrictAndSchoolTeacherAppInput
+	output   scanTeacherSharingRulesByDistrictAndSchoolTeacherAppOutput
+}
+
+func (g scanTeacherSharingRulesByDistrictAndSchoolTeacherAppTest) run(t *testing.T) {
+	teacherSharingRules := []models.TeacherSharingRule{}
+	err := g.d.ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp(g.input.ctx, g.input.input, func(m *models.TeacherSharingRule, last bool) bool {
+		teacherSharingRules = append(teacherSharingRules, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.teacherSharingRules, teacherSharingRules)
+}
+
+func ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveTeacherSharingRule(ctx, models.TeacherSharingRule{
+			Teacher: "string1",
+			School:  "string1",
+			App:     "string1",
+			// must specify non-empty string values for attributes
+			// in secondary indexes, since dynamodb doesn't support
+			// empty strings:
+			District: "district",
+		}))
+		require.Nil(t, d.SaveTeacherSharingRule(ctx, models.TeacherSharingRule{
+			Teacher: "string2",
+			School:  "string2",
+			App:     "string2",
+			// must specify non-empty string values for attributes
+			// in secondary indexes, since dynamodb doesn't support
+			// empty strings:
+			District: "district",
+		}))
+		require.Nil(t, d.SaveTeacherSharingRule(ctx, models.TeacherSharingRule{
+			Teacher: "string3",
+			School:  "string3",
+			App:     "string3",
+			// must specify non-empty string values for attributes
+			// in secondary indexes, since dynamodb doesn't support
+			// empty strings:
+			District: "district",
+		}))
+		tests := []scanTeacherSharingRulesByDistrictAndSchoolTeacherAppTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanTeacherSharingRulesByDistrictAndSchoolTeacherAppInput{
+					ctx:   context.Background(),
+					input: db.ScanTeacherSharingRulesByDistrictAndSchoolTeacherAppInput{},
+				},
+				output: scanTeacherSharingRulesByDistrictAndSchoolTeacherAppOutput{
+					things: []models.TeacherSharingRule{
+						models.TeacherSharingRule{
+							Teacher: "string3",
+							School:  "string3",
+							App:     "string3",
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+							District: "district",
+						},
+						models.TeacherSharingRule{
+							Teacher: "string2",
+							School:  "string2",
+							App:     "string2",
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+							District: "district",
+						},
+						models.TeacherSharingRule{
+							Teacher: "string1",
+							School:  "string1",
+							App:     "string1",
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+							District: "district",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanTeacherSharingRulesByDistrictAndSchoolTeacherAppInput{
+					ctx: context.Background(),
+					input: db.ScanTeacherSharingRulesByDistrictAndSchoolTeacherAppInput{
+						StartingAfter: &models.TeacherSharingRule{
+							Teacher: "string3",
+							School:  "string3",
+							App:     "string3",
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+							District: "district",
+						},
+					},
+				},
+				output: scanTeacherSharingRulesByDistrictAndSchoolTeacherAppOutput{
+					teacherSharingRules: []models.TeacherSharingRule{
+						models.TeacherSharingRule{
+							Teacher: "string2",
+							School:  "string2",
+							App:     "string2",
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+							District: "district",
+						},
+						models.TeacherSharingRule{
+							Teacher: "string1",
+							School:  "string1",
+							App:     "string1",
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+							District: "district",
 						},
 					},
 					err: nil,
@@ -2466,6 +3618,109 @@ func GetThingByID(s db.Interface, t *testing.T) func(t *testing.T) {
 		_, err = s.GetThingByID(ctx, "string2")
 		require.NotNil(t, err)
 		require.IsType(t, err, db.ErrThingByIDNotFound{})
+	}
+}
+
+type scanThingsByIDInput struct {
+	ctx   context.Context
+	input db.ScanThingsByIDInput
+}
+type scanThingsByIDOutput struct {
+	things []models.Thing
+	err    error
+}
+type scanThingsByIDTest struct {
+	testName string
+	d        db.Interface
+	input    scanThingsByIDInput
+	output   scanThingsByIDOutput
+}
+
+func (g scanThingsByIDTest) run(t *testing.T) {
+	things := []models.Thing{}
+	err := g.d.ScanThingsByID(g.input.ctx, g.input.input, func(m *models.Thing, last bool) bool {
+		things = append(things, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.things, things)
+}
+
+func ScanThingsByID(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThing(ctx, models.Thing{
+			Name:    "string1",
+			Version: 1,
+		}))
+		require.Nil(t, d.SaveThing(ctx, models.Thing{
+			Name:    "string2",
+			Version: 2,
+		}))
+		require.Nil(t, d.SaveThing(ctx, models.Thing{
+			Name:    "string3",
+			Version: 3,
+		}))
+		tests := []scanThingsByIDTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanThingsByIDInput{
+					ctx:   context.Background(),
+					input: db.ScanThingsByIDInput{},
+				},
+				output: scanThingsByIDOutput{
+					things: []models.Thing{
+						models.Thing{
+							Name:    "string3",
+							Version: 3,
+						},
+						models.Thing{
+							Name:    "string2",
+							Version: 2,
+						},
+						models.Thing{
+							Name:    "string1",
+							Version: 1,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanThingsByIDInput{
+					ctx: context.Background(),
+					input: db.ScanThingsByIDInput{
+						StartingAfter: &models.Thing{
+							Name:    "string3",
+							Version: 3,
+						},
+					},
+				},
+				output: scanThingsByIDOutput{
+					things: []models.Thing{
+						models.Thing{
+							Name:    "string2",
+							Version: 2,
+						},
+						models.Thing{
+							Name:    "string1",
+							Version: 1,
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
 	}
 }
 
@@ -3015,6 +4270,118 @@ func GetThingWithCompositeAttributessByNameBranchAndDate(d db.Interface, t *test
 	}
 }
 
+type scanThingWithCompositeAttributessInput struct {
+	ctx   context.Context
+	input db.ScanThingWithCompositeAttributessInput
+}
+type scanThingWithCompositeAttributessOutput struct {
+	thingWithCompositeAttributess []models.ThingWithCompositeAttributes
+	err                           error
+}
+type scanThingWithCompositeAttributessTest struct {
+	testName string
+	d        db.Interface
+	input    scanThingWithCompositeAttributessInput
+	output   scanThingWithCompositeAttributessOutput
+}
+
+func (g scanThingWithCompositeAttributessTest) run(t *testing.T) {
+	thingWithCompositeAttributess := []models.ThingWithCompositeAttributes{}
+	err := g.d.ScanThingWithCompositeAttributess(g.input.ctx, g.input.input, func(m *models.ThingWithCompositeAttributes, last bool) bool {
+		thingWithCompositeAttributess = append(thingWithCompositeAttributess, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.thingWithCompositeAttributess, thingWithCompositeAttributess)
+}
+
+func ScanThingWithCompositeAttributess(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithCompositeAttributes(ctx, models.ThingWithCompositeAttributes{
+			Name:   db.String("string1"),
+			Branch: db.String("string1"),
+			Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+		}))
+		require.Nil(t, d.SaveThingWithCompositeAttributes(ctx, models.ThingWithCompositeAttributes{
+			Name:   db.String("string2"),
+			Branch: db.String("string2"),
+			Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+		}))
+		require.Nil(t, d.SaveThingWithCompositeAttributes(ctx, models.ThingWithCompositeAttributes{
+			Name:   db.String("string3"),
+			Branch: db.String("string3"),
+			Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+		}))
+		tests := []scanThingWithCompositeAttributessTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanThingWithCompositeAttributessInput{
+					ctx:   context.Background(),
+					input: db.ScanThingWithCompositeAttributessInput{},
+				},
+				output: scanThingWithCompositeAttributessOutput{
+					things: []models.ThingWithCompositeAttributes{
+						models.ThingWithCompositeAttributes{
+							Name:   db.String("string3"),
+							Branch: db.String("string3"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+						},
+						models.ThingWithCompositeAttributes{
+							Name:   db.String("string2"),
+							Branch: db.String("string2"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+						},
+						models.ThingWithCompositeAttributes{
+							Name:   db.String("string1"),
+							Branch: db.String("string1"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanThingWithCompositeAttributessInput{
+					ctx: context.Background(),
+					input: db.ScanThingWithCompositeAttributessInput{
+						StartingAfter: &models.ThingWithCompositeAttributes{
+							Name:   db.String("string3"),
+							Branch: db.String("string3"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+						},
+					},
+				},
+				output: scanThingWithCompositeAttributessOutput{
+					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
+						models.ThingWithCompositeAttributes{
+							Name:   db.String("string2"),
+							Branch: db.String("string2"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+						},
+						models.ThingWithCompositeAttributes{
+							Name:   db.String("string1"),
+							Branch: db.String("string1"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
 func SaveThingWithCompositeAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -3273,6 +4640,118 @@ func GetThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *tes
 	}
 }
 
+type scanThingWithCompositeAttributessByNameVersionAndDateInput struct {
+	ctx   context.Context
+	input db.ScanThingWithCompositeAttributessByNameVersionAndDateInput
+}
+type scanThingWithCompositeAttributessByNameVersionAndDateOutput struct {
+	thingWithCompositeAttributess []models.ThingWithCompositeAttributes
+	err                           error
+}
+type scanThingWithCompositeAttributessByNameVersionAndDateTest struct {
+	testName string
+	d        db.Interface
+	input    scanThingWithCompositeAttributessByNameVersionAndDateInput
+	output   scanThingWithCompositeAttributessByNameVersionAndDateOutput
+}
+
+func (g scanThingWithCompositeAttributessByNameVersionAndDateTest) run(t *testing.T) {
+	thingWithCompositeAttributess := []models.ThingWithCompositeAttributes{}
+	err := g.d.ScanThingWithCompositeAttributessByNameVersionAndDate(g.input.ctx, g.input.input, func(m *models.ThingWithCompositeAttributes, last bool) bool {
+		thingWithCompositeAttributess = append(thingWithCompositeAttributess, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.thingWithCompositeAttributess, thingWithCompositeAttributess)
+}
+
+func ScanThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithCompositeAttributes(ctx, models.ThingWithCompositeAttributes{
+			Name:   db.String("string1"),
+			Branch: db.String("string1"),
+			Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+		}))
+		require.Nil(t, d.SaveThingWithCompositeAttributes(ctx, models.ThingWithCompositeAttributes{
+			Name:   db.String("string2"),
+			Branch: db.String("string2"),
+			Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+		}))
+		require.Nil(t, d.SaveThingWithCompositeAttributes(ctx, models.ThingWithCompositeAttributes{
+			Name:   db.String("string3"),
+			Branch: db.String("string3"),
+			Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+		}))
+		tests := []scanThingWithCompositeAttributessByNameVersionAndDateTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanThingWithCompositeAttributessByNameVersionAndDateInput{
+					ctx:   context.Background(),
+					input: db.ScanThingWithCompositeAttributessByNameVersionAndDateInput{},
+				},
+				output: scanThingWithCompositeAttributessByNameVersionAndDateOutput{
+					things: []models.ThingWithCompositeAttributes{
+						models.ThingWithCompositeAttributes{
+							Name:   db.String("string3"),
+							Branch: db.String("string3"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+						},
+						models.ThingWithCompositeAttributes{
+							Name:   db.String("string2"),
+							Branch: db.String("string2"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+						},
+						models.ThingWithCompositeAttributes{
+							Name:   db.String("string1"),
+							Branch: db.String("string1"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanThingWithCompositeAttributessByNameVersionAndDateInput{
+					ctx: context.Background(),
+					input: db.ScanThingWithCompositeAttributessByNameVersionAndDateInput{
+						StartingAfter: &models.ThingWithCompositeAttributes{
+							Name:   db.String("string3"),
+							Branch: db.String("string3"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+						},
+					},
+				},
+				output: scanThingWithCompositeAttributessByNameVersionAndDateOutput{
+					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
+						models.ThingWithCompositeAttributes{
+							Name:   db.String("string2"),
+							Branch: db.String("string2"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+						},
+						models.ThingWithCompositeAttributes{
+							Name:   db.String("string1"),
+							Branch: db.String("string1"),
+							Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
 func GetThingWithCompositeEnumAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -3495,6 +4974,118 @@ func GetThingWithCompositeEnumAttributessByNameBranchAndDate(d db.Interface, t *
 							Name:     db.String("string1"),
 							BranchID: models.BranchMaster,
 							Date:     db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+type scanThingWithCompositeEnumAttributessInput struct {
+	ctx   context.Context
+	input db.ScanThingWithCompositeEnumAttributessInput
+}
+type scanThingWithCompositeEnumAttributessOutput struct {
+	thingWithCompositeEnumAttributess []models.ThingWithCompositeEnumAttributes
+	err                               error
+}
+type scanThingWithCompositeEnumAttributessTest struct {
+	testName string
+	d        db.Interface
+	input    scanThingWithCompositeEnumAttributessInput
+	output   scanThingWithCompositeEnumAttributessOutput
+}
+
+func (g scanThingWithCompositeEnumAttributessTest) run(t *testing.T) {
+	thingWithCompositeEnumAttributess := []models.ThingWithCompositeEnumAttributes{}
+	err := g.d.ScanThingWithCompositeEnumAttributess(g.input.ctx, g.input.input, func(m *models.ThingWithCompositeEnumAttributes, last bool) bool {
+		thingWithCompositeEnumAttributess = append(thingWithCompositeEnumAttributess, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.thingWithCompositeEnumAttributess, thingWithCompositeEnumAttributess)
+}
+
+func ScanThingWithCompositeEnumAttributess(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithCompositeEnumAttributes(ctx, models.ThingWithCompositeEnumAttributes{
+			Name:     db.String("string1"),
+			BranchID: models.BranchMaster,
+			Date:     db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+		}))
+		require.Nil(t, d.SaveThingWithCompositeEnumAttributes(ctx, models.ThingWithCompositeEnumAttributes{
+			Name:     db.String("string2"),
+			BranchID: models.BranchDEVBRANCH,
+			Date:     db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+		}))
+		require.Nil(t, d.SaveThingWithCompositeEnumAttributes(ctx, models.ThingWithCompositeEnumAttributes{
+			Name:     db.String("string3"),
+			BranchID: models.BranchTest,
+			Date:     db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+		}))
+		tests := []scanThingWithCompositeEnumAttributessTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanThingWithCompositeEnumAttributessInput{
+					ctx:   context.Background(),
+					input: db.ScanThingWithCompositeEnumAttributessInput{},
+				},
+				output: scanThingWithCompositeEnumAttributessOutput{
+					things: []models.ThingWithCompositeEnumAttributes{
+						models.ThingWithCompositeEnumAttributes{
+							Name:     db.String("string3"),
+							BranchID: models.BranchTest,
+							Date:     db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+						},
+						models.ThingWithCompositeEnumAttributes{
+							Name:     db.String("string2"),
+							BranchID: models.BranchDEVBRANCH,
+							Date:     db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+						},
+						models.ThingWithCompositeEnumAttributes{
+							Name:     db.String("string1"),
+							BranchID: models.BranchMaster,
+							Date:     db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanThingWithCompositeEnumAttributessInput{
+					ctx: context.Background(),
+					input: db.ScanThingWithCompositeEnumAttributessInput{
+						StartingAfter: &models.ThingWithCompositeEnumAttributes{
+							Name:     db.String("string3"),
+							BranchID: models.BranchTest,
+							Date:     db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+						},
+					},
+				},
+				output: scanThingWithCompositeEnumAttributessOutput{
+					thingWithCompositeEnumAttributess: []models.ThingWithCompositeEnumAttributes{
+						models.ThingWithCompositeEnumAttributes{
+							Name:     db.String("string2"),
+							BranchID: models.BranchDEVBRANCH,
+							Date:     db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+						},
+						models.ThingWithCompositeEnumAttributes{
+							Name:     db.String("string1"),
+							BranchID: models.BranchMaster,
+							Date:     db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 						},
 					},
 					err: nil,
@@ -3731,6 +5322,109 @@ func GetThingWithDateRangesByNameAndDate(d db.Interface, t *testing.T) func(t *t
 						models.ThingWithDateRange{
 							Name: "string1",
 							Date: mustTime("2018-03-11T15:04:03+07:00"),
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+type scanThingWithDateRangesInput struct {
+	ctx   context.Context
+	input db.ScanThingWithDateRangesInput
+}
+type scanThingWithDateRangesOutput struct {
+	thingWithDateRanges []models.ThingWithDateRange
+	err                 error
+}
+type scanThingWithDateRangesTest struct {
+	testName string
+	d        db.Interface
+	input    scanThingWithDateRangesInput
+	output   scanThingWithDateRangesOutput
+}
+
+func (g scanThingWithDateRangesTest) run(t *testing.T) {
+	thingWithDateRanges := []models.ThingWithDateRange{}
+	err := g.d.ScanThingWithDateRanges(g.input.ctx, g.input.input, func(m *models.ThingWithDateRange, last bool) bool {
+		thingWithDateRanges = append(thingWithDateRanges, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.thingWithDateRanges, thingWithDateRanges)
+}
+
+func ScanThingWithDateRanges(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithDateRange(ctx, models.ThingWithDateRange{
+			Name: "string1",
+			Date: mustTime("2018-03-11T15:04:01+07:00"),
+		}))
+		require.Nil(t, d.SaveThingWithDateRange(ctx, models.ThingWithDateRange{
+			Name: "string2",
+			Date: mustTime("2018-03-11T15:04:02+07:00"),
+		}))
+		require.Nil(t, d.SaveThingWithDateRange(ctx, models.ThingWithDateRange{
+			Name: "string3",
+			Date: mustTime("2018-03-11T15:04:03+07:00"),
+		}))
+		tests := []scanThingWithDateRangesTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanThingWithDateRangesInput{
+					ctx:   context.Background(),
+					input: db.ScanThingWithDateRangesInput{},
+				},
+				output: scanThingWithDateRangesOutput{
+					things: []models.ThingWithDateRange{
+						models.ThingWithDateRange{
+							Name: "string3",
+							Date: mustTime("2018-03-11T15:04:03+07:00"),
+						},
+						models.ThingWithDateRange{
+							Name: "string2",
+							Date: mustTime("2018-03-11T15:04:02+07:00"),
+						},
+						models.ThingWithDateRange{
+							Name: "string1",
+							Date: mustTime("2018-03-11T15:04:01+07:00"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanThingWithDateRangesInput{
+					ctx: context.Background(),
+					input: db.ScanThingWithDateRangesInput{
+						StartingAfter: &models.ThingWithDateRange{
+							Name: "string3",
+							Date: mustTime("2018-03-11T15:04:03+07:00"),
+						},
+					},
+				},
+				output: scanThingWithDateRangesOutput{
+					thingWithDateRanges: []models.ThingWithDateRange{
+						models.ThingWithDateRange{
+							Name: "string2",
+							Date: mustTime("2018-03-11T15:04:02+07:00"),
+						},
+						models.ThingWithDateRange{
+							Name: "string1",
+							Date: mustTime("2018-03-11T15:04:01+07:00"),
 						},
 					},
 					err: nil,
@@ -4022,6 +5716,127 @@ func GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(d db.Interface, t 
 	}
 }
 
+type scanThingWithDateTimeCompositesInput struct {
+	ctx   context.Context
+	input db.ScanThingWithDateTimeCompositesInput
+}
+type scanThingWithDateTimeCompositesOutput struct {
+	thingWithDateTimeComposites []models.ThingWithDateTimeComposite
+	err                         error
+}
+type scanThingWithDateTimeCompositesTest struct {
+	testName string
+	d        db.Interface
+	input    scanThingWithDateTimeCompositesInput
+	output   scanThingWithDateTimeCompositesOutput
+}
+
+func (g scanThingWithDateTimeCompositesTest) run(t *testing.T) {
+	thingWithDateTimeComposites := []models.ThingWithDateTimeComposite{}
+	err := g.d.ScanThingWithDateTimeComposites(g.input.ctx, g.input.input, func(m *models.ThingWithDateTimeComposite, last bool) bool {
+		thingWithDateTimeComposites = append(thingWithDateTimeComposites, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.thingWithDateTimeComposites, thingWithDateTimeComposites)
+}
+
+func ScanThingWithDateTimeComposites(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithDateTimeComposite(ctx, models.ThingWithDateTimeComposite{
+			Type:     "string1",
+			ID:       "string1",
+			Created:  mustTime("2018-03-11T15:04:01+07:00"),
+			Resource: "string1",
+		}))
+		require.Nil(t, d.SaveThingWithDateTimeComposite(ctx, models.ThingWithDateTimeComposite{
+			Type:     "string2",
+			ID:       "string2",
+			Created:  mustTime("2018-03-11T15:04:02+07:00"),
+			Resource: "string2",
+		}))
+		require.Nil(t, d.SaveThingWithDateTimeComposite(ctx, models.ThingWithDateTimeComposite{
+			Type:     "string3",
+			ID:       "string3",
+			Created:  mustTime("2018-03-11T15:04:03+07:00"),
+			Resource: "string3",
+		}))
+		tests := []scanThingWithDateTimeCompositesTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanThingWithDateTimeCompositesInput{
+					ctx:   context.Background(),
+					input: db.ScanThingWithDateTimeCompositesInput{},
+				},
+				output: scanThingWithDateTimeCompositesOutput{
+					things: []models.ThingWithDateTimeComposite{
+						models.ThingWithDateTimeComposite{
+							Type:     "string3",
+							ID:       "string3",
+							Created:  mustTime("2018-03-11T15:04:03+07:00"),
+							Resource: "string3",
+						},
+						models.ThingWithDateTimeComposite{
+							Type:     "string2",
+							ID:       "string2",
+							Created:  mustTime("2018-03-11T15:04:02+07:00"),
+							Resource: "string2",
+						},
+						models.ThingWithDateTimeComposite{
+							Type:     "string1",
+							ID:       "string1",
+							Created:  mustTime("2018-03-11T15:04:01+07:00"),
+							Resource: "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanThingWithDateTimeCompositesInput{
+					ctx: context.Background(),
+					input: db.ScanThingWithDateTimeCompositesInput{
+						StartingAfter: &models.ThingWithDateTimeComposite{
+							Type:     "string3",
+							ID:       "string3",
+							Created:  mustTime("2018-03-11T15:04:03+07:00"),
+							Resource: "string3",
+						},
+					},
+				},
+				output: scanThingWithDateTimeCompositesOutput{
+					thingWithDateTimeComposites: []models.ThingWithDateTimeComposite{
+						models.ThingWithDateTimeComposite{
+							Type:     "string2",
+							ID:       "string2",
+							Created:  mustTime("2018-03-11T15:04:02+07:00"),
+							Resource: "string2",
+						},
+						models.ThingWithDateTimeComposite{
+							Type:     "string1",
+							ID:       "string1",
+							Created:  mustTime("2018-03-11T15:04:01+07:00"),
+							Resource: "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
 func SaveThingWithDateTimeComposite(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -4248,6 +6063,109 @@ func GetThingWithEnumHashKeysByBranchAndDate(d db.Interface, t *testing.T) func(
 						models.ThingWithEnumHashKey{
 							Branch: models.BranchMaster,
 							Date:   mustTime("2018-03-11T15:04:03+07:00"),
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+type scanThingWithEnumHashKeysInput struct {
+	ctx   context.Context
+	input db.ScanThingWithEnumHashKeysInput
+}
+type scanThingWithEnumHashKeysOutput struct {
+	thingWithEnumHashKeys []models.ThingWithEnumHashKey
+	err                   error
+}
+type scanThingWithEnumHashKeysTest struct {
+	testName string
+	d        db.Interface
+	input    scanThingWithEnumHashKeysInput
+	output   scanThingWithEnumHashKeysOutput
+}
+
+func (g scanThingWithEnumHashKeysTest) run(t *testing.T) {
+	thingWithEnumHashKeys := []models.ThingWithEnumHashKey{}
+	err := g.d.ScanThingWithEnumHashKeys(g.input.ctx, g.input.input, func(m *models.ThingWithEnumHashKey, last bool) bool {
+		thingWithEnumHashKeys = append(thingWithEnumHashKeys, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.thingWithEnumHashKeys, thingWithEnumHashKeys)
+}
+
+func ScanThingWithEnumHashKeys(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithEnumHashKey(ctx, models.ThingWithEnumHashKey{
+			Branch: models.BranchMaster,
+			Date:   mustTime("2018-03-11T15:04:01+07:00"),
+		}))
+		require.Nil(t, d.SaveThingWithEnumHashKey(ctx, models.ThingWithEnumHashKey{
+			Branch: models.BranchDEVBRANCH,
+			Date:   mustTime("2018-03-11T15:04:02+07:00"),
+		}))
+		require.Nil(t, d.SaveThingWithEnumHashKey(ctx, models.ThingWithEnumHashKey{
+			Branch: models.BranchTest,
+			Date:   mustTime("2018-03-11T15:04:03+07:00"),
+		}))
+		tests := []scanThingWithEnumHashKeysTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanThingWithEnumHashKeysInput{
+					ctx:   context.Background(),
+					input: db.ScanThingWithEnumHashKeysInput{},
+				},
+				output: scanThingWithEnumHashKeysOutput{
+					things: []models.ThingWithEnumHashKey{
+						models.ThingWithEnumHashKey{
+							Branch: models.BranchTest,
+							Date:   mustTime("2018-03-11T15:04:03+07:00"),
+						},
+						models.ThingWithEnumHashKey{
+							Branch: models.BranchDEVBRANCH,
+							Date:   mustTime("2018-03-11T15:04:02+07:00"),
+						},
+						models.ThingWithEnumHashKey{
+							Branch: models.BranchMaster,
+							Date:   mustTime("2018-03-11T15:04:01+07:00"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanThingWithEnumHashKeysInput{
+					ctx: context.Background(),
+					input: db.ScanThingWithEnumHashKeysInput{
+						StartingAfter: &models.ThingWithEnumHashKey{
+							Branch: models.BranchTest,
+							Date:   mustTime("2018-03-11T15:04:03+07:00"),
+						},
+					},
+				},
+				output: scanThingWithEnumHashKeysOutput{
+					thingWithEnumHashKeys: []models.ThingWithEnumHashKey{
+						models.ThingWithEnumHashKey{
+							Branch: models.BranchDEVBRANCH,
+							Date:   mustTime("2018-03-11T15:04:02+07:00"),
+						},
+						models.ThingWithEnumHashKey{
+							Branch: models.BranchMaster,
+							Date:   mustTime("2018-03-11T15:04:01+07:00"),
 						},
 					},
 					err: nil,
@@ -4494,6 +6412,109 @@ func GetThingWithEnumHashKeysByBranchAndDate2(d db.Interface, t *testing.T) func
 	}
 }
 
+type scanThingWithEnumHashKeysByBranchAndDate2Input struct {
+	ctx   context.Context
+	input db.ScanThingWithEnumHashKeysByBranchAndDate2Input
+}
+type scanThingWithEnumHashKeysByBranchAndDate2Output struct {
+	thingWithEnumHashKeys []models.ThingWithEnumHashKey
+	err                   error
+}
+type scanThingWithEnumHashKeysByBranchAndDate2Test struct {
+	testName string
+	d        db.Interface
+	input    scanThingWithEnumHashKeysByBranchAndDate2Input
+	output   scanThingWithEnumHashKeysByBranchAndDate2Output
+}
+
+func (g scanThingWithEnumHashKeysByBranchAndDate2Test) run(t *testing.T) {
+	thingWithEnumHashKeys := []models.ThingWithEnumHashKey{}
+	err := g.d.ScanThingWithEnumHashKeysByBranchAndDate2(g.input.ctx, g.input.input, func(m *models.ThingWithEnumHashKey, last bool) bool {
+		thingWithEnumHashKeys = append(thingWithEnumHashKeys, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.thingWithEnumHashKeys, thingWithEnumHashKeys)
+}
+
+func ScanThingWithEnumHashKeysByBranchAndDate2(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithEnumHashKey(ctx, models.ThingWithEnumHashKey{
+			Branch: models.BranchMaster,
+			Date:   mustTime("2018-03-11T15:04:01+07:00"),
+		}))
+		require.Nil(t, d.SaveThingWithEnumHashKey(ctx, models.ThingWithEnumHashKey{
+			Branch: models.BranchDEVBRANCH,
+			Date:   mustTime("2018-03-11T15:04:02+07:00"),
+		}))
+		require.Nil(t, d.SaveThingWithEnumHashKey(ctx, models.ThingWithEnumHashKey{
+			Branch: models.BranchTest,
+			Date:   mustTime("2018-03-11T15:04:03+07:00"),
+		}))
+		tests := []scanThingWithEnumHashKeysByBranchAndDate2Test{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanThingWithEnumHashKeysByBranchAndDate2Input{
+					ctx:   context.Background(),
+					input: db.ScanThingWithEnumHashKeysByBranchAndDate2Input{},
+				},
+				output: scanThingWithEnumHashKeysByBranchAndDate2Output{
+					things: []models.ThingWithEnumHashKey{
+						models.ThingWithEnumHashKey{
+							Branch: models.BranchTest,
+							Date:   mustTime("2018-03-11T15:04:03+07:00"),
+						},
+						models.ThingWithEnumHashKey{
+							Branch: models.BranchDEVBRANCH,
+							Date:   mustTime("2018-03-11T15:04:02+07:00"),
+						},
+						models.ThingWithEnumHashKey{
+							Branch: models.BranchMaster,
+							Date:   mustTime("2018-03-11T15:04:01+07:00"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanThingWithEnumHashKeysByBranchAndDate2Input{
+					ctx: context.Background(),
+					input: db.ScanThingWithEnumHashKeysByBranchAndDate2Input{
+						StartingAfter: &models.ThingWithEnumHashKey{
+							Branch: models.BranchTest,
+							Date:   mustTime("2018-03-11T15:04:03+07:00"),
+						},
+					},
+				},
+				output: scanThingWithEnumHashKeysByBranchAndDate2Output{
+					thingWithEnumHashKeys: []models.ThingWithEnumHashKey{
+						models.ThingWithEnumHashKey{
+							Branch: models.BranchDEVBRANCH,
+							Date:   mustTime("2018-03-11T15:04:02+07:00"),
+						},
+						models.ThingWithEnumHashKey{
+							Branch: models.BranchMaster,
+							Date:   mustTime("2018-03-11T15:04:01+07:00"),
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
 func GetThingWithMatchingKeys(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -4715,6 +6736,118 @@ func GetThingWithMatchingKeyssByBearAndAssocTypeID(d db.Interface, t *testing.T)
 							Bear:      "string1",
 							AssocType: "string3",
 							AssocID:   "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+type scanThingWithMatchingKeyssInput struct {
+	ctx   context.Context
+	input db.ScanThingWithMatchingKeyssInput
+}
+type scanThingWithMatchingKeyssOutput struct {
+	thingWithMatchingKeyss []models.ThingWithMatchingKeys
+	err                    error
+}
+type scanThingWithMatchingKeyssTest struct {
+	testName string
+	d        db.Interface
+	input    scanThingWithMatchingKeyssInput
+	output   scanThingWithMatchingKeyssOutput
+}
+
+func (g scanThingWithMatchingKeyssTest) run(t *testing.T) {
+	thingWithMatchingKeyss := []models.ThingWithMatchingKeys{}
+	err := g.d.ScanThingWithMatchingKeyss(g.input.ctx, g.input.input, func(m *models.ThingWithMatchingKeys, last bool) bool {
+		thingWithMatchingKeyss = append(thingWithMatchingKeyss, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.thingWithMatchingKeyss, thingWithMatchingKeyss)
+}
+
+func ScanThingWithMatchingKeyss(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithMatchingKeys(ctx, models.ThingWithMatchingKeys{
+			Bear:      "string1",
+			AssocType: "string1",
+			AssocID:   "string1",
+		}))
+		require.Nil(t, d.SaveThingWithMatchingKeys(ctx, models.ThingWithMatchingKeys{
+			Bear:      "string2",
+			AssocType: "string2",
+			AssocID:   "string2",
+		}))
+		require.Nil(t, d.SaveThingWithMatchingKeys(ctx, models.ThingWithMatchingKeys{
+			Bear:      "string3",
+			AssocType: "string3",
+			AssocID:   "string3",
+		}))
+		tests := []scanThingWithMatchingKeyssTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanThingWithMatchingKeyssInput{
+					ctx:   context.Background(),
+					input: db.ScanThingWithMatchingKeyssInput{},
+				},
+				output: scanThingWithMatchingKeyssOutput{
+					things: []models.ThingWithMatchingKeys{
+						models.ThingWithMatchingKeys{
+							Bear:      "string3",
+							AssocType: "string3",
+							AssocID:   "string3",
+						},
+						models.ThingWithMatchingKeys{
+							Bear:      "string2",
+							AssocType: "string2",
+							AssocID:   "string2",
+						},
+						models.ThingWithMatchingKeys{
+							Bear:      "string1",
+							AssocType: "string1",
+							AssocID:   "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanThingWithMatchingKeyssInput{
+					ctx: context.Background(),
+					input: db.ScanThingWithMatchingKeyssInput{
+						StartingAfter: &models.ThingWithMatchingKeys{
+							Bear:      "string3",
+							AssocType: "string3",
+							AssocID:   "string3",
+						},
+					},
+				},
+				output: scanThingWithMatchingKeyssOutput{
+					thingWithMatchingKeyss: []models.ThingWithMatchingKeys{
+						models.ThingWithMatchingKeys{
+							Bear:      "string2",
+							AssocType: "string2",
+							AssocID:   "string2",
+						},
+						models.ThingWithMatchingKeys{
+							Bear:      "string1",
+							AssocType: "string1",
+							AssocID:   "string1",
 						},
 					},
 					err: nil,
@@ -4987,6 +7120,118 @@ func GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(d db.Interface, t *tes
 	}
 }
 
+type scanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput struct {
+	ctx   context.Context
+	input db.ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput
+}
+type scanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearOutput struct {
+	thingWithMatchingKeyss []models.ThingWithMatchingKeys
+	err                    error
+}
+type scanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearTest struct {
+	testName string
+	d        db.Interface
+	input    scanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput
+	output   scanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearOutput
+}
+
+func (g scanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearTest) run(t *testing.T) {
+	thingWithMatchingKeyss := []models.ThingWithMatchingKeys{}
+	err := g.d.ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(g.input.ctx, g.input.input, func(m *models.ThingWithMatchingKeys, last bool) bool {
+		thingWithMatchingKeyss = append(thingWithMatchingKeyss, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.thingWithMatchingKeyss, thingWithMatchingKeyss)
+}
+
+func ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithMatchingKeys(ctx, models.ThingWithMatchingKeys{
+			Bear:      "string1",
+			AssocType: "string1",
+			AssocID:   "string1",
+		}))
+		require.Nil(t, d.SaveThingWithMatchingKeys(ctx, models.ThingWithMatchingKeys{
+			Bear:      "string2",
+			AssocType: "string2",
+			AssocID:   "string2",
+		}))
+		require.Nil(t, d.SaveThingWithMatchingKeys(ctx, models.ThingWithMatchingKeys{
+			Bear:      "string3",
+			AssocType: "string3",
+			AssocID:   "string3",
+		}))
+		tests := []scanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput{
+					ctx:   context.Background(),
+					input: db.ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput{},
+				},
+				output: scanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearOutput{
+					things: []models.ThingWithMatchingKeys{
+						models.ThingWithMatchingKeys{
+							Bear:      "string3",
+							AssocType: "string3",
+							AssocID:   "string3",
+						},
+						models.ThingWithMatchingKeys{
+							Bear:      "string2",
+							AssocType: "string2",
+							AssocID:   "string2",
+						},
+						models.ThingWithMatchingKeys{
+							Bear:      "string1",
+							AssocType: "string1",
+							AssocID:   "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput{
+					ctx: context.Background(),
+					input: db.ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput{
+						StartingAfter: &models.ThingWithMatchingKeys{
+							Bear:      "string3",
+							AssocType: "string3",
+							AssocID:   "string3",
+						},
+					},
+				},
+				output: scanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearOutput{
+					thingWithMatchingKeyss: []models.ThingWithMatchingKeys{
+						models.ThingWithMatchingKeys{
+							Bear:      "string2",
+							AssocType: "string2",
+							AssocID:   "string2",
+						},
+						models.ThingWithMatchingKeys{
+							Bear:      "string1",
+							AssocType: "string1",
+							AssocID:   "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
 func GetThingWithRequiredCompositePropertiesAndKeysOnly(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -5003,6 +7248,145 @@ func GetThingWithRequiredCompositePropertiesAndKeysOnly(s db.Interface, t *testi
 		_, err = s.GetThingWithRequiredCompositePropertiesAndKeysOnly(ctx, "string2")
 		require.NotNil(t, err)
 		require.IsType(t, err, db.ErrThingWithRequiredCompositePropertiesAndKeysOnlyNotFound{})
+	}
+}
+
+type scanThingWithRequiredCompositePropertiesAndKeysOnlysInput struct {
+	ctx   context.Context
+	input db.ScanThingWithRequiredCompositePropertiesAndKeysOnlysInput
+}
+type scanThingWithRequiredCompositePropertiesAndKeysOnlysOutput struct {
+	thingWithRequiredCompositePropertiesAndKeysOnlys []models.ThingWithRequiredCompositePropertiesAndKeysOnly
+	err                                              error
+}
+type scanThingWithRequiredCompositePropertiesAndKeysOnlysTest struct {
+	testName string
+	d        db.Interface
+	input    scanThingWithRequiredCompositePropertiesAndKeysOnlysInput
+	output   scanThingWithRequiredCompositePropertiesAndKeysOnlysOutput
+}
+
+func (g scanThingWithRequiredCompositePropertiesAndKeysOnlysTest) run(t *testing.T) {
+	thingWithRequiredCompositePropertiesAndKeysOnlys := []models.ThingWithRequiredCompositePropertiesAndKeysOnly{}
+	err := g.d.ScanThingWithRequiredCompositePropertiesAndKeysOnlys(g.input.ctx, g.input.input, func(m *models.ThingWithRequiredCompositePropertiesAndKeysOnly, last bool) bool {
+		thingWithRequiredCompositePropertiesAndKeysOnlys = append(thingWithRequiredCompositePropertiesAndKeysOnlys, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.thingWithRequiredCompositePropertiesAndKeysOnlys, thingWithRequiredCompositePropertiesAndKeysOnlys)
+}
+
+func ScanThingWithRequiredCompositePropertiesAndKeysOnlys(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx, models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+			PropertyThree: db.String("string1"),
+			// must specify non-empty string values for attributes
+			// in secondary indexes, since dynamodb doesn't support
+			// empty strings:
+			PropertyOne: "propertyOne",
+			PropertyTwo: "propertyTwo",
+		}))
+		require.Nil(t, d.SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx, models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+			PropertyThree: db.String("string2"),
+			// must specify non-empty string values for attributes
+			// in secondary indexes, since dynamodb doesn't support
+			// empty strings:
+			PropertyOne: "propertyOne",
+			PropertyTwo: "propertyTwo",
+		}))
+		require.Nil(t, d.SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx, models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+			PropertyThree: db.String("string3"),
+			// must specify non-empty string values for attributes
+			// in secondary indexes, since dynamodb doesn't support
+			// empty strings:
+			PropertyOne: "propertyOne",
+			PropertyTwo: "propertyTwo",
+		}))
+		tests := []scanThingWithRequiredCompositePropertiesAndKeysOnlysTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanThingWithRequiredCompositePropertiesAndKeysOnlysInput{
+					ctx:   context.Background(),
+					input: db.ScanThingWithRequiredCompositePropertiesAndKeysOnlysInput{},
+				},
+				output: scanThingWithRequiredCompositePropertiesAndKeysOnlysOutput{
+					things: []models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyThree: db.String("string3"),
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+							PropertyOne: "propertyOne",
+							PropertyTwo: "propertyTwo",
+						},
+						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyThree: db.String("string2"),
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+							PropertyOne: "propertyOne",
+							PropertyTwo: "propertyTwo",
+						},
+						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyThree: db.String("string1"),
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+							PropertyOne: "propertyOne",
+							PropertyTwo: "propertyTwo",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanThingWithRequiredCompositePropertiesAndKeysOnlysInput{
+					ctx: context.Background(),
+					input: db.ScanThingWithRequiredCompositePropertiesAndKeysOnlysInput{
+						StartingAfter: &models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyThree: db.String("string3"),
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+							PropertyOne: "propertyOne",
+							PropertyTwo: "propertyTwo",
+						},
+					},
+				},
+				output: scanThingWithRequiredCompositePropertiesAndKeysOnlysOutput{
+					thingWithRequiredCompositePropertiesAndKeysOnlys: []models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyThree: db.String("string2"),
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+							PropertyOne: "propertyOne",
+							PropertyTwo: "propertyTwo",
+						},
+						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyThree: db.String("string1"),
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+							PropertyOne: "propertyOne",
+							PropertyTwo: "propertyTwo",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
 	}
 }
 
@@ -5244,6 +7628,145 @@ func GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPr
 	}
 }
 
+type scanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput struct {
+	ctx   context.Context
+	input db.ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput
+}
+type scanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeOutput struct {
+	thingWithRequiredCompositePropertiesAndKeysOnlys []models.ThingWithRequiredCompositePropertiesAndKeysOnly
+	err                                              error
+}
+type scanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeTest struct {
+	testName string
+	d        db.Interface
+	input    scanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput
+	output   scanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeOutput
+}
+
+func (g scanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeTest) run(t *testing.T) {
+	thingWithRequiredCompositePropertiesAndKeysOnlys := []models.ThingWithRequiredCompositePropertiesAndKeysOnly{}
+	err := g.d.ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(g.input.ctx, g.input.input, func(m *models.ThingWithRequiredCompositePropertiesAndKeysOnly, last bool) bool {
+		thingWithRequiredCompositePropertiesAndKeysOnlys = append(thingWithRequiredCompositePropertiesAndKeysOnlys, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.thingWithRequiredCompositePropertiesAndKeysOnlys, thingWithRequiredCompositePropertiesAndKeysOnlys)
+}
+
+func ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx, models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+			PropertyThree: db.String("string1"),
+			// must specify non-empty string values for attributes
+			// in secondary indexes, since dynamodb doesn't support
+			// empty strings:
+			PropertyOne: "propertyOne",
+			PropertyTwo: "propertyTwo",
+		}))
+		require.Nil(t, d.SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx, models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+			PropertyThree: db.String("string2"),
+			// must specify non-empty string values for attributes
+			// in secondary indexes, since dynamodb doesn't support
+			// empty strings:
+			PropertyOne: "propertyOne",
+			PropertyTwo: "propertyTwo",
+		}))
+		require.Nil(t, d.SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx, models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+			PropertyThree: db.String("string3"),
+			// must specify non-empty string values for attributes
+			// in secondary indexes, since dynamodb doesn't support
+			// empty strings:
+			PropertyOne: "propertyOne",
+			PropertyTwo: "propertyTwo",
+		}))
+		tests := []scanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput{
+					ctx:   context.Background(),
+					input: db.ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput{},
+				},
+				output: scanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeOutput{
+					things: []models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyThree: db.String("string3"),
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+							PropertyOne: "propertyOne",
+							PropertyTwo: "propertyTwo",
+						},
+						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyThree: db.String("string2"),
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+							PropertyOne: "propertyOne",
+							PropertyTwo: "propertyTwo",
+						},
+						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyThree: db.String("string1"),
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+							PropertyOne: "propertyOne",
+							PropertyTwo: "propertyTwo",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput{
+					ctx: context.Background(),
+					input: db.ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput{
+						StartingAfter: &models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyThree: db.String("string3"),
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+							PropertyOne: "propertyOne",
+							PropertyTwo: "propertyTwo",
+						},
+					},
+				},
+				output: scanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeOutput{
+					thingWithRequiredCompositePropertiesAndKeysOnlys: []models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyThree: db.String("string2"),
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+							PropertyOne: "propertyOne",
+							PropertyTwo: "propertyTwo",
+						},
+						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+							PropertyThree: db.String("string1"),
+							// must specify non-empty string values for attributes
+							// in secondary indexes, since dynamodb doesn't support
+							// empty strings:
+							PropertyOne: "propertyOne",
+							PropertyTwo: "propertyTwo",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
 func GetThingWithRequiredFields(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -5258,6 +7781,100 @@ func GetThingWithRequiredFields(s db.Interface, t *testing.T) func(t *testing.T)
 		_, err = s.GetThingWithRequiredFields(ctx, "string2")
 		require.NotNil(t, err)
 		require.IsType(t, err, db.ErrThingWithRequiredFieldsNotFound{})
+	}
+}
+
+type scanThingWithRequiredFieldssInput struct {
+	ctx   context.Context
+	input db.ScanThingWithRequiredFieldssInput
+}
+type scanThingWithRequiredFieldssOutput struct {
+	thingWithRequiredFieldss []models.ThingWithRequiredFields
+	err                      error
+}
+type scanThingWithRequiredFieldssTest struct {
+	testName string
+	d        db.Interface
+	input    scanThingWithRequiredFieldssInput
+	output   scanThingWithRequiredFieldssOutput
+}
+
+func (g scanThingWithRequiredFieldssTest) run(t *testing.T) {
+	thingWithRequiredFieldss := []models.ThingWithRequiredFields{}
+	err := g.d.ScanThingWithRequiredFieldss(g.input.ctx, g.input.input, func(m *models.ThingWithRequiredFields, last bool) bool {
+		thingWithRequiredFieldss = append(thingWithRequiredFieldss, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.thingWithRequiredFieldss, thingWithRequiredFieldss)
+}
+
+func ScanThingWithRequiredFieldss(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithRequiredFields(ctx, models.ThingWithRequiredFields{
+			Name: db.String("string1"),
+		}))
+		require.Nil(t, d.SaveThingWithRequiredFields(ctx, models.ThingWithRequiredFields{
+			Name: db.String("string2"),
+		}))
+		require.Nil(t, d.SaveThingWithRequiredFields(ctx, models.ThingWithRequiredFields{
+			Name: db.String("string3"),
+		}))
+		tests := []scanThingWithRequiredFieldssTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanThingWithRequiredFieldssInput{
+					ctx:   context.Background(),
+					input: db.ScanThingWithRequiredFieldssInput{},
+				},
+				output: scanThingWithRequiredFieldssOutput{
+					things: []models.ThingWithRequiredFields{
+						models.ThingWithRequiredFields{
+							Name: db.String("string3"),
+						},
+						models.ThingWithRequiredFields{
+							Name: db.String("string2"),
+						},
+						models.ThingWithRequiredFields{
+							Name: db.String("string1"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanThingWithRequiredFieldssInput{
+					ctx: context.Background(),
+					input: db.ScanThingWithRequiredFieldssInput{
+						StartingAfter: &models.ThingWithRequiredFields{
+							Name: db.String("string3"),
+						},
+					},
+				},
+				output: scanThingWithRequiredFieldssOutput{
+					thingWithRequiredFieldss: []models.ThingWithRequiredFields{
+						models.ThingWithRequiredFields{
+							Name: db.String("string2"),
+						},
+						models.ThingWithRequiredFields{
+							Name: db.String("string1"),
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
 	}
 }
 
@@ -5481,6 +8098,109 @@ func GetThingWithRequiredFields2sByNameAndID(d db.Interface, t *testing.T) func(
 						models.ThingWithRequiredFields2{
 							Name: db.String("string1"),
 							ID:   db.String("string3"),
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+type scanThingWithRequiredFields2sInput struct {
+	ctx   context.Context
+	input db.ScanThingWithRequiredFields2sInput
+}
+type scanThingWithRequiredFields2sOutput struct {
+	thingWithRequiredFields2s []models.ThingWithRequiredFields2
+	err                       error
+}
+type scanThingWithRequiredFields2sTest struct {
+	testName string
+	d        db.Interface
+	input    scanThingWithRequiredFields2sInput
+	output   scanThingWithRequiredFields2sOutput
+}
+
+func (g scanThingWithRequiredFields2sTest) run(t *testing.T) {
+	thingWithRequiredFields2s := []models.ThingWithRequiredFields2{}
+	err := g.d.ScanThingWithRequiredFields2s(g.input.ctx, g.input.input, func(m *models.ThingWithRequiredFields2, last bool) bool {
+		thingWithRequiredFields2s = append(thingWithRequiredFields2s, *m)
+		return true
+	})
+	var errStr string
+	if err != nil {
+		errStr = err.Error()
+	}
+	require.Equal(t, g.output.err, err, errStr)
+	require.Equal(t, g.output.thingWithRequiredFields2s, thingWithRequiredFields2s)
+}
+
+func ScanThingWithRequiredFields2s(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithRequiredFields2(ctx, models.ThingWithRequiredFields2{
+			Name: db.String("string1"),
+			ID:   db.String("string1"),
+		}))
+		require.Nil(t, d.SaveThingWithRequiredFields2(ctx, models.ThingWithRequiredFields2{
+			Name: db.String("string2"),
+			ID:   db.String("string2"),
+		}))
+		require.Nil(t, d.SaveThingWithRequiredFields2(ctx, models.ThingWithRequiredFields2{
+			Name: db.String("string3"),
+			ID:   db.String("string3"),
+		}))
+		tests := []scanThingWithRequiredFields2sTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: scanThingWithRequiredFields2sInput{
+					ctx:   context.Background(),
+					input: db.ScanThingWithRequiredFields2sInput{},
+				},
+				output: scanThingWithRequiredFields2sOutput{
+					things: []models.ThingWithRequiredFields2{
+						models.ThingWithRequiredFields2{
+							Name: db.String("string3"),
+							ID:   db.String("string3"),
+						},
+						models.ThingWithRequiredFields2{
+							Name: db.String("string2"),
+							ID:   db.String("string2"),
+						},
+						models.ThingWithRequiredFields2{
+							Name: db.String("string1"),
+							ID:   db.String("string1"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: scanThingWithRequiredFields2sInput{
+					ctx: context.Background(),
+					input: db.ScanThingWithRequiredFields2sInput{
+						StartingAfter: &models.ThingWithRequiredFields2{
+							Name: db.String("string3"),
+							ID:   db.String("string3"),
+						},
+					},
+				},
+				output: scanThingWithRequiredFields2sOutput{
+					thingWithRequiredFields2s: []models.ThingWithRequiredFields2{
+						models.ThingWithRequiredFields2{
+							Name: db.String("string2"),
+							ID:   db.String("string2"),
+						},
+						models.ThingWithRequiredFields2{
+							Name: db.String("string1"),
+							ID:   db.String("string1"),
 						},
 					},
 					err: nil,

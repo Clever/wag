@@ -16,41 +16,57 @@ type Interface interface {
 	SaveDeployment(ctx context.Context, m models.Deployment) error
 	// GetDeployment retrieves a Deployment from the database.
 	GetDeployment(ctx context.Context, environment string, application string, version string) (*models.Deployment, error)
+	// ScanDeployments runs a scan on the Deployments table.
+	ScanDeployments(ctx context.Context, input ScanDeploymentsInput, fn func(m *models.Deployment, lastDeployment bool) bool) error
 	// GetDeploymentsByEnvAppAndVersion retrieves a page of Deployments from the database.
 	GetDeploymentsByEnvAppAndVersion(ctx context.Context, input GetDeploymentsByEnvAppAndVersionInput, fn func(m *models.Deployment, lastDeployment bool) bool) error
 	// DeleteDeployment deletes a Deployment from the database.
 	DeleteDeployment(ctx context.Context, environment string, application string, version string) error
 	// GetDeploymentsByEnvAppAndDate retrieves a page of Deployments from the database.
 	GetDeploymentsByEnvAppAndDate(ctx context.Context, input GetDeploymentsByEnvAppAndDateInput, fn func(m *models.Deployment, lastDeployment bool) bool) error
+	// ScanDeploymentsByEnvAppAndDate runs a scan on the EnvAppAndDate index.
+	ScanDeploymentsByEnvAppAndDate(ctx context.Context, input ScanDeploymentsByEnvAppAndDateInput, fn func(m *models.Deployment, lastDeployment bool) bool) error
 	// GetDeploymentsByEnvironmentAndDate retrieves a page of Deployments from the database.
 	GetDeploymentsByEnvironmentAndDate(ctx context.Context, input GetDeploymentsByEnvironmentAndDateInput, fn func(m *models.Deployment, lastDeployment bool) bool) error
 	// GetDeploymentByVersion retrieves a Deployment from the database.
 	GetDeploymentByVersion(ctx context.Context, version string) (*models.Deployment, error)
+	// ScanDeploymentsByVersion runs a scan on the Version index.
+	ScanDeploymentsByVersion(ctx context.Context, input ScanDeploymentsByVersionInput, fn func(m *models.Deployment, lastDeployment bool) bool) error
 
 	// SaveEvent saves a Event to the database.
 	SaveEvent(ctx context.Context, m models.Event) error
 	// GetEvent retrieves a Event from the database.
 	GetEvent(ctx context.Context, pk string, sk string) (*models.Event, error)
+	// ScanEvents runs a scan on the Events table.
+	ScanEvents(ctx context.Context, input ScanEventsInput, fn func(m *models.Event, lastEvent bool) bool) error
 	// GetEventsByPkAndSk retrieves a page of Events from the database.
 	GetEventsByPkAndSk(ctx context.Context, input GetEventsByPkAndSkInput, fn func(m *models.Event, lastEvent bool) bool) error
 	// DeleteEvent deletes a Event from the database.
 	DeleteEvent(ctx context.Context, pk string, sk string) error
 	// GetEventsBySkAndData retrieves a page of Events from the database.
 	GetEventsBySkAndData(ctx context.Context, input GetEventsBySkAndDataInput, fn func(m *models.Event, lastEvent bool) bool) error
+	// ScanEventsBySkAndData runs a scan on the SkAndData index.
+	ScanEventsBySkAndData(ctx context.Context, input ScanEventsBySkAndDataInput, fn func(m *models.Event, lastEvent bool) bool) error
 
 	// SaveNoRangeThingWithCompositeAttributes saves a NoRangeThingWithCompositeAttributes to the database.
 	SaveNoRangeThingWithCompositeAttributes(ctx context.Context, m models.NoRangeThingWithCompositeAttributes) error
 	// GetNoRangeThingWithCompositeAttributes retrieves a NoRangeThingWithCompositeAttributes from the database.
 	GetNoRangeThingWithCompositeAttributes(ctx context.Context, name string, branch string) (*models.NoRangeThingWithCompositeAttributes, error)
+	// ScanNoRangeThingWithCompositeAttributess runs a scan on the NoRangeThingWithCompositeAttributess table.
+	ScanNoRangeThingWithCompositeAttributess(ctx context.Context, input ScanNoRangeThingWithCompositeAttributessInput, fn func(m *models.NoRangeThingWithCompositeAttributes, lastNoRangeThingWithCompositeAttributes bool) bool) error
 	// DeleteNoRangeThingWithCompositeAttributes deletes a NoRangeThingWithCompositeAttributes from the database.
 	DeleteNoRangeThingWithCompositeAttributes(ctx context.Context, name string, branch string) error
 	// GetNoRangeThingWithCompositeAttributessByNameVersionAndDate retrieves a page of NoRangeThingWithCompositeAttributess from the database.
 	GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input GetNoRangeThingWithCompositeAttributessByNameVersionAndDateInput, fn func(m *models.NoRangeThingWithCompositeAttributes, lastNoRangeThingWithCompositeAttributes bool) bool) error
+	// ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate runs a scan on the NameVersionAndDate index.
+	ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input ScanNoRangeThingWithCompositeAttributessByNameVersionAndDateInput, fn func(m *models.NoRangeThingWithCompositeAttributes, lastNoRangeThingWithCompositeAttributes bool) bool) error
 
 	// SaveSimpleThing saves a SimpleThing to the database.
 	SaveSimpleThing(ctx context.Context, m models.SimpleThing) error
 	// GetSimpleThing retrieves a SimpleThing from the database.
 	GetSimpleThing(ctx context.Context, name string) (*models.SimpleThing, error)
+	// ScanSimpleThings runs a scan on the SimpleThings table.
+	ScanSimpleThings(ctx context.Context, input ScanSimpleThingsInput, fn func(m *models.SimpleThing, lastSimpleThing bool) bool) error
 	// DeleteSimpleThing deletes a SimpleThing from the database.
 	DeleteSimpleThing(ctx context.Context, name string) error
 
@@ -58,12 +74,16 @@ type Interface interface {
 	SaveTeacherSharingRule(ctx context.Context, m models.TeacherSharingRule) error
 	// GetTeacherSharingRule retrieves a TeacherSharingRule from the database.
 	GetTeacherSharingRule(ctx context.Context, teacher string, school string, app string) (*models.TeacherSharingRule, error)
+	// ScanTeacherSharingRules runs a scan on the TeacherSharingRules table.
+	ScanTeacherSharingRules(ctx context.Context, input ScanTeacherSharingRulesInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error
 	// GetTeacherSharingRulesByTeacherAndSchoolApp retrieves a page of TeacherSharingRules from the database.
 	GetTeacherSharingRulesByTeacherAndSchoolApp(ctx context.Context, input GetTeacherSharingRulesByTeacherAndSchoolAppInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error
 	// DeleteTeacherSharingRule deletes a TeacherSharingRule from the database.
 	DeleteTeacherSharingRule(ctx context.Context, teacher string, school string, app string) error
 	// GetTeacherSharingRulesByDistrictAndSchoolTeacherApp retrieves a page of TeacherSharingRules from the database.
 	GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx context.Context, input GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error
+	// ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp runs a scan on the DistrictAndSchoolTeacherApp index.
+	ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx context.Context, input ScanTeacherSharingRulesByDistrictAndSchoolTeacherAppInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error
 
 	// SaveThing saves a Thing to the database.
 	SaveThing(ctx context.Context, m models.Thing) error
@@ -77,6 +97,8 @@ type Interface interface {
 	DeleteThing(ctx context.Context, name string, version int64) error
 	// GetThingByID retrieves a Thing from the database.
 	GetThingByID(ctx context.Context, id string) (*models.Thing, error)
+	// ScanThingsByID runs a scan on the ID index.
+	ScanThingsByID(ctx context.Context, input ScanThingsByIDInput, fn func(m *models.Thing, lastThing bool) bool) error
 	// GetThingsByNameAndCreatedAt retrieves a page of Things from the database.
 	GetThingsByNameAndCreatedAt(ctx context.Context, input GetThingsByNameAndCreatedAtInput, fn func(m *models.Thing, lastThing bool) bool) error
 	// ScanThingsByNameAndCreatedAt runs a scan on the NameAndCreatedAt index.
@@ -86,17 +108,23 @@ type Interface interface {
 	SaveThingWithCompositeAttributes(ctx context.Context, m models.ThingWithCompositeAttributes) error
 	// GetThingWithCompositeAttributes retrieves a ThingWithCompositeAttributes from the database.
 	GetThingWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) (*models.ThingWithCompositeAttributes, error)
+	// ScanThingWithCompositeAttributess runs a scan on the ThingWithCompositeAttributess table.
+	ScanThingWithCompositeAttributess(ctx context.Context, input ScanThingWithCompositeAttributessInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error
 	// GetThingWithCompositeAttributessByNameBranchAndDate retrieves a page of ThingWithCompositeAttributess from the database.
 	GetThingWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input GetThingWithCompositeAttributessByNameBranchAndDateInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error
 	// DeleteThingWithCompositeAttributes deletes a ThingWithCompositeAttributes from the database.
 	DeleteThingWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) error
 	// GetThingWithCompositeAttributessByNameVersionAndDate retrieves a page of ThingWithCompositeAttributess from the database.
 	GetThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input GetThingWithCompositeAttributessByNameVersionAndDateInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error
+	// ScanThingWithCompositeAttributessByNameVersionAndDate runs a scan on the NameVersionAndDate index.
+	ScanThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input ScanThingWithCompositeAttributessByNameVersionAndDateInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error
 
 	// SaveThingWithCompositeEnumAttributes saves a ThingWithCompositeEnumAttributes to the database.
 	SaveThingWithCompositeEnumAttributes(ctx context.Context, m models.ThingWithCompositeEnumAttributes) error
 	// GetThingWithCompositeEnumAttributes retrieves a ThingWithCompositeEnumAttributes from the database.
 	GetThingWithCompositeEnumAttributes(ctx context.Context, name string, branchID models.Branch, date strfmt.DateTime) (*models.ThingWithCompositeEnumAttributes, error)
+	// ScanThingWithCompositeEnumAttributess runs a scan on the ThingWithCompositeEnumAttributess table.
+	ScanThingWithCompositeEnumAttributess(ctx context.Context, input ScanThingWithCompositeEnumAttributessInput, fn func(m *models.ThingWithCompositeEnumAttributes, lastThingWithCompositeEnumAttributes bool) bool) error
 	// GetThingWithCompositeEnumAttributessByNameBranchAndDate retrieves a page of ThingWithCompositeEnumAttributess from the database.
 	GetThingWithCompositeEnumAttributessByNameBranchAndDate(ctx context.Context, input GetThingWithCompositeEnumAttributessByNameBranchAndDateInput, fn func(m *models.ThingWithCompositeEnumAttributes, lastThingWithCompositeEnumAttributes bool) bool) error
 	// DeleteThingWithCompositeEnumAttributes deletes a ThingWithCompositeEnumAttributes from the database.
@@ -106,6 +134,8 @@ type Interface interface {
 	SaveThingWithDateRange(ctx context.Context, m models.ThingWithDateRange) error
 	// GetThingWithDateRange retrieves a ThingWithDateRange from the database.
 	GetThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) (*models.ThingWithDateRange, error)
+	// ScanThingWithDateRanges runs a scan on the ThingWithDateRanges table.
+	ScanThingWithDateRanges(ctx context.Context, input ScanThingWithDateRangesInput, fn func(m *models.ThingWithDateRange, lastThingWithDateRange bool) bool) error
 	// GetThingWithDateRangesByNameAndDate retrieves a page of ThingWithDateRanges from the database.
 	GetThingWithDateRangesByNameAndDate(ctx context.Context, input GetThingWithDateRangesByNameAndDateInput, fn func(m *models.ThingWithDateRange, lastThingWithDateRange bool) bool) error
 	// DeleteThingWithDateRange deletes a ThingWithDateRange from the database.
@@ -115,6 +145,8 @@ type Interface interface {
 	SaveThingWithDateTimeComposite(ctx context.Context, m models.ThingWithDateTimeComposite) error
 	// GetThingWithDateTimeComposite retrieves a ThingWithDateTimeComposite from the database.
 	GetThingWithDateTimeComposite(ctx context.Context, typeVar string, id string, created strfmt.DateTime, resource string) (*models.ThingWithDateTimeComposite, error)
+	// ScanThingWithDateTimeComposites runs a scan on the ThingWithDateTimeComposites table.
+	ScanThingWithDateTimeComposites(ctx context.Context, input ScanThingWithDateTimeCompositesInput, fn func(m *models.ThingWithDateTimeComposite, lastThingWithDateTimeComposite bool) bool) error
 	// GetThingWithDateTimeCompositesByTypeIDAndCreatedResource retrieves a page of ThingWithDateTimeComposites from the database.
 	GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx context.Context, input GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput, fn func(m *models.ThingWithDateTimeComposite, lastThingWithDateTimeComposite bool) bool) error
 	// DeleteThingWithDateTimeComposite deletes a ThingWithDateTimeComposite from the database.
@@ -124,37 +156,51 @@ type Interface interface {
 	SaveThingWithEnumHashKey(ctx context.Context, m models.ThingWithEnumHashKey) error
 	// GetThingWithEnumHashKey retrieves a ThingWithEnumHashKey from the database.
 	GetThingWithEnumHashKey(ctx context.Context, branch models.Branch, date strfmt.DateTime) (*models.ThingWithEnumHashKey, error)
+	// ScanThingWithEnumHashKeys runs a scan on the ThingWithEnumHashKeys table.
+	ScanThingWithEnumHashKeys(ctx context.Context, input ScanThingWithEnumHashKeysInput, fn func(m *models.ThingWithEnumHashKey, lastThingWithEnumHashKey bool) bool) error
 	// GetThingWithEnumHashKeysByBranchAndDate retrieves a page of ThingWithEnumHashKeys from the database.
 	GetThingWithEnumHashKeysByBranchAndDate(ctx context.Context, input GetThingWithEnumHashKeysByBranchAndDateInput, fn func(m *models.ThingWithEnumHashKey, lastThingWithEnumHashKey bool) bool) error
 	// DeleteThingWithEnumHashKey deletes a ThingWithEnumHashKey from the database.
 	DeleteThingWithEnumHashKey(ctx context.Context, branch models.Branch, date strfmt.DateTime) error
 	// GetThingWithEnumHashKeysByBranchAndDate2 retrieves a page of ThingWithEnumHashKeys from the database.
 	GetThingWithEnumHashKeysByBranchAndDate2(ctx context.Context, input GetThingWithEnumHashKeysByBranchAndDate2Input, fn func(m *models.ThingWithEnumHashKey, lastThingWithEnumHashKey bool) bool) error
+	// ScanThingWithEnumHashKeysByBranchAndDate2 runs a scan on the BranchAndDate2 index.
+	ScanThingWithEnumHashKeysByBranchAndDate2(ctx context.Context, input ScanThingWithEnumHashKeysByBranchAndDate2Input, fn func(m *models.ThingWithEnumHashKey, lastThingWithEnumHashKey bool) bool) error
 
 	// SaveThingWithMatchingKeys saves a ThingWithMatchingKeys to the database.
 	SaveThingWithMatchingKeys(ctx context.Context, m models.ThingWithMatchingKeys) error
 	// GetThingWithMatchingKeys retrieves a ThingWithMatchingKeys from the database.
 	GetThingWithMatchingKeys(ctx context.Context, bear string, assocType string, assocID string) (*models.ThingWithMatchingKeys, error)
+	// ScanThingWithMatchingKeyss runs a scan on the ThingWithMatchingKeyss table.
+	ScanThingWithMatchingKeyss(ctx context.Context, input ScanThingWithMatchingKeyssInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error
 	// GetThingWithMatchingKeyssByBearAndAssocTypeID retrieves a page of ThingWithMatchingKeyss from the database.
 	GetThingWithMatchingKeyssByBearAndAssocTypeID(ctx context.Context, input GetThingWithMatchingKeyssByBearAndAssocTypeIDInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error
 	// DeleteThingWithMatchingKeys deletes a ThingWithMatchingKeys from the database.
 	DeleteThingWithMatchingKeys(ctx context.Context, bear string, assocType string, assocID string) error
 	// GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear retrieves a page of ThingWithMatchingKeyss from the database.
 	GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Context, input GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error
+	// ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear runs a scan on the AssocTypeIDAndCreatedBear index.
+	ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Context, input ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error
 
 	// SaveThingWithRequiredCompositePropertiesAndKeysOnly saves a ThingWithRequiredCompositePropertiesAndKeysOnly to the database.
 	SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, m models.ThingWithRequiredCompositePropertiesAndKeysOnly) error
 	// GetThingWithRequiredCompositePropertiesAndKeysOnly retrieves a ThingWithRequiredCompositePropertiesAndKeysOnly from the database.
 	GetThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, propertyThree string) (*models.ThingWithRequiredCompositePropertiesAndKeysOnly, error)
+	// ScanThingWithRequiredCompositePropertiesAndKeysOnlys runs a scan on the ThingWithRequiredCompositePropertiesAndKeysOnlys table.
+	ScanThingWithRequiredCompositePropertiesAndKeysOnlys(ctx context.Context, input ScanThingWithRequiredCompositePropertiesAndKeysOnlysInput, fn func(m *models.ThingWithRequiredCompositePropertiesAndKeysOnly, lastThingWithRequiredCompositePropertiesAndKeysOnly bool) bool) error
 	// DeleteThingWithRequiredCompositePropertiesAndKeysOnly deletes a ThingWithRequiredCompositePropertiesAndKeysOnly from the database.
 	DeleteThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, propertyThree string) error
 	// GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree retrieves a page of ThingWithRequiredCompositePropertiesAndKeysOnlys from the database.
 	GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(ctx context.Context, input GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput, fn func(m *models.ThingWithRequiredCompositePropertiesAndKeysOnly, lastThingWithRequiredCompositePropertiesAndKeysOnly bool) bool) error
+	// ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree runs a scan on the PropertyOneAndTwoAndPropertyThree index.
+	ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(ctx context.Context, input ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput, fn func(m *models.ThingWithRequiredCompositePropertiesAndKeysOnly, lastThingWithRequiredCompositePropertiesAndKeysOnly bool) bool) error
 
 	// SaveThingWithRequiredFields saves a ThingWithRequiredFields to the database.
 	SaveThingWithRequiredFields(ctx context.Context, m models.ThingWithRequiredFields) error
 	// GetThingWithRequiredFields retrieves a ThingWithRequiredFields from the database.
 	GetThingWithRequiredFields(ctx context.Context, name string) (*models.ThingWithRequiredFields, error)
+	// ScanThingWithRequiredFieldss runs a scan on the ThingWithRequiredFieldss table.
+	ScanThingWithRequiredFieldss(ctx context.Context, input ScanThingWithRequiredFieldssInput, fn func(m *models.ThingWithRequiredFields, lastThingWithRequiredFields bool) bool) error
 	// DeleteThingWithRequiredFields deletes a ThingWithRequiredFields from the database.
 	DeleteThingWithRequiredFields(ctx context.Context, name string) error
 
@@ -162,6 +208,8 @@ type Interface interface {
 	SaveThingWithRequiredFields2(ctx context.Context, m models.ThingWithRequiredFields2) error
 	// GetThingWithRequiredFields2 retrieves a ThingWithRequiredFields2 from the database.
 	GetThingWithRequiredFields2(ctx context.Context, name string, id string) (*models.ThingWithRequiredFields2, error)
+	// ScanThingWithRequiredFields2s runs a scan on the ThingWithRequiredFields2s table.
+	ScanThingWithRequiredFields2s(ctx context.Context, input ScanThingWithRequiredFields2sInput, fn func(m *models.ThingWithRequiredFields2, lastThingWithRequiredFields2 bool) bool) error
 	// GetThingWithRequiredFields2sByNameAndID retrieves a page of ThingWithRequiredFields2s from the database.
 	GetThingWithRequiredFields2sByNameAndID(ctx context.Context, input GetThingWithRequiredFields2sByNameAndIDInput, fn func(m *models.ThingWithRequiredFields2, lastThingWithRequiredFields2 bool) bool) error
 	// DeleteThingWithRequiredFields2 deletes a ThingWithRequiredFields2 from the database.
@@ -183,6 +231,16 @@ func String(s string) *string { return &s }
 
 // DateTime returns a pointer to the strfmt.DateTime value passed in.
 func DateTime(d strfmt.DateTime) *strfmt.DateTime { return &d }
+
+// ScanDeploymentsInput is the input to the ScanDeployments method.
+type ScanDeploymentsInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.Deployment
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
 
 // GetDeploymentsByEnvAppAndVersionInput is the query input to GetDeploymentsByEnvAppAndVersion.
 type GetDeploymentsByEnvAppAndVersionInput struct {
@@ -241,6 +299,16 @@ func (e ErrDeploymentByEnvAppAndDateNotFound) Error() string {
 	return "could not find Deployment"
 }
 
+// ScanDeploymentsByEnvAppAndDateInput is the input to the ScanDeploymentsByByEnvAppAndDate method.
+type ScanDeploymentsByEnvAppAndDateInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.Deployment
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
 // GetDeploymentsByEnvironmentAndDateInput is the query input to GetDeploymentsByEnvironmentAndDate.
 type GetDeploymentsByEnvironmentAndDateInput struct {
 	// Environment is required
@@ -275,6 +343,26 @@ var _ error = ErrDeploymentByVersionNotFound{}
 // Error returns a description of the error.
 func (e ErrDeploymentByVersionNotFound) Error() string {
 	return "could not find Deployment"
+}
+
+// ScanDeploymentsByVersionInput is the input to the ScanDeploymentsByByVersion method.
+type ScanDeploymentsByVersionInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.Deployment
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// ScanEventsInput is the input to the ScanEvents method.
+type ScanEventsInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.Event
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
 }
 
 // GetEventsByPkAndSkInput is the query input to GetEventsByPkAndSk.
@@ -328,6 +416,26 @@ func (e ErrEventBySkAndDataNotFound) Error() string {
 	return "could not find Event"
 }
 
+// ScanEventsBySkAndDataInput is the input to the ScanEventsByBySkAndData method.
+type ScanEventsBySkAndDataInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.Event
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// ScanNoRangeThingWithCompositeAttributessInput is the input to the ScanNoRangeThingWithCompositeAttributess method.
+type ScanNoRangeThingWithCompositeAttributessInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.NoRangeThingWithCompositeAttributes
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
 // ErrNoRangeThingWithCompositeAttributesNotFound is returned when the database fails to find a NoRangeThingWithCompositeAttributes.
 type ErrNoRangeThingWithCompositeAttributesNotFound struct {
 	Name   string
@@ -368,6 +476,16 @@ func (e ErrNoRangeThingWithCompositeAttributesByNameVersionAndDateNotFound) Erro
 	return "could not find NoRangeThingWithCompositeAttributes"
 }
 
+// ScanNoRangeThingWithCompositeAttributessByNameVersionAndDateInput is the input to the ScanNoRangeThingWithCompositeAttributessByByNameVersionAndDate method.
+type ScanNoRangeThingWithCompositeAttributessByNameVersionAndDateInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.NoRangeThingWithCompositeAttributes
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
 // ErrNoRangeThingWithCompositeAttributesAlreadyExists is returned when trying to overwrite a NoRangeThingWithCompositeAttributes.
 type ErrNoRangeThingWithCompositeAttributesAlreadyExists struct {
 	NameBranch string
@@ -378,6 +496,16 @@ var _ error = ErrNoRangeThingWithCompositeAttributesAlreadyExists{}
 // Error returns a description of the error.
 func (e ErrNoRangeThingWithCompositeAttributesAlreadyExists) Error() string {
 	return "NoRangeThingWithCompositeAttributes already exists"
+}
+
+// ScanSimpleThingsInput is the input to the ScanSimpleThings method.
+type ScanSimpleThingsInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.SimpleThing
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
 }
 
 // ErrSimpleThingNotFound is returned when the database fails to find a SimpleThing.
@@ -402,6 +530,16 @@ var _ error = ErrSimpleThingAlreadyExists{}
 // Error returns a description of the error.
 func (e ErrSimpleThingAlreadyExists) Error() string {
 	return "SimpleThing already exists"
+}
+
+// ScanTeacherSharingRulesInput is the input to the ScanTeacherSharingRules method.
+type ScanTeacherSharingRulesInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.TeacherSharingRule
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
 }
 
 // GetTeacherSharingRulesByTeacherAndSchoolAppInput is the query input to GetTeacherSharingRulesByTeacherAndSchoolApp.
@@ -471,6 +609,16 @@ func (e ErrTeacherSharingRuleByDistrictAndSchoolTeacherAppNotFound) Error() stri
 	return "could not find TeacherSharingRule"
 }
 
+// ScanTeacherSharingRulesByDistrictAndSchoolTeacherAppInput is the input to the ScanTeacherSharingRulesByByDistrictAndSchoolTeacherApp method.
+type ScanTeacherSharingRulesByDistrictAndSchoolTeacherAppInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.TeacherSharingRule
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
 // ScanThingsInput is the input to the ScanThings method.
 type ScanThingsInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
@@ -520,6 +668,16 @@ func (e ErrThingByIDNotFound) Error() string {
 	return "could not find Thing"
 }
 
+// ScanThingsByIDInput is the input to the ScanThingsByByID method.
+type ScanThingsByIDInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.Thing
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
 // GetThingsByNameAndCreatedAtInput is the query input to GetThingsByNameAndCreatedAt.
 type GetThingsByNameAndCreatedAtInput struct {
 	// Name is required
@@ -565,6 +723,16 @@ var _ error = ErrThingAlreadyExists{}
 // Error returns a description of the error.
 func (e ErrThingAlreadyExists) Error() string {
 	return "Thing already exists"
+}
+
+// ScanThingWithCompositeAttributessInput is the input to the ScanThingWithCompositeAttributess method.
+type ScanThingWithCompositeAttributessInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithCompositeAttributes
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
 }
 
 // GetThingWithCompositeAttributessByNameBranchAndDateInput is the query input to GetThingWithCompositeAttributessByNameBranchAndDate.
@@ -624,6 +792,16 @@ func (e ErrThingWithCompositeAttributesByNameVersionAndDateNotFound) Error() str
 	return "could not find ThingWithCompositeAttributes"
 }
 
+// ScanThingWithCompositeAttributessByNameVersionAndDateInput is the input to the ScanThingWithCompositeAttributessByByNameVersionAndDate method.
+type ScanThingWithCompositeAttributessByNameVersionAndDateInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithCompositeAttributes
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
 // ErrThingWithCompositeAttributesAlreadyExists is returned when trying to overwrite a ThingWithCompositeAttributes.
 type ErrThingWithCompositeAttributesAlreadyExists struct {
 	NameBranch string
@@ -635,6 +813,16 @@ var _ error = ErrThingWithCompositeAttributesAlreadyExists{}
 // Error returns a description of the error.
 func (e ErrThingWithCompositeAttributesAlreadyExists) Error() string {
 	return "ThingWithCompositeAttributes already exists"
+}
+
+// ScanThingWithCompositeEnumAttributessInput is the input to the ScanThingWithCompositeEnumAttributess method.
+type ScanThingWithCompositeEnumAttributessInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithCompositeEnumAttributes
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
 }
 
 // GetThingWithCompositeEnumAttributessByNameBranchAndDateInput is the query input to GetThingWithCompositeEnumAttributessByNameBranchAndDate.
@@ -680,6 +868,16 @@ func (e ErrThingWithCompositeEnumAttributesAlreadyExists) Error() string {
 	return "ThingWithCompositeEnumAttributes already exists"
 }
 
+// ScanThingWithDateRangesInput is the input to the ScanThingWithDateRanges method.
+type ScanThingWithDateRangesInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithDateRange
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
 // GetThingWithDateRangesByNameAndDateInput is the query input to GetThingWithDateRangesByNameAndDate.
 type GetThingWithDateRangesByNameAndDateInput struct {
 	// Name is required
@@ -705,6 +903,16 @@ var _ error = ErrThingWithDateRangeNotFound{}
 // Error returns a description of the error.
 func (e ErrThingWithDateRangeNotFound) Error() string {
 	return "could not find ThingWithDateRange"
+}
+
+// ScanThingWithDateTimeCompositesInput is the input to the ScanThingWithDateTimeComposites method.
+type ScanThingWithDateTimeCompositesInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithDateTimeComposite
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
 }
 
 // GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput is the query input to GetThingWithDateTimeCompositesByTypeIDAndCreatedResource.
@@ -742,6 +950,16 @@ var _ error = ErrThingWithDateTimeCompositeNotFound{}
 // Error returns a description of the error.
 func (e ErrThingWithDateTimeCompositeNotFound) Error() string {
 	return "could not find ThingWithDateTimeComposite"
+}
+
+// ScanThingWithEnumHashKeysInput is the input to the ScanThingWithEnumHashKeys method.
+type ScanThingWithEnumHashKeysInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithEnumHashKey
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
 }
 
 // GetThingWithEnumHashKeysByBranchAndDateInput is the query input to GetThingWithEnumHashKeysByBranchAndDate.
@@ -795,6 +1013,16 @@ func (e ErrThingWithEnumHashKeyByBranchAndDate2NotFound) Error() string {
 	return "could not find ThingWithEnumHashKey"
 }
 
+// ScanThingWithEnumHashKeysByBranchAndDate2Input is the input to the ScanThingWithEnumHashKeysByByBranchAndDate2 method.
+type ScanThingWithEnumHashKeysByBranchAndDate2Input struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithEnumHashKey
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
 // ErrThingWithEnumHashKeyAlreadyExists is returned when trying to overwrite a ThingWithEnumHashKey.
 type ErrThingWithEnumHashKeyAlreadyExists struct {
 	Branch models.Branch
@@ -806,6 +1034,16 @@ var _ error = ErrThingWithEnumHashKeyAlreadyExists{}
 // Error returns a description of the error.
 func (e ErrThingWithEnumHashKeyAlreadyExists) Error() string {
 	return "ThingWithEnumHashKey already exists"
+}
+
+// ScanThingWithMatchingKeyssInput is the input to the ScanThingWithMatchingKeyss method.
+type ScanThingWithMatchingKeyssInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithMatchingKeys
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
 }
 
 // GetThingWithMatchingKeyssByBearAndAssocTypeIDInput is the query input to GetThingWithMatchingKeyssByBearAndAssocTypeID.
@@ -876,6 +1114,26 @@ func (e ErrThingWithMatchingKeysByAssocTypeIDAndCreatedBearNotFound) Error() str
 	return "could not find ThingWithMatchingKeys"
 }
 
+// ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput is the input to the ScanThingWithMatchingKeyssByByAssocTypeIDAndCreatedBear method.
+type ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithMatchingKeys
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// ScanThingWithRequiredCompositePropertiesAndKeysOnlysInput is the input to the ScanThingWithRequiredCompositePropertiesAndKeysOnlys method.
+type ScanThingWithRequiredCompositePropertiesAndKeysOnlysInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithRequiredCompositePropertiesAndKeysOnly
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
 // ErrThingWithRequiredCompositePropertiesAndKeysOnlyNotFound is returned when the database fails to find a ThingWithRequiredCompositePropertiesAndKeysOnly.
 type ErrThingWithRequiredCompositePropertiesAndKeysOnlyNotFound struct {
 	PropertyThree string
@@ -915,6 +1173,26 @@ func (e ErrThingWithRequiredCompositePropertiesAndKeysOnlyByPropertyOneAndTwoAnd
 	return "could not find ThingWithRequiredCompositePropertiesAndKeysOnly"
 }
 
+// ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput is the input to the ScanThingWithRequiredCompositePropertiesAndKeysOnlysByByPropertyOneAndTwoAndPropertyThree method.
+type ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithRequiredCompositePropertiesAndKeysOnly
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// ScanThingWithRequiredFieldssInput is the input to the ScanThingWithRequiredFieldss method.
+type ScanThingWithRequiredFieldssInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithRequiredFields
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
 // ErrThingWithRequiredFieldsNotFound is returned when the database fails to find a ThingWithRequiredFields.
 type ErrThingWithRequiredFieldsNotFound struct {
 	Name string
@@ -937,6 +1215,16 @@ var _ error = ErrThingWithRequiredFieldsAlreadyExists{}
 // Error returns a description of the error.
 func (e ErrThingWithRequiredFieldsAlreadyExists) Error() string {
 	return "ThingWithRequiredFields already exists"
+}
+
+// ScanThingWithRequiredFields2sInput is the input to the ScanThingWithRequiredFields2s method.
+type ScanThingWithRequiredFields2sInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithRequiredFields2
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
 }
 
 // GetThingWithRequiredFields2sByNameAndIDInput is the query input to GetThingWithRequiredFields2sByNameAndID.

@@ -145,6 +145,49 @@ func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2(ctx context.C
 	return &m, nil
 }
 
+func (t ThingWithRequiredFields2Table) scanThingWithRequiredFields2s(ctx context.Context, input db.ScanThingWithRequiredFields2sInput, fn func(m *models.ThingWithRequiredFields2, lastThingWithRequiredFields2 bool) bool) error {
+	scanInput := &dynamodb.ScanInput{
+		TableName:      aws.String(t.name()),
+		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+	}
+	if input.StartingAfter != nil {
+		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		if err != nil {
+			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
+		}
+		// must provide only the fields constituting the index
+		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"name": exclusiveStartKey["name"],
+			"id":   exclusiveStartKey["id"],
+		}
+	}
+	var innerErr error
+	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+		ms, err := decodeThingWithRequiredFields2s(out.Items)
+		if err != nil {
+			innerErr = fmt.Errorf("error decoding %s", err.Error())
+			return false
+		}
+		for i := range ms {
+			if input.Limiter != nil {
+				if err := input.Limiter.Wait(ctx); err != nil {
+					innerErr = err
+					return false
+				}
+			}
+			lastModel := lastPage && i == len(ms)-1
+			if continuee := fn(&ms[i], lastModel); !continuee {
+				return false
+			}
+		}
+		return true
+	})
+	if innerErr != nil {
+		return innerErr
+	}
+	return err
+}
+
 func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2sByNameAndID(ctx context.Context, input db.GetThingWithRequiredFields2sByNameAndIDInput, fn func(m *models.ThingWithRequiredFields2, lastThingWithRequiredFields2 bool) bool) error {
 	if input.IDStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.IDStartingAt or input.StartingAfter")

@@ -122,6 +122,49 @@ func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeComposite(ctx conte
 	return &m, nil
 }
 
+func (t ThingWithDateTimeCompositeTable) scanThingWithDateTimeComposites(ctx context.Context, input db.ScanThingWithDateTimeCompositesInput, fn func(m *models.ThingWithDateTimeComposite, lastThingWithDateTimeComposite bool) bool) error {
+	scanInput := &dynamodb.ScanInput{
+		TableName:      aws.String(t.name()),
+		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+	}
+	if input.StartingAfter != nil {
+		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		if err != nil {
+			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
+		}
+		// must provide only the fields constituting the index
+		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"typeID":          exclusiveStartKey["typeID"],
+			"createdResource": exclusiveStartKey["createdResource"],
+		}
+	}
+	var innerErr error
+	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+		ms, err := decodeThingWithDateTimeComposites(out.Items)
+		if err != nil {
+			innerErr = fmt.Errorf("error decoding %s", err.Error())
+			return false
+		}
+		for i := range ms {
+			if input.Limiter != nil {
+				if err := input.Limiter.Wait(ctx); err != nil {
+					innerErr = err
+					return false
+				}
+			}
+			lastModel := lastPage && i == len(ms)-1
+			if continuee := fn(&ms[i], lastModel); !continuee {
+				return false
+			}
+		}
+		return true
+	})
+	if innerErr != nil {
+		return innerErr
+	}
+	return err
+}
+
 func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx context.Context, input db.GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput, fn func(m *models.ThingWithDateTimeComposite, lastThingWithDateTimeComposite bool) bool) error {
 	if input.StartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of StartingAt or StartingAfter")

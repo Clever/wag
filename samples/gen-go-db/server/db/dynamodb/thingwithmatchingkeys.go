@@ -153,6 +153,49 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeys(ctx context.Context
 	return &m, nil
 }
 
+func (t ThingWithMatchingKeysTable) scanThingWithMatchingKeyss(ctx context.Context, input db.ScanThingWithMatchingKeyssInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error {
+	scanInput := &dynamodb.ScanInput{
+		TableName:      aws.String(t.name()),
+		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+	}
+	if input.StartingAfter != nil {
+		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		if err != nil {
+			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
+		}
+		// must provide only the fields constituting the index
+		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"bear":        exclusiveStartKey["bear"],
+			"assocTypeID": exclusiveStartKey["assocTypeID"],
+		}
+	}
+	var innerErr error
+	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+		ms, err := decodeThingWithMatchingKeyss(out.Items)
+		if err != nil {
+			innerErr = fmt.Errorf("error decoding %s", err.Error())
+			return false
+		}
+		for i := range ms {
+			if input.Limiter != nil {
+				if err := input.Limiter.Wait(ctx); err != nil {
+					innerErr = err
+					return false
+				}
+			}
+			lastModel := lastPage && i == len(ms)-1
+			if continuee := fn(&ms[i], lastModel); !continuee {
+				return false
+			}
+		}
+		return true
+	})
+	if innerErr != nil {
+		return innerErr
+	}
+	return err
+}
+
 func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByBearAndAssocTypeID(ctx context.Context, input db.GetThingWithMatchingKeyssByBearAndAssocTypeIDInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error {
 	if input.StartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of StartingAt or StartingAfter")
@@ -349,6 +392,49 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByAssocTypeIDAndCre
 	}
 
 	return nil
+}
+func (t ThingWithMatchingKeysTable) scanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Context, input db.ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error {
+	scanInput := &dynamodb.ScanInput{
+		TableName:      aws.String(t.name()),
+		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+		IndexName:      aws.String("byAssoc"),
+	}
+	if input.StartingAfter != nil {
+		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		if err != nil {
+			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
+		}
+		// must provide only the fields constituting the index
+		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"bear":        exclusiveStartKey["bear"],
+			"assocTypeID": exclusiveStartKey["assocTypeID"],
+		}
+	}
+	var innerErr error
+	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+		ms, err := decodeThingWithMatchingKeyss(out.Items)
+		if err != nil {
+			innerErr = fmt.Errorf("error decoding %s", err.Error())
+			return false
+		}
+		for i := range ms {
+			if input.Limiter != nil {
+				if err := input.Limiter.Wait(ctx); err != nil {
+					innerErr = err
+					return false
+				}
+			}
+			lastModel := lastPage && i == len(ms)-1
+			if continuee := fn(&ms[i], lastModel); !continuee {
+				return false
+			}
+		}
+		return true
+	})
+	if innerErr != nil {
+		return innerErr
+	}
+	return err
 }
 
 // encodeThingWithMatchingKeys encodes a ThingWithMatchingKeys as a DynamoDB map of attribute values.

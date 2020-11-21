@@ -6,12 +6,12 @@
 //  asset-dir: true
 //  restore: true
 // sources:
-//  /Users/aaronstein/go/src/github.com/Clever/wag/server/gendb/dynamodb-local.sh.tmpl
-//  /Users/aaronstein/go/src/github.com/Clever/wag/server/gendb/dynamodb.go.tmpl
-//  /Users/aaronstein/go/src/github.com/Clever/wag/server/gendb/dynamodb_test.go.tmpl
-//  /Users/aaronstein/go/src/github.com/Clever/wag/server/gendb/interface.go.tmpl
-//  /Users/aaronstein/go/src/github.com/Clever/wag/server/gendb/table.go.tmpl
-//  /Users/aaronstein/go/src/github.com/Clever/wag/server/gendb/tests.go.tmpl
+//  /Users/renatoprime/go/src/github.com/Clever/wag/server/gendb/dynamodb-local.sh.tmpl
+//  /Users/renatoprime/go/src/github.com/Clever/wag/server/gendb/dynamodb.go.tmpl
+//  /Users/renatoprime/go/src/github.com/Clever/wag/server/gendb/dynamodb_test.go.tmpl
+//  /Users/renatoprime/go/src/github.com/Clever/wag/server/gendb/interface.go.tmpl
+//  /Users/renatoprime/go/src/github.com/Clever/wag/server/gendb/table.go.tmpl
+//  /Users/renatoprime/go/src/github.com/Clever/wag/server/gendb/tests.go.tmpl
 
 package gendb
 
@@ -86,7 +86,7 @@ var _bindata = map[string]*asset{
 			"\x00\xff\xff",
 		size: 592,
 		mode: 0755,
-		time: time.Unix(1556041339, 502391471),
+		time: time.Unix(1565142748, 467807990),
 	},
 	"dynamodb.go.tmpl": &asset{
 		name: "dynamodb.go.tmpl",
@@ -159,7 +159,7 @@ var _bindata = map[string]*asset{
 			"\x00\xff\xff",
 		size: 7990,
 		mode: 0644,
-		time: time.Unix(1604526210, 242008217),
+		time: time.Unix(1605738197, 65167753),
 	},
 	"dynamodb_test.go.tmpl": &asset{
 		name: "dynamodb_test.go.tmpl",
@@ -227,7 +227,7 @@ var _bindata = map[string]*asset{
 			"\x17\x87\xd4\x3b\x03\x8a\x29\x9e\xee\xd3\x7f\x05\x00\x00\xff\xff",
 		size: 3570,
 		mode: 0644,
-		time: time.Unix(1604526207, 993448720),
+		time: time.Unix(1605738197, 65989386),
 	},
 	"interface.go.tmpl": &asset{
 		name: "interface.go.tmpl",
@@ -308,7 +308,7 @@ var _bindata = map[string]*asset{
 			"\x00\x00\xff\xff",
 		size: 10487,
 		mode: 0644,
-		time: time.Unix(1604526210, 243735105),
+		time: time.Unix(1605848340, 825780013),
 	},
 	"table.go.tmpl": &asset{
 		name: "table.go.tmpl",
@@ -531,7 +531,7 @@ var _bindata = map[string]*asset{
 			"\x7b\x3d\xc3\x62\x07\x93\x6f\x29\xfc\x5f\x00\x00\x00\xff\xff",
 		size: 42700,
 		mode: 0644,
-		time: time.Unix(1604526210, 244422409),
+		time: time.Unix(1607373154, 41011560),
 	},
 	"tests.go.tmpl": &asset{
 		name: "tests.go.tmpl",
@@ -670,7 +670,7 @@ var _bindata = map[string]*asset{
 			"\x9f\xfe\x1f\x00\x00\xff\xff",
 		size: 61677,
 		mode: 0644,
-		time: time.Unix(1604526210, 245436974),
+		time: time.Unix(1607373154, 43181645),
 	},
 }
 
