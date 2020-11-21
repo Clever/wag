@@ -46,8 +46,8 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
   {{- else }}
   t.Run("Get{{ $modelName }}By{{ $computedIndexName }}", Get{{ $modelName }}By{{ $computedIndexName }}(dbFactory(), t))
   {{- end }}
-  {{- if indexAllowsScans $xdbConfig $computedIndexName }}
-  t.Run("Scan{{ $modelName }}sBy{{ $computedIndexName }}", Scan{{ $modelName }}By{{ $computedIndexName }}(dbFactory(), t))
+  {{- if indexAllowsScans $xdbConfig $gsi.IndexName }}
+  t.Run("Scan{{ $modelName }}sBy{{ $computedIndexName }}", Scan{{ $modelName }}sBy{{ $computedIndexName }}(dbFactory(), t))
   {{- end }}
   {{- end }}
         {{- end }}
