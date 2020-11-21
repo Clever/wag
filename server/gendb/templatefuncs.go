@@ -108,9 +108,10 @@ var funcMap = template.FuncMap(map[string]interface{}{
 			return ""
 		}
 	},
-	"findCompositeAttribute":          findCompositeAttribute,
-	"indexContainsCompositeAttribute": indexContainsCompositeAttribute,
-	"isComposite":                     isComposite,
+	"findCompositeAttribute":             findCompositeAttribute,
+	"indexContainsCompositeAttribute":    indexContainsCompositeAttribute,
+	"indexContainsNonCompositeAttribute": indexContainsNonCompositeAttribute,
+	"isComposite":                        isComposite,
 	"stringPropertiesInComposites": func(config XDBConfig) map[string][]string {
 		sepToProps := map[string][]string{}
 		for _, attr := range config.CompositeAttributes {
@@ -342,6 +343,15 @@ func goTypeForAttribute(config XDBConfig, attributeName string) string {
 func indexContainsCompositeAttribute(config XDBConfig, keySchema []resources.AWSDynamoDBTable_KeySchema) bool {
 	for _, ks := range keySchema {
 		if ca := findCompositeAttribute(config, ks.AttributeName); ca != nil {
+			return true
+		}
+	}
+	return false
+}
+
+func indexContainsNonCompositeAttribute(config XDBConfig, keySchema []resources.AWSDynamoDBTable_KeySchema) bool {
+	for _, ks := range keySchema {
+		if !isComposite(config, ks.AttributeName) {
 			return true
 		}
 	}
