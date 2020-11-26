@@ -234,6 +234,7 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
   scanInput := &dynamodb.ScanInput{
     TableName:      aws.String(t.name()),
     ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+    Limit:          input.Limit,
   }
   if input.StartingAfter != nil {
   {{- if indexContainsNonCompositeAttribute $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
@@ -255,6 +256,7 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
                   {{- end }}
     }
   }
+  totalRecordsProcessed := int64(0)
   var innerErr error
   err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
     ms, err := decode{{ $modelName }}s(out.Items)
@@ -271,6 +273,11 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
       }
       lastModel := lastPage && i == len(ms)-1
       if continuee := fn(&ms[i], lastModel); !continuee {
+        return false
+      }
+      totalRecordsProcessed++
+      // if the Limit of records have been passed to fn, don't pass anymore records.
+      if input.Limit != nil && totalRecordsProcessed == *input.Limit {
         return false
       }
     }
@@ -818,6 +825,7 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}sBy{{ $computedIndexName }}(c
   scanInput := &dynamodb.ScanInput{
     TableName:      aws.String(t.name()),
     ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+    Limit:          input.Limit,
     IndexName:      aws.String("{{ $gsi.IndexName }}"),
   }
   if input.StartingAfter != nil {
@@ -842,6 +850,7 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}sBy{{ $computedIndexName }}(c
                   {{- end }}
     }
   }
+  totalRecordsProcessed := int64(0)
   var innerErr error
   err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
     ms, err := decode{{ $modelName }}s(out.Items)
@@ -858,6 +867,11 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}sBy{{ $computedIndexName }}(c
       }
       lastModel := lastPage && i == len(ms)-1
       if continuee := fn(&ms[i], lastModel); !continuee {
+        return false
+      }
+      totalRecordsProcessed++
+      // if the Limit of records have been passed to fn, don't pass anymore records.
+      if input.Limit != nil && totalRecordsProcessed == *input.Limit {
         return false
       }
     }
