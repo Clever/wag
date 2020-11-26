@@ -29,7 +29,7 @@ type XDBConfig struct {
 	// AllowPrimaryIndexScan determines whether methods should be generated that scan the primary index.
 	AllowPrimaryIndexScan bool
 
-	// AllowPrimaryIndexScan determines whether methods should be generated that scan each of the secondary indexes.
+	// AllowSecondaryIndexScan determines whether methods should be generated that scan each of the secondary indexes.
 	AllowSecondaryIndexScan []string
 
 	// DynamoDB configuration.

@@ -201,7 +201,7 @@ func (e Err{{ $modelName}}By{{ $computedIndexName }}NotFound) Error() string {
 }
 
 {{- if indexAllowsScans $xdbConfig $gsi.IndexName }}
-// Scan{{ $modelName }}sBy{{ $computedIndexName }}Input is the input to the Scan{{ $modelName }}sByBy{{ $computedIndexName }} method.
+// Scan{{ $modelName }}sBy{{ $computedIndexName }}Input is the input to the Scan{{ $modelName }}sBy{{ $computedIndexName }} method.
 type Scan{{ $modelName }}sBy{{ $computedIndexName }}Input struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.{{ $modelName }}
