@@ -458,85 +458,37 @@ func Scan{{ $modelName }}s(d db.Interface, t *testing.T) func(t *testing.T) {
   return func(t *testing.T) {
     ctx := context.Background()
     require.Nil(t, d.Save{{ $modelName }}(ctx, models.{{ $modelName }}{
-      {{- range $attributeName := $pkModelAttributeNames }}
-      {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+      {{- range $attributeName := modelAttributeNames $xdbConfig }}
+        {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
       {{- end }}
-                        {{- if len $nonPKSecondaryStringProperties }}
-      // must specify non-empty string values for attributes
-      // in secondary indexes, since dynamodb doesn't support
-      // empty strings:
-                        {{- range $attr := $nonPKSecondaryStringProperties }}
-                        {{ pascalize $attr }}: "{{ $attr }}",
-                        {{- end }}
-                        {{- end }}
     }))
     require.Nil(t, d.Save{{ $modelName }}(ctx, models.{{ $modelName }}{
-      {{- range $attributeName := $pkModelAttributeNames }}
-      {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
+      {{- range $attributeName := modelAttributeNames $xdbConfig }}
+        {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
       {{- end }}
-                        {{- if len $nonPKSecondaryStringProperties }}
-      // must specify non-empty string values for attributes
-      // in secondary indexes, since dynamodb doesn't support
-      // empty strings:
-                        {{- range $attr := $nonPKSecondaryStringProperties }}
-                        {{ pascalize $attr }}: "{{ $attr }}",
-                        {{- end }}
-                        {{- end }}
     }))
     require.Nil(t, d.Save{{ $modelName }}(ctx, models.{{ $modelName }}{
-      {{- range $attributeName := $pkModelAttributeNames }}
-      {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
+      {{- range $attributeName := modelAttributeNames $xdbConfig }}
+        {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
       {{- end }}
-                        {{- if len $nonPKSecondaryStringProperties }}
-      // must specify non-empty string values for attributes
-      // in secondary indexes, since dynamodb doesn't support
-      // empty strings:
-                        {{- range $attr := $nonPKSecondaryStringProperties }}
-                        {{ pascalize $attr }}: "{{ $attr }}",
-                        {{- end }}
-                        {{- end }}
     }))
 
     t.Run("basic", func(t *testing.T) {
       expected := []models.{{ $modelName }}{
             models.{{ $modelName }}{
-              {{- range $attributeName := $pkModelAttributeNames }}
-              {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+              {{- range $attributeName := modelAttributeNames $xdbConfig }}
+                {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
               {{- end }}
-                                {{- if len $nonPKSecondaryStringProperties }}
-              // must specify non-empty string values for attributes
-              // in secondary indexes, since dynamodb doesn't support
-              // empty strings:
-                                {{- range $attr := $nonPKSecondaryStringProperties }}
-                                {{ pascalize $attr }}: "{{ $attr }}",
-                                {{- end }}
-                                {{- end }}
             },
             models.{{ $modelName }}{
-              {{- range $attributeName := $pkModelAttributeNames }}
-              {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
+              {{- range $attributeName := modelAttributeNames $xdbConfig }}
+                {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
               {{- end }}
-                                {{- if len $nonPKSecondaryStringProperties }}
-              // must specify non-empty string values for attributes
-              // in secondary indexes, since dynamodb doesn't support
-              // empty strings:
-                                {{- range $attr := $nonPKSecondaryStringProperties }}
-                                {{ pascalize $attr }}: "{{ $attr }}",
-                                {{- end }}
-                                {{- end }}
             },
             models.{{ $modelName }}{
-              {{- range $attributeName := $pkModelAttributeNames }}
-              {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
+              {{- range $attributeName := modelAttributeNames $xdbConfig }}
+                {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
               {{- end }}
-                                {{- if len $nonPKSecondaryStringProperties }}
-              // must specify non-empty string values for attributes
-              // in secondary indexes, since dynamodb doesn't support
-              // empty strings:
-                                {{- range $attr := $nonPKSecondaryStringProperties }}
-                                {{ pascalize $attr }}: "{{ $attr }}",
-                                {{- end }}
-                                {{- end }}
             },
       }
       actual := []models.{{ $modelName }}{}
@@ -579,7 +531,7 @@ func Scan{{ $modelName }}s(d db.Interface, t *testing.T) func(t *testing.T) {
             // in secondary indexes, since dynamodb doesn't support
             // empty strings:
             {{- range $attr := $nonPKSecondaryStringProperties }}
-              {{ pascalize $attr }}: "{{ $attr }}",
+              {{ pascalize $attr }}: firstItem.{{ pascalize $attr }},
             {{- end }}
           {{- end }}
         },
