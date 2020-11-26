@@ -301,12 +301,13 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) scanThingWithRequi
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
-		// must provide only the fields constituting the index
+		// must provide the fields constituting the index and the primary key
+		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"propertyThree": exclusiveStartKey["propertyThree"],
 			"propertyOneAndTwo": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s_%s", *input.StartingAfter.PropertyOne, *input.StartingAfter.PropertyTwo)),
 			},
-			"propertyThree": exclusiveStartKey["propertyThree"],
 		}
 	}
 	var innerErr error

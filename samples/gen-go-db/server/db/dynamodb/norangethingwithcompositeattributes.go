@@ -340,8 +340,12 @@ func (t NoRangeThingWithCompositeAttributesTable) scanNoRangeThingWithCompositeA
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
-		// must provide only the fields constituting the index
+		// must provide the fields constituting the index and the primary key
+		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"name_branch": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
+			},
 			"name_version": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s:%d", *input.StartingAfter.Name, input.StartingAfter.Version)),
 			},

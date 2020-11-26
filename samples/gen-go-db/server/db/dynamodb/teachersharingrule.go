@@ -410,8 +410,13 @@ func (t TeacherSharingRuleTable) scanTeacherSharingRulesByDistrictAndSchoolTeach
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
-		// must provide only the fields constituting the index
+		// must provide the fields constituting the index and the primary key
+		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"teacher": exclusiveStartKey["teacher"],
+			"school_app": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s_%s", input.StartingAfter.School, input.StartingAfter.App)),
+			},
 			"district": exclusiveStartKey["district"],
 			"school_teacher_app": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s_%s_%s", input.StartingAfter.School, input.StartingAfter.Teacher, input.StartingAfter.App)),

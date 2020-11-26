@@ -402,8 +402,14 @@ func (t ThingWithMatchingKeysTable) scanThingWithMatchingKeyssByAssocTypeIDAndCr
 		IndexName:      aws.String("byAssoc"),
 	}
 	if input.StartingAfter != nil {
-		// must provide only the fields constituting the index
+		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		if err != nil {
+			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
+		}
+		// must provide the fields constituting the index and the primary key
+		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"bear": exclusiveStartKey["bear"],
 			"assocTypeID": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAfter.AssocType, input.StartingAfter.AssocID)),
 			},

@@ -408,9 +408,12 @@ func (t ThingTable) scanThingsByID(ctx context.Context, input db.ScanThingsByIDI
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
-		// must provide only the fields constituting the index
+		// must provide the fields constituting the index and the primary key
+		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"id": exclusiveStartKey["id"],
+			"name":    exclusiveStartKey["name"],
+			"version": exclusiveStartKey["version"],
+			"id":      exclusiveStartKey["id"],
 		}
 	}
 	var innerErr error
@@ -546,9 +549,11 @@ func (t ThingTable) scanThingsByNameAndCreatedAt(ctx context.Context, input db.S
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
-		// must provide only the fields constituting the index
+		// must provide the fields constituting the index and the primary key
+		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"name":      exclusiveStartKey["name"],
+			"version":   exclusiveStartKey["version"],
 			"createdAt": exclusiveStartKey["createdAt"],
 		}
 	}

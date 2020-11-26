@@ -460,12 +460,14 @@ func (t DeploymentTable) scanDeploymentsByEnvAppAndDate(ctx context.Context, inp
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
-		// must provide only the fields constituting the index
+		// must provide the fields constituting the index and the primary key
+		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"envApp": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application)),
 			},
-			"date": exclusiveStartKey["date"],
+			"version": exclusiveStartKey["version"],
+			"date":    exclusiveStartKey["date"],
 		}
 	}
 	var innerErr error
@@ -628,8 +630,12 @@ func (t DeploymentTable) scanDeploymentsByVersion(ctx context.Context, input db.
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
-		// must provide only the fields constituting the index
+		// must provide the fields constituting the index and the primary key
+		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"envApp": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application)),
+			},
 			"version": exclusiveStartKey["version"],
 		}
 	}
