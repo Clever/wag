@@ -821,15 +821,17 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}sBy{{ $computedIndexName }}(c
     IndexName:      aws.String("{{ $gsi.IndexName }}"),
   }
   if input.StartingAfter != nil {
-  {{- if indexContainsNonCompositeAttribute $xdbConfig $gsi.KeySchema }}
+  {{- $primaryAndSecondaryKeySchemas := unionKeySchemas $xdbConfig.DynamoDB.KeySchema $gsi.KeySchema }}
+  {{- if indexContainsNonCompositeAttribute $xdbConfig $primaryAndSecondaryKeySchemas }}
     exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
     if err != nil {
       return fmt.Errorf("error encoding exclusive start key for scan: %%s", err.Error())
     }
   {{- end }}
-    // must provide only the fields constituting the index
+    // must provide the fields constituting the index and the primary key
+    // https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
     scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-                  {{- range $ks := $gsi.KeySchema }}
+                  {{- range $ks := $primaryAndSecondaryKeySchemas}}
                     {{- if isComposite $xdbConfig $ks.AttributeName }}
       "{{ $ks.AttributeName }}": &dynamodb.AttributeValue{
           S: aws.String({{compositeValuePage $xdbConfig $ks.AttributeName "input.StartingAfter"}}),
