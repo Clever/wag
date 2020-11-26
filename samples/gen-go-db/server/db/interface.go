@@ -238,6 +238,8 @@ type ScanDeploymentsInput struct {
 	StartingAfter *models.Deployment
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -305,6 +307,8 @@ type ScanDeploymentsByEnvAppAndDateInput struct {
 	StartingAfter *models.Deployment
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -351,6 +355,8 @@ type ScanDeploymentsByVersionInput struct {
 	StartingAfter *models.Deployment
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -361,6 +367,8 @@ type ScanEventsInput struct {
 	StartingAfter *models.Event
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -422,6 +430,8 @@ type ScanEventsBySkAndDataInput struct {
 	StartingAfter *models.Event
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -432,6 +442,8 @@ type ScanNoRangeThingWithCompositeAttributessInput struct {
 	StartingAfter *models.NoRangeThingWithCompositeAttributes
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -482,6 +494,8 @@ type ScanNoRangeThingWithCompositeAttributessByNameVersionAndDateInput struct {
 	StartingAfter *models.NoRangeThingWithCompositeAttributes
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -504,6 +518,8 @@ type ScanSimpleThingsInput struct {
 	StartingAfter *models.SimpleThing
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -538,6 +554,8 @@ type ScanTeacherSharingRulesInput struct {
 	StartingAfter *models.TeacherSharingRule
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -615,6 +633,8 @@ type ScanTeacherSharingRulesByDistrictAndSchoolTeacherAppInput struct {
 	StartingAfter *models.TeacherSharingRule
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -625,6 +645,8 @@ type ScanThingsInput struct {
 	StartingAfter *models.Thing
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -674,6 +696,8 @@ type ScanThingsByIDInput struct {
 	StartingAfter *models.Thing
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -708,6 +732,8 @@ type ScanThingsByNameAndCreatedAtInput struct {
 	StartingAfter *models.Thing
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -731,6 +757,8 @@ type ScanThingWithCompositeAttributessInput struct {
 	StartingAfter *models.ThingWithCompositeAttributes
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -798,6 +826,8 @@ type ScanThingWithCompositeAttributessByNameVersionAndDateInput struct {
 	StartingAfter *models.ThingWithCompositeAttributes
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -821,6 +851,8 @@ type ScanThingWithCompositeEnumAttributessInput struct {
 	StartingAfter *models.ThingWithCompositeEnumAttributes
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -874,6 +906,8 @@ type ScanThingWithDateRangesInput struct {
 	StartingAfter *models.ThingWithDateRange
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -911,6 +945,8 @@ type ScanThingWithDateTimeCompositesInput struct {
 	StartingAfter *models.ThingWithDateTimeComposite
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -958,6 +994,8 @@ type ScanThingWithEnumHashKeysInput struct {
 	StartingAfter *models.ThingWithEnumHashKey
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1019,6 +1057,8 @@ type ScanThingWithEnumHashKeysByBranchAndDate2Input struct {
 	StartingAfter *models.ThingWithEnumHashKey
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1042,6 +1082,8 @@ type ScanThingWithMatchingKeyssInput struct {
 	StartingAfter *models.ThingWithMatchingKeys
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1120,6 +1162,8 @@ type ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput struct {
 	StartingAfter *models.ThingWithMatchingKeys
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1130,6 +1174,8 @@ type ScanThingWithRequiredCompositePropertiesAndKeysOnlysInput struct {
 	StartingAfter *models.ThingWithRequiredCompositePropertiesAndKeysOnly
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1179,6 +1225,8 @@ type ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndP
 	StartingAfter *models.ThingWithRequiredCompositePropertiesAndKeysOnly
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1189,6 +1237,8 @@ type ScanThingWithRequiredFieldssInput struct {
 	StartingAfter *models.ThingWithRequiredFields
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1223,6 +1273,8 @@ type ScanThingWithRequiredFields2sInput struct {
 	StartingAfter *models.ThingWithRequiredFields2
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }

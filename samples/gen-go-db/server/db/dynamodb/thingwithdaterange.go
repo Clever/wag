@@ -123,6 +123,7 @@ func (t ThingWithDateRangeTable) scanThingWithDateRanges(ctx context.Context, in
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.name()),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+		Limit:          input.Limit,
 	}
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
@@ -135,6 +136,7 @@ func (t ThingWithDateRangeTable) scanThingWithDateRanges(ctx context.Context, in
 			"date": exclusiveStartKey["date"],
 		}
 	}
+	totalRecordsProcessed := int64(0)
 	var innerErr error
 	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
 		ms, err := decodeThingWithDateRanges(out.Items)
@@ -151,6 +153,11 @@ func (t ThingWithDateRangeTable) scanThingWithDateRanges(ctx context.Context, in
 			}
 			lastModel := lastPage && i == len(ms)-1
 			if continuee := fn(&ms[i], lastModel); !continuee {
+				return false
+			}
+			totalRecordsProcessed++
+			// if the Limit of records have been passed to fn, don't pass anymore records.
+			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
 				return false
 			}
 		}

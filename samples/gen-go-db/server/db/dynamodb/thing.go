@@ -206,6 +206,7 @@ func (t ThingTable) scanThings(ctx context.Context, input db.ScanThingsInput, fn
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.name()),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+		Limit:          input.Limit,
 	}
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
@@ -218,6 +219,7 @@ func (t ThingTable) scanThings(ctx context.Context, input db.ScanThingsInput, fn
 			"version": exclusiveStartKey["version"],
 		}
 	}
+	totalRecordsProcessed := int64(0)
 	var innerErr error
 	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
 		ms, err := decodeThings(out.Items)
@@ -234,6 +236,11 @@ func (t ThingTable) scanThings(ctx context.Context, input db.ScanThingsInput, fn
 			}
 			lastModel := lastPage && i == len(ms)-1
 			if continuee := fn(&ms[i], lastModel); !continuee {
+				return false
+			}
+			totalRecordsProcessed++
+			// if the Limit of records have been passed to fn, don't pass anymore records.
+			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
 				return false
 			}
 		}
@@ -401,6 +408,7 @@ func (t ThingTable) scanThingsByID(ctx context.Context, input db.ScanThingsByIDI
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.name()),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+		Limit:          input.Limit,
 		IndexName:      aws.String("thingID"),
 	}
 	if input.StartingAfter != nil {
@@ -416,6 +424,7 @@ func (t ThingTable) scanThingsByID(ctx context.Context, input db.ScanThingsByIDI
 			"id":      exclusiveStartKey["id"],
 		}
 	}
+	totalRecordsProcessed := int64(0)
 	var innerErr error
 	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
 		ms, err := decodeThings(out.Items)
@@ -432,6 +441,11 @@ func (t ThingTable) scanThingsByID(ctx context.Context, input db.ScanThingsByIDI
 			}
 			lastModel := lastPage && i == len(ms)-1
 			if continuee := fn(&ms[i], lastModel); !continuee {
+				return false
+			}
+			totalRecordsProcessed++
+			// if the Limit of records have been passed to fn, don't pass anymore records.
+			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
 				return false
 			}
 		}
@@ -542,6 +556,7 @@ func (t ThingTable) scanThingsByNameAndCreatedAt(ctx context.Context, input db.S
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.name()),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+		Limit:          input.Limit,
 		IndexName:      aws.String("name-createdAt"),
 	}
 	if input.StartingAfter != nil {
@@ -557,6 +572,7 @@ func (t ThingTable) scanThingsByNameAndCreatedAt(ctx context.Context, input db.S
 			"createdAt": exclusiveStartKey["createdAt"],
 		}
 	}
+	totalRecordsProcessed := int64(0)
 	var innerErr error
 	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
 		ms, err := decodeThings(out.Items)
@@ -573,6 +589,11 @@ func (t ThingTable) scanThingsByNameAndCreatedAt(ctx context.Context, input db.S
 			}
 			lastModel := lastPage && i == len(ms)-1
 			if continuee := fn(&ms[i], lastModel); !continuee {
+				return false
+			}
+			totalRecordsProcessed++
+			// if the Limit of records have been passed to fn, don't pass anymore records.
+			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
 				return false
 			}
 		}

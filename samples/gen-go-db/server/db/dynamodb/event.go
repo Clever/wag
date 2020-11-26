@@ -155,6 +155,7 @@ func (t EventTable) scanEvents(ctx context.Context, input db.ScanEventsInput, fn
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.name()),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+		Limit:          input.Limit,
 	}
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
@@ -167,6 +168,7 @@ func (t EventTable) scanEvents(ctx context.Context, input db.ScanEventsInput, fn
 			"sk": exclusiveStartKey["sk"],
 		}
 	}
+	totalRecordsProcessed := int64(0)
 	var innerErr error
 	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
 		ms, err := decodeEvents(out.Items)
@@ -183,6 +185,11 @@ func (t EventTable) scanEvents(ctx context.Context, input db.ScanEventsInput, fn
 			}
 			lastModel := lastPage && i == len(ms)-1
 			if continuee := fn(&ms[i], lastModel); !continuee {
+				return false
+			}
+			totalRecordsProcessed++
+			// if the Limit of records have been passed to fn, don't pass anymore records.
+			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
 				return false
 			}
 		}
@@ -392,6 +399,7 @@ func (t EventTable) scanEventsBySkAndData(ctx context.Context, input db.ScanEven
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.name()),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+		Limit:          input.Limit,
 		IndexName:      aws.String("bySK"),
 	}
 	if input.StartingAfter != nil {
@@ -407,6 +415,7 @@ func (t EventTable) scanEventsBySkAndData(ctx context.Context, input db.ScanEven
 			"data": exclusiveStartKey["data"],
 		}
 	}
+	totalRecordsProcessed := int64(0)
 	var innerErr error
 	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
 		ms, err := decodeEvents(out.Items)
@@ -423,6 +432,11 @@ func (t EventTable) scanEventsBySkAndData(ctx context.Context, input db.ScanEven
 			}
 			lastModel := lastPage && i == len(ms)-1
 			if continuee := fn(&ms[i], lastModel); !continuee {
+				return false
+			}
+			totalRecordsProcessed++
+			// if the Limit of records have been passed to fn, don't pass anymore records.
+			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
 				return false
 			}
 		}

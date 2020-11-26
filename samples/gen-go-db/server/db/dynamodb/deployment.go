@@ -208,6 +208,7 @@ func (t DeploymentTable) scanDeployments(ctx context.Context, input db.ScanDeplo
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.name()),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+		Limit:          input.Limit,
 	}
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
@@ -222,6 +223,7 @@ func (t DeploymentTable) scanDeployments(ctx context.Context, input db.ScanDeplo
 			"version": exclusiveStartKey["version"],
 		}
 	}
+	totalRecordsProcessed := int64(0)
 	var innerErr error
 	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
 		ms, err := decodeDeployments(out.Items)
@@ -238,6 +240,11 @@ func (t DeploymentTable) scanDeployments(ctx context.Context, input db.ScanDeplo
 			}
 			lastModel := lastPage && i == len(ms)-1
 			if continuee := fn(&ms[i], lastModel); !continuee {
+				return false
+			}
+			totalRecordsProcessed++
+			// if the Limit of records have been passed to fn, don't pass anymore records.
+			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
 				return false
 			}
 		}
@@ -453,6 +460,7 @@ func (t DeploymentTable) scanDeploymentsByEnvAppAndDate(ctx context.Context, inp
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.name()),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+		Limit:          input.Limit,
 		IndexName:      aws.String("byDate"),
 	}
 	if input.StartingAfter != nil {
@@ -470,6 +478,7 @@ func (t DeploymentTable) scanDeploymentsByEnvAppAndDate(ctx context.Context, inp
 			"date":    exclusiveStartKey["date"],
 		}
 	}
+	totalRecordsProcessed := int64(0)
 	var innerErr error
 	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
 		ms, err := decodeDeployments(out.Items)
@@ -486,6 +495,11 @@ func (t DeploymentTable) scanDeploymentsByEnvAppAndDate(ctx context.Context, inp
 			}
 			lastModel := lastPage && i == len(ms)-1
 			if continuee := fn(&ms[i], lastModel); !continuee {
+				return false
+			}
+			totalRecordsProcessed++
+			// if the Limit of records have been passed to fn, don't pass anymore records.
+			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
 				return false
 			}
 		}
@@ -623,6 +637,7 @@ func (t DeploymentTable) scanDeploymentsByVersion(ctx context.Context, input db.
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.name()),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+		Limit:          input.Limit,
 		IndexName:      aws.String("byVersion"),
 	}
 	if input.StartingAfter != nil {
@@ -639,6 +654,7 @@ func (t DeploymentTable) scanDeploymentsByVersion(ctx context.Context, input db.
 			"version": exclusiveStartKey["version"],
 		}
 	}
+	totalRecordsProcessed := int64(0)
 	var innerErr error
 	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
 		ms, err := decodeDeployments(out.Items)
@@ -655,6 +671,11 @@ func (t DeploymentTable) scanDeploymentsByVersion(ctx context.Context, input db.
 			}
 			lastModel := lastPage && i == len(ms)-1
 			if continuee := fn(&ms[i], lastModel); !continuee {
+				return false
+			}
+			totalRecordsProcessed++
+			// if the Limit of records have been passed to fn, don't pass anymore records.
+			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
 				return false
 			}
 		}

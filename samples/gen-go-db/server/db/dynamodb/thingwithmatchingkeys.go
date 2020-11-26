@@ -157,6 +157,7 @@ func (t ThingWithMatchingKeysTable) scanThingWithMatchingKeyss(ctx context.Conte
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.name()),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+		Limit:          input.Limit,
 	}
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
@@ -171,6 +172,7 @@ func (t ThingWithMatchingKeysTable) scanThingWithMatchingKeyss(ctx context.Conte
 			},
 		}
 	}
+	totalRecordsProcessed := int64(0)
 	var innerErr error
 	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
 		ms, err := decodeThingWithMatchingKeyss(out.Items)
@@ -187,6 +189,11 @@ func (t ThingWithMatchingKeysTable) scanThingWithMatchingKeyss(ctx context.Conte
 			}
 			lastModel := lastPage && i == len(ms)-1
 			if continuee := fn(&ms[i], lastModel); !continuee {
+				return false
+			}
+			totalRecordsProcessed++
+			// if the Limit of records have been passed to fn, don't pass anymore records.
+			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
 				return false
 			}
 		}
@@ -399,6 +406,7 @@ func (t ThingWithMatchingKeysTable) scanThingWithMatchingKeyssByAssocTypeIDAndCr
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.name()),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+		Limit:          input.Limit,
 		IndexName:      aws.String("byAssoc"),
 	}
 	if input.StartingAfter != nil {
@@ -418,6 +426,7 @@ func (t ThingWithMatchingKeysTable) scanThingWithMatchingKeyssByAssocTypeIDAndCr
 			},
 		}
 	}
+	totalRecordsProcessed := int64(0)
 	var innerErr error
 	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
 		ms, err := decodeThingWithMatchingKeyss(out.Items)
@@ -434,6 +443,11 @@ func (t ThingWithMatchingKeysTable) scanThingWithMatchingKeyssByAssocTypeIDAndCr
 			}
 			lastModel := lastPage && i == len(ms)-1
 			if continuee := fn(&ms[i], lastModel); !continuee {
+				return false
+			}
+			totalRecordsProcessed++
+			// if the Limit of records have been passed to fn, don't pass anymore records.
+			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
 				return false
 			}
 		}
