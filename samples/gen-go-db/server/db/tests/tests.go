@@ -359,36 +359,42 @@ func ScanDeployments(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		require.Nil(t, d.SaveDeployment(ctx, models.Deployment{
-			Environment: "string1",
 			Application: "string1",
+			Date:        mustTime("2018-03-11T15:04:01+07:00"),
+			Environment: "string1",
 			Version:     "string1",
 		}))
 		require.Nil(t, d.SaveDeployment(ctx, models.Deployment{
-			Environment: "string2",
 			Application: "string2",
+			Date:        mustTime("2018-03-11T15:04:02+07:00"),
+			Environment: "string2",
 			Version:     "string2",
 		}))
 		require.Nil(t, d.SaveDeployment(ctx, models.Deployment{
-			Environment: "string3",
 			Application: "string3",
+			Date:        mustTime("2018-03-11T15:04:03+07:00"),
+			Environment: "string3",
 			Version:     "string3",
 		}))
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.Deployment{
 				models.Deployment{
-					Environment: "string1",
 					Application: "string1",
+					Date:        mustTime("2018-03-11T15:04:01+07:00"),
+					Environment: "string1",
 					Version:     "string1",
 				},
 				models.Deployment{
-					Environment: "string2",
 					Application: "string2",
+					Date:        mustTime("2018-03-11T15:04:02+07:00"),
+					Environment: "string2",
 					Version:     "string2",
 				},
 				models.Deployment{
-					Environment: "string3",
 					Application: "string3",
+					Date:        mustTime("2018-03-11T15:04:03+07:00"),
+					Environment: "string3",
 					Version:     "string3",
 				},
 			}
@@ -1362,31 +1368,37 @@ func ScanEvents(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		require.Nil(t, d.SaveEvent(ctx, models.Event{
-			Pk: "string1",
-			Sk: "string1",
+			Data: []byte("string1"),
+			Pk:   "string1",
+			Sk:   "string1",
 		}))
 		require.Nil(t, d.SaveEvent(ctx, models.Event{
-			Pk: "string2",
-			Sk: "string2",
+			Data: []byte("string2"),
+			Pk:   "string2",
+			Sk:   "string2",
 		}))
 		require.Nil(t, d.SaveEvent(ctx, models.Event{
-			Pk: "string3",
-			Sk: "string3",
+			Data: []byte("string3"),
+			Pk:   "string3",
+			Sk:   "string3",
 		}))
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.Event{
 				models.Event{
-					Pk: "string1",
-					Sk: "string1",
+					Data: []byte("string1"),
+					Pk:   "string1",
+					Sk:   "string1",
 				},
 				models.Event{
-					Pk: "string2",
-					Sk: "string2",
+					Data: []byte("string2"),
+					Pk:   "string2",
+					Sk:   "string2",
 				},
 				models.Event{
-					Pk: "string3",
-					Sk: "string3",
+					Data: []byte("string3"),
+					Pk:   "string3",
+					Sk:   "string3",
 				},
 			}
 			actual := []models.Event{}
@@ -1794,31 +1806,43 @@ func ScanNoRangeThingWithCompositeAttributess(d db.Interface, t *testing.T) func
 	return func(t *testing.T) {
 		ctx := context.Background()
 		require.Nil(t, d.SaveNoRangeThingWithCompositeAttributes(ctx, models.NoRangeThingWithCompositeAttributes{
-			Name:   db.String("string1"),
-			Branch: db.String("string1"),
+			Branch:  db.String("string1"),
+			Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Name:    db.String("string1"),
+			Version: 1,
 		}))
 		require.Nil(t, d.SaveNoRangeThingWithCompositeAttributes(ctx, models.NoRangeThingWithCompositeAttributes{
-			Name:   db.String("string2"),
-			Branch: db.String("string2"),
+			Branch:  db.String("string2"),
+			Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+			Name:    db.String("string2"),
+			Version: 2,
 		}))
 		require.Nil(t, d.SaveNoRangeThingWithCompositeAttributes(ctx, models.NoRangeThingWithCompositeAttributes{
-			Name:   db.String("string3"),
-			Branch: db.String("string3"),
+			Branch:  db.String("string3"),
+			Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+			Name:    db.String("string3"),
+			Version: 3,
 		}))
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.NoRangeThingWithCompositeAttributes{
 				models.NoRangeThingWithCompositeAttributes{
-					Name:   db.String("string1"),
-					Branch: db.String("string1"),
+					Branch:  db.String("string1"),
+					Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+					Name:    db.String("string1"),
+					Version: 1,
 				},
 				models.NoRangeThingWithCompositeAttributes{
-					Name:   db.String("string2"),
-					Branch: db.String("string2"),
+					Branch:  db.String("string2"),
+					Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+					Name:    db.String("string2"),
+					Version: 2,
 				},
 				models.NoRangeThingWithCompositeAttributes{
-					Name:   db.String("string3"),
-					Branch: db.String("string3"),
+					Branch:  db.String("string3"),
+					Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+					Name:    db.String("string3"),
+					Version: 3,
 				},
 			}
 			actual := []models.NoRangeThingWithCompositeAttributes{}
@@ -2602,61 +2626,43 @@ func ScanTeacherSharingRules(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		require.Nil(t, d.SaveTeacherSharingRule(ctx, models.TeacherSharingRule{
-			Teacher: "string1",
-			School:  "string1",
-			App:     "string1",
-			// must specify non-empty string values for attributes
-			// in secondary indexes, since dynamodb doesn't support
-			// empty strings:
-			District: "district",
+			App:      "string1",
+			District: "string1",
+			School:   "string1",
+			Teacher:  "string1",
 		}))
 		require.Nil(t, d.SaveTeacherSharingRule(ctx, models.TeacherSharingRule{
-			Teacher: "string2",
-			School:  "string2",
-			App:     "string2",
-			// must specify non-empty string values for attributes
-			// in secondary indexes, since dynamodb doesn't support
-			// empty strings:
-			District: "district",
+			App:      "string2",
+			District: "string2",
+			School:   "string2",
+			Teacher:  "string2",
 		}))
 		require.Nil(t, d.SaveTeacherSharingRule(ctx, models.TeacherSharingRule{
-			Teacher: "string3",
-			School:  "string3",
-			App:     "string3",
-			// must specify non-empty string values for attributes
-			// in secondary indexes, since dynamodb doesn't support
-			// empty strings:
-			District: "district",
+			App:      "string3",
+			District: "string3",
+			School:   "string3",
+			Teacher:  "string3",
 		}))
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.TeacherSharingRule{
 				models.TeacherSharingRule{
-					Teacher: "string1",
-					School:  "string1",
-					App:     "string1",
-					// must specify non-empty string values for attributes
-					// in secondary indexes, since dynamodb doesn't support
-					// empty strings:
-					District: "district",
+					App:      "string1",
+					District: "string1",
+					School:   "string1",
+					Teacher:  "string1",
 				},
 				models.TeacherSharingRule{
-					Teacher: "string2",
-					School:  "string2",
-					App:     "string2",
-					// must specify non-empty string values for attributes
-					// in secondary indexes, since dynamodb doesn't support
-					// empty strings:
-					District: "district",
+					App:      "string2",
+					District: "string2",
+					School:   "string2",
+					Teacher:  "string2",
 				},
 				models.TeacherSharingRule{
-					Teacher: "string3",
-					School:  "string3",
-					App:     "string3",
-					// must specify non-empty string values for attributes
-					// in secondary indexes, since dynamodb doesn't support
-					// empty strings:
-					District: "district",
+					App:      "string3",
+					District: "string3",
+					School:   "string3",
+					Teacher:  "string3",
 				},
 			}
 			actual := []models.TeacherSharingRule{}
@@ -2697,7 +2703,7 @@ func ScanTeacherSharingRules(d db.Interface, t *testing.T) func(t *testing.T) {
 					// must specify non-empty string values for attributes
 					// in secondary indexes, since dynamodb doesn't support
 					// empty strings:
-					District: "district",
+					District: firstItem.District,
 				},
 			}
 			actual := []models.TeacherSharingRule{}
@@ -3290,31 +3296,43 @@ func ScanThings(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		require.Nil(t, d.SaveThing(ctx, models.Thing{
-			Name:    "string1",
-			Version: 1,
+			CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
+			ID:        "string1",
+			Name:      "string1",
+			Version:   1,
 		}))
 		require.Nil(t, d.SaveThing(ctx, models.Thing{
-			Name:    "string2",
-			Version: 2,
+			CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
+			ID:        "string2",
+			Name:      "string2",
+			Version:   2,
 		}))
 		require.Nil(t, d.SaveThing(ctx, models.Thing{
-			Name:    "string3",
-			Version: 3,
+			CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
+			ID:        "string3",
+			Name:      "string3",
+			Version:   3,
 		}))
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.Thing{
 				models.Thing{
-					Name:    "string1",
-					Version: 1,
+					CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
+					ID:        "string1",
+					Name:      "string1",
+					Version:   1,
 				},
 				models.Thing{
-					Name:    "string2",
-					Version: 2,
+					CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
+					ID:        "string2",
+					Name:      "string2",
+					Version:   2,
 				},
 				models.Thing{
-					Name:    "string3",
-					Version: 3,
+					CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
+					ID:        "string3",
+					Name:      "string3",
+					Version:   3,
 				},
 			}
 			actual := []models.Thing{}
@@ -4057,37 +4075,43 @@ func ScanThingWithCompositeAttributess(d db.Interface, t *testing.T) func(t *tes
 	return func(t *testing.T) {
 		ctx := context.Background()
 		require.Nil(t, d.SaveThingWithCompositeAttributes(ctx, models.ThingWithCompositeAttributes{
-			Name:   db.String("string1"),
-			Branch: db.String("string1"),
-			Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Branch:  db.String("string1"),
+			Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Name:    db.String("string1"),
+			Version: 1,
 		}))
 		require.Nil(t, d.SaveThingWithCompositeAttributes(ctx, models.ThingWithCompositeAttributes{
-			Name:   db.String("string2"),
-			Branch: db.String("string2"),
-			Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+			Branch:  db.String("string2"),
+			Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+			Name:    db.String("string2"),
+			Version: 2,
 		}))
 		require.Nil(t, d.SaveThingWithCompositeAttributes(ctx, models.ThingWithCompositeAttributes{
-			Name:   db.String("string3"),
-			Branch: db.String("string3"),
-			Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+			Branch:  db.String("string3"),
+			Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+			Name:    db.String("string3"),
+			Version: 3,
 		}))
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithCompositeAttributes{
 				models.ThingWithCompositeAttributes{
-					Name:   db.String("string1"),
-					Branch: db.String("string1"),
-					Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+					Branch:  db.String("string1"),
+					Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+					Name:    db.String("string1"),
+					Version: 1,
 				},
 				models.ThingWithCompositeAttributes{
-					Name:   db.String("string2"),
-					Branch: db.String("string2"),
-					Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+					Branch:  db.String("string2"),
+					Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+					Name:    db.String("string2"),
+					Version: 2,
 				},
 				models.ThingWithCompositeAttributes{
-					Name:   db.String("string3"),
-					Branch: db.String("string3"),
-					Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+					Branch:  db.String("string3"),
+					Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+					Name:    db.String("string3"),
+					Version: 3,
 				},
 			}
 			actual := []models.ThingWithCompositeAttributes{}
@@ -4741,37 +4765,37 @@ func ScanThingWithCompositeEnumAttributess(d db.Interface, t *testing.T) func(t 
 	return func(t *testing.T) {
 		ctx := context.Background()
 		require.Nil(t, d.SaveThingWithCompositeEnumAttributes(ctx, models.ThingWithCompositeEnumAttributes{
-			Name:     db.String("string1"),
 			BranchID: models.BranchMaster,
 			Date:     db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Name:     db.String("string1"),
 		}))
 		require.Nil(t, d.SaveThingWithCompositeEnumAttributes(ctx, models.ThingWithCompositeEnumAttributes{
-			Name:     db.String("string2"),
 			BranchID: models.BranchDEVBRANCH,
 			Date:     db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+			Name:     db.String("string2"),
 		}))
 		require.Nil(t, d.SaveThingWithCompositeEnumAttributes(ctx, models.ThingWithCompositeEnumAttributes{
-			Name:     db.String("string3"),
 			BranchID: models.BranchTest,
 			Date:     db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+			Name:     db.String("string3"),
 		}))
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithCompositeEnumAttributes{
 				models.ThingWithCompositeEnumAttributes{
-					Name:     db.String("string1"),
 					BranchID: models.BranchMaster,
 					Date:     db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+					Name:     db.String("string1"),
 				},
 				models.ThingWithCompositeEnumAttributes{
-					Name:     db.String("string2"),
 					BranchID: models.BranchDEVBRANCH,
 					Date:     db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+					Name:     db.String("string2"),
 				},
 				models.ThingWithCompositeEnumAttributes{
-					Name:     db.String("string3"),
 					BranchID: models.BranchTest,
 					Date:     db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+					Name:     db.String("string3"),
 				},
 			}
 			actual := []models.ThingWithCompositeEnumAttributes{}
@@ -5067,31 +5091,31 @@ func ScanThingWithDateRanges(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		require.Nil(t, d.SaveThingWithDateRange(ctx, models.ThingWithDateRange{
-			Name: "string1",
 			Date: mustTime("2018-03-11T15:04:01+07:00"),
+			Name: "string1",
 		}))
 		require.Nil(t, d.SaveThingWithDateRange(ctx, models.ThingWithDateRange{
-			Name: "string2",
 			Date: mustTime("2018-03-11T15:04:02+07:00"),
+			Name: "string2",
 		}))
 		require.Nil(t, d.SaveThingWithDateRange(ctx, models.ThingWithDateRange{
-			Name: "string3",
 			Date: mustTime("2018-03-11T15:04:03+07:00"),
+			Name: "string3",
 		}))
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithDateRange{
 				models.ThingWithDateRange{
-					Name: "string1",
 					Date: mustTime("2018-03-11T15:04:01+07:00"),
+					Name: "string1",
 				},
 				models.ThingWithDateRange{
-					Name: "string2",
 					Date: mustTime("2018-03-11T15:04:02+07:00"),
+					Name: "string2",
 				},
 				models.ThingWithDateRange{
-					Name: "string3",
 					Date: mustTime("2018-03-11T15:04:03+07:00"),
+					Name: "string3",
 				},
 			}
 			actual := []models.ThingWithDateRange{}
@@ -5429,43 +5453,43 @@ func ScanThingWithDateTimeComposites(d db.Interface, t *testing.T) func(t *testi
 	return func(t *testing.T) {
 		ctx := context.Background()
 		require.Nil(t, d.SaveThingWithDateTimeComposite(ctx, models.ThingWithDateTimeComposite{
-			Type:     "string1",
-			ID:       "string1",
 			Created:  mustTime("2018-03-11T15:04:01+07:00"),
+			ID:       "string1",
 			Resource: "string1",
+			Type:     "string1",
 		}))
 		require.Nil(t, d.SaveThingWithDateTimeComposite(ctx, models.ThingWithDateTimeComposite{
-			Type:     "string2",
-			ID:       "string2",
 			Created:  mustTime("2018-03-11T15:04:02+07:00"),
+			ID:       "string2",
 			Resource: "string2",
+			Type:     "string2",
 		}))
 		require.Nil(t, d.SaveThingWithDateTimeComposite(ctx, models.ThingWithDateTimeComposite{
-			Type:     "string3",
-			ID:       "string3",
 			Created:  mustTime("2018-03-11T15:04:03+07:00"),
+			ID:       "string3",
 			Resource: "string3",
+			Type:     "string3",
 		}))
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithDateTimeComposite{
 				models.ThingWithDateTimeComposite{
-					Type:     "string1",
-					ID:       "string1",
 					Created:  mustTime("2018-03-11T15:04:01+07:00"),
+					ID:       "string1",
 					Resource: "string1",
+					Type:     "string1",
 				},
 				models.ThingWithDateTimeComposite{
-					Type:     "string2",
-					ID:       "string2",
 					Created:  mustTime("2018-03-11T15:04:02+07:00"),
+					ID:       "string2",
 					Resource: "string2",
+					Type:     "string2",
 				},
 				models.ThingWithDateTimeComposite{
-					Type:     "string3",
-					ID:       "string3",
 					Created:  mustTime("2018-03-11T15:04:03+07:00"),
+					ID:       "string3",
 					Resource: "string3",
+					Type:     "string3",
 				},
 			}
 			actual := []models.ThingWithDateTimeComposite{}
@@ -5766,14 +5790,17 @@ func ScanThingWithEnumHashKeys(d db.Interface, t *testing.T) func(t *testing.T) 
 		require.Nil(t, d.SaveThingWithEnumHashKey(ctx, models.ThingWithEnumHashKey{
 			Branch: models.BranchMaster,
 			Date:   mustTime("2018-03-11T15:04:01+07:00"),
+			Date2:  mustTime("2018-03-11T15:04:01+07:00"),
 		}))
 		require.Nil(t, d.SaveThingWithEnumHashKey(ctx, models.ThingWithEnumHashKey{
 			Branch: models.BranchDEVBRANCH,
 			Date:   mustTime("2018-03-11T15:04:02+07:00"),
+			Date2:  mustTime("2018-03-11T15:04:02+07:00"),
 		}))
 		require.Nil(t, d.SaveThingWithEnumHashKey(ctx, models.ThingWithEnumHashKey{
 			Branch: models.BranchTest,
 			Date:   mustTime("2018-03-11T15:04:03+07:00"),
+			Date2:  mustTime("2018-03-11T15:04:03+07:00"),
 		}))
 
 		t.Run("basic", func(t *testing.T) {
@@ -5781,14 +5808,17 @@ func ScanThingWithEnumHashKeys(d db.Interface, t *testing.T) func(t *testing.T) 
 				models.ThingWithEnumHashKey{
 					Branch: models.BranchMaster,
 					Date:   mustTime("2018-03-11T15:04:01+07:00"),
+					Date2:  mustTime("2018-03-11T15:04:01+07:00"),
 				},
 				models.ThingWithEnumHashKey{
 					Branch: models.BranchDEVBRANCH,
 					Date:   mustTime("2018-03-11T15:04:02+07:00"),
+					Date2:  mustTime("2018-03-11T15:04:02+07:00"),
 				},
 				models.ThingWithEnumHashKey{
 					Branch: models.BranchTest,
 					Date:   mustTime("2018-03-11T15:04:03+07:00"),
+					Date2:  mustTime("2018-03-11T15:04:03+07:00"),
 				},
 			}
 			actual := []models.ThingWithEnumHashKey{}
@@ -6409,37 +6439,43 @@ func ScanThingWithMatchingKeyss(d db.Interface, t *testing.T) func(t *testing.T)
 	return func(t *testing.T) {
 		ctx := context.Background()
 		require.Nil(t, d.SaveThingWithMatchingKeys(ctx, models.ThingWithMatchingKeys{
-			Bear:      "string1",
-			AssocType: "string1",
 			AssocID:   "string1",
+			AssocType: "string1",
+			Bear:      "string1",
+			Created:   mustTime("2018-03-11T15:04:01+07:00"),
 		}))
 		require.Nil(t, d.SaveThingWithMatchingKeys(ctx, models.ThingWithMatchingKeys{
-			Bear:      "string2",
-			AssocType: "string2",
 			AssocID:   "string2",
+			AssocType: "string2",
+			Bear:      "string2",
+			Created:   mustTime("2018-03-11T15:04:02+07:00"),
 		}))
 		require.Nil(t, d.SaveThingWithMatchingKeys(ctx, models.ThingWithMatchingKeys{
-			Bear:      "string3",
-			AssocType: "string3",
 			AssocID:   "string3",
+			AssocType: "string3",
+			Bear:      "string3",
+			Created:   mustTime("2018-03-11T15:04:03+07:00"),
 		}))
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithMatchingKeys{
 				models.ThingWithMatchingKeys{
-					Bear:      "string1",
-					AssocType: "string1",
 					AssocID:   "string1",
+					AssocType: "string1",
+					Bear:      "string1",
+					Created:   mustTime("2018-03-11T15:04:01+07:00"),
 				},
 				models.ThingWithMatchingKeys{
-					Bear:      "string2",
-					AssocType: "string2",
 					AssocID:   "string2",
+					AssocType: "string2",
+					Bear:      "string2",
+					Created:   mustTime("2018-03-11T15:04:02+07:00"),
 				},
 				models.ThingWithMatchingKeys{
-					Bear:      "string3",
-					AssocType: "string3",
 					AssocID:   "string3",
+					AssocType: "string3",
+					Bear:      "string3",
+					Created:   mustTime("2018-03-11T15:04:03+07:00"),
 				},
 			}
 			actual := []models.ThingWithMatchingKeys{}
@@ -6880,55 +6916,37 @@ func ScanThingWithRequiredCompositePropertiesAndKeysOnlys(d db.Interface, t *tes
 	return func(t *testing.T) {
 		ctx := context.Background()
 		require.Nil(t, d.SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx, models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+			PropertyOne:   db.String("string1"),
 			PropertyThree: db.String("string1"),
-			// must specify non-empty string values for attributes
-			// in secondary indexes, since dynamodb doesn't support
-			// empty strings:
-			PropertyOne: "propertyOne",
-			PropertyTwo: "propertyTwo",
+			PropertyTwo:   db.String("string1"),
 		}))
 		require.Nil(t, d.SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx, models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+			PropertyOne:   db.String("string2"),
 			PropertyThree: db.String("string2"),
-			// must specify non-empty string values for attributes
-			// in secondary indexes, since dynamodb doesn't support
-			// empty strings:
-			PropertyOne: "propertyOne",
-			PropertyTwo: "propertyTwo",
+			PropertyTwo:   db.String("string2"),
 		}))
 		require.Nil(t, d.SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx, models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+			PropertyOne:   db.String("string3"),
 			PropertyThree: db.String("string3"),
-			// must specify non-empty string values for attributes
-			// in secondary indexes, since dynamodb doesn't support
-			// empty strings:
-			PropertyOne: "propertyOne",
-			PropertyTwo: "propertyTwo",
+			PropertyTwo:   db.String("string3"),
 		}))
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithRequiredCompositePropertiesAndKeysOnly{
 				models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+					PropertyOne:   db.String("string1"),
 					PropertyThree: db.String("string1"),
-					// must specify non-empty string values for attributes
-					// in secondary indexes, since dynamodb doesn't support
-					// empty strings:
-					PropertyOne: "propertyOne",
-					PropertyTwo: "propertyTwo",
+					PropertyTwo:   db.String("string1"),
 				},
 				models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+					PropertyOne:   db.String("string2"),
 					PropertyThree: db.String("string2"),
-					// must specify non-empty string values for attributes
-					// in secondary indexes, since dynamodb doesn't support
-					// empty strings:
-					PropertyOne: "propertyOne",
-					PropertyTwo: "propertyTwo",
+					PropertyTwo:   db.String("string2"),
 				},
 				models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+					PropertyOne:   db.String("string3"),
 					PropertyThree: db.String("string3"),
-					// must specify non-empty string values for attributes
-					// in secondary indexes, since dynamodb doesn't support
-					// empty strings:
-					PropertyOne: "propertyOne",
-					PropertyTwo: "propertyTwo",
+					PropertyTwo:   db.String("string3"),
 				},
 			}
 			actual := []models.ThingWithRequiredCompositePropertiesAndKeysOnly{}
@@ -6967,8 +6985,8 @@ func ScanThingWithRequiredCompositePropertiesAndKeysOnlys(d db.Interface, t *tes
 					// must specify non-empty string values for attributes
 					// in secondary indexes, since dynamodb doesn't support
 					// empty strings:
-					PropertyOne: "propertyOne",
-					PropertyTwo: "propertyTwo",
+					PropertyOne: firstItem.PropertyOne,
+					PropertyTwo: firstItem.PropertyTwo,
 				},
 			}
 			actual := []models.ThingWithRequiredCompositePropertiesAndKeysOnly{}
@@ -7649,31 +7667,31 @@ func ScanThingWithRequiredFields2s(d db.Interface, t *testing.T) func(t *testing
 	return func(t *testing.T) {
 		ctx := context.Background()
 		require.Nil(t, d.SaveThingWithRequiredFields2(ctx, models.ThingWithRequiredFields2{
-			Name: db.String("string1"),
 			ID:   db.String("string1"),
+			Name: db.String("string1"),
 		}))
 		require.Nil(t, d.SaveThingWithRequiredFields2(ctx, models.ThingWithRequiredFields2{
-			Name: db.String("string2"),
 			ID:   db.String("string2"),
+			Name: db.String("string2"),
 		}))
 		require.Nil(t, d.SaveThingWithRequiredFields2(ctx, models.ThingWithRequiredFields2{
-			Name: db.String("string3"),
 			ID:   db.String("string3"),
+			Name: db.String("string3"),
 		}))
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithRequiredFields2{
 				models.ThingWithRequiredFields2{
-					Name: db.String("string1"),
 					ID:   db.String("string1"),
+					Name: db.String("string1"),
 				},
 				models.ThingWithRequiredFields2{
-					Name: db.String("string2"),
 					ID:   db.String("string2"),
+					Name: db.String("string2"),
 				},
 				models.ThingWithRequiredFields2{
-					Name: db.String("string3"),
 					ID:   db.String("string3"),
+					Name: db.String("string3"),
 				},
 			}
 			actual := []models.ThingWithRequiredFields2{}
