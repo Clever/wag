@@ -301,7 +301,7 @@ func (e ErrDeploymentByEnvAppAndDateNotFound) Error() string {
 	return "could not find Deployment"
 }
 
-// ScanDeploymentsByEnvAppAndDateInput is the input to the ScanDeploymentsByByEnvAppAndDate method.
+// ScanDeploymentsByEnvAppAndDateInput is the input to the ScanDeploymentsByEnvAppAndDate method.
 type ScanDeploymentsByEnvAppAndDateInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.Deployment
@@ -349,7 +349,7 @@ func (e ErrDeploymentByVersionNotFound) Error() string {
 	return "could not find Deployment"
 }
 
-// ScanDeploymentsByVersionInput is the input to the ScanDeploymentsByByVersion method.
+// ScanDeploymentsByVersionInput is the input to the ScanDeploymentsByVersion method.
 type ScanDeploymentsByVersionInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.Deployment
@@ -424,7 +424,7 @@ func (e ErrEventBySkAndDataNotFound) Error() string {
 	return "could not find Event"
 }
 
-// ScanEventsBySkAndDataInput is the input to the ScanEventsByBySkAndData method.
+// ScanEventsBySkAndDataInput is the input to the ScanEventsBySkAndData method.
 type ScanEventsBySkAndDataInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.Event
@@ -488,7 +488,7 @@ func (e ErrNoRangeThingWithCompositeAttributesByNameVersionAndDateNotFound) Erro
 	return "could not find NoRangeThingWithCompositeAttributes"
 }
 
-// ScanNoRangeThingWithCompositeAttributessByNameVersionAndDateInput is the input to the ScanNoRangeThingWithCompositeAttributessByByNameVersionAndDate method.
+// ScanNoRangeThingWithCompositeAttributessByNameVersionAndDateInput is the input to the ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate method.
 type ScanNoRangeThingWithCompositeAttributessByNameVersionAndDateInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.NoRangeThingWithCompositeAttributes
@@ -627,7 +627,7 @@ func (e ErrTeacherSharingRuleByDistrictAndSchoolTeacherAppNotFound) Error() stri
 	return "could not find TeacherSharingRule"
 }
 
-// ScanTeacherSharingRulesByDistrictAndSchoolTeacherAppInput is the input to the ScanTeacherSharingRulesByByDistrictAndSchoolTeacherApp method.
+// ScanTeacherSharingRulesByDistrictAndSchoolTeacherAppInput is the input to the ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp method.
 type ScanTeacherSharingRulesByDistrictAndSchoolTeacherAppInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.TeacherSharingRule
@@ -690,7 +690,7 @@ func (e ErrThingByIDNotFound) Error() string {
 	return "could not find Thing"
 }
 
-// ScanThingsByIDInput is the input to the ScanThingsByByID method.
+// ScanThingsByIDInput is the input to the ScanThingsByID method.
 type ScanThingsByIDInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.Thing
@@ -726,7 +726,7 @@ func (e ErrThingByNameAndCreatedAtNotFound) Error() string {
 	return "could not find Thing"
 }
 
-// ScanThingsByNameAndCreatedAtInput is the input to the ScanThingsByByNameAndCreatedAt method.
+// ScanThingsByNameAndCreatedAtInput is the input to the ScanThingsByNameAndCreatedAt method.
 type ScanThingsByNameAndCreatedAtInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.Thing
@@ -820,7 +820,7 @@ func (e ErrThingWithCompositeAttributesByNameVersionAndDateNotFound) Error() str
 	return "could not find ThingWithCompositeAttributes"
 }
 
-// ScanThingWithCompositeAttributessByNameVersionAndDateInput is the input to the ScanThingWithCompositeAttributessByByNameVersionAndDate method.
+// ScanThingWithCompositeAttributessByNameVersionAndDateInput is the input to the ScanThingWithCompositeAttributessByNameVersionAndDate method.
 type ScanThingWithCompositeAttributessByNameVersionAndDateInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.ThingWithCompositeAttributes
@@ -1051,7 +1051,7 @@ func (e ErrThingWithEnumHashKeyByBranchAndDate2NotFound) Error() string {
 	return "could not find ThingWithEnumHashKey"
 }
 
-// ScanThingWithEnumHashKeysByBranchAndDate2Input is the input to the ScanThingWithEnumHashKeysByByBranchAndDate2 method.
+// ScanThingWithEnumHashKeysByBranchAndDate2Input is the input to the ScanThingWithEnumHashKeysByBranchAndDate2 method.
 type ScanThingWithEnumHashKeysByBranchAndDate2Input struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.ThingWithEnumHashKey
@@ -1156,7 +1156,7 @@ func (e ErrThingWithMatchingKeysByAssocTypeIDAndCreatedBearNotFound) Error() str
 	return "could not find ThingWithMatchingKeys"
 }
 
-// ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput is the input to the ScanThingWithMatchingKeyssByByAssocTypeIDAndCreatedBear method.
+// ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput is the input to the ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear method.
 type ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.ThingWithMatchingKeys
@@ -1219,7 +1219,7 @@ func (e ErrThingWithRequiredCompositePropertiesAndKeysOnlyByPropertyOneAndTwoAnd
 	return "could not find ThingWithRequiredCompositePropertiesAndKeysOnly"
 }
 
-// ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput is the input to the ScanThingWithRequiredCompositePropertiesAndKeysOnlysByByPropertyOneAndTwoAndPropertyThree method.
+// ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput is the input to the ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree method.
 type ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.ThingWithRequiredCompositePropertiesAndKeysOnly

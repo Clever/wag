@@ -222,20 +222,20 @@ func (t ThingTable) scanThings(ctx context.Context, input db.ScanThingsInput, fn
 	totalRecordsProcessed := int64(0)
 	var innerErr error
 	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
-		ms, err := decodeThings(out.Items)
+		items, err := decodeThings(out.Items)
 		if err != nil {
 			innerErr = fmt.Errorf("error decoding %s", err.Error())
 			return false
 		}
-		for i := range ms {
+		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
 					innerErr = err
 					return false
 				}
 			}
-			lastModel := lastPage && i == len(ms)-1
-			if continuee := fn(&ms[i], lastModel); !continuee {
+			isLastModel := lastPage && i == len(items)-1
+			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
 				return false
 			}
 			totalRecordsProcessed++
@@ -427,20 +427,20 @@ func (t ThingTable) scanThingsByID(ctx context.Context, input db.ScanThingsByIDI
 	totalRecordsProcessed := int64(0)
 	var innerErr error
 	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
-		ms, err := decodeThings(out.Items)
+		items, err := decodeThings(out.Items)
 		if err != nil {
 			innerErr = fmt.Errorf("error decoding %s", err.Error())
 			return false
 		}
-		for i := range ms {
+		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
 					innerErr = err
 					return false
 				}
 			}
-			lastModel := lastPage && i == len(ms)-1
-			if continuee := fn(&ms[i], lastModel); !continuee {
+			isLastModel := lastPage && i == len(items)-1
+			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
 				return false
 			}
 			totalRecordsProcessed++
@@ -575,20 +575,20 @@ func (t ThingTable) scanThingsByNameAndCreatedAt(ctx context.Context, input db.S
 	totalRecordsProcessed := int64(0)
 	var innerErr error
 	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
-		ms, err := decodeThings(out.Items)
+		items, err := decodeThings(out.Items)
 		if err != nil {
 			innerErr = fmt.Errorf("error decoding %s", err.Error())
 			return false
 		}
-		for i := range ms {
+		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
 					innerErr = err
 					return false
 				}
 			}
-			lastModel := lastPage && i == len(ms)-1
-			if continuee := fn(&ms[i], lastModel); !continuee {
+			isLastModel := lastPage && i == len(items)-1
+			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
 				return false
 			}
 			totalRecordsProcessed++
