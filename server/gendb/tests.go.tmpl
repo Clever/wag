@@ -453,7 +453,8 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
 {{- end }}
 
 {{- if $xdbConfig.AllowPrimaryIndexScan }}
-
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func Scan{{ $modelName }}s(d db.Interface, t *testing.T) func(t *testing.T) {
   return func(t *testing.T) {
     ctx := context.Background()
@@ -548,6 +549,26 @@ func Scan{{ $modelName }}s(d db.Interface, t *testing.T) func(t *testing.T) {
 
       expected := allItems[1:]
       require.Equal(t, expected, actual)
+    })
+
+    t.Run("limit", func(t *testing.T) {
+      limit := int64(1)
+      // Scan for just the first item.
+      scanInput := db.Scan{{ $modelName }}sInput{
+        Limit: &limit,
+      }
+      actual := []models.{{ $modelName }}{}
+      err := d.Scan{{ $modelName }}s(ctx, scanInput, func(m *models.{{ $modelName }}, last bool) bool {
+        actual = append(actual, *m)
+        return true
+      })
+      var errStr string
+      if err != nil {
+        errStr = err.Error()
+      }
+      require.NoError(t, err, errStr)
+
+      require.Len(t, actual, 1)
     })
   }
 }
@@ -952,7 +973,8 @@ func Get{{ $modelName }}By{{ $computedIndexName }}(s db.Interface, t *testing.T)
 {{- end }}
 
 {{- if indexAllowsScans $xdbConfig $gsi.IndexName }}
-
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func Scan{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T) func(t *testing.T) {
   return func(t *testing.T) {
     ctx := context.Background()
@@ -1065,6 +1087,26 @@ func Scan{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.
 
       expected := allItems[1:]
       require.Equal(t, expected, actual)
+    })
+
+    t.Run("limit", func(t *testing.T) {
+      limit := int64(1)
+      // Scan for just the first item.
+      scanInput := db.Scan{{ $modelName }}sInput{
+        Limit: &limit,
+      }
+      actual := []models.{{ $modelName }}{}
+      err := d.Scan{{ $modelName }}s(ctx, scanInput, func(m *models.{{ $modelName }}, last bool) bool {
+        actual = append(actual, *m)
+        return true
+      })
+      var errStr string
+      if err != nil {
+        errStr = err.Error()
+      }
+      require.NoError(t, err, errStr)
+
+      require.Len(t, actual, 1)
     })
   }
 }
