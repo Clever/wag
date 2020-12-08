@@ -1,4 +1,5 @@
-v4.0.0
+v4.0.1
+- v4.0.1: Fix scans on DynamoDB indexes with composite attributes
 - v4.0.0: import package with correct module version
 - v3.23.0: add forEachAsync method for JS clients
 - v3.22.2: Fix for enum hash keys in GSIs

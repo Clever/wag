@@ -47,6 +47,7 @@ definitions:
       AllowOverwrites: false
       AllowPrimaryIndexScan: true
       AllowSecondaryIndexScan:
+        - thingID
         - name-createdAt
       DynamoDB:
         KeySchema:
@@ -102,6 +103,7 @@ definitions:
   SimpleThing:
     x-db:
       AllowOverwrites: false
+      AllowPrimaryIndexScan: true
       DynamoDB:
         KeySchema:
           - AttributeName: name
@@ -116,6 +118,7 @@ definitions:
   ThingWithRequiredFields:
     x-db:
       AllowOverwrites: false
+      AllowPrimaryIndexScan: true
       DynamoDB:
         KeySchema:
           - AttributeName: name
@@ -133,6 +136,7 @@ definitions:
   ThingWithRequiredFields2:
     x-db:
       AllowOverwrites: false
+      AllowPrimaryIndexScan: true
       DynamoDB:
         KeySchema:
           - AttributeName: name
@@ -152,6 +156,7 @@ definitions:
   ThingWithDateRange:
     x-db:
       AllowOverwrites: true
+      AllowPrimaryIndexScan: true
       DynamoDB:
         KeySchema:
           - AttributeName: name
@@ -182,6 +187,9 @@ definitions:
   ThingWithCompositeAttributes:
     x-db:
       AllowOverwrites: false
+      AllowPrimaryIndexScan: true
+      AllowSecondaryIndexScan:
+        - nameVersion
       CompositeAttributes:
       - AttributeName: name_branch
         Properties: [ name, branch ]
@@ -224,6 +232,9 @@ definitions:
   TeacherSharingRule:
     x-db:
       AllowOverwrites: true
+      AllowPrimaryIndexScan: true
+      AllowSecondaryIndexScan:
+        - district_school_teacher_app
       CompositeAttributes:
       - AttributeName: school_app
         Properties: [ school, app ]
@@ -267,6 +278,9 @@ definitions:
   ThingWithEnumHashKey:
     x-db:
       AllowOverwrites: false
+      AllowPrimaryIndexScan: true
+      AllowSecondaryIndexScan:
+        - byBranch
       DynamoDB:
         KeySchema:
         - AttributeName: branch
@@ -297,6 +311,7 @@ definitions:
   ThingWithCompositeEnumAttributes:
     x-db:
       AllowOverwrites: false
+      AllowPrimaryIndexScan: true
       CompositeAttributes:
       - AttributeName: name_branch
         Properties: [ name, branchID ]
@@ -332,7 +347,7 @@ definitions:
     type: object
     x-db:
       AllowOverwrites: true
-      AllowPrimaryIndexScan: false
+      AllowPrimaryIndexScan: true
       CompositeAttributes:
       - AttributeName: typeID
         Properties: [ type, id ]
@@ -361,6 +376,9 @@ definitions:
   NoRangeThingWithCompositeAttributes:
     x-db:
       AllowOverwrites: false
+      AllowPrimaryIndexScan: true
+      AllowSecondaryIndexScan:
+        - nameVersion
       CompositeAttributes:
       - AttributeName: name_branch
         Properties: [ name, branch ]
@@ -401,7 +419,9 @@ definitions:
     type: object
     x-db:
       AllowOverwrites: true
-      AllowPrimaryIndexScan: false
+      AllowPrimaryIndexScan: true
+      AllowSecondaryIndexScan:
+        - byAssoc
       CompositeAttributes:
       - AttributeName: assocTypeID
         Properties: [ assocType, assocID ]
@@ -438,6 +458,11 @@ definitions:
   Deployment:
     x-db:
       AllowOverwrites: true
+      AllowPrimaryIndexScan: true
+      AllowSecondaryIndexScan:
+        - byDate
+        - byEvironment
+        - byVersion
       CompositeAttributes:
       - AttributeName: envApp
         Properties: [ environment, application ]
@@ -488,6 +513,9 @@ definitions:
     type: object
     x-db:
       AllowOverwrites: true
+      AllowPrimaryIndexScan: true
+      AllowSecondaryIndexScan:
+        - bySK
       DynamoDB:
         AttributeDefinitions:
         - AttributeName: "pk"
@@ -539,6 +567,9 @@ definitions:
       - propertyThree
     x-db:
       AllowOverwrites: true
+      AllowPrimaryIndexScan: true
+      AllowSecondaryIndexScan:
+        - propertyOneAndTwo_PropertyThree
       CompositeAttributes:
       - AttributeName: propertyOneAndTwo
         Properties: [ propertyOne, propertyTwo ]
