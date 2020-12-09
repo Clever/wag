@@ -234,6 +234,7 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
   scanInput := &dynamodb.ScanInput{
     TableName:      aws.String(t.name()),
     ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+    Limit:          input.Limit,
   }
   if input.StartingAfter != nil {
   {{- if indexContainsNonCompositeAttribute $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
@@ -255,22 +256,28 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
                   {{- end }}
     }
   }
+  totalRecordsProcessed := int64(0)
   var innerErr error
   err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
-    ms, err := decode{{ $modelName }}s(out.Items)
+    items, err := decode{{ $modelName }}s(out.Items)
     if err != nil {
       innerErr = fmt.Errorf("error decoding %%s", err.Error())
       return false
     }
-    for i := range ms {
+    for i := range items {
       if input.Limiter != nil {
         if err := input.Limiter.Wait(ctx); err != nil {
           innerErr = err
           return false
         }
       }
-      lastModel := lastPage && i == len(ms)-1
-      if continuee := fn(&ms[i], lastModel); !continuee {
+      isLastModel := lastPage && i == len(items)-1
+      if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
+        return false
+      }
+      totalRecordsProcessed++
+      // if the Limit of records have been passed to fn, don't pass anymore records.
+      if input.Limit != nil && totalRecordsProcessed == *input.Limit {
         return false
       }
     }
@@ -818,6 +825,7 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}sBy{{ $computedIndexName }}(c
   scanInput := &dynamodb.ScanInput{
     TableName:      aws.String(t.name()),
     ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+    Limit:          input.Limit,
     IndexName:      aws.String("{{ $gsi.IndexName }}"),
   }
   if input.StartingAfter != nil {
@@ -842,22 +850,28 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}sBy{{ $computedIndexName }}(c
                   {{- end }}
     }
   }
+  totalRecordsProcessed := int64(0)
   var innerErr error
   err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
-    ms, err := decode{{ $modelName }}s(out.Items)
+    items, err := decode{{ $modelName }}s(out.Items)
     if err != nil {
       innerErr = fmt.Errorf("error decoding %%s", err.Error())
       return false
     }
-    for i := range ms {
+    for i := range items {
       if input.Limiter != nil {
         if err := input.Limiter.Wait(ctx); err != nil {
           innerErr = err
           return false
         }
       }
-      lastModel := lastPage && i == len(ms)-1
-      if continuee := fn(&ms[i], lastModel); !continuee {
+      isLastModel := lastPage && i == len(items)-1
+      if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
+        return false
+      }
+      totalRecordsProcessed++
+      // if the Limit of records have been passed to fn, don't pass anymore records.
+      if input.Limit != nil && totalRecordsProcessed == *input.Limit {
         return false
       }
     }

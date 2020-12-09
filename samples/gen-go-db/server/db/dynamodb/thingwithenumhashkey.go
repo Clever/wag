@@ -181,6 +181,7 @@ func (t ThingWithEnumHashKeyTable) scanThingWithEnumHashKeys(ctx context.Context
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.name()),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+		Limit:          input.Limit,
 	}
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
@@ -193,22 +194,28 @@ func (t ThingWithEnumHashKeyTable) scanThingWithEnumHashKeys(ctx context.Context
 			"date":   exclusiveStartKey["date"],
 		}
 	}
+	totalRecordsProcessed := int64(0)
 	var innerErr error
 	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
-		ms, err := decodeThingWithEnumHashKeys(out.Items)
+		items, err := decodeThingWithEnumHashKeys(out.Items)
 		if err != nil {
 			innerErr = fmt.Errorf("error decoding %s", err.Error())
 			return false
 		}
-		for i := range ms {
+		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
 					innerErr = err
 					return false
 				}
 			}
-			lastModel := lastPage && i == len(ms)-1
-			if continuee := fn(&ms[i], lastModel); !continuee {
+			isLastModel := lastPage && i == len(items)-1
+			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
+				return false
+			}
+			totalRecordsProcessed++
+			// if the Limit of records have been passed to fn, don't pass anymore records.
+			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
 				return false
 			}
 		}
@@ -436,6 +443,7 @@ func (t ThingWithEnumHashKeyTable) scanThingWithEnumHashKeysByBranchAndDate2(ctx
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.name()),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+		Limit:          input.Limit,
 		IndexName:      aws.String("byBranch"),
 	}
 	if input.StartingAfter != nil {
@@ -451,22 +459,28 @@ func (t ThingWithEnumHashKeyTable) scanThingWithEnumHashKeysByBranchAndDate2(ctx
 			"date2":  exclusiveStartKey["date2"],
 		}
 	}
+	totalRecordsProcessed := int64(0)
 	var innerErr error
 	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
-		ms, err := decodeThingWithEnumHashKeys(out.Items)
+		items, err := decodeThingWithEnumHashKeys(out.Items)
 		if err != nil {
 			innerErr = fmt.Errorf("error decoding %s", err.Error())
 			return false
 		}
-		for i := range ms {
+		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
 					innerErr = err
 					return false
 				}
 			}
-			lastModel := lastPage && i == len(ms)-1
-			if continuee := fn(&ms[i], lastModel); !continuee {
+			isLastModel := lastPage && i == len(items)-1
+			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
+				return false
+			}
+			totalRecordsProcessed++
+			// if the Limit of records have been passed to fn, don't pass anymore records.
+			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
 				return false
 			}
 		}

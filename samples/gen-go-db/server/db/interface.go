@@ -238,6 +238,8 @@ type ScanDeploymentsInput struct {
 	StartingAfter *models.Deployment
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -299,12 +301,14 @@ func (e ErrDeploymentByEnvAppAndDateNotFound) Error() string {
 	return "could not find Deployment"
 }
 
-// ScanDeploymentsByEnvAppAndDateInput is the input to the ScanDeploymentsByByEnvAppAndDate method.
+// ScanDeploymentsByEnvAppAndDateInput is the input to the ScanDeploymentsByEnvAppAndDate method.
 type ScanDeploymentsByEnvAppAndDateInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.Deployment
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -345,12 +349,14 @@ func (e ErrDeploymentByVersionNotFound) Error() string {
 	return "could not find Deployment"
 }
 
-// ScanDeploymentsByVersionInput is the input to the ScanDeploymentsByByVersion method.
+// ScanDeploymentsByVersionInput is the input to the ScanDeploymentsByVersion method.
 type ScanDeploymentsByVersionInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.Deployment
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -361,6 +367,8 @@ type ScanEventsInput struct {
 	StartingAfter *models.Event
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -416,12 +424,14 @@ func (e ErrEventBySkAndDataNotFound) Error() string {
 	return "could not find Event"
 }
 
-// ScanEventsBySkAndDataInput is the input to the ScanEventsByBySkAndData method.
+// ScanEventsBySkAndDataInput is the input to the ScanEventsBySkAndData method.
 type ScanEventsBySkAndDataInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.Event
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -432,6 +442,8 @@ type ScanNoRangeThingWithCompositeAttributessInput struct {
 	StartingAfter *models.NoRangeThingWithCompositeAttributes
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -476,12 +488,14 @@ func (e ErrNoRangeThingWithCompositeAttributesByNameVersionAndDateNotFound) Erro
 	return "could not find NoRangeThingWithCompositeAttributes"
 }
 
-// ScanNoRangeThingWithCompositeAttributessByNameVersionAndDateInput is the input to the ScanNoRangeThingWithCompositeAttributessByByNameVersionAndDate method.
+// ScanNoRangeThingWithCompositeAttributessByNameVersionAndDateInput is the input to the ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate method.
 type ScanNoRangeThingWithCompositeAttributessByNameVersionAndDateInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.NoRangeThingWithCompositeAttributes
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -504,6 +518,8 @@ type ScanSimpleThingsInput struct {
 	StartingAfter *models.SimpleThing
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -538,6 +554,8 @@ type ScanTeacherSharingRulesInput struct {
 	StartingAfter *models.TeacherSharingRule
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -609,12 +627,14 @@ func (e ErrTeacherSharingRuleByDistrictAndSchoolTeacherAppNotFound) Error() stri
 	return "could not find TeacherSharingRule"
 }
 
-// ScanTeacherSharingRulesByDistrictAndSchoolTeacherAppInput is the input to the ScanTeacherSharingRulesByByDistrictAndSchoolTeacherApp method.
+// ScanTeacherSharingRulesByDistrictAndSchoolTeacherAppInput is the input to the ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp method.
 type ScanTeacherSharingRulesByDistrictAndSchoolTeacherAppInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.TeacherSharingRule
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -625,6 +645,8 @@ type ScanThingsInput struct {
 	StartingAfter *models.Thing
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -668,12 +690,14 @@ func (e ErrThingByIDNotFound) Error() string {
 	return "could not find Thing"
 }
 
-// ScanThingsByIDInput is the input to the ScanThingsByByID method.
+// ScanThingsByIDInput is the input to the ScanThingsByID method.
 type ScanThingsByIDInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.Thing
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -702,12 +726,14 @@ func (e ErrThingByNameAndCreatedAtNotFound) Error() string {
 	return "could not find Thing"
 }
 
-// ScanThingsByNameAndCreatedAtInput is the input to the ScanThingsByByNameAndCreatedAt method.
+// ScanThingsByNameAndCreatedAtInput is the input to the ScanThingsByNameAndCreatedAt method.
 type ScanThingsByNameAndCreatedAtInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.Thing
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -731,6 +757,8 @@ type ScanThingWithCompositeAttributessInput struct {
 	StartingAfter *models.ThingWithCompositeAttributes
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -792,12 +820,14 @@ func (e ErrThingWithCompositeAttributesByNameVersionAndDateNotFound) Error() str
 	return "could not find ThingWithCompositeAttributes"
 }
 
-// ScanThingWithCompositeAttributessByNameVersionAndDateInput is the input to the ScanThingWithCompositeAttributessByByNameVersionAndDate method.
+// ScanThingWithCompositeAttributessByNameVersionAndDateInput is the input to the ScanThingWithCompositeAttributessByNameVersionAndDate method.
 type ScanThingWithCompositeAttributessByNameVersionAndDateInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.ThingWithCompositeAttributes
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -821,6 +851,8 @@ type ScanThingWithCompositeEnumAttributessInput struct {
 	StartingAfter *models.ThingWithCompositeEnumAttributes
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -874,6 +906,8 @@ type ScanThingWithDateRangesInput struct {
 	StartingAfter *models.ThingWithDateRange
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -911,6 +945,8 @@ type ScanThingWithDateTimeCompositesInput struct {
 	StartingAfter *models.ThingWithDateTimeComposite
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -958,6 +994,8 @@ type ScanThingWithEnumHashKeysInput struct {
 	StartingAfter *models.ThingWithEnumHashKey
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1013,12 +1051,14 @@ func (e ErrThingWithEnumHashKeyByBranchAndDate2NotFound) Error() string {
 	return "could not find ThingWithEnumHashKey"
 }
 
-// ScanThingWithEnumHashKeysByBranchAndDate2Input is the input to the ScanThingWithEnumHashKeysByByBranchAndDate2 method.
+// ScanThingWithEnumHashKeysByBranchAndDate2Input is the input to the ScanThingWithEnumHashKeysByBranchAndDate2 method.
 type ScanThingWithEnumHashKeysByBranchAndDate2Input struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.ThingWithEnumHashKey
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1042,6 +1082,8 @@ type ScanThingWithMatchingKeyssInput struct {
 	StartingAfter *models.ThingWithMatchingKeys
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1114,12 +1156,14 @@ func (e ErrThingWithMatchingKeysByAssocTypeIDAndCreatedBearNotFound) Error() str
 	return "could not find ThingWithMatchingKeys"
 }
 
-// ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput is the input to the ScanThingWithMatchingKeyssByByAssocTypeIDAndCreatedBear method.
+// ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput is the input to the ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear method.
 type ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.ThingWithMatchingKeys
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1130,6 +1174,8 @@ type ScanThingWithRequiredCompositePropertiesAndKeysOnlysInput struct {
 	StartingAfter *models.ThingWithRequiredCompositePropertiesAndKeysOnly
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1173,12 +1219,14 @@ func (e ErrThingWithRequiredCompositePropertiesAndKeysOnlyByPropertyOneAndTwoAnd
 	return "could not find ThingWithRequiredCompositePropertiesAndKeysOnly"
 }
 
-// ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput is the input to the ScanThingWithRequiredCompositePropertiesAndKeysOnlysByByPropertyOneAndTwoAndPropertyThree method.
+// ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput is the input to the ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree method.
 type ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.ThingWithRequiredCompositePropertiesAndKeysOnly
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1189,6 +1237,8 @@ type ScanThingWithRequiredFieldssInput struct {
 	StartingAfter *models.ThingWithRequiredFields
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1223,6 +1273,8 @@ type ScanThingWithRequiredFields2sInput struct {
 	StartingAfter *models.ThingWithRequiredFields2
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }

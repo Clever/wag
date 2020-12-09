@@ -84,6 +84,8 @@ type Scan{{ $modelName }}sInput struct {
 	StartingAfter *models.{{ $modelName }}
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -199,12 +201,14 @@ func (e Err{{ $modelName}}By{{ $computedIndexName }}NotFound) Error() string {
 }
 
 {{- if indexAllowsScans $xdbConfig $gsi.IndexName }}
-// Scan{{ $modelName }}sBy{{ $computedIndexName }}Input is the input to the Scan{{ $modelName }}sByBy{{ $computedIndexName }} method.
+// Scan{{ $modelName }}sBy{{ $computedIndexName }}Input is the input to the Scan{{ $modelName }}sBy{{ $computedIndexName }} method.
 type Scan{{ $modelName }}sBy{{ $computedIndexName }}Input struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.{{ $modelName }}
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }

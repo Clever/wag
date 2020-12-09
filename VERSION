@@ -1,4 +1,5 @@
-v4.0.1
+v4.1.0
+- v4.1.0: Support limiting the number of items returned by DynamoDB scans.
 - v4.0.1: Fix scans on DynamoDB indexes with composite attributes
 - v4.0.0: import package with correct module version
 - v3.23.0: add forEachAsync method for JS clients

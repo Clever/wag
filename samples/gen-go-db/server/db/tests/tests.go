@@ -355,6 +355,8 @@ func GetDeploymentsByEnvAppAndVersion(d db.Interface, t *testing.T) func(t *test
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanDeployments(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -447,6 +449,26 @@ func ScanDeployments(d db.Interface, t *testing.T) func(t *testing.T) {
 
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanDeploymentsInput{
+				Limit: &limit,
+			}
+			actual := []models.Deployment{}
+			err := d.ScanDeployments(ctx, scanInput, func(m *models.Deployment, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
 		})
 	}
 }
@@ -708,6 +730,8 @@ func GetDeploymentsByEnvAppAndDate(d db.Interface, t *testing.T) func(t *testing
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanDeploymentsByEnvAppAndDate(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -806,6 +830,26 @@ func ScanDeploymentsByEnvAppAndDate(d db.Interface, t *testing.T) func(t *testin
 
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanDeploymentsInput{
+				Limit: &limit,
+			}
+			actual := []models.Deployment{}
+			err := d.ScanDeployments(ctx, scanInput, func(m *models.Deployment, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
 		})
 	}
 }
@@ -1058,6 +1102,8 @@ func GetDeploymentByVersion(s db.Interface, t *testing.T) func(t *testing.T) {
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanDeploymentsByVersion(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -1149,6 +1195,26 @@ func ScanDeploymentsByVersion(d db.Interface, t *testing.T) func(t *testing.T) {
 
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanDeploymentsInput{
+				Limit: &limit,
+			}
+			actual := []models.Deployment{}
+			err := d.ScanDeployments(ctx, scanInput, func(m *models.Deployment, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
 		})
 	}
 }
@@ -1364,6 +1430,8 @@ func GetEventsByPkAndSk(d db.Interface, t *testing.T) func(t *testing.T) {
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanEvents(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -1449,6 +1517,26 @@ func ScanEvents(d db.Interface, t *testing.T) func(t *testing.T) {
 
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanEventsInput{
+				Limit: &limit,
+			}
+			actual := []models.Event{}
+			err := d.ScanEvents(ctx, scanInput, func(m *models.Event, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
 		})
 	}
 }
@@ -1686,6 +1774,8 @@ func GetEventsBySkAndData(d db.Interface, t *testing.T) func(t *testing.T) {
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanEventsBySkAndData(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -1778,6 +1868,26 @@ func ScanEventsBySkAndData(d db.Interface, t *testing.T) func(t *testing.T) {
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
 		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanEventsInput{
+				Limit: &limit,
+			}
+			actual := []models.Event{}
+			err := d.ScanEvents(ctx, scanInput, func(m *models.Event, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
+		})
 	}
 }
 
@@ -1802,6 +1912,8 @@ func GetNoRangeThingWithCompositeAttributes(s db.Interface, t *testing.T) func(t
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanNoRangeThingWithCompositeAttributess(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -1893,6 +2005,26 @@ func ScanNoRangeThingWithCompositeAttributess(d db.Interface, t *testing.T) func
 
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanNoRangeThingWithCompositeAttributessInput{
+				Limit: &limit,
+			}
+			actual := []models.NoRangeThingWithCompositeAttributes{}
+			err := d.ScanNoRangeThingWithCompositeAttributess(ctx, scanInput, func(m *models.NoRangeThingWithCompositeAttributes, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
 		})
 	}
 }
@@ -2155,6 +2287,8 @@ func GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface,
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -2254,6 +2388,26 @@ func ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
 		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanNoRangeThingWithCompositeAttributessInput{
+				Limit: &limit,
+			}
+			actual := []models.NoRangeThingWithCompositeAttributes{}
+			err := d.ScanNoRangeThingWithCompositeAttributess(ctx, scanInput, func(m *models.NoRangeThingWithCompositeAttributes, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
+		})
 	}
 }
 
@@ -2274,6 +2428,8 @@ func GetSimpleThing(s db.Interface, t *testing.T) func(t *testing.T) {
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanSimpleThings(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -2346,6 +2502,26 @@ func ScanSimpleThings(d db.Interface, t *testing.T) func(t *testing.T) {
 
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanSimpleThingsInput{
+				Limit: &limit,
+			}
+			actual := []models.SimpleThing{}
+			err := d.ScanSimpleThings(ctx, scanInput, func(m *models.SimpleThing, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
 		})
 	}
 }
@@ -2622,6 +2798,8 @@ func GetTeacherSharingRulesByTeacherAndSchoolApp(d db.Interface, t *testing.T) f
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanTeacherSharingRules(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -2718,6 +2896,26 @@ func ScanTeacherSharingRules(d db.Interface, t *testing.T) func(t *testing.T) {
 
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanTeacherSharingRulesInput{
+				Limit: &limit,
+			}
+			actual := []models.TeacherSharingRule{}
+			err := d.ScanTeacherSharingRules(ctx, scanInput, func(m *models.TeacherSharingRule, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
 		})
 	}
 }
@@ -2978,6 +3176,8 @@ func GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(d db.Interface, t *test
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -3076,6 +3276,26 @@ func ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp(d db.Interface, t *tes
 
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanTeacherSharingRulesInput{
+				Limit: &limit,
+			}
+			actual := []models.TeacherSharingRule{}
+			err := d.ScanTeacherSharingRules(ctx, scanInput, func(m *models.TeacherSharingRule, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
 		})
 	}
 }
@@ -3292,6 +3512,8 @@ func GetThingsByNameAndVersion(d db.Interface, t *testing.T) func(t *testing.T) 
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanThings(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -3384,6 +3606,26 @@ func ScanThings(d db.Interface, t *testing.T) func(t *testing.T) {
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
 		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingsInput{
+				Limit: &limit,
+			}
+			actual := []models.Thing{}
+			err := d.ScanThings(ctx, scanInput, func(m *models.Thing, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
+		})
 	}
 }
 
@@ -3438,6 +3680,8 @@ func GetThingByID(s db.Interface, t *testing.T) func(t *testing.T) {
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanThingsByID(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -3529,6 +3773,26 @@ func ScanThingsByID(d db.Interface, t *testing.T) func(t *testing.T) {
 
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingsInput{
+				Limit: &limit,
+			}
+			actual := []models.Thing{}
+			err := d.ScanThings(ctx, scanInput, func(m *models.Thing, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
 		})
 	}
 }
@@ -3741,6 +4005,8 @@ func GetThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.T
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -3832,6 +4098,26 @@ func ScanThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.
 
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingsInput{
+				Limit: &limit,
+			}
+			actual := []models.Thing{}
+			err := d.ScanThings(ctx, scanInput, func(m *models.Thing, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
 		})
 	}
 }
@@ -4071,6 +4357,8 @@ func GetThingWithCompositeAttributessByNameBranchAndDate(d db.Interface, t *test
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanThingWithCompositeAttributess(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -4163,6 +4451,26 @@ func ScanThingWithCompositeAttributess(d db.Interface, t *testing.T) func(t *tes
 
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithCompositeAttributessInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithCompositeAttributes{}
+			err := d.ScanThingWithCompositeAttributess(ctx, scanInput, func(m *models.ThingWithCompositeAttributes, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
 		})
 	}
 }
@@ -4425,6 +4733,8 @@ func GetThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *tes
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -4523,6 +4833,26 @@ func ScanThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *te
 
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithCompositeAttributessInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithCompositeAttributes{}
+			err := d.ScanThingWithCompositeAttributess(ctx, scanInput, func(m *models.ThingWithCompositeAttributes, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
 		})
 	}
 }
@@ -4761,6 +5091,8 @@ func GetThingWithCompositeEnumAttributessByNameBranchAndDate(d db.Interface, t *
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanThingWithCompositeEnumAttributess(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -4847,6 +5179,26 @@ func ScanThingWithCompositeEnumAttributess(d db.Interface, t *testing.T) func(t 
 
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithCompositeEnumAttributessInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithCompositeEnumAttributes{}
+			err := d.ScanThingWithCompositeEnumAttributess(ctx, scanInput, func(m *models.ThingWithCompositeEnumAttributes, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
 		})
 	}
 }
@@ -5087,6 +5439,8 @@ func GetThingWithDateRangesByNameAndDate(d db.Interface, t *testing.T) func(t *t
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanThingWithDateRanges(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -5166,6 +5520,26 @@ func ScanThingWithDateRanges(d db.Interface, t *testing.T) func(t *testing.T) {
 
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithDateRangesInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithDateRange{}
+			err := d.ScanThingWithDateRanges(ctx, scanInput, func(m *models.ThingWithDateRange, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
 		})
 	}
 }
@@ -5449,6 +5823,8 @@ func GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(d db.Interface, t 
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanThingWithDateTimeComposites(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -5542,6 +5918,26 @@ func ScanThingWithDateTimeComposites(d db.Interface, t *testing.T) func(t *testi
 
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithDateTimeCompositesInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithDateTimeComposite{}
+			err := d.ScanThingWithDateTimeComposites(ctx, scanInput, func(m *models.ThingWithDateTimeComposite, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
 		})
 	}
 }
@@ -5784,6 +6180,8 @@ func GetThingWithEnumHashKeysByBranchAndDate(d db.Interface, t *testing.T) func(
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanThingWithEnumHashKeys(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -5869,6 +6267,26 @@ func ScanThingWithEnumHashKeys(d db.Interface, t *testing.T) func(t *testing.T) 
 
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithEnumHashKeysInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithEnumHashKey{}
+			err := d.ScanThingWithEnumHashKeys(ctx, scanInput, func(m *models.ThingWithEnumHashKey, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
 		})
 	}
 }
@@ -6107,6 +6525,8 @@ func GetThingWithEnumHashKeysByBranchAndDate2(d db.Interface, t *testing.T) func
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanThingWithEnumHashKeysByBranchAndDate2(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -6198,6 +6618,26 @@ func ScanThingWithEnumHashKeysByBranchAndDate2(d db.Interface, t *testing.T) fun
 
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithEnumHashKeysInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithEnumHashKey{}
+			err := d.ScanThingWithEnumHashKeys(ctx, scanInput, func(m *models.ThingWithEnumHashKey, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
 		})
 	}
 }
@@ -6435,6 +6875,8 @@ func GetThingWithMatchingKeyssByBearAndAssocTypeID(d db.Interface, t *testing.T)
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanThingWithMatchingKeyss(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -6527,6 +6969,26 @@ func ScanThingWithMatchingKeyss(d db.Interface, t *testing.T) func(t *testing.T)
 
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithMatchingKeyssInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithMatchingKeys{}
+			err := d.ScanThingWithMatchingKeyss(ctx, scanInput, func(m *models.ThingWithMatchingKeys, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
 		})
 	}
 }
@@ -6791,6 +7253,8 @@ func GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(d db.Interface, t *tes
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -6890,6 +7354,26 @@ func ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(d db.Interface, t *te
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
 		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithMatchingKeyssInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithMatchingKeys{}
+			err := d.ScanThingWithMatchingKeyss(ctx, scanInput, func(m *models.ThingWithMatchingKeys, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
+		})
 	}
 }
 
@@ -6912,6 +7396,8 @@ func GetThingWithRequiredCompositePropertiesAndKeysOnly(s db.Interface, t *testi
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanThingWithRequiredCompositePropertiesAndKeysOnlys(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -7001,6 +7487,26 @@ func ScanThingWithRequiredCompositePropertiesAndKeysOnlys(d db.Interface, t *tes
 
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithRequiredCompositePropertiesAndKeysOnlysInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithRequiredCompositePropertiesAndKeysOnly{}
+			err := d.ScanThingWithRequiredCompositePropertiesAndKeysOnlys(ctx, scanInput, func(m *models.ThingWithRequiredCompositePropertiesAndKeysOnly, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
 		})
 	}
 }
@@ -7243,6 +7749,8 @@ func GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPr
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -7335,6 +7843,26 @@ func ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndP
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
 		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithRequiredCompositePropertiesAndKeysOnlysInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithRequiredCompositePropertiesAndKeysOnly{}
+			err := d.ScanThingWithRequiredCompositePropertiesAndKeysOnlys(ctx, scanInput, func(m *models.ThingWithRequiredCompositePropertiesAndKeysOnly, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
+		})
 	}
 }
 
@@ -7355,6 +7883,8 @@ func GetThingWithRequiredFields(s db.Interface, t *testing.T) func(t *testing.T)
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanThingWithRequiredFieldss(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -7427,6 +7957,26 @@ func ScanThingWithRequiredFieldss(d db.Interface, t *testing.T) func(t *testing.
 
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithRequiredFieldssInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithRequiredFields{}
+			err := d.ScanThingWithRequiredFieldss(ctx, scanInput, func(m *models.ThingWithRequiredFields, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
 		})
 	}
 }
@@ -7663,6 +8213,8 @@ func GetThingWithRequiredFields2sByNameAndID(d db.Interface, t *testing.T) func(
 	}
 }
 
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
 func ScanThingWithRequiredFields2s(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -7742,6 +8294,26 @@ func ScanThingWithRequiredFields2s(d db.Interface, t *testing.T) func(t *testing
 
 			expected := allItems[1:]
 			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithRequiredFields2sInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithRequiredFields2{}
+			err := d.ScanThingWithRequiredFields2s(ctx, scanInput, func(m *models.ThingWithRequiredFields2, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
 		})
 	}
 }
