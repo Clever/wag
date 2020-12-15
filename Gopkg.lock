@@ -330,6 +330,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:5cf74452bc1d1c06a979241fa05647b55476def7fd4f84d9c66cee69641a2623"
+  name = "github.com/kevinburke/go-bindata"
+  packages = ["."]
+  pruneopts = ""
+  revision = "017bb32866cbdd959f3f9891ab831bcd199c5819"
+
+[[projects]]
+  branch = "master"
   digest = "1:591a2778aa6e896980757ea87e659b3aa13d8c0e790310614028463a31c0998b"
   name = "github.com/kr/pretty"
   packages = ["."]
@@ -474,11 +482,7 @@
   branch = "master"
   digest = "1:9c653e5be65cdafc6a1acbb5f393b5893c2dd2ae7452187bda8bb190c1bf00c9"
   name = "github.com/tmthrgd/go-bindata"
-  packages = [
-    ".",
-    "internal/identifier",
-    "restore",
-  ]
+  packages = ["restore"]
   pruneopts = ""
   revision = "6fbf6c8bd45cf2d4189179ca4e92bb7438db4a93"
 
@@ -694,13 +698,13 @@
     "github.com/gorilla/handlers",
     "github.com/gorilla/mux",
     "github.com/kardianos/osext",
+    "github.com/kevinburke/go-bindata",
     "github.com/opentracing-contrib/go-aws-sdk",
     "github.com/opentracing/opentracing-go",
     "github.com/opentracing/opentracing-go/ext",
     "github.com/opentracing/opentracing-go/log",
     "github.com/stretchr/testify/assert",
     "github.com/stretchr/testify/require",
-    "github.com/tmthrgd/go-bindata",
     "github.com/tmthrgd/go-bindata/restore",
     "github.com/uber/jaeger-client-go",
     "github.com/uber/jaeger-client-go/config",

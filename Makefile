@@ -64,7 +64,7 @@ release:
 
 install_deps: golang-dep-vendor-deps
 	$(call golang-dep-vendor)
-	go build -o bin/go-bindata ./vendor/github.com/tmthrgd/go-bindata/go-bindata
+	go build -o bin/go-bindata ./vendor/github.com/kevinburke/go-bindata/go-bindata
 	go build -o bin/mockgen    ./vendor/github.com/golang/mock/mockgen
 	mkdir -p $(GOPATH)/bin
 	cp bin/mockgen $(GOPATH)/bin/mockgen

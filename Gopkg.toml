@@ -1,4 +1,4 @@
-required = ["github.com/tmthrgd/go-bindata", "github.com/golang/mock/mockgen", "github.com/go-openapi/jsonpointer"]
+required = ["github.com/kevinburke/go-bindata", "github.com/golang/mock/mockgen", "github.com/go-openapi/jsonpointer"]
 [[constraint]]
   name = "github.com/Clever/discovery-go"
   branch = "master"
@@ -64,7 +64,7 @@ required = ["github.com/tmthrgd/go-bindata", "github.com/golang/mock/mockgen", "
   branch = "master"
 
 [[constraint]]
-  name = "github.com/tmthrgd/go-bindata"
+  name = "github.com/kevinburke/go-bindata"
   branch = "master"
 
 [[constraint]]
