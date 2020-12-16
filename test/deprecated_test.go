@@ -6,8 +6,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Clever/wag/samples/gen-go-deprecated/models"
-	"github.com/Clever/wag/samples/gen-go-deprecated/server"
+	"github.com/Clever/wag/v5/samples/gen-go-deprecated/models"
+	"github.com/Clever/wag/v5/samples/gen-go-deprecated/server"
 
 	"github.com/stretchr/testify/assert"
 )

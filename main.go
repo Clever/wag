@@ -13,13 +13,13 @@ import (
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/loads/fmts"
 
-	goclient "github.com/Clever/wag/clients/go"
-	jsclient "github.com/Clever/wag/clients/js"
-	"github.com/Clever/wag/hardcoded"
-	"github.com/Clever/wag/models"
-	"github.com/Clever/wag/server"
-	"github.com/Clever/wag/swagger"
-	"github.com/Clever/wag/validation"
+	goclient "github.com/Clever/wag/v5/clients/go"
+	jsclient "github.com/Clever/wag/v5/clients/js"
+	"github.com/Clever/wag/v5/hardcoded"
+	"github.com/Clever/wag/v5/models"
+	"github.com/Clever/wag/v5/server"
+	"github.com/Clever/wag/v5/swagger"
+	"github.com/Clever/wag/v5/validation"
 )
 
 var version string
@@ -159,10 +159,10 @@ func getModulePackagePath(goPath, outputPath string) string {
 }
 
 // getModulePackageName gets the package name of the generated code
-// Example: if packagePath = github.com/Clever/wag/gen-go and the module name is github.com/Clever/wag/v2
-// the function will return github.com/Clever/wag/v2/gen-go
-// Example: if packagePath = github.com/Clever/wag/gen-go and the module name is github.com/Clever/wag
-// the function will return  github.com/Clever/wag/gen-go
+// Example: if packagePath = github.com/Clever/wag/v5/gen-go and the module name is github.com/Clever/wag/v5/v2
+// the function will return github.com/Clever/wag/v5/v2/gen-go
+// Example: if packagePath = github.com/Clever/wag/v5/gen-go and the module name is github.com/Clever/wag/v5
+// the function will return  github.com/Clever/wag/v5/gen-go
 func getModulePackageName(modFile *os.File, outputPath string) string {
 	// read first line of module file
 	r := bufio.NewReader(modFile)

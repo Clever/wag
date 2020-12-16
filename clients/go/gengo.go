@@ -7,9 +7,9 @@ import (
 
 	"github.com/go-openapi/spec"
 
-	"github.com/Clever/wag/swagger"
-	"github.com/Clever/wag/templates"
-	"github.com/Clever/wag/utils"
+	"github.com/Clever/wag/v5/swagger"
+	"github.com/Clever/wag/v5/templates"
+	"github.com/Clever/wag/v5/utils"
 )
 
 // Generate generates a client

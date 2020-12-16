@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Clever/wag/swagger"
+	"github.com/Clever/wag/v5/swagger"
 	swaggererrors "github.com/go-openapi/errors"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
