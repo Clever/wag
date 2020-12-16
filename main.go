@@ -58,6 +58,7 @@ func main() {
 			log.Fatal("output-path is required")
 		}
 
+		*outputPath = path.Clean(*outputPath)
 		goPackagePath = getModulePackagePath(goPath, *outputPath)
 		*goPackageName = getModulePackageName(modFile, *outputPath)
 	}
