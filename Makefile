@@ -9,7 +9,7 @@ PKG := github.com/Clever/wag
 PKGS := $(shell go list ./... | grep -v /vendor | grep -v /samples/gen* | grep -v /hardcoded)
 VERSION := $(shell head -n 1 VERSION)
 EXECUTABLE := wag
-PKGS := $(PKGS) $(PKG)/samples/gen-go-db/server/db/dynamodb
+PKGS := $(PKGS) ./samples/gen-go-db/server/db/dynamodb
 
 $(eval $(call golang-version-check,1.13))
 
@@ -32,24 +32,24 @@ go-generate:
 	go generate ./server/gendb/
 
 generate: build jsdoc2md
-	./bin/wag -file samples/swagger.yml -go-package $(PKG)/samples/gen-go -js-path $(GOPATH)/src/$(PKG)/samples/gen-js
-	cd $(GOPATH)/src/$(PKG)/samples/gen-js && jsdoc2md index.js types.js > ./README.md
-	go generate $(PKG)/samples/gen-go...
-	./bin/wag -file samples/deprecated.yml -go-package $(PKG)/samples/gen-go-deprecated -js-path $(GOPATH)/src/$(PKG)/samples/gen-js-deprecated
-	cd $(GOPATH)/src/$(PKG)/samples/gen-js-deprecated && jsdoc2md index.js types.js > ./README.md
-	go generate ${PKG}/samples/gen-go-deprecated...
-	./bin/wag -file samples/errors.yml -go-package $(PKG)/samples/gen-go-errors -js-path $(GOPATH)/src/$(PKG)/samples/gen-js-errors
-	cd $(GOPATH)/src/$(PKG)/samples/gen-js-errors && jsdoc2md index.js types.js > ./README.md
-	go generate ${PKG}/samples/gen-go-errors...
-	./bin/wag -file samples/nils.yml -go-package $(PKG)/samples/gen-go-nils -js-path $(GOPATH)/src/$(PKG)/samples/gen-js-nils
-	cd $(GOPATH)/src/$(PKG)/samples/gen-js-nils && jsdoc2md index.js types.js > ./README.md
-	go generate ${PKG}/samples/gen-go-nils...
-	./bin/wag -file samples/blog.yml -go-package $(PKG)/samples/gen-go-blog -js-path $(GOPATH)/src/$(PKG)/samples/gen-js-blog
-	cd $(GOPATH)/src/$(PKG)/samples/gen-js-blog && jsdoc2md index.js types.js > ./README.md
-	go generate ${PKG}/samples/gen-go-nils...
-	./bin/wag -file samples/db.yml -go-package $(PKG)/samples/gen-go-db -js-path $(GOPATH)/src/$(PKG)/samples/gen-js-db
-	cd $(GOPATH)/src/$(PKG)/samples/gen-js-db && jsdoc2md index.js types.js > ./README.md
-	go generate ${PKG}/samples/gen-go-db...
+	./bin/wag -file samples/swagger.yml -go-package ./samples/gen-go -js-path ./samples/gen-js
+	cd ./samples/gen-js && jsdoc2md index.js types.js > ./README.md
+	go generate ./samples/gen-go...
+	./bin/wag -file samples/deprecated.yml -go-package ./samples/gen-go-deprecated -js-path ./samples/gen-js-deprecated
+	cd ./samples/gen-js-deprecated && jsdoc2md index.js types.js > ./README.md
+	go generate ./samples/gen-go-deprecated...
+	./bin/wag -file samples/errors.yml -go-package ./samples/gen-go-errors -js-path ./samples/gen-js-errors
+	cd ./samples/gen-js-errors && jsdoc2md index.js types.js > ./README.md
+	go generate ./samples/gen-go-errors...
+	./bin/wag -file samples/nils.yml -go-package ./samples/gen-go-nils -js-path ./samples/gen-js-nils
+	cd ./samples/gen-js-nils && jsdoc2md index.js types.js > ./README.md
+	go generate ./samples/gen-go-nils...
+	./bin/wag -file samples/blog.yml -go-package ./samples/gen-go-blog -js-path ./samples/gen-js-blog
+	cd ./samples/gen-js-blog && jsdoc2md index.js types.js > ./README.md
+	go generate ./samples/gen-go-nils...
+	./bin/wag -file samples/db.yml -go-package ./samples/gen-go-db -js-path ./samples/gen-js-db
+	cd ./samples/gen-js-db && jsdoc2md index.js types.js > ./README.md
+	go generate ./samples/gen-go-db...
 
 $(PKGS): golang-test-all-strict-deps
 	$(call golang-test-all-strict,$@)
