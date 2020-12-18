@@ -6,7 +6,7 @@ package client
 
 import (
 	context "context"
-	models "github.com/Clever/wag/samples/gen-go-nils/models"
+	models "github.com/Clever/wag/v5/samples/gen-go-nils/models"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )

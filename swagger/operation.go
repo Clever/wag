@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Clever/wag/templates"
-	"github.com/Clever/wag/utils"
+	"github.com/Clever/wag/v5/templates"
+	"github.com/Clever/wag/v5/utils"
 	"github.com/go-openapi/spec"
 )
 
