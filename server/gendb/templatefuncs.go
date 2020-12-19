@@ -6,7 +6,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/awslabs/goformation/cloudformation/resources"
+	resources "github.com/awslabs/goformation/cloudformation"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
 	"github.com/go-swagger/go-swagger/generator"

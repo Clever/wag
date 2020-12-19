@@ -9,7 +9,7 @@ import (
 	"text/template"
 
 	"github.com/Clever/wag/v5/swagger"
-	"github.com/awslabs/goformation/cloudformation/resources"
+	resources "github.com/awslabs/goformation/cloudformation"
 	"github.com/go-openapi/spec"
 	"github.com/go-swagger/go-swagger/generator"
 )
