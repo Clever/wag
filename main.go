@@ -76,24 +76,6 @@ func main() {
 		log.Fatalf(err.Error())
 	}
 
-	// Check if glide.yaml and glide.lock files are up to date
-	// Ignore validation if the files don't yet exist
-	glideYAMLFile, err := os.Open("glide.yaml")
-	if err == nil {
-		defer glideYAMLFile.Close()
-		if err = validation.ValidateGlideYAML(glideYAMLFile); err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	glideLockFile, err := os.Open("glide.lock")
-	if err == nil {
-		defer glideLockFile.Close()
-		if err = validation.ValidateGlideLock(glideLockFile); err != nil {
-			log.Fatal(err)
-		}
-	}
-
 	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
 	doc, err := loads.Spec(*conf.swaggerFile)
 	if err != nil {
@@ -332,6 +314,12 @@ func (c *config) setGeneratedFilePaths() {
 			}
 		}
 		c.dynamoPath = path.Join(c.goAbsolutePackagePath, *c.relativeDynamoPath)
+	}
+
+	tracingGenerator := swagger.Generator{PackagePath: c.goPackagePath}
+	tracingGenerator.Write(hardcoded.MustAsset("../_hardcoded/tracing.go"))
+	if err := tracingGenerator.WriteFile("tracing/tracing.go"); err != nil {
+		log.Fatalf("Failed to copy tracing.go: %s", err)
 	}
 }
 

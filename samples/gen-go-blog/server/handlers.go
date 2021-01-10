@@ -14,8 +14,6 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/gorilla/mux"
-	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/log"
 	"golang.org/x/xerrors"
 	"gopkg.in/Clever/kayvee-go.v6/logger"
 )
@@ -27,7 +25,6 @@ var _ = errors.New
 var _ = mux.Vars
 var _ = bytes.Compare
 var _ = ioutil.ReadAll
-var _ = log.String
 
 var formats = strfmt.Default
 var _ = formats
@@ -138,9 +135,6 @@ func (h handler) PostGradeFileForStudentHandler(ctx context.Context, w http.Resp
 func newPostGradeFileForStudentInput(r *http.Request) (*models.PostGradeFileForStudentInput, error) {
 	var input models.PostGradeFileForStudentInput
 
-	sp := opentracing.SpanFromContext(r.Context())
-	_ = sp
-
 	var err error
 	_ = err
 
@@ -196,8 +190,6 @@ func statusCodeForGetSectionsForStudent(obj interface{}) int {
 
 func (h handler) GetSectionsForStudentHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
-	sp := opentracing.SpanFromContext(ctx)
-
 	studentID, err := newGetSectionsForStudentInput(r)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
@@ -237,9 +229,6 @@ func (h handler) GetSectionsForStudentHandler(ctx context.Context, w http.Respon
 		return
 	}
 
-	jsonSpan, _ := opentracing.StartSpanFromContext(ctx, "json-response-marshaling")
-	defer jsonSpan.Finish()
-
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
@@ -247,7 +236,6 @@ func (h handler) GetSectionsForStudentHandler(ctx context.Context, w http.Respon
 		return
 	}
 
-	sp.LogFields(log.Int("response-size-bytes", len(respBytes)))
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCodeForGetSectionsForStudent(resp))
 	w.Write(respBytes)
@@ -295,8 +283,6 @@ func statusCodeForPostSectionsForStudent(obj interface{}) int {
 
 func (h handler) PostSectionsForStudentHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
-	sp := opentracing.SpanFromContext(ctx)
-
 	input, err := newPostSectionsForStudentInput(r)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
@@ -336,9 +322,6 @@ func (h handler) PostSectionsForStudentHandler(ctx context.Context, w http.Respo
 		return
 	}
 
-	jsonSpan, _ := opentracing.StartSpanFromContext(ctx, "json-response-marshaling")
-	defer jsonSpan.Finish()
-
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
@@ -346,7 +329,6 @@ func (h handler) PostSectionsForStudentHandler(ctx context.Context, w http.Respo
 		return
 	}
 
-	sp.LogFields(log.Int("response-size-bytes", len(respBytes)))
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCodeForPostSectionsForStudent(resp))
 	w.Write(respBytes)
@@ -356,9 +338,6 @@ func (h handler) PostSectionsForStudentHandler(ctx context.Context, w http.Respo
 // newPostSectionsForStudentInput takes in an http.Request an returns the input struct.
 func newPostSectionsForStudentInput(r *http.Request) (*models.PostSectionsForStudentInput, error) {
 	var input models.PostSectionsForStudentInput
-
-	sp := opentracing.SpanFromContext(r.Context())
-	_ = sp
 
 	var err error
 	_ = err

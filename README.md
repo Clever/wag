@@ -240,16 +240,15 @@ definitions:
 
 ### Tracing
 
-`wag` instruments the context object with tracing-related metadata.
-This is done via [opentracing](http://opentracing.io/).
-In order for it to work, you are required to do two things:
+`wag` instruments servers and clients with [opentelementry-go](https://pkg.go.dev/go.opentelemetry.io/otel).
 
-* Add `TRACING_ACCESS_TOKEN` & `TRACING_INGEST_URL` to your env config. This will automatically report tracing data to your tracing providor.
-* By default we tag traces with `http.method`, `span.kind`, `http.url`, `http.status_code`, and `error`. For more information about what these tags mean see: https://github.com/opentracing/opentracing.io/blob/95b966bd6a6b2cf0f231260e3e1fa6206ede2151/_docs/pages/api/data-conventions.md#component-identification
-* Pass the tracer as an option when initializing the client or on each API call to be traced
+Server instrumentation is done via [go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux](https://pkg.go.dev/go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux).
 
-You can edit the default sampling rate by including  a float value in the `TRACING_SAMPLING_RATE_PERCENT` env var.
-We sample 1% of requests by default.
+Client instrumentation is done via [go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp](https://pkg.go.dev/go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp).
+
+Traces are sent to [opentelemetry-collector](https://github.com/open-telemetry/opentelemetry-collector) running at localhost:55680.
+If running locally, all samples are traced.
+Otherwise, the probability of sampling is 0.01 and can be overriden by setting `TRACING_SAMPLING_PROBABILITY`.
 
 ## Using the Go Client
 Initialize the client with `New`
