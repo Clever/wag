@@ -16,11 +16,10 @@ import (
 	"github.com/Clever/wag/v5/samples/gen-go/client"
 	"github.com/Clever/wag/v5/samples/gen-go/models"
 	"github.com/Clever/wag/v5/samples/gen-go/server"
-	kayvee "gopkg.in/Clever/kayvee-go.v6/logger"
-
 	"github.com/afex/hystrix-go/hystrix"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	kayvee "gopkg.in/Clever/kayvee-go.v6/logger"
 )
 
 type ClientContextTest struct {
