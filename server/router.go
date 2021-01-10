@@ -5,42 +5,7 @@ package server
 
 // Code auto-generated. Do not edit.
 
-import (
-	"compress/gzip"
-	"context"
-	"fmt"
-	"io"
-	"log"
-	"net/http"
-	"os"
-	"os/signal"
-	"path"
-	"strconv"
-	"syscall"
-	"time"
-
-	// register pprof listener
-	_ "net/http/pprof"
-
-	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
-	opentracing "github.com/opentracing/opentracing-go"
-	"gopkg.in/Clever/kayvee-go.v6/logger"
-	kvMiddleware "gopkg.in/Clever/kayvee-go.v6/middleware"
-	"github.com/Clever/go-process-metrics/metrics"
-	"github.com/kardianos/osext"
-	jaeger "github.com/uber/jaeger-client-go"
-	jaegercfg "github.com/uber/jaeger-client-go/config"
-	"github.com/uber/jaeger-client-go/transport"
-)
-
-const (
-	// lowerBoundRateLimiter determines the lower bound interval that we sample every operation.
-	// https://godoc.org/github.com/uber/jaeger-client-go#GuaranteedThroughputProbabilisticSampler
-	lowerBoundRateLimiter = 1.0 / 60 // 1 request/minute/operation
-)
-
-type contextKey struct{}
+{{.ImportStatements}}
 
 // Server defines a HTTP server that implements the Controller interface.
 type Server struct {
@@ -63,10 +28,7 @@ func CompressionLevel(level int) func(*serverConfig) {
 
 // Serve starts the server. It will return if an error occurs.
 func (s *Server) Serve() error {
-	tracingToken := os.Getenv("TRACING_ACCESS_TOKEN")
-	ingestURL := os.Getenv("TRACING_INGEST_URL")
 	isLocal := os.Getenv("_IS_LOCAL") == "true"
-
 	if !isLocal {
 		go startLoggingProcessMetrics()
 	}
@@ -84,69 +46,11 @@ func (s *Server) Serve() error {
 		s.l.Info("please provide a kvconfig.yml file to enable app log routing")
 	}
 
-	if (tracingToken != "" && ingestURL != "") || isLocal {
-		samplingRate := .01 // 1%% of requests
-
-		if samplingRateStr := os.Getenv("TRACING_SAMPLING_RATE_PERCENT"); samplingRateStr != "" {
-			samplingRateP, err := strconv.ParseFloat(samplingRateStr, 64)
-			if err != nil {
-				s.l.ErrorD("tracing-sampling-override-failed", logger.M{
-					"msg": fmt.Sprintf("could not parse '%%s' to integer", samplingRateStr),
-				})
-			} else {
-				samplingRate = samplingRateP
-			}
-
-			s.l.InfoD("tracing-sampling-rate", logger.M{
-				"msg": fmt.Sprintf("sampling rate will be %%.3f", samplingRate),
-			})
-		}
-
-		sampler, err := jaeger.NewGuaranteedThroughputProbabilisticSampler(lowerBoundRateLimiter, samplingRate)
-		if err != nil {
-			return fmt.Errorf("failed to build jaeger sampler: %%s", err)
-		}
-
-		cfg := &jaegercfg.Configuration{
-			ServiceName: os.Getenv("_APP_NAME"),
-			Tags:        []opentracing.Tag{
-				opentracing.Tag{Key: "app_name", Value: os.Getenv("_APP_NAME")},
-				opentracing.Tag{Key: "build_id", Value: os.Getenv("_BUILD_ID")},
-				opentracing.Tag{Key: "deploy_env", Value: os.Getenv("_DEPLOY_ENV")},
-				opentracing.Tag{Key: "team_owner", Value: os.Getenv("_TEAM_OWNER")},
-				opentracing.Tag{Key: "pod_id", Value: os.Getenv("_POD_ID")},
-				opentracing.Tag{Key: "pod_shortname", Value: os.Getenv("_POD_SHORTNAME")},
-				opentracing.Tag{Key: "pod_account", Value: os.Getenv("_POD_ACCOUNT")},
-				opentracing.Tag{Key: "pod_region", Value: os.Getenv("_POD_REGION")},
-			},
-		}
-
-		var tracer opentracing.Tracer
-		var closer io.Closer
-		if isLocal {
-			// when local, send everything and use the default params for the Jaeger collector
-			cfg.Sampler = &jaegercfg.SamplerConfig{
-				Type:  "const",
-				Param: 1.0,
-			}
-			tracer, closer, err = cfg.NewTracer()
-			s.l.InfoD("local-tracing", logger.M{"msg": "sending traces to default localhost jaeger address"})
-		} else {
-			// Create a Jaeger HTTP Thrift transport
-			transport := transport.NewHTTPTransport(ingestURL, transport.HTTPBasicAuth("auth", tracingToken))
-			tracer, closer, err = cfg.NewTracer(
-				jaegercfg.Reporter(jaeger.NewRemoteReporter(transport)),
-				jaegercfg.Sampler(sampler))
-		}
-		if err != nil {
-			log.Fatalf("Could not initialize jaeger tracer: %%s", err)
-		}
-		defer closer.Close()
-
-		opentracing.SetGlobalTracer(tracer)
-	} else {
-		s.l.Error("please set TRACING_ACCESS_TOKEN & TRACING_INGEST_URL to enable tracing")
+	exporter, err := tracing.SetupGlobalTraceProviderAndExporter()
+	if err != nil {
+		log.Fatal(err)
 	}
+	defer exporter.Shutdown(context.Background())
 
 	s.l.Counter("server-started")
 
@@ -201,12 +105,17 @@ func withMiddleware(serviceName string, router http.Handler, m []func(http.Handl
 	for i := len(m) - 1; i >= 0; i-- {
 		handler = m[i](handler)
 	}
-	handler = TracingMiddleware(handler)
 	handler = PanicMiddleware(handler)
 	// Logging middleware comes last, i.e. will be run first.
 	// This makes it so that other middleware has access to the logger
 	// that kvMiddleware injects into the request context.
-	handler = kvMiddleware.New(handler, serviceName)
+	handler = kvMiddleware.New(handler, serviceName, func(r *http.Request) map[string]interface{} {
+		spanID, traceID := tracing.ExtractSpanAndTraceID(r)
+		return map[string]interface{}{
+			"spanid":  spanID,
+			"traceid": traceID,
+		}
+	})
 	return handler
 }
 
@@ -224,14 +133,13 @@ func NewRouter(c Controller) *mux.Router {
 
 func newRouter(c Controller) *mux.Router {
 	router := mux.NewRouter()
+	router.Use(tracing.MuxServerMiddleware("{{.Title}}"))
 	h := handler{Controller: c}
 
 	{{range $index, $val := .Functions}}
 	router.Methods("{{$val.Method}}").Path("{{$val.Path}}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "{{$val.OpID}}")
 		h.{{$val.HandlerName}}Handler(r.Context(), w, r)
-		ctx := WithTracingOpName(r.Context(), "{{$val.OpID}}")
-		r = r.WithContext(ctx)
 	})
 	{{end}}
 	return router
