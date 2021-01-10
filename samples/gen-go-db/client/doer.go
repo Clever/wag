@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -16,8 +15,6 @@ import (
 
 	"github.com/afex/hystrix-go/hystrix"
 	"github.com/donovanhide/eventsource"
-	opentracing "github.com/opentracing/opentracing-go"
-	tags "github.com/opentracing/opentracing-go/ext"
 	"golang.org/x/net/context/ctxhttp"
 	logger "gopkg.in/Clever/kayvee-go.v6/logger"
 )
@@ -34,32 +31,6 @@ type baseDoer struct{}
 
 func (d baseDoer) Do(c *http.Client, r *http.Request) (*http.Response, error) {
 	return ctxhttp.Do(r.Context(), c, r)
-}
-
-// tracingDoer adds tracing to http requests
-type tracingDoer struct {
-	d doer
-}
-
-func (d tracingDoer) Do(c *http.Client, r *http.Request) (*http.Response, error) {
-
-	ctx := r.Context()
-	opName := ctx.Value(opNameCtx{}).(string)
-	var sp opentracing.Span
-	// TODO: add tags relating to input data?
-	if parentSpan := opentracing.SpanFromContext(ctx); parentSpan != nil {
-		sp = opentracing.StartSpan(opName, opentracing.ChildOf(parentSpan.Context()))
-	} else {
-		sp = opentracing.StartSpan(opName)
-	}
-	tags.SpanKind.Set(sp, tags.SpanKindRPCClientEnum)
-	if err := sp.Tracer().Inject(sp.Context(),
-		opentracing.HTTPHeaders,
-		opentracing.HTTPHeadersCarrier(r.Header)); err != nil {
-		return nil, fmt.Errorf("couldn't inject tracing headers (%v)", err)
-	}
-	defer sp.Finish()
-	return d.d.Do(c, r)
 }
 
 // retryHandler retries 50X http requests

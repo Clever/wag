@@ -10,7 +10,6 @@ import (
 	ddb "github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/go-openapi/strfmt"
-	otaws "github.com/opentracing-contrib/go-aws-sdk"
 )
 
 // Config is used to create a new DB struct.
@@ -71,11 +70,6 @@ func New(config Config) (*DB, error) {
 	}
 	if config.DefaultPrefix == "" {
 		return nil, errors.New("must specify DefaultPrefix")
-	}
-
-	// add OpenTracing observability to DDB calls if it's a non-mocked client
-	if ddbClient, ok := config.DynamoDBAPI.(*ddb.DynamoDB); ok {
-		otaws.AddOTHandlers(ddbClient.Client)
 	}
 
 	if config.DefaultWriteCapacityUnits == 0 {
