@@ -7,7 +7,6 @@ import (
 
 	"github.com/Clever/wag/v5/samples/gen-go-db/models"
 	"github.com/Clever/wag/v5/samples/gen-go-db/server/db"
-	ddb "github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/go-openapi/strfmt"
 )
