@@ -3,7 +3,6 @@ module github.com/Clever/wag/v6
 go 1.13
 
 require (
-	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/Clever/discovery-go v1.7.2-0.20180111182807-aec3a7cef89e
 	github.com/Clever/go-process-metrics v0.0.0-20171109172046-76790fe7fd86
 	github.com/Clever/go-utils v0.0.0-20150501165843-abc25366fa8e
@@ -29,7 +28,7 @@ require (
 	github.com/go-openapi/validate v0.0.0-20180222165948-180bba53b988
 	github.com/go-swagger/go-swagger v0.2.1-0.20171112234155-b015bda48dfc
 	github.com/go-swagger/scan-repo-boundary v0.0.0-20180623220736-973b3573c013 // indirect
-	github.com/golang/mock v1.0.1-0.20180211072722-58cd061d0938
+	github.com/golang/mock v1.1.1
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/hcl v0.0.0-20171017181929-23c074d0eceb // indirect
@@ -54,10 +53,17 @@ require (
 	github.com/uber/jaeger-lib v2.0.0+incompatible // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
+	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.19.0
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.19.0
+	go.opentelemetry.io/contrib/propagators/aws v0.19.0
+	go.opentelemetry.io/otel v0.19.0
+	go.opentelemetry.io/otel/exporters/otlp v0.19.0
+	go.opentelemetry.io/otel/sdk v0.19.0
+	go.opentelemetry.io/otel/trace v0.19.0
 	go.uber.org/atomic v1.7.0 // indirect
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
 	golang.org/x/time v0.0.0-20181108054448-85acf8d2951c
-	golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
 	gopkg.in/Clever/kayvee-go.v6 v6.24.1
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce

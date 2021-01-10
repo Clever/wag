@@ -14,8 +14,6 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/gorilla/mux"
-	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/log"
 	"golang.org/x/xerrors"
 	"gopkg.in/Clever/kayvee-go.v6/logger"
 )
@@ -27,7 +25,6 @@ var _ = errors.New
 var _ = mux.Vars
 var _ = bytes.Compare
 var _ = ioutil.ReadAll
-var _ = log.String
 
 var formats = strfmt.Default
 var _ = formats
@@ -102,8 +99,6 @@ func statusCodeForGetAuthors(obj interface{}) int {
 
 func (h handler) GetAuthorsHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
-	sp := opentracing.SpanFromContext(ctx)
-
 	input, err := newGetAuthorsInput(r)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
@@ -137,9 +132,6 @@ func (h handler) GetAuthorsHandler(ctx context.Context, w http.ResponseWriter, r
 		return
 	}
 
-	jsonSpan, _ := opentracing.StartSpanFromContext(ctx, "json-response-marshaling")
-	defer jsonSpan.Finish()
-
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
@@ -158,7 +150,6 @@ func (h handler) GetAuthorsHandler(ctx context.Context, w http.ResponseWriter, r
 		w.Header().Set("X-Next-Page-Path", path)
 	}
 
-	sp.LogFields(log.Int("response-size-bytes", len(respBytes)))
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCodeForGetAuthors(resp))
 	w.Write(respBytes)
@@ -168,9 +159,6 @@ func (h handler) GetAuthorsHandler(ctx context.Context, w http.ResponseWriter, r
 // newGetAuthorsInput takes in an http.Request an returns the input struct.
 func newGetAuthorsInput(r *http.Request) (*models.GetAuthorsInput, error) {
 	var input models.GetAuthorsInput
-
-	sp := opentracing.SpanFromContext(r.Context())
-	_ = sp
 
 	var err error
 	_ = err
@@ -233,8 +221,6 @@ func statusCodeForGetAuthorsWithPut(obj interface{}) int {
 
 func (h handler) GetAuthorsWithPutHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
-	sp := opentracing.SpanFromContext(ctx)
-
 	input, err := newGetAuthorsWithPutInput(r)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
@@ -268,9 +254,6 @@ func (h handler) GetAuthorsWithPutHandler(ctx context.Context, w http.ResponseWr
 		return
 	}
 
-	jsonSpan, _ := opentracing.StartSpanFromContext(ctx, "json-response-marshaling")
-	defer jsonSpan.Finish()
-
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
@@ -289,7 +272,6 @@ func (h handler) GetAuthorsWithPutHandler(ctx context.Context, w http.ResponseWr
 		w.Header().Set("X-Next-Page-Path", path)
 	}
 
-	sp.LogFields(log.Int("response-size-bytes", len(respBytes)))
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCodeForGetAuthorsWithPut(resp))
 	w.Write(respBytes)
@@ -299,9 +281,6 @@ func (h handler) GetAuthorsWithPutHandler(ctx context.Context, w http.ResponseWr
 // newGetAuthorsWithPutInput takes in an http.Request an returns the input struct.
 func newGetAuthorsWithPutInput(r *http.Request) (*models.GetAuthorsWithPutInput, error) {
 	var input models.GetAuthorsWithPutInput
-
-	sp := opentracing.SpanFromContext(r.Context())
-	_ = sp
 
 	var err error
 	_ = err
@@ -332,17 +311,11 @@ func newGetAuthorsWithPutInput(r *http.Request) (*models.GetAuthorsWithPutInput,
 
 	data, err := ioutil.ReadAll(r.Body)
 
-	sp.LogFields(log.Int("request-size-bytes", len(data)))
-
 	if len(data) > 0 {
-		jsonSpan, _ := opentracing.StartSpanFromContext(r.Context(), "json-request-marshaling")
-		defer jsonSpan.Finish()
-
 		input.FavoriteBooks = &models.Book{}
 		if err := json.NewDecoder(bytes.NewReader(data)).Decode(input.FavoriteBooks); err != nil {
 			return nil, err
 		}
-
 	}
 
 	return &input, nil
@@ -378,8 +351,6 @@ func statusCodeForGetBooks(obj interface{}) int {
 }
 
 func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-
-	sp := opentracing.SpanFromContext(ctx)
 
 	input, err := newGetBooksInput(r)
 	if err != nil {
@@ -420,9 +391,6 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 		return
 	}
 
-	jsonSpan, _ := opentracing.StartSpanFromContext(ctx, "json-response-marshaling")
-	defer jsonSpan.Finish()
-
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
@@ -441,7 +409,6 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 		w.Header().Set("X-Next-Page-Path", path)
 	}
 
-	sp.LogFields(log.Int("response-size-bytes", len(respBytes)))
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCodeForGetBooks(resp))
 	w.Write(respBytes)
@@ -451,9 +418,6 @@ func (h handler) GetBooksHandler(ctx context.Context, w http.ResponseWriter, r *
 // newGetBooksInput takes in an http.Request an returns the input struct.
 func newGetBooksInput(r *http.Request) (*models.GetBooksInput, error) {
 	var input models.GetBooksInput
-
-	sp := opentracing.SpanFromContext(r.Context())
-	_ = sp
 
 	var err error
 	_ = err
@@ -623,8 +587,6 @@ func statusCodeForCreateBook(obj interface{}) int {
 
 func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
-	sp := opentracing.SpanFromContext(ctx)
-
 	input, err := newCreateBookInput(r)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
@@ -660,9 +622,6 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 		return
 	}
 
-	jsonSpan, _ := opentracing.StartSpanFromContext(ctx, "json-response-marshaling")
-	defer jsonSpan.Finish()
-
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
@@ -670,7 +629,6 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 		return
 	}
 
-	sp.LogFields(log.Int("response-size-bytes", len(respBytes)))
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCodeForCreateBook(resp))
 	w.Write(respBytes)
@@ -679,9 +637,6 @@ func (h handler) CreateBookHandler(ctx context.Context, w http.ResponseWriter, r
 
 // newCreateBookInput takes in an http.Request an returns the input struct.
 func newCreateBookInput(r *http.Request) (*models.Book, error) {
-	sp := opentracing.SpanFromContext(r.Context())
-	_ = sp
-
 	var err error
 	_ = err
 
@@ -689,18 +644,12 @@ func newCreateBookInput(r *http.Request) (*models.Book, error) {
 	if len(data) == 0 {
 		return nil, errors.New("request body is required, but was empty")
 	}
-	sp.LogFields(log.Int("request-size-bytes", len(data)))
-
 	if len(data) > 0 {
-		jsonSpan, _ := opentracing.StartSpanFromContext(r.Context(), "json-request-marshaling")
-		defer jsonSpan.Finish()
-
 		var input models.Book
 		if err := json.NewDecoder(bytes.NewReader(data)).Decode(&input); err != nil {
 			return nil, err
 		}
 		return &input, nil
-
 	}
 
 	return nil, nil
@@ -737,8 +686,6 @@ func statusCodeForPutBook(obj interface{}) int {
 
 func (h handler) PutBookHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
-	sp := opentracing.SpanFromContext(ctx)
-
 	input, err := newPutBookInput(r)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
@@ -774,9 +721,6 @@ func (h handler) PutBookHandler(ctx context.Context, w http.ResponseWriter, r *h
 		return
 	}
 
-	jsonSpan, _ := opentracing.StartSpanFromContext(ctx, "json-response-marshaling")
-	defer jsonSpan.Finish()
-
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
@@ -784,7 +728,6 @@ func (h handler) PutBookHandler(ctx context.Context, w http.ResponseWriter, r *h
 		return
 	}
 
-	sp.LogFields(log.Int("response-size-bytes", len(respBytes)))
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCodeForPutBook(resp))
 	w.Write(respBytes)
@@ -793,26 +736,17 @@ func (h handler) PutBookHandler(ctx context.Context, w http.ResponseWriter, r *h
 
 // newPutBookInput takes in an http.Request an returns the input struct.
 func newPutBookInput(r *http.Request) (*models.Book, error) {
-	sp := opentracing.SpanFromContext(r.Context())
-	_ = sp
-
 	var err error
 	_ = err
 
 	data, err := ioutil.ReadAll(r.Body)
 
-	sp.LogFields(log.Int("request-size-bytes", len(data)))
-
 	if len(data) > 0 {
-		jsonSpan, _ := opentracing.StartSpanFromContext(r.Context(), "json-request-marshaling")
-		defer jsonSpan.Finish()
-
 		var input models.Book
 		if err := json.NewDecoder(bytes.NewReader(data)).Decode(&input); err != nil {
 			return nil, err
 		}
 		return &input, nil
-
 	}
 
 	return nil, nil
@@ -861,8 +795,6 @@ func statusCodeForGetBookByID(obj interface{}) int {
 
 func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
-	sp := opentracing.SpanFromContext(ctx)
-
 	input, err := newGetBookByIDInput(r)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
@@ -896,9 +828,6 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 		return
 	}
 
-	jsonSpan, _ := opentracing.StartSpanFromContext(ctx, "json-response-marshaling")
-	defer jsonSpan.Finish()
-
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
@@ -906,7 +835,6 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 		return
 	}
 
-	sp.LogFields(log.Int("response-size-bytes", len(respBytes)))
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCodeForGetBookByID(resp))
 	w.Write(respBytes)
@@ -916,9 +844,6 @@ func (h handler) GetBookByIDHandler(ctx context.Context, w http.ResponseWriter, 
 // newGetBookByIDInput takes in an http.Request an returns the input struct.
 func newGetBookByIDInput(r *http.Request) (*models.GetBookByIDInput, error) {
 	var input models.GetBookByIDInput
-
-	sp := opentracing.SpanFromContext(r.Context())
-	_ = sp
 
 	var err error
 	_ = err
@@ -1019,8 +944,6 @@ func statusCodeForGetBookByID2(obj interface{}) int {
 
 func (h handler) GetBookByID2Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
-	sp := opentracing.SpanFromContext(ctx)
-
 	id, err := newGetBookByID2Input(r)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
@@ -1054,9 +977,6 @@ func (h handler) GetBookByID2Handler(ctx context.Context, w http.ResponseWriter,
 		return
 	}
 
-	jsonSpan, _ := opentracing.StartSpanFromContext(ctx, "json-response-marshaling")
-	defer jsonSpan.Finish()
-
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
@@ -1064,7 +984,6 @@ func (h handler) GetBookByID2Handler(ctx context.Context, w http.ResponseWriter,
 		return
 	}
 
-	sp.LogFields(log.Int("response-size-bytes", len(respBytes)))
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCodeForGetBookByID2(resp))
 	w.Write(respBytes)
@@ -1132,9 +1051,6 @@ func (h handler) HealthCheckHandler(ctx context.Context, w http.ResponseWriter, 
 // newHealthCheckInput takes in an http.Request an returns the input struct.
 func newHealthCheckInput(r *http.Request) (*models.HealthCheckInput, error) {
 	var input models.HealthCheckInput
-
-	sp := opentracing.SpanFromContext(r.Context())
-	_ = sp
 
 	var err error
 	_ = err
