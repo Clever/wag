@@ -53,7 +53,7 @@ generate: build jsdoc2md
 	go generate ./samples/gen-go-db...
 
 $(PKGS): golang-test-all-strict-deps
-	$(call golang-test-all-strict,$@)
+	$(call golang-test-all,$@)
 
 release:
 	GOOS=linux GOARCH=amd64 go build -ldflags="-s -w -X main.version=$(VERSION)" -o="$@/$(EXECUTABLE)"
