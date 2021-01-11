@@ -34,8 +34,8 @@ var defaultCollectorPort uint16 = 4317
 
 // SetupGlobalTraceProviderAndExporter sets up an exporter to export,
 // as well as the opentelemetry global trace provider for trace generators to use.
-// The exporter is returned in order for the caller to defer shutdown.
-func SetupGlobalTraceProviderAndExporter() (sdkexporttrace.SpanExporter, error) {
+// The exporter and provider are returned in order for the caller to defer shutdown.
+func SetupGlobalTraceProviderAndExporter() (sdkexporttrace.SpanExporter, *sdktrace.TracerProvider, error) {
 	// 1. set up exporter
 	// 2. set up tracer provider
 	// 3. assign global tracer provider
@@ -49,7 +49,7 @@ func SetupGlobalTraceProviderAndExporter() (sdkexporttrace.SpanExporter, error) 
 	} else if v := os.Getenv("TRACING_SAMPLING_PROBABILITY"); v != "" {
 		samplingProbabilityFromEnv, err := strconv.ParseFloat(v, 64)
 		if err != nil {
-			return nil, fmt.Errorf("could not parse '%s' to integer", v)
+			return nil, nil, fmt.Errorf("could not parse '%s' to integer", v)
 		}
 		samplingProbability = samplingProbabilityFromEnv
 	}
@@ -64,22 +64,22 @@ func SetupGlobalTraceProviderAndExporter() (sdkexporttrace.SpanExporter, error) 
 		otlp.WithReconnectionPeriod(15*time.Second),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("error creating exporter: %v", err)
+		return nil, nil, fmt.Errorf("error creating exporter: %v", err)
 	}
 
 	tp := newTracerProvider(exporter, samplingProbability)
 	otel.SetTracerProvider(tp)
-	return exporter, nil
+	return exporter, tp, nil
 }
 
 // SetupGlobalTraceProviderAndExporterForTest is meant to be used in unit testing,
 // and mirrors the setup above for outside of unit testing. It returns an in-memory
 // exporter for examining generated spans.
-func SetupGlobalTraceProviderAndExporterForTest() (*tracetest.InMemoryExporter, error) {
+func SetupGlobalTraceProviderAndExporterForTest() (*tracetest.InMemoryExporter, *sdktrace.TracerProvider, error) {
 	exporter := tracetest.NewInMemoryExporter()
 	tp := newTracerProvider(exporter, 1.0)
 	otel.SetTracerProvider(tp)
-	return exporter, nil
+	return exporter, tp, nil
 }
 
 func newTracerProvider(exporter sdkexporttrace.SpanExporter, samplingProbability float64) *sdktrace.TracerProvider {

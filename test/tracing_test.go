@@ -25,11 +25,12 @@ func TestOpenTelemetryInstrumentation(t *testing.T) {
 	ctx := context.Background()
 	s, _ := setupServer()
 	defer s.Close()
-	exporter, err := tracing.SetupGlobalTraceProviderAndExporterForTest()
+	exporter, provider, err := tracing.SetupGlobalTraceProviderAndExporterForTest()
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer exporter.Shutdown(ctx)
+	defer provider.Shutdown(ctx)
 	c := client.New(s.URL)
 	c.HealthCheck(ctx)
 	spans := exporter.GetSpans()

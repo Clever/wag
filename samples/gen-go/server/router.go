@@ -62,11 +62,12 @@ func (s *Server) Serve() error {
 		s.l.Info("please provide a kvconfig.yml file to enable app log routing")
 	}
 
-	exporter, err := tracing.SetupGlobalTraceProviderAndExporter()
+	exporter, provider, err := tracing.SetupGlobalTraceProviderAndExporter()
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer exporter.Shutdown(context.Background())
+	defer provider.Shutdown(context.Background())
 
 	s.l.Counter("server-started")
 
