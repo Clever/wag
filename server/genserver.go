@@ -16,7 +16,7 @@ import (
 // Generate server package for a swagger spec.
 func Generate(packageName, packagePath string, s spec.Swagger) error {
 
-	if err := generateRouter(packagePath, s, s.Paths); err != nil {
+	if err := generateRouter(packageName, packagePath, s, s.Paths); err != nil {
 		return err
 	}
 	if err := generateInterface(packageName, packagePath, &s, s.Info.InfoProps.Title, s.Paths); err != nil {
@@ -41,7 +41,7 @@ type routerTemplate struct {
 	Functions        []routerFunction
 }
 
-func generateRouter(packagePath string, s spec.Swagger, paths *spec.Paths) error {
+func generateRouter(packageName, packagePath string, s spec.Swagger, paths *spec.Paths) error {
 
 	var template routerTemplate
 	template.Title = s.Info.Title
@@ -71,7 +71,7 @@ func generateRouter(packagePath string, s spec.Swagger, paths *spec.Paths) error
 		"syscall",
 		"time",
 		"github.com/Clever/go-process-metrics/metrics",
-		packagePath + "/tracing",
+		packageName + "/tracing",
 		"github.com/gorilla/handlers",
 		"github.com/gorilla/mux",
 		"github.com/kardianos/osext",
