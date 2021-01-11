@@ -26,7 +26,7 @@ require (
 	github.com/go-openapi/runtime v0.0.0-20180131174916-09fac855d850 // indirect
 	github.com/go-openapi/spec v0.0.0-20180213232550-1de3e0542de6
 	github.com/go-openapi/strfmt v0.19.3
-	github.com/go-openapi/swag v0.19.12
+	github.com/go-openapi/swag v0.19.5
 	github.com/go-openapi/validate v0.0.0-20180222165948-180bba53b988
 	github.com/go-swagger/go-swagger v0.2.1-0.20171112234155-b015bda48dfc
 	github.com/go-swagger/scan-repo-boundary v0.0.0-20180623220736-973b3573c013 // indirect
@@ -39,7 +39,10 @@ require (
 	github.com/jmespath/go-jmespath v0.0.0-20160202185014-0b12d6b521d8 // indirect
 	github.com/kardianos/osext v0.0.0-20170510131534-ae77be60afb1
 	github.com/kevinburke/go-bindata v3.15.0+incompatible
+	github.com/kr/text v0.2.0 // indirect
 	github.com/magiconair/properties v1.7.6 // indirect
+	github.com/mailru/easyjson v0.7.6 // indirect
+	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/opentracing-contrib/go-aws-sdk v0.0.0-20190205132030-9c29407076c0
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/pelletier/go-toml v1.1.0 // indirect
@@ -61,9 +64,11 @@ require (
 	golang.org/x/time v0.0.0-20181108054448-85acf8d2951c
 	golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
 	gopkg.in/Clever/kayvee-go.v6 v6.17.0
+	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce
-	gopkg.in/yaml.v2 v2.3.0
+	gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
 )
 
 exclude (
@@ -77,3 +82,5 @@ exclude (
 	github.com/uber-go/atomic v1.6.0
 	github.com/uber-go/atomic v1.7.0
 )
+
+replace github.com/go-openapi/swag => github.com/go-openapi/swag v0.0.0-20180102232305-84f4bee7c0a6
