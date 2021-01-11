@@ -71,7 +71,7 @@ func generateRouter(packagePath string, s spec.Swagger, paths *spec.Paths) error
 		"syscall",
 		"time",
 		"github.com/Clever/go-process-metrics/metrics",
-		"github.com/Clever/wag/v5/samples/gen-go/tracing",
+		packagePath + "/tracing",
 		"github.com/gorilla/handlers",
 		"github.com/gorilla/mux",
 		"github.com/kardianos/osext",
