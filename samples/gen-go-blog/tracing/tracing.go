@@ -60,8 +60,9 @@ func SetupGlobalTraceProviderAndExporter() (sdkexporttrace.SpanExporter, *sdktra
 	// locally this is a locally running opetelemetry-collector.
 	exporter, err := otlp.NewExporter(
 		context.Background(),
-		otlp.WithAddress(fmt.Sprintf("%s:%s", otlp.DefaultCollectorHost, defaultCollectorPort)),
+		otlp.WithAddress(fmt.Sprintf("%s:%d", otlp.DefaultCollectorHost, defaultCollectorPort)),
 		otlp.WithReconnectionPeriod(15*time.Second),
+		otlp.WithInsecure(),
 	)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error creating exporter: %v", err)
