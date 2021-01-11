@@ -28,6 +28,10 @@ var propagator propagation.TextMapPropagator = propagation.NewCompositeTextMapPr
 	xray.Propagator{},          // x-amzn-trace-id header
 )
 
+// defaultCollectorPort was changed from 55860 in November and the Go library
+// hasn't been updated when it is updated we can use otlp.DefaultCollectorPort
+var defaultCollectorPort uint16 = 4317
+
 // SetupGlobalTraceProviderAndExporter sets up an exporter to export,
 // as well as the opentelemetry global trace provider for trace generators to use.
 // The exporter is returned in order for the caller to defer shutdown.
@@ -51,12 +55,12 @@ func SetupGlobalTraceProviderAndExporter() (sdkexporttrace.SpanExporter, error) 
 	}
 
 	// Every 15 seconds we'll try to connect to opentelemetry collector at
-	// the default location of localhost:55680.
+	// the default location of localhost:4317
 	// When running in production this is a sidecar, and when running
 	// locally this is a locally running opetelemetry-collector.
 	exporter, err := otlp.NewExporter(
 		context.Background(),
-		otlp.WithAddress(fmt.Sprintf("%s:%s", otlp.DefaultCollectorHost, otlp.DefaultCollectorPort)),
+		otlp.WithAddress(fmt.Sprintf("%s:%s", otlp.DefaultCollectorHost, defaultCollectorPort)),
 		otlp.WithReconnectionPeriod(15*time.Second),
 	)
 	if err != nil {
