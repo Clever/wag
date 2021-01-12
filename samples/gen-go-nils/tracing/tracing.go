@@ -13,11 +13,9 @@ import (
 	"go.opentelemetry.io/contrib/propagators/aws/xray"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp"
-	"go.opentelemetry.io/otel/label"
 	"go.opentelemetry.io/otel/propagation"
 	sdkexporttrace "go.opentelemetry.io/otel/sdk/export/trace"
 	"go.opentelemetry.io/otel/sdk/export/trace/tracetest"
-	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -93,16 +91,6 @@ func newTracerProvider(exporter sdkexporttrace.SpanExporter, samplingProbability
 			MaxLinksPerSpan:      100,
 		}),
 		sdktrace.WithSyncer(exporter),
-		sdktrace.WithResource(resource.NewWithAttributes(
-			label.KeyValue{Key: "app_name", Value: label.StringValue(os.Getenv("_APP_NAME"))},
-			label.KeyValue{Key: "build_id", Value: label.StringValue(os.Getenv("_BUILD_ID"))},
-			label.KeyValue{Key: "deploy_env", Value: label.StringValue(os.Getenv("_DEPLOY_ENV"))},
-			label.KeyValue{Key: "team_owner", Value: label.StringValue(os.Getenv("_TEAM_OWNER"))},
-			label.KeyValue{Key: "pod_id", Value: label.StringValue(os.Getenv("_POD_ID"))},
-			label.KeyValue{Key: "pod_shortname", Value: label.StringValue(os.Getenv("_POD_SHORTNAME"))},
-			label.KeyValue{Key: "pod_account", Value: label.StringValue(os.Getenv("_POD_ACCOUNT"))},
-			label.KeyValue{Key: "pod_region", Value: label.StringValue(os.Getenv("_POD_REGION"))},
-		)),
 	)
 }
 
