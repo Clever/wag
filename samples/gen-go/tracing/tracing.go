@@ -18,6 +18,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/export/trace/tracetest"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
+	"gopkg.in/Clever/kayvee-go.v6/logger"
 )
 
 // propagator to use.
@@ -94,9 +95,22 @@ func newTracerProvider(exporter sdkexporttrace.SpanExporter, samplingProbability
 	)
 }
 
-// MuxServerMiddelware returns middleware that should be attached to a gorilla/mux server.
+// MuxServerMiddleware returns middleware that should be attached to a gorilla/mux server.
+// It does two things: starts spans, and adds span/trace info to the request-specific logger.
 func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
-	return otelmux.Middleware(serviceName, otelmux.WithPropagators(propagator))
+	otlmux := otelmux.Middleware(serviceName, otelmux.WithPropagators(propagator))
+	return func(h http.Handler) http.Handler {
+		return otlmux(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+			// otelmux has extracted the span. now put it into the ctx-specific logger
+			s := trace.SpanFromContext(r.Context())
+			if sc := s.SpanContext(); sc.HasTraceID() {
+				spanID, traceID := sc.SpanID.String(), sc.TraceID.String()
+				logger.FromContext(r.Context()).AddContext("spanid", spanID)
+				logger.FromContext(r.Context()).AddContext("traceid", traceID)
+			}
+			h.ServeHTTP(rw, r)
+		}))
+	}
 }
 
 // NewTransport returns the transport to use in client requests.
@@ -130,6 +144,10 @@ func (rt roundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 
 // ExtractSpanAndTraceID extracts span and trace IDs from an http request header.
 func ExtractSpanAndTraceID(r *http.Request) (traceID, spanID string) {
+	s := trace.SpanFromContext(r.Context())
+	if s.SpanContext().HasTraceID() {
+		return s.SpanContext().TraceID.String(), s.SpanContext().SpanID.String()
+	}
 	sc := trace.RemoteSpanContextFromContext(propagator.Extract(r.Context(), r.Header))
 	return sc.SpanID.String(), sc.TraceID.String()
 }

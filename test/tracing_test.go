@@ -23,14 +23,14 @@ func TestOpenTelemetryInstrumentation(t *testing.T) {
 	// 1. generate a span
 	// 2. log trace and span ids
 	ctx := context.Background()
-	s, _ := setupServer()
-	defer s.Close()
 	exporter, provider, err := tracing.SetupGlobalTraceProviderAndExporterForTest()
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer exporter.Shutdown(ctx)
 	defer provider.Shutdown(ctx)
+	s, _ := setupServer()
+	defer s.Close()
 	c := client.New(s.URL)
 	c.HealthCheck(ctx)
 	spans := exporter.GetSpans()
@@ -42,10 +42,6 @@ func TestOpenTelemetryInstrumentation(t *testing.T) {
 	assert.Equal(t, clientSpan.SpanContext.SpanID, serverSpan.ParentSpanID)
 	assert.Equal(t, "healthCheck", clientSpan.Name)
 	assert.Equal(t, false, clientSpan.HasRemoteParent)
-
-	// check it sets resource to server info
-	assert.True(t, hasAttribute(serverSpan.Resource, "deploy_env"))
-	assert.True(t, hasAttribute(serverSpan.Resource, "app_name"))
 
 	// test that the client joins a pre-existing span in the ctx
 	parentSpanID := serverSpan.SpanContext.SpanID

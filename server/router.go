@@ -46,13 +46,6 @@ func (s *Server) Serve() error {
 		s.l.Info("please provide a kvconfig.yml file to enable app log routing")
 	}
 
-	exporter, provider, err := tracing.SetupGlobalTraceProviderAndExporter()
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer exporter.Shutdown(context.Background())
-	defer provider.Shutdown(context.Background())
-
 	s.l.Counter("server-started")
 
 	// Give the sever 30 seconds to shut down
@@ -110,13 +103,7 @@ func withMiddleware(serviceName string, router http.Handler, m []func(http.Handl
 	// Logging middleware comes last, i.e. will be run first.
 	// This makes it so that other middleware has access to the logger
 	// that kvMiddleware injects into the request context.
-	handler = kvMiddleware.New(handler, serviceName, func(r *http.Request) map[string]interface{} {
-		spanID, traceID := tracing.ExtractSpanAndTraceID(r)
-		return map[string]interface{}{
-			"spanid":  spanID,
-			"traceid": traceID,
-		}
-	})
+	handler = kvMiddleware.New(handler, serviceName)
 	return handler
 }
 
