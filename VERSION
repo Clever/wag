@@ -1,4 +1,5 @@
-v5.0.0
+v6.0.0
+- v6.0.0: Revert the breaking changes to go-openapi/swag from 5.0.0.
 - v5.0.0: Convert to modules
 - v4.1.0: Support limiting the number of items returned by DynamoDB scans.
 - v4.0.1: Fix scans on DynamoDB indexes with composite attributes

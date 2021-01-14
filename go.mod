@@ -1,4 +1,4 @@
-module github.com/Clever/wag/v5
+module github.com/Clever/wag/v6
 
 go 1.13
 
@@ -26,7 +26,7 @@ require (
 	github.com/go-openapi/runtime v0.0.0-20180131174916-09fac855d850 // indirect
 	github.com/go-openapi/spec v0.0.0-20180213232550-1de3e0542de6
 	github.com/go-openapi/strfmt v0.19.3
-	github.com/go-openapi/swag v0.19.5
+	github.com/go-openapi/swag v0.19.12
 	github.com/go-openapi/validate v0.0.0-20180222165948-180bba53b988
 	github.com/go-swagger/go-swagger v0.2.1-0.20171112234155-b015bda48dfc
 	github.com/go-swagger/scan-repo-boundary v0.0.0-20180623220736-973b3573c013 // indirect
