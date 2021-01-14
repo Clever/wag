@@ -6,7 +6,7 @@ package db
 
 import (
 	context "context"
-	models "github.com/Clever/wag/v5/samples/gen-go-db/models"
+	models "github.com/Clever/wag/v6/samples/gen-go-db/models"
 	strfmt "github.com/go-openapi/strfmt"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"

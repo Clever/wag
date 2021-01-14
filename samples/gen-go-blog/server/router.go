@@ -229,6 +229,13 @@ func newRouter(c Controller) *mux.Router {
 		r = r.WithContext(ctx)
 	})
 
+	router.Methods("POST").Path("/students/{student_id}/sections").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger.FromContext(r.Context()).AddContext("op", "postSectionsForStudent")
+		h.PostSectionsForStudentHandler(r.Context(), w, r)
+		ctx := WithTracingOpName(r.Context(), "postSectionsForStudent")
+		r = r.WithContext(ctx)
+	})
+
 	return router
 }
 

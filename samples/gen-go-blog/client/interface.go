@@ -3,7 +3,7 @@ package client
 import (
 	"context"
 
-	"github.com/Clever/wag/v5/samples/gen-go-blog/models"
+	"github.com/Clever/wag/v6/samples/gen-go-blog/models"
 )
 
 //go:generate mockgen -source=$GOFILE -destination=mock_client.go -package=client
@@ -18,4 +18,12 @@ type Client interface {
 	// 500: *models.InternalError
 	// default: client side HTTP errors, for example: context.DeadlineExceeded.
 	GetSectionsForStudent(ctx context.Context, studentID string) ([]models.Section, error)
+
+	// PostSectionsForStudent makes a POST request to /students/{student_id}/sections
+	// Posts the sections for the specified student
+	// 200: []models.Section
+	// 400: *models.BadRequest
+	// 500: *models.InternalError
+	// default: client side HTTP errors, for example: context.DeadlineExceeded.
+	PostSectionsForStudent(ctx context.Context, i *models.PostSectionsForStudentInput) ([]models.Section, error)
 }

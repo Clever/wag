@@ -60,6 +60,8 @@ declare class Blog {
   
   getSectionsForStudent(student_id: string, options?: RequestOptions, cb?: Callback<models.Section[]>): Promise<models.Section[]>
   
+  postSectionsForStudent(params: models.PostSectionsForStudentParams, options?: RequestOptions, cb?: Callback<models.Section[]>): Promise<models.Section[]>
+  
 }
 
 declare namespace Blog {
@@ -94,11 +96,19 @@ declare namespace Blog {
 
   namespace Models {
     
+    type PostSectionsForStudentParams = {
+  studentID: string;
+  sections: string;
+  userType: ("math" | "science" | "reading");
+};
+    
     type Section = {
   id?: string;
   name?: string;
   period?: string;
 };
+    
+    type SectionType = ("math" | "science" | "reading");
     
   }
 }

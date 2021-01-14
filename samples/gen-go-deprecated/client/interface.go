@@ -3,7 +3,7 @@ package client
 import (
 	"context"
 
-	"github.com/Clever/wag/v5/samples/gen-go-deprecated/models"
+	"github.com/Clever/wag/v6/samples/gen-go-deprecated/models"
 )
 
 //go:generate mockgen -source=$GOFILE -destination=mock_client.go -package=client

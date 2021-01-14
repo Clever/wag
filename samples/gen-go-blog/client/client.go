@@ -12,7 +12,7 @@ import (
 	"time"
 
 	discovery "github.com/Clever/discovery-go"
-	"github.com/Clever/wag/v5/samples/gen-go-blog/models"
+	"github.com/Clever/wag/v6/samples/gen-go-blog/models"
 	"github.com/afex/hystrix-go/hystrix"
 	logger "gopkg.in/Clever/kayvee-go.v6/logger"
 )
@@ -191,6 +191,108 @@ func (c *WagClient) doGetSectionsForStudentRequest(ctx context.Context, req *htt
 
 	// Add the opname for doers like tracing
 	ctx = context.WithValue(ctx, opNameCtx{}, "getSectionsForStudent")
+	req = req.WithContext(ctx)
+	// Don't add the timeout in a "doer" because we don't want to call "defer.cancel()"
+	// until we've finished all the processing of the request object. Otherwise we'll cancel
+	// our own request before we've finished it.
+	if c.defaultTimeout != 0 {
+		ctx, cancel := context.WithTimeout(req.Context(), c.defaultTimeout)
+		defer cancel()
+		req = req.WithContext(ctx)
+	}
+	resp, err := c.requestDoer.Do(c.client, req)
+	retCode := 0
+	if resp != nil {
+		retCode = resp.StatusCode
+	}
+
+	// log all client failures and non-successful HT
+	logData := logger.M{
+		"backend":     "blog",
+		"method":      req.Method,
+		"uri":         req.URL,
+		"status_code": retCode,
+	}
+	if err == nil && retCode > 399 {
+		logData["message"] = resp.Status
+		c.logger.ErrorD("client-request-finished", logData)
+	}
+	if err != nil {
+		logData["message"] = err.Error()
+		c.logger.ErrorD("client-request-finished", logData)
+		return nil, err
+	}
+	defer resp.Body.Close()
+	switch resp.StatusCode {
+
+	case 200:
+
+		var output []models.Section
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, err
+		}
+
+		return output, nil
+
+	case 400:
+
+		var output models.BadRequest
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, err
+		}
+		return nil, &output
+
+	case 500:
+
+		var output models.InternalError
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, err
+		}
+		return nil, &output
+
+	default:
+		return nil, &models.InternalError{Message: "Unknown response"}
+	}
+}
+
+// PostSectionsForStudent makes a POST request to /students/{student_id}/sections
+// Posts the sections for the specified student
+// 200: []models.Section
+// 400: *models.BadRequest
+// 500: *models.InternalError
+// default: client side HTTP errors, for example: context.DeadlineExceeded.
+func (c *WagClient) PostSectionsForStudent(ctx context.Context, i *models.PostSectionsForStudentInput) ([]models.Section, error) {
+	headers := make(map[string]string)
+
+	var body []byte
+	path, err := i.Path()
+
+	if err != nil {
+		return nil, err
+	}
+
+	path = c.basePath + path
+
+	req, err := http.NewRequestWithContext(ctx, "POST", path, bytes.NewBuffer(body))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return c.doPostSectionsForStudentRequest(ctx, req, headers)
+}
+
+func (c *WagClient) doPostSectionsForStudentRequest(ctx context.Context, req *http.Request, headers map[string]string) ([]models.Section, error) {
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Canonical-Resource", "postSectionsForStudent")
+	req.Header.Set(VersionHeader, Version)
+
+	for field, value := range headers {
+		req.Header.Set(field, value)
+	}
+
+	// Add the opname for doers like tracing
+	ctx = context.WithValue(ctx, opNameCtx{}, "postSectionsForStudent")
 	req = req.WithContext(ctx)
 	// Don't add the timeout in a "doer" because we don't want to call "defer.cancel()"
 	// until we've finished all the processing of the request object. Otherwise we'll cancel

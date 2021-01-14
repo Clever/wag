@@ -7,10 +7,10 @@ import (
 
 	"github.com/go-openapi/spec"
 
-	"github.com/Clever/wag/v5/server/gendb"
-	"github.com/Clever/wag/v5/swagger"
-	"github.com/Clever/wag/v5/templates"
-	"github.com/Clever/wag/v5/utils"
+	"github.com/Clever/wag/v6/server/gendb"
+	"github.com/Clever/wag/v6/swagger"
+	"github.com/Clever/wag/v6/templates"
+	"github.com/Clever/wag/v6/utils"
 )
 
 // Generate server package for a swagger spec.

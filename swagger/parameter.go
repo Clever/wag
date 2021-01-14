@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Clever/wag/v5/utils"
+	"github.com/Clever/wag/v6/utils"
 	"github.com/go-openapi/spec"
 )
 

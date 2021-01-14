@@ -368,6 +368,129 @@ class Blog {
       }());
     });
   }
+
+  /**
+   * Posts the sections for the specified student
+   * @param {Object} params
+   * @param {string} params.studentID
+   * @param {string} params.sections
+   * @param {string} params.userType
+   * @param {object} [options]
+   * @param {number} [options.timeout] - A request specific timeout
+   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
+   * @param {module:blog.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {function} [cb]
+   * @returns {Promise}
+   * @fulfill {Object[]}
+   * @reject {module:blog.Errors.BadRequest}
+   * @reject {module:blog.Errors.InternalError}
+   * @reject {Error}
+   */
+  postSectionsForStudent(params, options, cb) {
+    let callback = cb;
+    if (!cb && typeof options === "function") {
+      callback = options;
+    }
+    return applyCallback(this._hystrixCommand.execute(this._postSectionsForStudent, arguments), callback);
+  }
+
+  _postSectionsForStudent(params, options, cb) {
+    if (!cb && typeof options === "function") {
+      options = undefined;
+    }
+
+    return new Promise((resolve, reject) => {
+      if (!options) {
+        options = {};
+      }
+
+      const timeout = options.timeout || this.timeout;
+      const tracer = options.tracer || this.tracer;
+      const span = options.span;
+
+      const headers = {};
+      headers["Canonical-Resource"] = "postSectionsForStudent";
+      headers[versionHeader] = version;
+      if (!params.studentID) {
+        reject(new Error("studentID must be non-empty because it's a path parameter"));
+        return;
+      }
+
+      const query = {};
+      query["sections"] = params.sections;
+
+      query["userType"] = params.userType;
+
+
+      if (span && typeof span.log === "function") {
+        // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
+        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
+        span.log({event: "POST /students/{student_id}/sections"});
+        span.setTag("span.kind", "client");
+      }
+
+      const requestOptions = {
+        method: "POST",
+        uri: this.address + "/students/" + params.studentID + "/sections",
+        gzip: true,
+        json: true,
+        timeout,
+        headers,
+        qs: query,
+        useQuerystring: true,
+      };
+      if (this.keepalive) {
+        requestOptions.forever = true;
+      }
+
+
+      const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
+      const backoffs = retryPolicy.backoffs();
+      const logger = this.logger;
+
+      let retries = 0;
+      (function requestOnce() {
+        request(requestOptions, (err, response, body) => {
+          if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
+            const backoff = backoffs[retries];
+            retries += 1;
+            setTimeout(requestOnce, backoff);
+            return;
+          }
+          if (err) {
+            err._fromRequest = true;
+            responseLog(logger, requestOptions, response, err)
+            reject(err);
+            return;
+          }
+
+          switch (response.statusCode) {
+            case 200:
+              resolve(body);
+              break;
+
+            case 400:
+              var err = new Errors.BadRequest(body || {});
+              responseLog(logger, requestOptions, response, err);
+              reject(err);
+              return;
+
+            case 500:
+              var err = new Errors.InternalError(body || {});
+              responseLog(logger, requestOptions, response, err);
+              reject(err);
+              return;
+
+            default:
+              var err = new Error("Received unexpected statusCode " + response.statusCode);
+              responseLog(logger, requestOptions, response, err);
+              reject(err);
+              return;
+          }
+        });
+      }());
+    });
+  }
 };
 
 module.exports = Blog;
