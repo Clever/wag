@@ -11,7 +11,7 @@ require (
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/afex/hystrix-go v0.0.0-20180329224416-4847ceb883b5
 	github.com/aws/aws-sdk-go v1.13.22
-	github.com/awslabs/goformation v1.4.2-0.20190523072350-4c9158b21dce
+	github.com/awslabs/goformation/v2 v2.3.1
 	github.com/codahale/hdrhistogram v0.9.0 // indirect
 	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b
 	github.com/fsnotify/fsnotify v1.4.7 // indirect
@@ -67,7 +67,7 @@ require (
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce
-	gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v2 v2.2.2
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
 )
 
@@ -84,3 +84,5 @@ exclude (
 )
 
 replace github.com/go-openapi/swag => github.com/go-openapi/swag v0.0.0-20180102232305-84f4bee7c0a6
+
+replace gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.0.0

@@ -9,6 +9,7 @@ blog client library.
         * [new Blog(options)](#new_module_blog--Blog_new)
         * _instance_
             * [.getSectionsForStudent(studentID, [options], [cb])](#module_blog--Blog+getSectionsForStudent) ⇒ <code>Promise</code>
+            * [.postSectionsForStudent(params, [options], [cb])](#module_blog--Blog+postSectionsForStudent) ⇒ <code>Promise</code>
         * _static_
             * [.RetryPolicies](#module_blog--Blog.RetryPolicies)
                 * [.Exponential](#module_blog--Blog.RetryPolicies.Exponential)
@@ -61,6 +62,29 @@ Gets the sections for the specified student
 | Param | Type | Description |
 | --- | --- | --- |
 | studentID | <code>string</code> |  |
+| [options] | <code>object</code> |  |
+| [options.timeout] | <code>number</code> | A request specific timeout |
+| [options.span] | [<code>Span</code>](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html) | An OpenTracing span - For example from the parent request |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_blog--Blog.RetryPolicies) | A request specific retryPolicy |
+| [cb] | <code>function</code> |  |
+
+<a name="module_blog--Blog+postSectionsForStudent"></a>
+
+#### blog.postSectionsForStudent(params, [options], [cb]) ⇒ <code>Promise</code>
+Posts the sections for the specified student
+
+**Kind**: instance method of [<code>Blog</code>](#exp_module_blog--Blog)  
+**Fulfill**: <code>Object[]</code>  
+**Reject**: [<code>BadRequest</code>](#module_blog--Blog.Errors.BadRequest)  
+**Reject**: [<code>InternalError</code>](#module_blog--Blog.Errors.InternalError)  
+**Reject**: <code>Error</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| params | <code>Object</code> |  |
+| params.studentID | <code>string</code> |  |
+| params.sections | <code>string</code> |  |
+| params.userType | <code>string</code> |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
 | [options.span] | [<code>Span</code>](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html) | An OpenTracing span - For example from the parent request |

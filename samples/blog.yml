@@ -37,6 +37,30 @@ paths:
             type: array
             items:
               $ref: "#/definitions/Section"
+    post:
+      operationId: postSectionsForStudent
+      description: Posts the sections for the specified student
+      parameters:
+        - name: student_id
+          in: path
+          type: string
+          required: true
+        - name: sections
+          in: query
+          type: string
+          required: true
+        - name: userType
+          in: query
+          type: string
+          required: true
+          enum: *SectionType
+      responses:
+        200:
+          description: "Success"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Section"
 
 definitions:
   Section:
@@ -48,6 +72,13 @@ definitions:
         type: string
       period:
         type: string
+
+  SectionType:
+    type: string
+    enum: &SectionType
+      - math
+      - science
+      - reading
 
   BadRequest:
     type: object

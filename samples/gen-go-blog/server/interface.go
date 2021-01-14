@@ -18,4 +18,12 @@ type Controller interface {
 	// 500: *models.InternalError
 	// default: client side HTTP errors, for example: context.DeadlineExceeded.
 	GetSectionsForStudent(ctx context.Context, studentID string) ([]models.Section, error)
+
+	// PostSectionsForStudent handles POST requests to /students/{student_id}/sections
+	// Posts the sections for the specified student
+	// 200: []models.Section
+	// 400: *models.BadRequest
+	// 500: *models.InternalError
+	// default: client side HTTP errors, for example: context.DeadlineExceeded.
+	PostSectionsForStudent(ctx context.Context, i *models.PostSectionsForStudentInput) ([]models.Section, error)
 }

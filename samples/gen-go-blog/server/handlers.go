@@ -169,3 +169,151 @@ func newGetSectionsForStudentInput(r *http.Request) (string, error) {
 	}
 	return studentID, nil
 }
+
+// statusCodeForPostSectionsForStudent returns the status code corresponding to the returned
+// object. It returns -1 if the type doesn't correspond to anything.
+func statusCodeForPostSectionsForStudent(obj interface{}) int {
+
+	switch obj.(type) {
+
+	case *[]models.Section:
+		return 200
+
+	case *models.BadRequest:
+		return 400
+
+	case *models.InternalError:
+		return 500
+
+	case []models.Section:
+		return 200
+
+	case models.BadRequest:
+		return 400
+
+	case models.InternalError:
+		return 500
+
+	default:
+		return -1
+	}
+}
+
+func (h handler) PostSectionsForStudentHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+
+	sp := opentracing.SpanFromContext(ctx)
+
+	input, err := newPostSectionsForStudentInput(r)
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		http.Error(w, jsonMarshalNoError(models.BadRequest{Message: err.Error()}), http.StatusBadRequest)
+		return
+	}
+
+	err = input.Validate()
+
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		http.Error(w, jsonMarshalNoError(models.BadRequest{Message: err.Error()}), http.StatusBadRequest)
+		return
+	}
+
+	resp, err := h.PostSectionsForStudent(ctx, input)
+
+	// Success types that return an array should never return nil so let's make this easier
+	// for consumers by converting nil arrays to empty arrays
+	if resp == nil {
+		resp = []models.Section{}
+	}
+
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		if btErr, ok := err.(*errors.Error); ok {
+			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
+		} else if xerr, ok := err.(xerrors.Formatter); ok {
+			logger.FromContext(ctx).AddContext("frames", fmt.Sprintf("%+v", xerr))
+		}
+		statusCode := statusCodeForPostSectionsForStudent(err)
+		if statusCode == -1 {
+			err = models.InternalError{Message: err.Error()}
+			statusCode = 500
+		}
+		http.Error(w, jsonMarshalNoError(err), statusCode)
+		return
+	}
+
+	jsonSpan, _ := opentracing.StartSpanFromContext(ctx, "json-response-marshaling")
+	defer jsonSpan.Finish()
+
+	respBytes, err := json.Marshal(resp)
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		http.Error(w, jsonMarshalNoError(models.InternalError{Message: err.Error()}), http.StatusInternalServerError)
+		return
+	}
+
+	sp.LogFields(log.Int("response-size-bytes", len(respBytes)))
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCodeForPostSectionsForStudent(resp))
+	w.Write(respBytes)
+
+}
+
+// newPostSectionsForStudentInput takes in an http.Request an returns the input struct.
+func newPostSectionsForStudentInput(r *http.Request) (*models.PostSectionsForStudentInput, error) {
+	var input models.PostSectionsForStudentInput
+
+	sp := opentracing.SpanFromContext(r.Context())
+	_ = sp
+
+	var err error
+	_ = err
+
+	studentIDStr := mux.Vars(r)["student_id"]
+	if len(studentIDStr) == 0 {
+		return nil, errors.New("path parameter 'student_id' must be specified")
+	}
+	studentIDStrs := []string{studentIDStr}
+
+	if len(studentIDStrs) > 0 {
+		var studentIDTmp string
+		studentIDStr := studentIDStrs[0]
+		studentIDTmp, err = studentIDStr, error(nil)
+		if err != nil {
+			return nil, err
+		}
+		input.StudentID = studentIDTmp
+	}
+
+	sectionsStrs := r.URL.Query()["sections"]
+	if len(sectionsStrs) == 0 {
+		return nil, errors.New("query parameter 'sections' must be specified")
+	}
+
+	if len(sectionsStrs) > 0 {
+		var sectionsTmp string
+		sectionsStr := sectionsStrs[0]
+		sectionsTmp, err = sectionsStr, error(nil)
+		if err != nil {
+			return nil, err
+		}
+		input.Sections = sectionsTmp
+	}
+
+	userTypeStrs := r.URL.Query()["userType"]
+	if len(userTypeStrs) == 0 {
+		return nil, errors.New("query parameter 'userType' must be specified")
+	}
+
+	if len(userTypeStrs) > 0 {
+		var userTypeTmp string
+		userTypeStr := userTypeStrs[0]
+		userTypeTmp, err = userTypeStr, error(nil)
+		if err != nil {
+			return nil, err
+		}
+		input.UserType = userTypeTmp
+	}
+
+	return &input, nil
+}
