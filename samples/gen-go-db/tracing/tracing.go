@@ -2,6 +2,8 @@ package tracing
 
 import (
 	"context"
+	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 	"net/http"
 	"os"
@@ -105,8 +107,22 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 			s := trace.SpanFromContext(r.Context())
 			if sc := s.SpanContext(); sc.HasTraceID() {
 				spanID, traceID := sc.SpanID.String(), sc.TraceID.String()
-				logger.FromContext(r.Context()).AddContext("spanid", spanID)
-				logger.FromContext(r.Context()).AddContext("traceid", traceID)
+				// be everything to everyone
+				// datadog:
+				// datadog converts hex strings to uint64 IDs, so log those so that correlating logs and traces works
+				if len(traceID) == 32 && len(spanID) == 16 { // opentelemetry format: 16 byte (32-char hex), 8 byte (16-char hex) trace and span ids
+					traceIDBs, _ := hex.DecodeString(traceID)
+					logger.FromContext(r.Context()).AddContext("trace_id",
+						fmt.Sprintf("%d", binary.BigEndian.Uint64(traceIDBs[8:])))
+					spanIDBs, _ := hex.DecodeString(spanID)
+					logger.FromContext(r.Context()).AddContext("span_id",
+						fmt.Sprintf("%d", binary.BigEndian.Uint64(spanIDBs)))
+				}
+				// newrelic:
+				logger.FromContext(r.Context()).AddContext("span.id", spanID)
+				logger.FromContext(r.Context()).AddContext("trace.id", traceID)
+				// x-ray
+				logger.FromContext(r.Context()).AddContext("x-ray", fmt.Sprintf("1-%s-%s", spanID, traceID))
 			}
 			h.ServeHTTP(rw, r)
 		}))
