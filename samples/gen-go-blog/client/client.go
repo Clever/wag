@@ -251,7 +251,7 @@ func (c *WagClient) doGetSectionsForStudentRequest(ctx context.Context, req *htt
 		return nil, &output
 
 	default:
-		return nil, &models.InternalError{Message: "Unknown response"}
+		return nil, &models.InternalError{Message: fmt.Sprintf("Unknown status code %v", resp.StatusCode)}
 	}
 }
 
@@ -353,7 +353,7 @@ func (c *WagClient) doPostSectionsForStudentRequest(ctx context.Context, req *ht
 		return nil, &output
 
 	default:
-		return nil, &models.InternalError{Message: "Unknown response"}
+		return nil, &models.InternalError{Message: fmt.Sprintf("Unknown status code %v", resp.StatusCode)}
 	}
 }
 

@@ -600,7 +600,7 @@ func parseResponseCode(s *spec.Swagger, op *spec.Operation, capOpID string) stri
 	errorType, _ := swagger.OutputType(s, op, 500)
 	buf.WriteString(fmt.Sprintf(`
 	default:
-		return %s&%s{Message: "Unknown response"}
+		return %s&%s{Message: fmt.Sprintf("Unknown status code %%%%%%%%v", resp.StatusCode)}
 	}
 }
 

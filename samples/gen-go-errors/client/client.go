@@ -255,7 +255,7 @@ func (c *WagClient) doGetBookRequest(ctx context.Context, req *http.Request, hea
 		return &output
 
 	default:
-		return &models.InternalError{Message: "Unknown response"}
+		return &models.InternalError{Message: fmt.Sprintf("Unknown status code %v", resp.StatusCode)}
 	}
 }
 
