@@ -11,37 +11,39 @@ import (
 	reflect "reflect"
 )
 
-// MockController is a mock of Controller interface
+// MockController is a mock of Controller interface.
 type MockController struct {
 	ctrl     *gomock.Controller
 	recorder *MockControllerMockRecorder
 }
 
-// MockControllerMockRecorder is the mock recorder for MockController
+// MockControllerMockRecorder is the mock recorder for MockController.
 type MockControllerMockRecorder struct {
 	mock *MockController
 }
 
-// NewMockController creates a new mock instance
+// NewMockController creates a new mock instance.
 func NewMockController(ctrl *gomock.Controller) *MockController {
 	mock := &MockController{ctrl: ctrl}
 	mock.recorder = &MockControllerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockController) EXPECT() *MockControllerMockRecorder {
 	return m.recorder
 }
 
-// GetBook mocks base method
+// GetBook mocks base method.
 func (m *MockController) GetBook(ctx context.Context, i *models.GetBookInput) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetBook", ctx, i)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// GetBook indicates an expected call of GetBook
+// GetBook indicates an expected call of GetBook.
 func (mr *MockControllerMockRecorder) GetBook(ctx, i interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBook", reflect.TypeOf((*MockController)(nil).GetBook), ctx, i)
 }
