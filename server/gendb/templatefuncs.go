@@ -127,6 +127,17 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		}
 		return sepToProps
 	},
+	"getCompositeAttributeProperties": func(config XDBConfig) []string {
+		props := []string{}
+		for _, attr := range config.CompositeAttributes {
+			for _, prop := range attr.Properties {
+				props = append(props, prop)
+			}
+		}
+		props = uniq(props)
+
+		return props
+	},
 	"sortedKeys": func(m map[string][]string) []string {
 		keys := []string{}
 		for k := range m {
@@ -306,6 +317,7 @@ var funcMap = template.FuncMap(map[string]interface{}{
 	"stringsEqual": func(s1, s2 string) bool {
 		return s1 == s2
 	},
+	"union": union,
 })
 
 func contains(el string, arr []string) bool {
@@ -427,6 +439,10 @@ func isComposite(config XDBConfig, attributeName string) bool {
 		return true
 	}
 	return false
+}
+
+func union(a, b []string) []string {
+	return uniq(append(a, b...))
 }
 
 func uniq(arr []string) []string {
