@@ -38,8 +38,8 @@ type ddbThingWithMultiUseCompositeAttributeGSIThreeIndex struct {
 
 // ddbThingWithMultiUseCompositeAttributeGSIFourIndex represents the fourIndex GSI.
 type ddbThingWithMultiUseCompositeAttributeGSIFourIndex struct {
-	Four  string `dynamodbav:"four"`
-	Three string `dynamodbav:"three"`
+	Four   string `dynamodbav:"four"`
+	OneTwo string `dynamodbav:"one_two"`
 }
 
 // ddbThingWithMultiUseCompositeAttribute represents a ThingWithMultiUseCompositeAttribute as stored in DynamoDB.
@@ -112,7 +112,7 @@ func (t ThingWithMultiUseCompositeAttributeTable) create(ctx context.Context) er
 						KeyType:       aws.String(dynamodb.KeyTypeHash),
 					},
 					{
-						AttributeName: aws.String("three"),
+						AttributeName: aws.String("one_two"),
 						KeyType:       aws.String(dynamodb.KeyTypeRange),
 					},
 				},
@@ -386,9 +386,9 @@ func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseComposite
 	return err
 }
 
-func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeAttributesByFourAndThree(ctx context.Context, input db.GetThingWithMultiUseCompositeAttributesByFourAndThreeInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error {
-	if input.ThreeStartingAt != nil && input.StartingAfter != nil {
-		return fmt.Errorf("Can specify only one of input.ThreeStartingAt or input.StartingAfter")
+func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx context.Context, input db.GetThingWithMultiUseCompositeAttributesByFourAndOneTwoInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error {
+	if input.StartingAt != nil && input.StartingAfter != nil {
+		return fmt.Errorf("Can specify only one of input.StartingAt or input.StartingAfter")
 	}
 	if input.Four == "" {
 		return fmt.Errorf("Hash key input.Four cannot be empty")
@@ -410,23 +410,23 @@ func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeA
 	if input.Limit != nil {
 		queryInput.Limit = input.Limit
 	}
-	if input.ThreeStartingAt == nil {
+	if input.StartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#FOUR = :four")
 	} else {
-		queryInput.ExpressionAttributeNames["#THREE"] = aws.String("three")
-		queryInput.ExpressionAttributeValues[":three"] = &dynamodb.AttributeValue{
-			S: aws.String(*input.ThreeStartingAt),
+		queryInput.ExpressionAttributeNames["#ONE_TWO"] = aws.String("one_two")
+		queryInput.ExpressionAttributeValues[":oneTwo"] = &dynamodb.AttributeValue{
+			S: aws.String(fmt.Sprintf("%s_%s", input.StartingAt.One, input.StartingAt.Two)),
 		}
 		if input.Descending {
-			queryInput.KeyConditionExpression = aws.String("#FOUR = :four AND #THREE <= :three")
+			queryInput.KeyConditionExpression = aws.String("#FOUR = :four AND #ONE_TWO <= :oneTwo")
 		} else {
-			queryInput.KeyConditionExpression = aws.String("#FOUR = :four AND #THREE >= :three")
+			queryInput.KeyConditionExpression = aws.String("#FOUR = :four AND #ONE_TWO >= :oneTwo")
 		}
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"three": &dynamodb.AttributeValue{
-				S: aws.String(*input.StartingAfter.Three),
+			"one_two": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s_%s", *input.StartingAfter.One, *input.StartingAfter.Two)),
 			},
 			"four": &dynamodb.AttributeValue{
 				S: aws.String(*input.StartingAfter.Four),
@@ -475,7 +475,7 @@ func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeA
 
 	return nil
 }
-func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseCompositeAttributesByFourAndThree(ctx context.Context, input db.ScanThingWithMultiUseCompositeAttributesByFourAndThreeInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error {
+func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx context.Context, input db.ScanThingWithMultiUseCompositeAttributesByFourAndOneTwoInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error {
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.name()),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -490,9 +490,11 @@ func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseComposite
 		// must provide the fields constituting the index and the primary key
 		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"one":   exclusiveStartKey["one"],
-			"four":  exclusiveStartKey["four"],
-			"three": exclusiveStartKey["three"],
+			"one":  exclusiveStartKey["one"],
+			"four": exclusiveStartKey["four"],
+			"one_two": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s_%s", *input.StartingAfter.One, *input.StartingAfter.Two)),
+			},
 		}
 	}
 	totalRecordsProcessed := int64(0)
@@ -552,6 +554,16 @@ func encodeThingWithMultiUseCompositeAttribute(m models.ThingWithMultiUseComposi
 		return nil, err
 	}
 	for k, v := range threeIndex {
+		val[k] = v
+	}
+	fourIndex, err := dynamodbattribute.MarshalMap(ddbThingWithMultiUseCompositeAttributeGSIFourIndex{
+		Four:   *m.Four,
+		OneTwo: fmt.Sprintf("%s_%s", *m.One, *m.Two),
+	})
+	if err != nil {
+		return nil, err
+	}
+	for k, v := range fourIndex {
 		val[k] = v
 	}
 	return val, err

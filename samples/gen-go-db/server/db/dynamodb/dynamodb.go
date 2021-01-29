@@ -850,14 +850,14 @@ func (d DB) ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx context
 	return d.thingWithMultiUseCompositeAttributeTable.scanThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx, input, fn)
 }
 
-// GetThingWithMultiUseCompositeAttributesByFourAndThree retrieves a page of ThingWithMultiUseCompositeAttributes from the database.
-func (d DB) GetThingWithMultiUseCompositeAttributesByFourAndThree(ctx context.Context, input db.GetThingWithMultiUseCompositeAttributesByFourAndThreeInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error {
-	return d.thingWithMultiUseCompositeAttributeTable.getThingWithMultiUseCompositeAttributesByFourAndThree(ctx, input, fn)
+// GetThingWithMultiUseCompositeAttributesByFourAndOneTwo retrieves a page of ThingWithMultiUseCompositeAttributes from the database.
+func (d DB) GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx context.Context, input db.GetThingWithMultiUseCompositeAttributesByFourAndOneTwoInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error {
+	return d.thingWithMultiUseCompositeAttributeTable.getThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx, input, fn)
 }
 
-// ScanThingWithMultiUseCompositeAttributesByFourAndThree runs a scan on the FourAndThree index.
-func (d DB) ScanThingWithMultiUseCompositeAttributesByFourAndThree(ctx context.Context, input db.ScanThingWithMultiUseCompositeAttributesByFourAndThreeInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error {
-	return d.thingWithMultiUseCompositeAttributeTable.scanThingWithMultiUseCompositeAttributesByFourAndThree(ctx, input, fn)
+// ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo runs a scan on the FourAndOneTwo index.
+func (d DB) ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx context.Context, input db.ScanThingWithMultiUseCompositeAttributesByFourAndOneTwoInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error {
+	return d.thingWithMultiUseCompositeAttributeTable.scanThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx, input, fn)
 }
 
 // SaveThingWithRequiredCompositePropertiesAndKeysOnly saves a ThingWithRequiredCompositePropertiesAndKeysOnly to the database.

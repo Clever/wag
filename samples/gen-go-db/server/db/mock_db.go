@@ -1070,28 +1070,28 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithMultiUseCompositeAttributesByT
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo", reflect.TypeOf((*MockInterface)(nil).ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo), ctx, input, fn)
 }
 
-// GetThingWithMultiUseCompositeAttributesByFourAndThree mocks base method
-func (m *MockInterface) GetThingWithMultiUseCompositeAttributesByFourAndThree(ctx context.Context, input GetThingWithMultiUseCompositeAttributesByFourAndThreeInput, fn func(*models.ThingWithMultiUseCompositeAttribute, bool) bool) error {
-	ret := m.ctrl.Call(m, "GetThingWithMultiUseCompositeAttributesByFourAndThree", ctx, input, fn)
+// GetThingWithMultiUseCompositeAttributesByFourAndOneTwo mocks base method
+func (m *MockInterface) GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx context.Context, input GetThingWithMultiUseCompositeAttributesByFourAndOneTwoInput, fn func(*models.ThingWithMultiUseCompositeAttribute, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetThingWithMultiUseCompositeAttributesByFourAndOneTwo", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// GetThingWithMultiUseCompositeAttributesByFourAndThree indicates an expected call of GetThingWithMultiUseCompositeAttributesByFourAndThree
-func (mr *MockInterfaceMockRecorder) GetThingWithMultiUseCompositeAttributesByFourAndThree(ctx, input, fn interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithMultiUseCompositeAttributesByFourAndThree", reflect.TypeOf((*MockInterface)(nil).GetThingWithMultiUseCompositeAttributesByFourAndThree), ctx, input, fn)
+// GetThingWithMultiUseCompositeAttributesByFourAndOneTwo indicates an expected call of GetThingWithMultiUseCompositeAttributesByFourAndOneTwo
+func (mr *MockInterfaceMockRecorder) GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithMultiUseCompositeAttributesByFourAndOneTwo", reflect.TypeOf((*MockInterface)(nil).GetThingWithMultiUseCompositeAttributesByFourAndOneTwo), ctx, input, fn)
 }
 
-// ScanThingWithMultiUseCompositeAttributesByFourAndThree mocks base method
-func (m *MockInterface) ScanThingWithMultiUseCompositeAttributesByFourAndThree(ctx context.Context, input ScanThingWithMultiUseCompositeAttributesByFourAndThreeInput, fn func(*models.ThingWithMultiUseCompositeAttribute, bool) bool) error {
-	ret := m.ctrl.Call(m, "ScanThingWithMultiUseCompositeAttributesByFourAndThree", ctx, input, fn)
+// ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo mocks base method
+func (m *MockInterface) ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx context.Context, input ScanThingWithMultiUseCompositeAttributesByFourAndOneTwoInput, fn func(*models.ThingWithMultiUseCompositeAttribute, bool) bool) error {
+	ret := m.ctrl.Call(m, "ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ScanThingWithMultiUseCompositeAttributesByFourAndThree indicates an expected call of ScanThingWithMultiUseCompositeAttributesByFourAndThree
-func (mr *MockInterfaceMockRecorder) ScanThingWithMultiUseCompositeAttributesByFourAndThree(ctx, input, fn interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithMultiUseCompositeAttributesByFourAndThree", reflect.TypeOf((*MockInterface)(nil).ScanThingWithMultiUseCompositeAttributesByFourAndThree), ctx, input, fn)
+// ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo indicates an expected call of ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo
+func (mr *MockInterfaceMockRecorder) ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo", reflect.TypeOf((*MockInterface)(nil).ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo), ctx, input, fn)
 }
 
 // SaveThingWithRequiredCompositePropertiesAndKeysOnly mocks base method

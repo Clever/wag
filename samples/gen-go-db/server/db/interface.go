@@ -194,10 +194,10 @@ type Interface interface {
 	GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx context.Context, input GetThingWithMultiUseCompositeAttributesByThreeAndOneTwoInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error
 	// ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo runs a scan on the ThreeAndOneTwo index.
 	ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx context.Context, input ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwoInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error
-	// GetThingWithMultiUseCompositeAttributesByFourAndThree retrieves a page of ThingWithMultiUseCompositeAttributes from the database.
-	GetThingWithMultiUseCompositeAttributesByFourAndThree(ctx context.Context, input GetThingWithMultiUseCompositeAttributesByFourAndThreeInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error
-	// ScanThingWithMultiUseCompositeAttributesByFourAndThree runs a scan on the FourAndThree index.
-	ScanThingWithMultiUseCompositeAttributesByFourAndThree(ctx context.Context, input ScanThingWithMultiUseCompositeAttributesByFourAndThreeInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error
+	// GetThingWithMultiUseCompositeAttributesByFourAndOneTwo retrieves a page of ThingWithMultiUseCompositeAttributes from the database.
+	GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx context.Context, input GetThingWithMultiUseCompositeAttributesByFourAndOneTwoInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error
+	// ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo runs a scan on the FourAndOneTwo index.
+	ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx context.Context, input ScanThingWithMultiUseCompositeAttributesByFourAndOneTwoInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error
 
 	// SaveThingWithRequiredCompositePropertiesAndKeysOnly saves a ThingWithRequiredCompositePropertiesAndKeysOnly to the database.
 	SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, m models.ThingWithRequiredCompositePropertiesAndKeysOnly) error
@@ -1246,32 +1246,33 @@ type ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwoInput struct {
 	Limiter *rate.Limiter
 }
 
-// GetThingWithMultiUseCompositeAttributesByFourAndThreeInput is the query input to GetThingWithMultiUseCompositeAttributesByFourAndThree.
-type GetThingWithMultiUseCompositeAttributesByFourAndThreeInput struct {
+// GetThingWithMultiUseCompositeAttributesByFourAndOneTwoInput is the query input to GetThingWithMultiUseCompositeAttributesByFourAndOneTwo.
+type GetThingWithMultiUseCompositeAttributesByFourAndOneTwoInput struct {
 	// Four is required
-	Four            string
-	ThreeStartingAt *string
-	StartingAfter   *models.ThingWithMultiUseCompositeAttribute
-	Descending      bool
+	Four          string
+	StartingAt    *OneTwo
+	StartingAfter *models.ThingWithMultiUseCompositeAttribute
+	Descending    bool
 	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
 }
 
-// ErrThingWithMultiUseCompositeAttributeByFourAndThreeNotFound is returned when the database fails to find a ThingWithMultiUseCompositeAttribute.
-type ErrThingWithMultiUseCompositeAttributeByFourAndThreeNotFound struct {
-	Four  string
-	Three string
+// ErrThingWithMultiUseCompositeAttributeByFourAndOneTwoNotFound is returned when the database fails to find a ThingWithMultiUseCompositeAttribute.
+type ErrThingWithMultiUseCompositeAttributeByFourAndOneTwoNotFound struct {
+	Four string
+	One  string
+	Two  string
 }
 
-var _ error = ErrThingWithMultiUseCompositeAttributeByFourAndThreeNotFound{}
+var _ error = ErrThingWithMultiUseCompositeAttributeByFourAndOneTwoNotFound{}
 
 // Error returns a description of the error.
-func (e ErrThingWithMultiUseCompositeAttributeByFourAndThreeNotFound) Error() string {
+func (e ErrThingWithMultiUseCompositeAttributeByFourAndOneTwoNotFound) Error() string {
 	return "could not find ThingWithMultiUseCompositeAttribute"
 }
 
-// ScanThingWithMultiUseCompositeAttributesByFourAndThreeInput is the input to the ScanThingWithMultiUseCompositeAttributesByFourAndThree method.
-type ScanThingWithMultiUseCompositeAttributesByFourAndThreeInput struct {
+// ScanThingWithMultiUseCompositeAttributesByFourAndOneTwoInput is the input to the ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo method.
+type ScanThingWithMultiUseCompositeAttributesByFourAndOneTwoInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.ThingWithMultiUseCompositeAttribute
 	// DisableConsistentRead turns off the default behavior of running a consistent read.

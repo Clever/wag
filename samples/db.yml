@@ -631,7 +631,7 @@ definitions:
             KeySchema:
               - AttributeName: four
                 KeyType: HASH
-              - AttributeName: three
+              - AttributeName: one_two
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
