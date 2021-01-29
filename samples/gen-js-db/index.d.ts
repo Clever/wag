@@ -185,6 +185,13 @@ declare namespace SwaggerTest {
   created?: string;
 };
     
+    type ThingWithMultiUseCompositeAttribute = {
+  four: string;
+  one: string;
+  three: string;
+  two: string;
+};
+    
     type ThingWithRequiredCompositePropertiesAndKeysOnly = {
   propertyOne: string;
   propertyThree: string;

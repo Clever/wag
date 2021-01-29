@@ -54,6 +54,8 @@ type Config struct {
 	ThingWithEnumHashKeyTable ThingWithEnumHashKeyTable
 	// ThingWithMatchingKeysTable configuration.
 	ThingWithMatchingKeysTable ThingWithMatchingKeysTable
+	// ThingWithMultiUseCompositeAttributeTable configuration.
+	ThingWithMultiUseCompositeAttributeTable ThingWithMultiUseCompositeAttributeTable
 	// ThingWithRequiredCompositePropertiesAndKeysOnlyTable configuration.
 	ThingWithRequiredCompositePropertiesAndKeysOnlyTable ThingWithRequiredCompositePropertiesAndKeysOnlyTable
 	// ThingWithRequiredFieldsTable configuration.
@@ -252,6 +254,20 @@ func New(config Config) (*DB, error) {
 	if thingWithMatchingKeysTable.WriteCapacityUnits == 0 {
 		thingWithMatchingKeysTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	// configure ThingWithMultiUseCompositeAttribute table
+	thingWithMultiUseCompositeAttributeTable := config.ThingWithMultiUseCompositeAttributeTable
+	if thingWithMultiUseCompositeAttributeTable.DynamoDBAPI == nil {
+		thingWithMultiUseCompositeAttributeTable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if thingWithMultiUseCompositeAttributeTable.Prefix == "" {
+		thingWithMultiUseCompositeAttributeTable.Prefix = config.DefaultPrefix
+	}
+	if thingWithMultiUseCompositeAttributeTable.ReadCapacityUnits == 0 {
+		thingWithMultiUseCompositeAttributeTable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if thingWithMultiUseCompositeAttributeTable.WriteCapacityUnits == 0 {
+		thingWithMultiUseCompositeAttributeTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
 	// configure ThingWithRequiredCompositePropertiesAndKeysOnly table
 	thingWithRequiredCompositePropertiesAndKeysOnlyTable := config.ThingWithRequiredCompositePropertiesAndKeysOnlyTable
 	if thingWithRequiredCompositePropertiesAndKeysOnlyTable.DynamoDBAPI == nil {
@@ -322,6 +338,7 @@ func New(config Config) (*DB, error) {
 		thingWithDateTimeCompositeTable:                      thingWithDateTimeCompositeTable,
 		thingWithEnumHashKeyTable:                            thingWithEnumHashKeyTable,
 		thingWithMatchingKeysTable:                           thingWithMatchingKeysTable,
+		thingWithMultiUseCompositeAttributeTable:             thingWithMultiUseCompositeAttributeTable,
 		thingWithRequiredCompositePropertiesAndKeysOnlyTable: thingWithRequiredCompositePropertiesAndKeysOnlyTable,
 		thingWithRequiredFieldsTable:                         thingWithRequiredFieldsTable,
 		thingWithRequiredFields2Table:                        thingWithRequiredFields2Table,
@@ -343,6 +360,7 @@ type DB struct {
 	thingWithDateTimeCompositeTable                      ThingWithDateTimeCompositeTable
 	thingWithEnumHashKeyTable                            ThingWithEnumHashKeyTable
 	thingWithMatchingKeysTable                           ThingWithMatchingKeysTable
+	thingWithMultiUseCompositeAttributeTable             ThingWithMultiUseCompositeAttributeTable
 	thingWithRequiredCompositePropertiesAndKeysOnlyTable ThingWithRequiredCompositePropertiesAndKeysOnlyTable
 	thingWithRequiredFieldsTable                         ThingWithRequiredFieldsTable
 	thingWithRequiredFields2Table                        ThingWithRequiredFields2Table
@@ -387,6 +405,9 @@ func (d DB) CreateTables(ctx context.Context) error {
 		return err
 	}
 	if err := d.thingWithMatchingKeysTable.create(ctx); err != nil {
+		return err
+	}
+	if err := d.thingWithMultiUseCompositeAttributeTable.create(ctx); err != nil {
 		return err
 	}
 	if err := d.thingWithRequiredCompositePropertiesAndKeysOnlyTable.create(ctx); err != nil {
@@ -797,6 +818,46 @@ func (d DB) GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Con
 // ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear runs a scan on the AssocTypeIDAndCreatedBear index.
 func (d DB) ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Context, input db.ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error {
 	return d.thingWithMatchingKeysTable.scanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx, input, fn)
+}
+
+// SaveThingWithMultiUseCompositeAttribute saves a ThingWithMultiUseCompositeAttribute to the database.
+func (d DB) SaveThingWithMultiUseCompositeAttribute(ctx context.Context, m models.ThingWithMultiUseCompositeAttribute) error {
+	return d.thingWithMultiUseCompositeAttributeTable.saveThingWithMultiUseCompositeAttribute(ctx, m)
+}
+
+// GetThingWithMultiUseCompositeAttribute retrieves a ThingWithMultiUseCompositeAttribute from the database.
+func (d DB) GetThingWithMultiUseCompositeAttribute(ctx context.Context, one string) (*models.ThingWithMultiUseCompositeAttribute, error) {
+	return d.thingWithMultiUseCompositeAttributeTable.getThingWithMultiUseCompositeAttribute(ctx, one)
+}
+
+// ScanThingWithMultiUseCompositeAttributes runs a scan on the ThingWithMultiUseCompositeAttributes table.
+func (d DB) ScanThingWithMultiUseCompositeAttributes(ctx context.Context, input db.ScanThingWithMultiUseCompositeAttributesInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error {
+	return d.thingWithMultiUseCompositeAttributeTable.scanThingWithMultiUseCompositeAttributes(ctx, input, fn)
+}
+
+// DeleteThingWithMultiUseCompositeAttribute deletes a ThingWithMultiUseCompositeAttribute from the database.
+func (d DB) DeleteThingWithMultiUseCompositeAttribute(ctx context.Context, one string) error {
+	return d.thingWithMultiUseCompositeAttributeTable.deleteThingWithMultiUseCompositeAttribute(ctx, one)
+}
+
+// GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo retrieves a page of ThingWithMultiUseCompositeAttributes from the database.
+func (d DB) GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx context.Context, input db.GetThingWithMultiUseCompositeAttributesByThreeAndOneTwoInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error {
+	return d.thingWithMultiUseCompositeAttributeTable.getThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx, input, fn)
+}
+
+// ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo runs a scan on the ThreeAndOneTwo index.
+func (d DB) ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx context.Context, input db.ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwoInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error {
+	return d.thingWithMultiUseCompositeAttributeTable.scanThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx, input, fn)
+}
+
+// GetThingWithMultiUseCompositeAttributesByFourAndThree retrieves a page of ThingWithMultiUseCompositeAttributes from the database.
+func (d DB) GetThingWithMultiUseCompositeAttributesByFourAndThree(ctx context.Context, input db.GetThingWithMultiUseCompositeAttributesByFourAndThreeInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error {
+	return d.thingWithMultiUseCompositeAttributeTable.getThingWithMultiUseCompositeAttributesByFourAndThree(ctx, input, fn)
+}
+
+// ScanThingWithMultiUseCompositeAttributesByFourAndThree runs a scan on the FourAndThree index.
+func (d DB) ScanThingWithMultiUseCompositeAttributesByFourAndThree(ctx context.Context, input db.ScanThingWithMultiUseCompositeAttributesByFourAndThreeInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error {
+	return d.thingWithMultiUseCompositeAttributeTable.scanThingWithMultiUseCompositeAttributesByFourAndThree(ctx, input, fn)
 }
 
 // SaveThingWithRequiredCompositePropertiesAndKeysOnly saves a ThingWithRequiredCompositePropertiesAndKeysOnly to the database.

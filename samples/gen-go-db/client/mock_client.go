@@ -10,39 +10,37 @@ import (
 	reflect "reflect"
 )
 
-// MockClient is a mock of Client interface.
+// MockClient is a mock of Client interface
 type MockClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockClientMockRecorder
 }
 
-// MockClientMockRecorder is the mock recorder for MockClient.
+// MockClientMockRecorder is the mock recorder for MockClient
 type MockClientMockRecorder struct {
 	mock *MockClient
 }
 
-// NewMockClient creates a new mock instance.
+// NewMockClient creates a new mock instance
 func NewMockClient(ctrl *gomock.Controller) *MockClient {
 	mock := &MockClient{ctrl: ctrl}
 	mock.recorder = &MockClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockClient) EXPECT() *MockClientMockRecorder {
 	return m.recorder
 }
 
-// HealthCheck mocks base method.
+// HealthCheck mocks base method
 func (m *MockClient) HealthCheck(ctx context.Context) error {
-	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "HealthCheck", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// HealthCheck indicates an expected call of HealthCheck.
+// HealthCheck indicates an expected call of HealthCheck
 func (mr *MockClientMockRecorder) HealthCheck(ctx interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HealthCheck", reflect.TypeOf((*MockClient)(nil).HealthCheck), ctx)
 }

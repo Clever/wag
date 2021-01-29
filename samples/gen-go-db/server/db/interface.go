@@ -182,6 +182,23 @@ type Interface interface {
 	// ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear runs a scan on the AssocTypeIDAndCreatedBear index.
 	ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Context, input ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error
 
+	// SaveThingWithMultiUseCompositeAttribute saves a ThingWithMultiUseCompositeAttribute to the database.
+	SaveThingWithMultiUseCompositeAttribute(ctx context.Context, m models.ThingWithMultiUseCompositeAttribute) error
+	// GetThingWithMultiUseCompositeAttribute retrieves a ThingWithMultiUseCompositeAttribute from the database.
+	GetThingWithMultiUseCompositeAttribute(ctx context.Context, one string) (*models.ThingWithMultiUseCompositeAttribute, error)
+	// ScanThingWithMultiUseCompositeAttributes runs a scan on the ThingWithMultiUseCompositeAttributes table.
+	ScanThingWithMultiUseCompositeAttributes(ctx context.Context, input ScanThingWithMultiUseCompositeAttributesInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error
+	// DeleteThingWithMultiUseCompositeAttribute deletes a ThingWithMultiUseCompositeAttribute from the database.
+	DeleteThingWithMultiUseCompositeAttribute(ctx context.Context, one string) error
+	// GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo retrieves a page of ThingWithMultiUseCompositeAttributes from the database.
+	GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx context.Context, input GetThingWithMultiUseCompositeAttributesByThreeAndOneTwoInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error
+	// ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo runs a scan on the ThreeAndOneTwo index.
+	ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx context.Context, input ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwoInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error
+	// GetThingWithMultiUseCompositeAttributesByFourAndThree retrieves a page of ThingWithMultiUseCompositeAttributes from the database.
+	GetThingWithMultiUseCompositeAttributesByFourAndThree(ctx context.Context, input GetThingWithMultiUseCompositeAttributesByFourAndThreeInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error
+	// ScanThingWithMultiUseCompositeAttributesByFourAndThree runs a scan on the FourAndThree index.
+	ScanThingWithMultiUseCompositeAttributesByFourAndThree(ctx context.Context, input ScanThingWithMultiUseCompositeAttributesByFourAndThreeInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error
+
 	// SaveThingWithRequiredCompositePropertiesAndKeysOnly saves a ThingWithRequiredCompositePropertiesAndKeysOnly to the database.
 	SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, m models.ThingWithRequiredCompositePropertiesAndKeysOnly) error
 	// GetThingWithRequiredCompositePropertiesAndKeysOnly retrieves a ThingWithRequiredCompositePropertiesAndKeysOnly from the database.
@@ -574,12 +591,6 @@ type GetTeacherSharingRulesByTeacherAndSchoolAppInput struct {
 	Limit *int64
 }
 
-// SchoolApp struct.
-type SchoolApp struct {
-	School string
-	App    string
-}
-
 // ErrTeacherSharingRuleNotFound is returned when the database fails to find a TeacherSharingRule.
 type ErrTeacherSharingRuleNotFound struct {
 	Teacher string
@@ -603,13 +614,6 @@ type GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput struct {
 	Descending    bool
 	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
-}
-
-// SchoolTeacherApp struct.
-type SchoolTeacherApp struct {
-	School  string
-	Teacher string
-	App     string
 }
 
 // ErrTeacherSharingRuleByDistrictAndSchoolTeacherAppNotFound is returned when the database fails to find a TeacherSharingRule.
@@ -637,6 +641,19 @@ type ScanTeacherSharingRulesByDistrictAndSchoolTeacherAppInput struct {
 	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
+}
+
+// SchoolApp struct.
+type SchoolApp struct {
+	School string
+	App    string
+}
+
+// SchoolTeacherApp struct.
+type SchoolTeacherApp struct {
+	School  string
+	Teacher string
+	App     string
 }
 
 // ScanThingsInput is the input to the ScanThings method.
@@ -967,12 +984,6 @@ type GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput struct {
 	Limit *int64
 }
 
-// CreatedResource struct.
-type CreatedResource struct {
-	Created  strfmt.DateTime
-	Resource string
-}
-
 // ErrThingWithDateTimeCompositeNotFound is returned when the database fails to find a ThingWithDateTimeComposite.
 type ErrThingWithDateTimeCompositeNotFound struct {
 	Type     string
@@ -986,6 +997,12 @@ var _ error = ErrThingWithDateTimeCompositeNotFound{}
 // Error returns a description of the error.
 func (e ErrThingWithDateTimeCompositeNotFound) Error() string {
 	return "could not find ThingWithDateTimeComposite"
+}
+
+// CreatedResource struct.
+type CreatedResource struct {
+	Created  strfmt.DateTime
+	Resource string
 }
 
 // ScanThingWithEnumHashKeysInput is the input to the ScanThingWithEnumHashKeys method.
@@ -1102,12 +1119,6 @@ type GetThingWithMatchingKeyssByBearAndAssocTypeIDInput struct {
 	Limit *int64
 }
 
-// AssocTypeAssocID struct.
-type AssocTypeAssocID struct {
-	AssocType string
-	AssocID   string
-}
-
 // ErrThingWithMatchingKeysNotFound is returned when the database fails to find a ThingWithMatchingKeys.
 type ErrThingWithMatchingKeysNotFound struct {
 	Bear      string
@@ -1135,12 +1146,6 @@ type GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput struct {
 	Limit *int64
 }
 
-// CreatedBear struct.
-type CreatedBear struct {
-	Created strfmt.DateTime
-	Bear    string
-}
-
 // ErrThingWithMatchingKeysByAssocTypeIDAndCreatedBearNotFound is returned when the database fails to find a ThingWithMatchingKeys.
 type ErrThingWithMatchingKeysByAssocTypeIDAndCreatedBearNotFound struct {
 	AssocType string
@@ -1166,6 +1171,121 @@ type ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput struct {
 	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
+}
+
+// AssocTypeAssocID struct.
+type AssocTypeAssocID struct {
+	AssocType string
+	AssocID   string
+}
+
+// CreatedBear struct.
+type CreatedBear struct {
+	Created strfmt.DateTime
+	Bear    string
+}
+
+// ScanThingWithMultiUseCompositeAttributesInput is the input to the ScanThingWithMultiUseCompositeAttributes method.
+type ScanThingWithMultiUseCompositeAttributesInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithMultiUseCompositeAttribute
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// ErrThingWithMultiUseCompositeAttributeNotFound is returned when the database fails to find a ThingWithMultiUseCompositeAttribute.
+type ErrThingWithMultiUseCompositeAttributeNotFound struct {
+	One string
+}
+
+var _ error = ErrThingWithMultiUseCompositeAttributeNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithMultiUseCompositeAttributeNotFound) Error() string {
+	return "could not find ThingWithMultiUseCompositeAttribute"
+}
+
+// GetThingWithMultiUseCompositeAttributesByThreeAndOneTwoInput is the query input to GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo.
+type GetThingWithMultiUseCompositeAttributesByThreeAndOneTwoInput struct {
+	// Three is required
+	Three         string
+	StartingAt    *OneTwo
+	StartingAfter *models.ThingWithMultiUseCompositeAttribute
+	Descending    bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+}
+
+// ErrThingWithMultiUseCompositeAttributeByThreeAndOneTwoNotFound is returned when the database fails to find a ThingWithMultiUseCompositeAttribute.
+type ErrThingWithMultiUseCompositeAttributeByThreeAndOneTwoNotFound struct {
+	Three string
+	One   string
+	Two   string
+}
+
+var _ error = ErrThingWithMultiUseCompositeAttributeByThreeAndOneTwoNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithMultiUseCompositeAttributeByThreeAndOneTwoNotFound) Error() string {
+	return "could not find ThingWithMultiUseCompositeAttribute"
+}
+
+// ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwoInput is the input to the ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo method.
+type ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwoInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithMultiUseCompositeAttribute
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// GetThingWithMultiUseCompositeAttributesByFourAndThreeInput is the query input to GetThingWithMultiUseCompositeAttributesByFourAndThree.
+type GetThingWithMultiUseCompositeAttributesByFourAndThreeInput struct {
+	// Four is required
+	Four            string
+	ThreeStartingAt *string
+	StartingAfter   *models.ThingWithMultiUseCompositeAttribute
+	Descending      bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+}
+
+// ErrThingWithMultiUseCompositeAttributeByFourAndThreeNotFound is returned when the database fails to find a ThingWithMultiUseCompositeAttribute.
+type ErrThingWithMultiUseCompositeAttributeByFourAndThreeNotFound struct {
+	Four  string
+	Three string
+}
+
+var _ error = ErrThingWithMultiUseCompositeAttributeByFourAndThreeNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithMultiUseCompositeAttributeByFourAndThreeNotFound) Error() string {
+	return "could not find ThingWithMultiUseCompositeAttribute"
+}
+
+// ScanThingWithMultiUseCompositeAttributesByFourAndThreeInput is the input to the ScanThingWithMultiUseCompositeAttributesByFourAndThree method.
+type ScanThingWithMultiUseCompositeAttributesByFourAndThreeInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithMultiUseCompositeAttribute
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// OneTwo struct.
+type OneTwo struct {
+	One string
+	Two string
 }
 
 // ScanThingWithRequiredCompositePropertiesAndKeysOnlysInput is the input to the ScanThingWithRequiredCompositePropertiesAndKeysOnlys method.

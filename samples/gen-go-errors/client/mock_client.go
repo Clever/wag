@@ -11,39 +11,37 @@ import (
 	reflect "reflect"
 )
 
-// MockClient is a mock of Client interface.
+// MockClient is a mock of Client interface
 type MockClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockClientMockRecorder
 }
 
-// MockClientMockRecorder is the mock recorder for MockClient.
+// MockClientMockRecorder is the mock recorder for MockClient
 type MockClientMockRecorder struct {
 	mock *MockClient
 }
 
-// NewMockClient creates a new mock instance.
+// NewMockClient creates a new mock instance
 func NewMockClient(ctrl *gomock.Controller) *MockClient {
 	mock := &MockClient{ctrl: ctrl}
 	mock.recorder = &MockClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockClient) EXPECT() *MockClientMockRecorder {
 	return m.recorder
 }
 
-// GetBook mocks base method.
+// GetBook mocks base method
 func (m *MockClient) GetBook(ctx context.Context, i *models.GetBookInput) error {
-	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetBook", ctx, i)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// GetBook indicates an expected call of GetBook.
+// GetBook indicates an expected call of GetBook
 func (mr *MockClientMockRecorder) GetBook(ctx, i interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBook", reflect.TypeOf((*MockClient)(nil).GetBook), ctx, i)
 }
