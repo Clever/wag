@@ -122,14 +122,6 @@ type Get{{ $modelName }}sBy{{ $indexName }}Input struct {
   // Limit is an optional limit of how many items to evaluate.
 	Limit  *int64
 }
-{{- if gt $lenRangeKeyAttributes 1 }}
-// {{ pascalizeAndJoin $rangeKeyAttributes }} struct.
-type {{ pascalizeAndJoin $rangeKeyAttributes }} struct {
-	{{- range $attributeName := $rangeKeyAttributes }}
-        {{ pascalize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }}
-        {{- end }}
-}
-{{- end }}
 {{- end }}
 
 // Err{{ $modelName}}NotFound is returned when the database fails to find a {{ $modelName}}.
@@ -175,14 +167,6 @@ type Get{{ $modelName }}sBy{{ $computedIndexName }}Input struct {
   // Limit is an optional limit of how many items to evaluate.
 	Limit  *int64
 }
-{{- if gt $lenRangeKeyAttributes 1 }}
-// {{ pascalizeAndJoin $rangeKeyAttributes }} struct.
-type {{ pascalizeAndJoin $rangeKeyAttributes }} struct {
-	{{- range $attributeName := $rangeKeyAttributes }}
-        {{ pascalize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }}
-        {{- end }}
-}
-{{- end }}
 {{- end }}
 
 {{- $gsiModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $gsi.KeySchema }}
@@ -231,4 +215,16 @@ func (e Err{{ $modelName }}AlreadyExists) Error() string {
 	return "{{ $modelName }} already exists"
 }
 {{- end }}
+
+{{- range $compositeAttribute := $xdbConfig.CompositeAttributes}}
+  {{if anyIndexRangeKeyContainsSpecifiedCompositeAttribute $xdbConfig $compositeAttribute.AttributeName}}
+  // {{ pascalizeAndJoin $compositeAttribute.Properties }} struct.
+  type {{ pascalizeAndJoin $compositeAttribute.Properties }} struct {
+    {{- range $attributeName := $compositeAttribute.Properties }}
+      {{ pascalize $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }}
+    {{- end }}
+  }
+  {{- end }}
+{{- end }}
+
 {{- end }}
