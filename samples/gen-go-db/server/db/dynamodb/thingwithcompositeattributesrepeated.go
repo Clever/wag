@@ -36,6 +36,12 @@ type ddbThingWithCompositeAttributesRepeatedGSIThreeIndex struct {
 	UnoDos string `dynamodbav:"uno_dos"`
 }
 
+// ddbThingWithCompositeAttributesRepeatedGSIFourIndex represents the fourIndex GSI.
+type ddbThingWithCompositeAttributesRepeatedGSIFourIndex struct {
+	Cuatro string `dynamodbav:"cuatro"`
+	Tres   string `dynamodbav:"tres"`
+}
+
 // ddbThingWithCompositeAttributesRepeated represents a ThingWithCompositeAttributesRepeated as stored in DynamoDB.
 type ddbThingWithCompositeAttributesRepeated struct {
 	models.ThingWithCompositeAttributesRepeated
@@ -51,6 +57,10 @@ func (t ThingWithCompositeAttributesRepeatedTable) name() string {
 func (t ThingWithCompositeAttributesRepeatedTable) create(ctx context.Context) error {
 	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
+			{
+				AttributeName: aws.String("cuatro"),
+				AttributeType: aws.String("S"),
+			},
 			{
 				AttributeName: aws.String("tres"),
 				AttributeType: aws.String("S"),
@@ -83,6 +93,26 @@ func (t ThingWithCompositeAttributesRepeatedTable) create(ctx context.Context) e
 					},
 					{
 						AttributeName: aws.String("uno_dos"),
+						KeyType:       aws.String(dynamodb.KeyTypeRange),
+					},
+				},
+				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
+					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
+				},
+			},
+			{
+				IndexName: aws.String("fourIndex"),
+				Projection: &dynamodb.Projection{
+					ProjectionType: aws.String("ALL"),
+				},
+				KeySchema: []*dynamodb.KeySchemaElement{
+					{
+						AttributeName: aws.String("cuatro"),
+						KeyType:       aws.String(dynamodb.KeyTypeHash),
+					},
+					{
+						AttributeName: aws.String("tres"),
 						KeyType:       aws.String(dynamodb.KeyTypeRange),
 					},
 				},
@@ -321,6 +351,148 @@ func (t ThingWithCompositeAttributesRepeatedTable) scanThingWithCompositeAttribu
 			"uno_dos": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s_%s", *input.StartingAfter.Uno, *input.StartingAfter.Dos)),
 			},
+		}
+	}
+	totalRecordsProcessed := int64(0)
+	var innerErr error
+	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+		items, err := decodeThingWithCompositeAttributesRepeateds(out.Items)
+		if err != nil {
+			innerErr = fmt.Errorf("error decoding %s", err.Error())
+			return false
+		}
+		for i := range items {
+			if input.Limiter != nil {
+				if err := input.Limiter.Wait(ctx); err != nil {
+					innerErr = err
+					return false
+				}
+			}
+			isLastModel := lastPage && i == len(items)-1
+			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
+				return false
+			}
+			totalRecordsProcessed++
+			// if the Limit of records have been passed to fn, don't pass anymore records.
+			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
+				return false
+			}
+		}
+		return true
+	})
+	if innerErr != nil {
+		return innerErr
+	}
+	return err
+}
+
+func (t ThingWithCompositeAttributesRepeatedTable) getThingWithCompositeAttributesRepeatedsByCuatroAndTres(ctx context.Context, input db.GetThingWithCompositeAttributesRepeatedsByCuatroAndTresInput, fn func(m *models.ThingWithCompositeAttributesRepeated, lastThingWithCompositeAttributesRepeated bool) bool) error {
+	if input.TresStartingAt != nil && input.StartingAfter != nil {
+		return fmt.Errorf("Can specify only one of input.TresStartingAt or input.StartingAfter")
+	}
+	if input.Cuatro == "" {
+		return fmt.Errorf("Hash key input.Cuatro cannot be empty")
+	}
+	queryInput := &dynamodb.QueryInput{
+		TableName: aws.String(t.name()),
+		IndexName: aws.String("fourIndex"),
+		ExpressionAttributeNames: map[string]*string{
+			"#CUATRO": aws.String("cuatro"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":cuatro": &dynamodb.AttributeValue{
+				S: aws.String(input.Cuatro),
+			},
+		},
+		ScanIndexForward: aws.Bool(!input.Descending),
+		ConsistentRead:   aws.Bool(false),
+	}
+	if input.Limit != nil {
+		queryInput.Limit = input.Limit
+	}
+	if input.TresStartingAt == nil {
+		queryInput.KeyConditionExpression = aws.String("#CUATRO = :cuatro")
+	} else {
+		queryInput.ExpressionAttributeNames["#TRES"] = aws.String("tres")
+		queryInput.ExpressionAttributeValues[":tres"] = &dynamodb.AttributeValue{
+			S: aws.String(*input.TresStartingAt),
+		}
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#CUATRO = :cuatro AND #TRES <= :tres")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#CUATRO = :cuatro AND #TRES >= :tres")
+		}
+	}
+	if input.StartingAfter != nil {
+		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"tres": &dynamodb.AttributeValue{
+				S: aws.String(*input.StartingAfter.Tres),
+			},
+			"cuatro": &dynamodb.AttributeValue{
+				S: aws.String(*input.StartingAfter.Cuatro),
+			},
+			"uno": &dynamodb.AttributeValue{
+				S: aws.String(*input.StartingAfter.Uno),
+			},
+		}
+	}
+
+	totalRecordsProcessed := int64(0)
+	var pageFnErr error
+	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
+		if len(queryOutput.Items) == 0 {
+			return false
+		}
+		items, err := decodeThingWithCompositeAttributesRepeateds(queryOutput.Items)
+		if err != nil {
+			pageFnErr = err
+			return false
+		}
+		hasMore := true
+		for i := range items {
+			if lastPage == true {
+				hasMore = i < len(items)-1
+			}
+			if !fn(&items[i], !hasMore) {
+				return false
+			}
+			totalRecordsProcessed++
+			// if the Limit of records have been passed to fn, don't pass anymore records.
+			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
+				return false
+			}
+		}
+		return true
+	}
+
+	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
+	if err != nil {
+		return err
+	}
+	if pageFnErr != nil {
+		return pageFnErr
+	}
+
+	return nil
+}
+func (t ThingWithCompositeAttributesRepeatedTable) scanThingWithCompositeAttributesRepeatedsByCuatroAndTres(ctx context.Context, input db.ScanThingWithCompositeAttributesRepeatedsByCuatroAndTresInput, fn func(m *models.ThingWithCompositeAttributesRepeated, lastThingWithCompositeAttributesRepeated bool) bool) error {
+	scanInput := &dynamodb.ScanInput{
+		TableName:      aws.String(t.name()),
+		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+		Limit:          input.Limit,
+		IndexName:      aws.String("fourIndex"),
+	}
+	if input.StartingAfter != nil {
+		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		if err != nil {
+			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
+		}
+		// must provide the fields constituting the index and the primary key
+		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
+		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"uno":    exclusiveStartKey["uno"],
+			"cuatro": exclusiveStartKey["cuatro"],
+			"tres":   exclusiveStartKey["tres"],
 		}
 	}
 	totalRecordsProcessed := int64(0)

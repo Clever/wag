@@ -131,6 +131,10 @@ type Interface interface {
 	GetThingWithCompositeAttributesRepeatedsByTresAndUnoDos(ctx context.Context, input GetThingWithCompositeAttributesRepeatedsByTresAndUnoDosInput, fn func(m *models.ThingWithCompositeAttributesRepeated, lastThingWithCompositeAttributesRepeated bool) bool) error
 	// ScanThingWithCompositeAttributesRepeatedsByTresAndUnoDos runs a scan on the TresAndUnoDos index.
 	ScanThingWithCompositeAttributesRepeatedsByTresAndUnoDos(ctx context.Context, input ScanThingWithCompositeAttributesRepeatedsByTresAndUnoDosInput, fn func(m *models.ThingWithCompositeAttributesRepeated, lastThingWithCompositeAttributesRepeated bool) bool) error
+	// GetThingWithCompositeAttributesRepeatedsByCuatroAndTres retrieves a page of ThingWithCompositeAttributesRepeateds from the database.
+	GetThingWithCompositeAttributesRepeatedsByCuatroAndTres(ctx context.Context, input GetThingWithCompositeAttributesRepeatedsByCuatroAndTresInput, fn func(m *models.ThingWithCompositeAttributesRepeated, lastThingWithCompositeAttributesRepeated bool) bool) error
+	// ScanThingWithCompositeAttributesRepeatedsByCuatroAndTres runs a scan on the CuatroAndTres index.
+	ScanThingWithCompositeAttributesRepeatedsByCuatroAndTres(ctx context.Context, input ScanThingWithCompositeAttributesRepeatedsByCuatroAndTresInput, fn func(m *models.ThingWithCompositeAttributesRepeated, lastThingWithCompositeAttributesRepeated bool) bool) error
 
 	// SaveThingWithCompositeEnumAttributes saves a ThingWithCompositeEnumAttributes to the database.
 	SaveThingWithCompositeEnumAttributes(ctx context.Context, m models.ThingWithCompositeEnumAttributes) error
@@ -915,6 +919,42 @@ func (e ErrThingWithCompositeAttributesRepeatedByTresAndUnoDosNotFound) Error() 
 
 // ScanThingWithCompositeAttributesRepeatedsByTresAndUnoDosInput is the input to the ScanThingWithCompositeAttributesRepeatedsByTresAndUnoDos method.
 type ScanThingWithCompositeAttributesRepeatedsByTresAndUnoDosInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithCompositeAttributesRepeated
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// GetThingWithCompositeAttributesRepeatedsByCuatroAndTresInput is the query input to GetThingWithCompositeAttributesRepeatedsByCuatroAndTres.
+type GetThingWithCompositeAttributesRepeatedsByCuatroAndTresInput struct {
+	// Cuatro is required
+	Cuatro         string
+	TresStartingAt *string
+	StartingAfter  *models.ThingWithCompositeAttributesRepeated
+	Descending     bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+}
+
+// ErrThingWithCompositeAttributesRepeatedByCuatroAndTresNotFound is returned when the database fails to find a ThingWithCompositeAttributesRepeated.
+type ErrThingWithCompositeAttributesRepeatedByCuatroAndTresNotFound struct {
+	Cuatro string
+	Tres   string
+}
+
+var _ error = ErrThingWithCompositeAttributesRepeatedByCuatroAndTresNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithCompositeAttributesRepeatedByCuatroAndTresNotFound) Error() string {
+	return "could not find ThingWithCompositeAttributesRepeated"
+}
+
+// ScanThingWithCompositeAttributesRepeatedsByCuatroAndTresInput is the input to the ScanThingWithCompositeAttributesRepeatedsByCuatroAndTres method.
+type ScanThingWithCompositeAttributesRepeatedsByCuatroAndTresInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
 	StartingAfter *models.ThingWithCompositeAttributesRepeated
 	// DisableConsistentRead turns off the default behavior of running a consistent read.

@@ -77,6 +77,8 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("DeleteThingWithCompositeAttributesRepeated", DeleteThingWithCompositeAttributesRepeated(dbFactory(), t))
 	t.Run("GetThingWithCompositeAttributesRepeatedsByTresAndUnoDos", GetThingWithCompositeAttributesRepeatedsByTresAndUnoDos(dbFactory(), t))
 	t.Run("ScanThingWithCompositeAttributesRepeatedsByTresAndUnoDos", ScanThingWithCompositeAttributesRepeatedsByTresAndUnoDos(dbFactory(), t))
+	t.Run("GetThingWithCompositeAttributesRepeatedsByCuatroAndTres", GetThingWithCompositeAttributesRepeatedsByCuatroAndTres(dbFactory(), t))
+	t.Run("ScanThingWithCompositeAttributesRepeatedsByCuatroAndTres", ScanThingWithCompositeAttributesRepeatedsByCuatroAndTres(dbFactory(), t))
 	t.Run("GetThingWithCompositeEnumAttributes", GetThingWithCompositeEnumAttributes(dbFactory(), t))
 	t.Run("ScanThingWithCompositeEnumAttributess", ScanThingWithCompositeEnumAttributess(dbFactory(), t))
 	t.Run("GetThingWithCompositeEnumAttributessByNameBranchAndDate", GetThingWithCompositeEnumAttributessByNameBranchAndDate(dbFactory(), t))
@@ -4867,9 +4869,10 @@ func GetThingWithCompositeAttributesRepeated(s db.Interface, t *testing.T) func(
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m := models.ThingWithCompositeAttributesRepeated{
-			Dos:  db.String("string1"),
-			Tres: db.String("string1"),
-			Uno:  db.String("string1"),
+			Cuatro: db.String("string1"),
+			Dos:    db.String("string1"),
+			Tres:   db.String("string1"),
+			Uno:    db.String("string1"),
 		}
 		require.Nil(t, s.SaveThingWithCompositeAttributesRepeated(ctx, m))
 		m2, err := s.GetThingWithCompositeAttributesRepeated(ctx, *m.Uno)
@@ -4888,37 +4891,43 @@ func ScanThingWithCompositeAttributesRepeateds(d db.Interface, t *testing.T) fun
 	return func(t *testing.T) {
 		ctx := context.Background()
 		require.Nil(t, d.SaveThingWithCompositeAttributesRepeated(ctx, models.ThingWithCompositeAttributesRepeated{
-			Dos:  db.String("string1"),
-			Tres: db.String("string1"),
-			Uno:  db.String("string1"),
+			Cuatro: db.String("string1"),
+			Dos:    db.String("string1"),
+			Tres:   db.String("string1"),
+			Uno:    db.String("string1"),
 		}))
 		require.Nil(t, d.SaveThingWithCompositeAttributesRepeated(ctx, models.ThingWithCompositeAttributesRepeated{
-			Dos:  db.String("string2"),
-			Tres: db.String("string2"),
-			Uno:  db.String("string2"),
+			Cuatro: db.String("string2"),
+			Dos:    db.String("string2"),
+			Tres:   db.String("string2"),
+			Uno:    db.String("string2"),
 		}))
 		require.Nil(t, d.SaveThingWithCompositeAttributesRepeated(ctx, models.ThingWithCompositeAttributesRepeated{
-			Dos:  db.String("string3"),
-			Tres: db.String("string3"),
-			Uno:  db.String("string3"),
+			Cuatro: db.String("string3"),
+			Dos:    db.String("string3"),
+			Tres:   db.String("string3"),
+			Uno:    db.String("string3"),
 		}))
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithCompositeAttributesRepeated{
 				models.ThingWithCompositeAttributesRepeated{
-					Dos:  db.String("string1"),
-					Tres: db.String("string1"),
-					Uno:  db.String("string1"),
+					Cuatro: db.String("string1"),
+					Dos:    db.String("string1"),
+					Tres:   db.String("string1"),
+					Uno:    db.String("string1"),
 				},
 				models.ThingWithCompositeAttributesRepeated{
-					Dos:  db.String("string2"),
-					Tres: db.String("string2"),
-					Uno:  db.String("string2"),
+					Cuatro: db.String("string2"),
+					Dos:    db.String("string2"),
+					Tres:   db.String("string2"),
+					Uno:    db.String("string2"),
 				},
 				models.ThingWithCompositeAttributesRepeated{
-					Dos:  db.String("string3"),
-					Tres: db.String("string3"),
-					Uno:  db.String("string3"),
+					Cuatro: db.String("string3"),
+					Dos:    db.String("string3"),
+					Tres:   db.String("string3"),
+					Uno:    db.String("string3"),
 				},
 			}
 			actual := []models.ThingWithCompositeAttributesRepeated{}
@@ -4996,9 +5005,10 @@ func SaveThingWithCompositeAttributesRepeated(s db.Interface, t *testing.T) func
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m := models.ThingWithCompositeAttributesRepeated{
-			Dos:  db.String("string1"),
-			Tres: db.String("string1"),
-			Uno:  db.String("string1"),
+			Cuatro: db.String("string1"),
+			Dos:    db.String("string1"),
+			Tres:   db.String("string1"),
+			Uno:    db.String("string1"),
 		}
 		require.Nil(t, s.SaveThingWithCompositeAttributesRepeated(ctx, m))
 	}
@@ -5008,9 +5018,10 @@ func DeleteThingWithCompositeAttributesRepeated(s db.Interface, t *testing.T) fu
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m := models.ThingWithCompositeAttributesRepeated{
-			Dos:  db.String("string1"),
-			Tres: db.String("string1"),
-			Uno:  db.String("string1"),
+			Cuatro: db.String("string1"),
+			Dos:    db.String("string1"),
+			Tres:   db.String("string1"),
+			Uno:    db.String("string1"),
 		}
 		require.Nil(t, s.SaveThingWithCompositeAttributesRepeated(ctx, m))
 		require.Nil(t, s.DeleteThingWithCompositeAttributesRepeated(ctx, *m.Uno))
@@ -5311,6 +5322,331 @@ func ScanThingWithCompositeAttributesRepeatedsByTresAndUnoDos(d db.Interface, t 
 			}
 			actual := []models.ThingWithCompositeAttributesRepeated{}
 			err = d.ScanThingWithCompositeAttributesRepeatedsByTresAndUnoDos(ctx, scanInput, func(m *models.ThingWithCompositeAttributesRepeated, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			expected := allItems[1:]
+			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithCompositeAttributesRepeatedsInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithCompositeAttributesRepeated{}
+			err := d.ScanThingWithCompositeAttributesRepeateds(ctx, scanInput, func(m *models.ThingWithCompositeAttributesRepeated, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
+		})
+	}
+}
+
+type getThingWithCompositeAttributesRepeatedsByCuatroAndTresInput struct {
+	ctx   context.Context
+	input db.GetThingWithCompositeAttributesRepeatedsByCuatroAndTresInput
+}
+type getThingWithCompositeAttributesRepeatedsByCuatroAndTresOutput struct {
+	thingWithCompositeAttributesRepeateds []models.ThingWithCompositeAttributesRepeated
+	err                                   error
+}
+type getThingWithCompositeAttributesRepeatedsByCuatroAndTresTest struct {
+	testName string
+	d        db.Interface
+	input    getThingWithCompositeAttributesRepeatedsByCuatroAndTresInput
+	output   getThingWithCompositeAttributesRepeatedsByCuatroAndTresOutput
+}
+
+func (g getThingWithCompositeAttributesRepeatedsByCuatroAndTresTest) run(t *testing.T) {
+	thingWithCompositeAttributesRepeateds := []models.ThingWithCompositeAttributesRepeated{}
+	fn := func(m *models.ThingWithCompositeAttributesRepeated, lastThingWithCompositeAttributesRepeated bool) bool {
+		thingWithCompositeAttributesRepeateds = append(thingWithCompositeAttributesRepeateds, *m)
+		if lastThingWithCompositeAttributesRepeated {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingWithCompositeAttributesRepeatedsByCuatroAndTres(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.thingWithCompositeAttributesRepeateds, thingWithCompositeAttributesRepeateds)
+}
+
+func GetThingWithCompositeAttributesRepeatedsByCuatroAndTres(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithCompositeAttributesRepeated(ctx, models.ThingWithCompositeAttributesRepeated{
+			Cuatro: db.String("string1"),
+			Tres:   db.String("string1"),
+			Uno:    db.String("string1"),
+		}))
+		require.Nil(t, d.SaveThingWithCompositeAttributesRepeated(ctx, models.ThingWithCompositeAttributesRepeated{
+			Cuatro: db.String("string1"),
+			Tres:   db.String("string2"),
+			Uno:    db.String("string3"),
+		}))
+		require.Nil(t, d.SaveThingWithCompositeAttributesRepeated(ctx, models.ThingWithCompositeAttributesRepeated{
+			Cuatro: db.String("string1"),
+			Tres:   db.String("string3"),
+			Uno:    db.String("string2"),
+		}))
+		limit := int64(3)
+		tests := []getThingWithCompositeAttributesRepeatedsByCuatroAndTresTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getThingWithCompositeAttributesRepeatedsByCuatroAndTresInput{
+					ctx: context.Background(),
+					input: db.GetThingWithCompositeAttributesRepeatedsByCuatroAndTresInput{
+						Cuatro: "string1",
+						Limit:  &limit,
+					},
+				},
+				output: getThingWithCompositeAttributesRepeatedsByCuatroAndTresOutput{
+					thingWithCompositeAttributesRepeateds: []models.ThingWithCompositeAttributesRepeated{
+						models.ThingWithCompositeAttributesRepeated{
+							Cuatro: db.String("string1"),
+							Tres:   db.String("string1"),
+							Uno:    db.String("string1"),
+						},
+						models.ThingWithCompositeAttributesRepeated{
+							Cuatro: db.String("string1"),
+							Tres:   db.String("string2"),
+							Uno:    db.String("string3"),
+						},
+						models.ThingWithCompositeAttributesRepeated{
+							Cuatro: db.String("string1"),
+							Tres:   db.String("string3"),
+							Uno:    db.String("string2"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getThingWithCompositeAttributesRepeatedsByCuatroAndTresInput{
+					ctx: context.Background(),
+					input: db.GetThingWithCompositeAttributesRepeatedsByCuatroAndTresInput{
+						Cuatro:     "string1",
+						Descending: true,
+					},
+				},
+				output: getThingWithCompositeAttributesRepeatedsByCuatroAndTresOutput{
+					thingWithCompositeAttributesRepeateds: []models.ThingWithCompositeAttributesRepeated{
+						models.ThingWithCompositeAttributesRepeated{
+							Cuatro: db.String("string1"),
+							Tres:   db.String("string3"),
+							Uno:    db.String("string2"),
+						},
+						models.ThingWithCompositeAttributesRepeated{
+							Cuatro: db.String("string1"),
+							Tres:   db.String("string2"),
+							Uno:    db.String("string3"),
+						},
+						models.ThingWithCompositeAttributesRepeated{
+							Cuatro: db.String("string1"),
+							Tres:   db.String("string1"),
+							Uno:    db.String("string1"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getThingWithCompositeAttributesRepeatedsByCuatroAndTresInput{
+					ctx: context.Background(),
+					input: db.GetThingWithCompositeAttributesRepeatedsByCuatroAndTresInput{
+						Cuatro: "string1",
+						StartingAfter: &models.ThingWithCompositeAttributesRepeated{
+							Cuatro: db.String("string1"),
+							Tres:   db.String("string1"),
+							Uno:    db.String("string1"),
+						},
+					},
+				},
+				output: getThingWithCompositeAttributesRepeatedsByCuatroAndTresOutput{
+					thingWithCompositeAttributesRepeateds: []models.ThingWithCompositeAttributesRepeated{
+						models.ThingWithCompositeAttributesRepeated{
+							Cuatro: db.String("string1"),
+							Tres:   db.String("string2"),
+							Uno:    db.String("string3"),
+						},
+						models.ThingWithCompositeAttributesRepeated{
+							Cuatro: db.String("string1"),
+							Tres:   db.String("string3"),
+							Uno:    db.String("string2"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after descending",
+				d:        d,
+				input: getThingWithCompositeAttributesRepeatedsByCuatroAndTresInput{
+					ctx: context.Background(),
+					input: db.GetThingWithCompositeAttributesRepeatedsByCuatroAndTresInput{
+						Cuatro: "string1",
+						StartingAfter: &models.ThingWithCompositeAttributesRepeated{
+							Cuatro: db.String("string1"),
+							Tres:   db.String("string3"),
+							Uno:    db.String("string2"),
+						},
+						Descending: true,
+					},
+				},
+				output: getThingWithCompositeAttributesRepeatedsByCuatroAndTresOutput{
+					thingWithCompositeAttributesRepeateds: []models.ThingWithCompositeAttributesRepeated{
+						models.ThingWithCompositeAttributesRepeated{
+							Cuatro: db.String("string1"),
+							Tres:   db.String("string2"),
+							Uno:    db.String("string3"),
+						},
+						models.ThingWithCompositeAttributesRepeated{
+							Cuatro: db.String("string1"),
+							Tres:   db.String("string1"),
+							Uno:    db.String("string1"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingWithCompositeAttributesRepeatedsByCuatroAndTresInput{
+					ctx: context.Background(),
+					input: db.GetThingWithCompositeAttributesRepeatedsByCuatroAndTresInput{
+						Cuatro:         "string1",
+						TresStartingAt: db.String("string2"),
+					},
+				},
+				output: getThingWithCompositeAttributesRepeatedsByCuatroAndTresOutput{
+					thingWithCompositeAttributesRepeateds: []models.ThingWithCompositeAttributesRepeated{
+						models.ThingWithCompositeAttributesRepeated{
+							Cuatro: db.String("string1"),
+							Tres:   db.String("string2"),
+							Uno:    db.String("string3"),
+						},
+						models.ThingWithCompositeAttributesRepeated{
+							Cuatro: db.String("string1"),
+							Tres:   db.String("string3"),
+							Uno:    db.String("string2"),
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
+func ScanThingWithCompositeAttributesRepeatedsByCuatroAndTres(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithCompositeAttributesRepeated(ctx, models.ThingWithCompositeAttributesRepeated{
+			Cuatro: db.String("string1"),
+			Tres:   db.String("string1"),
+			Uno:    db.String("string1"),
+		}))
+		require.Nil(t, d.SaveThingWithCompositeAttributesRepeated(ctx, models.ThingWithCompositeAttributesRepeated{
+			Cuatro: db.String("string2"),
+			Tres:   db.String("string2"),
+			Uno:    db.String("string2"),
+		}))
+		require.Nil(t, d.SaveThingWithCompositeAttributesRepeated(ctx, models.ThingWithCompositeAttributesRepeated{
+			Cuatro: db.String("string3"),
+			Tres:   db.String("string3"),
+			Uno:    db.String("string3"),
+		}))
+
+		t.Run("basic", func(t *testing.T) {
+			expected := []models.ThingWithCompositeAttributesRepeated{
+				models.ThingWithCompositeAttributesRepeated{
+					Cuatro: db.String("string1"),
+					Tres:   db.String("string1"),
+					Uno:    db.String("string1"),
+				},
+				models.ThingWithCompositeAttributesRepeated{
+					Cuatro: db.String("string2"),
+					Tres:   db.String("string2"),
+					Uno:    db.String("string2"),
+				},
+				models.ThingWithCompositeAttributesRepeated{
+					Cuatro: db.String("string3"),
+					Tres:   db.String("string3"),
+					Uno:    db.String("string3"),
+				},
+			}
+			// Consistent read must be disabled when scaning a GSI.
+			scanInput := db.ScanThingWithCompositeAttributesRepeatedsByCuatroAndTresInput{DisableConsistentRead: true}
+			actual := []models.ThingWithCompositeAttributesRepeated{}
+			err := d.ScanThingWithCompositeAttributesRepeatedsByCuatroAndTres(ctx, scanInput, func(m *models.ThingWithCompositeAttributesRepeated, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+			// We can't use Equal here because Scan doesn't return items in any specific order.
+			require.ElementsMatch(t, expected, actual)
+		})
+
+		t.Run("starting after", func(t *testing.T) {
+			// Scan for everything.
+			allItems := []models.ThingWithCompositeAttributesRepeated{}
+			// Consistent read must be disabled when scaning a GSI.
+			scanInput := db.ScanThingWithCompositeAttributesRepeatedsByCuatroAndTresInput{DisableConsistentRead: true}
+			err := d.ScanThingWithCompositeAttributesRepeatedsByCuatroAndTres(ctx, scanInput, func(m *models.ThingWithCompositeAttributesRepeated, last bool) bool {
+				allItems = append(allItems, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			firstItem := allItems[0]
+
+			// Scan for everything after the first item.
+			scanInput = db.ScanThingWithCompositeAttributesRepeatedsByCuatroAndTresInput{
+				DisableConsistentRead: true,
+				StartingAfter: &models.ThingWithCompositeAttributesRepeated{
+					Cuatro: firstItem.Cuatro,
+					Tres:   firstItem.Tres,
+					Uno:    firstItem.Uno,
+				},
+			}
+			actual := []models.ThingWithCompositeAttributesRepeated{}
+			err = d.ScanThingWithCompositeAttributesRepeatedsByCuatroAndTres(ctx, scanInput, func(m *models.ThingWithCompositeAttributesRepeated, last bool) bool {
 				actual = append(actual, *m)
 				return true
 			})

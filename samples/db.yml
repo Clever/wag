@@ -627,3 +627,11 @@ definitions:
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
+          - IndexName: fourIndex
+            KeySchema:
+              - AttributeName: cuatro
+                KeyType: HASH
+              - AttributeName: tres
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL

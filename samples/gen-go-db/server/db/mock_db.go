@@ -717,6 +717,30 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithCompositeAttributesRepeatedsBy
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithCompositeAttributesRepeatedsByTresAndUnoDos", reflect.TypeOf((*MockInterface)(nil).ScanThingWithCompositeAttributesRepeatedsByTresAndUnoDos), ctx, input, fn)
 }
 
+// GetThingWithCompositeAttributesRepeatedsByCuatroAndTres mocks base method
+func (m *MockInterface) GetThingWithCompositeAttributesRepeatedsByCuatroAndTres(ctx context.Context, input GetThingWithCompositeAttributesRepeatedsByCuatroAndTresInput, fn func(*models.ThingWithCompositeAttributesRepeated, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetThingWithCompositeAttributesRepeatedsByCuatroAndTres", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingWithCompositeAttributesRepeatedsByCuatroAndTres indicates an expected call of GetThingWithCompositeAttributesRepeatedsByCuatroAndTres
+func (mr *MockInterfaceMockRecorder) GetThingWithCompositeAttributesRepeatedsByCuatroAndTres(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithCompositeAttributesRepeatedsByCuatroAndTres", reflect.TypeOf((*MockInterface)(nil).GetThingWithCompositeAttributesRepeatedsByCuatroAndTres), ctx, input, fn)
+}
+
+// ScanThingWithCompositeAttributesRepeatedsByCuatroAndTres mocks base method
+func (m *MockInterface) ScanThingWithCompositeAttributesRepeatedsByCuatroAndTres(ctx context.Context, input ScanThingWithCompositeAttributesRepeatedsByCuatroAndTresInput, fn func(*models.ThingWithCompositeAttributesRepeated, bool) bool) error {
+	ret := m.ctrl.Call(m, "ScanThingWithCompositeAttributesRepeatedsByCuatroAndTres", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ScanThingWithCompositeAttributesRepeatedsByCuatroAndTres indicates an expected call of ScanThingWithCompositeAttributesRepeatedsByCuatroAndTres
+func (mr *MockInterfaceMockRecorder) ScanThingWithCompositeAttributesRepeatedsByCuatroAndTres(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithCompositeAttributesRepeatedsByCuatroAndTres", reflect.TypeOf((*MockInterface)(nil).ScanThingWithCompositeAttributesRepeatedsByCuatroAndTres), ctx, input, fn)
+}
+
 // SaveThingWithCompositeEnumAttributes mocks base method
 func (m_2 *MockInterface) SaveThingWithCompositeEnumAttributes(ctx context.Context, m models.ThingWithCompositeEnumAttributes) error {
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithCompositeEnumAttributes", ctx, m)

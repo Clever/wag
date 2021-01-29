@@ -705,6 +705,16 @@ func (d DB) ScanThingWithCompositeAttributesRepeatedsByTresAndUnoDos(ctx context
 	return d.thingWithCompositeAttributesRepeatedTable.scanThingWithCompositeAttributesRepeatedsByTresAndUnoDos(ctx, input, fn)
 }
 
+// GetThingWithCompositeAttributesRepeatedsByCuatroAndTres retrieves a page of ThingWithCompositeAttributesRepeateds from the database.
+func (d DB) GetThingWithCompositeAttributesRepeatedsByCuatroAndTres(ctx context.Context, input db.GetThingWithCompositeAttributesRepeatedsByCuatroAndTresInput, fn func(m *models.ThingWithCompositeAttributesRepeated, lastThingWithCompositeAttributesRepeated bool) bool) error {
+	return d.thingWithCompositeAttributesRepeatedTable.getThingWithCompositeAttributesRepeatedsByCuatroAndTres(ctx, input, fn)
+}
+
+// ScanThingWithCompositeAttributesRepeatedsByCuatroAndTres runs a scan on the CuatroAndTres index.
+func (d DB) ScanThingWithCompositeAttributesRepeatedsByCuatroAndTres(ctx context.Context, input db.ScanThingWithCompositeAttributesRepeatedsByCuatroAndTresInput, fn func(m *models.ThingWithCompositeAttributesRepeated, lastThingWithCompositeAttributesRepeated bool) bool) error {
+	return d.thingWithCompositeAttributesRepeatedTable.scanThingWithCompositeAttributesRepeatedsByCuatroAndTres(ctx, input, fn)
+}
+
 // SaveThingWithCompositeEnumAttributes saves a ThingWithCompositeEnumAttributes to the database.
 func (d DB) SaveThingWithCompositeEnumAttributes(ctx context.Context, m models.ThingWithCompositeEnumAttributes) error {
 	return d.thingWithCompositeEnumAttributesTable.saveThingWithCompositeEnumAttributes(ctx, m)
