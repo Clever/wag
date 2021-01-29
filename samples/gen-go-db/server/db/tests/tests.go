@@ -7587,19 +7587,16 @@ func GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(d db.Interface, t *
 			Three: db.String("string1"),
 			One:   db.String("string1"),
 			Two:   db.String("string1"),
-			Four:  db.String("string1"),
 		}))
 		require.Nil(t, d.SaveThingWithMultiUseCompositeAttribute(ctx, models.ThingWithMultiUseCompositeAttribute{
 			Three: db.String("string1"),
 			One:   db.String("string2"),
 			Two:   db.String("string2"),
-			Four:  db.String("string3"),
 		}))
 		require.Nil(t, d.SaveThingWithMultiUseCompositeAttribute(ctx, models.ThingWithMultiUseCompositeAttribute{
 			Three: db.String("string1"),
 			One:   db.String("string3"),
 			Two:   db.String("string3"),
-			Four:  db.String("string2"),
 		}))
 		limit := int64(3)
 		tests := []getThingWithMultiUseCompositeAttributesByThreeAndOneTwoTest{
@@ -7619,19 +7616,16 @@ func GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(d db.Interface, t *
 							Three: db.String("string1"),
 							One:   db.String("string1"),
 							Two:   db.String("string1"),
-							Four:  db.String("string1"),
 						},
 						models.ThingWithMultiUseCompositeAttribute{
 							Three: db.String("string1"),
 							One:   db.String("string2"),
 							Two:   db.String("string2"),
-							Four:  db.String("string3"),
 						},
 						models.ThingWithMultiUseCompositeAttribute{
 							Three: db.String("string1"),
 							One:   db.String("string3"),
 							Two:   db.String("string3"),
-							Four:  db.String("string2"),
 						},
 					},
 					err: nil,
@@ -7653,19 +7647,16 @@ func GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(d db.Interface, t *
 							Three: db.String("string1"),
 							One:   db.String("string3"),
 							Two:   db.String("string3"),
-							Four:  db.String("string2"),
 						},
 						models.ThingWithMultiUseCompositeAttribute{
 							Three: db.String("string1"),
 							One:   db.String("string2"),
 							Two:   db.String("string2"),
-							Four:  db.String("string3"),
 						},
 						models.ThingWithMultiUseCompositeAttribute{
 							Three: db.String("string1"),
 							One:   db.String("string1"),
 							Two:   db.String("string1"),
-							Four:  db.String("string1"),
 						},
 					},
 					err: nil,
@@ -7682,7 +7673,6 @@ func GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(d db.Interface, t *
 							Three: db.String("string1"),
 							One:   db.String("string1"),
 							Two:   db.String("string1"),
-							Four:  db.String("string1"),
 						},
 					},
 				},
@@ -7692,13 +7682,11 @@ func GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(d db.Interface, t *
 							Three: db.String("string1"),
 							One:   db.String("string2"),
 							Two:   db.String("string2"),
-							Four:  db.String("string3"),
 						},
 						models.ThingWithMultiUseCompositeAttribute{
 							Three: db.String("string1"),
 							One:   db.String("string3"),
 							Two:   db.String("string3"),
-							Four:  db.String("string2"),
 						},
 					},
 					err: nil,
@@ -7715,7 +7703,6 @@ func GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(d db.Interface, t *
 							Three: db.String("string1"),
 							One:   db.String("string3"),
 							Two:   db.String("string3"),
-							Four:  db.String("string2"),
 						},
 						Descending: true,
 					},
@@ -7726,13 +7713,11 @@ func GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(d db.Interface, t *
 							Three: db.String("string1"),
 							One:   db.String("string2"),
 							Two:   db.String("string2"),
-							Four:  db.String("string3"),
 						},
 						models.ThingWithMultiUseCompositeAttribute{
 							Three: db.String("string1"),
 							One:   db.String("string1"),
 							Two:   db.String("string1"),
-							Four:  db.String("string1"),
 						},
 					},
 					err: nil,
@@ -7757,13 +7742,11 @@ func GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(d db.Interface, t *
 							Three: db.String("string1"),
 							One:   db.String("string2"),
 							Two:   db.String("string2"),
-							Four:  db.String("string3"),
 						},
 						models.ThingWithMultiUseCompositeAttribute{
 							Three: db.String("string1"),
 							One:   db.String("string3"),
 							Two:   db.String("string3"),
-							Four:  db.String("string2"),
 						},
 					},
 					err: nil,
@@ -7785,19 +7768,16 @@ func ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo(d db.Interface, t 
 			Three: db.String("string1"),
 			One:   db.String("string1"),
 			Two:   db.String("string1"),
-			Four:  db.String("string1"),
 		}))
 		require.Nil(t, d.SaveThingWithMultiUseCompositeAttribute(ctx, models.ThingWithMultiUseCompositeAttribute{
 			Three: db.String("string2"),
 			One:   db.String("string2"),
 			Two:   db.String("string2"),
-			Four:  db.String("string2"),
 		}))
 		require.Nil(t, d.SaveThingWithMultiUseCompositeAttribute(ctx, models.ThingWithMultiUseCompositeAttribute{
 			Three: db.String("string3"),
 			One:   db.String("string3"),
 			Two:   db.String("string3"),
-			Four:  db.String("string3"),
 		}))
 
 		t.Run("basic", func(t *testing.T) {
@@ -7806,19 +7786,16 @@ func ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo(d db.Interface, t 
 					Three: db.String("string1"),
 					One:   db.String("string1"),
 					Two:   db.String("string1"),
-					Four:  db.String("string1"),
 				},
 				models.ThingWithMultiUseCompositeAttribute{
 					Three: db.String("string2"),
 					One:   db.String("string2"),
 					Two:   db.String("string2"),
-					Four:  db.String("string2"),
 				},
 				models.ThingWithMultiUseCompositeAttribute{
 					Three: db.String("string3"),
 					One:   db.String("string3"),
 					Two:   db.String("string3"),
-					Four:  db.String("string3"),
 				},
 			}
 			// Consistent read must be disabled when scaning a GSI.
@@ -7935,22 +7912,19 @@ func GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(d db.Interface, t *t
 	return func(t *testing.T) {
 		ctx := context.Background()
 		require.Nil(t, d.SaveThingWithMultiUseCompositeAttribute(ctx, models.ThingWithMultiUseCompositeAttribute{
-			Four:  db.String("string1"),
-			One:   db.String("string1"),
-			Two:   db.String("string1"),
-			Three: db.String("string1"),
+			Four: db.String("string1"),
+			One:  db.String("string1"),
+			Two:  db.String("string1"),
 		}))
 		require.Nil(t, d.SaveThingWithMultiUseCompositeAttribute(ctx, models.ThingWithMultiUseCompositeAttribute{
-			Four:  db.String("string1"),
-			One:   db.String("string2"),
-			Two:   db.String("string2"),
-			Three: db.String("string3"),
+			Four: db.String("string1"),
+			One:  db.String("string2"),
+			Two:  db.String("string2"),
 		}))
 		require.Nil(t, d.SaveThingWithMultiUseCompositeAttribute(ctx, models.ThingWithMultiUseCompositeAttribute{
-			Four:  db.String("string1"),
-			One:   db.String("string3"),
-			Two:   db.String("string3"),
-			Three: db.String("string2"),
+			Four: db.String("string1"),
+			One:  db.String("string3"),
+			Two:  db.String("string3"),
 		}))
 		limit := int64(3)
 		tests := []getThingWithMultiUseCompositeAttributesByFourAndOneTwoTest{
@@ -7967,22 +7941,19 @@ func GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(d db.Interface, t *t
 				output: getThingWithMultiUseCompositeAttributesByFourAndOneTwoOutput{
 					thingWithMultiUseCompositeAttributes: []models.ThingWithMultiUseCompositeAttribute{
 						models.ThingWithMultiUseCompositeAttribute{
-							Four:  db.String("string1"),
-							One:   db.String("string1"),
-							Two:   db.String("string1"),
-							Three: db.String("string1"),
+							Four: db.String("string1"),
+							One:  db.String("string1"),
+							Two:  db.String("string1"),
 						},
 						models.ThingWithMultiUseCompositeAttribute{
-							Four:  db.String("string1"),
-							One:   db.String("string2"),
-							Two:   db.String("string2"),
-							Three: db.String("string3"),
+							Four: db.String("string1"),
+							One:  db.String("string2"),
+							Two:  db.String("string2"),
 						},
 						models.ThingWithMultiUseCompositeAttribute{
-							Four:  db.String("string1"),
-							One:   db.String("string3"),
-							Two:   db.String("string3"),
-							Three: db.String("string2"),
+							Four: db.String("string1"),
+							One:  db.String("string3"),
+							Two:  db.String("string3"),
 						},
 					},
 					err: nil,
@@ -8001,22 +7972,19 @@ func GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(d db.Interface, t *t
 				output: getThingWithMultiUseCompositeAttributesByFourAndOneTwoOutput{
 					thingWithMultiUseCompositeAttributes: []models.ThingWithMultiUseCompositeAttribute{
 						models.ThingWithMultiUseCompositeAttribute{
-							Four:  db.String("string1"),
-							One:   db.String("string3"),
-							Two:   db.String("string3"),
-							Three: db.String("string2"),
+							Four: db.String("string1"),
+							One:  db.String("string3"),
+							Two:  db.String("string3"),
 						},
 						models.ThingWithMultiUseCompositeAttribute{
-							Four:  db.String("string1"),
-							One:   db.String("string2"),
-							Two:   db.String("string2"),
-							Three: db.String("string3"),
+							Four: db.String("string1"),
+							One:  db.String("string2"),
+							Two:  db.String("string2"),
 						},
 						models.ThingWithMultiUseCompositeAttribute{
-							Four:  db.String("string1"),
-							One:   db.String("string1"),
-							Two:   db.String("string1"),
-							Three: db.String("string1"),
+							Four: db.String("string1"),
+							One:  db.String("string1"),
+							Two:  db.String("string1"),
 						},
 					},
 					err: nil,
@@ -8030,26 +7998,23 @@ func GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(d db.Interface, t *t
 					input: db.GetThingWithMultiUseCompositeAttributesByFourAndOneTwoInput{
 						Four: "string1",
 						StartingAfter: &models.ThingWithMultiUseCompositeAttribute{
-							Four:  db.String("string1"),
-							One:   db.String("string1"),
-							Two:   db.String("string1"),
-							Three: db.String("string1"),
+							Four: db.String("string1"),
+							One:  db.String("string1"),
+							Two:  db.String("string1"),
 						},
 					},
 				},
 				output: getThingWithMultiUseCompositeAttributesByFourAndOneTwoOutput{
 					thingWithMultiUseCompositeAttributes: []models.ThingWithMultiUseCompositeAttribute{
 						models.ThingWithMultiUseCompositeAttribute{
-							Four:  db.String("string1"),
-							One:   db.String("string2"),
-							Two:   db.String("string2"),
-							Three: db.String("string3"),
+							Four: db.String("string1"),
+							One:  db.String("string2"),
+							Two:  db.String("string2"),
 						},
 						models.ThingWithMultiUseCompositeAttribute{
-							Four:  db.String("string1"),
-							One:   db.String("string3"),
-							Two:   db.String("string3"),
-							Three: db.String("string2"),
+							Four: db.String("string1"),
+							One:  db.String("string3"),
+							Two:  db.String("string3"),
 						},
 					},
 					err: nil,
@@ -8063,10 +8028,9 @@ func GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(d db.Interface, t *t
 					input: db.GetThingWithMultiUseCompositeAttributesByFourAndOneTwoInput{
 						Four: "string1",
 						StartingAfter: &models.ThingWithMultiUseCompositeAttribute{
-							Four:  db.String("string1"),
-							One:   db.String("string3"),
-							Two:   db.String("string3"),
-							Three: db.String("string2"),
+							Four: db.String("string1"),
+							One:  db.String("string3"),
+							Two:  db.String("string3"),
 						},
 						Descending: true,
 					},
@@ -8074,16 +8038,14 @@ func GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(d db.Interface, t *t
 				output: getThingWithMultiUseCompositeAttributesByFourAndOneTwoOutput{
 					thingWithMultiUseCompositeAttributes: []models.ThingWithMultiUseCompositeAttribute{
 						models.ThingWithMultiUseCompositeAttribute{
-							Four:  db.String("string1"),
-							One:   db.String("string2"),
-							Two:   db.String("string2"),
-							Three: db.String("string3"),
+							Four: db.String("string1"),
+							One:  db.String("string2"),
+							Two:  db.String("string2"),
 						},
 						models.ThingWithMultiUseCompositeAttribute{
-							Four:  db.String("string1"),
-							One:   db.String("string1"),
-							Two:   db.String("string1"),
-							Three: db.String("string1"),
+							Four: db.String("string1"),
+							One:  db.String("string1"),
+							Two:  db.String("string1"),
 						},
 					},
 					err: nil,
@@ -8105,16 +8067,14 @@ func GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(d db.Interface, t *t
 				output: getThingWithMultiUseCompositeAttributesByFourAndOneTwoOutput{
 					thingWithMultiUseCompositeAttributes: []models.ThingWithMultiUseCompositeAttribute{
 						models.ThingWithMultiUseCompositeAttribute{
-							Four:  db.String("string1"),
-							One:   db.String("string2"),
-							Two:   db.String("string2"),
-							Three: db.String("string3"),
+							Four: db.String("string1"),
+							One:  db.String("string2"),
+							Two:  db.String("string2"),
 						},
 						models.ThingWithMultiUseCompositeAttribute{
-							Four:  db.String("string1"),
-							One:   db.String("string3"),
-							Two:   db.String("string3"),
-							Three: db.String("string2"),
+							Four: db.String("string1"),
+							One:  db.String("string3"),
+							Two:  db.String("string3"),
 						},
 					},
 					err: nil,
@@ -8133,43 +8093,37 @@ func ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo(d db.Interface, t *
 	return func(t *testing.T) {
 		ctx := context.Background()
 		require.Nil(t, d.SaveThingWithMultiUseCompositeAttribute(ctx, models.ThingWithMultiUseCompositeAttribute{
-			Four:  db.String("string1"),
-			One:   db.String("string1"),
-			Two:   db.String("string1"),
-			Three: db.String("string1"),
+			Four: db.String("string1"),
+			One:  db.String("string1"),
+			Two:  db.String("string1"),
 		}))
 		require.Nil(t, d.SaveThingWithMultiUseCompositeAttribute(ctx, models.ThingWithMultiUseCompositeAttribute{
-			Four:  db.String("string2"),
-			One:   db.String("string2"),
-			Two:   db.String("string2"),
-			Three: db.String("string2"),
+			Four: db.String("string2"),
+			One:  db.String("string2"),
+			Two:  db.String("string2"),
 		}))
 		require.Nil(t, d.SaveThingWithMultiUseCompositeAttribute(ctx, models.ThingWithMultiUseCompositeAttribute{
-			Four:  db.String("string3"),
-			One:   db.String("string3"),
-			Two:   db.String("string3"),
-			Three: db.String("string3"),
+			Four: db.String("string3"),
+			One:  db.String("string3"),
+			Two:  db.String("string3"),
 		}))
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithMultiUseCompositeAttribute{
 				models.ThingWithMultiUseCompositeAttribute{
-					Four:  db.String("string1"),
-					One:   db.String("string1"),
-					Two:   db.String("string1"),
-					Three: db.String("string1"),
+					Four: db.String("string1"),
+					One:  db.String("string1"),
+					Two:  db.String("string1"),
 				},
 				models.ThingWithMultiUseCompositeAttribute{
-					Four:  db.String("string2"),
-					One:   db.String("string2"),
-					Two:   db.String("string2"),
-					Three: db.String("string2"),
+					Four: db.String("string2"),
+					One:  db.String("string2"),
+					Two:  db.String("string2"),
 				},
 				models.ThingWithMultiUseCompositeAttribute{
-					Four:  db.String("string3"),
-					One:   db.String("string3"),
-					Two:   db.String("string3"),
-					Three: db.String("string3"),
+					Four: db.String("string3"),
+					One:  db.String("string3"),
+					Two:  db.String("string3"),
 				},
 			}
 			// Consistent read must be disabled when scaning a GSI.

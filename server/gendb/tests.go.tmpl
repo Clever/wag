@@ -610,8 +610,7 @@ func Delete{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
 {{ $primaryKeySchemaWithoutSecondary := differenceKeySchemas $xdbConfig.DynamoDB.KeySchema $gsi.KeySchema }}
 {{- $gsiModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $gsi.KeySchema }}
 {{- $compositeAndPkUnion := union $compositeAttributeProperties $pkModelAttributeNames}}
-{{- $compositeAndPkAndRequiredUnion := union $compositeAndPkUnion $xdbConfig.Schema.Required}}
-{{- $nonSecondaryRequiredAttributes := difference $compositeAndPkAndRequiredUnion $gsiModelAttributeNames}}
+{{- $nonSecondaryRequiredAttributes := difference $compositeAndPkUnion $gsiModelAttributeNames}}
 {{- $pkAttributeNamesWithoutSecondary := difference $pkModelAttributeNames $gsiModelAttributeNames }}
 {{- if indexHasRangeKey $gsi.KeySchema }}
 {{- $hashKey := index $gsi.KeySchema 0 }}
