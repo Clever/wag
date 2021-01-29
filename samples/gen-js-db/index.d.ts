@@ -154,6 +154,13 @@ declare namespace SwaggerTest {
   version?: number;
 };
     
+    type ThingWithCompositeAttributesRepeated = {
+  cuatro: string;
+  dos: string;
+  tres: string;
+  uno: string;
+};
+    
     type ThingWithCompositeEnumAttributes = {
   branchID: Branch;
   date: string;

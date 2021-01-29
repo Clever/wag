@@ -587,3 +587,43 @@ definitions:
                 KeyType: RANGE
             Projection:
               ProjectionType: KEYS_ONLY
+
+  ThingWithCompositeAttributesRepeated:
+    type: object
+    properties:
+      uno:
+        type: string
+      dos:
+        type: string
+      tres:
+        type: string
+      cuatro:
+        type: string
+    required:
+      - uno
+      - dos
+      - tres
+      - cuatro
+    x-db:
+      AllowOverwrites: true
+      AllowPrimaryIndexScan: true
+      AllowSecondaryIndexScan:
+        - threeIndex
+        - fourIndex
+      CompositeAttributes:
+      - AttributeName: uno_dos
+        Properties: [ uno, dos ]
+        Separator: "_"
+      DynamoDB:
+        KeySchema:
+        - AttributeName: uno
+          KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: threeIndex
+            KeySchema:
+              - AttributeName: tres
+                KeyType: HASH
+              - AttributeName: uno_dos
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL

@@ -44,6 +44,8 @@ type Config struct {
 	ThingTable ThingTable
 	// ThingWithCompositeAttributesTable configuration.
 	ThingWithCompositeAttributesTable ThingWithCompositeAttributesTable
+	// ThingWithCompositeAttributesRepeatedTable configuration.
+	ThingWithCompositeAttributesRepeatedTable ThingWithCompositeAttributesRepeatedTable
 	// ThingWithCompositeEnumAttributesTable configuration.
 	ThingWithCompositeEnumAttributesTable ThingWithCompositeEnumAttributesTable
 	// ThingWithDateRangeTable configuration.
@@ -182,6 +184,20 @@ func New(config Config) (*DB, error) {
 	if thingWithCompositeAttributesTable.WriteCapacityUnits == 0 {
 		thingWithCompositeAttributesTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	// configure ThingWithCompositeAttributesRepeated table
+	thingWithCompositeAttributesRepeatedTable := config.ThingWithCompositeAttributesRepeatedTable
+	if thingWithCompositeAttributesRepeatedTable.DynamoDBAPI == nil {
+		thingWithCompositeAttributesRepeatedTable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if thingWithCompositeAttributesRepeatedTable.Prefix == "" {
+		thingWithCompositeAttributesRepeatedTable.Prefix = config.DefaultPrefix
+	}
+	if thingWithCompositeAttributesRepeatedTable.ReadCapacityUnits == 0 {
+		thingWithCompositeAttributesRepeatedTable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if thingWithCompositeAttributesRepeatedTable.WriteCapacityUnits == 0 {
+		thingWithCompositeAttributesRepeatedTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
 	// configure ThingWithCompositeEnumAttributes table
 	thingWithCompositeEnumAttributesTable := config.ThingWithCompositeEnumAttributesTable
 	if thingWithCompositeEnumAttributesTable.DynamoDBAPI == nil {
@@ -317,6 +333,7 @@ func New(config Config) (*DB, error) {
 		teacherSharingRuleTable:                              teacherSharingRuleTable,
 		thingTable:                                           thingTable,
 		thingWithCompositeAttributesTable:                    thingWithCompositeAttributesTable,
+		thingWithCompositeAttributesRepeatedTable:            thingWithCompositeAttributesRepeatedTable,
 		thingWithCompositeEnumAttributesTable:                thingWithCompositeEnumAttributesTable,
 		thingWithDateRangeTable:                              thingWithDateRangeTable,
 		thingWithDateTimeCompositeTable:                      thingWithDateTimeCompositeTable,
@@ -338,6 +355,7 @@ type DB struct {
 	teacherSharingRuleTable                              TeacherSharingRuleTable
 	thingTable                                           ThingTable
 	thingWithCompositeAttributesTable                    ThingWithCompositeAttributesTable
+	thingWithCompositeAttributesRepeatedTable            ThingWithCompositeAttributesRepeatedTable
 	thingWithCompositeEnumAttributesTable                ThingWithCompositeEnumAttributesTable
 	thingWithDateRangeTable                              ThingWithDateRangeTable
 	thingWithDateTimeCompositeTable                      ThingWithDateTimeCompositeTable
@@ -372,6 +390,9 @@ func (d DB) CreateTables(ctx context.Context) error {
 		return err
 	}
 	if err := d.thingWithCompositeAttributesTable.create(ctx); err != nil {
+		return err
+	}
+	if err := d.thingWithCompositeAttributesRepeatedTable.create(ctx); err != nil {
 		return err
 	}
 	if err := d.thingWithCompositeEnumAttributesTable.create(ctx); err != nil {
@@ -652,6 +673,36 @@ func (d DB) GetThingWithCompositeAttributessByNameVersionAndDate(ctx context.Con
 // ScanThingWithCompositeAttributessByNameVersionAndDate runs a scan on the NameVersionAndDate index.
 func (d DB) ScanThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input db.ScanThingWithCompositeAttributessByNameVersionAndDateInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error {
 	return d.thingWithCompositeAttributesTable.scanThingWithCompositeAttributessByNameVersionAndDate(ctx, input, fn)
+}
+
+// SaveThingWithCompositeAttributesRepeated saves a ThingWithCompositeAttributesRepeated to the database.
+func (d DB) SaveThingWithCompositeAttributesRepeated(ctx context.Context, m models.ThingWithCompositeAttributesRepeated) error {
+	return d.thingWithCompositeAttributesRepeatedTable.saveThingWithCompositeAttributesRepeated(ctx, m)
+}
+
+// GetThingWithCompositeAttributesRepeated retrieves a ThingWithCompositeAttributesRepeated from the database.
+func (d DB) GetThingWithCompositeAttributesRepeated(ctx context.Context, uno string) (*models.ThingWithCompositeAttributesRepeated, error) {
+	return d.thingWithCompositeAttributesRepeatedTable.getThingWithCompositeAttributesRepeated(ctx, uno)
+}
+
+// ScanThingWithCompositeAttributesRepeateds runs a scan on the ThingWithCompositeAttributesRepeateds table.
+func (d DB) ScanThingWithCompositeAttributesRepeateds(ctx context.Context, input db.ScanThingWithCompositeAttributesRepeatedsInput, fn func(m *models.ThingWithCompositeAttributesRepeated, lastThingWithCompositeAttributesRepeated bool) bool) error {
+	return d.thingWithCompositeAttributesRepeatedTable.scanThingWithCompositeAttributesRepeateds(ctx, input, fn)
+}
+
+// DeleteThingWithCompositeAttributesRepeated deletes a ThingWithCompositeAttributesRepeated from the database.
+func (d DB) DeleteThingWithCompositeAttributesRepeated(ctx context.Context, uno string) error {
+	return d.thingWithCompositeAttributesRepeatedTable.deleteThingWithCompositeAttributesRepeated(ctx, uno)
+}
+
+// GetThingWithCompositeAttributesRepeatedsByTresAndUnoDos retrieves a page of ThingWithCompositeAttributesRepeateds from the database.
+func (d DB) GetThingWithCompositeAttributesRepeatedsByTresAndUnoDos(ctx context.Context, input db.GetThingWithCompositeAttributesRepeatedsByTresAndUnoDosInput, fn func(m *models.ThingWithCompositeAttributesRepeated, lastThingWithCompositeAttributesRepeated bool) bool) error {
+	return d.thingWithCompositeAttributesRepeatedTable.getThingWithCompositeAttributesRepeatedsByTresAndUnoDos(ctx, input, fn)
+}
+
+// ScanThingWithCompositeAttributesRepeatedsByTresAndUnoDos runs a scan on the TresAndUnoDos index.
+func (d DB) ScanThingWithCompositeAttributesRepeatedsByTresAndUnoDos(ctx context.Context, input db.ScanThingWithCompositeAttributesRepeatedsByTresAndUnoDosInput, fn func(m *models.ThingWithCompositeAttributesRepeated, lastThingWithCompositeAttributesRepeated bool) bool) error {
+	return d.thingWithCompositeAttributesRepeatedTable.scanThingWithCompositeAttributesRepeatedsByTresAndUnoDos(ctx, input, fn)
 }
 
 // SaveThingWithCompositeEnumAttributes saves a ThingWithCompositeEnumAttributes to the database.
