@@ -1118,16 +1118,19 @@ func ScanDeploymentsByVersion(d db.Interface, t *testing.T) func(t *testing.T) {
 		require.Nil(t, d.SaveDeployment(ctx, models.Deployment{
 			Version:     "string1",
 			Application: "string1",
+			Date:        mustTime("2018-03-11T15:04:01+07:00"),
 			Environment: "string1",
 		}))
 		require.Nil(t, d.SaveDeployment(ctx, models.Deployment{
 			Version:     "string2",
 			Application: "string2",
+			Date:        mustTime("2018-03-11T15:04:02+07:00"),
 			Environment: "string2",
 		}))
 		require.Nil(t, d.SaveDeployment(ctx, models.Deployment{
 			Version:     "string3",
 			Application: "string3",
+			Date:        mustTime("2018-03-11T15:04:03+07:00"),
 			Environment: "string3",
 		}))
 
@@ -1136,16 +1139,19 @@ func ScanDeploymentsByVersion(d db.Interface, t *testing.T) func(t *testing.T) {
 				models.Deployment{
 					Version:     "string1",
 					Application: "string1",
+					Date:        mustTime("2018-03-11T15:04:01+07:00"),
 					Environment: "string1",
 				},
 				models.Deployment{
 					Version:     "string2",
 					Application: "string2",
+					Date:        mustTime("2018-03-11T15:04:02+07:00"),
 					Environment: "string2",
 				},
 				models.Deployment{
 					Version:     "string3",
 					Application: "string3",
+					Date:        mustTime("2018-03-11T15:04:03+07:00"),
 					Environment: "string3",
 				},
 			}
