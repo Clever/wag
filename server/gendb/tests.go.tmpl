@@ -55,7 +55,7 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 
 {{ range $xdbConfig := .XDBConfigs }}
 {{- $modelName := pascalize $xdbConfig.SchemaName }}
-{{- $compositeAttributeProperties := getCompositeAttributeProperties $xdbConfig}}
+{{- $compositeAttributeProperties := getCompositeAttributeAndCompositeAttributeIndexProperties $xdbConfig}}
 {{- $pkModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
 {{- $nonPKSecondaryStringProperties := nonPKSecondaryStringProperties $xdbConfig }}
 func Get{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {

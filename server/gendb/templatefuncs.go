@@ -127,11 +127,20 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		}
 		return sepToProps
 	},
-	"getCompositeAttributeProperties": func(config XDBConfig) []string {
+	"getCompositeAttributeAndCompositeAttributeIndexProperties": func(config XDBConfig) []string {
 		props := []string{}
 		for _, attr := range config.CompositeAttributes {
 			for _, prop := range attr.Properties {
 				props = append(props, prop)
+			}
+		}
+		for _, gsi := range config.DynamoDB.GlobalSecondaryIndexes {
+			if indexContainsCompositeAttribute(config, gsi.KeySchema) {
+				for _, ks := range gsi.KeySchema {
+					if !isComposite(config, ks.AttributeName) {
+						props = append(props, ks.AttributeName)
+					}
+				}
 			}
 		}
 		props = uniq(props)
