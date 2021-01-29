@@ -997,6 +997,103 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithMatchingKeyssByAssocTypeIDAndC
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear", reflect.TypeOf((*MockInterface)(nil).ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear), ctx, input, fn)
 }
 
+// SaveThingWithMultiUseCompositeAttribute mocks base method
+func (m_2 *MockInterface) SaveThingWithMultiUseCompositeAttribute(ctx context.Context, m models.ThingWithMultiUseCompositeAttribute) error {
+	ret := m_2.ctrl.Call(m_2, "SaveThingWithMultiUseCompositeAttribute", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveThingWithMultiUseCompositeAttribute indicates an expected call of SaveThingWithMultiUseCompositeAttribute
+func (mr *MockInterfaceMockRecorder) SaveThingWithMultiUseCompositeAttribute(ctx, m interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithMultiUseCompositeAttribute", reflect.TypeOf((*MockInterface)(nil).SaveThingWithMultiUseCompositeAttribute), ctx, m)
+}
+
+// GetThingWithMultiUseCompositeAttribute mocks base method
+func (m *MockInterface) GetThingWithMultiUseCompositeAttribute(ctx context.Context, one string) (*models.ThingWithMultiUseCompositeAttribute, error) {
+	ret := m.ctrl.Call(m, "GetThingWithMultiUseCompositeAttribute", ctx, one)
+	ret0, _ := ret[0].(*models.ThingWithMultiUseCompositeAttribute)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingWithMultiUseCompositeAttribute indicates an expected call of GetThingWithMultiUseCompositeAttribute
+func (mr *MockInterfaceMockRecorder) GetThingWithMultiUseCompositeAttribute(ctx, one interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithMultiUseCompositeAttribute", reflect.TypeOf((*MockInterface)(nil).GetThingWithMultiUseCompositeAttribute), ctx, one)
+}
+
+// ScanThingWithMultiUseCompositeAttributes mocks base method
+func (m *MockInterface) ScanThingWithMultiUseCompositeAttributes(ctx context.Context, input ScanThingWithMultiUseCompositeAttributesInput, fn func(*models.ThingWithMultiUseCompositeAttribute, bool) bool) error {
+	ret := m.ctrl.Call(m, "ScanThingWithMultiUseCompositeAttributes", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ScanThingWithMultiUseCompositeAttributes indicates an expected call of ScanThingWithMultiUseCompositeAttributes
+func (mr *MockInterfaceMockRecorder) ScanThingWithMultiUseCompositeAttributes(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithMultiUseCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).ScanThingWithMultiUseCompositeAttributes), ctx, input, fn)
+}
+
+// DeleteThingWithMultiUseCompositeAttribute mocks base method
+func (m *MockInterface) DeleteThingWithMultiUseCompositeAttribute(ctx context.Context, one string) error {
+	ret := m.ctrl.Call(m, "DeleteThingWithMultiUseCompositeAttribute", ctx, one)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteThingWithMultiUseCompositeAttribute indicates an expected call of DeleteThingWithMultiUseCompositeAttribute
+func (mr *MockInterfaceMockRecorder) DeleteThingWithMultiUseCompositeAttribute(ctx, one interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithMultiUseCompositeAttribute", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithMultiUseCompositeAttribute), ctx, one)
+}
+
+// GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo mocks base method
+func (m *MockInterface) GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx context.Context, input GetThingWithMultiUseCompositeAttributesByThreeAndOneTwoInput, fn func(*models.ThingWithMultiUseCompositeAttribute, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo indicates an expected call of GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo
+func (mr *MockInterfaceMockRecorder) GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo", reflect.TypeOf((*MockInterface)(nil).GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo), ctx, input, fn)
+}
+
+// ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo mocks base method
+func (m *MockInterface) ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx context.Context, input ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwoInput, fn func(*models.ThingWithMultiUseCompositeAttribute, bool) bool) error {
+	ret := m.ctrl.Call(m, "ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo indicates an expected call of ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo
+func (mr *MockInterfaceMockRecorder) ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo", reflect.TypeOf((*MockInterface)(nil).ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo), ctx, input, fn)
+}
+
+// GetThingWithMultiUseCompositeAttributesByFourAndOneTwo mocks base method
+func (m *MockInterface) GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx context.Context, input GetThingWithMultiUseCompositeAttributesByFourAndOneTwoInput, fn func(*models.ThingWithMultiUseCompositeAttribute, bool) bool) error {
+	ret := m.ctrl.Call(m, "GetThingWithMultiUseCompositeAttributesByFourAndOneTwo", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingWithMultiUseCompositeAttributesByFourAndOneTwo indicates an expected call of GetThingWithMultiUseCompositeAttributesByFourAndOneTwo
+func (mr *MockInterfaceMockRecorder) GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithMultiUseCompositeAttributesByFourAndOneTwo", reflect.TypeOf((*MockInterface)(nil).GetThingWithMultiUseCompositeAttributesByFourAndOneTwo), ctx, input, fn)
+}
+
+// ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo mocks base method
+func (m *MockInterface) ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx context.Context, input ScanThingWithMultiUseCompositeAttributesByFourAndOneTwoInput, fn func(*models.ThingWithMultiUseCompositeAttribute, bool) bool) error {
+	ret := m.ctrl.Call(m, "ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo indicates an expected call of ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo
+func (mr *MockInterfaceMockRecorder) ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx, input, fn interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo", reflect.TypeOf((*MockInterface)(nil).ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo), ctx, input, fn)
+}
+
 // SaveThingWithRequiredCompositePropertiesAndKeysOnly mocks base method
 func (m_2 *MockInterface) SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, m models.ThingWithRequiredCompositePropertiesAndKeysOnly) error {
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithRequiredCompositePropertiesAndKeysOnly", ctx, m)

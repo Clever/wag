@@ -55,6 +55,7 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 
 {{ range $xdbConfig := .XDBConfigs }}
 {{- $modelName := pascalize $xdbConfig.SchemaName }}
+{{- $compositeAttributeProperties := getCompositeAttributeProperties $xdbConfig}}
 {{- $pkModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
 {{- $nonPKSecondaryStringProperties := nonPKSecondaryStringProperties $xdbConfig }}
 func Get{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
@@ -608,6 +609,9 @@ func Delete{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
 {{ $primaryAndSecondaryKeySchemas := unionKeySchemas $xdbConfig.DynamoDB.KeySchema $gsi.KeySchema }}
 {{ $primaryKeySchemaWithoutSecondary := differenceKeySchemas $xdbConfig.DynamoDB.KeySchema $gsi.KeySchema }}
 {{- $gsiModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $gsi.KeySchema }}
+{{- $compositeAndPkUnion := union $compositeAttributeProperties $pkModelAttributeNames}}
+{{- $compositeAndPkAndRequiredUnion := union $compositeAndPkUnion $xdbConfig.Schema.Required}}
+{{- $nonSecondaryRequiredAttributes := difference $compositeAndPkAndRequiredUnion $gsiModelAttributeNames}}
 {{- $pkAttributeNamesWithoutSecondary := difference $pkModelAttributeNames $gsiModelAttributeNames }}
 {{- if indexHasRangeKey $gsi.KeySchema }}
 {{- $hashKey := index $gsi.KeySchema 0 }}
@@ -657,7 +661,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
             {{- range $attributeName := $rangeKeyAttributes }}
       {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
       {{- end }}
-                        {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+                        {{- range $attributeName := $nonSecondaryRequiredAttributes }}
       {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
       {{- end }}
     }))
@@ -668,7 +672,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
             {{- range $attributeName := $rangeKeyAttributes }}
       {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
       {{- end }}
-                        {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+                        {{- range $attributeName := $nonSecondaryRequiredAttributes }}
       {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
       {{- end }}
     }))
@@ -679,7 +683,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
             {{- range $attributeName := $rangeKeyAttributes }}
       {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
       {{- end }}
-                        {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+                        {{- range $attributeName := $nonSecondaryRequiredAttributes }}
       {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
       {{- end }}
     }))
@@ -706,7 +710,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
                     {{- range $attributeName := $rangeKeyAttributes }}
               {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
               {{- end }}
-                                {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+                                {{- range $attributeName := $nonSecondaryRequiredAttributes }}
               {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
               {{- end }}
             },
@@ -717,7 +721,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
                     {{- range $attributeName := $rangeKeyAttributes }}
               {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
               {{- end }}
-                                {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+                                {{- range $attributeName := $nonSecondaryRequiredAttributes }}
               {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
               {{- end }}
             },
@@ -728,7 +732,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
                     {{- range $attributeName := $rangeKeyAttributes }}
               {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
               {{- end }}
-                                {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+                                {{- range $attributeName := $nonSecondaryRequiredAttributes }}
               {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
               {{- end }}
             },
@@ -757,7 +761,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
                     {{- range $attributeName := $rangeKeyAttributes }}
               {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
               {{- end }}
-                                {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+                                {{- range $attributeName := $nonSecondaryRequiredAttributes }}
               {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
               {{- end }}
             },
@@ -768,7 +772,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
                     {{- range $attributeName := $rangeKeyAttributes }}
               {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
               {{- end }}
-                                {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+                                {{- range $attributeName := $nonSecondaryRequiredAttributes }}
               {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
               {{- end }}
             },
@@ -779,7 +783,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
                     {{- range $attributeName := $rangeKeyAttributes }}
               {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
               {{- end }}
-                                {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+                                {{- range $attributeName := $nonSecondaryRequiredAttributes }}
               {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
               {{- end }}
             },
@@ -803,7 +807,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
                     {{- range $attributeName := $rangeKeyAttributes }}
               {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
               {{- end }}
-                                {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+                                {{- range $attributeName := $nonSecondaryRequiredAttributes }}
               {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
               {{- end }}
             },
@@ -818,7 +822,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
                     {{- range $attributeName := $rangeKeyAttributes }}
               {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
               {{- end }}
-                                {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+                                {{- range $attributeName := $nonSecondaryRequiredAttributes }}
               {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
               {{- end }}
             },
@@ -829,7 +833,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
                     {{- range $attributeName := $rangeKeyAttributes }}
               {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
               {{- end }}
-                                {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+                                {{- range $attributeName := $nonSecondaryRequiredAttributes }}
               {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
               {{- end }}
             },
@@ -853,7 +857,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
                     {{- range $attributeName := $rangeKeyAttributes }}
               {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
               {{- end }}
-                                {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+                                {{- range $attributeName := $nonSecondaryRequiredAttributes }}
               {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
               {{- end }}
             },
@@ -869,7 +873,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
                     {{- range $attributeName := $rangeKeyAttributes }}
               {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
               {{- end }}
-                                {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+                                {{- range $attributeName := $nonSecondaryRequiredAttributes }}
               {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
               {{- end }}
             },
@@ -880,7 +884,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
                     {{- range $attributeName := $rangeKeyAttributes }}
               {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
               {{- end }}
-                                {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+                                {{- range $attributeName := $nonSecondaryRequiredAttributes }}
               {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
               {{- end }}
             },
@@ -918,7 +922,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
                     {{- range $attributeName := $rangeKeyAttributes }}
               {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
               {{- end }}
-                                {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+                                {{- range $attributeName := $nonSecondaryRequiredAttributes }}
               {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
               {{- end }}
             },
@@ -929,7 +933,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
                     {{- range $attributeName := $rangeKeyAttributes }}
               {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
               {{- end }}
-                                {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+                                {{- range $attributeName := $nonSecondaryRequiredAttributes }}
               {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
               {{- end }}
             },
@@ -982,7 +986,7 @@ func Scan{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.
       {{- range $attributeName := $gsiModelAttributeNames }}
       {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
       {{- end }}
-      {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+      {{- range $attributeName := $nonSecondaryRequiredAttributes }}
       {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
       {{- end }}
     }))
@@ -990,7 +994,7 @@ func Scan{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.
       {{- range $attributeName := $gsiModelAttributeNames }}
       {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
       {{- end }}
-      {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+      {{- range $attributeName := $nonSecondaryRequiredAttributes }}
       {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
       {{- end }}
     }))
@@ -998,7 +1002,7 @@ func Scan{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.
       {{- range $attributeName := $gsiModelAttributeNames }}
       {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
       {{- end }}
-      {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+      {{- range $attributeName := $nonSecondaryRequiredAttributes }}
       {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
       {{- end }}
     }))
@@ -1009,7 +1013,7 @@ func Scan{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.
               {{- range $attributeName := $gsiModelAttributeNames }}
               {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
               {{- end }}
-              {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+              {{- range $attributeName := $nonSecondaryRequiredAttributes }}
               {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
               {{- end }}
             },
@@ -1017,7 +1021,7 @@ func Scan{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.
               {{- range $attributeName := $gsiModelAttributeNames }}
               {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
               {{- end }}
-              {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+              {{- range $attributeName := $nonSecondaryRequiredAttributes }}
               {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
               {{- end }}
             },
@@ -1025,7 +1029,7 @@ func Scan{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.
               {{- range $attributeName := $gsiModelAttributeNames }}
               {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
               {{- end }}
-              {{- range $attributeName := $pkAttributeNamesWithoutSecondary }}
+              {{- range $attributeName := $nonSecondaryRequiredAttributes }}
               {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 3 }},
               {{- end }}
             },

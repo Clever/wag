@@ -108,10 +108,11 @@ var funcMap = template.FuncMap(map[string]interface{}{
 			return ""
 		}
 	},
-	"findCompositeAttribute":             findCompositeAttribute,
-	"indexContainsCompositeAttribute":    indexContainsCompositeAttribute,
-	"indexContainsNonCompositeAttribute": indexContainsNonCompositeAttribute,
-	"isComposite":                        isComposite,
+	"findCompositeAttribute":                              findCompositeAttribute,
+	"indexContainsCompositeAttribute":                     indexContainsCompositeAttribute,
+	"indexContainsNonCompositeAttribute":                  indexContainsNonCompositeAttribute,
+	"anyIndexRangeKeyContainsSpecifiedCompositeAttribute": anyIndexRangeKeyContainsSpecifiedCompositeAttribute,
+	"isComposite": isComposite,
 	"stringPropertiesInComposites": func(config XDBConfig) map[string][]string {
 		sepToProps := map[string][]string{}
 		for _, attr := range config.CompositeAttributes {
@@ -125,6 +126,17 @@ var funcMap = template.FuncMap(map[string]interface{}{
 			sepToProps[k] = uniq(v)
 		}
 		return sepToProps
+	},
+	"getCompositeAttributeProperties": func(config XDBConfig) []string {
+		props := []string{}
+		for _, attr := range config.CompositeAttributes {
+			for _, prop := range attr.Properties {
+				props = append(props, prop)
+			}
+		}
+		props = uniq(props)
+
+		return props
 	},
 	"sortedKeys": func(m map[string][]string) []string {
 		keys := []string{}
@@ -305,6 +317,7 @@ var funcMap = template.FuncMap(map[string]interface{}{
 	"stringsEqual": func(s1, s2 string) bool {
 		return s1 == s2
 	},
+	"union": union,
 })
 
 func contains(el string, arr []string) bool {
@@ -355,6 +368,23 @@ func indexContainsNonCompositeAttribute(config XDBConfig, keySchema []resources.
 			return true
 		}
 	}
+	return false
+}
+
+func anyIndexRangeKeyContainsSpecifiedCompositeAttribute(config XDBConfig, compAttr string) bool {
+	for _, ks := range config.DynamoDB.KeySchema {
+		if compAttr == ks.AttributeName && ks.KeyType == "RANGE" {
+			return true
+		}
+	}
+	for _, gsi := range config.DynamoDB.GlobalSecondaryIndexes {
+		for _, ks := range gsi.KeySchema {
+			if compAttr == ks.AttributeName && ks.KeyType == "RANGE" {
+				return true
+			}
+		}
+	}
+
 	return false
 }
 
@@ -409,6 +439,10 @@ func isComposite(config XDBConfig, attributeName string) bool {
 		return true
 	}
 	return false
+}
+
+func union(a, b []string) []string {
+	return uniq(append(a, b...))
 }
 
 func uniq(arr []string) []string {
