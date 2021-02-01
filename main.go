@@ -31,53 +31,29 @@ type config struct {
 	versionFlag    *bool
 	clientOnly     *bool
 	clientLanguage *string
+	goPackagePath  string
 }
 
 var version string
 
 func main() {
-	conf := config{}
-	conf.swaggerFile = flag.String("file", "swagger.yml", "the spec file to use")
-	conf.goPackageName = flag.String("go-package", "", "package of the generated go code")
-	conf.outputPath = flag.String("output-path", "", "relative output path of the generated go code")
-	conf.jsModulePath = flag.String("js-path", "", "path to put the js client")
-	conf.versionFlag = flag.Bool("version", false, "print the wag version and exit")
-	conf.clientOnly = flag.Bool("client-only", false, "only generate client code")
-	conf.clientLanguage = flag.String("client-language", "", "generate client code in specific language [go|js]")
+	conf := &config{
+		swaggerFile:    flag.String("file", "swagger.yml", "the spec file to use"),
+		goPackageName:  flag.String("go-package", "", "package of the generated go code"),
+		outputPath:     flag.String("output-path", "", "relative output path of the generated go code"),
+		jsModulePath:   flag.String("js-path", "", "path to put the js client"),
+		versionFlag:    flag.Bool("version", false, "print the wag version and exit"),
+		clientOnly:     flag.Bool("client-only", false, "only generate client code"),
+		clientLanguage: flag.String("client-language", "", "generate client code in specific language [go|js]"),
+	}
 	flag.Parse()
 	if *conf.versionFlag {
 		fmt.Println(version)
 		os.Exit(0)
 	}
 
-	var goPackagePath string
-	// check if the repo uses modules
-	if modFile, err := os.Open("go.mod"); err != nil {
-		if _, ok := err.(*os.PathError); !ok {
-			log.Fatalf("Error checking if the repo contains a go.mod file: %s", err.Error())
-		}
-		if *conf.goPackageName == "" {
-			log.Fatal("go-package is required")
-		}
-		goPackagePath = *conf.goPackageName
-	} else {
-		defer modFile.Close()
-
-		goPath := os.Getenv("GOPATH")
-		if goPath == "" {
-			log.Fatalf("GOPATH must be set")
-		}
-		if *conf.outputPath == "" {
-			log.Fatal("output-path is required")
-		}
-
-		*conf.outputPath = path.Clean(*conf.outputPath)
-		goPackagePath = getModulePackagePath(goPath, *conf.outputPath)
-		*conf.goPackageName = getModulePackageName(modFile, *conf.outputPath)
-	}
-
-	if *conf.jsModulePath == "" {
-		log.Fatal("js-path is required")
+	if err := conf.validate(); err != nil {
+		log.Fatalf(err.Error())
 	}
 
 	// Check if glide.yaml and glide.lock files are up to date
@@ -110,9 +86,9 @@ func main() {
 	}
 
 	dirs := []string{
-		filepath.Join(os.Getenv("GOPATH"), "src", goPackagePath, "server"),
-		filepath.Join(os.Getenv("GOPATH"), "src", goPackagePath, "client"),
-		filepath.Join(os.Getenv("GOPATH"), "src", goPackagePath, "models"),
+		filepath.Join(os.Getenv("GOPATH"), "src", conf.goPackagePath, "server"),
+		filepath.Join(os.Getenv("GOPATH"), "src", conf.goPackagePath, "client"),
+		filepath.Join(os.Getenv("GOPATH"), "src", conf.goPackagePath, "models"),
 		*conf.jsModulePath,
 	}
 
@@ -133,15 +109,15 @@ func main() {
 		log.Fatalf("Failed processing the swagger spec: %s", err)
 	}
 
-	if err := models.Generate(goPackagePath, swaggerSpec); err != nil {
+	if err := models.Generate(conf.goPackagePath, swaggerSpec); err != nil {
 		log.Fatalf("Error generating models: %s", err)
 	}
 
-	if err := server.Generate(*conf.goPackageName, goPackagePath, swaggerSpec); err != nil {
+	if err := server.Generate(*conf.goPackageName, conf.goPackagePath, swaggerSpec); err != nil {
 		log.Fatalf("Failed to generate server: %s", err)
 	}
 
-	if err := goclient.Generate(*conf.goPackageName, goPackagePath, swaggerSpec); err != nil {
+	if err := goclient.Generate(*conf.goPackageName, conf.goPackagePath, swaggerSpec); err != nil {
 		log.Fatalf("Failed generating go client %s", err)
 	}
 
@@ -149,13 +125,13 @@ func main() {
 		log.Fatalf("Failed generating js client %s", err)
 	}
 
-	middlewareGenerator := swagger.Generator{PackagePath: goPackagePath}
+	middlewareGenerator := swagger.Generator{PackagePath: conf.goPackagePath}
 	middlewareGenerator.Write(hardcoded.MustAsset("../_hardcoded/middleware.go"))
 	if err := middlewareGenerator.WriteFile("server/middleware.go"); err != nil {
 		log.Fatalf("Failed to copy middleware.go: %s", err)
 	}
 
-	doerGenerator := swagger.Generator{PackagePath: goPackagePath}
+	doerGenerator := swagger.Generator{PackagePath: conf.goPackagePath}
 	doerGenerator.Write(hardcoded.MustAsset("../_hardcoded/doer.go"))
 	if err := doerGenerator.WriteFile("client/doer.go"); err != nil {
 		log.Fatalf("Failed to copy doer.go: %s", err)
@@ -188,4 +164,37 @@ func getModulePackageName(modFile *os.File, outputPath string) string {
 	moduleName := strings.TrimPrefix(string(b), "module")
 	moduleName = strings.TrimSpace(moduleName)
 	return fmt.Sprintf("%v/%v", moduleName, outputPath)
+}
+
+func (c *config) validate() error {
+	// check if the repo uses modules
+	if modFile, err := os.Open("go.mod"); err != nil {
+		if _, ok := err.(*os.PathError); !ok {
+			return fmt.Errorf("Error checking if the repo contains a go.mod file: %s", err.Error())
+		}
+		if *c.goPackageName == "" {
+			return fmt.Errorf("go-package is required")
+		}
+		c.goPackagePath = *c.goPackageName
+	} else {
+		defer modFile.Close()
+
+		goPath := os.Getenv("GOPATH")
+		if goPath == "" {
+			return fmt.Errorf("GOPATH must be set")
+		}
+		if *c.outputPath == "" {
+			return fmt.Errorf("output-path is required")
+		}
+
+		*c.outputPath = path.Clean(*c.outputPath)
+		c.goPackagePath = getModulePackagePath(goPath, *c.outputPath)
+		*c.goPackageName = getModulePackageName(modFile, *c.outputPath)
+	}
+
+	if *c.jsModulePath == "" {
+		return fmt.Errorf("js-path is required")
+	}
+
+	return nil
 }
