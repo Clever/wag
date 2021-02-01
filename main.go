@@ -22,17 +22,30 @@ import (
 	"github.com/Clever/wag/v6/validation"
 )
 
+// config contains the configuration derived from command line flags
+type config struct {
+	swaggerFile    *string
+	goPackageName  *string
+	outputPath     *string
+	jsModulePath   *string
+	versionFlag    *bool
+	clientOnly     *bool
+	clientLanguage *string
+}
+
 var version string
 
 func main() {
-
-	swaggerFile := flag.String("file", "swagger.yml", "the spec file to use")
-	goPackageName := flag.String("go-package", "", "package of the generated go code")
-	outputPath := flag.String("output-path", "", "relative output path of the generated go code")
-	jsModulePath := flag.String("js-path", "", "path to put the js client")
-	versionFlag := flag.Bool("version", false, "print the wag version and exit")
+	conf := config{}
+	conf.swaggerFile = flag.String("file", "swagger.yml", "the spec file to use")
+	conf.goPackageName = flag.String("go-package", "", "package of the generated go code")
+	conf.outputPath = flag.String("output-path", "", "relative output path of the generated go code")
+	conf.jsModulePath = flag.String("js-path", "", "path to put the js client")
+	conf.versionFlag = flag.Bool("version", false, "print the wag version and exit")
+	conf.clientOnly = flag.Bool("client-only", false, "only generate client code")
+	conf.clientLanguage = flag.String("client-language", "", "generate client code in specific language [go|js]")
 	flag.Parse()
-	if *versionFlag {
+	if *conf.versionFlag {
 		fmt.Println(version)
 		os.Exit(0)
 	}
@@ -43,10 +56,10 @@ func main() {
 		if _, ok := err.(*os.PathError); !ok {
 			log.Fatalf("Error checking if the repo contains a go.mod file: %s", err.Error())
 		}
-		if *goPackageName == "" {
+		if *conf.goPackageName == "" {
 			log.Fatal("go-package is required")
 		}
-		goPackagePath = *goPackageName
+		goPackagePath = *conf.goPackageName
 	} else {
 		defer modFile.Close()
 
@@ -54,16 +67,16 @@ func main() {
 		if goPath == "" {
 			log.Fatalf("GOPATH must be set")
 		}
-		if *outputPath == "" {
+		if *conf.outputPath == "" {
 			log.Fatal("output-path is required")
 		}
 
-		*outputPath = path.Clean(*outputPath)
-		goPackagePath = getModulePackagePath(goPath, *outputPath)
-		*goPackageName = getModulePackageName(modFile, *outputPath)
+		*conf.outputPath = path.Clean(*conf.outputPath)
+		goPackagePath = getModulePackagePath(goPath, *conf.outputPath)
+		*conf.goPackageName = getModulePackageName(modFile, *conf.outputPath)
 	}
 
-	if *jsModulePath == "" {
+	if *conf.jsModulePath == "" {
 		log.Fatal("js-path is required")
 	}
 
@@ -86,7 +99,7 @@ func main() {
 	}
 
 	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
-	doc, err := loads.Spec(*swaggerFile)
+	doc, err := loads.Spec(*conf.swaggerFile)
 	if err != nil {
 		log.Fatalf("Error loading swagger file: %s", err)
 	}
@@ -100,7 +113,7 @@ func main() {
 		filepath.Join(os.Getenv("GOPATH"), "src", goPackagePath, "server"),
 		filepath.Join(os.Getenv("GOPATH"), "src", goPackagePath, "client"),
 		filepath.Join(os.Getenv("GOPATH"), "src", goPackagePath, "models"),
-		*jsModulePath,
+		*conf.jsModulePath,
 	}
 
 	for _, dir := range dirs {
@@ -124,15 +137,15 @@ func main() {
 		log.Fatalf("Error generating models: %s", err)
 	}
 
-	if err := server.Generate(*goPackageName, goPackagePath, swaggerSpec); err != nil {
+	if err := server.Generate(*conf.goPackageName, goPackagePath, swaggerSpec); err != nil {
 		log.Fatalf("Failed to generate server: %s", err)
 	}
 
-	if err := goclient.Generate(*goPackageName, goPackagePath, swaggerSpec); err != nil {
+	if err := goclient.Generate(*conf.goPackageName, goPackagePath, swaggerSpec); err != nil {
 		log.Fatalf("Failed generating go client %s", err)
 	}
 
-	if err := jsclient.Generate(*jsModulePath, swaggerSpec); err != nil {
+	if err := jsclient.Generate(*conf.jsModulePath, swaggerSpec); err != nil {
 		log.Fatalf("Failed generating js client %s", err)
 	}
 
