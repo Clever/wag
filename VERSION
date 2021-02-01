@@ -1,4 +1,5 @@
-v6.0.3
+v6.1.0
+- v6.1.0: Add --client-only and --client-language flags to generate only client code
 - v6.0.3: Modify which fields initialized in tests, reduced to bare minimum
 - v6.0.2: Fix to allow composite attributes to be used for more than one index range key
 - v6.0.1: Add the status code to the client's error message when the status code is not recognized.
