@@ -245,10 +245,6 @@ func (c *config) validate() error {
 		*c.goPackageName = getModulePackageName(modFile, *c.outputPath)
 	}
 
-	if *c.jsModulePath == "" {
-		return fmt.Errorf("js-path is required")
-	}
-
 	// parse flags determing if client/server code is generated
 	c.generateServer = true
 	c.generateGoClient = true
@@ -277,6 +273,9 @@ func (c *config) validate() error {
 		}
 	}
 	c.generateGoModels = c.generateServer || c.generateGoClient
+	if c.generateJSClient && *c.jsModulePath == "" {
+		return fmt.Errorf("js-path is required")
+	}
 
 	// determine paths for generated files
 	c.modelsPath = filepath.Join(os.Getenv("GOPATH"), "src", c.goPackagePath, "models")
