@@ -252,28 +252,30 @@ func (c *config) validate() error {
 	// only generate client
 	if c.clientOnly != nil && *c.clientOnly == true {
 		c.generateServer = false
-		// only generate client of specific language
-		if c.clientLanguage != nil && len(*c.clientLanguage) > 0 {
-			if *c.clientLanguage != "go" && *c.clientLanguage != "js" {
-				return fmt.Errorf("client-language must be one of \"go\" or \"js\"")
-			}
-			switch *c.clientLanguage {
-			case "go":
-				c.generateGoClient = true
-				c.generateJSClient = false
-			case "js":
-				c.generateGoClient = false
-				c.generateJSClient = true
-			default:
-				return fmt.Errorf("client-language must be one of \"go\" or \"js\"")
-			}
-		} else {
-			c.generateGoClient = true
-			c.generateJSClient = true
-		}
 	}
+
+	// only generate client of specific language
+	if c.clientLanguage != nil && len(*c.clientLanguage) > 0 {
+		if *c.clientLanguage != "go" && *c.clientLanguage != "js" {
+			return fmt.Errorf("client-language must be one of \"go\" or \"js\"")
+		}
+		switch *c.clientLanguage {
+		case "go":
+			c.generateGoClient = true
+			c.generateJSClient = false
+		case "js":
+			c.generateGoClient = false
+			c.generateJSClient = true
+		default:
+			return fmt.Errorf("client-language must be one of \"go\" or \"js\"")
+		}
+	} else {
+		c.generateGoClient = true
+		c.generateJSClient = true
+	}
+
 	c.generateGoModels = c.generateServer || c.generateGoClient
-	if c.generateJSClient && *c.jsModulePath == "" {
+	if c.generateJSClient && (c.jsModulePath == nil || *c.jsModulePath == "") {
 		return fmt.Errorf("js-path is required")
 	}
 

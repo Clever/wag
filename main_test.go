@@ -94,6 +94,53 @@ func Test_config_validate(t *testing.T) {
 			},
 		},
 		{
+			name: "server with js client",
+			input: config{
+				clientLanguage: stringPtr("js"),
+				outputPath:     stringPtr("output-path"),
+				goPackageName:  stringPtr("github.com/Clever/wag/v6/output-path"),
+				jsModulePath:   stringPtr("jsModulePath"),
+			},
+			output: config{
+				clientLanguage:   stringPtr("js"),
+				outputPath:       stringPtr("output-path"),
+				goPackageName:    stringPtr("github.com/Clever/wag/v6/output-path"),
+				jsModulePath:     stringPtr("jsModulePath"),
+				goPackagePath:    "github.com/Clever/wag/output-path",
+				generateServer:   true,
+				generateGoClient: false,
+				generateGoModels: true,
+				generateJSClient: true,
+			},
+		},
+		{
+			name: "server with go client",
+			input: config{
+				clientLanguage: stringPtr("go"),
+				outputPath:     stringPtr("output-path"),
+				goPackageName:  stringPtr("github.com/Clever/wag/v6/output-path"),
+			},
+			output: config{
+				clientLanguage:   stringPtr("go"),
+				outputPath:       stringPtr("output-path"),
+				goPackageName:    stringPtr("github.com/Clever/wag/v6/output-path"),
+				goPackagePath:    "github.com/Clever/wag/output-path",
+				generateServer:   true,
+				generateGoClient: true,
+				generateGoModels: true,
+				generateJSClient: false,
+			},
+		},
+		{
+			name: "js client no jsModulePath",
+			input: config{
+				clientLanguage: stringPtr("js"),
+				outputPath:     stringPtr("output-path"),
+				goPackageName:  stringPtr("github.com/Clever/wag/v6/output-path"),
+			},
+			wantErr: true,
+		},
+		{
 			name: "client only invalid language",
 			input: config{
 				clientOnly:     boolPtr(true),
@@ -109,8 +156,7 @@ func Test_config_validate(t *testing.T) {
 			err := tt.input.validate()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("config.validate() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			if !tt.wantErr {
+			} else if !tt.wantErr {
 				// clear paths so they are not diffed
 				tt.input.modelsPath = ""
 				tt.input.serverPath = ""
