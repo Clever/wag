@@ -210,7 +210,7 @@ func validateDefinitions(definitions map[string]spec.Schema) error {
 // we don't support. Note that this isn't a comprehensive check for all things
 // we don't support, so this may not return an error, but the Swagger file might
 // have values we don't support
-func Validate(d loads.Document) error {
+func Validate(d loads.Document, generateJSClient bool) error {
 	s := d.Spec()
 
 	goSwaggerError := validate.Spec(&d, strfmt.Default)
@@ -255,7 +255,7 @@ func Validate(d loads.Document) error {
 	}
 
 	_, ok := s.Info.Extensions.GetString("x-npm-package")
-	if !ok {
+	if !ok && generateJSClient {
 		return fmt.Errorf("must provide 'x-npm-package' in the 'info' section of the swagger.yml")
 	}
 

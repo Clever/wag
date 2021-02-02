@@ -94,7 +94,7 @@ func main() {
 	}
 	swaggerSpec := *doc.Spec()
 
-	if err := validation.Validate(*doc); err != nil {
+	if err := validation.Validate(*doc, conf.generateJSClient); err != nil {
 		log.Fatalf("Swagger file not valid: %s", err)
 	}
 
