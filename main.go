@@ -275,7 +275,7 @@ func (c *config) validate() error {
 	}
 
 	c.generateGoModels = c.generateServer || c.generateGoClient
-	if c.generateJSClient && (c.jsModulePath == nil || *c.jsModulePath == "") {
+	if c.generateJSClient && swag.StringValue(c.jsModulePath) == "" {
 		return fmt.Errorf("js-path is required")
 	}
 
