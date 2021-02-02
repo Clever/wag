@@ -255,7 +255,7 @@ func (c *config) validate() error {
 	}
 
 	// only generate client of specific language
-	if c.clientLanguage != nil && len(*c.clientLanguage) > 0 {
+	if swag.StringValue(c.clientLanguage) != "" {
 		if *c.clientLanguage != "go" && *c.clientLanguage != "js" {
 			return fmt.Errorf("client-language must be one of \"go\" or \"js\"")
 		}
