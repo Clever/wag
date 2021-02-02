@@ -13,6 +13,7 @@ import (
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/spec"
+	"github.com/go-openapi/swag"
 
 	goclient "github.com/Clever/wag/v6/clients/go"
 	jsclient "github.com/Clever/wag/v6/clients/js"
@@ -64,7 +65,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	if err := conf.validate(); err != nil {
+	if err := conf.setDerivedFields(); err != nil {
 		log.Fatalf(err.Error())
 	}
 
@@ -218,8 +219,8 @@ func getModulePackageName(modFile *os.File, outputPath string) string {
 	return fmt.Sprintf("%v/%v", moduleName, outputPath)
 }
 
-// validate validates the configuration and determines the goPackagePath for the generated code
-func (c *config) validate() error {
+// setDerivedFields sets the derived configuration from the command line arguments
+func (c *config) setDerivedFields() error {
 	// check if the repo uses modules
 	if modFile, err := os.Open("go.mod"); err != nil {
 		if _, ok := err.(*os.PathError); !ok {
