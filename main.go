@@ -250,7 +250,7 @@ func (c *config) validate() error {
 	c.generateGoClient = true
 	c.generateJSClient = true
 	// only generate client
-	if c.clientOnly != nil && *c.clientOnly == true {
+	if swag.BoolValue(c.clientOnly) {
 		c.generateServer = false
 	}
 
