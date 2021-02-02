@@ -34,7 +34,7 @@ type config struct {
 	clientOnly     *bool
 	clientLanguage *string
 
-	// dervied values
+	// derived values
 	goPackagePath    string
 	generateServer   bool
 	generateGoClient bool
