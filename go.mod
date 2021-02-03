@@ -15,7 +15,7 @@ require (
 	github.com/codahale/hdrhistogram v0.9.0 // indirect
 	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b
 	github.com/fsnotify/fsnotify v1.4.7 // indirect
-	github.com/go-errors/errors v1.0.0
+	github.com/go-errors/errors v1.1.1
 	github.com/go-ini/ini v1.33.0 // indirect
 	github.com/go-openapi/analysis v0.0.0-20180126163718-f59a71f0ece6 // indirect
 	github.com/go-openapi/errors v0.19.2
