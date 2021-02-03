@@ -6,6 +6,8 @@ github.com/Clever/go-process-metrics v0.0.0-20171109172046-76790fe7fd86 h1:zVsjy
 github.com/Clever/go-process-metrics v0.0.0-20171109172046-76790fe7fd86/go.mod h1:Aemel1It05GRZlIfbxbTLl0TwgFaaAALkqfyzuTDk7s=
 github.com/Clever/go-utils v0.0.0-20150501165843-abc25366fa8e h1:mwYZTFK3HvBY5zqwtxezWFnQOdL8VWhOSXjrBnMngAI=
 github.com/Clever/go-utils v0.0.0-20150501165843-abc25366fa8e/go.mod h1:XXTA9F/953CGhnDRslFaBp7S0560745gMZSDm+C4ebw=
+github.com/Clever/wag v1.14.2 h1:OdUsbefl9l/N1iOwePPuBEK22bcotw7acq0g80OwfHE=
+github.com/Clever/wag v4.1.0+incompatible h1:/7y61nKf6d3VKYk+/XFw1e7tmXG6tu4AO3UmFhROfa0=
 github.com/PuerkitoBio/purell v1.1.0 h1:rmGxhojJlM0tuKtfdvliR84CFHljx9ag64t2xmVkjK4=
 github.com/PuerkitoBio/purell v1.1.0/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 h1:d+Bc7a5rLufV/sSk/8dngufqelfh6jnri85riMAaF/M=
@@ -30,6 +32,7 @@ github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/go-errors/errors v1.0.0 h1:2G1gYpeHw4GhLet4Ebp5q9wpnSCAOJNTiJq+I3wJV5I=
 github.com/go-errors/errors v1.0.0/go.mod h1:f4zRHt4oKfwPJE5k8C9vpYG+aDHdBFUsgrm6/TyX73Q=
+github.com/go-errors/errors v1.1.1/go.mod h1:psDX2osz5VnTOnFWbDeWwS7yejl+uV3FEWEp4lssFEs=
 github.com/go-ini/ini v1.33.0 h1:/0Y2X+/6jgfPYl2LOihvxikDfznXMufz0Zkr3mW+7Zg=
 github.com/go-ini/ini v1.33.0/go.mod h1:ByCAeIL28uOIIG0E3PJtZPDL8WnHpFKFOtgjp+3Ies8=
 github.com/go-openapi/analysis v0.0.0-20180126163718-f59a71f0ece6 h1:52PeQi3V1whLu/QUj5yErwGzO3+qcxR7FgIe4B88Yas=
