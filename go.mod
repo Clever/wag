@@ -44,7 +44,7 @@ require (
 	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/opentracing-contrib/go-aws-sdk v0.0.0-20190205132030-9c29407076c0
-	github.com/opentracing/opentracing-go v1.1.0
+	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pelletier/go-toml v1.1.0 // indirect
 	github.com/pkg/errors v0.8.0 // indirect
 	github.com/smartystreets/goconvey v1.6.4 // indirect
