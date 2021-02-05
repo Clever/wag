@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"path"
 	"sort"
 	"strings"
 	"text/template"
@@ -123,7 +124,7 @@ func findCompositeAttribute(config XDBConfig, attributeName string) *CompositeAt
 }
 
 // GenerateDB generates DB code for schemas annotated with the x-db extension.
-func GenerateDB(packageName, packagePath string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
+func GenerateDB(packageName, packagePath string, s *spec.Swagger, outputPath string) error {
 	var xdbConfigs []XDBConfig
 	for schemaName, schema := range s.Definitions {
 		if config, err := DecodeConfig(schemaName, schema, *s); err != nil {
@@ -168,49 +169,53 @@ func GenerateDB(packageName, packagePath string, s *spec.Swagger, serviceName st
 	wtis := []writeTemplateInput{
 		{
 			tmplFilename:   "dynamodb-local.sh.tmpl",
-			outputFilename: "server/db/dynamodb/dynamodb-local.sh",
+			outputFilename: path.Join(outputPath, "dynamodb/dynamodb-local.sh"),
 			data:           nil,
 		},
 		{
 			tmplFilename:   "dynamodb.go.tmpl",
-			outputFilename: "server/db/dynamodb/dynamodb.go",
+			outputFilename: path.Join(outputPath, "dynamodb/dynamodb.go"),
 			data: map[string]interface{}{
 				"PackageName": packageName,
 				"XDBConfigs":  xdbConfigs,
+				"OutputPath":  outputPath,
 			},
 		},
 		{
 			tmplFilename:   "dynamodb_test.go.tmpl",
-			outputFilename: "server/db/dynamodb/dynamodb_test.go",
+			outputFilename: path.Join(outputPath, "dynamodb/dynamodb_test.go"),
 			data: map[string]interface{}{
 				"PackageName": packageName,
+				"OutputPath":  outputPath,
 			},
 		},
 		{
 			tmplFilename:   "interface.go.tmpl",
-			outputFilename: "server/db/interface.go",
+			outputFilename: path.Join(outputPath, "interface.go"),
 			data: map[string]interface{}{
 				"PackageName": packageName,
-				"ServiceName": serviceName,
+				"ServiceName": s.Info.InfoProps.Title,
 				"XDBConfigs":  xdbConfigs,
 			},
 		},
 		{
 			tmplFilename:   "tests.go.tmpl",
-			outputFilename: "server/db/tests/tests.go",
+			outputFilename: path.Join(outputPath, "tests/tests.go"),
 			data: map[string]interface{}{
 				"PackageName": packageName,
 				"XDBConfigs":  xdbConfigs,
+				"OutputPath":  outputPath,
 			},
 		},
 	}
 	for _, xdbConfig := range xdbConfigs {
 		wtis = append(wtis, writeTemplateInput{
 			tmplFilename:   "table.go.tmpl",
-			outputFilename: "server/db/dynamodb/" + strings.ToLower(xdbConfig.SchemaName) + ".go",
+			outputFilename: path.Join(outputPath, "dynamodb", fmt.Sprintf("%v.go", strings.ToLower(xdbConfig.SchemaName))),
 			data: map[string]interface{}{
 				"PackageName": packageName,
 				"XDBConfig":   xdbConfig,
+				"OutputPath":  outputPath,
 			},
 		})
 	}

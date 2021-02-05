@@ -20,6 +20,7 @@ import (
 	"github.com/Clever/wag/v6/hardcoded"
 	"github.com/Clever/wag/v6/models"
 	"github.com/Clever/wag/v6/server"
+	"github.com/Clever/wag/v6/server/gendb"
 	"github.com/Clever/wag/v6/swagger"
 	"github.com/Clever/wag/v6/validation"
 )
@@ -27,37 +28,44 @@ import (
 // config contains the configuration derived from command line flags
 type config struct {
 	// flag values
-	swaggerFile    *string
-	goPackageName  *string
-	outputPath     *string
-	jsModulePath   *string
-	versionFlag    *bool
-	clientOnly     *bool
-	clientLanguage *string
+	swaggerFile        *string
+	goPackageName      *string
+	outputPath         *string
+	jsModulePath       *string
+	versionFlag        *bool
+	clientOnly         *bool
+	clientLanguage     *string
+	dynamoOnly         *bool
+	relativeDynamoPath *string
 
 	// derived values
-	goPackagePath    string
-	generateServer   bool
-	generateGoClient bool
-	generateGoModels bool
-	generateJSClient bool
-	modelsPath       string
-	serverPath       string
-	goClientPath     string
-	jsClientPath     string
+	goPackagePath         string
+	generateServer        bool
+	generateGoClient      bool
+	generateGoModels      bool
+	generateJSClient      bool
+	generateDynamo        bool
+	goAbsolutePackagePath string
+	modelsPath            string
+	serverPath            string
+	goClientPath          string
+	jsClientPath          string
+	dynamoPath            string
 }
 
 var version string
 
 func main() {
 	conf := &config{
-		swaggerFile:    flag.String("file", "swagger.yml", "the spec file to use"),
-		goPackageName:  flag.String("go-package", "", "package of the generated go code"),
-		outputPath:     flag.String("output-path", "", "relative output path of the generated go code"),
-		jsModulePath:   flag.String("js-path", "", "path to put the js client"),
-		versionFlag:    flag.Bool("version", false, "print the wag version and exit"),
-		clientOnly:     flag.Bool("client-only", false, "only generate client code"),
-		clientLanguage: flag.String("client-language", "", "generate client code in specific language [go|js]"),
+		swaggerFile:        flag.String("file", "swagger.yml", "the spec file to use"),
+		goPackageName:      flag.String("go-package", "", "package of the generated go code"),
+		outputPath:         flag.String("output-path", "", "relative output path of the generated go code"),
+		jsModulePath:       flag.String("js-path", "", "path to put the js client"),
+		versionFlag:        flag.Bool("version", false, "print the wag version and exit"),
+		clientOnly:         flag.Bool("client-only", false, "only generate client code"),
+		clientLanguage:     flag.String("client-language", "", "generate client code in specific language [go|js]"),
+		dynamoOnly:         flag.Bool("dynamo-only", false, "only generate dynamo code"),
+		relativeDynamoPath: flag.String("dynamo-path", "", "path to generate dynamo code relative to go package path"),
 	}
 	flag.Parse()
 	if *conf.versionFlag {
@@ -115,6 +123,12 @@ func main() {
 		}
 	}
 
+	if conf.generateDynamo {
+		if err := generateDynamo(conf.dynamoPath, *conf.goPackageName, conf.goPackagePath, *conf.relativeDynamoPath, swaggerSpec); err != nil {
+			log.Fatal(err.Error())
+		}
+	}
+
 	if conf.generateGoClient {
 		if err := generateGoClient(conf.goClientPath, *conf.goPackageName, conf.goPackagePath, swaggerSpec); err != nil {
 			log.Fatal(err.Error())
@@ -149,6 +163,16 @@ func generateServer(serverPath, goPackageName, goPackagePath string, swaggerSpec
 	middlewareGenerator.Write(hardcoded.MustAsset("../_hardcoded/middleware.go"))
 	if err := middlewareGenerator.WriteFile("server/middleware.go"); err != nil {
 		return fmt.Errorf("Failed to copy middleware.go: %s", err)
+	}
+	return nil
+}
+
+func generateDynamo(dynamoPath, goPackageName, goPackagePath, outputPath string, swaggerSpec spec.Swagger) error {
+	if err := prepareDir(dynamoPath); err != nil {
+		return err
+	}
+	if err := gendb.GenerateDB(goPackageName, goPackagePath, &swaggerSpec, outputPath); err != nil {
+		return fmt.Errorf("Failed to generate database: %s", err)
 	}
 	return nil
 }
@@ -221,6 +245,8 @@ func getModulePackageName(modFile *os.File, outputPath string) string {
 
 // setDerivedFields sets the derived configuration from the command line arguments
 func (c *config) setDerivedFields() error {
+	const serverDir = "server"
+
 	// check if the repo uses modules
 	if modFile, err := os.Open("go.mod"); err != nil {
 		if _, ok := err.(*os.PathError); !ok {
@@ -250,9 +276,11 @@ func (c *config) setDerivedFields() error {
 	c.generateServer = true
 	c.generateGoClient = true
 	c.generateJSClient = true
+	c.generateDynamo = true
 	// only generate client
 	if swag.BoolValue(c.clientOnly) {
 		c.generateServer = false
+		c.generateDynamo = false
 	}
 
 	// only generate client of specific language
@@ -276,14 +304,36 @@ func (c *config) setDerivedFields() error {
 	}
 
 	c.generateGoModels = c.generateServer || c.generateGoClient
-	if c.generateJSClient && swag.StringValue(c.jsModulePath) == "" {
+	if c.generateJSClient && swag.StringValue(c.jsModulePath) == "" && !swag.BoolValue(c.dynamoOnly) {
 		return fmt.Errorf("js-path is required")
 	}
 
+	// if using -dynamo-only, only generate dynamo files and go models
+	if swag.BoolValue(c.dynamoOnly) {
+		c.generateDynamo = true
+		c.generateGoModels = true
+		c.generateGoClient = false
+		c.generateServer = false
+		c.generateJSClient = false
+	}
+
+	c.goAbsolutePackagePath = filepath.Join(os.Getenv("GOPATH"), "src", c.goPackagePath)
 	// determine paths for generated files
-	c.modelsPath = filepath.Join(os.Getenv("GOPATH"), "src", c.goPackagePath, "models")
-	c.serverPath = filepath.Join(os.Getenv("GOPATH"), "src", c.goPackagePath, "server")
-	c.goClientPath = filepath.Join(os.Getenv("GOPATH"), "src", c.goPackagePath, "client")
+	c.modelsPath = filepath.Join(c.goAbsolutePackagePath, "models")
+	c.serverPath = filepath.Join(c.goAbsolutePackagePath, serverDir)
+	c.goClientPath = filepath.Join(c.goAbsolutePackagePath, "client")
+
+	if c.generateDynamo {
+		// set path of generated dynamo code if none specified
+		if swag.StringValue(c.relativeDynamoPath) == "" {
+			if c.generateServer {
+				c.relativeDynamoPath = swag.String(path.Join(serverDir, "db"))
+			} else {
+				c.relativeDynamoPath = swag.String("db")
+			}
+		}
+		c.dynamoPath = path.Join(c.goAbsolutePackagePath, *c.relativeDynamoPath)
+	}
 
 	return nil
 }

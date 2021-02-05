@@ -6,7 +6,7 @@ import (
   "time"
 
   "{{ .PackageName }}/models"
-  "{{ .PackageName }}/server/db"
+  "{{ .PackageName }}/{{ .OutputPath}}"
   ddb "github.com/aws/aws-sdk-go/service/dynamodb"
   "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
   "github.com/go-openapi/strfmt"

@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-openapi/spec"
 
-	"github.com/Clever/wag/v6/server/gendb"
 	"github.com/Clever/wag/v6/swagger"
 	"github.com/Clever/wag/v6/templates"
 	"github.com/Clever/wag/v6/utils"
@@ -15,7 +14,6 @@ import (
 
 // Generate server package for a swagger spec.
 func Generate(packageName, packagePath string, s spec.Swagger) error {
-
 	if err := generateRouter(packagePath, s, s.Paths); err != nil {
 		return err
 	}
@@ -25,7 +23,7 @@ func Generate(packageName, packagePath string, s spec.Swagger) error {
 	if err := generateHandlers(packageName, packagePath, &s, s.Paths); err != nil {
 		return err
 	}
-	return gendb.GenerateDB(packageName, packagePath, &s, s.Info.InfoProps.Title, s.Paths)
+	return nil
 }
 
 type routerFunction struct {
