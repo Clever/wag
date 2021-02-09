@@ -222,11 +222,19 @@ func (c *config) parse() error {
 	}
 
 	clientLanguage, jsModulePath := swag.StringValue(c.clientLanguage), swag.StringValue(c.jsModulePath)
+	if err := c.setGenerateFlags(clientLanguage, jsModulePath); err != nil {
+		return err
+	}
+
+	c.setGeneratedFilePaths()
+
+	return nil
+}
+
+func (c *config) setGenerateFlags(clientLanguage, jsModulePath string) error {
 	if swag.BoolValue(c.clientOnly) && swag.BoolValue(c.dynamoOnly) {
 		return fmt.Errorf("Cannot use -dynamo-only and -client-only together")
 	} else if swag.BoolValue(c.clientOnly) {
-		c.generateServer = false
-		c.generateDynamo = false
 		if err := c.setClientLanguage(clientLanguage, jsModulePath); err != nil {
 			return err
 		}
@@ -235,8 +243,6 @@ func (c *config) parse() error {
 		c.generateDynamo = true
 		c.generateGoModels = true
 		c.generateGoClient = false
-		c.generateServer = false
-		c.generateJSClient = false
 	} else {
 		c.generateServer = true
 		c.generateDynamo = true
@@ -245,9 +251,6 @@ func (c *config) parse() error {
 			return err
 		}
 	}
-
-	c.setGeneratedFilePaths()
-
 	return nil
 }
 
@@ -266,7 +269,7 @@ func (c *config) setGoPaths(outputPath, goPackageName string) error {
 		c.goPackagePath = goPackageName
 	} else {
 		defer modFile.Close()
-		// todo: do not rely on GOPATH when repo uses modules
+		// TODO: do not rely on GOPATH when repo uses modules
 		goPath := os.Getenv("GOPATH")
 		if goPath == "" {
 			return fmt.Errorf("GOPATH must be set")
