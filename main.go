@@ -20,44 +20,51 @@ import (
 	"github.com/Clever/wag/v6/hardcoded"
 	"github.com/Clever/wag/v6/models"
 	"github.com/Clever/wag/v6/server"
+	"github.com/Clever/wag/v6/server/gendb"
 	"github.com/Clever/wag/v6/swagger"
 	"github.com/Clever/wag/v6/validation"
 )
 
-// config contains the configuration derived from command line flags
+// config contains the configuration of command line flags and configuration derived from command line flags
 type config struct {
-	// flag values
-	swaggerFile    *string
-	goPackageName  *string
-	outputPath     *string
-	jsModulePath   *string
-	versionFlag    *bool
-	clientOnly     *bool
-	clientLanguage *string
+	clientLanguage     *string
+	clientOnly         *bool
+	dynamoOnly         *bool
+	outputPath         *string
+	versionFlag        *bool
+	swaggerFile        *string
+	relativeDynamoPath *string
+	jsModulePath       *string
+	goPackageName      *string
 
-	// derived values
-	goPackagePath    string
-	generateServer   bool
+	dynamoPath            string
+	goAbsolutePackagePath string
+	goClientPath          string
+	goPackagePath         string
+	jsClientPath          string
+	modelsPath            string
+	serverPath            string
+
+	generateDynamo   bool
 	generateGoClient bool
 	generateGoModels bool
 	generateJSClient bool
-	modelsPath       string
-	serverPath       string
-	goClientPath     string
-	jsClientPath     string
+	generateServer   bool
 }
 
 var version string
 
 func main() {
-	conf := &config{
-		swaggerFile:    flag.String("file", "swagger.yml", "the spec file to use"),
-		goPackageName:  flag.String("go-package", "", "package of the generated go code"),
-		outputPath:     flag.String("output-path", "", "relative output path of the generated go code"),
-		jsModulePath:   flag.String("js-path", "", "path to put the js client"),
-		versionFlag:    flag.Bool("version", false, "print the wag version and exit"),
-		clientOnly:     flag.Bool("client-only", false, "only generate client code"),
-		clientLanguage: flag.String("client-language", "", "generate client code in specific language [go|js]"),
+	conf := config{
+		swaggerFile:        flag.String("file", "swagger.yml", "the spec file to use"),
+		goPackageName:      flag.String("go-package", "", "package of the generated go code"),
+		outputPath:         flag.String("output-path", "", "relative output path of the generated go code"),
+		jsModulePath:       flag.String("js-path", "", "path to put the js client"),
+		versionFlag:        flag.Bool("version", false, "print the wag version and exit"),
+		clientOnly:         flag.Bool("client-only", false, "only generate client code"),
+		clientLanguage:     flag.String("client-language", "", "generate client code in specific language [go|js]"),
+		dynamoOnly:         flag.Bool("dynamo-only", false, "only generate dynamo code"),
+		relativeDynamoPath: flag.String("dynamo-path", "", "path to generate dynamo code relative to go package path"),
 	}
 	flag.Parse()
 	if *conf.versionFlag {
@@ -65,7 +72,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	if err := conf.setDerivedFields(); err != nil {
+	if err := conf.parse(); err != nil {
 		log.Fatalf(err.Error())
 	}
 
@@ -115,6 +122,12 @@ func main() {
 		}
 	}
 
+	if conf.generateDynamo {
+		if err := generateDynamo(conf.dynamoPath, *conf.goPackageName, conf.goPackagePath, *conf.relativeDynamoPath, swaggerSpec); err != nil {
+			log.Fatal(err.Error())
+		}
+	}
+
 	if conf.generateGoClient {
 		if err := generateGoClient(conf.goClientPath, *conf.goPackageName, conf.goPackagePath, swaggerSpec); err != nil {
 			log.Fatal(err.Error())
@@ -149,6 +162,16 @@ func generateServer(serverPath, goPackageName, goPackagePath string, swaggerSpec
 	middlewareGenerator.Write(hardcoded.MustAsset("../_hardcoded/middleware.go"))
 	if err := middlewareGenerator.WriteFile("server/middleware.go"); err != nil {
 		return fmt.Errorf("Failed to copy middleware.go: %s", err)
+	}
+	return nil
+}
+
+func generateDynamo(dynamoPath, goPackageName, goPackagePath, outputPath string, swaggerSpec spec.Swagger) error {
+	if err := prepareDir(dynamoPath); err != nil {
+		return err
+	}
+	if err := gendb.GenerateDB(goPackageName, goPackagePath, &swaggerSpec, outputPath); err != nil {
+		return fmt.Errorf("Failed to generate database: %s", err)
 	}
 	return nil
 }
@@ -191,6 +214,127 @@ func prepareDir(dir string) error {
 	return nil
 }
 
+// parseCmdConfig determines the which code is generated and the location of the generated code
+// from the command line arguments
+func (c *config) parse() error {
+	if err := c.setGoPaths(swag.StringValue(c.outputPath), swag.StringValue(c.goPackageName)); err != nil {
+		return err
+	}
+
+	clientLanguage, jsModulePath := swag.StringValue(c.clientLanguage), swag.StringValue(c.jsModulePath)
+	if err := c.setGenerateFlags(clientLanguage, jsModulePath); err != nil {
+		return err
+	}
+
+	c.setGeneratedFilePaths()
+
+	return nil
+}
+
+func (c *config) setGenerateFlags(clientLanguage, jsModulePath string) error {
+	if swag.BoolValue(c.clientOnly) && swag.BoolValue(c.dynamoOnly) {
+		return fmt.Errorf("Cannot use -dynamo-only and -client-only together")
+	} else if swag.BoolValue(c.clientOnly) {
+		if err := c.setClientLanguage(clientLanguage, jsModulePath); err != nil {
+			return err
+		}
+		c.generateGoModels = c.generateGoClient
+	} else if swag.BoolValue(c.dynamoOnly) {
+		c.generateDynamo = true
+		c.generateGoModels = true
+		c.generateGoClient = false
+	} else {
+		c.generateServer = true
+		c.generateDynamo = true
+		c.generateGoModels = true
+		if err := c.setClientLanguage(clientLanguage, jsModulePath); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// setGoPaths sets the golang package path and package name. Go repos using modules may have a
+// package name differing from its package path.
+func (c *config) setGoPaths(outputPath, goPackageName string) error {
+	// check if the repo uses modules
+	if modFile, err := os.Open("go.mod"); err != nil {
+		if _, ok := err.(*os.PathError); !ok {
+			return fmt.Errorf("Error checking if the repo contains a go.mod file: %s", err.Error())
+		}
+		if goPackageName == "" {
+			return fmt.Errorf("go-package is required")
+		}
+		// if the repo does not use modules, the package name is equivalent to the package path
+		c.goPackagePath = goPackageName
+	} else {
+		defer modFile.Close()
+		// TODO: do not rely on GOPATH when repo uses modules
+		goPath := os.Getenv("GOPATH")
+		if goPath == "" {
+			return fmt.Errorf("GOPATH must be set")
+		}
+		if outputPath == "" {
+			return fmt.Errorf("output-path is required")
+		}
+
+		c.goPackagePath = getModulePackagePath(goPath, path.Clean(outputPath))
+		*c.goPackageName = getModulePackageName(modFile, path.Clean(outputPath))
+	}
+	return nil
+}
+
+// setClientLanguage determines in which langues to generate the server client
+func (c *config) setClientLanguage(clientLanguage, jsModulePath string) error {
+	if clientLanguage != "" {
+		if clientLanguage != "go" && clientLanguage != "js" {
+			return fmt.Errorf("client-language must be one of \"go\" or \"js\"")
+		}
+		switch clientLanguage {
+		case "go":
+			c.generateGoClient = true
+			c.generateJSClient = false
+		case "js":
+			c.generateGoClient = false
+			c.generateJSClient = true
+		default:
+			return fmt.Errorf("client-language must be one of \"go\" or \"js\"")
+		}
+	} else {
+		c.generateGoClient = true
+		c.generateJSClient = true
+	}
+
+	if c.generateJSClient && jsModulePath == "" {
+		return fmt.Errorf("js-path is required")
+	}
+
+	return nil
+}
+
+// setGeneratedFilePaths determines where to output the generated files.
+func (c *config) setGeneratedFilePaths() {
+	const serverDir = "server"
+
+	// determine paths for generated files
+	c.goAbsolutePackagePath = filepath.Join(os.Getenv("GOPATH"), "src", c.goPackagePath)
+	c.modelsPath = filepath.Join(c.goAbsolutePackagePath, "models")
+	c.serverPath = filepath.Join(c.goAbsolutePackagePath, serverDir)
+	c.goClientPath = filepath.Join(c.goAbsolutePackagePath, "client")
+
+	if c.generateDynamo {
+		// set path of generated dynamo code if none specified
+		if swag.StringValue(c.relativeDynamoPath) == "" {
+			if c.generateServer {
+				c.relativeDynamoPath = swag.String(path.Join(serverDir, "db"))
+			} else {
+				c.relativeDynamoPath = swag.String("db")
+			}
+		}
+		c.dynamoPath = path.Join(c.goAbsolutePackagePath, *c.relativeDynamoPath)
+	}
+}
+
 func getModulePackagePath(goPath, outputPath string) string {
 	pwd, err := os.Getwd()
 	if err != nil {
@@ -217,73 +361,4 @@ func getModulePackageName(modFile *os.File, outputPath string) string {
 	moduleName := strings.TrimPrefix(string(b), "module")
 	moduleName = strings.TrimSpace(moduleName)
 	return fmt.Sprintf("%v/%v", moduleName, outputPath)
-}
-
-// setDerivedFields sets the derived configuration from the command line arguments
-func (c *config) setDerivedFields() error {
-	// check if the repo uses modules
-	if modFile, err := os.Open("go.mod"); err != nil {
-		if _, ok := err.(*os.PathError); !ok {
-			return fmt.Errorf("Error checking if the repo contains a go.mod file: %s", err.Error())
-		}
-		if *c.goPackageName == "" {
-			return fmt.Errorf("go-package is required")
-		}
-		c.goPackagePath = *c.goPackageName
-	} else {
-		defer modFile.Close()
-
-		goPath := os.Getenv("GOPATH")
-		if goPath == "" {
-			return fmt.Errorf("GOPATH must be set")
-		}
-		if *c.outputPath == "" {
-			return fmt.Errorf("output-path is required")
-		}
-
-		*c.outputPath = path.Clean(*c.outputPath)
-		c.goPackagePath = getModulePackagePath(goPath, *c.outputPath)
-		*c.goPackageName = getModulePackageName(modFile, *c.outputPath)
-	}
-
-	// parse flags determing if client/server code is generated
-	c.generateServer = true
-	c.generateGoClient = true
-	c.generateJSClient = true
-	// only generate client
-	if swag.BoolValue(c.clientOnly) {
-		c.generateServer = false
-	}
-
-	// only generate client of specific language
-	if swag.StringValue(c.clientLanguage) != "" {
-		if *c.clientLanguage != "go" && *c.clientLanguage != "js" {
-			return fmt.Errorf("client-language must be one of \"go\" or \"js\"")
-		}
-		switch *c.clientLanguage {
-		case "go":
-			c.generateGoClient = true
-			c.generateJSClient = false
-		case "js":
-			c.generateGoClient = false
-			c.generateJSClient = true
-		default:
-			return fmt.Errorf("client-language must be one of \"go\" or \"js\"")
-		}
-	} else {
-		c.generateGoClient = true
-		c.generateJSClient = true
-	}
-
-	c.generateGoModels = c.generateServer || c.generateGoClient
-	if c.generateJSClient && swag.StringValue(c.jsModulePath) == "" {
-		return fmt.Errorf("js-path is required")
-	}
-
-	// determine paths for generated files
-	c.modelsPath = filepath.Join(os.Getenv("GOPATH"), "src", c.goPackagePath, "models")
-	c.serverPath = filepath.Join(os.Getenv("GOPATH"), "src", c.goPackagePath, "server")
-	c.goClientPath = filepath.Join(os.Getenv("GOPATH"), "src", c.goPackagePath, "client")
-
-	return nil
 }

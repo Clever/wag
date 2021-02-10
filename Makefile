@@ -54,6 +54,11 @@ generate: build jsdoc2md
 	./bin/wag -file ./samples/swagger.yml -output-path ./samples/gen-go-client-only -js-path ./samples/gen-js-client-only --client-only
 	cd ./samples/gen-js-client-only && jsdoc2md index.js types.js > ./README.md
 	go generate ./samples/gen-go-client-only...
+	./bin/wag -file ./samples/db.yml -output-path ./samples/gen-go-db-only -dynamo-only
+	go generate ./samples/gen-go-db-only...
+	./bin/wag -file ./samples/db.yml -output-path ./samples/gen-go-db-custom-path -js-path ./samples/gen-js-db-custom-path -dynamo-path db
+	cd ./samples/gen-js-db-custom-path && jsdoc2md index.js types.js > ./README.md
+	go generate ./samples/gen-go-db-custom-path...
 
 $(PKGS): golang-test-all-strict-deps
 	$(call golang-test-all-strict,$@)

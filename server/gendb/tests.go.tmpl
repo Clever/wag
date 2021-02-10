@@ -9,7 +9,7 @@ import (
   {{- end }}
 
   "{{ .PackageName }}/models"
-  "{{ .PackageName }}/server/db"
+  "{{ .PackageName }}/{{ .OutputPath }}"
   "github.com/stretchr/testify/require"
   {{- if anyTableUsesDateTime .XDBConfigs }}
   "github.com/go-openapi/strfmt"

@@ -18,7 +18,7 @@ import (
         {{- end }}
 
   "{{ .PackageName }}/models"
-  "{{ .PackageName }}/server/db"
+  "{{ .PackageName }}/{{ .OutputPath }}"
   "github.com/aws/aws-sdk-go/aws"
         {{- if not $xdbConfig.AllowOverwrites }}
   "github.com/aws/aws-sdk-go/aws/awserr"
