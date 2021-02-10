@@ -55,7 +55,7 @@ require (
 	github.com/spf13/viper v1.0.1-0.20171227194143-aafc9e6bc7b7 // indirect
 	github.com/stretchr/testify v1.7.0
 	github.com/uber-go/atomic v1.4.0 // indirect
-	github.com/uber/jaeger-client-go v2.16.0+incompatible
+	github.com/uber/jaeger-client-go v2.25.0+incompatible
 	github.com/uber/jaeger-lib v2.0.0+incompatible // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
