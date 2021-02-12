@@ -33,7 +33,7 @@ require (
 	github.com/golang/mock v1.0.1-0.20180211072722-58cd061d0938
 	github.com/gorilla/context v0.0.0-20160226214623-1ea25387ff6f // indirect
 	github.com/gorilla/handlers v1.4.2
-	github.com/gorilla/mux v1.6.1
+	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/hcl v0.0.0-20171017181929-23c074d0eceb // indirect
 	github.com/jessevdk/go-flags v1.4.0 // indirect
 	github.com/kardianos/osext v0.0.0-20170510131534-ae77be60afb1
