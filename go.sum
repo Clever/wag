@@ -19,6 +19,7 @@ github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a/go.mod h1:l
 github.com/aws/aws-sdk-go v1.13.22 h1:S18o71mCjRUw9bZzw61k2xjZx3/XtzwJKdAXx5CUf6s=
 github.com/aws/aws-sdk-go v1.13.22/go.mod h1:ZRmQr0FajVIyZ4ZzBYKG5P3ZqPz9IHG41ZoMu1ADI3k=
 github.com/aws/aws-sdk-go v1.37.8/go.mod h1:hcU610XS61/+aQV88ixoOzUoG7v3b31pl2zKMmprdro=
+github.com/aws/aws-sdk-go v1.37.10/go.mod h1:hcU610XS61/+aQV88ixoOzUoG7v3b31pl2zKMmprdro=
 github.com/awslabs/goformation/v2 v2.3.1 h1:Z+RD42c29UnZuMiQOU45qX90WAZ+Vb0RRGCD8T+lBBU=
 github.com/awslabs/goformation/v2 v2.3.1/go.mod h1:TltEj7mH+mT+6byC/VuOlDHvLFoEHQcleM1RVoO6ZMs=
 github.com/codahale/hdrhistogram v0.9.0 h1:9GjrtRI+mLEFPtTfR/AZhcxp+Ii8NZYWq5104FbZQY0=

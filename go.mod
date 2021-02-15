@@ -10,7 +10,7 @@ require (
 	github.com/PuerkitoBio/purell v1.1.0 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/afex/hystrix-go v0.0.0-20180329224416-4847ceb883b5
-	github.com/aws/aws-sdk-go v1.37.8
+	github.com/aws/aws-sdk-go v1.37.10
 	github.com/awslabs/goformation/v2 v2.3.1
 	github.com/codahale/hdrhistogram v0.9.0 // indirect
 	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b
