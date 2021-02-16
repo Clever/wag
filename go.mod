@@ -18,7 +18,7 @@ require (
 	github.com/go-errors/errors v1.1.1
 	github.com/go-ini/ini v1.33.0 // indirect
 	github.com/go-openapi/analysis v0.0.0-20180126163718-f59a71f0ece6 // indirect
-	github.com/go-openapi/errors v0.19.2
+	github.com/go-openapi/errors v0.20.0
 	github.com/go-openapi/inflect v0.0.0-20130829110746-b1f6470ffb9c // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.0.0-20161105162150-36d33bfe519e
