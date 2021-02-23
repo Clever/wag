@@ -8,6 +8,7 @@ blog client library.
     * [Blog](#exp_module_blog--Blog) ⏏
         * [new Blog(options)](#new_module_blog--Blog_new)
         * _instance_
+            * [.postGradeFileForStudent(params, [options], [cb])](#module_blog--Blog+postGradeFileForStudent) ⇒ <code>Promise</code>
             * [.getSectionsForStudent(studentID, [options], [cb])](#module_blog--Blog+getSectionsForStudent) ⇒ <code>Promise</code>
             * [.postSectionsForStudent(params, [options], [cb])](#module_blog--Blog+postSectionsForStudent) ⇒ <code>Promise</code>
         * _static_
@@ -47,6 +48,28 @@ Create a new client object.
 | [options.circuit.requestVolumeThreshold] | <code>number</code> |  | The minimum number of requests needed before a circuit can be tripped due to health. Default: 20. |
 | [options.circuit.sleepWindow] | <code>number</code> |  | how long, in milliseconds, to wait after a circuit opens before testing for recovery. Default: 5000. |
 | [options.circuit.errorPercentThreshold] | <code>number</code> |  | the threshold to place on the rolling error rate. Once the error rate exceeds this percentage, the circuit opens. Default: 90. |
+
+<a name="module_blog--Blog+postGradeFileForStudent"></a>
+
+#### blog.postGradeFileForStudent(params, [options], [cb]) ⇒ <code>Promise</code>
+Posts the grade file for the specified student
+
+**Kind**: instance method of [<code>Blog</code>](#exp_module_blog--Blog)  
+**Fulfill**: <code>undefined</code>  
+**Reject**: [<code>BadRequest</code>](#module_blog--Blog.Errors.BadRequest)  
+**Reject**: [<code>InternalError</code>](#module_blog--Blog.Errors.InternalError)  
+**Reject**: <code>Error</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| params | <code>Object</code> |  |
+| params.studentID | <code>string</code> |  |
+| [params.file] |  |  |
+| [options] | <code>object</code> |  |
+| [options.timeout] | <code>number</code> | A request specific timeout |
+| [options.span] | [<code>Span</code>](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html) | An OpenTracing span - For example from the parent request |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_blog--Blog.RetryPolicies) | A request specific retryPolicy |
+| [cb] | <code>function</code> |  |
 
 <a name="module_blog--Blog+getSectionsForStudent"></a>
 

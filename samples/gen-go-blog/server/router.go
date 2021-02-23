@@ -222,6 +222,13 @@ func newRouter(c Controller) *mux.Router {
 	router := mux.NewRouter()
 	h := handler{Controller: c}
 
+	router.Methods("POST").Path("/students/{student_id}/gradeFile").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger.FromContext(r.Context()).AddContext("op", "postGradeFileForStudent")
+		h.PostGradeFileForStudentHandler(r.Context(), w, r)
+		ctx := WithTracingOpName(r.Context(), "postGradeFileForStudent")
+		r = r.WithContext(ctx)
+	})
+
 	router.Methods("GET").Path("/students/{student_id}/sections").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.FromContext(r.Context()).AddContext("op", "getSectionsForStudent")
 		h.GetSectionsForStudentHandler(r.Context(), w, r)

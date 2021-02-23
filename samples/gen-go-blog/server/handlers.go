@@ -71,6 +71,113 @@ func jsonMarshalNoError(i interface{}) string {
 	return string(bytes)
 }
 
+// statusCodeForPostGradeFileForStudent returns the status code corresponding to the returned
+// object. It returns -1 if the type doesn't correspond to anything.
+func statusCodeForPostGradeFileForStudent(obj interface{}) int {
+
+	switch obj.(type) {
+
+	case *models.BadRequest:
+		return 400
+
+	case *models.InternalError:
+		return 500
+
+	case models.BadRequest:
+		return 400
+
+	case models.InternalError:
+		return 500
+
+	default:
+		return -1
+	}
+}
+
+func (h handler) PostGradeFileForStudentHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+
+	input, err := newPostGradeFileForStudentInput(r)
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		http.Error(w, jsonMarshalNoError(models.BadRequest{Message: err.Error()}), http.StatusBadRequest)
+		return
+	}
+
+	err = input.Validate()
+
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		http.Error(w, jsonMarshalNoError(models.BadRequest{Message: err.Error()}), http.StatusBadRequest)
+		return
+	}
+
+	err = h.PostGradeFileForStudent(ctx, input)
+
+	if err != nil {
+		logger.FromContext(ctx).AddContext("error", err.Error())
+		if btErr, ok := err.(*errors.Error); ok {
+			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
+		} else if xerr, ok := err.(xerrors.Formatter); ok {
+			logger.FromContext(ctx).AddContext("frames", fmt.Sprintf("%+v", xerr))
+		}
+		statusCode := statusCodeForPostGradeFileForStudent(err)
+		if statusCode == -1 {
+			err = models.InternalError{Message: err.Error()}
+			statusCode = 500
+		}
+		http.Error(w, jsonMarshalNoError(err), statusCode)
+		return
+	}
+
+	w.WriteHeader(200)
+	w.Write([]byte(""))
+
+}
+
+// newPostGradeFileForStudentInput takes in an http.Request an returns the input struct.
+func newPostGradeFileForStudentInput(r *http.Request) (*models.PostGradeFileForStudentInput, error) {
+	var input models.PostGradeFileForStudentInput
+
+	sp := opentracing.SpanFromContext(r.Context())
+	_ = sp
+
+	var err error
+	_ = err
+
+	studentIDStr := mux.Vars(r)["student_id"]
+	if len(studentIDStr) == 0 {
+		return nil, errors.New("path parameter 'student_id' must be specified")
+	}
+	studentIDStrs := []string{studentIDStr}
+
+	if len(studentIDStrs) > 0 {
+		var studentIDTmp string
+		studentIDStr := studentIDStrs[0]
+		studentIDTmp, err = studentIDStr, error(nil)
+		if err != nil {
+			return nil, err
+		}
+		input.StudentID = studentIDTmp
+	}
+
+	data, err := ioutil.ReadAll(r.Body)
+
+	sp.LogFields(log.Int("request-size-bytes", len(data)))
+
+	if len(data) > 0 {
+		jsonSpan, _ := opentracing.StartSpanFromContext(r.Context(), "json-request-marshaling")
+		defer jsonSpan.Finish()
+
+		input.File = &models.GradeFile{}
+		if err := json.NewDecoder(bytes.NewReader(data)).Decode(input.File); err != nil {
+			return nil, err
+		}
+
+	}
+
+	return &input, nil
+}
+
 // statusCodeForGetSectionsForStudent returns the status code corresponding to the returned
 // object. It returns -1 if the type doesn't correspond to anything.
 func statusCodeForGetSectionsForStudent(obj interface{}) int {

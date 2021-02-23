@@ -10,6 +10,7 @@ import (
 	"github.com/go-openapi/spec"
 
 	"github.com/Clever/go-utils/stringset"
+	goClient "github.com/Clever/wag/v6/clients/go"
 	"github.com/Clever/wag/v6/swagger"
 	"github.com/Clever/wag/v6/templates"
 
@@ -90,7 +91,7 @@ var _ = strfmt.NewFormats
 			if err := printInputStruct(&g, op); err != nil {
 				return err
 			}
-			if err := printInputValidation(&g, op); err != nil {
+			if err := printInputValidation(&g, op, goClient.IsBinaryBody(op, s.Definitions)); err != nil {
 				return err
 			}
 			if err := printInputSerializer(&g, op, s.BasePath, pathKey); err != nil {
@@ -127,7 +128,7 @@ func printInputStruct(g *swagger.Generator, op *spec.Operation) error {
 	return nil
 }
 
-func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
+func printInputValidation(g *swagger.Generator, op *spec.Operation, binaryBody bool) error {
 	singleStringPathParameter, paramName := swagger.SingleStringPathParameter(op)
 	if singleStringPathParameter {
 		capOpID := swagger.Capitalize(op.ID)
@@ -152,11 +153,13 @@ func printInputValidation(g *swagger.Generator, op *spec.Operation) error {
 		if err != nil {
 			return err
 		}
+
 		t := validateTemplate{
 			Type:         param.In,
 			AccessString: "i." + swagger.StructParamName(param),
 			Pointer:      pointer || param.Type == "array",
 			Validations:  validations,
+			BinaryBody:   binaryBody,
 		}
 		if single, _ := swagger.SingleStringPathParameter(op); single {
 			t.AccessString = param.Name
@@ -178,17 +181,20 @@ type validateTemplate struct {
 	AccessString string
 	Pointer      bool
 	Validations  []string
+	BinaryBody   bool
 }
 
 //
 
 var validationStr = `
 	{{if eq .Type "body" -}}
+	{{if not .BinaryBody -}}
 	if {{.AccessString}} != nil {
 		if err := {{.AccessString}}.Validate(nil); err != nil {
 			return err
 		}
 	}
+	{{- end -}}
 	{{- end -}}
 	{{- $type := .Type -}}
 	{{- $accessString := .AccessString -}}
