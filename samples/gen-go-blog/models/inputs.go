@@ -20,6 +20,36 @@ var _ = strings.Replace
 var _ = validate.Maximum
 var _ = strfmt.NewFormats
 
+// PostGradeFileForStudentInput holds the input parameters for a postGradeFileForStudent operation.
+type PostGradeFileForStudentInput struct {
+	StudentID string
+	File      *GradeFile
+}
+
+// Validate returns an error if any of the PostGradeFileForStudentInput parameters don't satisfy the
+// requirements from the swagger yml file.
+func (i PostGradeFileForStudentInput) Validate() error {
+
+	return nil
+}
+
+// Path returns the URI path for the input.
+func (i PostGradeFileForStudentInput) Path() (string, error) {
+	path := "/students/{student_id}/gradeFile"
+	urlVals := url.Values{}
+
+	pathstudent_id := i.StudentID
+	if pathstudent_id == "" {
+		err := fmt.Errorf("student_id cannot be empty because it's a path parameter")
+		if err != nil {
+			return "", err
+		}
+	}
+	path = strings.Replace(path, "{student_id}", pathstudent_id, -1)
+
+	return path + "?" + urlVals.Encode(), nil
+}
+
 // GetSectionsForStudentInput holds the input parameters for a getSectionsForStudent operation.
 type GetSectionsForStudentInput struct {
 	StudentID string

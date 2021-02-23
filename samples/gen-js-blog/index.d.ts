@@ -58,6 +58,8 @@ declare class Blog {
   constructor(options: BlogOptions);
 
   
+  postGradeFileForStudent(params: models.PostGradeFileForStudentParams, options?: RequestOptions, cb?: Callback<void>): Promise<void>
+  
   getSectionsForStudent(student_id: string, options?: RequestOptions, cb?: Callback<models.Section[]>): Promise<models.Section[]>
   
   postSectionsForStudent(params: models.PostSectionsForStudentParams, options?: RequestOptions, cb?: Callback<models.Section[]>): Promise<models.Section[]>
@@ -95,6 +97,13 @@ declare namespace Blog {
   }
 
   namespace Models {
+    
+    type GradeFile = string;
+    
+    type PostGradeFileForStudentParams = {
+  studentID: string;
+  file?: GradeFile;
+};
     
     type PostSectionsForStudentParams = {
   studentID: string;

@@ -62,7 +62,29 @@ paths:
             items:
               $ref: "#/definitions/Section"
 
+  /students/{student_id}/gradeFile:
+    post:
+      operationId: postGradeFileForStudent
+      description: Posts the grade file for the specified student
+      parameters:
+        - name: student_id
+          in: path
+          type: string
+          required: true
+        - name: file
+          in: body
+          schema:
+            $ref: "#/definitions/GradeFile"
+      responses:
+        200:
+          description: "Success"
+              
+
 definitions:
+  GradeFile:
+    type: string
+    format: binary
+
   Section:
     type: object
     properties:

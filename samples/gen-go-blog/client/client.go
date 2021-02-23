@@ -153,6 +153,102 @@ func (c *WagClient) SetTransport(t http.RoundTripper) {
 	c.client.Transport = t
 }
 
+// PostGradeFileForStudent makes a POST request to /students/{student_id}/gradeFile
+// Posts the grade file for the specified student
+// 200: nil
+// 400: *models.BadRequest
+// 500: *models.InternalError
+// default: client side HTTP errors, for example: context.DeadlineExceeded.
+func (c *WagClient) PostGradeFileForStudent(ctx context.Context, i *models.PostGradeFileForStudentInput) error {
+	headers := make(map[string]string)
+
+	path, err := i.Path()
+
+	if err != nil {
+		return err
+	}
+
+	path = c.basePath + path
+
+	req, err := http.NewRequestWithContext(ctx, "POST", path, *i.File)
+
+	if err != nil {
+		return err
+	}
+
+	return c.doPostGradeFileForStudentRequest(ctx, req, headers)
+}
+
+func (c *WagClient) doPostGradeFileForStudentRequest(ctx context.Context, req *http.Request, headers map[string]string) error {
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Canonical-Resource", "postGradeFileForStudent")
+	req.Header.Set(VersionHeader, Version)
+
+	for field, value := range headers {
+		req.Header.Set(field, value)
+	}
+
+	// Add the opname for doers like tracing
+	ctx = context.WithValue(ctx, opNameCtx{}, "postGradeFileForStudent")
+	req = req.WithContext(ctx)
+	// Don't add the timeout in a "doer" because we don't want to call "defer.cancel()"
+	// until we've finished all the processing of the request object. Otherwise we'll cancel
+	// our own request before we've finished it.
+	if c.defaultTimeout != 0 {
+		ctx, cancel := context.WithTimeout(req.Context(), c.defaultTimeout)
+		defer cancel()
+		req = req.WithContext(ctx)
+	}
+	resp, err := c.requestDoer.Do(c.client, req)
+	retCode := 0
+	if resp != nil {
+		retCode = resp.StatusCode
+	}
+
+	// log all client failures and non-successful HT
+	logData := logger.M{
+		"backend":     "blog",
+		"method":      req.Method,
+		"uri":         req.URL,
+		"status_code": retCode,
+	}
+	if err == nil && retCode > 399 {
+		logData["message"] = resp.Status
+		c.logger.ErrorD("client-request-finished", logData)
+	}
+	if err != nil {
+		logData["message"] = err.Error()
+		c.logger.ErrorD("client-request-finished", logData)
+		return err
+	}
+	defer resp.Body.Close()
+	switch resp.StatusCode {
+
+	case 200:
+
+		return nil
+
+	case 400:
+
+		var output models.BadRequest
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return err
+		}
+		return &output
+
+	case 500:
+
+		var output models.InternalError
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return err
+		}
+		return &output
+
+	default:
+		return &models.InternalError{Message: fmt.Sprintf("Unknown status code %v", resp.StatusCode)}
+	}
+}
+
 // GetSectionsForStudent makes a GET request to /students/{student_id}/sections
 // Gets the sections for the specified student
 // 200: []models.Section

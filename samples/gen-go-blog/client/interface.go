@@ -11,6 +11,14 @@ import (
 // Client defines the methods available to clients of the blog service.
 type Client interface {
 
+	// PostGradeFileForStudent makes a POST request to /students/{student_id}/gradeFile
+	// Posts the grade file for the specified student
+	// 200: nil
+	// 400: *models.BadRequest
+	// 500: *models.InternalError
+	// default: client side HTTP errors, for example: context.DeadlineExceeded.
+	PostGradeFileForStudent(ctx context.Context, i *models.PostGradeFileForStudentInput) error
+
 	// GetSectionsForStudent makes a GET request to /students/{student_id}/sections
 	// Gets the sections for the specified student
 	// 200: []models.Section
