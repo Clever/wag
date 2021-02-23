@@ -16,7 +16,6 @@ require (
 	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b
 	github.com/fsnotify/fsnotify v1.4.7 // indirect
 	github.com/go-errors/errors v1.1.1
-	github.com/go-ini/ini v1.33.0 // indirect
 	github.com/go-openapi/analysis v0.0.0-20180126163718-f59a71f0ece6 // indirect
 	github.com/go-openapi/errors v0.19.2
 	github.com/go-openapi/inflect v0.0.0-20130829110746-b1f6470ffb9c // indirect
@@ -31,7 +30,6 @@ require (
 	github.com/go-swagger/go-swagger v0.2.1-0.20171112234155-b015bda48dfc
 	github.com/go-swagger/scan-repo-boundary v0.0.0-20180623220736-973b3573c013 // indirect
 	github.com/golang/mock v1.0.1-0.20180211072722-58cd061d0938
-	github.com/gorilla/context v0.0.0-20160226214623-1ea25387ff6f // indirect
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/hcl v0.0.0-20171017181929-23c074d0eceb // indirect
@@ -52,7 +50,6 @@ require (
 	github.com/spf13/pflag v1.0.0 // indirect
 	github.com/spf13/viper v1.0.1-0.20171227194143-aafc9e6bc7b7 // indirect
 	github.com/stretchr/testify v1.7.0
-	github.com/uber-go/atomic v1.4.0 // indirect
 	github.com/uber/jaeger-client-go v2.25.0+incompatible
 	github.com/uber/jaeger-lib v2.0.0+incompatible // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
@@ -63,7 +60,6 @@ require (
 	golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
 	gopkg.in/Clever/kayvee-go.v6 v6.17.0
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
-	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
