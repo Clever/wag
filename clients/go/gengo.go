@@ -3,6 +3,7 @@ package goclient
 import (
 	"bytes"
 	"fmt"
+	"path"
 	"strings"
 
 	"github.com/go-openapi/spec"
@@ -211,7 +212,7 @@ func generateClient(packageName, packagePath string, s spec.Swagger) error {
 			if op.Deprecated {
 				continue
 			}
-			code, err := operationCode(&s, op, s.BasePath, method, path)
+			code, err := operationCode(&s, op, s.BasePath, method, path, IsBinaryBody(op, s.Definitions))
 			if err != nil {
 				return err
 			}
@@ -227,6 +228,17 @@ func generateClient(packageName, packagePath string, s spec.Swagger) error {
 	g := swagger.Generator{PackagePath: packagePath}
 	g.Printf(clientCode)
 	return g.WriteFile("client/client.go")
+}
+
+// IsBinaryBody returns true if the format of the body of the operation is binary
+func IsBinaryBody(op *spec.Operation, definitions map[string]spec.Schema) bool {
+	for _, param := range op.Parameters {
+		if param.In == "body" {
+			definitionName := path.Base(param.Schema.Ref.Ref.GetURL().String())
+			return definitions[definitionName].Format == "binary"
+		}
+	}
+	return false
 }
 
 func generateInterface(packageName, packagePath string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
@@ -302,10 +314,10 @@ func generateIteratorTypes(s *spec.Swagger, g *swagger.Generator, paths *spec.Pa
 	return nil
 }
 
-func operationCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPath string) (string, error) {
+func operationCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPath string, binaryBody bool) (string, error) {
 	var buf bytes.Buffer
 
-	generatedMethodCodeString, err := methodCode(s, op, basePath, method, methodPath)
+	generatedMethodCodeString, err := methodCode(s, op, basePath, method, methodPath, binaryBody)
 	if err != nil {
 		return "", err
 	}
@@ -322,7 +334,7 @@ func operationCode(s *spec.Swagger, op *spec.Operation, basePath, method, method
 	return buf.String(), nil
 }
 
-func methodCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPath string) (string, error) {
+func methodCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPath string, binaryBody bool) (string, error) {
 	var buf bytes.Buffer
 	capOpID := swagger.Capitalize(op.ID)
 
@@ -334,11 +346,13 @@ func methodCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPat
 	buf.WriteString(fmt.Sprintf("func (c *WagClient) %s {\n", swagger.ClientInterface(s, op)))
 
 	buf.WriteString(fmt.Sprintf("\theaders := make(map[string]string)\n\n"))
-	buf.WriteString(fmt.Sprintf("\tvar body []byte\n"))
+	if !binaryBody {
+		buf.WriteString(fmt.Sprintf("\tvar body []byte\n"))
+	}
 
 	buf.WriteString(fmt.Sprintf(buildPathCode(s, op, basePath, methodPath)))
 	buf.WriteString(fmt.Sprintf(buildHeadersCode(s, op)))
-	buf.WriteString(fmt.Sprintf(buildRequestCode(s, op, method)))
+	buf.WriteString(fmt.Sprintf(buildRequestCode(s, op, method, binaryBody)))
 
 	if _, hasPaging := swagger.PagingParam(op); !hasPaging {
 		buf.WriteString(fmt.Sprintf(`
@@ -473,15 +487,36 @@ func buildBodyCode(s *spec.Swagger, op *spec.Operation, method string) string {
 	return ""
 }
 
-// buildRequestCode adds the body and makes the request
-func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string) string {
-	var buf bytes.Buffer
-	buf.WriteString(buildBodyCode(s, op, method))
+func getAccessString(op *spec.Operation) string {
+	for _, param := range op.Parameters {
+		if param.In == "body" {
+			t := swagger.ParamToTemplate(&param, op)
+			if singleParam, _ := swagger.SingleSchemaedBodyParameter(op); singleParam {
+				t.AccessString = "i"
+			}
+			return t.AccessString
+		}
+	}
+	panic("unexpected error: no body in request")
+}
 
-	buf.WriteString(fmt.Sprintf(`
+// buildRequestCode adds the body and makes the request
+func buildRequestCode(s *spec.Swagger, op *spec.Operation, method string, binaryBody bool) string {
+	var buf bytes.Buffer
+
+	// binary bodies are io.ReadCloser and do not need to be transformed
+	if binaryBody {
+		buf.WriteString(fmt.Sprintf(`
+	req, err := http.NewRequestWithContext(ctx, "%s", path, *%s)
+	%s
+`, strings.ToUpper(method), getAccessString(op), errorMessage(s, op)))
+	} else {
+		buf.WriteString(buildBodyCode(s, op, method))
+		buf.WriteString(fmt.Sprintf(`
 	req, err := http.NewRequestWithContext(ctx, "%s", path, bytes.NewBuffer(body))
 	%s
 `, strings.ToUpper(method), errorMessage(s, op)))
+	}
 
 	return buf.String()
 }
