@@ -30,7 +30,7 @@ require (
 	github.com/go-swagger/go-swagger v0.2.1-0.20171112234155-b015bda48dfc
 	github.com/go-swagger/scan-repo-boundary v0.0.0-20180623220736-973b3573c013 // indirect
 	github.com/golang/mock v1.0.1-0.20180211072722-58cd061d0938
-	github.com/gorilla/handlers v1.4.2
+	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/hcl v0.0.0-20171017181929-23c074d0eceb // indirect
 	github.com/jessevdk/go-flags v1.4.0 // indirect
