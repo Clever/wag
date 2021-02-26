@@ -160,20 +160,7 @@ func newPostGradeFileForStudentInput(r *http.Request) (*models.PostGradeFileForS
 		input.StudentID = studentIDTmp
 	}
 
-	data, err := ioutil.ReadAll(r.Body)
-
-	sp.LogFields(log.Int("request-size-bytes", len(data)))
-
-	if len(data) > 0 {
-		jsonSpan, _ := opentracing.StartSpanFromContext(r.Context(), "json-request-marshaling")
-		defer jsonSpan.Finish()
-
-		input.File = &models.GradeFile{}
-		if err := json.NewDecoder(bytes.NewReader(data)).Decode(input.File); err != nil {
-			return nil, err
-		}
-
-	}
+	input.File = (*models.GradeFile)(&r.Body)
 
 	return &input, nil
 }

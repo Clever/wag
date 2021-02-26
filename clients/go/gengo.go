@@ -234,11 +234,16 @@ func generateClient(packageName, packagePath string, s spec.Swagger) error {
 func IsBinaryBody(op *spec.Operation, definitions map[string]spec.Schema) bool {
 	for _, param := range op.Parameters {
 		if param.In == "body" {
-			definitionName := path.Base(param.Schema.Ref.Ref.GetURL().String())
-			return definitions[definitionName].Format == "binary"
+			return IsBinaryParam(param, definitions)
 		}
 	}
 	return false
+}
+
+// IsBinaryParam returns true of the format of the parameter is binary
+func IsBinaryParam(param spec.Parameter, definitions map[string]spec.Schema) bool {
+	definitionName := path.Base(param.Schema.Ref.Ref.GetURL().String())
+	return definitions[definitionName].Format == "binary"
 }
 
 func generateInterface(packageName, packagePath string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
