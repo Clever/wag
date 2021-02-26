@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-openapi/spec"
 
+	clients "github.com/Clever/wag/v6/clients/go"
 	"github.com/Clever/wag/v6/swagger"
 	"github.com/Clever/wag/v6/templates"
 	"github.com/Clever/wag/v6/utils"
@@ -262,7 +263,7 @@ func generateOperationHandler(s *spec.Swagger, op *spec.Operation) (string, erro
 		return "", err
 	}
 
-	newInputCode, err := generateNewInput(op)
+	newInputCode, err := generateNewInput(op, s.Definitions)
 	if err != nil {
 		return "", err
 	}
@@ -425,7 +426,7 @@ func new{{.Op}}Input(r *http.Request) (string, error) {
 }
 `
 
-func generateNewInput(op *spec.Operation) (string, error) {
+func generateNewInput(op *spec.Operation, definitions map[string]spec.Schema) (string, error) {
 	capOpID := swagger.Capitalize(op.ID)
 
 	singleStringPathParameter, paramVarName := swagger.SingleStringPathParameter(op)
@@ -507,6 +508,7 @@ func generateNewInput(op *spec.Operation) (string, error) {
 				Required:   param.Required,
 				ParamField: paramField,
 				TypeName:   typeName,
+				IsBinary:   clients.IsBinaryParam(param, definitions),
 			})
 			if err != nil {
 				return "", err
@@ -590,11 +592,13 @@ var paramTemplateStr = `
 
 type bodyParamTemplate struct {
 	Required   bool
+	IsBinary   bool
 	ParamField string
 	TypeName   string
 }
 
 var bodyParamTemplateStr = `
+	{{ if not .IsBinary }}
 	data, err := ioutil.ReadAll(r.Body)
 	{{if .Required}} if len(data) == 0 {
 		return nil, errors.New("request body is required, but was empty")
@@ -618,4 +622,11 @@ var bodyParamTemplateStr = `
 			}
 		{{end}}
 	}
+	{{else}}
+	{{if eq (len .ParamField) 0}}
+		input := (*models.{{.TypeName}})(&r.Body)
+	{{else}}
+		input.{{.ParamField}} = (*models.{{.TypeName}})(&r.Body)
+	{{end}}
+	{{end}}
 `
