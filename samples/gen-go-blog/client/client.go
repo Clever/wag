@@ -54,7 +54,8 @@ func New(basePath string) *WagClient {
 	retry := retryDoer{d: tracing, retryPolicy: SingleRetryPolicy{}}
 	logger := logger.New("blog-wagclient")
 	circuit := &circuitBreakerDoer{
-		d:     &retry,
+		d: &retry,
+		// TODO: INFRANG-4404 allow passing circuitBreakerOptions
 		debug: true,
 		// one circuit for each service + url pair
 		circuitName: fmt.Sprintf("blog-%s", shortHash(basePath)),

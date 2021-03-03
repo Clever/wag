@@ -277,6 +277,15 @@ func (d *circuitBreakerDoer) init() {
 					if e.Type != "HystrixCommand" {
 						continue
 					}
+
+					// Today we are creating a stream for every client so lets only log events for this
+					// circuit. In an ideal world we only create a single stream and pass it to the client.
+					// Lets worry about doing this when we implement passing circuitBreakerOptions
+					// to disable debug mode
+					if e.Name != d.circuitName {
+						continue
+					}
+
 					lastSeen, ok := lastEventSeen[e.Name]
 					lastEventSeen[e.Name] = e
 
