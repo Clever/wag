@@ -88,6 +88,7 @@ func New(basePath string) *WagClient {
 	logger := logger.New("{{.ServiceName}}-wagclient")
 	circuit := &circuitBreakerDoer{
 		d:     &retry,
+		// TODO: INFRANG-4404 allow passing circuitBreakerOptions
 		debug: true,
 		// one circuit for each service + url pair
 		circuitName: fmt.Sprintf("{{.ServiceName}}-%%s", shortHash(basePath)),
