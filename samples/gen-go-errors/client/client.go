@@ -33,7 +33,6 @@ type WagClient struct {
 	basePath    string
 	requestDoer doer
 	client      *http.Client
-	timeout     time.Duration
 	// Keep the retry doer around so that we can set the number of retries
 	retryDoer *retryDoer
 	// Keep the circuit doer around so that we can turn it on / off
@@ -144,7 +143,7 @@ func (c *WagClient) SetCircuitBreakerSettings(settings CircuitBreakerSettings) {
 }
 
 // SetTimeout sets a timeout on all operations for the client. To make a single request
-// with a timeout use context.WithTimeout as described here: https://godoc.org/golang.org/x/net/context#WithTimeout.
+// with a shorter timeout use context.WithTimeout as described here: https://godoc.org/golang.org/x/net/context#WithTimeout.
 func (c *WagClient) SetTimeout(timeout time.Duration) {
 	c.defaultTimeout = timeout
 }
