@@ -388,13 +388,24 @@ func TestTimeout(t *testing.T) {
 	assert.Error(t, err)
 	assert.IsType(t, context.DeadlineExceeded, err)
 	end := time.Now()
-	assert.True(t, end.Sub(start) < 80*time.Millisecond)
+	assert.True(t, end.Sub(start) < 20*time.Millisecond)
 
 	// Try with a global client setting
 	c.SetTimeout(10 * time.Millisecond)
 	_, err = c.GetBooks(context.Background(), &models.GetBooksInput{})
 	require.Error(t, err)
 	assert.IsType(t, context.DeadlineExceeded, err)
+
+	// TODO: Ideally this would actually take effect
+	// Adding a higher per request context timeout has no effect
+	ctx, cancel = context.WithTimeout(context.Background(), 50*time.Millisecond)
+	defer cancel()
+	start = time.Now()
+	_, err = c.GetBooks(ctx, &models.GetBooksInput{})
+	assert.Error(t, err)
+	assert.IsType(t, context.DeadlineExceeded, err)
+	end = time.Now()
+	assert.True(t, end.Sub(start) < 20*time.Millisecond)
 }
 
 func TestOmitEmpty(t *testing.T) {

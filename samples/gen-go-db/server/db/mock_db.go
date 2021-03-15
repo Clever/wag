@@ -37,6 +37,7 @@ func (m *MockInterface) EXPECT() *MockInterfaceMockRecorder {
 
 // SaveDeployment mocks base method
 func (m_2 *MockInterface) SaveDeployment(ctx context.Context, m models.Deployment) error {
+	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveDeployment", ctx, m)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -44,11 +45,13 @@ func (m_2 *MockInterface) SaveDeployment(ctx context.Context, m models.Deploymen
 
 // SaveDeployment indicates an expected call of SaveDeployment
 func (mr *MockInterfaceMockRecorder) SaveDeployment(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveDeployment", reflect.TypeOf((*MockInterface)(nil).SaveDeployment), ctx, m)
 }
 
 // GetDeployment mocks base method
 func (m *MockInterface) GetDeployment(ctx context.Context, environment, application, version string) (*models.Deployment, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDeployment", ctx, environment, application, version)
 	ret0, _ := ret[0].(*models.Deployment)
 	ret1, _ := ret[1].(error)
@@ -57,11 +60,13 @@ func (m *MockInterface) GetDeployment(ctx context.Context, environment, applicat
 
 // GetDeployment indicates an expected call of GetDeployment
 func (mr *MockInterfaceMockRecorder) GetDeployment(ctx, environment, application, version interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeployment", reflect.TypeOf((*MockInterface)(nil).GetDeployment), ctx, environment, application, version)
 }
 
 // ScanDeployments mocks base method
 func (m *MockInterface) ScanDeployments(ctx context.Context, input ScanDeploymentsInput, fn func(*models.Deployment, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanDeployments", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -69,11 +74,13 @@ func (m *MockInterface) ScanDeployments(ctx context.Context, input ScanDeploymen
 
 // ScanDeployments indicates an expected call of ScanDeployments
 func (mr *MockInterfaceMockRecorder) ScanDeployments(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanDeployments", reflect.TypeOf((*MockInterface)(nil).ScanDeployments), ctx, input, fn)
 }
 
 // GetDeploymentsByEnvAppAndVersion mocks base method
 func (m *MockInterface) GetDeploymentsByEnvAppAndVersion(ctx context.Context, input GetDeploymentsByEnvAppAndVersionInput, fn func(*models.Deployment, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDeploymentsByEnvAppAndVersion", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -81,11 +88,13 @@ func (m *MockInterface) GetDeploymentsByEnvAppAndVersion(ctx context.Context, in
 
 // GetDeploymentsByEnvAppAndVersion indicates an expected call of GetDeploymentsByEnvAppAndVersion
 func (mr *MockInterfaceMockRecorder) GetDeploymentsByEnvAppAndVersion(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeploymentsByEnvAppAndVersion", reflect.TypeOf((*MockInterface)(nil).GetDeploymentsByEnvAppAndVersion), ctx, input, fn)
 }
 
 // DeleteDeployment mocks base method
 func (m *MockInterface) DeleteDeployment(ctx context.Context, environment, application, version string) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteDeployment", ctx, environment, application, version)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -93,11 +102,13 @@ func (m *MockInterface) DeleteDeployment(ctx context.Context, environment, appli
 
 // DeleteDeployment indicates an expected call of DeleteDeployment
 func (mr *MockInterfaceMockRecorder) DeleteDeployment(ctx, environment, application, version interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDeployment", reflect.TypeOf((*MockInterface)(nil).DeleteDeployment), ctx, environment, application, version)
 }
 
 // GetDeploymentsByEnvAppAndDate mocks base method
 func (m *MockInterface) GetDeploymentsByEnvAppAndDate(ctx context.Context, input GetDeploymentsByEnvAppAndDateInput, fn func(*models.Deployment, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDeploymentsByEnvAppAndDate", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -105,11 +116,13 @@ func (m *MockInterface) GetDeploymentsByEnvAppAndDate(ctx context.Context, input
 
 // GetDeploymentsByEnvAppAndDate indicates an expected call of GetDeploymentsByEnvAppAndDate
 func (mr *MockInterfaceMockRecorder) GetDeploymentsByEnvAppAndDate(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeploymentsByEnvAppAndDate", reflect.TypeOf((*MockInterface)(nil).GetDeploymentsByEnvAppAndDate), ctx, input, fn)
 }
 
 // ScanDeploymentsByEnvAppAndDate mocks base method
 func (m *MockInterface) ScanDeploymentsByEnvAppAndDate(ctx context.Context, input ScanDeploymentsByEnvAppAndDateInput, fn func(*models.Deployment, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanDeploymentsByEnvAppAndDate", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -117,11 +130,13 @@ func (m *MockInterface) ScanDeploymentsByEnvAppAndDate(ctx context.Context, inpu
 
 // ScanDeploymentsByEnvAppAndDate indicates an expected call of ScanDeploymentsByEnvAppAndDate
 func (mr *MockInterfaceMockRecorder) ScanDeploymentsByEnvAppAndDate(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanDeploymentsByEnvAppAndDate", reflect.TypeOf((*MockInterface)(nil).ScanDeploymentsByEnvAppAndDate), ctx, input, fn)
 }
 
 // GetDeploymentsByEnvironmentAndDate mocks base method
 func (m *MockInterface) GetDeploymentsByEnvironmentAndDate(ctx context.Context, input GetDeploymentsByEnvironmentAndDateInput, fn func(*models.Deployment, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDeploymentsByEnvironmentAndDate", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -129,11 +144,13 @@ func (m *MockInterface) GetDeploymentsByEnvironmentAndDate(ctx context.Context, 
 
 // GetDeploymentsByEnvironmentAndDate indicates an expected call of GetDeploymentsByEnvironmentAndDate
 func (mr *MockInterfaceMockRecorder) GetDeploymentsByEnvironmentAndDate(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeploymentsByEnvironmentAndDate", reflect.TypeOf((*MockInterface)(nil).GetDeploymentsByEnvironmentAndDate), ctx, input, fn)
 }
 
 // GetDeploymentByVersion mocks base method
 func (m *MockInterface) GetDeploymentByVersion(ctx context.Context, version string) (*models.Deployment, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDeploymentByVersion", ctx, version)
 	ret0, _ := ret[0].(*models.Deployment)
 	ret1, _ := ret[1].(error)
@@ -142,11 +159,13 @@ func (m *MockInterface) GetDeploymentByVersion(ctx context.Context, version stri
 
 // GetDeploymentByVersion indicates an expected call of GetDeploymentByVersion
 func (mr *MockInterfaceMockRecorder) GetDeploymentByVersion(ctx, version interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeploymentByVersion", reflect.TypeOf((*MockInterface)(nil).GetDeploymentByVersion), ctx, version)
 }
 
 // ScanDeploymentsByVersion mocks base method
 func (m *MockInterface) ScanDeploymentsByVersion(ctx context.Context, input ScanDeploymentsByVersionInput, fn func(*models.Deployment, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanDeploymentsByVersion", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -154,11 +173,13 @@ func (m *MockInterface) ScanDeploymentsByVersion(ctx context.Context, input Scan
 
 // ScanDeploymentsByVersion indicates an expected call of ScanDeploymentsByVersion
 func (mr *MockInterfaceMockRecorder) ScanDeploymentsByVersion(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanDeploymentsByVersion", reflect.TypeOf((*MockInterface)(nil).ScanDeploymentsByVersion), ctx, input, fn)
 }
 
 // SaveEvent mocks base method
 func (m_2 *MockInterface) SaveEvent(ctx context.Context, m models.Event) error {
+	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveEvent", ctx, m)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -166,11 +187,13 @@ func (m_2 *MockInterface) SaveEvent(ctx context.Context, m models.Event) error {
 
 // SaveEvent indicates an expected call of SaveEvent
 func (mr *MockInterfaceMockRecorder) SaveEvent(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveEvent", reflect.TypeOf((*MockInterface)(nil).SaveEvent), ctx, m)
 }
 
 // GetEvent mocks base method
 func (m *MockInterface) GetEvent(ctx context.Context, pk, sk string) (*models.Event, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetEvent", ctx, pk, sk)
 	ret0, _ := ret[0].(*models.Event)
 	ret1, _ := ret[1].(error)
@@ -179,11 +202,13 @@ func (m *MockInterface) GetEvent(ctx context.Context, pk, sk string) (*models.Ev
 
 // GetEvent indicates an expected call of GetEvent
 func (mr *MockInterfaceMockRecorder) GetEvent(ctx, pk, sk interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEvent", reflect.TypeOf((*MockInterface)(nil).GetEvent), ctx, pk, sk)
 }
 
 // ScanEvents mocks base method
 func (m *MockInterface) ScanEvents(ctx context.Context, input ScanEventsInput, fn func(*models.Event, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanEvents", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -191,11 +216,13 @@ func (m *MockInterface) ScanEvents(ctx context.Context, input ScanEventsInput, f
 
 // ScanEvents indicates an expected call of ScanEvents
 func (mr *MockInterfaceMockRecorder) ScanEvents(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanEvents", reflect.TypeOf((*MockInterface)(nil).ScanEvents), ctx, input, fn)
 }
 
 // GetEventsByPkAndSk mocks base method
 func (m *MockInterface) GetEventsByPkAndSk(ctx context.Context, input GetEventsByPkAndSkInput, fn func(*models.Event, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetEventsByPkAndSk", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -203,11 +230,13 @@ func (m *MockInterface) GetEventsByPkAndSk(ctx context.Context, input GetEventsB
 
 // GetEventsByPkAndSk indicates an expected call of GetEventsByPkAndSk
 func (mr *MockInterfaceMockRecorder) GetEventsByPkAndSk(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEventsByPkAndSk", reflect.TypeOf((*MockInterface)(nil).GetEventsByPkAndSk), ctx, input, fn)
 }
 
 // DeleteEvent mocks base method
 func (m *MockInterface) DeleteEvent(ctx context.Context, pk, sk string) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteEvent", ctx, pk, sk)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -215,11 +244,13 @@ func (m *MockInterface) DeleteEvent(ctx context.Context, pk, sk string) error {
 
 // DeleteEvent indicates an expected call of DeleteEvent
 func (mr *MockInterfaceMockRecorder) DeleteEvent(ctx, pk, sk interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteEvent", reflect.TypeOf((*MockInterface)(nil).DeleteEvent), ctx, pk, sk)
 }
 
 // GetEventsBySkAndData mocks base method
 func (m *MockInterface) GetEventsBySkAndData(ctx context.Context, input GetEventsBySkAndDataInput, fn func(*models.Event, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetEventsBySkAndData", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -227,11 +258,13 @@ func (m *MockInterface) GetEventsBySkAndData(ctx context.Context, input GetEvent
 
 // GetEventsBySkAndData indicates an expected call of GetEventsBySkAndData
 func (mr *MockInterfaceMockRecorder) GetEventsBySkAndData(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEventsBySkAndData", reflect.TypeOf((*MockInterface)(nil).GetEventsBySkAndData), ctx, input, fn)
 }
 
 // ScanEventsBySkAndData mocks base method
 func (m *MockInterface) ScanEventsBySkAndData(ctx context.Context, input ScanEventsBySkAndDataInput, fn func(*models.Event, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanEventsBySkAndData", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -239,11 +272,13 @@ func (m *MockInterface) ScanEventsBySkAndData(ctx context.Context, input ScanEve
 
 // ScanEventsBySkAndData indicates an expected call of ScanEventsBySkAndData
 func (mr *MockInterfaceMockRecorder) ScanEventsBySkAndData(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanEventsBySkAndData", reflect.TypeOf((*MockInterface)(nil).ScanEventsBySkAndData), ctx, input, fn)
 }
 
 // SaveNoRangeThingWithCompositeAttributes mocks base method
 func (m_2 *MockInterface) SaveNoRangeThingWithCompositeAttributes(ctx context.Context, m models.NoRangeThingWithCompositeAttributes) error {
+	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveNoRangeThingWithCompositeAttributes", ctx, m)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -251,11 +286,13 @@ func (m_2 *MockInterface) SaveNoRangeThingWithCompositeAttributes(ctx context.Co
 
 // SaveNoRangeThingWithCompositeAttributes indicates an expected call of SaveNoRangeThingWithCompositeAttributes
 func (mr *MockInterfaceMockRecorder) SaveNoRangeThingWithCompositeAttributes(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveNoRangeThingWithCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).SaveNoRangeThingWithCompositeAttributes), ctx, m)
 }
 
 // GetNoRangeThingWithCompositeAttributes mocks base method
 func (m *MockInterface) GetNoRangeThingWithCompositeAttributes(ctx context.Context, name, branch string) (*models.NoRangeThingWithCompositeAttributes, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNoRangeThingWithCompositeAttributes", ctx, name, branch)
 	ret0, _ := ret[0].(*models.NoRangeThingWithCompositeAttributes)
 	ret1, _ := ret[1].(error)
@@ -264,11 +301,13 @@ func (m *MockInterface) GetNoRangeThingWithCompositeAttributes(ctx context.Conte
 
 // GetNoRangeThingWithCompositeAttributes indicates an expected call of GetNoRangeThingWithCompositeAttributes
 func (mr *MockInterfaceMockRecorder) GetNoRangeThingWithCompositeAttributes(ctx, name, branch interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNoRangeThingWithCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).GetNoRangeThingWithCompositeAttributes), ctx, name, branch)
 }
 
 // ScanNoRangeThingWithCompositeAttributess mocks base method
 func (m *MockInterface) ScanNoRangeThingWithCompositeAttributess(ctx context.Context, input ScanNoRangeThingWithCompositeAttributessInput, fn func(*models.NoRangeThingWithCompositeAttributes, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanNoRangeThingWithCompositeAttributess", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -276,11 +315,13 @@ func (m *MockInterface) ScanNoRangeThingWithCompositeAttributess(ctx context.Con
 
 // ScanNoRangeThingWithCompositeAttributess indicates an expected call of ScanNoRangeThingWithCompositeAttributess
 func (mr *MockInterfaceMockRecorder) ScanNoRangeThingWithCompositeAttributess(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanNoRangeThingWithCompositeAttributess", reflect.TypeOf((*MockInterface)(nil).ScanNoRangeThingWithCompositeAttributess), ctx, input, fn)
 }
 
 // DeleteNoRangeThingWithCompositeAttributes mocks base method
 func (m *MockInterface) DeleteNoRangeThingWithCompositeAttributes(ctx context.Context, name, branch string) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteNoRangeThingWithCompositeAttributes", ctx, name, branch)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -288,11 +329,13 @@ func (m *MockInterface) DeleteNoRangeThingWithCompositeAttributes(ctx context.Co
 
 // DeleteNoRangeThingWithCompositeAttributes indicates an expected call of DeleteNoRangeThingWithCompositeAttributes
 func (mr *MockInterfaceMockRecorder) DeleteNoRangeThingWithCompositeAttributes(ctx, name, branch interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNoRangeThingWithCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).DeleteNoRangeThingWithCompositeAttributes), ctx, name, branch)
 }
 
 // GetNoRangeThingWithCompositeAttributessByNameVersionAndDate mocks base method
 func (m *MockInterface) GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input GetNoRangeThingWithCompositeAttributessByNameVersionAndDateInput, fn func(*models.NoRangeThingWithCompositeAttributes, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNoRangeThingWithCompositeAttributessByNameVersionAndDate", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -300,11 +343,13 @@ func (m *MockInterface) GetNoRangeThingWithCompositeAttributessByNameVersionAndD
 
 // GetNoRangeThingWithCompositeAttributessByNameVersionAndDate indicates an expected call of GetNoRangeThingWithCompositeAttributessByNameVersionAndDate
 func (mr *MockInterfaceMockRecorder) GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNoRangeThingWithCompositeAttributessByNameVersionAndDate", reflect.TypeOf((*MockInterface)(nil).GetNoRangeThingWithCompositeAttributessByNameVersionAndDate), ctx, input, fn)
 }
 
 // ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate mocks base method
 func (m *MockInterface) ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input ScanNoRangeThingWithCompositeAttributessByNameVersionAndDateInput, fn func(*models.NoRangeThingWithCompositeAttributes, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -312,11 +357,13 @@ func (m *MockInterface) ScanNoRangeThingWithCompositeAttributessByNameVersionAnd
 
 // ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate indicates an expected call of ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate
 func (mr *MockInterfaceMockRecorder) ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate", reflect.TypeOf((*MockInterface)(nil).ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate), ctx, input, fn)
 }
 
 // SaveSimpleThing mocks base method
 func (m_2 *MockInterface) SaveSimpleThing(ctx context.Context, m models.SimpleThing) error {
+	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveSimpleThing", ctx, m)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -324,11 +371,13 @@ func (m_2 *MockInterface) SaveSimpleThing(ctx context.Context, m models.SimpleTh
 
 // SaveSimpleThing indicates an expected call of SaveSimpleThing
 func (mr *MockInterfaceMockRecorder) SaveSimpleThing(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveSimpleThing", reflect.TypeOf((*MockInterface)(nil).SaveSimpleThing), ctx, m)
 }
 
 // GetSimpleThing mocks base method
 func (m *MockInterface) GetSimpleThing(ctx context.Context, name string) (*models.SimpleThing, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSimpleThing", ctx, name)
 	ret0, _ := ret[0].(*models.SimpleThing)
 	ret1, _ := ret[1].(error)
@@ -337,11 +386,13 @@ func (m *MockInterface) GetSimpleThing(ctx context.Context, name string) (*model
 
 // GetSimpleThing indicates an expected call of GetSimpleThing
 func (mr *MockInterfaceMockRecorder) GetSimpleThing(ctx, name interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSimpleThing", reflect.TypeOf((*MockInterface)(nil).GetSimpleThing), ctx, name)
 }
 
 // ScanSimpleThings mocks base method
 func (m *MockInterface) ScanSimpleThings(ctx context.Context, input ScanSimpleThingsInput, fn func(*models.SimpleThing, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanSimpleThings", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -349,11 +400,13 @@ func (m *MockInterface) ScanSimpleThings(ctx context.Context, input ScanSimpleTh
 
 // ScanSimpleThings indicates an expected call of ScanSimpleThings
 func (mr *MockInterfaceMockRecorder) ScanSimpleThings(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanSimpleThings", reflect.TypeOf((*MockInterface)(nil).ScanSimpleThings), ctx, input, fn)
 }
 
 // DeleteSimpleThing mocks base method
 func (m *MockInterface) DeleteSimpleThing(ctx context.Context, name string) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteSimpleThing", ctx, name)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -361,11 +414,13 @@ func (m *MockInterface) DeleteSimpleThing(ctx context.Context, name string) erro
 
 // DeleteSimpleThing indicates an expected call of DeleteSimpleThing
 func (mr *MockInterfaceMockRecorder) DeleteSimpleThing(ctx, name interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSimpleThing", reflect.TypeOf((*MockInterface)(nil).DeleteSimpleThing), ctx, name)
 }
 
 // SaveTeacherSharingRule mocks base method
 func (m_2 *MockInterface) SaveTeacherSharingRule(ctx context.Context, m models.TeacherSharingRule) error {
+	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveTeacherSharingRule", ctx, m)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -373,11 +428,13 @@ func (m_2 *MockInterface) SaveTeacherSharingRule(ctx context.Context, m models.T
 
 // SaveTeacherSharingRule indicates an expected call of SaveTeacherSharingRule
 func (mr *MockInterfaceMockRecorder) SaveTeacherSharingRule(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveTeacherSharingRule", reflect.TypeOf((*MockInterface)(nil).SaveTeacherSharingRule), ctx, m)
 }
 
 // GetTeacherSharingRule mocks base method
 func (m *MockInterface) GetTeacherSharingRule(ctx context.Context, teacher, school, app string) (*models.TeacherSharingRule, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetTeacherSharingRule", ctx, teacher, school, app)
 	ret0, _ := ret[0].(*models.TeacherSharingRule)
 	ret1, _ := ret[1].(error)
@@ -386,11 +443,13 @@ func (m *MockInterface) GetTeacherSharingRule(ctx context.Context, teacher, scho
 
 // GetTeacherSharingRule indicates an expected call of GetTeacherSharingRule
 func (mr *MockInterfaceMockRecorder) GetTeacherSharingRule(ctx, teacher, school, app interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTeacherSharingRule", reflect.TypeOf((*MockInterface)(nil).GetTeacherSharingRule), ctx, teacher, school, app)
 }
 
 // ScanTeacherSharingRules mocks base method
 func (m *MockInterface) ScanTeacherSharingRules(ctx context.Context, input ScanTeacherSharingRulesInput, fn func(*models.TeacherSharingRule, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanTeacherSharingRules", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -398,11 +457,13 @@ func (m *MockInterface) ScanTeacherSharingRules(ctx context.Context, input ScanT
 
 // ScanTeacherSharingRules indicates an expected call of ScanTeacherSharingRules
 func (mr *MockInterfaceMockRecorder) ScanTeacherSharingRules(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanTeacherSharingRules", reflect.TypeOf((*MockInterface)(nil).ScanTeacherSharingRules), ctx, input, fn)
 }
 
 // GetTeacherSharingRulesByTeacherAndSchoolApp mocks base method
 func (m *MockInterface) GetTeacherSharingRulesByTeacherAndSchoolApp(ctx context.Context, input GetTeacherSharingRulesByTeacherAndSchoolAppInput, fn func(*models.TeacherSharingRule, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetTeacherSharingRulesByTeacherAndSchoolApp", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -410,11 +471,13 @@ func (m *MockInterface) GetTeacherSharingRulesByTeacherAndSchoolApp(ctx context.
 
 // GetTeacherSharingRulesByTeacherAndSchoolApp indicates an expected call of GetTeacherSharingRulesByTeacherAndSchoolApp
 func (mr *MockInterfaceMockRecorder) GetTeacherSharingRulesByTeacherAndSchoolApp(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTeacherSharingRulesByTeacherAndSchoolApp", reflect.TypeOf((*MockInterface)(nil).GetTeacherSharingRulesByTeacherAndSchoolApp), ctx, input, fn)
 }
 
 // DeleteTeacherSharingRule mocks base method
 func (m *MockInterface) DeleteTeacherSharingRule(ctx context.Context, teacher, school, app string) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteTeacherSharingRule", ctx, teacher, school, app)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -422,11 +485,13 @@ func (m *MockInterface) DeleteTeacherSharingRule(ctx context.Context, teacher, s
 
 // DeleteTeacherSharingRule indicates an expected call of DeleteTeacherSharingRule
 func (mr *MockInterfaceMockRecorder) DeleteTeacherSharingRule(ctx, teacher, school, app interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTeacherSharingRule", reflect.TypeOf((*MockInterface)(nil).DeleteTeacherSharingRule), ctx, teacher, school, app)
 }
 
 // GetTeacherSharingRulesByDistrictAndSchoolTeacherApp mocks base method
 func (m *MockInterface) GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx context.Context, input GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput, fn func(*models.TeacherSharingRule, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetTeacherSharingRulesByDistrictAndSchoolTeacherApp", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -434,11 +499,13 @@ func (m *MockInterface) GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx 
 
 // GetTeacherSharingRulesByDistrictAndSchoolTeacherApp indicates an expected call of GetTeacherSharingRulesByDistrictAndSchoolTeacherApp
 func (mr *MockInterfaceMockRecorder) GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTeacherSharingRulesByDistrictAndSchoolTeacherApp", reflect.TypeOf((*MockInterface)(nil).GetTeacherSharingRulesByDistrictAndSchoolTeacherApp), ctx, input, fn)
 }
 
 // ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp mocks base method
 func (m *MockInterface) ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx context.Context, input ScanTeacherSharingRulesByDistrictAndSchoolTeacherAppInput, fn func(*models.TeacherSharingRule, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -446,11 +513,13 @@ func (m *MockInterface) ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx
 
 // ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp indicates an expected call of ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp
 func (mr *MockInterfaceMockRecorder) ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp", reflect.TypeOf((*MockInterface)(nil).ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp), ctx, input, fn)
 }
 
 // SaveThing mocks base method
 func (m_2 *MockInterface) SaveThing(ctx context.Context, m models.Thing) error {
+	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThing", ctx, m)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -458,11 +527,13 @@ func (m_2 *MockInterface) SaveThing(ctx context.Context, m models.Thing) error {
 
 // SaveThing indicates an expected call of SaveThing
 func (mr *MockInterfaceMockRecorder) SaveThing(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThing", reflect.TypeOf((*MockInterface)(nil).SaveThing), ctx, m)
 }
 
 // GetThing mocks base method
 func (m *MockInterface) GetThing(ctx context.Context, name string, version int64) (*models.Thing, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThing", ctx, name, version)
 	ret0, _ := ret[0].(*models.Thing)
 	ret1, _ := ret[1].(error)
@@ -471,11 +542,13 @@ func (m *MockInterface) GetThing(ctx context.Context, name string, version int64
 
 // GetThing indicates an expected call of GetThing
 func (mr *MockInterfaceMockRecorder) GetThing(ctx, name, version interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThing", reflect.TypeOf((*MockInterface)(nil).GetThing), ctx, name, version)
 }
 
 // ScanThings mocks base method
 func (m *MockInterface) ScanThings(ctx context.Context, input ScanThingsInput, fn func(*models.Thing, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThings", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -483,11 +556,13 @@ func (m *MockInterface) ScanThings(ctx context.Context, input ScanThingsInput, f
 
 // ScanThings indicates an expected call of ScanThings
 func (mr *MockInterfaceMockRecorder) ScanThings(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThings", reflect.TypeOf((*MockInterface)(nil).ScanThings), ctx, input, fn)
 }
 
 // GetThingsByNameAndVersion mocks base method
 func (m *MockInterface) GetThingsByNameAndVersion(ctx context.Context, input GetThingsByNameAndVersionInput, fn func(*models.Thing, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingsByNameAndVersion", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -495,11 +570,13 @@ func (m *MockInterface) GetThingsByNameAndVersion(ctx context.Context, input Get
 
 // GetThingsByNameAndVersion indicates an expected call of GetThingsByNameAndVersion
 func (mr *MockInterfaceMockRecorder) GetThingsByNameAndVersion(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingsByNameAndVersion", reflect.TypeOf((*MockInterface)(nil).GetThingsByNameAndVersion), ctx, input, fn)
 }
 
 // DeleteThing mocks base method
 func (m *MockInterface) DeleteThing(ctx context.Context, name string, version int64) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteThing", ctx, name, version)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -507,11 +584,13 @@ func (m *MockInterface) DeleteThing(ctx context.Context, name string, version in
 
 // DeleteThing indicates an expected call of DeleteThing
 func (mr *MockInterfaceMockRecorder) DeleteThing(ctx, name, version interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThing", reflect.TypeOf((*MockInterface)(nil).DeleteThing), ctx, name, version)
 }
 
 // GetThingByID mocks base method
 func (m *MockInterface) GetThingByID(ctx context.Context, id string) (*models.Thing, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingByID", ctx, id)
 	ret0, _ := ret[0].(*models.Thing)
 	ret1, _ := ret[1].(error)
@@ -520,11 +599,13 @@ func (m *MockInterface) GetThingByID(ctx context.Context, id string) (*models.Th
 
 // GetThingByID indicates an expected call of GetThingByID
 func (mr *MockInterfaceMockRecorder) GetThingByID(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingByID", reflect.TypeOf((*MockInterface)(nil).GetThingByID), ctx, id)
 }
 
 // ScanThingsByID mocks base method
 func (m *MockInterface) ScanThingsByID(ctx context.Context, input ScanThingsByIDInput, fn func(*models.Thing, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingsByID", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -532,11 +613,13 @@ func (m *MockInterface) ScanThingsByID(ctx context.Context, input ScanThingsByID
 
 // ScanThingsByID indicates an expected call of ScanThingsByID
 func (mr *MockInterfaceMockRecorder) ScanThingsByID(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingsByID", reflect.TypeOf((*MockInterface)(nil).ScanThingsByID), ctx, input, fn)
 }
 
 // GetThingsByNameAndCreatedAt mocks base method
 func (m *MockInterface) GetThingsByNameAndCreatedAt(ctx context.Context, input GetThingsByNameAndCreatedAtInput, fn func(*models.Thing, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingsByNameAndCreatedAt", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -544,11 +627,13 @@ func (m *MockInterface) GetThingsByNameAndCreatedAt(ctx context.Context, input G
 
 // GetThingsByNameAndCreatedAt indicates an expected call of GetThingsByNameAndCreatedAt
 func (mr *MockInterfaceMockRecorder) GetThingsByNameAndCreatedAt(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingsByNameAndCreatedAt", reflect.TypeOf((*MockInterface)(nil).GetThingsByNameAndCreatedAt), ctx, input, fn)
 }
 
 // ScanThingsByNameAndCreatedAt mocks base method
 func (m *MockInterface) ScanThingsByNameAndCreatedAt(ctx context.Context, input ScanThingsByNameAndCreatedAtInput, fn func(*models.Thing, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingsByNameAndCreatedAt", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -556,11 +641,13 @@ func (m *MockInterface) ScanThingsByNameAndCreatedAt(ctx context.Context, input 
 
 // ScanThingsByNameAndCreatedAt indicates an expected call of ScanThingsByNameAndCreatedAt
 func (mr *MockInterfaceMockRecorder) ScanThingsByNameAndCreatedAt(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingsByNameAndCreatedAt", reflect.TypeOf((*MockInterface)(nil).ScanThingsByNameAndCreatedAt), ctx, input, fn)
 }
 
 // SaveThingWithCompositeAttributes mocks base method
 func (m_2 *MockInterface) SaveThingWithCompositeAttributes(ctx context.Context, m models.ThingWithCompositeAttributes) error {
+	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithCompositeAttributes", ctx, m)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -568,11 +655,13 @@ func (m_2 *MockInterface) SaveThingWithCompositeAttributes(ctx context.Context, 
 
 // SaveThingWithCompositeAttributes indicates an expected call of SaveThingWithCompositeAttributes
 func (mr *MockInterfaceMockRecorder) SaveThingWithCompositeAttributes(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).SaveThingWithCompositeAttributes), ctx, m)
 }
 
 // GetThingWithCompositeAttributes mocks base method
 func (m *MockInterface) GetThingWithCompositeAttributes(ctx context.Context, name, branch string, date strfmt.DateTime) (*models.ThingWithCompositeAttributes, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithCompositeAttributes", ctx, name, branch, date)
 	ret0, _ := ret[0].(*models.ThingWithCompositeAttributes)
 	ret1, _ := ret[1].(error)
@@ -581,11 +670,13 @@ func (m *MockInterface) GetThingWithCompositeAttributes(ctx context.Context, nam
 
 // GetThingWithCompositeAttributes indicates an expected call of GetThingWithCompositeAttributes
 func (mr *MockInterfaceMockRecorder) GetThingWithCompositeAttributes(ctx, name, branch, date interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).GetThingWithCompositeAttributes), ctx, name, branch, date)
 }
 
 // ScanThingWithCompositeAttributess mocks base method
 func (m *MockInterface) ScanThingWithCompositeAttributess(ctx context.Context, input ScanThingWithCompositeAttributessInput, fn func(*models.ThingWithCompositeAttributes, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithCompositeAttributess", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -593,11 +684,13 @@ func (m *MockInterface) ScanThingWithCompositeAttributess(ctx context.Context, i
 
 // ScanThingWithCompositeAttributess indicates an expected call of ScanThingWithCompositeAttributess
 func (mr *MockInterfaceMockRecorder) ScanThingWithCompositeAttributess(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithCompositeAttributess", reflect.TypeOf((*MockInterface)(nil).ScanThingWithCompositeAttributess), ctx, input, fn)
 }
 
 // GetThingWithCompositeAttributessByNameBranchAndDate mocks base method
 func (m *MockInterface) GetThingWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input GetThingWithCompositeAttributessByNameBranchAndDateInput, fn func(*models.ThingWithCompositeAttributes, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithCompositeAttributessByNameBranchAndDate", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -605,11 +698,13 @@ func (m *MockInterface) GetThingWithCompositeAttributessByNameBranchAndDate(ctx 
 
 // GetThingWithCompositeAttributessByNameBranchAndDate indicates an expected call of GetThingWithCompositeAttributessByNameBranchAndDate
 func (mr *MockInterfaceMockRecorder) GetThingWithCompositeAttributessByNameBranchAndDate(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithCompositeAttributessByNameBranchAndDate", reflect.TypeOf((*MockInterface)(nil).GetThingWithCompositeAttributessByNameBranchAndDate), ctx, input, fn)
 }
 
 // DeleteThingWithCompositeAttributes mocks base method
 func (m *MockInterface) DeleteThingWithCompositeAttributes(ctx context.Context, name, branch string, date strfmt.DateTime) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteThingWithCompositeAttributes", ctx, name, branch, date)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -617,11 +712,13 @@ func (m *MockInterface) DeleteThingWithCompositeAttributes(ctx context.Context, 
 
 // DeleteThingWithCompositeAttributes indicates an expected call of DeleteThingWithCompositeAttributes
 func (mr *MockInterfaceMockRecorder) DeleteThingWithCompositeAttributes(ctx, name, branch, date interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithCompositeAttributes), ctx, name, branch, date)
 }
 
 // GetThingWithCompositeAttributessByNameVersionAndDate mocks base method
 func (m *MockInterface) GetThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input GetThingWithCompositeAttributessByNameVersionAndDateInput, fn func(*models.ThingWithCompositeAttributes, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithCompositeAttributessByNameVersionAndDate", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -629,11 +726,13 @@ func (m *MockInterface) GetThingWithCompositeAttributessByNameVersionAndDate(ctx
 
 // GetThingWithCompositeAttributessByNameVersionAndDate indicates an expected call of GetThingWithCompositeAttributessByNameVersionAndDate
 func (mr *MockInterfaceMockRecorder) GetThingWithCompositeAttributessByNameVersionAndDate(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithCompositeAttributessByNameVersionAndDate", reflect.TypeOf((*MockInterface)(nil).GetThingWithCompositeAttributessByNameVersionAndDate), ctx, input, fn)
 }
 
 // ScanThingWithCompositeAttributessByNameVersionAndDate mocks base method
 func (m *MockInterface) ScanThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input ScanThingWithCompositeAttributessByNameVersionAndDateInput, fn func(*models.ThingWithCompositeAttributes, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithCompositeAttributessByNameVersionAndDate", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -641,11 +740,13 @@ func (m *MockInterface) ScanThingWithCompositeAttributessByNameVersionAndDate(ct
 
 // ScanThingWithCompositeAttributessByNameVersionAndDate indicates an expected call of ScanThingWithCompositeAttributessByNameVersionAndDate
 func (mr *MockInterfaceMockRecorder) ScanThingWithCompositeAttributessByNameVersionAndDate(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithCompositeAttributessByNameVersionAndDate", reflect.TypeOf((*MockInterface)(nil).ScanThingWithCompositeAttributessByNameVersionAndDate), ctx, input, fn)
 }
 
 // SaveThingWithCompositeEnumAttributes mocks base method
 func (m_2 *MockInterface) SaveThingWithCompositeEnumAttributes(ctx context.Context, m models.ThingWithCompositeEnumAttributes) error {
+	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithCompositeEnumAttributes", ctx, m)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -653,11 +754,13 @@ func (m_2 *MockInterface) SaveThingWithCompositeEnumAttributes(ctx context.Conte
 
 // SaveThingWithCompositeEnumAttributes indicates an expected call of SaveThingWithCompositeEnumAttributes
 func (mr *MockInterfaceMockRecorder) SaveThingWithCompositeEnumAttributes(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithCompositeEnumAttributes", reflect.TypeOf((*MockInterface)(nil).SaveThingWithCompositeEnumAttributes), ctx, m)
 }
 
 // GetThingWithCompositeEnumAttributes mocks base method
 func (m *MockInterface) GetThingWithCompositeEnumAttributes(ctx context.Context, name string, branchID models.Branch, date strfmt.DateTime) (*models.ThingWithCompositeEnumAttributes, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithCompositeEnumAttributes", ctx, name, branchID, date)
 	ret0, _ := ret[0].(*models.ThingWithCompositeEnumAttributes)
 	ret1, _ := ret[1].(error)
@@ -666,11 +769,13 @@ func (m *MockInterface) GetThingWithCompositeEnumAttributes(ctx context.Context,
 
 // GetThingWithCompositeEnumAttributes indicates an expected call of GetThingWithCompositeEnumAttributes
 func (mr *MockInterfaceMockRecorder) GetThingWithCompositeEnumAttributes(ctx, name, branchID, date interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithCompositeEnumAttributes", reflect.TypeOf((*MockInterface)(nil).GetThingWithCompositeEnumAttributes), ctx, name, branchID, date)
 }
 
 // ScanThingWithCompositeEnumAttributess mocks base method
 func (m *MockInterface) ScanThingWithCompositeEnumAttributess(ctx context.Context, input ScanThingWithCompositeEnumAttributessInput, fn func(*models.ThingWithCompositeEnumAttributes, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithCompositeEnumAttributess", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -678,11 +783,13 @@ func (m *MockInterface) ScanThingWithCompositeEnumAttributess(ctx context.Contex
 
 // ScanThingWithCompositeEnumAttributess indicates an expected call of ScanThingWithCompositeEnumAttributess
 func (mr *MockInterfaceMockRecorder) ScanThingWithCompositeEnumAttributess(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithCompositeEnumAttributess", reflect.TypeOf((*MockInterface)(nil).ScanThingWithCompositeEnumAttributess), ctx, input, fn)
 }
 
 // GetThingWithCompositeEnumAttributessByNameBranchAndDate mocks base method
 func (m *MockInterface) GetThingWithCompositeEnumAttributessByNameBranchAndDate(ctx context.Context, input GetThingWithCompositeEnumAttributessByNameBranchAndDateInput, fn func(*models.ThingWithCompositeEnumAttributes, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithCompositeEnumAttributessByNameBranchAndDate", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -690,11 +797,13 @@ func (m *MockInterface) GetThingWithCompositeEnumAttributessByNameBranchAndDate(
 
 // GetThingWithCompositeEnumAttributessByNameBranchAndDate indicates an expected call of GetThingWithCompositeEnumAttributessByNameBranchAndDate
 func (mr *MockInterfaceMockRecorder) GetThingWithCompositeEnumAttributessByNameBranchAndDate(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithCompositeEnumAttributessByNameBranchAndDate", reflect.TypeOf((*MockInterface)(nil).GetThingWithCompositeEnumAttributessByNameBranchAndDate), ctx, input, fn)
 }
 
 // DeleteThingWithCompositeEnumAttributes mocks base method
 func (m *MockInterface) DeleteThingWithCompositeEnumAttributes(ctx context.Context, name string, branchID models.Branch, date strfmt.DateTime) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteThingWithCompositeEnumAttributes", ctx, name, branchID, date)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -702,11 +811,13 @@ func (m *MockInterface) DeleteThingWithCompositeEnumAttributes(ctx context.Conte
 
 // DeleteThingWithCompositeEnumAttributes indicates an expected call of DeleteThingWithCompositeEnumAttributes
 func (mr *MockInterfaceMockRecorder) DeleteThingWithCompositeEnumAttributes(ctx, name, branchID, date interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithCompositeEnumAttributes", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithCompositeEnumAttributes), ctx, name, branchID, date)
 }
 
 // SaveThingWithDateRange mocks base method
 func (m_2 *MockInterface) SaveThingWithDateRange(ctx context.Context, m models.ThingWithDateRange) error {
+	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithDateRange", ctx, m)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -714,11 +825,13 @@ func (m_2 *MockInterface) SaveThingWithDateRange(ctx context.Context, m models.T
 
 // SaveThingWithDateRange indicates an expected call of SaveThingWithDateRange
 func (mr *MockInterfaceMockRecorder) SaveThingWithDateRange(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithDateRange", reflect.TypeOf((*MockInterface)(nil).SaveThingWithDateRange), ctx, m)
 }
 
 // GetThingWithDateRange mocks base method
 func (m *MockInterface) GetThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) (*models.ThingWithDateRange, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithDateRange", ctx, name, date)
 	ret0, _ := ret[0].(*models.ThingWithDateRange)
 	ret1, _ := ret[1].(error)
@@ -727,11 +840,13 @@ func (m *MockInterface) GetThingWithDateRange(ctx context.Context, name string, 
 
 // GetThingWithDateRange indicates an expected call of GetThingWithDateRange
 func (mr *MockInterfaceMockRecorder) GetThingWithDateRange(ctx, name, date interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithDateRange", reflect.TypeOf((*MockInterface)(nil).GetThingWithDateRange), ctx, name, date)
 }
 
 // ScanThingWithDateRanges mocks base method
 func (m *MockInterface) ScanThingWithDateRanges(ctx context.Context, input ScanThingWithDateRangesInput, fn func(*models.ThingWithDateRange, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithDateRanges", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -739,11 +854,13 @@ func (m *MockInterface) ScanThingWithDateRanges(ctx context.Context, input ScanT
 
 // ScanThingWithDateRanges indicates an expected call of ScanThingWithDateRanges
 func (mr *MockInterfaceMockRecorder) ScanThingWithDateRanges(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithDateRanges", reflect.TypeOf((*MockInterface)(nil).ScanThingWithDateRanges), ctx, input, fn)
 }
 
 // GetThingWithDateRangesByNameAndDate mocks base method
 func (m *MockInterface) GetThingWithDateRangesByNameAndDate(ctx context.Context, input GetThingWithDateRangesByNameAndDateInput, fn func(*models.ThingWithDateRange, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithDateRangesByNameAndDate", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -751,11 +868,13 @@ func (m *MockInterface) GetThingWithDateRangesByNameAndDate(ctx context.Context,
 
 // GetThingWithDateRangesByNameAndDate indicates an expected call of GetThingWithDateRangesByNameAndDate
 func (mr *MockInterfaceMockRecorder) GetThingWithDateRangesByNameAndDate(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithDateRangesByNameAndDate", reflect.TypeOf((*MockInterface)(nil).GetThingWithDateRangesByNameAndDate), ctx, input, fn)
 }
 
 // DeleteThingWithDateRange mocks base method
 func (m *MockInterface) DeleteThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteThingWithDateRange", ctx, name, date)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -763,11 +882,13 @@ func (m *MockInterface) DeleteThingWithDateRange(ctx context.Context, name strin
 
 // DeleteThingWithDateRange indicates an expected call of DeleteThingWithDateRange
 func (mr *MockInterfaceMockRecorder) DeleteThingWithDateRange(ctx, name, date interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithDateRange", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithDateRange), ctx, name, date)
 }
 
 // SaveThingWithDateTimeComposite mocks base method
 func (m_2 *MockInterface) SaveThingWithDateTimeComposite(ctx context.Context, m models.ThingWithDateTimeComposite) error {
+	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithDateTimeComposite", ctx, m)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -775,11 +896,13 @@ func (m_2 *MockInterface) SaveThingWithDateTimeComposite(ctx context.Context, m 
 
 // SaveThingWithDateTimeComposite indicates an expected call of SaveThingWithDateTimeComposite
 func (mr *MockInterfaceMockRecorder) SaveThingWithDateTimeComposite(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithDateTimeComposite", reflect.TypeOf((*MockInterface)(nil).SaveThingWithDateTimeComposite), ctx, m)
 }
 
 // GetThingWithDateTimeComposite mocks base method
 func (m *MockInterface) GetThingWithDateTimeComposite(ctx context.Context, typeVar, id string, created strfmt.DateTime, resource string) (*models.ThingWithDateTimeComposite, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithDateTimeComposite", ctx, typeVar, id, created, resource)
 	ret0, _ := ret[0].(*models.ThingWithDateTimeComposite)
 	ret1, _ := ret[1].(error)
@@ -788,11 +911,13 @@ func (m *MockInterface) GetThingWithDateTimeComposite(ctx context.Context, typeV
 
 // GetThingWithDateTimeComposite indicates an expected call of GetThingWithDateTimeComposite
 func (mr *MockInterfaceMockRecorder) GetThingWithDateTimeComposite(ctx, typeVar, id, created, resource interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithDateTimeComposite", reflect.TypeOf((*MockInterface)(nil).GetThingWithDateTimeComposite), ctx, typeVar, id, created, resource)
 }
 
 // ScanThingWithDateTimeComposites mocks base method
 func (m *MockInterface) ScanThingWithDateTimeComposites(ctx context.Context, input ScanThingWithDateTimeCompositesInput, fn func(*models.ThingWithDateTimeComposite, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithDateTimeComposites", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -800,11 +925,13 @@ func (m *MockInterface) ScanThingWithDateTimeComposites(ctx context.Context, inp
 
 // ScanThingWithDateTimeComposites indicates an expected call of ScanThingWithDateTimeComposites
 func (mr *MockInterfaceMockRecorder) ScanThingWithDateTimeComposites(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithDateTimeComposites", reflect.TypeOf((*MockInterface)(nil).ScanThingWithDateTimeComposites), ctx, input, fn)
 }
 
 // GetThingWithDateTimeCompositesByTypeIDAndCreatedResource mocks base method
 func (m *MockInterface) GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx context.Context, input GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput, fn func(*models.ThingWithDateTimeComposite, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithDateTimeCompositesByTypeIDAndCreatedResource", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -812,11 +939,13 @@ func (m *MockInterface) GetThingWithDateTimeCompositesByTypeIDAndCreatedResource
 
 // GetThingWithDateTimeCompositesByTypeIDAndCreatedResource indicates an expected call of GetThingWithDateTimeCompositesByTypeIDAndCreatedResource
 func (mr *MockInterfaceMockRecorder) GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithDateTimeCompositesByTypeIDAndCreatedResource", reflect.TypeOf((*MockInterface)(nil).GetThingWithDateTimeCompositesByTypeIDAndCreatedResource), ctx, input, fn)
 }
 
 // DeleteThingWithDateTimeComposite mocks base method
 func (m *MockInterface) DeleteThingWithDateTimeComposite(ctx context.Context, typeVar, id string, created strfmt.DateTime, resource string) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteThingWithDateTimeComposite", ctx, typeVar, id, created, resource)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -824,11 +953,13 @@ func (m *MockInterface) DeleteThingWithDateTimeComposite(ctx context.Context, ty
 
 // DeleteThingWithDateTimeComposite indicates an expected call of DeleteThingWithDateTimeComposite
 func (mr *MockInterfaceMockRecorder) DeleteThingWithDateTimeComposite(ctx, typeVar, id, created, resource interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithDateTimeComposite", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithDateTimeComposite), ctx, typeVar, id, created, resource)
 }
 
 // SaveThingWithEnumHashKey mocks base method
 func (m_2 *MockInterface) SaveThingWithEnumHashKey(ctx context.Context, m models.ThingWithEnumHashKey) error {
+	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithEnumHashKey", ctx, m)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -836,11 +967,13 @@ func (m_2 *MockInterface) SaveThingWithEnumHashKey(ctx context.Context, m models
 
 // SaveThingWithEnumHashKey indicates an expected call of SaveThingWithEnumHashKey
 func (mr *MockInterfaceMockRecorder) SaveThingWithEnumHashKey(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithEnumHashKey", reflect.TypeOf((*MockInterface)(nil).SaveThingWithEnumHashKey), ctx, m)
 }
 
 // GetThingWithEnumHashKey mocks base method
 func (m *MockInterface) GetThingWithEnumHashKey(ctx context.Context, branch models.Branch, date strfmt.DateTime) (*models.ThingWithEnumHashKey, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithEnumHashKey", ctx, branch, date)
 	ret0, _ := ret[0].(*models.ThingWithEnumHashKey)
 	ret1, _ := ret[1].(error)
@@ -849,11 +982,13 @@ func (m *MockInterface) GetThingWithEnumHashKey(ctx context.Context, branch mode
 
 // GetThingWithEnumHashKey indicates an expected call of GetThingWithEnumHashKey
 func (mr *MockInterfaceMockRecorder) GetThingWithEnumHashKey(ctx, branch, date interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithEnumHashKey", reflect.TypeOf((*MockInterface)(nil).GetThingWithEnumHashKey), ctx, branch, date)
 }
 
 // ScanThingWithEnumHashKeys mocks base method
 func (m *MockInterface) ScanThingWithEnumHashKeys(ctx context.Context, input ScanThingWithEnumHashKeysInput, fn func(*models.ThingWithEnumHashKey, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithEnumHashKeys", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -861,11 +996,13 @@ func (m *MockInterface) ScanThingWithEnumHashKeys(ctx context.Context, input Sca
 
 // ScanThingWithEnumHashKeys indicates an expected call of ScanThingWithEnumHashKeys
 func (mr *MockInterfaceMockRecorder) ScanThingWithEnumHashKeys(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithEnumHashKeys", reflect.TypeOf((*MockInterface)(nil).ScanThingWithEnumHashKeys), ctx, input, fn)
 }
 
 // GetThingWithEnumHashKeysByBranchAndDate mocks base method
 func (m *MockInterface) GetThingWithEnumHashKeysByBranchAndDate(ctx context.Context, input GetThingWithEnumHashKeysByBranchAndDateInput, fn func(*models.ThingWithEnumHashKey, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithEnumHashKeysByBranchAndDate", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -873,11 +1010,13 @@ func (m *MockInterface) GetThingWithEnumHashKeysByBranchAndDate(ctx context.Cont
 
 // GetThingWithEnumHashKeysByBranchAndDate indicates an expected call of GetThingWithEnumHashKeysByBranchAndDate
 func (mr *MockInterfaceMockRecorder) GetThingWithEnumHashKeysByBranchAndDate(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithEnumHashKeysByBranchAndDate", reflect.TypeOf((*MockInterface)(nil).GetThingWithEnumHashKeysByBranchAndDate), ctx, input, fn)
 }
 
 // DeleteThingWithEnumHashKey mocks base method
 func (m *MockInterface) DeleteThingWithEnumHashKey(ctx context.Context, branch models.Branch, date strfmt.DateTime) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteThingWithEnumHashKey", ctx, branch, date)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -885,11 +1024,13 @@ func (m *MockInterface) DeleteThingWithEnumHashKey(ctx context.Context, branch m
 
 // DeleteThingWithEnumHashKey indicates an expected call of DeleteThingWithEnumHashKey
 func (mr *MockInterfaceMockRecorder) DeleteThingWithEnumHashKey(ctx, branch, date interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithEnumHashKey", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithEnumHashKey), ctx, branch, date)
 }
 
 // GetThingWithEnumHashKeysByBranchAndDate2 mocks base method
 func (m *MockInterface) GetThingWithEnumHashKeysByBranchAndDate2(ctx context.Context, input GetThingWithEnumHashKeysByBranchAndDate2Input, fn func(*models.ThingWithEnumHashKey, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithEnumHashKeysByBranchAndDate2", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -897,11 +1038,13 @@ func (m *MockInterface) GetThingWithEnumHashKeysByBranchAndDate2(ctx context.Con
 
 // GetThingWithEnumHashKeysByBranchAndDate2 indicates an expected call of GetThingWithEnumHashKeysByBranchAndDate2
 func (mr *MockInterfaceMockRecorder) GetThingWithEnumHashKeysByBranchAndDate2(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithEnumHashKeysByBranchAndDate2", reflect.TypeOf((*MockInterface)(nil).GetThingWithEnumHashKeysByBranchAndDate2), ctx, input, fn)
 }
 
 // ScanThingWithEnumHashKeysByBranchAndDate2 mocks base method
 func (m *MockInterface) ScanThingWithEnumHashKeysByBranchAndDate2(ctx context.Context, input ScanThingWithEnumHashKeysByBranchAndDate2Input, fn func(*models.ThingWithEnumHashKey, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithEnumHashKeysByBranchAndDate2", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -909,11 +1052,13 @@ func (m *MockInterface) ScanThingWithEnumHashKeysByBranchAndDate2(ctx context.Co
 
 // ScanThingWithEnumHashKeysByBranchAndDate2 indicates an expected call of ScanThingWithEnumHashKeysByBranchAndDate2
 func (mr *MockInterfaceMockRecorder) ScanThingWithEnumHashKeysByBranchAndDate2(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithEnumHashKeysByBranchAndDate2", reflect.TypeOf((*MockInterface)(nil).ScanThingWithEnumHashKeysByBranchAndDate2), ctx, input, fn)
 }
 
 // SaveThingWithMatchingKeys mocks base method
 func (m_2 *MockInterface) SaveThingWithMatchingKeys(ctx context.Context, m models.ThingWithMatchingKeys) error {
+	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithMatchingKeys", ctx, m)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -921,11 +1066,13 @@ func (m_2 *MockInterface) SaveThingWithMatchingKeys(ctx context.Context, m model
 
 // SaveThingWithMatchingKeys indicates an expected call of SaveThingWithMatchingKeys
 func (mr *MockInterfaceMockRecorder) SaveThingWithMatchingKeys(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithMatchingKeys", reflect.TypeOf((*MockInterface)(nil).SaveThingWithMatchingKeys), ctx, m)
 }
 
 // GetThingWithMatchingKeys mocks base method
 func (m *MockInterface) GetThingWithMatchingKeys(ctx context.Context, bear, assocType, assocID string) (*models.ThingWithMatchingKeys, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithMatchingKeys", ctx, bear, assocType, assocID)
 	ret0, _ := ret[0].(*models.ThingWithMatchingKeys)
 	ret1, _ := ret[1].(error)
@@ -934,11 +1081,13 @@ func (m *MockInterface) GetThingWithMatchingKeys(ctx context.Context, bear, asso
 
 // GetThingWithMatchingKeys indicates an expected call of GetThingWithMatchingKeys
 func (mr *MockInterfaceMockRecorder) GetThingWithMatchingKeys(ctx, bear, assocType, assocID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithMatchingKeys", reflect.TypeOf((*MockInterface)(nil).GetThingWithMatchingKeys), ctx, bear, assocType, assocID)
 }
 
 // ScanThingWithMatchingKeyss mocks base method
 func (m *MockInterface) ScanThingWithMatchingKeyss(ctx context.Context, input ScanThingWithMatchingKeyssInput, fn func(*models.ThingWithMatchingKeys, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithMatchingKeyss", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -946,11 +1095,13 @@ func (m *MockInterface) ScanThingWithMatchingKeyss(ctx context.Context, input Sc
 
 // ScanThingWithMatchingKeyss indicates an expected call of ScanThingWithMatchingKeyss
 func (mr *MockInterfaceMockRecorder) ScanThingWithMatchingKeyss(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithMatchingKeyss", reflect.TypeOf((*MockInterface)(nil).ScanThingWithMatchingKeyss), ctx, input, fn)
 }
 
 // GetThingWithMatchingKeyssByBearAndAssocTypeID mocks base method
 func (m *MockInterface) GetThingWithMatchingKeyssByBearAndAssocTypeID(ctx context.Context, input GetThingWithMatchingKeyssByBearAndAssocTypeIDInput, fn func(*models.ThingWithMatchingKeys, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithMatchingKeyssByBearAndAssocTypeID", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -958,11 +1109,13 @@ func (m *MockInterface) GetThingWithMatchingKeyssByBearAndAssocTypeID(ctx contex
 
 // GetThingWithMatchingKeyssByBearAndAssocTypeID indicates an expected call of GetThingWithMatchingKeyssByBearAndAssocTypeID
 func (mr *MockInterfaceMockRecorder) GetThingWithMatchingKeyssByBearAndAssocTypeID(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithMatchingKeyssByBearAndAssocTypeID", reflect.TypeOf((*MockInterface)(nil).GetThingWithMatchingKeyssByBearAndAssocTypeID), ctx, input, fn)
 }
 
 // DeleteThingWithMatchingKeys mocks base method
 func (m *MockInterface) DeleteThingWithMatchingKeys(ctx context.Context, bear, assocType, assocID string) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteThingWithMatchingKeys", ctx, bear, assocType, assocID)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -970,11 +1123,13 @@ func (m *MockInterface) DeleteThingWithMatchingKeys(ctx context.Context, bear, a
 
 // DeleteThingWithMatchingKeys indicates an expected call of DeleteThingWithMatchingKeys
 func (mr *MockInterfaceMockRecorder) DeleteThingWithMatchingKeys(ctx, bear, assocType, assocID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithMatchingKeys", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithMatchingKeys), ctx, bear, assocType, assocID)
 }
 
 // GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear mocks base method
 func (m *MockInterface) GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Context, input GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput, fn func(*models.ThingWithMatchingKeys, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -982,11 +1137,13 @@ func (m *MockInterface) GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx
 
 // GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear indicates an expected call of GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear
 func (mr *MockInterfaceMockRecorder) GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear", reflect.TypeOf((*MockInterface)(nil).GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear), ctx, input, fn)
 }
 
 // ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear mocks base method
 func (m *MockInterface) ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Context, input ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput, fn func(*models.ThingWithMatchingKeys, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -994,11 +1151,13 @@ func (m *MockInterface) ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ct
 
 // ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear indicates an expected call of ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear
 func (mr *MockInterfaceMockRecorder) ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear", reflect.TypeOf((*MockInterface)(nil).ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear), ctx, input, fn)
 }
 
 // SaveThingWithMultiUseCompositeAttribute mocks base method
 func (m_2 *MockInterface) SaveThingWithMultiUseCompositeAttribute(ctx context.Context, m models.ThingWithMultiUseCompositeAttribute) error {
+	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithMultiUseCompositeAttribute", ctx, m)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -1006,11 +1165,13 @@ func (m_2 *MockInterface) SaveThingWithMultiUseCompositeAttribute(ctx context.Co
 
 // SaveThingWithMultiUseCompositeAttribute indicates an expected call of SaveThingWithMultiUseCompositeAttribute
 func (mr *MockInterfaceMockRecorder) SaveThingWithMultiUseCompositeAttribute(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithMultiUseCompositeAttribute", reflect.TypeOf((*MockInterface)(nil).SaveThingWithMultiUseCompositeAttribute), ctx, m)
 }
 
 // GetThingWithMultiUseCompositeAttribute mocks base method
 func (m *MockInterface) GetThingWithMultiUseCompositeAttribute(ctx context.Context, one string) (*models.ThingWithMultiUseCompositeAttribute, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithMultiUseCompositeAttribute", ctx, one)
 	ret0, _ := ret[0].(*models.ThingWithMultiUseCompositeAttribute)
 	ret1, _ := ret[1].(error)
@@ -1019,11 +1180,13 @@ func (m *MockInterface) GetThingWithMultiUseCompositeAttribute(ctx context.Conte
 
 // GetThingWithMultiUseCompositeAttribute indicates an expected call of GetThingWithMultiUseCompositeAttribute
 func (mr *MockInterfaceMockRecorder) GetThingWithMultiUseCompositeAttribute(ctx, one interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithMultiUseCompositeAttribute", reflect.TypeOf((*MockInterface)(nil).GetThingWithMultiUseCompositeAttribute), ctx, one)
 }
 
 // ScanThingWithMultiUseCompositeAttributes mocks base method
 func (m *MockInterface) ScanThingWithMultiUseCompositeAttributes(ctx context.Context, input ScanThingWithMultiUseCompositeAttributesInput, fn func(*models.ThingWithMultiUseCompositeAttribute, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithMultiUseCompositeAttributes", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -1031,11 +1194,13 @@ func (m *MockInterface) ScanThingWithMultiUseCompositeAttributes(ctx context.Con
 
 // ScanThingWithMultiUseCompositeAttributes indicates an expected call of ScanThingWithMultiUseCompositeAttributes
 func (mr *MockInterfaceMockRecorder) ScanThingWithMultiUseCompositeAttributes(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithMultiUseCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).ScanThingWithMultiUseCompositeAttributes), ctx, input, fn)
 }
 
 // DeleteThingWithMultiUseCompositeAttribute mocks base method
 func (m *MockInterface) DeleteThingWithMultiUseCompositeAttribute(ctx context.Context, one string) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteThingWithMultiUseCompositeAttribute", ctx, one)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -1043,11 +1208,13 @@ func (m *MockInterface) DeleteThingWithMultiUseCompositeAttribute(ctx context.Co
 
 // DeleteThingWithMultiUseCompositeAttribute indicates an expected call of DeleteThingWithMultiUseCompositeAttribute
 func (mr *MockInterfaceMockRecorder) DeleteThingWithMultiUseCompositeAttribute(ctx, one interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithMultiUseCompositeAttribute", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithMultiUseCompositeAttribute), ctx, one)
 }
 
 // GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo mocks base method
 func (m *MockInterface) GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx context.Context, input GetThingWithMultiUseCompositeAttributesByThreeAndOneTwoInput, fn func(*models.ThingWithMultiUseCompositeAttribute, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -1055,11 +1222,13 @@ func (m *MockInterface) GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(
 
 // GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo indicates an expected call of GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo
 func (mr *MockInterfaceMockRecorder) GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo", reflect.TypeOf((*MockInterface)(nil).GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo), ctx, input, fn)
 }
 
 // ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo mocks base method
 func (m *MockInterface) ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx context.Context, input ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwoInput, fn func(*models.ThingWithMultiUseCompositeAttribute, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -1067,11 +1236,13 @@ func (m *MockInterface) ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo
 
 // ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo indicates an expected call of ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo
 func (mr *MockInterfaceMockRecorder) ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo", reflect.TypeOf((*MockInterface)(nil).ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo), ctx, input, fn)
 }
 
 // GetThingWithMultiUseCompositeAttributesByFourAndOneTwo mocks base method
 func (m *MockInterface) GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx context.Context, input GetThingWithMultiUseCompositeAttributesByFourAndOneTwoInput, fn func(*models.ThingWithMultiUseCompositeAttribute, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithMultiUseCompositeAttributesByFourAndOneTwo", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -1079,11 +1250,13 @@ func (m *MockInterface) GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(c
 
 // GetThingWithMultiUseCompositeAttributesByFourAndOneTwo indicates an expected call of GetThingWithMultiUseCompositeAttributesByFourAndOneTwo
 func (mr *MockInterfaceMockRecorder) GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithMultiUseCompositeAttributesByFourAndOneTwo", reflect.TypeOf((*MockInterface)(nil).GetThingWithMultiUseCompositeAttributesByFourAndOneTwo), ctx, input, fn)
 }
 
 // ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo mocks base method
 func (m *MockInterface) ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx context.Context, input ScanThingWithMultiUseCompositeAttributesByFourAndOneTwoInput, fn func(*models.ThingWithMultiUseCompositeAttribute, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -1091,11 +1264,13 @@ func (m *MockInterface) ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo(
 
 // ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo indicates an expected call of ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo
 func (mr *MockInterfaceMockRecorder) ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo", reflect.TypeOf((*MockInterface)(nil).ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo), ctx, input, fn)
 }
 
 // SaveThingWithRequiredCompositePropertiesAndKeysOnly mocks base method
 func (m_2 *MockInterface) SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, m models.ThingWithRequiredCompositePropertiesAndKeysOnly) error {
+	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithRequiredCompositePropertiesAndKeysOnly", ctx, m)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -1103,11 +1278,13 @@ func (m_2 *MockInterface) SaveThingWithRequiredCompositePropertiesAndKeysOnly(ct
 
 // SaveThingWithRequiredCompositePropertiesAndKeysOnly indicates an expected call of SaveThingWithRequiredCompositePropertiesAndKeysOnly
 func (mr *MockInterfaceMockRecorder) SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithRequiredCompositePropertiesAndKeysOnly", reflect.TypeOf((*MockInterface)(nil).SaveThingWithRequiredCompositePropertiesAndKeysOnly), ctx, m)
 }
 
 // GetThingWithRequiredCompositePropertiesAndKeysOnly mocks base method
 func (m *MockInterface) GetThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, propertyThree string) (*models.ThingWithRequiredCompositePropertiesAndKeysOnly, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithRequiredCompositePropertiesAndKeysOnly", ctx, propertyThree)
 	ret0, _ := ret[0].(*models.ThingWithRequiredCompositePropertiesAndKeysOnly)
 	ret1, _ := ret[1].(error)
@@ -1116,11 +1293,13 @@ func (m *MockInterface) GetThingWithRequiredCompositePropertiesAndKeysOnly(ctx c
 
 // GetThingWithRequiredCompositePropertiesAndKeysOnly indicates an expected call of GetThingWithRequiredCompositePropertiesAndKeysOnly
 func (mr *MockInterfaceMockRecorder) GetThingWithRequiredCompositePropertiesAndKeysOnly(ctx, propertyThree interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithRequiredCompositePropertiesAndKeysOnly", reflect.TypeOf((*MockInterface)(nil).GetThingWithRequiredCompositePropertiesAndKeysOnly), ctx, propertyThree)
 }
 
 // ScanThingWithRequiredCompositePropertiesAndKeysOnlys mocks base method
 func (m *MockInterface) ScanThingWithRequiredCompositePropertiesAndKeysOnlys(ctx context.Context, input ScanThingWithRequiredCompositePropertiesAndKeysOnlysInput, fn func(*models.ThingWithRequiredCompositePropertiesAndKeysOnly, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithRequiredCompositePropertiesAndKeysOnlys", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -1128,11 +1307,13 @@ func (m *MockInterface) ScanThingWithRequiredCompositePropertiesAndKeysOnlys(ctx
 
 // ScanThingWithRequiredCompositePropertiesAndKeysOnlys indicates an expected call of ScanThingWithRequiredCompositePropertiesAndKeysOnlys
 func (mr *MockInterfaceMockRecorder) ScanThingWithRequiredCompositePropertiesAndKeysOnlys(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithRequiredCompositePropertiesAndKeysOnlys", reflect.TypeOf((*MockInterface)(nil).ScanThingWithRequiredCompositePropertiesAndKeysOnlys), ctx, input, fn)
 }
 
 // DeleteThingWithRequiredCompositePropertiesAndKeysOnly mocks base method
 func (m *MockInterface) DeleteThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, propertyThree string) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteThingWithRequiredCompositePropertiesAndKeysOnly", ctx, propertyThree)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -1140,11 +1321,13 @@ func (m *MockInterface) DeleteThingWithRequiredCompositePropertiesAndKeysOnly(ct
 
 // DeleteThingWithRequiredCompositePropertiesAndKeysOnly indicates an expected call of DeleteThingWithRequiredCompositePropertiesAndKeysOnly
 func (mr *MockInterfaceMockRecorder) DeleteThingWithRequiredCompositePropertiesAndKeysOnly(ctx, propertyThree interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithRequiredCompositePropertiesAndKeysOnly", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithRequiredCompositePropertiesAndKeysOnly), ctx, propertyThree)
 }
 
 // GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree mocks base method
 func (m *MockInterface) GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(ctx context.Context, input GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput, fn func(*models.ThingWithRequiredCompositePropertiesAndKeysOnly, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -1152,11 +1335,13 @@ func (m *MockInterface) GetThingWithRequiredCompositePropertiesAndKeysOnlysByPro
 
 // GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree indicates an expected call of GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree
 func (mr *MockInterfaceMockRecorder) GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree", reflect.TypeOf((*MockInterface)(nil).GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree), ctx, input, fn)
 }
 
 // ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree mocks base method
 func (m *MockInterface) ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(ctx context.Context, input ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput, fn func(*models.ThingWithRequiredCompositePropertiesAndKeysOnly, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -1164,11 +1349,13 @@ func (m *MockInterface) ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPr
 
 // ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree indicates an expected call of ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree
 func (mr *MockInterfaceMockRecorder) ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree", reflect.TypeOf((*MockInterface)(nil).ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree), ctx, input, fn)
 }
 
 // SaveThingWithRequiredFields mocks base method
 func (m_2 *MockInterface) SaveThingWithRequiredFields(ctx context.Context, m models.ThingWithRequiredFields) error {
+	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithRequiredFields", ctx, m)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -1176,11 +1363,13 @@ func (m_2 *MockInterface) SaveThingWithRequiredFields(ctx context.Context, m mod
 
 // SaveThingWithRequiredFields indicates an expected call of SaveThingWithRequiredFields
 func (mr *MockInterfaceMockRecorder) SaveThingWithRequiredFields(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithRequiredFields", reflect.TypeOf((*MockInterface)(nil).SaveThingWithRequiredFields), ctx, m)
 }
 
 // GetThingWithRequiredFields mocks base method
 func (m *MockInterface) GetThingWithRequiredFields(ctx context.Context, name string) (*models.ThingWithRequiredFields, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithRequiredFields", ctx, name)
 	ret0, _ := ret[0].(*models.ThingWithRequiredFields)
 	ret1, _ := ret[1].(error)
@@ -1189,11 +1378,13 @@ func (m *MockInterface) GetThingWithRequiredFields(ctx context.Context, name str
 
 // GetThingWithRequiredFields indicates an expected call of GetThingWithRequiredFields
 func (mr *MockInterfaceMockRecorder) GetThingWithRequiredFields(ctx, name interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithRequiredFields", reflect.TypeOf((*MockInterface)(nil).GetThingWithRequiredFields), ctx, name)
 }
 
 // ScanThingWithRequiredFieldss mocks base method
 func (m *MockInterface) ScanThingWithRequiredFieldss(ctx context.Context, input ScanThingWithRequiredFieldssInput, fn func(*models.ThingWithRequiredFields, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithRequiredFieldss", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -1201,11 +1392,13 @@ func (m *MockInterface) ScanThingWithRequiredFieldss(ctx context.Context, input 
 
 // ScanThingWithRequiredFieldss indicates an expected call of ScanThingWithRequiredFieldss
 func (mr *MockInterfaceMockRecorder) ScanThingWithRequiredFieldss(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithRequiredFieldss", reflect.TypeOf((*MockInterface)(nil).ScanThingWithRequiredFieldss), ctx, input, fn)
 }
 
 // DeleteThingWithRequiredFields mocks base method
 func (m *MockInterface) DeleteThingWithRequiredFields(ctx context.Context, name string) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteThingWithRequiredFields", ctx, name)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -1213,11 +1406,13 @@ func (m *MockInterface) DeleteThingWithRequiredFields(ctx context.Context, name 
 
 // DeleteThingWithRequiredFields indicates an expected call of DeleteThingWithRequiredFields
 func (mr *MockInterfaceMockRecorder) DeleteThingWithRequiredFields(ctx, name interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithRequiredFields", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithRequiredFields), ctx, name)
 }
 
 // SaveThingWithRequiredFields2 mocks base method
 func (m_2 *MockInterface) SaveThingWithRequiredFields2(ctx context.Context, m models.ThingWithRequiredFields2) error {
+	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithRequiredFields2", ctx, m)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -1225,11 +1420,13 @@ func (m_2 *MockInterface) SaveThingWithRequiredFields2(ctx context.Context, m mo
 
 // SaveThingWithRequiredFields2 indicates an expected call of SaveThingWithRequiredFields2
 func (mr *MockInterfaceMockRecorder) SaveThingWithRequiredFields2(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithRequiredFields2", reflect.TypeOf((*MockInterface)(nil).SaveThingWithRequiredFields2), ctx, m)
 }
 
 // GetThingWithRequiredFields2 mocks base method
 func (m *MockInterface) GetThingWithRequiredFields2(ctx context.Context, name, id string) (*models.ThingWithRequiredFields2, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithRequiredFields2", ctx, name, id)
 	ret0, _ := ret[0].(*models.ThingWithRequiredFields2)
 	ret1, _ := ret[1].(error)
@@ -1238,11 +1435,13 @@ func (m *MockInterface) GetThingWithRequiredFields2(ctx context.Context, name, i
 
 // GetThingWithRequiredFields2 indicates an expected call of GetThingWithRequiredFields2
 func (mr *MockInterfaceMockRecorder) GetThingWithRequiredFields2(ctx, name, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithRequiredFields2", reflect.TypeOf((*MockInterface)(nil).GetThingWithRequiredFields2), ctx, name, id)
 }
 
 // ScanThingWithRequiredFields2s mocks base method
 func (m *MockInterface) ScanThingWithRequiredFields2s(ctx context.Context, input ScanThingWithRequiredFields2sInput, fn func(*models.ThingWithRequiredFields2, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithRequiredFields2s", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -1250,11 +1449,13 @@ func (m *MockInterface) ScanThingWithRequiredFields2s(ctx context.Context, input
 
 // ScanThingWithRequiredFields2s indicates an expected call of ScanThingWithRequiredFields2s
 func (mr *MockInterfaceMockRecorder) ScanThingWithRequiredFields2s(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithRequiredFields2s", reflect.TypeOf((*MockInterface)(nil).ScanThingWithRequiredFields2s), ctx, input, fn)
 }
 
 // GetThingWithRequiredFields2sByNameAndID mocks base method
 func (m *MockInterface) GetThingWithRequiredFields2sByNameAndID(ctx context.Context, input GetThingWithRequiredFields2sByNameAndIDInput, fn func(*models.ThingWithRequiredFields2, bool) bool) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithRequiredFields2sByNameAndID", ctx, input, fn)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -1262,11 +1463,13 @@ func (m *MockInterface) GetThingWithRequiredFields2sByNameAndID(ctx context.Cont
 
 // GetThingWithRequiredFields2sByNameAndID indicates an expected call of GetThingWithRequiredFields2sByNameAndID
 func (mr *MockInterfaceMockRecorder) GetThingWithRequiredFields2sByNameAndID(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithRequiredFields2sByNameAndID", reflect.TypeOf((*MockInterface)(nil).GetThingWithRequiredFields2sByNameAndID), ctx, input, fn)
 }
 
 // DeleteThingWithRequiredFields2 mocks base method
 func (m *MockInterface) DeleteThingWithRequiredFields2(ctx context.Context, name, id string) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteThingWithRequiredFields2", ctx, name, id)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -1274,11 +1477,13 @@ func (m *MockInterface) DeleteThingWithRequiredFields2(ctx context.Context, name
 
 // DeleteThingWithRequiredFields2 indicates an expected call of DeleteThingWithRequiredFields2
 func (mr *MockInterfaceMockRecorder) DeleteThingWithRequiredFields2(ctx, name, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithRequiredFields2", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithRequiredFields2), ctx, name, id)
 }
 
 // SaveThingWithUnderscores mocks base method
 func (m_2 *MockInterface) SaveThingWithUnderscores(ctx context.Context, m models.ThingWithUnderscores) error {
+	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithUnderscores", ctx, m)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -1286,11 +1491,13 @@ func (m_2 *MockInterface) SaveThingWithUnderscores(ctx context.Context, m models
 
 // SaveThingWithUnderscores indicates an expected call of SaveThingWithUnderscores
 func (mr *MockInterfaceMockRecorder) SaveThingWithUnderscores(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithUnderscores", reflect.TypeOf((*MockInterface)(nil).SaveThingWithUnderscores), ctx, m)
 }
 
 // GetThingWithUnderscores mocks base method
 func (m *MockInterface) GetThingWithUnderscores(ctx context.Context, iDApp string) (*models.ThingWithUnderscores, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithUnderscores", ctx, iDApp)
 	ret0, _ := ret[0].(*models.ThingWithUnderscores)
 	ret1, _ := ret[1].(error)
@@ -1299,11 +1506,13 @@ func (m *MockInterface) GetThingWithUnderscores(ctx context.Context, iDApp strin
 
 // GetThingWithUnderscores indicates an expected call of GetThingWithUnderscores
 func (mr *MockInterfaceMockRecorder) GetThingWithUnderscores(ctx, iDApp interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithUnderscores", reflect.TypeOf((*MockInterface)(nil).GetThingWithUnderscores), ctx, iDApp)
 }
 
 // DeleteThingWithUnderscores mocks base method
 func (m *MockInterface) DeleteThingWithUnderscores(ctx context.Context, iDApp string) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteThingWithUnderscores", ctx, iDApp)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -1311,5 +1520,6 @@ func (m *MockInterface) DeleteThingWithUnderscores(ctx context.Context, iDApp st
 
 // DeleteThingWithUnderscores indicates an expected call of DeleteThingWithUnderscores
 func (mr *MockInterfaceMockRecorder) DeleteThingWithUnderscores(ctx, iDApp interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithUnderscores", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithUnderscores), ctx, iDApp)
 }

@@ -36,6 +36,7 @@ func (m *MockClient) EXPECT() *MockClientMockRecorder {
 
 // GetAuthors mocks base method
 func (m *MockClient) GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (*models.AuthorsResponse, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAuthors", ctx, i)
 	ret0, _ := ret[0].(*models.AuthorsResponse)
 	ret1, _ := ret[1].(error)
@@ -44,11 +45,13 @@ func (m *MockClient) GetAuthors(ctx context.Context, i *models.GetAuthorsInput) 
 
 // GetAuthors indicates an expected call of GetAuthors
 func (mr *MockClientMockRecorder) GetAuthors(ctx, i interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAuthors", reflect.TypeOf((*MockClient)(nil).GetAuthors), ctx, i)
 }
 
 // NewGetAuthorsIter mocks base method
 func (m *MockClient) NewGetAuthorsIter(ctx context.Context, i *models.GetAuthorsInput) (GetAuthorsIter, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NewGetAuthorsIter", ctx, i)
 	ret0, _ := ret[0].(GetAuthorsIter)
 	ret1, _ := ret[1].(error)
@@ -57,11 +60,13 @@ func (m *MockClient) NewGetAuthorsIter(ctx context.Context, i *models.GetAuthors
 
 // NewGetAuthorsIter indicates an expected call of NewGetAuthorsIter
 func (mr *MockClientMockRecorder) NewGetAuthorsIter(ctx, i interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewGetAuthorsIter", reflect.TypeOf((*MockClient)(nil).NewGetAuthorsIter), ctx, i)
 }
 
 // GetAuthorsWithPut mocks base method
 func (m *MockClient) GetAuthorsWithPut(ctx context.Context, i *models.GetAuthorsWithPutInput) (*models.AuthorsResponse, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAuthorsWithPut", ctx, i)
 	ret0, _ := ret[0].(*models.AuthorsResponse)
 	ret1, _ := ret[1].(error)
@@ -70,11 +75,13 @@ func (m *MockClient) GetAuthorsWithPut(ctx context.Context, i *models.GetAuthors
 
 // GetAuthorsWithPut indicates an expected call of GetAuthorsWithPut
 func (mr *MockClientMockRecorder) GetAuthorsWithPut(ctx, i interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAuthorsWithPut", reflect.TypeOf((*MockClient)(nil).GetAuthorsWithPut), ctx, i)
 }
 
 // NewGetAuthorsWithPutIter mocks base method
 func (m *MockClient) NewGetAuthorsWithPutIter(ctx context.Context, i *models.GetAuthorsWithPutInput) (GetAuthorsWithPutIter, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NewGetAuthorsWithPutIter", ctx, i)
 	ret0, _ := ret[0].(GetAuthorsWithPutIter)
 	ret1, _ := ret[1].(error)
@@ -83,11 +90,13 @@ func (m *MockClient) NewGetAuthorsWithPutIter(ctx context.Context, i *models.Get
 
 // NewGetAuthorsWithPutIter indicates an expected call of NewGetAuthorsWithPutIter
 func (mr *MockClientMockRecorder) NewGetAuthorsWithPutIter(ctx, i interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewGetAuthorsWithPutIter", reflect.TypeOf((*MockClient)(nil).NewGetAuthorsWithPutIter), ctx, i)
 }
 
 // GetBooks mocks base method
 func (m *MockClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models.Book, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetBooks", ctx, i)
 	ret0, _ := ret[0].([]models.Book)
 	ret1, _ := ret[1].(error)
@@ -96,11 +105,13 @@ func (m *MockClient) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]m
 
 // GetBooks indicates an expected call of GetBooks
 func (mr *MockClientMockRecorder) GetBooks(ctx, i interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBooks", reflect.TypeOf((*MockClient)(nil).GetBooks), ctx, i)
 }
 
 // NewGetBooksIter mocks base method
 func (m *MockClient) NewGetBooksIter(ctx context.Context, i *models.GetBooksInput) (GetBooksIter, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NewGetBooksIter", ctx, i)
 	ret0, _ := ret[0].(GetBooksIter)
 	ret1, _ := ret[1].(error)
@@ -109,11 +120,13 @@ func (m *MockClient) NewGetBooksIter(ctx context.Context, i *models.GetBooksInpu
 
 // NewGetBooksIter indicates an expected call of NewGetBooksIter
 func (mr *MockClientMockRecorder) NewGetBooksIter(ctx, i interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewGetBooksIter", reflect.TypeOf((*MockClient)(nil).NewGetBooksIter), ctx, i)
 }
 
 // CreateBook mocks base method
 func (m *MockClient) CreateBook(ctx context.Context, i *models.Book) (*models.Book, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateBook", ctx, i)
 	ret0, _ := ret[0].(*models.Book)
 	ret1, _ := ret[1].(error)
@@ -122,11 +135,13 @@ func (m *MockClient) CreateBook(ctx context.Context, i *models.Book) (*models.Bo
 
 // CreateBook indicates an expected call of CreateBook
 func (mr *MockClientMockRecorder) CreateBook(ctx, i interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBook", reflect.TypeOf((*MockClient)(nil).CreateBook), ctx, i)
 }
 
 // PutBook mocks base method
 func (m *MockClient) PutBook(ctx context.Context, i *models.Book) (*models.Book, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PutBook", ctx, i)
 	ret0, _ := ret[0].(*models.Book)
 	ret1, _ := ret[1].(error)
@@ -135,11 +150,13 @@ func (m *MockClient) PutBook(ctx context.Context, i *models.Book) (*models.Book,
 
 // PutBook indicates an expected call of PutBook
 func (mr *MockClientMockRecorder) PutBook(ctx, i interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutBook", reflect.TypeOf((*MockClient)(nil).PutBook), ctx, i)
 }
 
 // GetBookByID mocks base method
 func (m *MockClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (*models.Book, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetBookByID", ctx, i)
 	ret0, _ := ret[0].(*models.Book)
 	ret1, _ := ret[1].(error)
@@ -148,11 +165,13 @@ func (m *MockClient) GetBookByID(ctx context.Context, i *models.GetBookByIDInput
 
 // GetBookByID indicates an expected call of GetBookByID
 func (mr *MockClientMockRecorder) GetBookByID(ctx, i interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBookByID", reflect.TypeOf((*MockClient)(nil).GetBookByID), ctx, i)
 }
 
 // GetBookByID2 mocks base method
 func (m *MockClient) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetBookByID2", ctx, id)
 	ret0, _ := ret[0].(*models.Book)
 	ret1, _ := ret[1].(error)
@@ -161,11 +180,13 @@ func (m *MockClient) GetBookByID2(ctx context.Context, id string) (*models.Book,
 
 // GetBookByID2 indicates an expected call of GetBookByID2
 func (mr *MockClientMockRecorder) GetBookByID2(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBookByID2", reflect.TypeOf((*MockClient)(nil).GetBookByID2), ctx, id)
 }
 
 // HealthCheck mocks base method
 func (m *MockClient) HealthCheck(ctx context.Context) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "HealthCheck", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -173,6 +194,7 @@ func (m *MockClient) HealthCheck(ctx context.Context) error {
 
 // HealthCheck indicates an expected call of HealthCheck
 func (mr *MockClientMockRecorder) HealthCheck(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HealthCheck", reflect.TypeOf((*MockClient)(nil).HealthCheck), ctx)
 }
 
@@ -201,6 +223,7 @@ func (m *MockGetAuthorsIter) EXPECT() *MockGetAuthorsIterMockRecorder {
 
 // Next mocks base method
 func (m *MockGetAuthorsIter) Next(arg0 *models.Author) bool {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Next", arg0)
 	ret0, _ := ret[0].(bool)
 	return ret0
@@ -208,11 +231,13 @@ func (m *MockGetAuthorsIter) Next(arg0 *models.Author) bool {
 
 // Next indicates an expected call of Next
 func (mr *MockGetAuthorsIterMockRecorder) Next(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Next", reflect.TypeOf((*MockGetAuthorsIter)(nil).Next), arg0)
 }
 
 // Err mocks base method
 func (m *MockGetAuthorsIter) Err() error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Err")
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -220,6 +245,7 @@ func (m *MockGetAuthorsIter) Err() error {
 
 // Err indicates an expected call of Err
 func (mr *MockGetAuthorsIterMockRecorder) Err() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Err", reflect.TypeOf((*MockGetAuthorsIter)(nil).Err))
 }
 
@@ -248,6 +274,7 @@ func (m *MockGetAuthorsWithPutIter) EXPECT() *MockGetAuthorsWithPutIterMockRecor
 
 // Next mocks base method
 func (m *MockGetAuthorsWithPutIter) Next(arg0 *models.Author) bool {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Next", arg0)
 	ret0, _ := ret[0].(bool)
 	return ret0
@@ -255,11 +282,13 @@ func (m *MockGetAuthorsWithPutIter) Next(arg0 *models.Author) bool {
 
 // Next indicates an expected call of Next
 func (mr *MockGetAuthorsWithPutIterMockRecorder) Next(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Next", reflect.TypeOf((*MockGetAuthorsWithPutIter)(nil).Next), arg0)
 }
 
 // Err mocks base method
 func (m *MockGetAuthorsWithPutIter) Err() error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Err")
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -267,6 +296,7 @@ func (m *MockGetAuthorsWithPutIter) Err() error {
 
 // Err indicates an expected call of Err
 func (mr *MockGetAuthorsWithPutIterMockRecorder) Err() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Err", reflect.TypeOf((*MockGetAuthorsWithPutIter)(nil).Err))
 }
 
@@ -295,6 +325,7 @@ func (m *MockGetBooksIter) EXPECT() *MockGetBooksIterMockRecorder {
 
 // Next mocks base method
 func (m *MockGetBooksIter) Next(arg0 *models.Book) bool {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Next", arg0)
 	ret0, _ := ret[0].(bool)
 	return ret0
@@ -302,11 +333,13 @@ func (m *MockGetBooksIter) Next(arg0 *models.Book) bool {
 
 // Next indicates an expected call of Next
 func (mr *MockGetBooksIterMockRecorder) Next(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Next", reflect.TypeOf((*MockGetBooksIter)(nil).Next), arg0)
 }
 
 // Err mocks base method
 func (m *MockGetBooksIter) Err() error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Err")
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -314,5 +347,6 @@ func (m *MockGetBooksIter) Err() error {
 
 // Err indicates an expected call of Err
 func (mr *MockGetBooksIterMockRecorder) Err() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Err", reflect.TypeOf((*MockGetBooksIter)(nil).Err))
 }
