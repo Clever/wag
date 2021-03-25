@@ -50,7 +50,6 @@ require (
 	github.com/spf13/pflag v1.0.0 // indirect
 	github.com/spf13/viper v1.0.1-0.20171227194143-aafc9e6bc7b7 // indirect
 	github.com/stretchr/testify v1.7.0
-	github.com/tmthrgd/go-bindata v0.0.0-20190904063317-a4b65675e0fb
 	github.com/uber/jaeger-client-go v2.25.0+incompatible
 	github.com/uber/jaeger-lib v2.0.0+incompatible // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
