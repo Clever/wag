@@ -1,4 +1,5 @@
-v6.4.2
+v6.4.3
+- v6.4.3: Patch bump for publishing testing
 - v6.4.2: Code cleanup around timeouts for clients
 - v6.4.1: Fix generated go clients logging circuit breaker events for other clients
 - v6.4.0: Generate server handler with binary request body
