@@ -36,7 +36,6 @@ func (m *MockController) EXPECT() *MockControllerMockRecorder {
 
 // GetBook mocks base method
 func (m *MockController) GetBook(ctx context.Context, i *models.GetBookInput) error {
-	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetBook", ctx, i)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -44,6 +43,5 @@ func (m *MockController) GetBook(ctx context.Context, i *models.GetBookInput) er
 
 // GetBook indicates an expected call of GetBook
 func (mr *MockControllerMockRecorder) GetBook(ctx, i interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBook", reflect.TypeOf((*MockController)(nil).GetBook), ctx, i)
 }
