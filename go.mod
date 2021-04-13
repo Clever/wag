@@ -68,11 +68,6 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
 )
 
-exclude (
-	github.com/codahale/hdrhistogram v1.0.0
-	github.com/codahale/hdrhistogram v1.0.1
-)
-
 replace github.com/go-openapi/swag => github.com/go-openapi/swag v0.0.0-20180102232305-84f4bee7c0a6
 
 replace gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.0.0
