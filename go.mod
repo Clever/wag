@@ -6,6 +6,7 @@ require (
 	github.com/Clever/discovery-go v1.7.2-0.20180111182807-aec3a7cef89e
 	github.com/Clever/go-process-metrics v0.0.0-20171109172046-76790fe7fd86
 	github.com/Clever/go-utils v0.0.0-20150501165843-abc25366fa8e
+	github.com/GeertJohan/fgt v0.0.0-20160120143236-262f7b11eec0
 	github.com/afex/hystrix-go v0.0.0-20180329224416-4847ceb883b5
 	github.com/aws/aws-sdk-go v1.37.8
 	github.com/awslabs/goformation/v2 v2.3.1
@@ -38,6 +39,7 @@ require (
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
+	golang.org/x/lint v0.0.0-20200302205851-738671d3881b
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
 	golang.org/x/tools v0.0.0-20210106214847-113979e3529a // indirect
