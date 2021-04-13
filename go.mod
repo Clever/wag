@@ -12,15 +12,15 @@ require (
 	github.com/codahale/hdrhistogram v0.9.0 // indirect
 	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b
 	github.com/go-errors/errors v1.1.1
-	github.com/go-openapi/errors v0.19.2
+	github.com/go-openapi/errors v0.19.4
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
-	github.com/go-openapi/jsonreference v0.19.2
-	github.com/go-openapi/loads v0.19.2
-	github.com/go-openapi/spec v0.19.2
-	github.com/go-openapi/strfmt v0.19.3
-	github.com/go-openapi/swag v0.19.5
-	github.com/go-openapi/validate v0.19.2
-	github.com/go-swagger/go-swagger v0.20.0
+	github.com/go-openapi/jsonreference v0.19.3
+	github.com/go-openapi/loads v0.19.5
+	github.com/go-openapi/spec v0.19.7
+	github.com/go-openapi/strfmt v0.19.5
+	github.com/go-openapi/swag v0.19.8
+	github.com/go-openapi/validate v0.19.7
+	github.com/go-swagger/go-swagger v0.23.0
 	github.com/golang/mock v1.3.1
 	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/google/uuid v1.1.2 // indirect
@@ -28,12 +28,10 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/kardianos/osext v0.0.0-20170510131534-ae77be60afb1
 	github.com/kevinburke/go-bindata v3.15.0+incompatible
-	github.com/kr/text v0.2.0 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/opentracing-contrib/go-aws-sdk v0.0.0-20190205132030-9c29407076c0
 	github.com/opentracing/opentracing-go v1.2.0
-	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/stretchr/testify v1.7.0
 	github.com/uber/jaeger-client-go v2.25.0+incompatible
 	github.com/uber/jaeger-lib v2.0.0+incompatible // indirect
