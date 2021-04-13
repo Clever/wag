@@ -8,5 +8,6 @@ import "io"
 // Editing this file might prove futile when you re-run the swagger generate command
 
 // GradeFile grade file
+//
 // swagger:model GradeFile
 type GradeFile io.ReadCloser
