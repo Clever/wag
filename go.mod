@@ -73,13 +73,6 @@ exclude (
 	github.com/codahale/hdrhistogram v1.0.1
 )
 
-exclude (
-	github.com/uber-go/atomic v1.5.0
-	github.com/uber-go/atomic v1.5.1
-	github.com/uber-go/atomic v1.6.0
-	github.com/uber-go/atomic v1.7.0
-)
-
 replace github.com/go-openapi/swag => github.com/go-openapi/swag v0.0.0-20180102232305-84f4bee7c0a6
 
 replace gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.0.0
