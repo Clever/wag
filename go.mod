@@ -1,6 +1,6 @@
 module github.com/Clever/wag/v6
 
-go 1.13
+go 1.16
 
 require (
 	github.com/Clever/discovery-go v1.7.2-0.20180111182807-aec3a7cef89e

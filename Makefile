@@ -12,7 +12,7 @@ VERSION := $(shell head -n 1 VERSION)
 EXECUTABLE := wag
 PKGS := $(PKGS) $(PKG)/samples/gen-go-db/server/db/dynamodb
 
-$(eval $(call golang-version-check,1.13))
+$(eval $(call golang-version-check,1.16))
 
 .PHONY: test build release js-tests jsdoc2md go-generate generate $(PKGS) install_deps
 
