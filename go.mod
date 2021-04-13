@@ -7,8 +7,6 @@ require (
 	github.com/Clever/discovery-go v1.7.2-0.20180111182807-aec3a7cef89e
 	github.com/Clever/go-process-metrics v0.0.0-20171109172046-76790fe7fd86
 	github.com/Clever/go-utils v0.0.0-20150501165843-abc25366fa8e
-	github.com/PuerkitoBio/purell v1.1.0 // indirect
-	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/afex/hystrix-go v0.0.0-20180329224416-4847ceb883b5
 	github.com/aws/aws-sdk-go v1.37.8
 	github.com/awslabs/goformation/v2 v2.3.1
@@ -16,18 +14,18 @@ require (
 	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b
 	github.com/fsnotify/fsnotify v1.4.7 // indirect
 	github.com/go-errors/errors v1.1.1
-	github.com/go-openapi/analysis v0.0.0-20180126163718-f59a71f0ece6 // indirect
+	github.com/go-openapi/analysis v0.17.0 // indirect
 	github.com/go-openapi/errors v0.19.2
 	github.com/go-openapi/inflect v0.0.0-20130829110746-b1f6470ffb9c // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
-	github.com/go-openapi/jsonreference v0.0.0-20161105162150-36d33bfe519e
-	github.com/go-openapi/loads v0.0.0-20171207192234-2a2b323bab96
+	github.com/go-openapi/jsonreference v0.17.0
+	github.com/go-openapi/loads v0.17.0
 	github.com/go-openapi/runtime v0.0.0-20180131174916-09fac855d850 // indirect
-	github.com/go-openapi/spec v0.0.0-20180213232550-1de3e0542de6
+	github.com/go-openapi/spec v0.17.0
 	github.com/go-openapi/strfmt v0.19.3
 	github.com/go-openapi/swag v0.19.5
 	github.com/go-openapi/validate v0.0.0-20180222165948-180bba53b988
-	github.com/go-swagger/go-swagger v0.2.1-0.20171112234155-b015bda48dfc
+	github.com/go-swagger/go-swagger v0.17.2
 	github.com/go-swagger/scan-repo-boundary v0.0.0-20180623220736-973b3573c013 // indirect
 	github.com/golang/mock v1.1.1
 	github.com/google/go-cmp v0.5.5 // indirect
