@@ -20,12 +20,12 @@ require (
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.17.0
 	github.com/go-openapi/loads v0.17.0
-	github.com/go-openapi/runtime v0.0.0-20180131174916-09fac855d850 // indirect
+	github.com/go-openapi/runtime v0.0.0-20180920151709-4f900dc2ade9 // indirect
 	github.com/go-openapi/spec v0.17.0
 	github.com/go-openapi/strfmt v0.19.3
 	github.com/go-openapi/swag v0.19.5
-	github.com/go-openapi/validate v0.0.0-20180222165948-180bba53b988
-	github.com/go-swagger/go-swagger v0.17.2
+	github.com/go-openapi/validate v0.0.0-20180703152151-9a6e517cddf1
+	github.com/go-swagger/go-swagger v0.19.0
 	github.com/go-swagger/scan-repo-boundary v0.0.0-20180623220736-973b3573c013 // indirect
 	github.com/golang/mock v1.1.1
 	github.com/google/go-cmp v0.5.5 // indirect
@@ -66,6 +66,8 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
 )
 
-// replace github.com/go-openapi/swag => github.com/go-openapi/swag v0.0.0-20180102232305-84f4bee7c0a6
+replace github.com/go-openapi/validate => github.com/go-openapi/validate v0.0.0-20180703152151-9a6e517cddf1 // pre-modules tag 0.15.0
+
+replace github.com/go-openapi/runtime => github.com/go-openapi/runtime v0.0.0-20180920151709-4f900dc2ade9
 
 replace gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.0.0
