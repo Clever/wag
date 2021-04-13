@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // ThingWithDateTimeComposite thing with date time composite
@@ -17,6 +18,7 @@ import (
 type ThingWithDateTimeComposite struct {
 
 	// created
+	// Format: date-time
 	Created strfmt.DateTime `json:"created,omitempty"`
 
 	// id
@@ -33,9 +35,26 @@ type ThingWithDateTimeComposite struct {
 func (m *ThingWithDateTimeComposite) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateCreated(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ThingWithDateTimeComposite) validateCreated(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Created) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("created", "body", "date-time", m.Created.String(), formats); err != nil {
+		return err
+	}
+
 	return nil
 }
 

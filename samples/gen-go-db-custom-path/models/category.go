@@ -19,8 +19,10 @@ import (
 type Category string
 
 const (
+
 	// CategoryA captures enum value "a"
 	CategoryA Category = "a"
+
 	// CategoryB captures enum value "b"
 	CategoryB Category = "b"
 )

@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // ThingWithDateRange thing with date range
@@ -17,6 +18,7 @@ import (
 type ThingWithDateRange struct {
 
 	// date
+	// Format: date-time
 	Date strfmt.DateTime `json:"date,omitempty"`
 
 	// name
@@ -27,9 +29,26 @@ type ThingWithDateRange struct {
 func (m *ThingWithDateRange) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateDate(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ThingWithDateRange) validateDate(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Date) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("date", "body", "date-time", m.Date.String(), formats); err != nil {
+		return err
+	}
+
 	return nil
 }
 

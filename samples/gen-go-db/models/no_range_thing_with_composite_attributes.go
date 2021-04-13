@@ -23,6 +23,7 @@ type NoRangeThingWithCompositeAttributes struct {
 
 	// date
 	// Required: true
+	// Format: date-time
 	Date *strfmt.DateTime `json:"date"`
 
 	// name
@@ -38,17 +39,14 @@ func (m *NoRangeThingWithCompositeAttributes) Validate(formats strfmt.Registry) 
 	var res []error
 
 	if err := m.validateBranch(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateDate(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateName(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 

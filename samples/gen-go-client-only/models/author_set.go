@@ -20,16 +20,36 @@ type AuthorSet struct {
 	RandomProp int64 `json:"randomProp,omitempty"`
 
 	// results
-	Results AuthorArray `json:"results"`
+	Results AuthorArray `json:"results,omitempty"`
 }
 
 // Validate validates this author set
 func (m *AuthorSet) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateResults(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *AuthorSet) validateResults(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Results) { // not required
+		return nil
+	}
+
+	if err := m.Results.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("results")
+		}
+		return err
+	}
+
 	return nil
 }
 

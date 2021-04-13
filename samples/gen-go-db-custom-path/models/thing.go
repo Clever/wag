@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // Thing thing
@@ -20,6 +21,7 @@ type Thing struct {
 	Category Category `json:"category,omitempty"`
 
 	// created at
+	// Format: date-time
 	CreatedAt strfmt.DateTime `json:"createdAt,omitempty"`
 
 	// id
@@ -40,12 +42,14 @@ func (m *Thing) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCategory(formats); err != nil {
-		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateCreatedAt(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateNestedObject(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
@@ -71,6 +75,19 @@ func (m *Thing) validateCategory(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Thing) validateCreatedAt(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.CreatedAt) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("createdAt", "body", "date-time", m.CreatedAt.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Thing) validateNestedObject(formats strfmt.Registry) error {
 
 	if swag.IsZero(m.NestedObject) { // not required
@@ -78,7 +95,6 @@ func (m *Thing) validateNestedObject(formats strfmt.Registry) error {
 	}
 
 	if m.NestedObject != nil {
-
 		if err := m.NestedObject.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("nestedObject")

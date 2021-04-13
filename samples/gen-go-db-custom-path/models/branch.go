@@ -19,10 +19,13 @@ import (
 type Branch string
 
 const (
+
 	// BranchMaster captures enum value "master"
 	BranchMaster Branch = "master"
+
 	// BranchDEVBRANCH captures enum value "DEV_BRANCH"
 	BranchDEVBRANCH Branch = "DEV_BRANCH"
+
 	// BranchTest captures enum value "test"
 	BranchTest Branch = "test"
 )

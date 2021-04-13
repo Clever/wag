@@ -23,6 +23,7 @@ type ThingWithCompositeEnumAttributes struct {
 
 	// date
 	// Required: true
+	// Format: date-time
 	Date *strfmt.DateTime `json:"date"`
 
 	// name
@@ -35,17 +36,14 @@ func (m *ThingWithCompositeEnumAttributes) Validate(formats strfmt.Registry) err
 	var res []error
 
 	if err := m.validateBranchID(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateDate(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateName(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 

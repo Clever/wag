@@ -23,6 +23,7 @@ type Book struct {
 	Author string `json:"author,omitempty"`
 
 	// genre
+	// Enum: [scifi mystery horror]
 	Genre string `json:"genre,omitempty"`
 
 	// id
@@ -43,12 +44,6 @@ func (m *Book) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateGenre(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateOtherArray(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
@@ -71,10 +66,13 @@ func init() {
 }
 
 const (
+
 	// BookGenreScifi captures enum value "scifi"
 	BookGenreScifi string = "scifi"
+
 	// BookGenreMystery captures enum value "mystery"
 	BookGenreMystery string = "mystery"
+
 	// BookGenreHorror captures enum value "horror"
 	BookGenreHorror string = "horror"
 )
@@ -96,19 +94,6 @@ func (m *Book) validateGenre(formats strfmt.Registry) error {
 	// value enum
 	if err := m.validateGenreEnum("genre", "body", m.Genre); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *Book) validateOtherArray(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.OtherArray) { // not required
-		return nil
-	}
-
-	if swag.IsZero(m.OtherArray) { // not required
-		return nil
 	}
 
 	return nil

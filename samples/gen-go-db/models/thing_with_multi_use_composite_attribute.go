@@ -39,22 +39,18 @@ func (m *ThingWithMultiUseCompositeAttribute) Validate(formats strfmt.Registry) 
 	var res []error
 
 	if err := m.validateFour(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateOne(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateThree(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateTwo(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 

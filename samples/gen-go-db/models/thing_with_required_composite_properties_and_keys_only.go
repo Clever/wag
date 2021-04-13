@@ -35,17 +35,14 @@ func (m *ThingWithRequiredCompositePropertiesAndKeysOnly) Validate(formats strfm
 	var res []error
 
 	if err := m.validatePropertyOne(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validatePropertyThree(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validatePropertyTwo(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 

@@ -19,10 +19,13 @@ import (
 type SectionType string
 
 const (
+
 	// SectionTypeMath captures enum value "math"
 	SectionTypeMath SectionType = "math"
+
 	// SectionTypeScience captures enum value "science"
 	SectionTypeScience SectionType = "science"
+
 	// SectionTypeReading captures enum value "reading"
 	SectionTypeReading SectionType = "reading"
 )

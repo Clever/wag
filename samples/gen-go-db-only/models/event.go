@@ -17,6 +17,7 @@ import (
 type Event struct {
 
 	// data
+	// Format: byte
 	Data strfmt.Base64 `json:"data,omitempty"`
 
 	// pk
@@ -33,9 +34,24 @@ type Event struct {
 func (m *Event) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateData(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *Event) validateData(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Data) { // not required
+		return nil
+	}
+
+	// Format "byte" (base64 string) is already validated when unmarshalled
+
 	return nil
 }
 

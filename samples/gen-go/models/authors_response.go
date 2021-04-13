@@ -28,12 +28,10 @@ func (m *AuthorsResponse) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAuthorSet(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateMetadata(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
@@ -50,7 +48,6 @@ func (m *AuthorsResponse) validateAuthorSet(formats strfmt.Registry) error {
 	}
 
 	if m.AuthorSet != nil {
-
 		if err := m.AuthorSet.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("authorSet")
@@ -69,7 +66,6 @@ func (m *AuthorsResponse) validateMetadata(formats strfmt.Registry) error {
 	}
 
 	if m.Metadata != nil {
-
 		if err := m.Metadata.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("metadata")

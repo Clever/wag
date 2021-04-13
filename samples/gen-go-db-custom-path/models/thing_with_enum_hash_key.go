@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // ThingWithEnumHashKey thing with enum hash key
@@ -20,9 +21,11 @@ type ThingWithEnumHashKey struct {
 	Branch Branch `json:"branch,omitempty"`
 
 	// date
+	// Format: date-time
 	Date strfmt.DateTime `json:"date,omitempty"`
 
 	// date2
+	// Format: date-time
 	Date2 strfmt.DateTime `json:"date2,omitempty"`
 }
 
@@ -31,7 +34,14 @@ func (m *ThingWithEnumHashKey) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateBranch(formats); err != nil {
-		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateDate(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDate2(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -51,6 +61,32 @@ func (m *ThingWithEnumHashKey) validateBranch(formats strfmt.Registry) error {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("branch")
 		}
+		return err
+	}
+
+	return nil
+}
+
+func (m *ThingWithEnumHashKey) validateDate(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Date) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("date", "body", "date-time", m.Date.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ThingWithEnumHashKey) validateDate2(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Date2) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("date2", "body", "date-time", m.Date2.String(), formats); err != nil {
 		return err
 	}
 

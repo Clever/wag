@@ -8,7 +8,6 @@ package models
 import (
 	strfmt "github.com/go-openapi/strfmt"
 
-	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
 )
 
@@ -37,25 +36,6 @@ type TeacherSharingRule struct {
 
 // Validate validates this teacher sharing rule
 func (m *TeacherSharingRule) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateSections(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *TeacherSharingRule) validateSections(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Sections) { // not required
-		return nil
-	}
-
 	return nil
 }
 
