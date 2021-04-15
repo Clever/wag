@@ -598,7 +598,6 @@ type bodyParamTemplate struct {
 }
 
 var bodyParamTemplateStr = `
-	{{ if not .IsBinary }}
 	data, err := ioutil.ReadAll(r.Body)
 	{{if .Required}} if len(data) == 0 {
 		return nil, errors.New("request body is required, but was empty")
@@ -606,7 +605,7 @@ var bodyParamTemplateStr = `
 	sp.LogFields(log.Int("request-size-bytes", len(data)))
 
 	if len(data) > 0 {
-		jsonSpan, _ := opentracing.StartSpanFromContext(r.Context(), "json-request-marshaling")
+		{{ if not .IsBinary }}jsonSpan, _ := opentracing.StartSpanFromContext(r.Context(), "json-request-marshaling")
 		defer jsonSpan.Finish()
 
 		{{if eq (len .ParamField) 0}}
@@ -621,12 +620,10 @@ var bodyParamTemplateStr = `
 				return nil, err
 			}
 		{{end}}
+		{{else}}
+		{{if eq (len .ParamField) 0}}input := (*models.{{.TypeName}})(&r.Body)
+		{{else}}input.{{.ParamField}} = (*models.{{.TypeName}})(&r.Body)
+		{{end}}
+		{{end}}
 	}
-	{{else}}
-	{{if eq (len .ParamField) 0}}
-		input := (*models.{{.TypeName}})(&r.Body)
-	{{else}}
-		input.{{.ParamField}} = (*models.{{.TypeName}})(&r.Body)
-	{{end}}
-	{{end}}
 `

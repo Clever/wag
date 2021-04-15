@@ -160,7 +160,15 @@ func newPostGradeFileForStudentInput(r *http.Request) (*models.PostGradeFileForS
 		input.StudentID = studentIDTmp
 	}
 
-	input.File = (*models.GradeFile)(&r.Body)
+	data, err := ioutil.ReadAll(r.Body)
+
+	sp.LogFields(log.Int("request-size-bytes", len(data)))
+
+	if len(data) > 0 {
+
+		input.File = (*models.GradeFile)(&r.Body)
+
+	}
 
 	return &input, nil
 }
