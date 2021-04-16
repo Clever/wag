@@ -47,6 +47,9 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 )
 
+// For validate, something seems to have broken or changed between this pinned version and 0.16.0  (commit 7c1911976134d3a24d0c03127505163c9f16aa3b)
+// That version suddenly stops accepting almost anything inline inside the `paths` block.
+// TODO remove this pin.
 replace github.com/go-openapi/validate => github.com/go-openapi/validate v0.0.0-20180703152151-9a6e517cddf1 // pre-modules tag 0.15.0
 
 replace gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.0.0
