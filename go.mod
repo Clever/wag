@@ -49,6 +49,4 @@ require (
 
 replace github.com/go-openapi/validate => github.com/go-openapi/validate v0.0.0-20180703152151-9a6e517cddf1 // pre-modules tag 0.15.0
 
-replace github.com/go-openapi/runtime => github.com/go-openapi/runtime v0.0.0-20180920151709-4f900dc2ade9
-
 replace gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.0.0
