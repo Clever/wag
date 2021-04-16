@@ -11,10 +11,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Clever/wag/v6/samples/gen-go/client"
-	"github.com/Clever/wag/v6/samples/gen-go/models"
-	"github.com/Clever/wag/v6/samples/gen-go/server"
-	"github.com/Clever/wag/v6/swagger"
+	"github.com/Clever/wag/v7/samples/gen-go/client"
+	"github.com/Clever/wag/v7/samples/gen-go/models"
+	"github.com/Clever/wag/v7/samples/gen-go/server"
+	"github.com/Clever/wag/v7/swagger"
 
 	"net/http"
 	"net/http/httptest"
