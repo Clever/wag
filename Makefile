@@ -60,7 +60,9 @@ generate: build jsdoc2md
 	cd ./samples/gen-js-db-custom-path && jsdoc2md index.js types.js > ./README.md
 	go generate ./samples/gen-go-db-custom-path...
 
-# TODO why did we remove all-strict
+# TODO re-add -strict to the call
+#      There is a race condition in the *testing* trace exporter in this version of Otel SDKs, it is fixed in a later version
+#      But we can't upgrade yet, until we're ready to jump to Go 1.16
 $(PKGS): golang-test-all-strict-deps
 	$(call golang-test-all,$@)
 

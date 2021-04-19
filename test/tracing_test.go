@@ -16,9 +16,7 @@ import (
 func TestOpenTelemetryInstrumentation(t *testing.T) {
 	// client should
 	// 1. generate a span
-	// 2. send
-	//    - the w3c-approved "Traceparent" header
-	//    - the aws-xray "X-Amzn-Trace-Id" header
+	// 2. send the w3c-approved "Traceparent" header
 	// server should
 	// 1. generate a span
 	// 2. log trace and span ids

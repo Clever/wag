@@ -27,7 +27,9 @@ require (
 	github.com/go-openapi/validate v0.0.0-20180222165948-180bba53b988
 	github.com/go-swagger/go-swagger v0.2.1-0.20171112234155-b015bda48dfc
 	github.com/go-swagger/scan-repo-boundary v0.0.0-20180623220736-973b3573c013 // indirect
+	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/mock v1.1.1
+	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/hcl v0.0.0-20171017181929-23c074d0eceb // indirect
@@ -48,16 +50,16 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
-	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.19.0
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.19.0
-	go.opentelemetry.io/contrib/propagators/aws v0.19.0
-	go.opentelemetry.io/otel v0.19.0
-	go.opentelemetry.io/otel/exporters/otlp v0.19.0
-	go.opentelemetry.io/otel/sdk v0.19.0
-	go.opentelemetry.io/otel/trace v0.19.0
+	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.15.1
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.15.1
+	go.opentelemetry.io/contrib/propagators/aws v0.15.1
+	go.opentelemetry.io/otel v0.15.0
+	go.opentelemetry.io/otel/exporters/otlp v0.15.0
+	go.opentelemetry.io/otel/sdk v0.15.0
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
 	golang.org/x/time v0.0.0-20181108054448-85acf8d2951c
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
+	google.golang.org/grpc v1.36.0 // indirect
 	gopkg.in/Clever/kayvee-go.v6 v6.24.1
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce

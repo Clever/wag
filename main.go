@@ -145,6 +145,13 @@ func generateServer(serverPath, goPackageName, goPackagePath string, swaggerSpec
 	if err := middlewareGenerator.WriteFile("server/middleware.go"); err != nil {
 		return fmt.Errorf("Failed to copy middleware.go: %s", err)
 	}
+
+	tracingGenerator := swagger.Generator{PackagePath: goPackagePath}
+	tracingGenerator.Write(hardcoded.MustAsset("../_hardcoded/tracing.go"))
+	if err := tracingGenerator.WriteFile("tracing/tracing.go"); err != nil {
+		log.Fatalf("Failed to copy tracing.go: %s", err)
+	}
+
 	return nil
 }
 
@@ -314,12 +321,6 @@ func (c *config) setGeneratedFilePaths() {
 			}
 		}
 		c.dynamoPath = path.Join(c.goAbsolutePackagePath, *c.relativeDynamoPath)
-	}
-
-	tracingGenerator := swagger.Generator{PackagePath: c.goPackagePath}
-	tracingGenerator.Write(hardcoded.MustAsset("../_hardcoded/tracing.go"))
-	if err := tracingGenerator.WriteFile("tracing/tracing.go"); err != nil {
-		log.Fatalf("Failed to copy tracing.go: %s", err)
 	}
 }
 
