@@ -10,9 +10,9 @@ import (
 	"github.com/go-openapi/spec"
 
 	"github.com/Clever/go-utils/stringset"
-	goClient "github.com/Clever/wag/v6/clients/go"
-	"github.com/Clever/wag/v6/swagger"
-	"github.com/Clever/wag/v6/templates"
+	goClient "github.com/Clever/wag/v7/clients/go"
+	"github.com/Clever/wag/v7/swagger"
+	"github.com/Clever/wag/v7/templates"
 
 	"github.com/go-swagger/go-swagger/generator"
 )
@@ -26,15 +26,22 @@ func Generate(packagePath string, s spec.Swagger) error {
 	}
 	defer os.Remove(tmpFile)
 
-	// generate models with go-swagger
-	if err := generator.GenerateServer("", []string{}, []string{}, &generator.GenOpts{
+	genopts := generator.GenOpts{
 		Spec:           tmpFile,
 		ModelPackage:   "models",
 		Target:         fmt.Sprintf("%s/src/%s/", os.Getenv("GOPATH"), packagePath),
 		IncludeModel:   true,
 		IncludeHandler: false,
 		IncludeSupport: false,
-	}); err != nil {
+	}
+
+	// The zero-values for many fields in GenOpts are not good defaults; this call
+	// sets them to actually good defaults.
+	// Setting GenOpts.FlattenOpts is particularly important.
+	genopts.EnsureDefaults()
+
+	// generate models with go-swagger
+	if err := generator.GenerateServer("", []string{}, []string{}, &genopts); err != nil {
 		return fmt.Errorf("error generating go-swagger models: %s", err)
 	}
 

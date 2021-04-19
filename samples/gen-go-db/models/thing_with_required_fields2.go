@@ -6,14 +6,14 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // ThingWithRequiredFields2 thing with required fields2
+//
 // swagger:model ThingWithRequiredFields2
 type ThingWithRequiredFields2 struct {
 
@@ -31,12 +31,10 @@ func (m *ThingWithRequiredFields2) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateID(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateName(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 

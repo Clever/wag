@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Clever/wag/v6/samples/gen-go-db-custom-path/db"
-	"github.com/Clever/wag/v6/samples/gen-go-db-custom-path/db/tests"
+	"github.com/Clever/wag/v7/samples/gen-go-db-custom-path/db"
+	"github.com/Clever/wag/v7/samples/gen-go-db-custom-path/db/tests"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -60,7 +60,8 @@ func TestDynamoDBStore(t *testing.T) {
 			txt := errLines.Text()
 			t.Logf("ddblocal stderr: %s", txt)
 			if txt == "java.net.BindException: Address already in use" {
-				t.Fatal(`zombie ddb local process running. Kill it and try again: pgrep -f "java -jar /tmp/DynamoDBLocal.jar" | xargs kill`)
+				t.Errorf(`zombie ddb local process running. Kill it and try again: pgrep -f "java -jar /tmp/DynamoDBLocal.jar" | xargs kill`)
+				return
 			}
 		}
 	}()
@@ -68,7 +69,8 @@ func TestDynamoDBStore(t *testing.T) {
 	// the ddblocal command should not exit with an error before the test is finished
 	go func() {
 		if err := cmd.Wait(); err != nil && testCtx.Err() == nil {
-			t.Fatalf("cmd.Wait: %s", err)
+			t.Errorf("cmd.Wait: %s", err)
+			return
 		}
 	}()
 

@@ -6,14 +6,14 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // ThingWithRequiredCompositePropertiesAndKeysOnly thing with required composite properties and keys only
+//
 // swagger:model ThingWithRequiredCompositePropertiesAndKeysOnly
 type ThingWithRequiredCompositePropertiesAndKeysOnly struct {
 
@@ -35,17 +35,14 @@ func (m *ThingWithRequiredCompositePropertiesAndKeysOnly) Validate(formats strfm
 	var res []error
 
 	if err := m.validatePropertyOne(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validatePropertyThree(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validatePropertyTwo(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 

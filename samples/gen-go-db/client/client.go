@@ -12,7 +12,7 @@ import (
 	"time"
 
 	discovery "github.com/Clever/discovery-go"
-	"github.com/Clever/wag/v6/samples/gen-go-db/models"
+	"github.com/Clever/wag/v7/samples/gen-go-db/models"
 	"github.com/afex/hystrix-go/hystrix"
 	logger "gopkg.in/Clever/kayvee-go.v6/logger"
 )

@@ -6,14 +6,14 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // ThingWithMultiUseCompositeAttribute thing with multi use composite attribute
+//
 // swagger:model ThingWithMultiUseCompositeAttribute
 type ThingWithMultiUseCompositeAttribute struct {
 
@@ -39,22 +39,18 @@ func (m *ThingWithMultiUseCompositeAttribute) Validate(formats strfmt.Registry) 
 	var res []error
 
 	if err := m.validateFour(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateOne(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateThree(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateTwo(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 

@@ -12,9 +12,9 @@ import (
 	"strings"
 
 	"github.com/Clever/go-utils/stringset"
-	"github.com/Clever/wag/v6/swagger"
-	"github.com/Clever/wag/v6/templates"
-	"github.com/Clever/wag/v6/utils"
+	"github.com/Clever/wag/v7/swagger"
+	"github.com/Clever/wag/v7/templates"
+	"github.com/Clever/wag/v7/utils"
 	"github.com/go-openapi/spec"
 )
 

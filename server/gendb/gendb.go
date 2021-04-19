@@ -9,13 +9,13 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/Clever/wag/v6/swagger"
+	"github.com/Clever/wag/v7/swagger"
 	"github.com/awslabs/goformation/v2/cloudformation/resources"
 	"github.com/go-openapi/spec"
 	"github.com/go-swagger/go-swagger/generator"
 )
 
-//go:generate go-bindata -ignore .*\.go$ -pkg gendb -prefix $PWD/server/gendb/ $PWD/server/gendb/
+//go:generate go-bindata -nometadata -ignore .*\.go$ -pkg gendb -prefix $PWD/server/gendb/ $PWD/server/gendb/
 
 const xdbExtensionKey = "x-db"
 
@@ -143,7 +143,7 @@ func GenerateDB(packageName, packagePath string, s *spec.Swagger, outputPath str
 
 	writeTemplate := func(tmplFilename, outputFilename string, data interface{}) error {
 		tmpl, err := template.New(tmplFilename).
-			Funcs(generator.FuncMap).
+			Funcs(generator.FuncMapFunc(generator.DefaultLanguageFunc())).
 			Funcs(funcMap).
 			Parse(string(MustAsset(tmplFilename)))
 		if err != nil {

@@ -6,14 +6,14 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // ThingWithCompositeEnumAttributes thing with composite enum attributes
+//
 // swagger:model ThingWithCompositeEnumAttributes
 type ThingWithCompositeEnumAttributes struct {
 
@@ -23,6 +23,7 @@ type ThingWithCompositeEnumAttributes struct {
 
 	// date
 	// Required: true
+	// Format: date-time
 	Date *strfmt.DateTime `json:"date"`
 
 	// name
@@ -35,17 +36,14 @@ func (m *ThingWithCompositeEnumAttributes) Validate(formats strfmt.Registry) err
 	var res []error
 
 	if err := m.validateBranchID(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateDate(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateName(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 

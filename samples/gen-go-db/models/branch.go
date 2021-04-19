@@ -8,21 +8,24 @@ package models
 import (
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
 )
 
 // Branch branch
+//
 // swagger:model Branch
 type Branch string
 
 const (
+
 	// BranchMaster captures enum value "master"
 	BranchMaster Branch = "master"
+
 	// BranchDEVBRANCH captures enum value "DEV_BRANCH"
 	BranchDEVBRANCH Branch = "DEV_BRANCH"
+
 	// BranchTest captures enum value "test"
 	BranchTest Branch = "test"
 )

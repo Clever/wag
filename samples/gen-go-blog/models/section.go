@@ -6,13 +6,12 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
-	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // Section section
+//
 // swagger:model Section
 type Section struct {
 
@@ -28,11 +27,6 @@ type Section struct {
 
 // Validate validates this section
 func (m *Section) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
 	return nil
 }
 

@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Clever/wag/v6/samples/gen-go-db/models"
-	"github.com/Clever/wag/v6/samples/gen-go-db/server/db"
+	"github.com/Clever/wag/v7/samples/gen-go-db/models"
+	"github.com/Clever/wag/v7/samples/gen-go-db/server/db"
 	"github.com/go-openapi/strfmt"
 	"github.com/stretchr/testify/require"
 )

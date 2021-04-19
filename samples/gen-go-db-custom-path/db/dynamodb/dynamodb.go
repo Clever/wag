@@ -5,8 +5,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/Clever/wag/v6/samples/gen-go-db-custom-path/db"
-	"github.com/Clever/wag/v6/samples/gen-go-db-custom-path/models"
+	"github.com/Clever/wag/v7/samples/gen-go-db-custom-path/db"
+	"github.com/Clever/wag/v7/samples/gen-go-db-custom-path/models"
 	ddb "github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/go-openapi/strfmt"

@@ -6,17 +6,17 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
-	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // Event event
+//
 // swagger:model Event
 type Event struct {
 
 	// data
+	// Format: byte
 	Data strfmt.Base64 `json:"data,omitempty"`
 
 	// pk
@@ -31,11 +31,6 @@ type Event struct {
 
 // Validate validates this event
 func (m *Event) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
 	return nil
 }
 

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Clever/wag/v6/samples/gen-go-db-custom-path/db"
-	"github.com/Clever/wag/v6/samples/gen-go-db-custom-path/models"
+	"github.com/Clever/wag/v7/samples/gen-go-db-custom-path/db"
+	"github.com/Clever/wag/v7/samples/gen-go-db-custom-path/models"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
