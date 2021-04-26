@@ -252,9 +252,9 @@ Server instrumentation is done via [go.opentelemetry.io/contrib/instrumentation/
 
 Client instrumentation is done via [go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp](https://pkg.go.dev/go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp).
 
-Traces are sent to [opentelemetry-collector](https://github.com/open-telemetry/opentelemetry-collector) running at localhost:55680.
+Traces are sent to [opentelemetry-collector](https://github.com/open-telemetry/opentelemetry-collector) running at localhost:4317.
 If running locally, all samples are traced.
-Otherwise, the probability of sampling is 0.01 and can be overriden by setting `TRACING_SAMPLING_PROBABILITY`.
+Otherwise, the probability of sampling is 0.01 (i.e. one in one hundred traces) and can be overriden by setting the environment variable `TRACING_SAMPLING_PROBABILITY`.
 
 ## Using the Go Client
 Initialize the client with `New`
