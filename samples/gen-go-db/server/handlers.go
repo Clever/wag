@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Clever/wag/v6/samples/gen-go-db/models"
+	"github.com/Clever/wag/v7/samples/gen-go-db/models"
 	"github.com/go-errors/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"

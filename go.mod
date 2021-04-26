@@ -1,11 +1,11 @@
-module github.com/Clever/wag/v6
+module github.com/Clever/wag/v7
 
 go 1.13
 
 require (
 	github.com/Clever/go-utils v0.0.0-20150501165843-abc25366fa8e
 
-	github.com/Clever/wag/v6/samples v0.0.0-internal
+	github.com/Clever/wag/v7/samples v0.0.0-internal
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/awslabs/goformation/v2 v2.3.1
 	github.com/fsnotify/fsnotify v1.4.7 // indirect
@@ -62,4 +62,4 @@ replace github.com/go-openapi/swag => github.com/go-openapi/swag v0.0.0-20180102
 
 replace gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.0.0
 
-replace github.com/Clever/wag/v6/samples v0.0.0-internal => ./samples
+replace github.com/Clever/wag/v7/samples v0.0.0-internal => ./samples

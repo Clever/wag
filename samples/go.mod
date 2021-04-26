@@ -1,4 +1,4 @@
-module github.com/Clever/wag/v6/samples
+module github.com/Clever/wag/v7/samples
 
 go 1.13
 
