@@ -8,9 +8,9 @@ import (
 
 	"github.com/go-openapi/spec"
 
-	"github.com/Clever/wag/v6/swagger"
-	"github.com/Clever/wag/v6/templates"
-	"github.com/Clever/wag/v6/utils"
+	"github.com/Clever/wag/v7/swagger"
+	"github.com/Clever/wag/v7/templates"
+	"github.com/Clever/wag/v7/utils"
 )
 
 // Generate generates a client
@@ -45,6 +45,7 @@ import (
 		"crypto/md5"
 
 		"{{.PackageName}}/models"
+		"{{.PackageName}}/tracing"
 		discovery "github.com/Clever/discovery-go"
 		"github.com/afex/hystrix-go/hystrix"
 		logger "gopkg.in/Clever/kayvee-go.v6/logger"
@@ -80,10 +81,9 @@ var _ Client = (*WagClient)(nil)
 func New(basePath string) *WagClient {
 	basePath = strings.TrimSuffix(basePath, "/")
 	base := baseDoer{}
-	tracing := tracingDoer{d: base}
 	// For the short-term don't use the default retry policy since its 5 retries can 5X
 	// the traffic. Once we've enabled circuit breakers by default we can turn it on.
-	retry := retryDoer{d: tracing, retryPolicy: SingleRetryPolicy{}}
+	retry := retryDoer{d: base, retryPolicy: SingleRetryPolicy{}}
 	logger := logger.New("{{.ServiceName}}-wagclient")
 	circuit := &circuitBreakerDoer{
 		d:     &retry,
@@ -97,7 +97,9 @@ func New(basePath string) *WagClient {
 	client := &WagClient{
 		basePath: basePath,
 		requestDoer: circuit,
-		client: &http.Client{Transport: http.DefaultTransport},
+		client: &http.Client{
+			Transport: tracing.NewTransport(http.DefaultTransport, opNameCtx{}),
+		},
 		retryDoer: &retry,
 		circuitDoer: circuit,
 		defaultTimeout: 5 * time.Second,
@@ -183,7 +185,7 @@ func (c *WagClient) SetTimeout(timeout time.Duration){
 
 // SetTransport sets the http transport used by the client.
 func (c *WagClient) SetTransport(t http.RoundTripper){
-	c.client.Transport = t
+	c.client.Transport = tracing.NewTransport(t, opNameCtx{})
 }
 
 {{range $operationCode := .Operations}}

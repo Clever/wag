@@ -9,13 +9,11 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Clever/wag/v6/samples/gen-go-nils/models"
+	"github.com/Clever/wag/v7/samples/gen-go-nils/models"
 	"github.com/go-errors/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/gorilla/mux"
-	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/log"
 	"golang.org/x/xerrors"
 	"gopkg.in/Clever/kayvee-go.v6/logger"
 )
@@ -27,7 +25,6 @@ var _ = errors.New
 var _ = mux.Vars
 var _ = bytes.Compare
 var _ = ioutil.ReadAll
-var _ = log.String
 
 var formats = strfmt.Default
 var _ = formats
@@ -138,9 +135,6 @@ func (h handler) NilCheckHandler(ctx context.Context, w http.ResponseWriter, r *
 func newNilCheckInput(r *http.Request) (*models.NilCheckInput, error) {
 	var input models.NilCheckInput
 
-	sp := opentracing.SpanFromContext(r.Context())
-	_ = sp
-
 	var err error
 	_ = err
 
@@ -185,17 +179,11 @@ func newNilCheckInput(r *http.Request) (*models.NilCheckInput, error) {
 
 	data, err := ioutil.ReadAll(r.Body)
 
-	sp.LogFields(log.Int("request-size-bytes", len(data)))
-
 	if len(data) > 0 {
-		jsonSpan, _ := opentracing.StartSpanFromContext(r.Context(), "json-request-marshaling")
-		defer jsonSpan.Finish()
-
 		input.Body = &models.NilFields{}
 		if err := json.NewDecoder(bytes.NewReader(data)).Decode(input.Body); err != nil {
 			return nil, err
 		}
-
 	}
 
 	return &input, nil
