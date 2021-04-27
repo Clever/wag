@@ -46,7 +46,7 @@ func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdkexporttrace.Sp
 	} else if v := os.Getenv("TRACING_SAMPLING_PROBABILITY"); v != "" {
 		samplingProbabilityFromEnv, err := strconv.ParseFloat(v, 64)
 		if err != nil {
-			return nil, nil, fmt.Errorf("could not parse '%s' to integer", v)
+			return nil, nil, fmt.Errorf("could not parse '%s' to float", v)
 		}
 		samplingProbability = samplingProbabilityFromEnv
 	}
