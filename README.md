@@ -246,15 +246,28 @@ definitions:
 
 ### Tracing
 
-`wag` instruments servers and clients with [opentelementry-go](https://pkg.go.dev/go.opentelemetry.io/otel).
+`wag` instruments servers and clients with [opentelementry-go](https://pkg.go.dev/go.opentelemetry.io/otel). You must initialize tracing before use with a snippet like this in your `main()`:
+```go
+// at the top:
+import <MY REPO NAME>/gen-go/tracing"
+
+	exp, prov, err := tracing.SetupGlobalTraceProviderAndExporter(context.Background())
+	if err != nil {
+		log.Fatalf("failed to setup tracing: %v", err)
+	}
+	defer exp.Shutdown(context.Background())
+	defer prov.Shutdown(context.Background())
+```
 
 Server instrumentation is done via [go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux](https://pkg.go.dev/go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux).
 
 Client instrumentation is done via [go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp](https://pkg.go.dev/go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp).
 
-Traces are sent to [opentelemetry-collector](https://github.com/open-telemetry/opentelemetry-collector) running at localhost:4317.
+Traces are sent to [opentelemetry-collector](https://github.com/open-telemetry/opentelemetry-collector) running at `localhost:4317`.
 If running locally, all samples are traced.
 Otherwise, the probability of sampling is 0.01 (i.e. one in one hundred traces) and can be overriden by setting the environment variable `TRACING_SAMPLING_PROBABILITY`.
+
+These details (the function to setup tracing, the addresses to which traces are sent, and the `TRACING_SAMPLING_PROBABILITY` variable) are stable for 7.x, but other details of tracing, such as the instrumention and the tags that are sent, are subject to changes even within 7.x.
 
 ## Using the Go Client
 Initialize the client with `New`
