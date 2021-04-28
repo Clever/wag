@@ -78,7 +78,7 @@ func (s *Server) Serve() error {
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt, os.Signal(syscall.SIGTERM))
 		sig := <-c
-		s.l.CriticalD("shutdown-initiated", logger.M{"signal": sig.String()})
+		s.l.InfoD("shutdown-initiated", logger.M{"signal": sig.String()})
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 		defer close(shutdown)

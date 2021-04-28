@@ -25,9 +25,4 @@ jobs:
     - run: make build
     - run: sudo npm install -g jsdoc-to-markdown@^4.0.0
     - run: make test
-    # For dev branch: always make releases, but make them pre-release
-    # Revert before merging to master
-    # original:
-    # - run: if [ "${CIRCLE_BRANCH}" == "master" ]; then make release && $HOME/ci-scripts/circleci/github-release $GH_RELEASE_TOKEN release; fi;
-    # for now:
-    - run: if [ "${CIRCLE_BRANCH}" == "wag-7.0-dev" ]; then make release && $HOME/ci-scripts/circleci/github-release --pre-release $GH_RELEASE_TOKEN release; fi;
+    - run: if [ "${CIRCLE_BRANCH}" == "master" ]; then make release && $HOME/ci-scripts/circleci/github-release $GH_RELEASE_TOKEN release; fi;
