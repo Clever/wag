@@ -324,7 +324,6 @@ sampleClient.getBookById("bookID", (err, book) => {
 
 You can also pass an optional options argument. This can have the following options
 - `timeout` - overide the global timeout for this specific call
-- `span` - Pass an opentracing span to instrument with the call - More on this below
 
 ```javascript
 const options = {
@@ -338,34 +337,7 @@ sampleClient.getBookById("bookID", options, (err, book) => {
 
 #### Tracing
 
-To utilize the `span` option above you need to pass an opentracing span into the request. The below
-example shows you how to setup an express app to track requests and any calls made via a wag client.
-
-```bash
-npm install --save tracing-middleware
-```
-
-
-```javascript
-import * as express from "express";
-import middleware from "tracing-middleware";
-import * as SampleClientLib from 'sample-client-lib-js';
-
-const app = express();
-const sampleClient = new SampleClientLib({discovery: true}); // Using discovery
-
-const TRACING_ACCESS_TOKEN = "access_token";
-app.use(middleware({access_token: TRACING_ACCESS_TOKEN}));
-
-app.get("/my-url", (req, res) => {
-  sampleClient.getBookById("bookID", {span: req.span}, (err, book) => {
-    if (book.isSpecial) {
-    	// guarantee that this trace instance will be sampled
-    	req.span.setTag("sampling.priority", 1);
-    }
-  });
-});
-```
+As of v7, `wag` no longer provides any special tracing experience for Javascript clients. We recommend using the `@opentelemetry` [packages](https://github.com/open-telemetry/opentelemetry-js) to add client-side instrumentation.
 
 ## Tests
 ```

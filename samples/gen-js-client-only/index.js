@@ -2,14 +2,8 @@ const async = require("async");
 const discovery = require("clever-discovery");
 const kayvee = require("kayvee");
 const request = require("request");
-const opentracing = require("opentracing");
 const {commandFactory} = require("hystrixjs");
 const RollingNumberEvent = require("hystrixjs/lib/metrics/RollingNumberEvent");
-
-/**
- * @external Span
- * @see {@link https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html}
- */
 
 const { Errors } = require("./types");
 
@@ -195,11 +189,6 @@ class SwaggerTest {
     } else {
       this.logger = new kayvee.logger((options.serviceName || "swagger-test") + "-wagclient");
     }
-    if (options.tracer) {
-      this.tracer = options.tracer;
-    } else {
-      this.tracer = opentracing.globalTracer();
-    }
 
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
     this._hystrixCommand = commandFactory.getOrCreate(options.serviceName || "swagger-test").
@@ -257,7 +246,6 @@ class SwaggerTest {
    * @param {string} [params.startingAfter]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -285,8 +273,6 @@ class SwaggerTest {
       }
 
       const timeout = options.timeout || this.timeout;
-      const tracer = options.tracer || this.tracer;
-      const span = options.span;
 
       const headers = {};
       headers["Canonical-Resource"] = "getAuthors";
@@ -301,13 +287,6 @@ class SwaggerTest {
         query["startingAfter"] = params.startingAfter;
       }
 
-
-      if (span && typeof span.log === "function") {
-        // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        span.log({event: "GET /v1/authors"});
-        span.setTag("span.kind", "client");
-      }
 
       const requestOptions = {
         method: "GET",
@@ -380,7 +359,6 @@ class SwaggerTest {
    * @param {string} [params.startingAfter]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @returns {Object} iter
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
@@ -395,8 +373,6 @@ class SwaggerTest {
       }
 
       const timeout = options.timeout || this.timeout;
-      const tracer = options.tracer || this.tracer;
-      const span = options.span;
 
       const headers = {};
       headers["Canonical-Resource"] = "getAuthors";
@@ -411,12 +387,6 @@ class SwaggerTest {
         query["startingAfter"] = params.startingAfter;
       }
 
-
-      if (span && typeof span.log === "function") {
-        // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        span.setTag("span.kind", "client");
-      }
 
       const requestOptions = {
         method: "GET",
@@ -441,9 +411,6 @@ class SwaggerTest {
       async.whilst(
         () => requestOptions.uri !== "",
         cbW => {
-          if (span && typeof span.log === "function") {
-            span.log({event: "GET /v1/authors"});
-          }
       const address = this.address;
       let retries = 0;
       (function requestOnce() {
@@ -539,7 +506,6 @@ class SwaggerTest {
    * @param [params.favoriteBooks]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -567,8 +533,6 @@ class SwaggerTest {
       }
 
       const timeout = options.timeout || this.timeout;
-      const tracer = options.tracer || this.tracer;
-      const span = options.span;
 
       const headers = {};
       headers["Canonical-Resource"] = "getAuthorsWithPut";
@@ -583,13 +547,6 @@ class SwaggerTest {
         query["startingAfter"] = params.startingAfter;
       }
 
-
-      if (span && typeof span.log === "function") {
-        // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        span.log({event: "PUT /v1/authors"});
-        span.setTag("span.kind", "client");
-      }
 
       const requestOptions = {
         method: "PUT",
@@ -665,7 +622,6 @@ class SwaggerTest {
    * @param [params.favoriteBooks]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @returns {Object} iter
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
@@ -680,8 +636,6 @@ class SwaggerTest {
       }
 
       const timeout = options.timeout || this.timeout;
-      const tracer = options.tracer || this.tracer;
-      const span = options.span;
 
       const headers = {};
       headers["Canonical-Resource"] = "getAuthorsWithPut";
@@ -696,12 +650,6 @@ class SwaggerTest {
         query["startingAfter"] = params.startingAfter;
       }
 
-
-      if (span && typeof span.log === "function") {
-        // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        span.setTag("span.kind", "client");
-      }
 
       const requestOptions = {
         method: "PUT",
@@ -728,9 +676,6 @@ class SwaggerTest {
       async.whilst(
         () => requestOptions.uri !== "",
         cbW => {
-          if (span && typeof span.log === "function") {
-            span.log({event: "PUT /v1/authors"});
-          }
       const address = this.address;
       let retries = 0;
       (function requestOnce() {
@@ -834,7 +779,6 @@ class SwaggerTest {
    * @param {number} [params.startingAfter]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -862,8 +806,6 @@ class SwaggerTest {
       }
 
       const timeout = options.timeout || this.timeout;
-      const tracer = options.tracer || this.tracer;
-      const span = options.span;
 
       const headers = {};
       headers["Canonical-Resource"] = "getBooks";
@@ -911,13 +853,6 @@ class SwaggerTest {
         query["startingAfter"] = params.startingAfter;
       }
 
-
-      if (span && typeof span.log === "function") {
-        // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        span.log({event: "GET /v1/books"});
-        span.setTag("span.kind", "client");
-      }
 
       const requestOptions = {
         method: "GET",
@@ -999,7 +934,6 @@ class SwaggerTest {
    * @param {number} [params.startingAfter]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @returns {Object} iter
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
@@ -1014,8 +948,6 @@ class SwaggerTest {
       }
 
       const timeout = options.timeout || this.timeout;
-      const tracer = options.tracer || this.tracer;
-      const span = options.span;
 
       const headers = {};
       headers["Canonical-Resource"] = "getBooks";
@@ -1064,12 +996,6 @@ class SwaggerTest {
       }
 
 
-      if (span && typeof span.log === "function") {
-        // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        span.setTag("span.kind", "client");
-      }
-
       const requestOptions = {
         method: "GET",
         uri: this.address + "/v1/books",
@@ -1093,9 +1019,6 @@ class SwaggerTest {
       async.whilst(
         () => requestOptions.uri !== "",
         cbW => {
-          if (span && typeof span.log === "function") {
-            span.log({event: "GET /v1/books"});
-          }
       const address = this.address;
       let retries = 0;
       (function requestOnce() {
@@ -1188,7 +1111,6 @@ class SwaggerTest {
    * @param newBook
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -1219,21 +1141,12 @@ class SwaggerTest {
       }
 
       const timeout = options.timeout || this.timeout;
-      const tracer = options.tracer || this.tracer;
-      const span = options.span;
 
       const headers = {};
       headers["Canonical-Resource"] = "createBook";
       headers[versionHeader] = version;
 
       const query = {};
-
-      if (span && typeof span.log === "function") {
-        // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        span.log({event: "POST /v1/books"});
-        span.setTag("span.kind", "client");
-      }
 
       const requestOptions = {
         method: "POST",
@@ -1305,7 +1218,6 @@ class SwaggerTest {
    * @param newBook
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -1336,21 +1248,12 @@ class SwaggerTest {
       }
 
       const timeout = options.timeout || this.timeout;
-      const tracer = options.tracer || this.tracer;
-      const span = options.span;
 
       const headers = {};
       headers["Canonical-Resource"] = "putBook";
       headers[versionHeader] = version;
 
       const query = {};
-
-      if (span && typeof span.log === "function") {
-        // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        span.log({event: "PUT /v1/books"});
-        span.setTag("span.kind", "client");
-      }
 
       const requestOptions = {
         method: "PUT",
@@ -1427,7 +1330,6 @@ class SwaggerTest {
    * @param {string} [params.randomBytes]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -1457,8 +1359,6 @@ class SwaggerTest {
       }
 
       const timeout = options.timeout || this.timeout;
-      const tracer = options.tracer || this.tracer;
-      const span = options.span;
 
       const headers = {};
       headers["Canonical-Resource"] = "getBookByID";
@@ -1479,13 +1379,6 @@ class SwaggerTest {
         query["randomBytes"] = params.randomBytes;
       }
 
-
-      if (span && typeof span.log === "function") {
-        // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        span.log({event: "GET /v1/books/{book_id}"});
-        span.setTag("span.kind", "client");
-      }
 
       const requestOptions = {
         method: "GET",
@@ -1567,7 +1460,6 @@ class SwaggerTest {
    * @param {string} id
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -1599,8 +1491,6 @@ class SwaggerTest {
       }
 
       const timeout = options.timeout || this.timeout;
-      const tracer = options.tracer || this.tracer;
-      const span = options.span;
 
       const headers = {};
       headers["Canonical-Resource"] = "getBookByID2";
@@ -1611,13 +1501,6 @@ class SwaggerTest {
       }
 
       const query = {};
-
-      if (span && typeof span.log === "function") {
-        // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        span.log({event: "GET /v1/books2/{id}"});
-        span.setTag("span.kind", "client");
-      }
 
       const requestOptions = {
         method: "GET",
@@ -1691,7 +1574,6 @@ class SwaggerTest {
   /**
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -1721,21 +1603,12 @@ class SwaggerTest {
       }
 
       const timeout = options.timeout || this.timeout;
-      const tracer = options.tracer || this.tracer;
-      const span = options.span;
 
       const headers = {};
       headers["Canonical-Resource"] = "healthCheck";
       headers[versionHeader] = version;
 
       const query = {};
-
-      if (span && typeof span.log === "function") {
-        // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        span.log({event: "GET /v1/health/check"});
-        span.setTag("span.kind", "client");
-      }
 
       const requestOptions = {
         method: "GET",

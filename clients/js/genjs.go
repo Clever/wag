@@ -97,14 +97,8 @@ var indexJSTmplStr = `const async = require("async");
 const discovery = require("clever-discovery");
 const kayvee = require("kayvee");
 const request = require("request");
-const opentracing = require("opentracing");
 const {commandFactory} = require("hystrixjs");
 const RollingNumberEvent = require("hystrixjs/lib/metrics/RollingNumberEvent");
-
-/**
- * @external Span
- * @see {@link https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html}
- */
 
 const { Errors } = require("./types");
 
@@ -290,11 +284,6 @@ class {{.ClassName}} {
     } else {
       this.logger = new kayvee.logger((options.serviceName || "{{.ServiceName}}") + "-wagclient");
     }
-    if (options.tracer) {
-      this.tracer = options.tracer;
-    } else {
-      this.tracer = opentracing.globalTracer();
-    }
 
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
     this._hystrixCommand = commandFactory.getOrCreate(options.serviceName || "{{.ServiceName}}").
@@ -380,7 +369,6 @@ const packageJSONTmplStr = `{
   "dependencies": {
     "async": "^2.1.4",
     "clever-discovery": "0.0.8",
-    "opentracing": "^0.14.0",
     "request": "^2.87.0",
     "kayvee": "^3.13.0",
     "hystrixjs": "^0.2.0",
@@ -408,8 +396,6 @@ const methodTmplStr = `
       }
 
       const timeout = options.timeout || this.timeout;
-      const tracer = options.tracer || this.tracer;
-      const span = options.span;
 
       const headers = {};
       headers["Canonical-Resource"] = "{{.Operation}}";
@@ -433,15 +419,6 @@ const methodTmplStr = `
         query["{{$param.WagName}}"] = params.{{$param.JSName}};
       }
 {{end}}{{end}}
-
-      if (span && typeof span.log === "function") {
-        // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        {{- if not .IterMethod}}
-        span.log({event: "{{.Method}} {{.Path}}"});
-        {{- end}}
-        span.setTag("span.kind", "client");
-      }
 
       const requestOptions = {
         method: "{{.Method}}",
@@ -468,9 +445,6 @@ const methodTmplStr = `
       async.whilst(
         () => requestOptions.uri !== "",
         cbW => {
-          if (span && typeof span.log === "function") {
-            span.log({event: "{{.Method}} {{.Path}}"});
-          }
       const address = this.address;
   {{- end}}
       let retries = 0;
@@ -586,7 +560,6 @@ const singleParamMethodDefinitionTemplateString = `/**{{if .Description}}
    * @param {{if $param.JSDocType}}{{.JSDocType}} {{end}}{{$param.JSName}}{{if $param.Default}}={{$param.Default}}{{end}}{{if $param.Description}} - {{.Description}}{{end}}{{end}}
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
    * @param {module:{{.ServiceName}}.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    {{- if .IterMethod}}
    * @returns {Object} iter
@@ -624,7 +597,6 @@ const pluralParamMethodDefinitionTemplateString = `/**{{if .Description}}
    * @param {{if $param.JSDocType}}{{.JSDocType}} {{end}}{{if not $param.Required}}[{{end}}params.{{$param.JSName}}{{if $param.Default}}={{$param.Default}}{{end}}{{if not $param.Required}}]{{end}}{{if $param.Description}} - {{.Description}}{{end}}{{end}}
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
    * @param {module:{{.ServiceName}}.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    {{- if .IterMethod}}
    * @returns {Object} iter
@@ -1323,8 +1295,7 @@ func defFromRef(ref string) (string, error) {
 		"Must start with #/definitions or #/responses.", ref)
 }
 
-const typescriptTmplStr = `import { Span, Tracer } from "opentracing";
-import { Logger } from "kayvee";
+const typescriptTmplStr = `import { Logger } from "kayvee";
 
 type Callback<R> = (err: Error, result: R) => void;
 type ArrayInner<R> = R extends (infer T)[] ? T : never;
@@ -1336,7 +1307,6 @@ interface RetryPolicy {
 
 interface RequestOptions {
   timeout?: number;
-  span?: Span;
   retryPolicy?: RetryPolicy;
 }
 
@@ -1360,7 +1330,6 @@ interface GenericOptions {
   keepalive?: boolean;
   retryPolicy?: RetryPolicy;
   logger?: Logger;
-  tracer?: Tracer;
   circuit?: CircuitOptions;
   serviceName?: string;
 }
