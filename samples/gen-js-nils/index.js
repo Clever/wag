@@ -2,14 +2,8 @@ const async = require("async");
 const discovery = require("clever-discovery");
 const kayvee = require("kayvee");
 const request = require("request");
-const opentracing = require("opentracing");
 const {commandFactory} = require("hystrixjs");
 const RollingNumberEvent = require("hystrixjs/lib/metrics/RollingNumberEvent");
-
-/**
- * @external Span
- * @see {@link https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html}
- */
 
 const { Errors } = require("./types");
 
@@ -195,11 +189,6 @@ class NilTest {
     } else {
       this.logger = new kayvee.logger((options.serviceName || "nil-test") + "-wagclient");
     }
-    if (options.tracer) {
-      this.tracer = options.tracer;
-    } else {
-      this.tracer = opentracing.globalTracer();
-    }
 
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
     this._hystrixCommand = commandFactory.getOrCreate(options.serviceName || "nil-test").
@@ -260,7 +249,6 @@ class NilTest {
    * @param [params.body]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
    * @param {module:nil-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -288,8 +276,6 @@ class NilTest {
       }
 
       const timeout = options.timeout || this.timeout;
-      const tracer = options.tracer || this.tracer;
-      const span = options.span;
 
       const headers = {};
       headers["Canonical-Resource"] = "nilCheck";
@@ -309,13 +295,6 @@ class NilTest {
         query["array"] = params.array;
       }
 
-
-      if (span && typeof span.log === "function") {
-        // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        span.log({event: "POST /v1/check/{id}"});
-        span.setTag("span.kind", "client");
-      }
 
       const requestOptions = {
         method: "POST",

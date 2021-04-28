@@ -68,7 +68,6 @@ Nil check tests
 | [params.body] |  |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.span] | [<code>Span</code>](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html) | An OpenTracing span - For example from the parent request |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_nil-test--NilTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 

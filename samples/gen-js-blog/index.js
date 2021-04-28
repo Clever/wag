@@ -2,14 +2,8 @@ const async = require("async");
 const discovery = require("clever-discovery");
 const kayvee = require("kayvee");
 const request = require("request");
-const opentracing = require("opentracing");
 const {commandFactory} = require("hystrixjs");
 const RollingNumberEvent = require("hystrixjs/lib/metrics/RollingNumberEvent");
-
-/**
- * @external Span
- * @see {@link https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html}
- */
 
 const { Errors } = require("./types");
 
@@ -195,11 +189,6 @@ class Blog {
     } else {
       this.logger = new kayvee.logger((options.serviceName || "blog") + "-wagclient");
     }
-    if (options.tracer) {
-      this.tracer = options.tracer;
-    } else {
-      this.tracer = opentracing.globalTracer();
-    }
 
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
     this._hystrixCommand = commandFactory.getOrCreate(options.serviceName || "blog").
@@ -257,7 +246,6 @@ class Blog {
    * @param [params.file]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
    * @param {module:blog.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -285,8 +273,6 @@ class Blog {
       }
 
       const timeout = options.timeout || this.timeout;
-      const tracer = options.tracer || this.tracer;
-      const span = options.span;
 
       const headers = {};
       headers["Canonical-Resource"] = "postGradeFileForStudent";
@@ -297,13 +283,6 @@ class Blog {
       }
 
       const query = {};
-
-      if (span && typeof span.log === "function") {
-        // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        span.log({event: "POST /students/{student_id}/gradeFile"});
-        span.setTag("span.kind", "client");
-      }
 
       const requestOptions = {
         method: "POST",
@@ -375,7 +354,6 @@ class Blog {
    * @param {string} studentID
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
    * @param {module:blog.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -406,8 +384,6 @@ class Blog {
       }
 
       const timeout = options.timeout || this.timeout;
-      const tracer = options.tracer || this.tracer;
-      const span = options.span;
 
       const headers = {};
       headers["Canonical-Resource"] = "getSectionsForStudent";
@@ -418,13 +394,6 @@ class Blog {
       }
 
       const query = {};
-
-      if (span && typeof span.log === "function") {
-        // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        span.log({event: "GET /students/{student_id}/sections"});
-        span.setTag("span.kind", "client");
-      }
 
       const requestOptions = {
         method: "GET",
@@ -497,7 +466,6 @@ class Blog {
    * @param {string} params.userType
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {external:Span} [options.span] - An OpenTracing span - For example from the parent request
    * @param {module:blog.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -525,8 +493,6 @@ class Blog {
       }
 
       const timeout = options.timeout || this.timeout;
-      const tracer = options.tracer || this.tracer;
-      const span = options.span;
 
       const headers = {};
       headers["Canonical-Resource"] = "postSectionsForStudent";
@@ -541,13 +507,6 @@ class Blog {
 
       query["userType"] = params.userType;
 
-
-      if (span && typeof span.log === "function") {
-        // Need to get tracer to inject. Use HTTP headers format so we can properly escape special characters
-        tracer.inject(span, opentracing.FORMAT_HTTP_HEADERS, headers);
-        span.log({event: "POST /students/{student_id}/sections"});
-        span.setTag("span.kind", "client");
-      }
 
       const requestOptions = {
         method: "POST",
