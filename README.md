@@ -269,6 +269,8 @@ Otherwise, the probability of sampling is 0.01 (i.e. one in one hundred traces) 
 
 These details (the function to setup tracing, the addresses to which traces are sent, and the `TRACING_SAMPLING_PROBABILITY` variable) are stable for 7.x, but other details of tracing, such as the instrumention and the tags that are sent, are subject to changes even within 7.x.
 
+In addition, tracing relies on a specific version of the `opentelemetry` modules; you can find a complete list of dependencies that work in `samples/go.mod`.
+
 ## Using the Go Client
 Initialize the client with `New`
 ```
