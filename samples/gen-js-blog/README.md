@@ -67,7 +67,6 @@ Posts the grade file for the specified student
 | [params.file] |  |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.span] | [<code>Span</code>](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html) | An OpenTracing span - For example from the parent request |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_blog--Blog.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
@@ -87,7 +86,6 @@ Gets the sections for the specified student
 | studentID | <code>string</code> |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.span] | [<code>Span</code>](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html) | An OpenTracing span - For example from the parent request |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_blog--Blog.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
@@ -110,7 +108,6 @@ Posts the sections for the specified student
 | params.userType | <code>string</code> |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.span] | [<code>Span</code>](https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/span.js~Span.html) | An OpenTracing span - For example from the parent request |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_blog--Blog.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 

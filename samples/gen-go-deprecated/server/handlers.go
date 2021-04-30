@@ -9,13 +9,11 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Clever/wag/v6/samples/gen-go-deprecated/models"
+	"github.com/Clever/wag/v7/samples/gen-go-deprecated/models"
 	"github.com/go-errors/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/gorilla/mux"
-	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/log"
 	"golang.org/x/xerrors"
 	"gopkg.in/Clever/kayvee-go.v6/logger"
 )
@@ -27,7 +25,6 @@ var _ = errors.New
 var _ = mux.Vars
 var _ = bytes.Compare
 var _ = ioutil.ReadAll
-var _ = log.String
 
 var formats = strfmt.Default
 var _ = formats
@@ -143,9 +140,6 @@ func (h handler) HealthHandler(ctx context.Context, w http.ResponseWriter, r *ht
 // newHealthInput takes in an http.Request an returns the input struct.
 func newHealthInput(r *http.Request) (*models.HealthInput, error) {
 	var input models.HealthInput
-
-	sp := opentracing.SpanFromContext(r.Context())
-	_ = sp
 
 	var err error
 	_ = err

@@ -7,15 +7,16 @@ import (
 
 	"github.com/go-openapi/spec"
 
-	clients "github.com/Clever/wag/v6/clients/go"
-	"github.com/Clever/wag/v6/swagger"
-	"github.com/Clever/wag/v6/templates"
-	"github.com/Clever/wag/v6/utils"
+	clients "github.com/Clever/wag/v7/clients/go"
+	"github.com/Clever/wag/v7/swagger"
+	"github.com/Clever/wag/v7/templates"
+	"github.com/Clever/wag/v7/utils"
 )
 
 // Generate server package for a swagger spec.
 func Generate(packageName, packagePath string, s spec.Swagger) error {
-	if err := generateRouter(packagePath, s, s.Paths); err != nil {
+
+	if err := generateRouter(packageName, packagePath, s, s.Paths); err != nil {
 		return err
 	}
 	if err := generateInterface(packageName, packagePath, &s, s.Info.InfoProps.Title, s.Paths); err != nil {
@@ -35,11 +36,12 @@ type routerFunction struct {
 }
 
 type routerTemplate struct {
-	Title     string
-	Functions []routerFunction
+	ImportStatements string
+	Title            string
+	Functions        []routerFunction
 }
 
-func generateRouter(packagePath string, s spec.Swagger, paths *spec.Paths) error {
+func generateRouter(packageName, packagePath string, s spec.Swagger, paths *spec.Paths) error {
 
 	var template routerTemplate
 	template.Title = s.Info.Title
@@ -57,7 +59,25 @@ func generateRouter(packagePath string, s spec.Swagger, paths *spec.Paths) error
 			})
 		}
 	}
-
+	template.ImportStatements = swagger.ImportStatements([]string{
+		"compress/gzip",
+		"context",
+		"log",
+		"net/http",
+		`_ "net/http/pprof"`,
+		"os",
+		"os/signal",
+		"path",
+		"syscall",
+		"time",
+		"github.com/Clever/go-process-metrics/metrics",
+		packageName + "/tracing",
+		"github.com/gorilla/handlers",
+		"github.com/gorilla/mux",
+		"github.com/kardianos/osext",
+		"gopkg.in/Clever/kayvee-go.v6/logger",
+		`kvMiddleware "gopkg.in/Clever/kayvee-go.v6/middleware"`,
+	})
 	routerCode, err := templates.WriteTemplate(routerTemplateStr, template)
 	if err != nil {
 		return err
@@ -149,7 +169,6 @@ var _ = errors.New
 var _ = mux.Vars
 var _ = bytes.Compare
 var _ = ioutil.ReadAll
-var _ = log.String
 
 {{.BaseStringToTypeCode}}
 
@@ -168,15 +187,12 @@ func jsonMarshalNoError(i interface{}) string {
 `
 
 func generateHandlers(packageName, packagePath string, s *spec.Swagger, paths *spec.Paths) error {
-
 	tmpl := handlerFileTemplate{
 		ImportStatements: swagger.ImportStatements([]string{"context", "github.com/gorilla/mux",
 			"gopkg.in/Clever/kayvee-go.v6/logger",
 			"net/http", "strconv", "encoding/json", "strconv", "fmt", packageName + "/models",
 			"github.com/go-openapi/strfmt", "github.com/go-openapi/swag", "io/ioutil", "bytes",
 			"github.com/go-errors/errors", "golang.org/x/xerrors",
-			"github.com/opentracing/opentracing-go",
-			"github.com/opentracing/opentracing-go/log",
 		}),
 		BaseStringToTypeCode: swagger.BaseStringToTypeCode(),
 	}
@@ -309,9 +325,6 @@ func statusCodeFor{{.Op}}(obj interface{}) int {
 }
 
 func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-{{if .SuccessReturnType}}
-	sp := opentracing.SpanFromContext(ctx)
-{{end}}
 {{if .HasParams}}
 	{{.InputVarName}}, err := new{{.Op}}Input(r)
 	if err != nil {
@@ -374,9 +387,6 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 	}
 
 {{if .SuccessReturnType}}
-	jsonSpan, _ := opentracing.StartSpanFromContext(ctx, "json-response-marshaling")
-	defer jsonSpan.Finish()
-
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
@@ -397,7 +407,6 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 		}
 	{{end}}
 
-	sp.LogFields(log.Int("response-size-bytes", len(respBytes)))
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCodeFor{{.Op}}(resp))
 	w.Write(respBytes)
@@ -450,9 +459,6 @@ func generateNewInput(op *spec.Operation, definitions map[string]spec.Schema) (s
 			capOpID, capOpID))
 		buf.WriteString(fmt.Sprintf("\tvar input models.%sInput\n\n", capOpID))
 	}
-
-	buf.WriteString(fmt.Sprintf("\tsp := opentracing.SpanFromContext(r.Context())\n"))
-	buf.WriteString(fmt.Sprintf("\t_ = sp\n\n"))
 
 	buf.WriteString(fmt.Sprintf("\tvar err error\n"))
 	buf.WriteString(fmt.Sprintf("\t_ = err\n"))
@@ -603,24 +609,19 @@ var bodyParamTemplateStr = `
 	{{if .Required}} if len(data) == 0 {
 		return nil, errors.New("request body is required, but was empty")
 	}{{end}}
-	sp.LogFields(log.Int("request-size-bytes", len(data)))
-
 	if len(data) > 0 {
-		jsonSpan, _ := opentracing.StartSpanFromContext(r.Context(), "json-request-marshaling")
-		defer jsonSpan.Finish()
-
-		{{if eq (len .ParamField) 0}}
+		{{- if eq (len .ParamField) 0}}
 			var input models.{{.TypeName}}
 			if err := json.NewDecoder(bytes.NewReader(data)).Decode(&input); err != nil {
 				return nil, err
 			}
 			return &input, nil
-		{{else}}
+		{{- else}}
 			input.{{.ParamField}} = &models.{{.TypeName}}{}
 			if err := json.NewDecoder(bytes.NewReader(data)).Decode(input.{{.ParamField}}); err != nil {
 				return nil, err
 			}
-		{{end}}
+		{{- end}}
 	}
 	{{else}}
 	{{if eq (len .ParamField) 0}}

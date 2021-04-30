@@ -1,4 +1,3 @@
-import { Span, Tracer } from "opentracing";
 import { Logger } from "kayvee";
 
 type Callback<R> = (err: Error, result: R) => void;
@@ -11,7 +10,6 @@ interface RetryPolicy {
 
 interface RequestOptions {
   timeout?: number;
-  span?: Span;
   retryPolicy?: RetryPolicy;
 }
 
@@ -35,7 +33,6 @@ interface GenericOptions {
   keepalive?: boolean;
   retryPolicy?: RetryPolicy;
   logger?: Logger;
-  tracer?: Tracer;
   circuit?: CircuitOptions;
   serviceName?: string;
 }

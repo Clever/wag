@@ -1,4 +1,15 @@
-v6.4.5
+v7.0.0
+
+v7 removes all references to OpenTracing and begins adding OpenTelemetry to replace it. For now,
+OpenTelemetry parts should be considered *unstable*, especially as the OpenTelemetry Go SDKs are
+themselves unstable.
+
+Support for the glide package manager for Go is also removed. Previously, wag could update your
+Glide dependencies to set up the packages used by the wag generated code. Now, you should follow the
+example go.mod file under samples/.
+
+## Older Versions
+
 - v6.4.5: shutdown-initiated log should be info not critical
 - v6.4.4: Catch engineer error for old dependencies during building
 - v6.4.3: Patch bump for publishing testing

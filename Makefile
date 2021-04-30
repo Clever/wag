@@ -7,10 +7,9 @@ $(eval $(call node-version-check,$(NODE_VERSION)))
 export PATH := $(PWD)/bin:$(PATH)
 MAJOR_VERSION := $(shell head -n 1 VERSION | sed 's/[[:alpha:]|[:space:]]//g' | cut -d. -f1)
 PKG := github.com/Clever/wag/v$(MAJOR_VERSION)
-PKGS := $(shell go list ./... | grep -v /vendor | grep -v /samples/gen* | grep -v /hardcoded | grep -v /tools)
+PKGS := $(shell go list ./... | grep -v /hardcoded | grep -v /tools)
 VERSION := $(shell head -n 1 VERSION)
 EXECUTABLE := wag
-PKGS := $(PKGS) $(PKG)/samples/gen-go-db/server/db/dynamodb
 
 $(eval $(call golang-version-check,1.13))
 
@@ -20,6 +19,7 @@ build: go-generate
 	go build -o bin/wag
 
 test: build generate $(PKGS) js-tests
+	$(MAKE) -C samples test
 
 js-tests:
 	cd test/js && rm -rf node_modules && npm install && npm test
@@ -33,35 +33,13 @@ go-generate:
 	go generate ./server/gendb/
 
 generate: build jsdoc2md
-	./bin/wag -file ./samples/swagger.yml -output-path ./samples/gen-go -js-path ./samples/gen-js
-	cd ./samples/gen-js && jsdoc2md index.js types.js > ./README.md
-	go generate ./samples/gen-go...
-	./bin/wag -file ./samples/deprecated.yml -output-path ./samples/gen-go-deprecated -js-path ./samples/gen-js-deprecated
-	cd ./samples/gen-js-deprecated && jsdoc2md index.js types.js > ./README.md
-	go generate ./samples/gen-go-deprecated...
-	./bin/wag -file ./samples/errors.yml -output-path ./samples/gen-go-errors -js-path ./samples/gen-js-errors
-	cd ./samples/gen-js-errors && jsdoc2md index.js types.js > ./README.md
-	go generate ./samples/gen-go-errors...
-	./bin/wag -file ./samples/nils.yml -output-path ./samples/gen-go-nils -js-path ./samples/gen-js-nils
-	cd ./samples/gen-js-nils && jsdoc2md index.js types.js > ./README.md
-	go generate ./samples/gen-go-nils...
-	./bin/wag -file ./samples/blog.yml -output-path ./samples/gen-go-blog -js-path ./samples/gen-js-blog
-	cd ./samples/gen-js-blog && jsdoc2md index.js types.js > ./README.md
-	go generate ./samples/gen-go-nils...
-	./bin/wag -file ./samples/db.yml -output-path ./samples/gen-go-db -js-path ./samples/gen-js-db
-	cd ./samples/gen-js-db && jsdoc2md index.js types.js > ./README.md
-	go generate ./samples/gen-go-db...
-	./bin/wag -file ./samples/swagger.yml -output-path ./samples/gen-go-client-only -js-path ./samples/gen-js-client-only --client-only
-	cd ./samples/gen-js-client-only && jsdoc2md index.js types.js > ./README.md
-	go generate ./samples/gen-go-client-only...
-	./bin/wag -file ./samples/db.yml -output-path ./samples/gen-go-db-only -dynamo-only
-	go generate ./samples/gen-go-db-only...
-	./bin/wag -file ./samples/db.yml -output-path ./samples/gen-go-db-custom-path -js-path ./samples/gen-js-db-custom-path -dynamo-path db
-	cd ./samples/gen-js-db-custom-path && jsdoc2md index.js types.js > ./README.md
-	go generate ./samples/gen-go-db-custom-path...
+	$(MAKE) -C samples generate
 
+# TODO re-add -strict to the call
+#      There is a race condition in the *testing* trace exporter in this version of Otel SDKs, it is fixed in a later version
+#      But we can't upgrade yet, until we're ready to jump to Go 1.16
 $(PKGS): golang-test-all-strict-deps
-	$(call golang-test-all-strict,$@)
+	$(call golang-test-all,$@)
 
 release:
 	GOOS=linux GOARCH=amd64 go build -ldflags="-s -w -X main.version=$(VERSION)" -o="$@/$(EXECUTABLE)"

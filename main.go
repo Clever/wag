@@ -15,14 +15,14 @@ import (
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
 
-	goclient "github.com/Clever/wag/v6/clients/go"
-	jsclient "github.com/Clever/wag/v6/clients/js"
-	"github.com/Clever/wag/v6/hardcoded"
-	"github.com/Clever/wag/v6/models"
-	"github.com/Clever/wag/v6/server"
-	"github.com/Clever/wag/v6/server/gendb"
-	"github.com/Clever/wag/v6/swagger"
-	"github.com/Clever/wag/v6/validation"
+	goclient "github.com/Clever/wag/v7/clients/go"
+	jsclient "github.com/Clever/wag/v7/clients/js"
+	"github.com/Clever/wag/v7/hardcoded"
+	"github.com/Clever/wag/v7/models"
+	"github.com/Clever/wag/v7/server"
+	"github.com/Clever/wag/v7/server/gendb"
+	"github.com/Clever/wag/v7/swagger"
+	"github.com/Clever/wag/v7/validation"
 )
 
 // config contains the configuration of command line flags and configuration derived from command line flags
@@ -74,24 +74,6 @@ func main() {
 
 	if err := conf.parse(); err != nil {
 		log.Fatalf(err.Error())
-	}
-
-	// Check if glide.yaml and glide.lock files are up to date
-	// Ignore validation if the files don't yet exist
-	glideYAMLFile, err := os.Open("glide.yaml")
-	if err == nil {
-		defer glideYAMLFile.Close()
-		if err = validation.ValidateGlideYAML(glideYAMLFile); err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	glideLockFile, err := os.Open("glide.lock")
-	if err == nil {
-		defer glideLockFile.Close()
-		if err = validation.ValidateGlideLock(glideLockFile); err != nil {
-			log.Fatal(err)
-		}
 	}
 
 	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
@@ -163,6 +145,13 @@ func generateServer(serverPath, goPackageName, goPackagePath string, swaggerSpec
 	if err := middlewareGenerator.WriteFile("server/middleware.go"); err != nil {
 		return fmt.Errorf("Failed to copy middleware.go: %s", err)
 	}
+
+	tracingGenerator := swagger.Generator{PackagePath: goPackagePath}
+	tracingGenerator.Write(hardcoded.MustAsset("../_hardcoded/tracing.go"))
+	if err := tracingGenerator.WriteFile("tracing/tracing.go"); err != nil {
+		log.Fatalf("Failed to copy tracing.go: %s", err)
+	}
+
 	return nil
 }
 
@@ -345,10 +334,10 @@ func getModulePackagePath(goPath, outputPath string) string {
 }
 
 // getModulePackageName gets the package name of the generated code
-// Example: if packagePath = github.com/Clever/wag/v6/gen-go and the module name is github.com/Clever/wag/v6/v2
-// the function will return github.com/Clever/wag/v6/v2/gen-go
-// Example: if packagePath = github.com/Clever/wag/v6/gen-go and the module name is github.com/Clever/wag/v6
-// the function will return  github.com/Clever/wag/v6/gen-go
+// Example: if packagePath = github.com/Clever/wag/v7/gen-go and the module name is github.com/Clever/wag/v7/v2
+// the function will return github.com/Clever/wag/v7/v2/gen-go
+// Example: if packagePath = github.com/Clever/wag/v7/gen-go and the module name is github.com/Clever/wag/v7
+// the function will return  github.com/Clever/wag/v7/gen-go
 func getModulePackageName(modFile *os.File, outputPath string) string {
 	// read first line of module file
 	r := bufio.NewReader(modFile)

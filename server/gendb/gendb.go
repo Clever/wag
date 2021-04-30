@@ -9,13 +9,13 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/Clever/wag/v6/swagger"
+	"github.com/Clever/wag/v7/swagger"
 	"github.com/awslabs/goformation/v2/cloudformation/resources"
 	"github.com/go-openapi/spec"
 	"github.com/go-swagger/go-swagger/generator"
 )
 
-//go:generate go-bindata -ignore .*\.go$ -pkg gendb -prefix $PWD/server/gendb/ $PWD/server/gendb/
+//go:generate go-bindata -nometadata -ignore .*\.go$ -pkg gendb -prefix $PWD/server/gendb/ $PWD/server/gendb/
 
 const xdbExtensionKey = "x-db"
 
