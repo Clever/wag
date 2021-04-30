@@ -14,8 +14,8 @@ github.com/afex/hystrix-go v0.0.0-20180329224416-4847ceb883b5 h1:AfZZ7ZDbWHSOeRH
 github.com/afex/hystrix-go v0.0.0-20180329224416-4847ceb883b5/go.mod h1:SkGFH1ia65gfNATL8TAiHDNxPzPdmEL5uirI2Uyuz6c=
 github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a h1:idn718Q4B6AGu/h5Sxe66HYVdqdGu2l9Iebqhi/AEoA=
 github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a/go.mod h1:lB+ZfQJz7igIIfQNfa7Ml4HSf2uFQQRzpGGRXenZAgY=
-github.com/aws/aws-sdk-go v1.37.8 h1:9kywcbuz6vQuTf+FD+U7FshafrHzmqUCjgAEiLuIJ8U=
-github.com/aws/aws-sdk-go v1.37.8/go.mod h1:hcU610XS61/+aQV88ixoOzUoG7v3b31pl2zKMmprdro=
+github.com/aws/aws-sdk-go v1.38.29 h1:Go3a0Bw3V12he3XuefJsZ1CICn1wjmn6lp+FjICQR2w=
+github.com/aws/aws-sdk-go v1.38.29/go.mod h1:hcU610XS61/+aQV88ixoOzUoG7v3b31pl2zKMmprdro=
 github.com/awslabs/goformation/v2 v2.3.1 h1:Z+RD42c29UnZuMiQOU45qX90WAZ+Vb0RRGCD8T+lBBU=
 github.com/awslabs/goformation/v2 v2.3.1/go.mod h1:TltEj7mH+mT+6byC/VuOlDHvLFoEHQcleM1RVoO6ZMs=
 github.com/codahale/hdrhistogram v0.9.0 h1:9GjrtRI+mLEFPtTfR/AZhcxp+Ii8NZYWq5104FbZQY0=
