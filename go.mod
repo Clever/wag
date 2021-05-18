@@ -22,7 +22,7 @@ require (
 	github.com/golang/mock v1.5.0
 	github.com/hashicorp/hcl v0.0.0-20171017181929-23c074d0eceb // indirect
 	github.com/jessevdk/go-flags v1.4.0 // indirect
-	github.com/kevinburke/go-bindata v3.15.0+incompatible
+	github.com/kevinburke/go-bindata v3.21.0+incompatible
 	github.com/kr/text v0.2.0 // indirect
 	github.com/magiconair/properties v1.7.6 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
