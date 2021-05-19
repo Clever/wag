@@ -22,7 +22,7 @@ import (
 func bindataRead(data []byte, name string) ([]byte, error) {
 	gz, err := gzip.NewReader(bytes.NewBuffer(data))
 	if err != nil {
-		return nil, fmt.Errorf("read %q: %v", name, err)
+		return nil, fmt.Errorf("read %q: %w", name, err)
 	}
 
 	var buf bytes.Buffer
@@ -30,7 +30,7 @@ func bindataRead(data []byte, name string) ([]byte, error) {
 	clErr := gz.Close()
 
 	if err != nil {
-		return nil, fmt.Errorf("read %q: %v", name, err)
+		return nil, fmt.Errorf("read %q: %w", name, err)
 	}
 	if clErr != nil {
 		return nil, err
@@ -227,6 +227,9 @@ var _bindata = map[string]func() (*asset, error){
 	"../_hardcoded/tracing.go":    _hardcodedTracingGo,
 }
 
+// AssetDebug is true if the assets were built with the debug flag enabled.
+const AssetDebug = false
+
 // AssetDir returns the file names below a certain
 // directory embedded in the file by go-bindata.
 // For example if you run go-bindata on data/... and data contains the
@@ -268,11 +271,11 @@ type bintree struct {
 }
 
 var _bintree = &bintree{nil, map[string]*bintree{
-	"..": &bintree{nil, map[string]*bintree{
-		"_hardcoded": &bintree{nil, map[string]*bintree{
-			"doer.go":       &bintree{_hardcodedDoerGo, map[string]*bintree{}},
-			"middleware.go": &bintree{_hardcodedMiddlewareGo, map[string]*bintree{}},
-			"tracing.go":    &bintree{_hardcodedTracingGo, map[string]*bintree{}},
+	"..": {nil, map[string]*bintree{
+		"_hardcoded": {nil, map[string]*bintree{
+			"doer.go":       {_hardcodedDoerGo, map[string]*bintree{}},
+			"middleware.go": {_hardcodedMiddlewareGo, map[string]*bintree{}},
+			"tracing.go":    {_hardcodedTracingGo, map[string]*bintree{}},
 		}},
 	}},
 }}
