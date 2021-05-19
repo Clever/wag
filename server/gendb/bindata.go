@@ -25,7 +25,7 @@ import (
 func bindataRead(data []byte, name string) ([]byte, error) {
 	gz, err := gzip.NewReader(bytes.NewBuffer(data))
 	if err != nil {
-		return nil, fmt.Errorf("read %q: %v", name, err)
+		return nil, fmt.Errorf("read %q: %w", name, err)
 	}
 
 	var buf bytes.Buffer
@@ -33,7 +33,7 @@ func bindataRead(data []byte, name string) ([]byte, error) {
 	clErr := gz.Close()
 
 	if err != nil {
-		return nil, fmt.Errorf("read %q: %v", name, err)
+		return nil, fmt.Errorf("read %q: %w", name, err)
 	}
 	if clErr != nil {
 		return nil, err
@@ -293,6 +293,9 @@ var _bindata = map[string]func() (*asset, error){
 	"tests.go.tmpl":          testsGoTmpl,
 }
 
+// AssetDebug is true if the assets were built with the debug flag enabled.
+const AssetDebug = false
+
 // AssetDir returns the file names below a certain
 // directory embedded in the file by go-bindata.
 // For example if you run go-bindata on data/... and data contains the
@@ -334,12 +337,12 @@ type bintree struct {
 }
 
 var _bintree = &bintree{nil, map[string]*bintree{
-	"dynamodb-local.sh.tmpl": &bintree{dynamodbLocalShTmpl, map[string]*bintree{}},
-	"dynamodb.go.tmpl":       &bintree{dynamodbGoTmpl, map[string]*bintree{}},
-	"dynamodb_test.go.tmpl":  &bintree{dynamodb_testGoTmpl, map[string]*bintree{}},
-	"interface.go.tmpl":      &bintree{interfaceGoTmpl, map[string]*bintree{}},
-	"table.go.tmpl":          &bintree{tableGoTmpl, map[string]*bintree{}},
-	"tests.go.tmpl":          &bintree{testsGoTmpl, map[string]*bintree{}},
+	"dynamodb-local.sh.tmpl": {dynamodbLocalShTmpl, map[string]*bintree{}},
+	"dynamodb.go.tmpl":       {dynamodbGoTmpl, map[string]*bintree{}},
+	"dynamodb_test.go.tmpl":  {dynamodb_testGoTmpl, map[string]*bintree{}},
+	"interface.go.tmpl":      {interfaceGoTmpl, map[string]*bintree{}},
+	"table.go.tmpl":          {tableGoTmpl, map[string]*bintree{}},
+	"tests.go.tmpl":          {testsGoTmpl, map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory.

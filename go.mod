@@ -22,7 +22,7 @@ require (
 	github.com/golang/mock v1.5.0
 	github.com/hashicorp/hcl v0.0.0-20171017181929-23c074d0eceb // indirect
 	github.com/jessevdk/go-flags v1.4.0 // indirect
-	github.com/kevinburke/go-bindata v3.15.0+incompatible
+	github.com/kevinburke/go-bindata v3.22.0+incompatible
 	github.com/kr/text v0.2.0 // indirect
 	github.com/magiconair/properties v1.7.6 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
@@ -34,8 +34,8 @@ require (
 	github.com/spf13/pflag v1.0.0 // indirect
 	github.com/spf13/viper v1.0.1-0.20171227194143-aafc9e6bc7b7 // indirect
 	github.com/stretchr/testify v1.7.0
+	go.opentelemetry.io/otel v0.15.0
 	go.opentelemetry.io/otel/sdk v0.15.0
-	go.opentelemetry.io/otel/trace v0.20.0
 	google.golang.org/grpc v1.36.0 // indirect
 	gopkg.in/Clever/kayvee-go.v6 v6.24.1
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
