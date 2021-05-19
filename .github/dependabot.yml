@@ -8,15 +8,10 @@ updates:
     timezone: America/Los_Angeles
   open-pull-requests-limit: 1
   ignore:
-  - dependency-name: github.com/aws/aws-sdk-go
-    versions:
-    - "> 1.37.8, < 1.38"
   - dependency-name: github.com/go-openapi/errors
     versions:
     - "> 0.19.2"
   - dependency-name: github.com/go-openapi/strfmt
     versions:
     - ">= 0.20.a, < 0.21"
-  - dependency-name: github.com/kevinburke/go-bindata
-    versions:
-    - 3.22.0+incompatible
+  - dependency-name: "go.opentelemetry.io/*"
