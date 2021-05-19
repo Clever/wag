@@ -338,11 +338,11 @@ type bintree struct {
 
 var _bintree = &bintree{nil, map[string]*bintree{
 	"dynamodb-local.sh.tmpl": {dynamodbLocalShTmpl, map[string]*bintree{}},
-	"dynamodb.go.tmpl": {dynamodbGoTmpl, map[string]*bintree{}},
-	"dynamodb_test.go.tmpl": {dynamodb_testGoTmpl, map[string]*bintree{}},
-	"interface.go.tmpl": {interfaceGoTmpl, map[string]*bintree{}},
-	"table.go.tmpl": {tableGoTmpl, map[string]*bintree{}},
-	"tests.go.tmpl": {testsGoTmpl, map[string]*bintree{}},
+	"dynamodb.go.tmpl":       {dynamodbGoTmpl, map[string]*bintree{}},
+	"dynamodb_test.go.tmpl":  {dynamodb_testGoTmpl, map[string]*bintree{}},
+	"interface.go.tmpl":      {interfaceGoTmpl, map[string]*bintree{}},
+	"table.go.tmpl":          {tableGoTmpl, map[string]*bintree{}},
+	"tests.go.tmpl":          {testsGoTmpl, map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory.
