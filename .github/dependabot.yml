@@ -9,9 +9,5 @@ updates:
   open-pull-requests-limit: 1
   ignore:
   - dependency-name: github.com/go-openapi/errors
-    versions:
-    - "> 0.19.2"
   - dependency-name: github.com/go-openapi/strfmt
-    versions:
-    - ">= 0.20.a, < 0.21"
   - dependency-name: "go.opentelemetry.io/*"
