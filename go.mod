@@ -19,7 +19,7 @@ require (
 	github.com/go-swagger/go-swagger v0.2.1-0.20171112234155-b015bda48dfc
 	github.com/go-swagger/scan-repo-boundary v0.0.0-20180623220736-973b3573c013 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang/mock v1.5.0
+	github.com/golang/mock v1.6.0
 	github.com/hashicorp/hcl v0.0.0-20171017181929-23c074d0eceb // indirect
 	github.com/jessevdk/go-flags v1.4.0 // indirect
 	github.com/kevinburke/go-bindata v3.22.0+incompatible
