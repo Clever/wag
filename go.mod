@@ -35,7 +35,7 @@ require (
 	go.opentelemetry.io/otel v0.15.0
 	go.opentelemetry.io/otel/sdk v0.15.0
 	google.golang.org/grpc v1.36.0 // indirect
-	gopkg.in/Clever/kayvee-go.v6 v6.26.0
+	gopkg.in/Clever/kayvee-go.v6 v6.27.0
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
