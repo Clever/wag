@@ -1,7 +1,7 @@
 # This is the default Clever Golang Makefile.
 # It is stored in the dev-handbook repo, github.com/Clever/dev-handbook
 # Please do not alter this file directly.
-GOLANG_MK_VERSION := 1.0.0
+GOLANG_MK_VERSION := 1.0.1
 
 SHELL := /bin/bash
 SYSTEM := $(shell uname -a | cut -d" " -f1 | tr '[:upper:]' '[:lower:]')
@@ -11,7 +11,7 @@ SYSTEM := $(shell uname -a | cut -d" " -f1 | tr '[:upper:]' '[:lower:]')
 export TZ=UTC
 
 # go build flags for use across all commands which accept them
-GO_BUILD_FLAGS := "-mod=vendor"
+export GOFLAGS := -mod=vendor $(GOFLAGS)
 
 # if the gopath includes several directories, use only the first
 GOPATH=$(shell echo $$GOPATH | cut -d: -f1)
@@ -39,7 +39,7 @@ endef
 # so we're defended against it breaking or changing in the future.
 FGT := $(GOPATH)/bin/fgt
 $(FGT):
-	go get github.com/GeertJohan/fgt@262f7b11eec07dc7b147c44641236f3212fee89d
+	go install -mod=readonly github.com/GeertJohan/fgt@262f7b11eec07dc7b147c44641236f3212fee89d
 
 golang-ensure-curl-installed:
 	@command -v curl >/dev/null 2>&1 || { echo >&2 "curl not installed. Please install curl."; exit 1; }
@@ -49,7 +49,7 @@ golang-ensure-curl-installed:
 # previously passing tests start failing without changing our code.
 GOLINT := $(GOPATH)/bin/golint
 $(GOLINT):
-	go get golang.org/x/lint/golint@738671d3881b9731cc63024d5d88cf28db875626
+	go install -mod=readonly golang.org/x/lint/golint@738671d3881b9731cc63024d5d88cf28db875626
 
 # golang-fmt-deps requires the FGT tool for checking output
 golang-fmt-deps: $(FGT)
@@ -89,7 +89,7 @@ golang-test-deps:
 # arg1: pkg path
 define golang-test
 @echo "TESTING $(1)..."
-@go test $(GO_BUILD_FLAGS) -v $(1)
+@go test -v $(1)
 endef
 
 # golang-test-strict-deps is here for consistency
@@ -99,7 +99,7 @@ golang-test-strict-deps:
 # arg1: pkg path
 define golang-test-strict
 @echo "TESTING $(1)..."
-@go test -v $(GO_BUILD_FLAGS) -race $(1)
+@go test -v -race $(1)
 endef
 
 # golang-vet-deps is here for consistency
@@ -109,7 +109,7 @@ golang-vet-deps:
 # arg1: pkg path
 define golang-vet
 @echo "VETTING $(1)..."
-@go vet $(GO_BUILD_FLAGS) $(1)
+@go vet $(1)
 endef
 
 # golang-test-all-deps installs all dependencies needed for different test cases.
@@ -143,10 +143,10 @@ endef
 define golang-build
 @echo "BUILDING..."
 @if [ -z "$$CI" ]; then \
-	go build $(GO_BUILD_FLAGS) -o bin/$(2) $(1); \
+	go build -o bin/$(2) $(1); \
 else \
 	echo "-> Building CGO binary"; \
-	CGO_ENABLED=0 go build $(GO_BUILD_FLAGS) -installsuffix cgo -o bin/$(2) $(1); \
+	CGO_ENABLED=0 go build -installsuffix cgo -o bin/$(2) $(1); \
 fi;
 endef
 
