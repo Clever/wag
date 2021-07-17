@@ -144,7 +144,7 @@ func GenerateDB(packageName, packagePath string, s *spec.Swagger, outputPath str
 
 	writeTemplate := func(tmplFilename, outputFilename string, data interface{}) error {
 		tmpl, err := template.New(tmplFilename).
-			Funcs(generator.FuncMap).
+			Funcs(generator.FuncMapFunc(generator.DefaultLanguageFunc())).
 			Funcs(funcMap).
 			Parse(string(MustAsset(tmplFilename)))
 		if err != nil {
