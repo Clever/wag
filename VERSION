@@ -1,4 +1,6 @@
-v7.0.0
+v7.0.1
+- v7.0.1 bugfix --client-only not generating tracing files
+- v7.0.0
 
 v7 removes all references to OpenTracing and begins adding OpenTelemetry to replace it. For now,
 OpenTelemetry parts should be considered *unstable*, especially as the OpenTelemetry Go SDKs are
