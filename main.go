@@ -44,12 +44,14 @@ type config struct {
 	jsClientPath          string
 	modelsPath            string
 	serverPath            string
+	tracingPath           string
 
 	generateDynamo   bool
 	generateGoClient bool
 	generateGoModels bool
 	generateJSClient bool
 	generateServer   bool
+	generateTracing  bool
 }
 
 var version string
@@ -104,6 +106,12 @@ func main() {
 		}
 	}
 
+	if conf.generateTracing {
+		if err := generateTracing(conf.tracingPath, conf.goPackagePath); err != nil {
+			log.Fatal(err.Error())
+		}
+	}
+
 	if conf.generateDynamo {
 		if err := generateDynamo(conf.dynamoPath, *conf.goPackageName, conf.goPackagePath, *conf.relativeDynamoPath, swaggerSpec); err != nil {
 			log.Fatal(err.Error())
@@ -144,6 +152,14 @@ func generateServer(serverPath, goPackageName, goPackagePath string, swaggerSpec
 	middlewareGenerator.Write(hardcoded.MustAsset("../_hardcoded/middleware.go"))
 	if err := middlewareGenerator.WriteFile("server/middleware.go"); err != nil {
 		return fmt.Errorf("Failed to copy middleware.go: %s", err)
+	}
+
+	return nil
+}
+
+func generateTracing(tracingPath, goPackagePath string) error {
+	if err := prepareDir(tracingPath); err != nil {
+		return err
 	}
 
 	tracingGenerator := swagger.Generator{PackagePath: goPackagePath}
@@ -228,6 +244,7 @@ func (c *config) setGenerateFlags(clientLanguage, jsModulePath string) error {
 			return err
 		}
 		c.generateGoModels = c.generateGoClient
+		c.generateTracing = c.generateGoClient
 	} else if swag.BoolValue(c.dynamoOnly) {
 		c.generateDynamo = true
 		c.generateGoModels = true
@@ -236,6 +253,7 @@ func (c *config) setGenerateFlags(clientLanguage, jsModulePath string) error {
 		c.generateServer = true
 		c.generateDynamo = true
 		c.generateGoModels = true
+		c.generateTracing = true
 		if err := c.setClientLanguage(clientLanguage, jsModulePath); err != nil {
 			return err
 		}
@@ -304,11 +322,13 @@ func (c *config) setClientLanguage(clientLanguage, jsModulePath string) error {
 // setGeneratedFilePaths determines where to output the generated files.
 func (c *config) setGeneratedFilePaths() {
 	const serverDir = "server"
+	const tracingDir = "tracing"
 
 	// determine paths for generated files
 	c.goAbsolutePackagePath = filepath.Join(os.Getenv("GOPATH"), "src", c.goPackagePath)
 	c.modelsPath = filepath.Join(c.goAbsolutePackagePath, "models")
 	c.serverPath = filepath.Join(c.goAbsolutePackagePath, serverDir)
+	c.tracingPath = filepath.Join(c.goAbsolutePackagePath, tracingDir)
 	c.goClientPath = filepath.Join(c.goAbsolutePackagePath, "client")
 
 	if c.generateDynamo {
