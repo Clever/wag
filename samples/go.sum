@@ -4,6 +4,8 @@ github.com/Clever/discovery-go v1.7.2 h1:sK3PJCz7Q94fDUAncTi4FDUHqMHrAYefPe0x8ZN
 github.com/Clever/discovery-go v1.7.2/go.mod h1:WC3d6zZHgBarTh3TCktYLy5Bj1Auj5fH86TkP+La71o=
 github.com/Clever/go-process-metrics v0.2.0 h1:a4mHTNkH/cnw1MQHDwR8IlJ4MnBXuMY77SYsLeslAYw=
 github.com/Clever/go-process-metrics v0.2.0/go.mod h1:Aemel1It05GRZlIfbxbTLl0TwgFaaAALkqfyzuTDk7s=
+github.com/Clever/wag v4.1.0+incompatible h1:/7y61nKf6d3VKYk+/XFw1e7tmXG6tu4AO3UmFhROfa0=
+github.com/Clever/wag/v7 v7.0.0 h1:E1J0snX0Y4e5BIPqlu008FYPs3cTEssVIzP89lRsgfk=
 github.com/DataDog/sketches-go v0.0.1 h1:RtG+76WKgZuz6FIaGsjoPePmadDBkuD/KC6+ZWu78b8=
 github.com/DataDog/sketches-go v0.0.1/go.mod h1:Q5DbzQ+3AkgGwymQO7aZFNP7ns2lZKGtvRBzRXfdi60=
 github.com/PuerkitoBio/purell v1.1.1 h1:WEQqlqaGbrPkxLJWfBwQmfEAE1Z7ONdDLqrN38tNFfI=
