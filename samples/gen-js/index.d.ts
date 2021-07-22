@@ -121,6 +121,11 @@ declare namespace SwaggerTest {
 
   namespace Models {
     
+    type Animal = {
+  age?: number;
+  species?: string;
+};
+    
     type Author = {
   id?: string;
   name?: string;
@@ -150,6 +155,8 @@ declare namespace SwaggerTest {
   other?: { [key: string]: string };
   otherArray?: { [key: string]: string[] };
 };
+    
+    type Dog = any;
     
     type Error = {
   code?: number;
@@ -189,10 +196,16 @@ declare namespace SwaggerTest {
   startingAfter?: number;
 };
     
+    type Identifiable = {
+  id?: string;
+};
+    
     type OmitEmpty = {
   arrayFieldNotOmitted?: string[];
   arrayFieldOmitted?: string[];
 };
+    
+    type Pet = any;
     
     type Unathorized = {
   message?: string;
