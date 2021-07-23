@@ -1209,6 +1209,18 @@ func asJSType(schema *spec.Schema, refPrefix string) (JSType, error) {
 		return JSType(""), fmt.Errorf("No schema")
 	}
 
+	if len(schema.AllOf) > 0 {
+		subTypes := []string{}
+		for _, subSchema := range schema.AllOf {
+			subType, err := asJSType(&subSchema, refPrefix)
+			if err != nil {
+				return JSType(""), err
+			}
+			subTypes = append(subTypes, string(subType))
+		}
+		return JSType(strings.Join(subTypes, " & ")), nil
+	}
+
 	if schema.Ref.String() != "" {
 		def, err := defFromRef(schema.Ref.String())
 		if err != nil {
