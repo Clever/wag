@@ -205,7 +205,14 @@ class Blog {
       context(this).
       build();
 
-    setInterval(() => this._logCircuitState(), circuitOptions.logIntervalMs);
+    this._logCircuitStateInterval = setInterval(() => this._logCircuitState(), circuitOptions.logIntervalMs);
+  }
+
+  /**
+  * Releases handles used in client
+  */
+  close() {
+    clearInterval(this._logCircuitStateInterval);
   }
 
   _hystrixCommandErrorHandler(err) {

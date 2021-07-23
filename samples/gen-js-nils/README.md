@@ -8,6 +8,7 @@ nil-test client library.
     * [NilTest](#exp_module_nil-test--NilTest) ⏏
         * [new NilTest(options)](#new_module_nil-test--NilTest_new)
         * _instance_
+            * [.close()](#module_nil-test--NilTest+close)
             * [.nilCheck(params, [options], [cb])](#module_nil-test--NilTest+nilCheck) ⇒ <code>Promise</code>
         * _static_
             * [.RetryPolicies](#module_nil-test--NilTest.RetryPolicies)
@@ -47,6 +48,12 @@ Create a new client object.
 | [options.circuit.sleepWindow] | <code>number</code> |  | how long, in milliseconds, to wait after a circuit opens before testing for recovery. Default: 5000. |
 | [options.circuit.errorPercentThreshold] | <code>number</code> |  | the threshold to place on the rolling error rate. Once the error rate exceeds this percentage, the circuit opens. Default: 90. |
 
+<a name="module_nil-test--NilTest+close"></a>
+
+#### nilTest.close()
+Releases handles used in client
+
+**Kind**: instance method of [<code>NilTest</code>](#exp_module_nil-test--NilTest)  
 <a name="module_nil-test--NilTest+nilCheck"></a>
 
 #### nilTest.nilCheck(params, [options], [cb]) ⇒ <code>Promise</code>

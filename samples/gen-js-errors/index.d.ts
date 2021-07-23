@@ -54,6 +54,7 @@ import models = SwaggerTest.Models
 declare class SwaggerTest {
   constructor(options: SwaggerTestOptions);
 
+  close();
   
   getBook(id: number, options?: RequestOptions, cb?: Callback<void>): Promise<void>
   

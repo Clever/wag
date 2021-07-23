@@ -8,6 +8,7 @@ blog client library.
     * [Blog](#exp_module_blog--Blog) ⏏
         * [new Blog(options)](#new_module_blog--Blog_new)
         * _instance_
+            * [.close()](#module_blog--Blog+close)
             * [.postGradeFileForStudent(params, [options], [cb])](#module_blog--Blog+postGradeFileForStudent) ⇒ <code>Promise</code>
             * [.getSectionsForStudent(studentID, [options], [cb])](#module_blog--Blog+getSectionsForStudent) ⇒ <code>Promise</code>
             * [.postSectionsForStudent(params, [options], [cb])](#module_blog--Blog+postSectionsForStudent) ⇒ <code>Promise</code>
@@ -49,6 +50,12 @@ Create a new client object.
 | [options.circuit.sleepWindow] | <code>number</code> |  | how long, in milliseconds, to wait after a circuit opens before testing for recovery. Default: 5000. |
 | [options.circuit.errorPercentThreshold] | <code>number</code> |  | the threshold to place on the rolling error rate. Once the error rate exceeds this percentage, the circuit opens. Default: 90. |
 
+<a name="module_blog--Blog+close"></a>
+
+#### blog.close()
+Releases handles used in client
+
+**Kind**: instance method of [<code>Blog</code>](#exp_module_blog--Blog)  
 <a name="module_blog--Blog+postGradeFileForStudent"></a>
 
 #### blog.postGradeFileForStudent(params, [options], [cb]) ⇒ <code>Promise</code>
