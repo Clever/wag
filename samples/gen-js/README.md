@@ -8,6 +8,7 @@ swagger-test client library.
     * [SwaggerTest](#exp_module_swagger-test--SwaggerTest) ⏏
         * [new SwaggerTest(options)](#new_module_swagger-test--SwaggerTest_new)
         * _instance_
+            * [.close()](#module_swagger-test--SwaggerTest+close)
             * [.getAuthors(params, [options], [cb])](#module_swagger-test--SwaggerTest+getAuthors) ⇒ <code>Promise</code>
             * [.getAuthorsIter(params, [options])](#module_swagger-test--SwaggerTest+getAuthorsIter) ⇒ <code>Object</code> \| <code>function</code> \| <code>function</code> \| <code>function</code> \| <code>function</code>
             * [.getAuthorsWithPut(params, [options], [cb])](#module_swagger-test--SwaggerTest+getAuthorsWithPut) ⇒ <code>Promise</code>
@@ -59,6 +60,12 @@ Create a new client object.
 | [options.circuit.sleepWindow] | <code>number</code> |  | how long, in milliseconds, to wait after a circuit opens before testing for recovery. Default: 5000. |
 | [options.circuit.errorPercentThreshold] | <code>number</code> |  | the threshold to place on the rolling error rate. Once the error rate exceeds this percentage, the circuit opens. Default: 90. |
 
+<a name="module_swagger-test--SwaggerTest+close"></a>
+
+#### swaggerTest.close()
+Releases handles used in client
+
+**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 <a name="module_swagger-test--SwaggerTest+getAuthors"></a>
 
 #### swaggerTest.getAuthors(params, [options], [cb]) ⇒ <code>Promise</code>

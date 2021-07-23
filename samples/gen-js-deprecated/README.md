@@ -7,15 +7,18 @@ swagger-test client library.
 * [swagger-test](#module_swagger-test)
     * [SwaggerTest](#exp_module_swagger-test--SwaggerTest) ⏏
         * [new SwaggerTest(options)](#new_module_swagger-test--SwaggerTest_new)
-        * [.RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)
-            * [.Exponential](#module_swagger-test--SwaggerTest.RetryPolicies.Exponential)
-            * [.Single](#module_swagger-test--SwaggerTest.RetryPolicies.Single)
-            * [.None](#module_swagger-test--SwaggerTest.RetryPolicies.None)
-        * [.Errors](#module_swagger-test--SwaggerTest.Errors)
-            * [.BadRequest](#module_swagger-test--SwaggerTest.Errors.BadRequest) ⇐ <code>Error</code>
-            * [.NotFound](#module_swagger-test--SwaggerTest.Errors.NotFound) ⇐ <code>Error</code>
-            * [.InternalError](#module_swagger-test--SwaggerTest.Errors.InternalError) ⇐ <code>Error</code>
-        * [.DefaultCircuitOptions](#module_swagger-test--SwaggerTest.DefaultCircuitOptions)
+        * _instance_
+            * [.close()](#module_swagger-test--SwaggerTest+close)
+        * _static_
+            * [.RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)
+                * [.Exponential](#module_swagger-test--SwaggerTest.RetryPolicies.Exponential)
+                * [.Single](#module_swagger-test--SwaggerTest.RetryPolicies.Single)
+                * [.None](#module_swagger-test--SwaggerTest.RetryPolicies.None)
+            * [.Errors](#module_swagger-test--SwaggerTest.Errors)
+                * [.BadRequest](#module_swagger-test--SwaggerTest.Errors.BadRequest) ⇐ <code>Error</code>
+                * [.NotFound](#module_swagger-test--SwaggerTest.Errors.NotFound) ⇐ <code>Error</code>
+                * [.InternalError](#module_swagger-test--SwaggerTest.Errors.InternalError) ⇐ <code>Error</code>
+            * [.DefaultCircuitOptions](#module_swagger-test--SwaggerTest.DefaultCircuitOptions)
 
 <a name="exp_module_swagger-test--SwaggerTest"></a>
 
@@ -45,6 +48,12 @@ Create a new client object.
 | [options.circuit.sleepWindow] | <code>number</code> |  | how long, in milliseconds, to wait after a circuit opens before testing for recovery. Default: 5000. |
 | [options.circuit.errorPercentThreshold] | <code>number</code> |  | the threshold to place on the rolling error rate. Once the error rate exceeds this percentage, the circuit opens. Default: 90. |
 
+<a name="module_swagger-test--SwaggerTest+close"></a>
+
+#### swaggerTest.close()
+Releases handles used in client
+
+**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 <a name="module_swagger-test--SwaggerTest.RetryPolicies"></a>
 
 #### SwaggerTest.RetryPolicies

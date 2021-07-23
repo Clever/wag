@@ -54,6 +54,7 @@ import models = Blog.Models
 declare class Blog {
   constructor(options: BlogOptions);
 
+  close();
   
   postGradeFileForStudent(params: models.PostGradeFileForStudentParams, options?: RequestOptions, cb?: Callback<void>): Promise<void>
   
