@@ -36,13 +36,13 @@ func TestOpenTelemetryInstrumentation(t *testing.T) {
 	serverSpan := spans[0]
 	clientSpan := spans[1]
 	assert.Equal(t, "/v1/health/check", serverSpan.Name)
-	assert.Equal(t, true, serverSpan.HasRemoteParent)
-	assert.Equal(t, clientSpan.SpanContext.SpanID, serverSpan.ParentSpanID)
+	assert.Equal(t, true, serverSpan.Parent.IsRemote())
+	assert.Equal(t, clientSpan.SpanContext.SpanID(), serverSpan.Parent.SpanID())
 	assert.Equal(t, "healthCheck", clientSpan.Name)
-	assert.Equal(t, false, clientSpan.HasRemoteParent)
+	assert.Equal(t, false, clientSpan.Parent.IsRemote())
 
 	// test that the client joins a pre-existing span in the ctx
-	parentSpanID := serverSpan.SpanContext.SpanID
+	parentSpanID := serverSpan.SpanContext.SpanID()
 	ctx = trace.ContextWithRemoteSpanContext(ctx, serverSpan.SpanContext)
 	c.GetBookByID(ctx, &models.GetBookByIDInput{BookID: 1})
 	spans = exporter.GetSpans()
@@ -51,8 +51,8 @@ func TestOpenTelemetryInstrumentation(t *testing.T) {
 	clientSpan = spans[3]
 	assert.Equal(t, "/v1/books/{book_id}", serverSpan.Name)
 	assert.Equal(t, "getBookByID", clientSpan.Name)
-	assert.Equal(t, true, clientSpan.HasRemoteParent)
-	assert.Equal(t, parentSpanID, clientSpan.ParentSpanID)
+	assert.Equal(t, true, clientSpan.Parent.IsRemote())
+	assert.Equal(t, parentSpanID, clientSpan.Parent.SpanID())
 }
 
 func hasAttribute(r *resource.Resource, attr string) bool {

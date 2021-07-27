@@ -15,15 +15,12 @@ require (
 	github.com/go-openapi/swag v0.19.14
 	github.com/go-openapi/validate v0.19.7
 	github.com/go-swagger/go-swagger v0.23.0
-	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/mock v1.6.0
-	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/kevinburke/go-bindata v3.22.0+incompatible
 	github.com/pelletier/go-toml v1.9.1 // indirect
 	github.com/stretchr/testify v1.7.0
-	go.opentelemetry.io/otel v0.15.0
-	go.opentelemetry.io/otel/sdk v0.15.0
-	google.golang.org/grpc v1.36.0 // indirect
+	go.opentelemetry.io/otel/sdk v0.20.0
+	go.opentelemetry.io/otel/trace v0.20.0
 	gopkg.in/Clever/kayvee-go.v6 v6.27.0
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce
 )
