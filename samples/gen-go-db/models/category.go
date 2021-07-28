@@ -8,19 +8,21 @@ package models
 import (
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
 )
 
 // Category category
+//
 // swagger:model Category
 type Category string
 
 const (
+
 	// CategoryA captures enum value "a"
 	CategoryA Category = "a"
+
 	// CategoryB captures enum value "b"
 	CategoryB Category = "b"
 )

@@ -8,21 +8,24 @@ package models
 import (
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
 )
 
 // SectionType section type
+//
 // swagger:model SectionType
 type SectionType string
 
 const (
+
 	// SectionTypeMath captures enum value "math"
 	SectionTypeMath SectionType = "math"
+
 	// SectionTypeScience captures enum value "science"
 	SectionTypeScience SectionType = "science"
+
 	// SectionTypeReading captures enum value "reading"
 	SectionTypeReading SectionType = "reading"
 )
