@@ -6,13 +6,14 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // ThingWithMatchingKeys thing with matching keys
+//
 // swagger:model ThingWithMatchingKeys
 type ThingWithMatchingKeys struct {
 
@@ -26,6 +27,7 @@ type ThingWithMatchingKeys struct {
 	Bear string `json:"bear,omitempty"`
 
 	// created
+	// Format: date-time
 	Created strfmt.DateTime `json:"created,omitempty"`
 }
 
@@ -33,9 +35,26 @@ type ThingWithMatchingKeys struct {
 func (m *ThingWithMatchingKeys) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateCreated(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ThingWithMatchingKeys) validateCreated(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Created) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("created", "body", "date-time", m.Created.String(), formats); err != nil {
+		return err
+	}
+
 	return nil
 }
 
