@@ -1,4 +1,4 @@
-module github.com/Clever/wag/v7/samples
+module github.com/Clever/wag/v8/samples
 
 go 1.13
 
@@ -30,7 +30,6 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.15.1
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.15.1
-	go.opentelemetry.io/contrib/propagators/aws v0.15.1
 	go.opentelemetry.io/otel v0.15.0
 	go.opentelemetry.io/otel/exporters/otlp v0.15.0
 	go.opentelemetry.io/otel/sdk v0.15.0

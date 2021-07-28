@@ -10,9 +10,9 @@ import (
 	"github.com/go-openapi/spec"
 
 	"github.com/Clever/go-utils/stringset"
-	goClient "github.com/Clever/wag/v7/clients/go"
-	"github.com/Clever/wag/v7/swagger"
-	"github.com/Clever/wag/v7/templates"
+	goClient "github.com/Clever/wag/v8/clients/go"
+	"github.com/Clever/wag/v8/swagger"
+	"github.com/Clever/wag/v8/templates"
 
 	"github.com/go-swagger/go-swagger/generator"
 )
