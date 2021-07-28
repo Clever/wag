@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Clever/wag/v7/samples/gen-go-db/models"
-	"github.com/Clever/wag/v7/samples/gen-go-db/server/db"
+	"github.com/Clever/wag/v8/samples/gen-go-db/models"
+	"github.com/Clever/wag/v8/samples/gen-go-db/server/db"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
