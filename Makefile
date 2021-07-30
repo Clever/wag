@@ -35,11 +35,8 @@ go-generate:
 generate: build jsdoc2md
 	$(MAKE) -C samples generate
 
-# TODO re-add -strict to the call
-#      There is a race condition in the *testing* trace exporter in this version of Otel SDKs, it is fixed in a later version
-#      But we can't upgrade yet, until we're ready to jump to Go 1.16
 $(PKGS): golang-test-all-strict-deps
-	$(call golang-test-all,$@)
+	$(call golang-test-all-strict,$@)
 
 release:
 	GOOS=linux GOARCH=amd64 go build -ldflags="-s -w -X main.version=$(VERSION)" -o="$@/$(EXECUTABLE)"

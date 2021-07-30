@@ -14,10 +14,10 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpgrpc"
 	"go.opentelemetry.io/otel/propagation"
-	sdkexporttrace "go.opentelemetry.io/otel/sdk/export/trace"
-	"go.opentelemetry.io/otel/sdk/export/trace/tracetest"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	"go.opentelemetry.io/otel/trace"
 	"gopkg.in/Clever/kayvee-go.v6/logger"
 )
@@ -32,7 +32,7 @@ var defaultCollectorPort uint16 = 4317
 // SetupGlobalTraceProviderAndExporter sets up an exporter to export,
 // as well as the opentelemetry global trace provider for trace generators to use.
 // The exporter and provider are returned in order for the caller to defer shutdown.
-func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdkexporttrace.SpanExporter, *sdktrace.TracerProvider, error) {
+func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdktrace.SpanExporter, *sdktrace.TracerProvider, error) {
 	// 1. set up exporter
 	// 2. set up tracer provider
 	// 3. assign global tracer provider
@@ -57,11 +57,14 @@ func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdkexporttrace.Sp
 	// the default location of localhost:4317
 	// When running in production this is a sidecar, and when running
 	// locally this is a locally running opetelemetry-collector.
+	driver := otlpgrpc.NewDriver(
+		otlpgrpc.WithReconnectionPeriod(15*time.Second),
+		otlpgrpc.WithEndpoint(addr),
+		otlpgrpc.WithInsecure(),
+	)
 	exporter, err := otlp.NewExporter(
 		ctx,
-		otlp.WithAddress(addr),
-		otlp.WithReconnectionPeriod(15*time.Second),
-		otlp.WithInsecure(),
+		driver,
 	)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error creating exporter: %v", err)
@@ -86,18 +89,17 @@ func SetupGlobalTraceProviderAndExporterForTest() (*tracetest.InMemoryExporter, 
 	return exporter, tp, nil
 }
 
-func newTracerProvider(exporter sdkexporttrace.SpanExporter, samplingProbability float64) *sdktrace.TracerProvider {
+func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float64) *sdktrace.TracerProvider {
 	return sdktrace.NewTracerProvider(
-		sdktrace.WithConfig(sdktrace.Config{
-			// We use the default ID generator. In order for sampling to work (at least with this sampler)
-			// the ID generator must generate trace IDs uniformly at random from the entire space of uint64.
-			// For example, the default x-ray ID generator does not do this.
-			DefaultSampler: sdktrace.ParentBased(sdktrace.TraceIDRatioBased(samplingProbability)),
-			// These maximums are to guard against something going wrong and sending a ton of data unexpectedly
-			// They could be tweaked in the future if needed.
-			MaxEventsPerSpan:     100,
-			MaxAttributesPerSpan: 100,
-			MaxLinksPerSpan:      100,
+		// We use the default ID generator. In order for sampling to work (at least with this sampler)
+		// the ID generator must generate trace IDs uniformly at random from the entire space of uint64.
+		// For example, the default x-ray ID generator does not do this.
+		sdktrace.WithSampler(sdktrace.ParentBased(sdktrace.TraceIDRatioBased(samplingProbability))),
+		// These maximums are to guard against something going wrong and sending a ton of data unexpectedly
+		sdktrace.WithSpanLimits(sdktrace.SpanLimits{
+			AttributeCountLimit: 100,
+			EventCountLimit:     100,
+			LinkCountLimit:      100,
 		}),
 		sdktrace.WithSyncer(exporter),
 	)
@@ -113,7 +115,7 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 			// otelmux has extracted the span. now put it into the ctx-specific logger
 			s := trace.SpanFromContext(r.Context())
 			if sc := s.SpanContext(); sc.HasTraceID() {
-				spanID, traceID := sc.SpanID.String(), sc.TraceID.String()
+				spanID, traceID := sc.SpanID().String(), sc.TraceID().String()
 				// datadog converts hex strings to uint64 IDs, so log those so that correlating logs and traces works
 				if len(traceID) == 32 && len(spanID) == 16 { // opentelemetry format: 16 byte (32-char hex), 8 byte (16-char hex) trace and span ids
 					traceIDBs, _ := hex.DecodeString(traceID)
@@ -162,8 +164,8 @@ func (rt roundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 func ExtractSpanAndTraceID(r *http.Request) (traceID, spanID string) {
 	s := trace.SpanFromContext(r.Context())
 	if s.SpanContext().HasTraceID() {
-		return s.SpanContext().TraceID.String(), s.SpanContext().SpanID.String()
+		return s.SpanContext().TraceID().String(), s.SpanContext().SpanID().String()
 	}
-	sc := trace.RemoteSpanContextFromContext(propagator.Extract(r.Context(), r.Header))
-	return sc.SpanID.String(), sc.TraceID.String()
+	sc := trace.SpanContextFromContext(propagator.Extract(r.Context(), propagation.HeaderCarrier(r.Header)))
+	return sc.SpanID().String(), sc.TraceID().String()
 }
