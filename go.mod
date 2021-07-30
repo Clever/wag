@@ -1,6 +1,6 @@
 module github.com/Clever/wag/v8
 
-go 1.13
+go 1.16
 
 require (
 	github.com/Clever/go-utils v0.0.0-20150501165843-abc25366fa8e
