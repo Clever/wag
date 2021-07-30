@@ -6,13 +6,12 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
-	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // OmitEmpty omit empty
+//
 // swagger:model OmitEmpty
 type OmitEmpty struct {
 
@@ -25,39 +24,6 @@ type OmitEmpty struct {
 
 // Validate validates this omit empty
 func (m *OmitEmpty) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateArrayFieldNotOmitted(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateArrayFieldOmitted(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *OmitEmpty) validateArrayFieldNotOmitted(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.ArrayFieldNotOmitted) { // not required
-		return nil
-	}
-
-	return nil
-}
-
-func (m *OmitEmpty) validateArrayFieldOmitted(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.ArrayFieldOmitted) { // not required
-		return nil
-	}
-
 	return nil
 }
 

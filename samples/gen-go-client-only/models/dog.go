@@ -6,13 +6,13 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // Dog dog
+//
 // swagger:model Dog
 type Dog struct {
 	Pet
@@ -25,34 +25,36 @@ type Dog struct {
 
 // UnmarshalJSON unmarshals this object from a JSON structure
 func (m *Dog) UnmarshalJSON(raw []byte) error {
-
+	// AO0
 	var aO0 Pet
 	if err := swag.ReadJSON(raw, &aO0); err != nil {
 		return err
 	}
 	m.Pet = aO0
 
+	// AO1
 	var aO1 Identifiable
 	if err := swag.ReadJSON(raw, &aO1); err != nil {
 		return err
 	}
 	m.Identifiable = aO1
 
-	var data struct {
+	// AO2
+	var dataAO2 struct {
 		Breed string `json:"breed,omitempty"`
 	}
-	if err := swag.ReadJSON(raw, &data); err != nil {
+	if err := swag.ReadJSON(raw, &dataAO2); err != nil {
 		return err
 	}
 
-	m.Breed = data.Breed
+	m.Breed = dataAO2.Breed
 
 	return nil
 }
 
 // MarshalJSON marshals this object to a JSON structure
 func (m Dog) MarshalJSON() ([]byte, error) {
-	var _parts [][]byte
+	_parts := make([][]byte, 0, 3)
 
 	aO0, err := swag.WriteJSON(m.Pet)
 	if err != nil {
@@ -65,19 +67,17 @@ func (m Dog) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 	_parts = append(_parts, aO1)
-
-	var data struct {
+	var dataAO2 struct {
 		Breed string `json:"breed,omitempty"`
 	}
 
-	data.Breed = m.Breed
+	dataAO2.Breed = m.Breed
 
-	jsonData, err := swag.WriteJSON(data)
-	if err != nil {
-		return nil, err
+	jsonDataAO2, errAO2 := swag.WriteJSON(dataAO2)
+	if errAO2 != nil {
+		return nil, errAO2
 	}
-	_parts = append(_parts, jsonData)
-
+	_parts = append(_parts, jsonDataAO2)
 	return swag.ConcatJSON(_parts...), nil
 }
 
@@ -85,10 +85,11 @@ func (m Dog) MarshalJSON() ([]byte, error) {
 func (m *Dog) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	// validation for a type composition with Pet
 	if err := m.Pet.Validate(formats); err != nil {
 		res = append(res, err)
 	}
-
+	// validation for a type composition with Identifiable
 	if err := m.Identifiable.Validate(formats); err != nil {
 		res = append(res, err)
 	}

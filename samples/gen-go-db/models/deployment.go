@@ -6,13 +6,14 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // Deployment deployment
+//
 // swagger:model Deployment
 type Deployment struct {
 
@@ -20,6 +21,7 @@ type Deployment struct {
 	Application string `json:"application,omitempty"`
 
 	// date
+	// Format: date-time
 	Date strfmt.DateTime `json:"date,omitempty"`
 
 	// environment
@@ -33,9 +35,26 @@ type Deployment struct {
 func (m *Deployment) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateDate(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *Deployment) validateDate(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Date) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("date", "body", "date-time", m.Date.String(), formats); err != nil {
+		return err
+	}
+
 	return nil
 }
 
