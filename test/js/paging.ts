@@ -7,6 +7,10 @@ import * as Client from "swagger-test";
 const mockAddress = "http://localhost:8000";
 
 describe("paging", function() {
+  beforeEach(() => {
+    nock.cleanAll();
+  });
+
   it("iterators support map", async () => {
     const c = new Client({ address: mockAddress });
     const scopeFirst = nock(mockAddress)

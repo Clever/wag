@@ -15,13 +15,13 @@ async function sleep(ms) {
 };
 
 describe("circuit", function() {
-  afterEach(() => {
+  beforeEach(() => {
     metricsFactory.resetCache();
     circuitFactory.resetCache();
     commandFactory.resetCache();
     nock.cleanAll();
   });
-  
+
   it("opens when the number of failures exceeds requestVolumeThreshold, and closes if sees success after sleep window", async () => {
     const c = new Client({
       address: mockAddress,

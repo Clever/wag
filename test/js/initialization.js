@@ -9,7 +9,7 @@ describe("initialization", function() {
   it("fails if not given address or discovery", function() {
     assert.throws(function() {
       new Client();
-    }, "Cannot initialize swagger-test without discovery or address");
+    }, { message: "Cannot initialize swagger-test without discovery or address" });
   });
 
   it("succeeds given `address`", function() {
@@ -34,8 +34,8 @@ describe("initialization", function() {
 
     it("fails with no env vars", function() {
       assert.throws(function() {
-        new Client({discovery: true});
-      }, "Missing env var SERVICE_SWAGGER_TEST_DEFAULT_PROTO");
+        new Client({ discovery: true });
+      }, { message: "Missing env var SERVICE_SWAGGER_TEST_DEFAULT_PROTO" });
     });
 
     it("succeeds with default expose", function() {
