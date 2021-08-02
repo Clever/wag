@@ -120,9 +120,9 @@ describe("operations", function() {
     const c = new Client({address: mockAddress});
     const scope = nock(mockAddress)
           .get(`/v1/books`)
-      .reply(function(uri, requestBody) {
-        assert.equal(Client.Version, this.req.headers[Client.VersionHeader.toLowerCase()]);
-      }, 200);
+	  .reply(200, function(uri, requestBody) {
+              assert.equal(Client.Version, this.req.headers[Client.VersionHeader.toLowerCase()]);
+	  });
     c.getBooks({}, {}).then(function() {
       assert(scope.isDone());
       done();

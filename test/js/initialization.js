@@ -13,7 +13,7 @@ describe("initialization", function() {
   });
 
   it("succeeds given `address`", function() {
-    const c = new Client({address: mockAddress});
+    const c = new Client({ address: mockAddress });
     assert.equal(c.address, mockAddress);
   });
 
@@ -42,7 +42,7 @@ describe("initialization", function() {
       process.env.SERVICE_SWAGGER_TEST_DEFAULT_PROTO = "http"
       process.env.SERVICE_SWAGGER_TEST_DEFAULT_HOST = "localhost"
       process.env.SERVICE_SWAGGER_TEST_DEFAULT_PORT = "8000"
-      const c = new Client({discovery: true});
+      const c = new Client({ discovery: true });
       assert.equal(c.address, mockAddress);
     });
 
@@ -50,7 +50,7 @@ describe("initialization", function() {
       process.env.SERVICE_SWAGGER_TEST_HTTP_PROTO = "http"
       process.env.SERVICE_SWAGGER_TEST_HTTP_HOST = "localhost"
       process.env.SERVICE_SWAGGER_TEST_HTTP_PORT = "8000"
-      const c = new Client({discovery: true});
+      const c = new Client({ discovery: true });
       assert.equal(c.address, mockAddress);
     });
 
@@ -58,7 +58,7 @@ describe("initialization", function() {
       process.env.SERVICE_ALTERNATE_SWAGGER_TEST_HTTP_PROTO = "http"
       process.env.SERVICE_ALTERNATE_SWAGGER_TEST_HTTP_HOST = "localhost"
       process.env.SERVICE_ALTERNATE_SWAGGER_TEST_HTTP_PORT = "8001"
-      const c = new Client({discovery: true, serviceName: "alternate-swagger-test"});
+      const c = new Client({ discovery: true, serviceName: "alternate-swagger-test" });
       assert.equal(c.address, alternateMockAddress);
     })
   });

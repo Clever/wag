@@ -2,15 +2,17 @@ const assert = require("assert");
 const nock = require("nock");
 
 const Client = require("swagger-test");
-const {RetryPolicies} = Client;
+const { RetryPolicies } = Client;
 
 const mockAddress = "http://localhost:8000";
 
-const {commandFactory,metricsFactory,circuitFactory} = require("hystrixjs");
+const { commandFactory, metricsFactory, circuitFactory } = require("hystrixjs");
 
-async function sleep(ms) { return new Promise((resolve) => {
-  setTimeout(resolve, ms);
-});};
+async function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+};
 
 describe("circuit", function() {
   afterEach(() => {
@@ -109,7 +111,7 @@ describe("circuit", function() {
     const c = new Client({
       address: mockAddress,
       logger: {
-        errorD: (title, data) => {},
+        errorD: (title, data) => { },
         infoD: (title, data) => {
           loggerCalls++;
           if (loggerCalls == 1) {
@@ -146,7 +148,7 @@ describe("circuit", function() {
       address: mockAddress,
       retryPolicy: RetryPolicies.None,
       logger: {
-        errorD: (title, data) => {},
+        errorD: (title, data) => { },
         infoD: (title, data) => {
           loggerCalls++;
           if (loggerCalls == 1) {
@@ -166,7 +168,7 @@ describe("circuit", function() {
         get("/v1/books/12345").
         reply(404, `{"message":"Not found"}`);
       try {
-        const resp = await c.getBookByID({bookID: 12345});
+        const resp = await c.getBookByID({ bookID: 12345 });
         throw new Error("got resp, should have gotten error");
       } catch (err) {
         assert.equal(err.message, "Not found");
@@ -186,8 +188,8 @@ describe("circuit", function() {
         requestVolumeThreshold: 5,
       },
       logger: {
-        errorD: () => {},
-        infoD: () => {},
+        errorD: () => { },
+        infoD: () => { },
       },
       retryPolicy: RetryPolicies.None,
     });
