@@ -3,9 +3,9 @@ const nock = require("nock");
 const util = require("util");
 
 const Client = require("swagger-test");
-const {RetryPolicies} = Client;
+const { RetryPolicies } = Client;
 
-const {commandFactory,metricsFactory,circuitFactory} = require("hystrixjs");
+const { commandFactory, metricsFactory, circuitFactory } = require("hystrixjs");
 
 const mockAddress = "http://localhost:8000";
 
@@ -25,17 +25,17 @@ describe("retries", function() {
     let requestCount = 0;
     let requestTimes = [];
     const scope = nock(mockAddress)
-            .get("/v1/books")
-            .times(3)
-            .reply(function(uri, requestBody) {
-              requestTimes.push(new Date());
-              requestCount++;
-              if (requestCount <= 2) {
-                return [500, ""];
-              } else {
-                return [200, "[]"];
-              }
-            });
+      .get("/v1/books")
+      .times(3)
+      .reply(function(uri, requestBody) {
+        requestTimes.push(new Date());
+        requestCount++;
+        if (requestCount <= 2) {
+          return [500, ""];
+        } else {
+          return [200, "[]"];
+        }
+      });
     client.getBooks({}, function(err, books) {
       assert.equal(requestCount, 3);
       assert(!err, "unexpected error: " + util.inspect(err));
@@ -56,17 +56,17 @@ describe("retries", function() {
     let requestCount = 0;
     let requestTimes = [];
     const scope = nock(mockAddress)
-            .get("/v1/books")
-            .times(3)
-            .reply(function(uri, requestBody) {
-              requestTimes.push(new Date());
-              requestCount++;
-              if (requestCount <= 2) {
-                return [500, ""];
-              } else {
-                return [200, "[]"];
-              }
-            });
+      .get("/v1/books")
+      .times(3)
+      .reply(function(uri, requestBody) {
+        requestTimes.push(new Date());
+        requestCount++;
+        if (requestCount <= 2) {
+          return [500, ""];
+        } else {
+          return [200, "[]"];
+        }
+      });
     client.getBooks({}, function(err, books) {
       assert.equal(requestCount, 1);
       assert(err);
@@ -77,22 +77,22 @@ describe("retries", function() {
   });
 
   it("lets the user configure a custom retry policy on a single request", function(done) {
-    const client = new Client({address: mockAddress});
+    const client = new Client({ address: mockAddress });
     let requestCount = 0;
     let requestTimes = [];
     const scope = nock(mockAddress)
-            .get("/v1/books")
-            .times(3)
-            .reply(function(uri, requestBody) {
-              requestTimes.push(new Date());
-              requestCount++;
-              if (requestCount <= 2) {
-                return [500, ""];
-              } else {
-                return [200, "[]"];
-              }
-            });
-    client.getBooks({}, {retryPolicy: RetryPolicies.None}, function(err, books) {
+      .get("/v1/books")
+      .times(3)
+      .reply(function(uri, requestBody) {
+        requestTimes.push(new Date());
+        requestCount++;
+        if (requestCount <= 2) {
+          return [500, ""];
+        } else {
+          return [200, "[]"];
+        }
+      });
+    client.getBooks({}, { retryPolicy: RetryPolicies.None }, function(err, books) {
       assert.equal(requestCount, 1);
       assert(err);
       assert(!scope.isDone());
@@ -102,21 +102,21 @@ describe("retries", function() {
   });
 
   it("does not retry POSTs", function(done) {
-    const client = new Client({address: mockAddress});
+    const client = new Client({ address: mockAddress });
     let requestCount = 0;
     let requestTimes = [];
     const scope = nock(mockAddress)
-            .post("/v1/books")
-            .times(3)
-            .reply(function(uri, requestBody) {
-              requestTimes.push(new Date());
-              requestCount++;
-              if (requestCount <= 2) {
-                return [500, ""];
-              } else {
-                return [200, "[]"];
-              }
-            });
+      .post("/v1/books")
+      .times(3)
+      .reply(function(uri, requestBody) {
+        requestTimes.push(new Date());
+        requestCount++;
+        if (requestCount <= 2) {
+          return [500, ""];
+        } else {
+          return [200, "[]"];
+        }
+      });
     client.createBook({}, function(err, book) {
       assert.equal(requestCount, 1);
       assert(err);
@@ -137,7 +137,7 @@ describe("retries", function() {
         return false;
       }
     };
-    const client = new Client({address: "https://thisshouldnotresolve1234567890.com", retryPolicy});
+    const client = new Client({ address: "https://thisshouldnotresolve1234567890.com", retryPolicy });
     client.getBooks({}, function(err, books) {
       assert(err);
       assert.equal(errorReceived, err);

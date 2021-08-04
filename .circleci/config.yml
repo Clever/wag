@@ -10,8 +10,7 @@ jobs:
     steps:
     - run:
         command: |-
-          sudo apt-get install -y curl
-          curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
+          curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -
           sudo apt-get install -y nodejs
     - run:
         command: cd $HOME && git clone --depth 1 -v https://github.com/Clever/ci-scripts.git && cd ci-scripts && git show --oneline -s
