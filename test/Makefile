@@ -2,9 +2,13 @@ include ../golang.mk
 
 PKGS := $(shell go list ./...)
 
-.PHONY: test install_deps
+.PHONY: test install_deps debug $(PKGS)
 
-test: install_deps $(PKGS)
+debug:
+	go env
+	@echo $(PKGS)
+
+test: debug install_deps $(PKGS)
 
 $(PKGS):
 	$(call golang-test-all-strict,$@)

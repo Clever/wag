@@ -18,7 +18,7 @@ $(eval $(call golang-version-check,1.16))
 build: go-generate
 	go build -o bin/wag
 
-test: build generate $(PKGS) js-tests
+test: build generate # $(PKGS) js-tests
 	$(MAKE) -C samples test
 	$(MAKE) -C test test
 
