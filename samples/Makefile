@@ -1,4 +1,4 @@
-include golang.mk
+include ../golang.mk
 
 PKGS := $(shell go list ./...)
 TEST_PKGS := "./gen-go-db/server/db/dynamodb"

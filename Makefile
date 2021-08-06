@@ -20,6 +20,7 @@ build: go-generate
 
 test: build generate $(PKGS) js-tests
 	$(MAKE) -C samples test
+	$(MAKE) -C test test
 
 js-tests:
 	cd test/js && rm -rf node_modules && npm install && npm test

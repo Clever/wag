@@ -12,8 +12,8 @@ import (
 	"time"
 
 	discovery "github.com/Clever/discovery-go"
-	"github.com/Clever/wag/v8/samples/gen-go-nils/models"
-	"github.com/Clever/wag/v8/samples/gen-go-nils/tracing"
+	"github.com/Clever/wag/samples/v8/gen-go-nils/models"
+	"github.com/Clever/wag/samples/v8/gen-go-nils/tracing"
 	"github.com/afex/hystrix-go/hystrix"
 	logger "gopkg.in/Clever/kayvee-go.v6/logger"
 )

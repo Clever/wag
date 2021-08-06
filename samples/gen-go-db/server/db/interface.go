@@ -3,7 +3,7 @@ package db
 import (
 	"context"
 
-	"github.com/Clever/wag/v8/samples/gen-go-db/models"
+	"github.com/Clever/wag/samples/v8/gen-go-db/models"
 	"github.com/go-openapi/strfmt"
 	"golang.org/x/time/rate"
 )

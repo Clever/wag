@@ -1,4 +1,4 @@
-module github.com/Clever/wag/v8/samples
+module github.com/Clever/wag/samples/v8
 
 go 1.16
 
