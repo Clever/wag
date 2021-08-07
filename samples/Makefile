@@ -1,9 +1,9 @@
 include ../golang.mk
 
-TEST_PKGS := $(shell go list ./test...)
+TEST_PKGS := $(shell go list -mod=mod ./test...)
 TEST_DB_PKG := "./gen-go-db/server/db/dynamodb"
 
-.PHONY: generate test $(TEST_PKGS) $(TEST_DB_PKG)
+.PHONY: generate test $(TEST_PKGS) $(TEST_DB_PKG) install_deps
 
 # These go:generate don't actually care about dependencies, so we use -mod=mod to override -mod=vendor
 # If not for that, it's difficult to bootstrap
@@ -41,4 +41,4 @@ $(TEST_PKGS) $(TEST_DB_PKG): golang-test-all-strict-deps
 install_deps:
 	go mod vendor
 
-test: install_deps $(TEST_DB_PKG) $(TEST_PKGS)
+test: install_deps $(TEST_PKGS) $(TEST_DB_PKG)
