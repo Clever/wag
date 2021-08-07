@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Tests the generated wag JS client",
   "dependencies": {
-    "swagger-test": "../../samples/gen-js"
+    "swagger-test": "../../gen-js"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.39",

@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 
-	"github.com/Clever/wag/v8/samples/gen-go-deprecated/models"
+	"github.com/Clever/wag/samples/v8/gen-go-deprecated/models"
 )
 
 //go:generate mockgen -source=$GOFILE -destination=mock_controller.go -package=server

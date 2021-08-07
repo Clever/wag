@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Clever/wag/v8/samples/gen-go-db/server/db"
-	"github.com/Clever/wag/v8/samples/gen-go-db/server/db/tests"
+	"github.com/Clever/wag/samples/v8/gen-go-db/server/db"
+	"github.com/Clever/wag/samples/v8/gen-go-db/server/db/tests"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"

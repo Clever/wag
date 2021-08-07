@@ -11,9 +11,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Clever/wag/v8/samples/gen-go/client"
-	"github.com/Clever/wag/v8/samples/gen-go/models"
-	"github.com/Clever/wag/v8/samples/gen-go/server"
+	"github.com/Clever/wag/samples/v8/gen-go/client"
+	"github.com/Clever/wag/samples/v8/gen-go/models"
+	"github.com/Clever/wag/samples/v8/gen-go/server"
 	"github.com/Clever/wag/v8/swagger"
 
 	"net/http"
