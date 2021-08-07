@@ -1,9 +1,9 @@
-include golang.mk
+include ../golang.mk
 
-PKGS := $(shell go list ./...)
-TEST_PKGS := "./gen-go-db/server/db/dynamodb"
+TEST_PKGS := $(shell go list ./test...)
+TEST_DB_PKG := "./gen-go-db/server/db/dynamodb"
 
-.PHONY: generate test
+.PHONY: generate test $(TEST_PKGS) $(TEST_DB_PKG)
 
 # These go:generate don't actually care about dependencies, so we use -mod=mod to override -mod=vendor
 # If not for that, it's difficult to bootstrap
@@ -35,10 +35,10 @@ generate:
 	cd ./gen-js-db-custom-path && jsdoc2md index.js types.js > ./README.md
 	go generate -mod=mod ./gen-go-db-custom-path...
 
-$(TEST_PKGS): golang-test-all-strict-deps
+$(TEST_PKGS) $(TEST_DB_PKG): golang-test-all-strict-deps
 	$(call golang-test-all,$@)
 
 install_deps:
 	go mod vendor
 
-test: install_deps $(TEST_PKGS)
+test: install_deps $(TEST_DB_PKG) $(TEST_PKGS)

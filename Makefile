@@ -22,7 +22,7 @@ test: build generate $(PKGS) js-tests
 	$(MAKE) -C samples test
 
 js-tests:
-	cd test/js && rm -rf node_modules && npm install && npm test
+	cd samples/test/js && rm -rf node_modules && npm install && npm test
 
 jsdoc2md:
 	hash npm 2>/dev/null || (echo "Could not run npm, please install node" && false)
