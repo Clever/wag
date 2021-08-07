@@ -3,7 +3,7 @@ package client
 import (
 	"context"
 
-	"github.com/Clever/wag/v8/samples/gen-go-client-only/models"
+	"github.com/Clever/wag/samples/v8/gen-go-client-only/models"
 )
 
 //go:generate mockgen -source=$GOFILE -destination=mock_client.go -package=client
