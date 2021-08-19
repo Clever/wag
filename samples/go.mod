@@ -13,7 +13,7 @@ require (
 	github.com/go-openapi/errors v0.19.4
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/strfmt v0.19.5
-	github.com/go-openapi/swag v0.19.14
+	github.com/go-openapi/swag v0.19.15
 	github.com/go-openapi/validate v0.19.7
 	github.com/golang/mock v1.6.0
 	github.com/gorilla/handlers v1.5.1

@@ -1,4 +1,6 @@
-v8.0.1
+v8.0.2
+
+v8.0.2: Fix potential nil pointer panic when implementing your own custom RetryPolicy
 
 v8.0.1: Remove the dependency of `wag` on `samples`. This should allow other packages to import
 `github.com/Clever/wag/v8` e.g. to use the `swagger` package.
