@@ -57,3 +57,36 @@ func TestGenerateErrorDeclaration(t *testing.T) {
 		})
 	})
 }
+
+func TestGeneratePropertyDeclaration(t *testing.T) {
+	t.Run("key has no special chars and is not required", func(t *testing.T) {
+		assert.Equal(t,
+			`asdf?: any;`,
+			generatePropertyDeclaration("asdf", JSType("any"), false),
+		)
+	})
+	t.Run("key has no special chars and is required", func(t *testing.T) {
+		assert.Equal(t,
+			`asdf: any;`,
+			generatePropertyDeclaration("asdf", JSType("any"), true),
+		)
+	})
+	t.Run("key has a dash and is not required", func(t *testing.T) {
+		assert.Equal(t,
+			`"as-df"?: any;`,
+			generatePropertyDeclaration("as-df", JSType("any"), false),
+		)
+	})
+	t.Run("key has a dash and is required", func(t *testing.T) {
+		assert.Equal(t,
+			`"as-df": any;`,
+			generatePropertyDeclaration("as-df", JSType("any"), true),
+		)
+	})
+	t.Run("key has an emoji", func(t *testing.T) {
+		assert.Equal(t,
+			`"🤩": any;`,
+			generatePropertyDeclaration("🤩", JSType("any"), true),
+		)
+	})
+}
