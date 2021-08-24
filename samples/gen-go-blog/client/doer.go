@@ -144,7 +144,7 @@ func (d *retryDoer) Do(c *http.Client, r *http.Request) (*http.Response, error) 
 		if retries == len(backoffs) || !retryPolicy.Retry(r, resp, err) {
 			break
 		}
-		// Close the response body and try again only if response is not nil
+		// Close the response body if response is not nil
 		if resp != nil {
 			resp.Body.Close()
 		}
