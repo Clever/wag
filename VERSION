@@ -1,4 +1,6 @@
-v8.0.2
+v8.0.3
+
+v8.0.3: Fix generated TS types (index.d.ts) when fields might not be valid JS identifiers.
 
 v8.0.2: Fix potential nil pointer panic when implementing your own custom RetryPolicy
 

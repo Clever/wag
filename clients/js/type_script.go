@@ -2,6 +2,7 @@ package jsclient
 
 import (
 	"fmt"
+	"regexp"
 	"sort"
 	"strings"
 	"text/template"
@@ -85,8 +86,17 @@ func generatePropertyDeclarations(schema *spec.Schema, refPrefix string) (
 	return typeDeclarations, nil
 }
 
+// JS identifiers must begin with $, _, or a letter, and subsequent characters can also be numbers.
+// Unfortunately,"letter" here is somewhat complicated and defined by a list of ranges within Unicode.
+// For our case, we'll be simplify and be a bit cautious and quote anything that isn't ASCII.
+var simpleJSIdentifierRegexp = regexp.MustCompile(`^[$_a-zA-Z][$_a-zA-Z0-9]*$`)
+
 // Given a property key, type, and requirement generate a property declaration
 func generatePropertyDeclaration(key string, typeForKey JSType, required bool) string {
+	if !simpleJSIdentifierRegexp.MatchString(key) {
+		key = `"` + key + `"`
+	}
+
 	if required {
 		return fmt.Sprintf("%s: %s;", key, typeForKey)
 	}
