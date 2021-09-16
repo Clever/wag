@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
@@ -31,6 +33,11 @@ type Event struct {
 
 // Validate validates this event
 func (m *Event) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this event based on context it is used
+func (m *Event) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
@@ -21,6 +23,11 @@ type NotFound struct {
 
 // Validate validates this not found
 func (m *NotFound) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this not found based on context it is used
+func (m *NotFound) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

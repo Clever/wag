@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -42,7 +44,6 @@ func (m *AuthorsResponse) Validate(formats strfmt.Registry) error {
 }
 
 func (m *AuthorsResponse) validateAuthorSet(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.AuthorSet) { // not required
 		return nil
 	}
@@ -60,13 +61,58 @@ func (m *AuthorsResponse) validateAuthorSet(formats strfmt.Registry) error {
 }
 
 func (m *AuthorsResponse) validateMetadata(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Metadata) { // not required
 		return nil
 	}
 
 	if m.Metadata != nil {
 		if err := m.Metadata.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metadata")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this authors response based on the context it is used
+func (m *AuthorsResponse) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAuthorSet(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMetadata(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AuthorsResponse) contextValidateAuthorSet(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.AuthorSet != nil {
+		if err := m.AuthorSet.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("authorSet")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *AuthorsResponse) contextValidateMetadata(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Metadata != nil {
+		if err := m.Metadata.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("metadata")
 			}

@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -60,7 +62,6 @@ func (m *Thing) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Thing) validateCategory(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Category) { // not required
 		return nil
 	}
@@ -76,7 +77,6 @@ func (m *Thing) validateCategory(formats strfmt.Registry) error {
 }
 
 func (m *Thing) validateCreatedAt(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.CreatedAt) { // not required
 		return nil
 	}
@@ -89,13 +89,56 @@ func (m *Thing) validateCreatedAt(formats strfmt.Registry) error {
 }
 
 func (m *Thing) validateNestedObject(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.NestedObject) { // not required
 		return nil
 	}
 
 	if m.NestedObject != nil {
 		if err := m.NestedObject.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nestedObject")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this thing based on the context it is used
+func (m *Thing) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCategory(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNestedObject(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Thing) contextValidateCategory(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := m.Category.ContextValidate(ctx, formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("category")
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (m *Thing) contextValidateNestedObject(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.NestedObject != nil {
+		if err := m.NestedObject.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("nestedObject")
 			}

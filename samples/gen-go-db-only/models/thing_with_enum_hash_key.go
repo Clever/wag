@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -52,7 +54,6 @@ func (m *ThingWithEnumHashKey) Validate(formats strfmt.Registry) error {
 }
 
 func (m *ThingWithEnumHashKey) validateBranch(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Branch) { // not required
 		return nil
 	}
@@ -68,7 +69,6 @@ func (m *ThingWithEnumHashKey) validateBranch(formats strfmt.Registry) error {
 }
 
 func (m *ThingWithEnumHashKey) validateDate(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Date) { // not required
 		return nil
 	}
@@ -81,12 +81,37 @@ func (m *ThingWithEnumHashKey) validateDate(formats strfmt.Registry) error {
 }
 
 func (m *ThingWithEnumHashKey) validateDate2(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Date2) { // not required
 		return nil
 	}
 
 	if err := validate.FormatOf("date2", "body", "date-time", m.Date2.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this thing with enum hash key based on the context it is used
+func (m *ThingWithEnumHashKey) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateBranch(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ThingWithEnumHashKey) contextValidateBranch(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := m.Branch.ContextValidate(ctx, formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("branch")
+		}
 		return err
 	}
 

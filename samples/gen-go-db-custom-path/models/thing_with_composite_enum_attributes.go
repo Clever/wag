@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -19,7 +21,7 @@ type ThingWithCompositeEnumAttributes struct {
 
 	// branch ID
 	// Required: true
-	BranchID Branch `json:"branchID"`
+	BranchID *Branch `json:"branchID"`
 
 	// date
 	// Required: true
@@ -55,11 +57,21 @@ func (m *ThingWithCompositeEnumAttributes) Validate(formats strfmt.Registry) err
 
 func (m *ThingWithCompositeEnumAttributes) validateBranchID(formats strfmt.Registry) error {
 
-	if err := m.BranchID.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("branchID")
-		}
+	if err := validate.Required("branchID", "body", m.BranchID); err != nil {
 		return err
+	}
+
+	if err := validate.Required("branchID", "body", m.BranchID); err != nil {
+		return err
+	}
+
+	if m.BranchID != nil {
+		if err := m.BranchID.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("branchID")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -82,6 +94,34 @@ func (m *ThingWithCompositeEnumAttributes) validateName(formats strfmt.Registry)
 
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this thing with composite enum attributes based on the context it is used
+func (m *ThingWithCompositeEnumAttributes) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateBranchID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ThingWithCompositeEnumAttributes) contextValidateBranchID(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.BranchID != nil {
+		if err := m.BranchID.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("branchID")
+			}
+			return err
+		}
 	}
 
 	return nil

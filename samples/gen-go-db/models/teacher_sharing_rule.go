@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
@@ -36,6 +38,11 @@ type TeacherSharingRule struct {
 
 // Validate validates this teacher sharing rule
 func (m *TeacherSharingRule) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this teacher sharing rule based on context it is used
+func (m *TeacherSharingRule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
