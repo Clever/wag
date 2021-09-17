@@ -30,7 +30,7 @@ func TestValidatePathParams(t *testing.T) {
 	op.Responses = &spec.Responses{}
 	err := validateOp(&s, "/books", "GET", &op)
 	assert.Error(t, err)
-	assert.Equal(t, "paramName for GET /books is a path parameter so it must be required", err.Error())
+	assert.Equal(t, "invalid params: paramName for GET /books is a path parameter so it must be required", err.Error())
 }
 
 func TestValidateRawRef(t *testing.T) {

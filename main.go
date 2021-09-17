@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -84,19 +83,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error loading swagger file: %s", err)
 	}
-
-	bs, err := doc.Spec().MarshalJSON()
-	if err != nil {
-		log.Fatal("TODO")
-	}
+	swaggerSpec := *doc.Spec()
 
 	if err := validation.Validate(*doc, conf.generateJSClient); err != nil {
 		log.Fatalf("Swagger file not valid: %s", err)
-	}
-
-	var swaggerSpec spec.Swagger
-	if err := json.Unmarshal(bs, &swaggerSpec); err != nil {
-		log.Fatal("TODO")
 	}
 
 	err = swagger.ValidateResponses(swaggerSpec)
