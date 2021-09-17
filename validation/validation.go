@@ -1,6 +1,7 @@
 package validation
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"regexp"
@@ -50,14 +51,18 @@ func validateOp(s *spec.Swagger, path, method string, op *spec.Operation) error 
 	}
 
 	if err := validateResponses(path, method, op); err != nil {
-		return err
+		return fmt.Errorf("invalid response: %v", err)
 	}
 
 	if err := validateParams(path, method, op); err != nil {
-		return err
+		return fmt.Errorf("invalid params: %v", err)
 	}
 
-	return validatePaging(s, path, method, op)
+	if err := validatePaging(s, path, method, op); err != nil {
+		return fmt.Errorf("invalid paging: %v", err)
+	}
+
+	return nil
 }
 
 func validateResponses(path, method string, op *spec.Operation) error {
@@ -76,6 +81,19 @@ func validateResponses(path, method string, op *spec.Operation) error {
 				statusCode, refStr, path, method, statusCode, refStr)
 		}
 
+		if response.Schema != nil {
+			schemaAsJSON, _ := response.Schema.MarshalJSON()
+			// TODO - with new deps, it seems scheamAsJSON has inlined the $ref
+			// on the new deps, this line outputs the definition of Book:
+			// {"type":"object","properties":{"author":{"type":"string","format":"mongo-id"},"genre":{"type":"string","enum":["scifi","mystery","horror"]},"id":{"type":"integer"},"name":{"type":"string"},"other":{"additionalProperties":{"type":"string"}},"otherArray":{"additionalProperties":{"type":"array","items":{"type":"string"}}}}}
+			// 2021/09/16 22:06:12 Swagger file not valid: invalid operation GET on path /books2/{id}: invalid response: responses.200 for GET /books2/{id}: Cannot define complex data types inline. They must be defined in the #/definitions section of the swagger yaml.
+			// on old deps, it outputs this:
+			// {"$ref":"#/definitions/Book"}
+			fmt.Printf("calling TypeFromSchema on:\n%s\n", string(schemaAsJSON))
+		} else {
+			fmt.Printf("calling TypeFromSchema on:\nnil\n")
+
+		}
 		_, err := swagger.TypeFromSchema(response.Schema, false)
 		if err != nil {
 			return fmt.Errorf("responses.%d for %s %s: %s", statusCode, method, path, err.Error())
@@ -206,12 +224,42 @@ func validateDefinitions(definitions map[string]spec.Schema) error {
 	return nil
 }
 
+func SpecClone(d *loads.Document) (*spec.Swagger, error) {
+	s := d.Spec()
+
+	// calling validate.Spec(&d) modifies the document AND the spec, expanding $refs
+	// We need the un-expanded spec because we use the target of the ref to create type signatures
+	// Luckily, we can make a deep copy of the spec pretty straightforwardly by saving it as JSON then
+	// reloading it from JSON after.
+	bs, err := s.MarshalJSON()
+	if err != nil {
+		return nil, fmt.Errorf("marshalling spec to JSON: %v", err)
+	}
+
+	if err := json.Unmarshal(bs, s); err != nil {
+		return nil, fmt.Errorf("unmarshalling spec from JSON: %v", err)
+	}
+
+	return s, nil
+}
+
 // Validate returns an error if the swagger file is invalid or uses fields
 // we don't support. Note that this isn't a comprehensive check for all things
 // we don't support, so this may not return an error, but the Swagger file might
 // have values we don't support
+// This function modifies
 func Validate(d loads.Document, generateJSClient bool) error {
-	s := d.Spec()
+
+	s, err := SpecClone(&d)
+
+	// calling validate.Spec(&d) modifies the document AND the spec, expanding $refs
+	// We need the un-expanded spec because we use the target of the ref to create type signatures
+	// Luckily, we can make a deep copy of the spec pretty straightforwardly by saving it as JSON then
+	// reloading it from JSON after.
+	bs, err := s.MarshalJSON()
+	if err != nil {
+		return fmt.Errorf("marshalling spec to JSON: %v", err)
+	}
 
 	goSwaggerError := validate.Spec(&d, strfmt.Default)
 	if goSwaggerError != nil {
@@ -220,6 +268,10 @@ func Validate(d loads.Document, generateJSClient bool) error {
 			str += fmt.Sprintf("- %s\n", desc)
 		}
 		return errors.New(str)
+	}
+
+	if err := json.Unmarshal(bs, s); err != nil {
+		return fmt.Errorf("unmarshalling spec from JSON: %v", err)
 	}
 
 	if s.Swagger != "2.0" {
@@ -270,7 +322,7 @@ func Validate(d loads.Document, generateJSClient bool) error {
 		}
 		for op, opItem := range pathItemOperations(pathItem) {
 			if err := validateOp(s, path, op, opItem); err != nil {
-				return err
+				return fmt.Errorf("invalid operation %s on path %s: %v", op, path, err)
 			}
 		}
 	}
