@@ -60,6 +60,12 @@ type Interface interface {
     Scan{{ $modelName }}sBy{{ $indexName }}(ctx context.Context, input Scan{{ $modelName }}sBy{{ $indexName }}Input, fn func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool) error
     {{- end }}
     {{- end }}
+    {{- range $transactWithSchemaName := $xdbConfig.EnableTransactions }}
+    {{- $transactWithModelName := pascalize $transactWithSchemaName }}
+    // TransactSave{{ $modelName }}And{{ $transactWithModelName }} saves {{ $modelName }} and {{ $transactWithModelName }} as an atomic transaction.
+    // Use the condition map to indicate pre-transaction condition requirements when updating an item; key = attribute JSON key, use 'x.y' notation for nested properties
+    TransactSave{{ $modelName }}And{{ $transactWithModelName }}(ctx context.Context, m1 models.{{ $modelName }}, m1ConditionMap map[string]interface{}, m2 models.{{ $transactWithModelName }}, m2ConditionMap map[string]interface{}) error
+    {{- end }}
 
     {{ end }}
 }

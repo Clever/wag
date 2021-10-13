@@ -182,6 +182,15 @@ func (d DB) Scan{{ $modelName }}sBy{{ $indexName }}(ctx context.Context, input d
 }
 {{- end }}
 {{- end }}
+
+{{- range $transactWithSchemaName := $xdbConfig.EnableTransactions }}
+{{- $transactWithModelName := pascalize $transactWithSchemaName }}
+// TransactSave{{ $modelName }}And{{ $transactWithModelName }} saves {{ $modelName }} and {{ $transactWithModelName }} as a transaction.
+func (d DB) TransactSave{{ $modelName }}And{{ $transactWithModelName }}(ctx context.Context, m1 models.{{ $modelName }}, m1ConditionMap map[string]interface{}, m2 models.{{ $transactWithModelName }}, m2ConditionMap map[string]interface{}) error {
+  return d.{{ $modelNameCamel }}Table.transactSave{{ $modelName }}And{{ $transactWithModelName }}(ctx, m1, m1ConditionMap, m2, m2ConditionMap)
+}
+{{- end }}
+
 {{- end }}
 
 func toDynamoTimeString(d strfmt.DateTime) string {
