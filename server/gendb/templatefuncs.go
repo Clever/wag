@@ -109,6 +109,9 @@ var funcMap = template.FuncMap(map[string]interface{}{
 			return ""
 		}
 	},
+	"transactionsEnabled": func(config XDBConfig) bool {
+		return len(config.EnableTransactions) > 0
+	},
 	"findCompositeAttribute":                              findCompositeAttribute,
 	"indexContainsCompositeAttribute":                     indexContainsCompositeAttribute,
 	"indexContainsNonCompositeAttribute":                  indexContainsNonCompositeAttribute,
@@ -286,6 +289,16 @@ var funcMap = template.FuncMap(map[string]interface{}{
 			}
 		}
 		return attributeNames
+	},
+	"configForSchemaName": func(configs []XDBConfig, schemaName string) XDBConfig {
+		var config XDBConfig
+		for _, c := range configs {
+			if c.SchemaName == schemaName {
+				config = c
+				break
+			}
+		}
+		return config
 	},
 	"nonPKSecondaryStringProperties": func(config XDBConfig) []string {
 		// find attributes in non-primary indexes that are strings.
