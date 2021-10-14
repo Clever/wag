@@ -943,16 +943,16 @@ func buildCondExpr(conditionMap map[string]interface{}) (*string, map[string]*dy
 	var condExpr *string
 	var exprVals map[string]*dynamodb.AttributeValue
 	var exprNames map[string]*string
-	if conditionMap != nil && len(conditionMap) > 0 {
-		c := 0
+	if len(conditionMap) > 0 {
+		condCounter := 0
 		var exprCondBuilder expression.ConditionBuilder
 		for k, v := range conditionMap {
-			if c == 0 {
+			if condCounter == 0 {
 				exprCondBuilder = expression.Name(k).Equal(expression.Value(v))
 			} else {
 				expression.And(exprCondBuilder, expression.Name(k).Equal(expression.Value(v)))
 			}
-      c++
+      condCounter++
 		}
     exprBuilder, err := expression.NewBuilder().WithCondition(exprCondBuilder).Build()
     if err != nil {
