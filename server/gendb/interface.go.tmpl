@@ -4,7 +4,10 @@ import (
 	"context"
 
 	"{{ .PackageName }}/models"
-	{{- if anyTableUsesDateTime .XDBConfigs }}
+	{{- if anyTableHasTransactionsEnabled .XDBConfigs }}
+  "github.com/aws/aws-sdk-go/service/dynamodb/expression"
+  {{- end }}
+  {{- if anyTableUsesDateTime .XDBConfigs }}
 	"github.com/go-openapi/strfmt"
         {{- end -}}
 	{{- if anyTableAllowsScans .XDBConfigs }}
@@ -63,8 +66,8 @@ type Interface interface {
     {{- range $transactWithSchemaName := $xdbConfig.EnableTransactions }}
     {{- $transactWithModelName := pascalize $transactWithSchemaName }}
     // TransactSave{{ $modelName }}And{{ $transactWithModelName }} saves {{ $modelName }} and {{ $transactWithModelName }} as an atomic transaction.
-    // Use the condition map to indicate pre-transaction condition requirements when updating an item; key = attribute JSON key, use 'x.y' notation for nested properties
-    TransactSave{{ $modelName }}And{{ $transactWithModelName }}(ctx context.Context, m1 models.{{ $modelName }}, m1ConditionMap map[string]interface{}, m2 models.{{ $transactWithModelName }}, m2ConditionMap map[string]interface{}) error
+    // Use the optional condition parameters to require pre-transaction conditions for each put
+    TransactSave{{ $modelName }}And{{ $transactWithModelName }}(ctx context.Context, m1 models.{{ $modelName }}, m1Conditions *expression.ConditionBuilder, m2 models.{{ $transactWithModelName }}, m2Conditions *expression.ConditionBuilder) error
     {{- end }}
 
     {{ end }}

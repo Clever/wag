@@ -890,13 +890,13 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}sBy{{ $computedIndexName }}(c
 {{- if transactionsEnabled $xdbConfig }}
 {{- range $transactWithSchemaName := $xdbConfig.EnableTransactions }}
 {{- $transactWithModelName := pascalize $transactWithSchemaName }}
-func (t {{ $modelName }}Table) transactSave{{ $modelName }}And{{ $transactWithModelName }}(ctx context.Context, m1 models.{{ $modelName }}, m1ConditionMap map[string]interface{}, m2 models.{{ $transactWithModelName }}, m2ConditionMap map[string]interface{}) error {
+func (t {{ $modelName }}Table) transactSave{{ $modelName }}And{{ $transactWithModelName }}(ctx context.Context, m1 models.{{ $modelName }}, m1Conditions *expression.ConditionBuilder, m2 models.{{ $transactWithModelName }}, m2Conditions *expression.ConditionBuilder) error {
   data1, err := encode{{ $modelName }}(m1)
   if err != nil {
     return err
   }
 
-  m1CondExpr, m1ExprVals, m1ExprNames, err := buildCondExpr(m1ConditionMap)
+  m1CondExpr, m1ExprVals, m1ExprNames, err := buildCondExpr(m1Conditions)
   if err != nil {
     return err
   }
@@ -906,7 +906,7 @@ func (t {{ $modelName }}Table) transactSave{{ $modelName }}And{{ $transactWithMo
     return err
   }
 
-  m2CondExpr, m2ExprVals, m2ExprNames, err := buildCondExpr(m2ConditionMap)
+  m2CondExpr, m2ExprVals, m2ExprNames, err := buildCondExpr(m2Conditions)
   if err != nil {
     return err
   }
@@ -939,22 +939,12 @@ func (t {{ $modelName }}Table) transactSave{{ $modelName }}And{{ $transactWithMo
 }
 {{- end }}
 
-func buildCondExpr(conditionMap map[string]interface{}) (*string, map[string]*dynamodb.AttributeValue, map[string]*string, error) {
+func buildCondExpr(conditions *expression.ConditionBuilder) (*string, map[string]*dynamodb.AttributeValue, map[string]*string, error) {
 	var condExpr *string
 	var exprVals map[string]*dynamodb.AttributeValue
 	var exprNames map[string]*string
-	if len(conditionMap) > 0 {
-		condCounter := 0
-		var exprCondBuilder expression.ConditionBuilder
-		for k, v := range conditionMap {
-			if condCounter == 0 {
-				exprCondBuilder = expression.Name(k).Equal(expression.Value(v))
-			} else {
-				expression.And(exprCondBuilder, expression.Name(k).Equal(expression.Value(v)))
-			}
-      condCounter++
-		}
-    exprBuilder, err := expression.NewBuilder().WithCondition(exprCondBuilder).Build()
+	if conditions != nil {
+    exprBuilder, err := expression.NewBuilder().WithCondition(*conditions).Build()
     if err != nil {
       return nil, nil, nil, err
     }

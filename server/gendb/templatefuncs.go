@@ -109,8 +109,14 @@ var funcMap = template.FuncMap(map[string]interface{}{
 			return ""
 		}
 	},
-	"transactionsEnabled": func(config XDBConfig) bool {
-		return len(config.EnableTransactions) > 0
+	"transactionsEnabled": tableHasTransactionsEnabled,
+	"anyTableHasTransactionsEnabled": func(configs []XDBConfig) bool {
+		for _, config := range configs {
+			if tableHasTransactionsEnabled(config) {
+				return true
+			}
+		}
+		return false
 	},
 	"findCompositeAttribute":                              findCompositeAttribute,
 	"indexContainsCompositeAttribute":                     indexContainsCompositeAttribute,
@@ -623,4 +629,8 @@ func tableUsesDateTime(config XDBConfig) bool {
 
 func tableAllowsScans(config XDBConfig) bool {
 	return config.AllowPrimaryIndexScan || (len(config.AllowSecondaryIndexScan) > 0)
+}
+
+func tableHasTransactionsEnabled(config XDBConfig) bool {
+	return len(config.EnableTransactions) > 0
 }

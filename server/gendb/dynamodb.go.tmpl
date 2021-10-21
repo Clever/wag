@@ -8,6 +8,9 @@ import (
   "{{ .PackageName }}/models"
   "{{ .PackageName }}/{{ .OutputPath}}"
   "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	{{- if anyTableHasTransactionsEnabled .XDBConfigs }}
+  "github.com/aws/aws-sdk-go/service/dynamodb/expression"
+  {{- end }}
   "github.com/go-openapi/strfmt"
 )
 
@@ -186,8 +189,8 @@ func (d DB) Scan{{ $modelName }}sBy{{ $indexName }}(ctx context.Context, input d
 {{- range $transactWithSchemaName := $xdbConfig.EnableTransactions }}
 {{- $transactWithModelName := pascalize $transactWithSchemaName }}
 // TransactSave{{ $modelName }}And{{ $transactWithModelName }} saves {{ $modelName }} and {{ $transactWithModelName }} as a transaction.
-func (d DB) TransactSave{{ $modelName }}And{{ $transactWithModelName }}(ctx context.Context, m1 models.{{ $modelName }}, m1ConditionMap map[string]interface{}, m2 models.{{ $transactWithModelName }}, m2ConditionMap map[string]interface{}) error {
-  return d.{{ $modelNameCamel }}Table.transactSave{{ $modelName }}And{{ $transactWithModelName }}(ctx, m1, m1ConditionMap, m2, m2ConditionMap)
+func (d DB) TransactSave{{ $modelName }}And{{ $transactWithModelName }}(ctx context.Context, m1 models.{{ $modelName }}, m1Conditions *expression.ConditionBuilder, m2 models.{{ $transactWithModelName }}, m2Conditions *expression.ConditionBuilder) error {
+  return d.{{ $modelNameCamel }}Table.transactSave{{ $modelName }}And{{ $transactWithModelName }}(ctx, m1, m1Conditions, m2, m2Conditions)
 }
 {{- end }}
 
