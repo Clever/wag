@@ -10,11 +10,11 @@ require (
 	github.com/aws/aws-sdk-go v1.38.25
 	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b
 	github.com/go-errors/errors v1.1.1
-	github.com/go-openapi/errors v0.19.4
+	github.com/go-openapi/errors v0.19.9
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
-	github.com/go-openapi/strfmt v0.19.5
+	github.com/go-openapi/strfmt v0.19.11
 	github.com/go-openapi/swag v0.19.15
-	github.com/go-openapi/validate v0.19.7
+	github.com/go-openapi/validate v0.19.15
 	github.com/golang/mock v1.6.0
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
