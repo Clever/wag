@@ -1,4 +1,6 @@
-v8.1.0
+v8.1.1
+
+v8.1.1: Revert update of open-api spec dependency bump
 
 v8.1.0: Add dynamodb codegen support for same and cross table transactions
 
