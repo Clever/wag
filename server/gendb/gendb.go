@@ -37,6 +37,9 @@ type XDBConfig struct {
 	// DynamoDB configuration.
 	DynamoDB AWSDynamoDBTable
 
+	// EnableTransactions determines which schemas this schema will be able to perform transactions with. It only needs to be set for one per pair.
+	EnableTransactions []string
+
 	// SwaggerSpec, Schema and SchemaName that the config was contained within.
 	SwaggerSpec spec.Swagger
 	Schema      spec.Schema
@@ -51,7 +54,7 @@ type CompositeAttribute struct {
 }
 
 // Validate checks that the user enter a valid x-db config.
-func (config XDBConfig) Validate() error {
+func (config XDBConfig) Validate(schemaNames []string) error {
 	// check that all attribute names show up in the schema or in composite attribute defs.
 	for _, ks := range config.DynamoDB.KeySchema {
 		if err := config.attributeNameIsDefined(ks.AttributeName); err != nil {
@@ -63,6 +66,12 @@ func (config XDBConfig) Validate() error {
 			if err := config.attributeNameIsDefined(ks.AttributeName); err != nil {
 				return err
 			}
+		}
+	}
+	// check that the transaction config is valid i.e. each schema name is valid
+	for _, t := range config.EnableTransactions {
+		if !contains(t, schemaNames) {
+			return fmt.Errorf("invalid transaction config for %s: no matching schema %s", config.SchemaName, t)
 		}
 	}
 	return nil
@@ -126,12 +135,17 @@ func findCompositeAttribute(config XDBConfig, attributeName string) *CompositeAt
 
 // GenerateDB generates DB code for schemas annotated with the x-db extension.
 func GenerateDB(packageName, packagePath string, s *spec.Swagger, outputPath string) error {
+	var schemaNames []string
+	for schemaName := range s.Definitions {
+		schemaNames = append(schemaNames, schemaName)
+	}
+
 	var xdbConfigs []XDBConfig
 	for schemaName, schema := range s.Definitions {
 		if config, err := DecodeConfig(schemaName, schema, *s); err != nil {
 			return err
 		} else if config != nil {
-			if err := config.Validate(); err != nil {
+			if err := config.Validate(schemaNames); err != nil {
 				return err
 			}
 			xdbConfigs = append(xdbConfigs, *config)

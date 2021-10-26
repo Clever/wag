@@ -4,7 +4,10 @@ import (
 	"context"
 
 	"{{ .PackageName }}/models"
-	{{- if anyTableUsesDateTime .XDBConfigs }}
+	{{- if anyTableHasTransactionsEnabled .XDBConfigs }}
+  "github.com/aws/aws-sdk-go/service/dynamodb/expression"
+  {{- end }}
+  {{- if anyTableUsesDateTime .XDBConfigs }}
 	"github.com/go-openapi/strfmt"
         {{- end -}}
 	{{- if anyTableAllowsScans .XDBConfigs }}
@@ -59,6 +62,12 @@ type Interface interface {
     // Scan{{ $modelName }}sBy{{ $indexName }} runs a scan on the {{ $indexName }} index.
     Scan{{ $modelName }}sBy{{ $indexName }}(ctx context.Context, input Scan{{ $modelName }}sBy{{ $indexName }}Input, fn func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool) error
     {{- end }}
+    {{- end }}
+    {{- range $transactWithSchemaName := $xdbConfig.EnableTransactions }}
+    {{- $transactWithModelName := pascalize $transactWithSchemaName }}
+    // TransactSave{{ $modelName }}And{{ $transactWithModelName }} saves {{ $modelName }} and {{ $transactWithModelName }} as an atomic transaction.
+    // Use the optional condition parameters to require pre-transaction conditions for each put
+    TransactSave{{ $modelName }}And{{ $transactWithModelName }}(ctx context.Context, m1 models.{{ $modelName }}, m1Conditions *expression.ConditionBuilder, m2 models.{{ $transactWithModelName }}, m2Conditions *expression.ConditionBuilder) error
     {{- end }}
 
     {{ end }}

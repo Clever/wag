@@ -26,6 +26,9 @@ import (
   "github.com/aws/aws-sdk-go/service/dynamodb"
   "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
   "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+  {{- if transactionsEnabled $xdbConfig }}
+  "github.com/aws/aws-sdk-go/service/dynamodb/expression"
+  {{- end }}
   "github.com/go-openapi/strfmt"
 )
 
@@ -883,6 +886,77 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}sBy{{ $computedIndexName }}(c
   return err
 }
 {{- end }}
+
+{{- if transactionsEnabled $xdbConfig }}
+{{- range $transactWithSchemaName := $xdbConfig.EnableTransactions }}
+{{- $transactWithModelName := pascalize $transactWithSchemaName }}
+func (t {{ $modelName }}Table) transactSave{{ $modelName }}And{{ $transactWithModelName }}(ctx context.Context, m1 models.{{ $modelName }}, m1Conditions *expression.ConditionBuilder, m2 models.{{ $transactWithModelName }}, m2Conditions *expression.ConditionBuilder) error {
+  data1, err := encode{{ $modelName }}(m1)
+  if err != nil {
+    return err
+  }
+
+  m1CondExpr, m1ExprVals, m1ExprNames, err := buildCondExpr(m1Conditions)
+  if err != nil {
+    return err
+  }
+
+  data2, err := encode{{ $transactWithModelName }}(m2)
+  if err != nil {
+    return err
+  }
+
+  m2CondExpr, m2ExprVals, m2ExprNames, err := buildCondExpr(m2Conditions)
+  if err != nil {
+    return err
+  }
+
+	input := &dynamodb.TransactWriteItemsInput{
+		TransactItems: []*dynamodb.TransactWriteItem{
+			{
+				Put: &dynamodb.Put{
+          TableName: aws.String(t.name()),
+					Item:      data1,
+					ConditionExpression:       m1CondExpr,
+					ExpressionAttributeValues: m1ExprVals,
+					ExpressionAttributeNames:  m1ExprNames,
+				},
+			},
+			{
+				Put: &dynamodb.Put{
+    			TableName: aws.String(fmt.Sprintf("%%s-{{ $transactWithModelName }}s", t.Prefix)),
+					Item:      data2,
+					ConditionExpression:       m2CondExpr,
+					ExpressionAttributeValues: m2ExprVals,
+					ExpressionAttributeNames:  m2ExprNames,
+				},
+			},
+		},
+	}  
+  _, err = t.DynamoDBAPI.TransactWriteItemsWithContext(ctx, input)
+
+  return err
+}
+{{- end }}
+
+func buildCondExpr(conditions *expression.ConditionBuilder) (*string, map[string]*dynamodb.AttributeValue, map[string]*string, error) {
+	var condExpr *string
+	var exprVals map[string]*dynamodb.AttributeValue
+	var exprNames map[string]*string
+	if conditions != nil {
+    exprBuilder, err := expression.NewBuilder().WithCondition(*conditions).Build()
+    if err != nil {
+      return nil, nil, nil, err
+    }
+    condExpr = exprBuilder.Condition()
+    exprVals = exprBuilder.Values()
+    exprNames = exprBuilder.Names()
+	}
+  return condExpr, exprVals, exprNames, nil
+}
+
+{{- end }}
+
 {{ end }}
 
 // encode{{ $modelName }} encodes a {{ $modelName }} as a DynamoDB map of attribute values.

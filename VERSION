@@ -1,4 +1,6 @@
-v8.0.3
+v8.1.0
+
+v8.1.0: Add dynamodb codegen support for same and cross table transactions
 
 v8.0.3: Fix generated TS types (index.d.ts) when fields might not be valid JS identifiers.
 
@@ -34,7 +36,7 @@ which attributes are set, should not be considered stable.
 - v7.0.0
 
 v7 removes all references to OpenTracing and begins adding OpenTelemetry to replace it. For now,
-OpenTelemetry parts should be considered *unstable*, especially as the OpenTelemetry Go SDKs are
+OpenTelemetry parts should be considered _unstable_, especially as the OpenTelemetry Go SDKs are
 themselves unstable.
 
 Support for the glide package manager for Go is also removed. Previously, wag could update your

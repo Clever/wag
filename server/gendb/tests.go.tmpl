@@ -27,6 +27,7 @@ func mustTime(s string) strfmt.DateTime {
 {{- end }}
 
 func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
+  {{- $xdbConfigs := .XDBConfigs }}
   {{- range $xdbConfig := .XDBConfigs }}
   {{- $modelName := pascalize $xdbConfig.SchemaName }}
   t.Run("Get{{ $modelName }}", Get{{ $modelName }}(dbFactory(), t))
@@ -48,6 +49,10 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
   {{- end }}
   {{- if indexAllowsScans $xdbConfig $gsi.IndexName }}
   t.Run("Scan{{ $modelName }}sBy{{ $computedIndexName }}", Scan{{ $modelName }}sBy{{ $computedIndexName }}(dbFactory(), t))
+  {{- end }}
+  {{- range $transactWithSchemaName := $xdbConfig.EnableTransactions }}
+  {{- $transactWithModelName := pascalize $transactWithSchemaName }}
+  t.Run("TransactSave{{ $modelName }}And{{ $transactWithModelName }}", TransactSave{{ $modelName }}And{{ $transactWithModelName }}(dbFactory(), t))
   {{- end }}
   {{- end }}
         {{- end }}
@@ -1114,5 +1119,27 @@ func Scan{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.
   }
 }
 {{- end }}
+
+{{- range $transactWithSchemaName := $xdbConfig.EnableTransactions }}
+{{- $transactWithModelName := pascalize $transactWithSchemaName }}
+{{- $transactWithConfig := configForSchemaName $xdbConfigs $transactWithSchemaName }}
+func TransactSave{{ $modelName }}And{{ $transactWithModelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
+  return func(t *testing.T) {
+    ctx := context.Background()
+    m1 := models.{{ $modelName }}{
+      {{- range $attributeName := modelAttributeNames $xdbConfig }}
+        {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+      {{- end }}
+    }
+    m2 := models.{{ $transactWithModelName }}{
+      {{- range $attributeName := modelAttributeNames $transactWithConfig }}
+        {{ pascalize $attributeName }}: {{ exampleValueForAttribute $transactWithConfig $attributeName 1 }},
+      {{- end }}
+    }
+    require.Nil(t, s.TransactSave{{ $modelName }}And{{ $transactWithModelName }}(ctx, m1, nil, m2, nil))
+  }
+}
+{{- end }}
+
 {{ end }}
 {{ end }}

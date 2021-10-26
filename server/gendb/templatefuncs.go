@@ -109,6 +109,15 @@ var funcMap = template.FuncMap(map[string]interface{}{
 			return ""
 		}
 	},
+	"transactionsEnabled": tableHasTransactionsEnabled,
+	"anyTableHasTransactionsEnabled": func(configs []XDBConfig) bool {
+		for _, config := range configs {
+			if tableHasTransactionsEnabled(config) {
+				return true
+			}
+		}
+		return false
+	},
 	"findCompositeAttribute":                              findCompositeAttribute,
 	"indexContainsCompositeAttribute":                     indexContainsCompositeAttribute,
 	"indexContainsNonCompositeAttribute":                  indexContainsNonCompositeAttribute,
@@ -286,6 +295,16 @@ var funcMap = template.FuncMap(map[string]interface{}{
 			}
 		}
 		return attributeNames
+	},
+	"configForSchemaName": func(configs []XDBConfig, schemaName string) XDBConfig {
+		var config XDBConfig
+		for _, c := range configs {
+			if c.SchemaName == schemaName {
+				config = c
+				break
+			}
+		}
+		return config
 	},
 	"nonPKSecondaryStringProperties": func(config XDBConfig) []string {
 		// find attributes in non-primary indexes that are strings.
@@ -610,4 +629,8 @@ func tableUsesDateTime(config XDBConfig) bool {
 
 func tableAllowsScans(config XDBConfig) bool {
 	return config.AllowPrimaryIndexScan || (len(config.AllowSecondaryIndexScan) > 0)
+}
+
+func tableHasTransactionsEnabled(config XDBConfig) bool {
+	return len(config.EnableTransactions) > 0
 }
