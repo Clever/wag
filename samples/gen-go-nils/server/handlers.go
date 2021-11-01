@@ -178,6 +178,9 @@ func newNilCheckInput(r *http.Request) (*models.NilCheckInput, error) {
 	}
 
 	data, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return nil, fmt.Errorf("reading request body: %w", err)
+	}
 
 	if len(data) > 0 {
 		input.Body = &models.NilFields{}
