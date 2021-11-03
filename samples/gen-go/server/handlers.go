@@ -310,6 +310,9 @@ func newGetAuthorsWithPutInput(r *http.Request) (*models.GetAuthorsWithPutInput,
 	}
 
 	data, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return nil, fmt.Errorf("reading request body: %w", err)
+	}
 
 	if len(data) > 0 {
 		input.FavoriteBooks = &models.Book{}
@@ -641,6 +644,9 @@ func newCreateBookInput(r *http.Request) (*models.Book, error) {
 	_ = err
 
 	data, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return nil, fmt.Errorf("reading request body: %w", err)
+	}
 	if len(data) == 0 {
 		return nil, errors.New("request body is required, but was empty")
 	}
@@ -740,6 +746,9 @@ func newPutBookInput(r *http.Request) (*models.Book, error) {
 	_ = err
 
 	data, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return nil, fmt.Errorf("reading request body: %w", err)
+	}
 
 	if len(data) > 0 {
 		var input models.Book

@@ -606,6 +606,9 @@ type bodyParamTemplate struct {
 var bodyParamTemplateStr = `
 	{{ if not .IsBinary }}
 	data, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return nil, fmt.Errorf("reading request body: %%w", err)
+	}
 	{{if .Required}} if len(data) == 0 {
 		return nil, errors.New("request body is required, but was empty")
 	}{{end}}

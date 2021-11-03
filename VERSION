@@ -1,4 +1,6 @@
-v8.1.1
+v8.1.2
+
+v8.1.2: Check the return value of reading the request body.
 
 v8.1.1: Revert update of open-api spec dependency bump
 
