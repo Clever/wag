@@ -54,7 +54,7 @@ import models = SwaggerTest.Models
 declare class SwaggerTest {
   constructor(options: SwaggerTestOptions);
 
-  close();
+  close(): void;
   
   healthCheck(options?: RequestOptions, cb?: Callback<void>): Promise<void>
   

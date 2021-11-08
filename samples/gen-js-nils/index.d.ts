@@ -54,7 +54,7 @@ import models = NilTest.Models
 declare class NilTest {
   constructor(options: NilTestOptions);
 
-  close();
+  close(): void;
   
   nilCheck(params: models.NilCheckParams, options?: RequestOptions, cb?: Callback<void>): Promise<void>
   

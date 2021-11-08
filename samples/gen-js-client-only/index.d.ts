@@ -54,7 +54,7 @@ import models = SwaggerTest.Models
 declare class SwaggerTest {
   constructor(options: SwaggerTestOptions);
 
-  close();
+  close(): void;
   
   getAuthors(params: models.GetAuthorsParams, options?: RequestOptions, cb?: Callback<models.AuthorsResponse>): Promise<models.AuthorsResponse>
   getAuthorsIter(params: models.GetAuthorsParams, options?: RequestOptions): IterResult<ArrayInner<models.AuthorsResponse["authorSet"]["results"]>>
