@@ -1370,7 +1370,7 @@ import models = {{.ServiceName}}.Models
 declare class {{.ServiceName}} {
   constructor(options: {{.ServiceName}}Options);
 
-  close();
+  close(): void;
   {{range .MethodDecls}}
   {{.}}
   {{end}}
