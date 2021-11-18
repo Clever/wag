@@ -90,3 +90,22 @@ func TestGeneratePropertyDeclaration(t *testing.T) {
 		)
 	})
 }
+
+func TestMethodDeclWithHyphens(t *testing.T) {
+	//variable names with hyphens won't compile in ts, but they're really common in header variables.
+	//Convert x-csrf-token to XCSRFToken: string
+	param := spec.Parameter{}
+	param.Name = "hyphen-y-name"
+	param.Type = "string"
+	param.Required = true
+	param.In = "header"
+
+	op := spec.Operation{}
+	op.ID = "withHyphen"
+	op.Parameters = []spec.Parameter{param}
+	op.Responses = &spec.Responses{}
+
+	result, err := methodDecl(spec.Swagger{}, &op, "", "")
+	assert.NoError(t, err)
+	assert.Regexp(t, `withHyphen\(hyphenYName: string`, result)
+}

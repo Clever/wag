@@ -1061,7 +1061,7 @@ func methodDecl(s spec.Swagger, op *spec.Operation, path, method string) (string
 	if len(op.Parameters) == 0 {
 		params = ""
 	} else if len(op.Parameters) == 1 {
-		paramName := op.Parameters[0].Name
+		paramName := utils.CamelCase(op.Parameters[0].Name, false)
 		var paramType JSType
 		if op.Parameters[0].ParamProps.Schema != nil {
 			paramType, err = asJSType(op.Parameters[0].ParamProps.Schema, "")
