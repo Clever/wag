@@ -1,4 +1,5 @@
-v7.1.1
+v7.1.2
+- v7.1.2: Support TS methods with a single hyphenated header variable
 - v7.1.1: Add close() to TypeScript clients to release outstanding handles
 - v7.1.0: Properly generate TypeScript types for allOf
 - v7.0.1 bugfix --client-only not generating tracing files
