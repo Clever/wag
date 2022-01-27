@@ -15,7 +15,7 @@ require (
 	github.com/go-swagger/go-swagger v0.23.0
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.5.5 // indirect
-	github.com/kevinburke/go-bindata v3.22.0+incompatible
+	github.com/kevinburke/go-bindata v3.23.0+incompatible
 	github.com/pelletier/go-toml v1.9.1 // indirect
 	github.com/stretchr/testify v1.7.0
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce
