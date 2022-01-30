@@ -15,12 +15,12 @@ import (
 	"time"
 
 	"github.com/Clever/go-process-metrics/metrics"
+	"github.com/Clever/kayvee-go/v7/logger"
+	kvMiddleware "github.com/Clever/kayvee-go/v7/middleware"
 	"github.com/Clever/wag/samples/v8/gen-go-db-custom-path/tracing"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/kardianos/osext"
-	"gopkg.in/Clever/kayvee-go.v6/logger"
-	kvMiddleware "gopkg.in/Clever/kayvee-go.v6/middleware"
 )
 
 // Server defines a HTTP server that implements the Controller interface.

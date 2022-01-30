@@ -12,10 +12,10 @@ import (
 	"time"
 
 	discovery "github.com/Clever/discovery-go"
+	logger "github.com/Clever/kayvee-go/v7/logger"
 	"github.com/Clever/wag/samples/v8/gen-go-db/models"
 	"github.com/Clever/wag/samples/v8/gen-go-db/tracing"
 	"github.com/afex/hystrix-go/hystrix"
-	logger "gopkg.in/Clever/kayvee-go.v6/logger"
 )
 
 var _ = json.Marshal

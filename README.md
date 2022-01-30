@@ -110,11 +110,11 @@ The server interface defined in `gen-go/server/interface.go` has one method for 
 
 
 ### Logging
-  The [kayvee middleware logger](https://godoc.org/gopkg.in/Clever/kayvee-go.v6/middleware) is automatically added to the context object.
+  The [kayvee middleware logger](https://godoc.org/github.com/Clever/kayvee-go/v7/middleware) is automatically added to the context object.
   It can be pulled out of the context object and used via the kayvee `FromContext` method:
 
 ```go
-import "gopkg.in/Clever/kayvee-go.v6/logger"
+import "github.com/Clever/kayvee-go/v7/logger"
 ...
 logger.FromContext(ctx).Info(...)
 ```

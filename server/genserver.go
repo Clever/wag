@@ -75,8 +75,8 @@ func generateRouter(packageName, packagePath string, s spec.Swagger, paths *spec
 		"github.com/gorilla/handlers",
 		"github.com/gorilla/mux",
 		"github.com/kardianos/osext",
-		"gopkg.in/Clever/kayvee-go.v6/logger",
-		`kvMiddleware "gopkg.in/Clever/kayvee-go.v6/middleware"`,
+		"github.com/Clever/kayvee-go/v7/logger",
+		`kvMiddleware "github.com/Clever/kayvee-go/v7/middleware"`,
 	})
 	routerCode, err := templates.WriteTemplate(routerTemplateStr, template)
 	if err != nil {
@@ -189,7 +189,7 @@ func jsonMarshalNoError(i interface{}) string {
 func generateHandlers(packageName, packagePath string, s *spec.Swagger, paths *spec.Paths) error {
 	tmpl := handlerFileTemplate{
 		ImportStatements: swagger.ImportStatements([]string{"context", "github.com/gorilla/mux",
-			"gopkg.in/Clever/kayvee-go.v6/logger",
+			"github.com/Clever/kayvee-go/v7/logger",
 			"net/http", "strconv", "encoding/json", "strconv", "fmt", packageName + "/models",
 			"github.com/go-openapi/strfmt", "github.com/go-openapi/swag", "io/ioutil", "bytes",
 			"github.com/go-errors/errors", "golang.org/x/xerrors",

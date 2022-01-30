@@ -48,7 +48,7 @@ import (
 		"{{.PackageName}}/tracing"
 		discovery "github.com/Clever/discovery-go"
 		"github.com/afex/hystrix-go/hystrix"
-		logger "gopkg.in/Clever/kayvee-go.v6/logger"
+		logger "github.com/Clever/kayvee-go/v7/logger"
 )
 
 var _ = json.Marshal

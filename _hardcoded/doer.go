@@ -16,7 +16,7 @@ import (
 	"github.com/afex/hystrix-go/hystrix"
 	"github.com/donovanhide/eventsource"
 	"golang.org/x/net/context/ctxhttp"
-	logger "gopkg.in/Clever/kayvee-go.v6/logger"
+	logger "github.com/Clever/kayvee-go/v7/logger"
 )
 
 // doer is an interface for "doing" http requests possibly with wrapping

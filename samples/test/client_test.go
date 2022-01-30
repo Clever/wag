@@ -16,7 +16,7 @@ import (
 	"github.com/Clever/wag/samples/v8/gen-go/client"
 	"github.com/Clever/wag/samples/v8/gen-go/models"
 	"github.com/Clever/wag/samples/v8/gen-go/server"
-	kayvee "gopkg.in/Clever/kayvee-go.v6/logger"
+	kayvee "github.com/Clever/kayvee-go/v7/logger"
 
 	"github.com/afex/hystrix-go/hystrix"
 	"github.com/stretchr/testify/assert"
