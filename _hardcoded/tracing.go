@@ -10,24 +10,20 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/Clever/kayvee-go/v7/logger"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp"
-	"go.opentelemetry.io/otel/exporters/otlp/otlpgrpc"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	"go.opentelemetry.io/otel/trace"
-	"github.com/Clever/kayvee-go/v7/logger"
 )
 
 // propagator to use.
 var propagator propagation.TextMapPropagator = propagation.TraceContext{} // traceparent header
-
-// defaultCollectorPort was changed from 55860 in November and the Go library
-// hasn't been updated when it is updated we can use otlp.DefaultCollectorPort
-var defaultCollectorPort uint16 = 4317
 
 // SetupGlobalTraceProviderAndExporter sets up an exporter to export,
 // as well as the opentelemetry global trace provider for trace generators to use.
@@ -51,20 +47,15 @@ func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdktrace.SpanExpo
 		samplingProbability = samplingProbabilityFromEnv
 	}
 
-	addr := fmt.Sprintf("%s:%d", otlp.DefaultCollectorHost, defaultCollectorPort)
-
 	// Every 15 seconds we'll try to connect to opentelemetry collector at
 	// the default location of localhost:4317
 	// When running in production this is a sidecar, and when running
 	// locally this is a locally running opetelemetry-collector.
-	driver := otlpgrpc.NewDriver(
-		otlpgrpc.WithReconnectionPeriod(15*time.Second),
-		otlpgrpc.WithEndpoint(addr),
-		otlpgrpc.WithInsecure(),
-	)
-	exporter, err := otlp.NewExporter(
-		ctx,
-		driver,
+	addr := fmt.Sprintf("%s:%d", otlp.DefaultCollectorHost, otlp.DefaultCollectorPort)
+	exporter, err := otlptracegrpc.New(context.Background(),
+		otlptracegrpc.WithReconnectionPeriod(15*time.Second),
+		otlptracegrpc.WithEndpoint(addr),
+		otlptracegrpc.WithInsecure(),
 	)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error creating exporter: %v", err)
