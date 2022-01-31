@@ -14,7 +14,6 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/otlp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
@@ -24,6 +23,11 @@ import (
 
 // propagator to use.
 var propagator propagation.TextMapPropagator = propagation.TraceContext{} // traceparent header
+
+// Default host / port for opentelemetry sidecar. Only available in an internal package so
+// redefined here (https://github.com/open-telemetry/opentelemetry-go/blob/cb607b0ab159372036419cae744f1bead9c2f9e2/exporters/otlp/otlptrace/internal/otlpconfig/optiontypes.go)
+var defaultCollectorHost string = "localhost"
+var defaultCollectorPort uint16 = 4317
 
 // SetupGlobalTraceProviderAndExporter sets up an exporter to export,
 // as well as the opentelemetry global trace provider for trace generators to use.
@@ -51,7 +55,7 @@ func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdktrace.SpanExpo
 	// the default location of localhost:4317
 	// When running in production this is a sidecar, and when running
 	// locally this is a locally running opetelemetry-collector.
-	addr := fmt.Sprintf("%s:%d", otlp.DefaultCollectorHost, otlp.DefaultCollectorPort)
+	addr := fmt.Sprintf("%s:%d", defaultCollectorHost, defaultCollectorPort)
 	exporter, err := otlptracegrpc.New(context.Background(),
 		otlptracegrpc.WithReconnectionPeriod(15*time.Second),
 		otlptracegrpc.WithEndpoint(addr),
