@@ -12,7 +12,6 @@ require (
 	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b
 	github.com/go-errors/errors v1.1.1
 	github.com/go-openapi/errors v0.19.9
-	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/strfmt v0.19.11
 	github.com/go-openapi/swag v0.21.1
 	github.com/go-openapi/validate v0.19.15
@@ -24,9 +23,7 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.28.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.28.0
-	go.opentelemetry.io/contrib/propagators/aws v1.3.0
 	go.opentelemetry.io/otel v1.3.0
-	go.opentelemetry.io/otel/exporters/otlp v0.20.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.3.0
 	go.opentelemetry.io/otel/sdk v1.3.0
 	go.opentelemetry.io/otel/trace v1.3.0
