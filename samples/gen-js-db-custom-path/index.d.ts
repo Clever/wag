@@ -92,6 +92,8 @@ declare namespace SwaggerTest {
 
   namespace Models {
     
+    type ArrayOfThingAllowingBatchWrites = ThingAllowingBatchWrites[];
+    
     type Branch = ("master" | "DEV_BRANCH" | "test");
     
     type Category = ("a" | "b");
@@ -137,6 +139,15 @@ declare namespace SwaggerTest {
 };
     
     type Thing = {
+  category?: Category;
+  createdAt?: string;
+  id?: string;
+  name?: string;
+  nestedObject?: Object;
+  version?: number;
+};
+    
+    type ThingAllowingBatchWrites = {
   category?: Category;
   createdAt?: string;
   id?: string;

@@ -58,7 +58,7 @@ declare class Blog {
   
   postGradeFileForStudent(params: models.PostGradeFileForStudentParams, options?: RequestOptions, cb?: Callback<void>): Promise<void>
   
-  getSectionsForStudent(student_id: string, options?: RequestOptions, cb?: Callback<models.Section[]>): Promise<models.Section[]>
+  getSectionsForStudent(studentID: string, options?: RequestOptions, cb?: Callback<models.Section[]>): Promise<models.Section[]>
   
   postSectionsForStudent(params: models.PostSectionsForStudentParams, options?: RequestOptions, cb?: Callback<models.Section[]>): Promise<models.Section[]>
   

@@ -183,6 +183,53 @@ definitions:
       id_app:
         type: string
 
+  ThingAllowingBatchWrites:
+    x-db:
+      AllowOverwrites: false
+      AllowPrimaryIndexScan: true
+      BatchWriteObject: ArrayOfThingAllowingBatchWrites
+      DynamoDB:
+        KeySchema:
+          - AttributeName: name
+            KeyType: HASH
+          - AttributeName: version
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: thingID # "id" is two chars, min IndexName length is 3
+            Projection:
+              ProjectionType: ALL
+            KeySchema:
+              - AttributeName: id
+                KeyType: HASH
+          - IndexName: name-createdAt
+            Projection:
+              ProjectionType: ALL
+            KeySchema:
+              - AttributeName: name
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      version:
+        type: integer
+      createdAt:
+        type: string
+        format: date-time
+      category:
+        $ref: '#/definitions/Category'
+      nestedObject:
+        $ref: '#/definitions/Object'
+
+  ArrayOfThingAllowingBatchWrites:
+    type: array
+    items:
+      $ref: "#/definitions/ThingAllowingBatchWrites"
+ 
   # Composite hash keys
   ThingWithCompositeAttributes:
     x-db:
