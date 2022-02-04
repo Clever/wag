@@ -181,15 +181,15 @@ func (t {{ $modelName }}Table) save{{ $modelName }}(ctx context.Context, m model
         {{- end }}
 }
 
-{{- if ne $xdbConfig.BatchWriteObject "" }}
-func (t {{ $modelName }}Table) save{{ $xdbConfig.BatchWriteObject }}(ctx context.Context, ms models.{{ $xdbConfig.BatchWriteObject }}) error {
+{{- if $xdbConfig.AllowBatchWrites }}
+func (t {{ $modelName }}Table) saveArrayOf{{ $modelName }}(ctx context.Context, ms []models.{{ $modelName }}) error {
 	if len(ms) > maxDynamoDBBatchItems {
-		return fmt.Errorf("save{{ $xdbConfig.BatchWriteObject }} received %%d items to save, which is greater than the maximum of %%d", len(ms), maxDynamoDBBatchItems)
+		return fmt.Errorf("saveArrayOf{{ $modelName }} received %%d items to save, which is greater than the maximum of %%d", len(ms), maxDynamoDBBatchItems)
 	}
 
 	batch := make([]*dynamodb.WriteRequest, len(ms))
 	for i := range ms {
-	data, err := encode{{ $modelName }}(*ms[i])
+	data, err := encode{{ $modelName }}(ms[i])
 		if err != nil {
 			return err
 		}

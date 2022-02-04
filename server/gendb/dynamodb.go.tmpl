@@ -117,10 +117,10 @@ func (d DB) Save{{ $modelName }}(ctx context.Context, m models.{{ $modelName }})
   return d.{{ $modelNameCamel }}Table.save{{ $modelName }}(ctx, m)
 }
 
-{{- if ne $xdbConfig.BatchWriteObject ""}}
-// Save{{ $xdbConfig.BatchWriteObject }} batch saves all items in {{ $xdbConfig.BatchWriteObject }} to the database.
-func (d DB) Save{{ $xdbConfig.BatchWriteObject }}(ctx context.Context, m models.{{ $xdbConfig.BatchWriteObject }}) error {
-  return d.{{ $modelNameCamel }}Table.save{{ $xdbConfig.BatchWriteObject }}(ctx, m)
+{{- if $xdbConfig.AllowBatchWrites }}
+// SaveArrayOf{{ $modelName }} batch saves all items in the {{ $modelName }} slice to the database.
+func (d DB) SaveArrayOf{{ $modelName }}(ctx context.Context, m []models.{{ $modelName }}) error {
+  return d.{{ $modelNameCamel }}Table.saveArrayOf{{ $modelName }}(ctx, m)
 }
 {{- end }}
 
