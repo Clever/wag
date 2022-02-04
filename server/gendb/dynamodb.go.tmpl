@@ -39,6 +39,8 @@ type Config struct {
   {{- end }}
 }
 
+const maxDynamoDBBatchItems = 25
+
 // New creates a new DB object.
 func New(config Config) (*DB, error) {
   if config.DynamoDBAPI == nil {
@@ -114,6 +116,13 @@ func (d DB) CreateTables(ctx context.Context) error {
 func (d DB) Save{{ $modelName }}(ctx context.Context, m models.{{ $modelName }}) error {
   return d.{{ $modelNameCamel }}Table.save{{ $modelName }}(ctx, m)
 }
+
+{{- if ne $xdbConfig.BatchWriteObject ""}}
+// Save{{ $xdbConfig.BatchWriteObject }} batch saves all items in {{ $xdbConfig.BatchWriteObject }} to the database.
+func (d DB) Save{{ $xdbConfig.BatchWriteObject }}(ctx context.Context, m models.{{ $xdbConfig.BatchWriteObject }}) error {
+  return d.{{ $modelNameCamel }}Table.save{{ $xdbConfig.BatchWriteObject }}(ctx, m)
+}
+{{- end }}
 
 // Get{{ $modelName }} retrieves a {{ $modelName }} from the database.
 func (d DB) Get{{ $modelName }}(ctx context.Context,

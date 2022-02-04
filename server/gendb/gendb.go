@@ -28,6 +28,9 @@ type XDBConfig struct {
 	// CompositeAttributes encodes attributes that are composed of multiple properties in the schema.
 	CompositeAttributes []CompositeAttribute
 
+	// BatchWriteObject will batch write the given object to the table.
+	BatchWriteObject string
+
 	// AllowPrimaryIndexScan determines whether methods should be generated that scan the primary index.
 	AllowPrimaryIndexScan bool
 
