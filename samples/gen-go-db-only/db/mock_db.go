@@ -954,17 +954,17 @@ func (mr *MockInterfaceMockRecorder) GetThingsByNameAndVersion(ctx, input, fn in
 }
 
 // SaveArrayOfThingAllowingBatchWrites mocks base method.
-func (m_2 *MockInterface) SaveArrayOfThingAllowingBatchWrites(ctx context.Context, m models.ArrayOfThingAllowingBatchWrites) error {
-	m_2.ctrl.T.Helper()
-	ret := m_2.ctrl.Call(m_2, "SaveArrayOfThingAllowingBatchWrites", ctx, m)
+func (m *MockInterface) SaveArrayOfThingAllowingBatchWrites(ctx context.Context, ms []models.ThingAllowingBatchWrites) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveArrayOfThingAllowingBatchWrites", ctx, ms)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SaveArrayOfThingAllowingBatchWrites indicates an expected call of SaveArrayOfThingAllowingBatchWrites.
-func (mr *MockInterfaceMockRecorder) SaveArrayOfThingAllowingBatchWrites(ctx, m interface{}) *gomock.Call {
+func (mr *MockInterfaceMockRecorder) SaveArrayOfThingAllowingBatchWrites(ctx, ms interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveArrayOfThingAllowingBatchWrites", reflect.TypeOf((*MockInterface)(nil).SaveArrayOfThingAllowingBatchWrites), ctx, m)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveArrayOfThingAllowingBatchWrites", reflect.TypeOf((*MockInterface)(nil).SaveArrayOfThingAllowingBatchWrites), ctx, ms)
 }
 
 // SaveDeployment mocks base method.

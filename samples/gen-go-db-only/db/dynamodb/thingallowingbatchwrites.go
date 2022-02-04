@@ -163,14 +163,14 @@ func (t ThingAllowingBatchWritesTable) saveThingAllowingBatchWrites(ctx context.
 	}
 	return nil
 }
-func (t ThingAllowingBatchWritesTable) saveArrayOfThingAllowingBatchWrites(ctx context.Context, ms models.ArrayOfThingAllowingBatchWrites) error {
+func (t ThingAllowingBatchWritesTable) saveArrayOfThingAllowingBatchWrites(ctx context.Context, ms []models.ThingAllowingBatchWrites) error {
 	if len(ms) > maxDynamoDBBatchItems {
 		return fmt.Errorf("saveArrayOfThingAllowingBatchWrites received %d items to save, which is greater than the maximum of %d", len(ms), maxDynamoDBBatchItems)
 	}
 
 	batch := make([]*dynamodb.WriteRequest, len(ms))
 	for i := range ms {
-		data, err := encodeThingAllowingBatchWrites(*ms[i])
+		data, err := encodeThingAllowingBatchWrites(ms[i])
 		if err != nil {
 			return err
 		}

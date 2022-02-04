@@ -106,8 +106,8 @@ type Interface interface {
 
 	// SaveThingAllowingBatchWrites saves a ThingAllowingBatchWrites to the database.
 	SaveThingAllowingBatchWrites(ctx context.Context, m models.ThingAllowingBatchWrites) error
-	// SaveArrayOfThingAllowingBatchWrites batch saves all items in ArrayOfThingAllowingBatchWrites to the database.
-	SaveArrayOfThingAllowingBatchWrites(ctx context.Context, m models.ArrayOfThingAllowingBatchWrites) error
+	// SaveArrayOfThingAllowingBatchWrites batch saves all items in []ThingAllowingBatchWrites to the database.
+	SaveArrayOfThingAllowingBatchWrites(ctx context.Context, ms []models.ThingAllowingBatchWrites) error
 	// GetThingAllowingBatchWrites retrieves a ThingAllowingBatchWrites from the database.
 	GetThingAllowingBatchWrites(ctx context.Context, name string, version int64) (*models.ThingAllowingBatchWrites, error)
 	// ScanThingAllowingBatchWritess runs a scan on the ThingAllowingBatchWritess table.

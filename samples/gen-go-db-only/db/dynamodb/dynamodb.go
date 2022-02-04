@@ -661,8 +661,8 @@ func (d DB) SaveThingAllowingBatchWrites(ctx context.Context, m models.ThingAllo
 	return d.thingAllowingBatchWritesTable.saveThingAllowingBatchWrites(ctx, m)
 }
 
-// SaveArrayOfThingAllowingBatchWrites batch saves all items in ArrayOfThingAllowingBatchWrites to the database.
-func (d DB) SaveArrayOfThingAllowingBatchWrites(ctx context.Context, m models.ArrayOfThingAllowingBatchWrites) error {
+// SaveArrayOfThingAllowingBatchWrites batch saves all items in the ThingAllowingBatchWrites slice to the database.
+func (d DB) SaveArrayOfThingAllowingBatchWrites(ctx context.Context, m []models.ThingAllowingBatchWrites) error {
 	return d.thingAllowingBatchWritesTable.saveArrayOfThingAllowingBatchWrites(ctx, m)
 }
 

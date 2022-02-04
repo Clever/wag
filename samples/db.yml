@@ -187,7 +187,7 @@ definitions:
     x-db:
       AllowOverwrites: false
       AllowPrimaryIndexScan: true
-      BatchWriteObject: ArrayOfThingAllowingBatchWrites
+      AllowBatchWrites: true
       DynamoDB:
         KeySchema:
           - AttributeName: name
@@ -225,11 +225,6 @@ definitions:
       nestedObject:
         $ref: '#/definitions/Object'
 
-  ArrayOfThingAllowingBatchWrites:
-    type: array
-    items:
-      $ref: "#/definitions/ThingAllowingBatchWrites"
- 
   # Composite hash keys
   ThingWithCompositeAttributes:
     x-db:
