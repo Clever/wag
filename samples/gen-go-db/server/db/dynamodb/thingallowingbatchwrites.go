@@ -31,17 +31,6 @@ type ddbThingAllowingBatchWritesPrimaryKey struct {
 	Version int64  `dynamodbav:"version"`
 }
 
-// ddbThingAllowingBatchWritesGSIThingID represents the thingID GSI.
-type ddbThingAllowingBatchWritesGSIThingID struct {
-	ID string `dynamodbav:"id"`
-}
-
-// ddbThingAllowingBatchWritesGSINameCreatedAt represents the name-createdAt GSI.
-type ddbThingAllowingBatchWritesGSINameCreatedAt struct {
-	Name      string          `dynamodbav:"name"`
-	CreatedAt strfmt.DateTime `dynamodbav:"createdAt"`
-}
-
 // ddbThingAllowingBatchWrites represents a ThingAllowingBatchWrites as stored in DynamoDB.
 type ddbThingAllowingBatchWrites struct {
 	models.ThingAllowingBatchWrites
@@ -57,14 +46,6 @@ func (t ThingAllowingBatchWritesTable) name() string {
 func (t ThingAllowingBatchWritesTable) create(ctx context.Context) error {
 	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
-			{
-				AttributeName: aws.String("createdAt"),
-				AttributeType: aws.String("S"),
-			},
-			{
-				AttributeName: aws.String("id"),
-				AttributeType: aws.String("S"),
-			},
 			{
 				AttributeName: aws.String("name"),
 				AttributeType: aws.String("S"),
@@ -82,44 +63,6 @@ func (t ThingAllowingBatchWritesTable) create(ctx context.Context) error {
 			{
 				AttributeName: aws.String("version"),
 				KeyType:       aws.String(dynamodb.KeyTypeRange),
-			},
-		},
-		GlobalSecondaryIndexes: []*dynamodb.GlobalSecondaryIndex{
-			{
-				IndexName: aws.String("thingID"),
-				Projection: &dynamodb.Projection{
-					ProjectionType: aws.String("ALL"),
-				},
-				KeySchema: []*dynamodb.KeySchemaElement{
-					{
-						AttributeName: aws.String("id"),
-						KeyType:       aws.String(dynamodb.KeyTypeHash),
-					},
-				},
-				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
-					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
-					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
-				},
-			},
-			{
-				IndexName: aws.String("name-createdAt"),
-				Projection: &dynamodb.Projection{
-					ProjectionType: aws.String("ALL"),
-				},
-				KeySchema: []*dynamodb.KeySchemaElement{
-					{
-						AttributeName: aws.String("name"),
-						KeyType:       aws.String(dynamodb.KeyTypeHash),
-					},
-					{
-						AttributeName: aws.String("createdAt"),
-						KeyType:       aws.String(dynamodb.KeyTypeRange),
-					},
-				},
-				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
-					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
-					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
-				},
 			},
 		},
 		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
@@ -397,138 +340,6 @@ func (t ThingAllowingBatchWritesTable) deleteThingAllowingBatchWrites(ctx contex
 			}
 		}
 		return err
-	}
-
-	return nil
-}
-
-func (t ThingAllowingBatchWritesTable) getThingAllowingBatchWritesByID(ctx context.Context, id string) (*models.ThingAllowingBatchWrites, error) {
-	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
-		IndexName: aws.String("thingID"),
-		ExpressionAttributeNames: map[string]*string{
-			"#ID": aws.String("id"),
-		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":id": &dynamodb.AttributeValue{
-				S: aws.String(id),
-			},
-		},
-		KeyConditionExpression: aws.String("#ID = :id"),
-	}
-
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeResourceNotFoundException:
-				return nil, fmt.Errorf("table or index not found: %s", t.name())
-			}
-		}
-		return nil, err
-	}
-	if len(queryOutput.Items) == 0 {
-		return nil, db.ErrThingAllowingBatchWritesByIDNotFound{ID: id}
-	}
-
-	var thingAllowingBatchWrites models.ThingAllowingBatchWrites
-	if err := decodeThingAllowingBatchWrites(queryOutput.Items[0], &thingAllowingBatchWrites); err != nil {
-		return nil, err
-	}
-	return &thingAllowingBatchWrites, nil
-}
-
-func (t ThingAllowingBatchWritesTable) getThingAllowingBatchWritessByNameAndCreatedAt(ctx context.Context, input db.GetThingAllowingBatchWritessByNameAndCreatedAtInput, fn func(m *models.ThingAllowingBatchWrites, lastThingAllowingBatchWrites bool) bool) error {
-	if input.CreatedAtStartingAt != nil && input.StartingAfter != nil {
-		return fmt.Errorf("Can specify only one of input.CreatedAtStartingAt or input.StartingAfter")
-	}
-	if input.Name == "" {
-		return fmt.Errorf("Hash key input.Name cannot be empty")
-	}
-	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
-		IndexName: aws.String("name-createdAt"),
-		ExpressionAttributeNames: map[string]*string{
-			"#NAME": aws.String("name"),
-		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":name": &dynamodb.AttributeValue{
-				S: aws.String(input.Name),
-			},
-		},
-		ScanIndexForward: aws.Bool(!input.Descending),
-		ConsistentRead:   aws.Bool(false),
-	}
-	if input.Limit != nil {
-		queryInput.Limit = input.Limit
-	}
-	if input.CreatedAtStartingAt == nil {
-		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
-	} else {
-		queryInput.ExpressionAttributeNames["#CREATEDAT"] = aws.String("createdAt")
-		queryInput.ExpressionAttributeValues[":createdAt"] = &dynamodb.AttributeValue{
-			S: aws.String(toDynamoTimeString(*input.CreatedAtStartingAt)),
-		}
-		if input.Descending {
-			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #CREATEDAT <= :createdAt")
-		} else {
-			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #CREATEDAT >= :createdAt")
-		}
-	}
-	if input.StartingAfter != nil {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"createdAt": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeString(input.StartingAfter.CreatedAt)),
-			},
-			"name": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.Name),
-			},
-			"version": &dynamodb.AttributeValue{
-				N: aws.String(fmt.Sprintf("%d", input.StartingAfter.Version)),
-			},
-		}
-	}
-
-	totalRecordsProcessed := int64(0)
-	var pageFnErr error
-	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
-		if len(queryOutput.Items) == 0 {
-			return false
-		}
-		items, err := decodeThingAllowingBatchWritess(queryOutput.Items)
-		if err != nil {
-			pageFnErr = err
-			return false
-		}
-		hasMore := true
-		for i := range items {
-			if lastPage == true {
-				hasMore = i < len(items)-1
-			}
-			if !fn(&items[i], !hasMore) {
-				return false
-			}
-			totalRecordsProcessed++
-			// if the Limit of records have been passed to fn, don't pass anymore records.
-			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-				return false
-			}
-		}
-		return true
-	}
-
-	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.name())
-			}
-		}
-		return err
-	}
-	if pageFnErr != nil {
-		return pageFnErr
 	}
 
 	return nil

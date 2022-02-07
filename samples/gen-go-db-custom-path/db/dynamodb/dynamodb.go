@@ -66,6 +66,8 @@ type Config struct {
 	ThingWithUnderscoresTable ThingWithUnderscoresTable
 }
 
+// maxDynamoDBBatchItems is the AWS-defined maximum number of items that can be written at once
+// https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_BatchWriteItem.html
 const maxDynamoDBBatchItems = 25
 
 // New creates a new DB object.
@@ -684,16 +686,6 @@ func (d DB) GetThingAllowingBatchWritessByNameAndVersion(ctx context.Context, in
 // DeleteThingAllowingBatchWrites deletes a ThingAllowingBatchWrites from the database.
 func (d DB) DeleteThingAllowingBatchWrites(ctx context.Context, name string, version int64) error {
 	return d.thingAllowingBatchWritesTable.deleteThingAllowingBatchWrites(ctx, name, version)
-}
-
-// GetThingAllowingBatchWritesByID retrieves a ThingAllowingBatchWrites from the database.
-func (d DB) GetThingAllowingBatchWritesByID(ctx context.Context, id string) (*models.ThingAllowingBatchWrites, error) {
-	return d.thingAllowingBatchWritesTable.getThingAllowingBatchWritesByID(ctx, id)
-}
-
-// GetThingAllowingBatchWritessByNameAndCreatedAt retrieves a page of ThingAllowingBatchWritess from the database.
-func (d DB) GetThingAllowingBatchWritessByNameAndCreatedAt(ctx context.Context, input db.GetThingAllowingBatchWritessByNameAndCreatedAtInput, fn func(m *models.ThingAllowingBatchWrites, lastThingAllowingBatchWrites bool) bool) error {
-	return d.thingAllowingBatchWritesTable.getThingAllowingBatchWritessByNameAndCreatedAt(ctx, input, fn)
 }
 
 // SaveThingWithCompositeAttributes saves a ThingWithCompositeAttributes to the database.

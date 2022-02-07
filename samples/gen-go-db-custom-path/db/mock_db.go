@@ -520,35 +520,6 @@ func (mr *MockInterfaceMockRecorder) GetThingAllowingBatchWrites(ctx, name, vers
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingAllowingBatchWrites", reflect.TypeOf((*MockInterface)(nil).GetThingAllowingBatchWrites), ctx, name, version)
 }
 
-// GetThingAllowingBatchWritesByID mocks base method.
-func (m *MockInterface) GetThingAllowingBatchWritesByID(ctx context.Context, id string) (*models.ThingAllowingBatchWrites, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetThingAllowingBatchWritesByID", ctx, id)
-	ret0, _ := ret[0].(*models.ThingAllowingBatchWrites)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetThingAllowingBatchWritesByID indicates an expected call of GetThingAllowingBatchWritesByID.
-func (mr *MockInterfaceMockRecorder) GetThingAllowingBatchWritesByID(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingAllowingBatchWritesByID", reflect.TypeOf((*MockInterface)(nil).GetThingAllowingBatchWritesByID), ctx, id)
-}
-
-// GetThingAllowingBatchWritessByNameAndCreatedAt mocks base method.
-func (m *MockInterface) GetThingAllowingBatchWritessByNameAndCreatedAt(ctx context.Context, input GetThingAllowingBatchWritessByNameAndCreatedAtInput, fn func(*models.ThingAllowingBatchWrites, bool) bool) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetThingAllowingBatchWritessByNameAndCreatedAt", ctx, input, fn)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// GetThingAllowingBatchWritessByNameAndCreatedAt indicates an expected call of GetThingAllowingBatchWritessByNameAndCreatedAt.
-func (mr *MockInterfaceMockRecorder) GetThingAllowingBatchWritessByNameAndCreatedAt(ctx, input, fn interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingAllowingBatchWritessByNameAndCreatedAt", reflect.TypeOf((*MockInterface)(nil).GetThingAllowingBatchWritessByNameAndCreatedAt), ctx, input, fn)
-}
-
 // GetThingAllowingBatchWritessByNameAndVersion mocks base method.
 func (m *MockInterface) GetThingAllowingBatchWritessByNameAndVersion(ctx context.Context, input GetThingAllowingBatchWritessByNameAndVersionInput, fn func(*models.ThingAllowingBatchWrites, bool) bool) error {
 	m.ctrl.T.Helper()

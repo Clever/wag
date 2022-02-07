@@ -116,10 +116,6 @@ type Interface interface {
 	GetThingAllowingBatchWritessByNameAndVersion(ctx context.Context, input GetThingAllowingBatchWritessByNameAndVersionInput, fn func(m *models.ThingAllowingBatchWrites, lastThingAllowingBatchWrites bool) bool) error
 	// DeleteThingAllowingBatchWrites deletes a ThingAllowingBatchWrites from the database.
 	DeleteThingAllowingBatchWrites(ctx context.Context, name string, version int64) error
-	// GetThingAllowingBatchWritesByID retrieves a ThingAllowingBatchWrites from the database.
-	GetThingAllowingBatchWritesByID(ctx context.Context, id string) (*models.ThingAllowingBatchWrites, error)
-	// GetThingAllowingBatchWritessByNameAndCreatedAt retrieves a page of ThingAllowingBatchWritess from the database.
-	GetThingAllowingBatchWritessByNameAndCreatedAt(ctx context.Context, input GetThingAllowingBatchWritessByNameAndCreatedAtInput, fn func(m *models.ThingAllowingBatchWrites, lastThingAllowingBatchWrites bool) bool) error
 
 	// SaveThingWithCompositeAttributes saves a ThingWithCompositeAttributes to the database.
 	SaveThingWithCompositeAttributes(ctx context.Context, m models.ThingWithCompositeAttributes) error
@@ -821,42 +817,6 @@ var _ error = ErrThingAllowingBatchWritesNotFound{}
 
 // Error returns a description of the error.
 func (e ErrThingAllowingBatchWritesNotFound) Error() string {
-	return "could not find ThingAllowingBatchWrites"
-}
-
-// ErrThingAllowingBatchWritesByIDNotFound is returned when the database fails to find a ThingAllowingBatchWrites.
-type ErrThingAllowingBatchWritesByIDNotFound struct {
-	ID string
-}
-
-var _ error = ErrThingAllowingBatchWritesByIDNotFound{}
-
-// Error returns a description of the error.
-func (e ErrThingAllowingBatchWritesByIDNotFound) Error() string {
-	return "could not find ThingAllowingBatchWrites"
-}
-
-// GetThingAllowingBatchWritessByNameAndCreatedAtInput is the query input to GetThingAllowingBatchWritessByNameAndCreatedAt.
-type GetThingAllowingBatchWritessByNameAndCreatedAtInput struct {
-	// Name is required
-	Name                string
-	CreatedAtStartingAt *strfmt.DateTime
-	StartingAfter       *models.ThingAllowingBatchWrites
-	Descending          bool
-	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
-}
-
-// ErrThingAllowingBatchWritesByNameAndCreatedAtNotFound is returned when the database fails to find a ThingAllowingBatchWrites.
-type ErrThingAllowingBatchWritesByNameAndCreatedAtNotFound struct {
-	Name      string
-	CreatedAt strfmt.DateTime
-}
-
-var _ error = ErrThingAllowingBatchWritesByNameAndCreatedAtNotFound{}
-
-// Error returns a description of the error.
-func (e ErrThingAllowingBatchWritesByNameAndCreatedAtNotFound) Error() string {
 	return "could not find ThingAllowingBatchWrites"
 }
 

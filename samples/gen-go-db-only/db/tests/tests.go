@@ -69,8 +69,6 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingAllowingBatchWritessByNameAndVersion", GetThingAllowingBatchWritessByNameAndVersion(dbFactory(), t))
 	t.Run("SaveThingAllowingBatchWrites", SaveThingAllowingBatchWrites(dbFactory(), t))
 	t.Run("DeleteThingAllowingBatchWrites", DeleteThingAllowingBatchWrites(dbFactory(), t))
-	t.Run("GetThingAllowingBatchWritesByID", GetThingAllowingBatchWritesByID(dbFactory(), t))
-	t.Run("GetThingAllowingBatchWritessByNameAndCreatedAt", GetThingAllowingBatchWritessByNameAndCreatedAt(dbFactory(), t))
 	t.Run("GetThingWithCompositeAttributes", GetThingWithCompositeAttributes(dbFactory(), t))
 	t.Run("ScanThingWithCompositeAttributess", ScanThingWithCompositeAttributess(dbFactory(), t))
 	t.Run("GetThingWithCompositeAttributessByNameBranchAndDate", GetThingWithCompositeAttributessByNameBranchAndDate(dbFactory(), t))
@@ -4147,10 +4145,8 @@ func GetThingAllowingBatchWrites(s db.Interface, t *testing.T) func(t *testing.T
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m := models.ThingAllowingBatchWrites{
-			CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
-			ID:        "string1",
-			Name:      "string1",
-			Version:   1,
+			Name:    "string1",
+			Version: 1,
 		}
 		require.Nil(t, s.SaveThingAllowingBatchWrites(ctx, m))
 		m2, err := s.GetThingAllowingBatchWrites(ctx, m.Name, m.Version)
@@ -4361,43 +4357,31 @@ func ScanThingAllowingBatchWritess(d db.Interface, t *testing.T) func(t *testing
 	return func(t *testing.T) {
 		ctx := context.Background()
 		require.Nil(t, d.SaveThingAllowingBatchWrites(ctx, models.ThingAllowingBatchWrites{
-			CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
-			ID:        "string1",
-			Name:      "string1",
-			Version:   1,
+			Name:    "string1",
+			Version: 1,
 		}))
 		require.Nil(t, d.SaveThingAllowingBatchWrites(ctx, models.ThingAllowingBatchWrites{
-			CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
-			ID:        "string2",
-			Name:      "string2",
-			Version:   2,
+			Name:    "string2",
+			Version: 2,
 		}))
 		require.Nil(t, d.SaveThingAllowingBatchWrites(ctx, models.ThingAllowingBatchWrites{
-			CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
-			ID:        "string3",
-			Name:      "string3",
-			Version:   3,
+			Name:    "string3",
+			Version: 3,
 		}))
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingAllowingBatchWrites{
 				models.ThingAllowingBatchWrites{
-					CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
-					ID:        "string1",
-					Name:      "string1",
-					Version:   1,
+					Name:    "string1",
+					Version: 1,
 				},
 				models.ThingAllowingBatchWrites{
-					CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
-					ID:        "string2",
-					Name:      "string2",
-					Version:   2,
+					Name:    "string2",
+					Version: 2,
 				},
 				models.ThingAllowingBatchWrites{
-					CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
-					ID:        "string3",
-					Name:      "string3",
-					Version:   3,
+					Name:    "string3",
+					Version: 3,
 				},
 			}
 			actual := []models.ThingAllowingBatchWrites{}
@@ -4476,10 +4460,8 @@ func SaveThingAllowingBatchWrites(s db.Interface, t *testing.T) func(t *testing.
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m := models.ThingAllowingBatchWrites{
-			CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
-			ID:        "string1",
-			Name:      "string1",
-			Version:   1,
+			Name:    "string1",
+			Version: 1,
 		}
 		require.Nil(t, s.SaveThingAllowingBatchWrites(ctx, m))
 		require.IsType(t, db.ErrThingAllowingBatchWritesAlreadyExists{}, s.SaveThingAllowingBatchWrites(ctx, m))
@@ -4490,244 +4472,11 @@ func DeleteThingAllowingBatchWrites(s db.Interface, t *testing.T) func(t *testin
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m := models.ThingAllowingBatchWrites{
-			CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
-			ID:        "string1",
-			Name:      "string1",
-			Version:   1,
+			Name:    "string1",
+			Version: 1,
 		}
 		require.Nil(t, s.SaveThingAllowingBatchWrites(ctx, m))
 		require.Nil(t, s.DeleteThingAllowingBatchWrites(ctx, m.Name, m.Version))
-	}
-}
-
-func GetThingAllowingBatchWritesByID(s db.Interface, t *testing.T) func(t *testing.T) {
-	return func(t *testing.T) {
-		ctx := context.Background()
-		m := models.ThingAllowingBatchWrites{
-			CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
-			ID:        "string1",
-			Name:      "string1",
-			Version:   1,
-		}
-		require.Nil(t, s.SaveThingAllowingBatchWrites(ctx, m))
-		m2, err := s.GetThingAllowingBatchWritesByID(ctx, m.ID)
-		require.Nil(t, err)
-		require.Equal(t, m.CreatedAt.String(), m2.CreatedAt.String())
-		require.Equal(t, m.ID, m2.ID)
-		require.Equal(t, m.Name, m2.Name)
-		require.Equal(t, m.Version, m2.Version)
-
-		_, err = s.GetThingAllowingBatchWritesByID(ctx, "string2")
-		require.NotNil(t, err)
-		require.IsType(t, err, db.ErrThingAllowingBatchWritesByIDNotFound{})
-	}
-}
-
-type getThingAllowingBatchWritessByNameAndCreatedAtInput struct {
-	ctx   context.Context
-	input db.GetThingAllowingBatchWritessByNameAndCreatedAtInput
-}
-type getThingAllowingBatchWritessByNameAndCreatedAtOutput struct {
-	thingAllowingBatchWritess []models.ThingAllowingBatchWrites
-	err                       error
-}
-type getThingAllowingBatchWritessByNameAndCreatedAtTest struct {
-	testName string
-	d        db.Interface
-	input    getThingAllowingBatchWritessByNameAndCreatedAtInput
-	output   getThingAllowingBatchWritessByNameAndCreatedAtOutput
-}
-
-func (g getThingAllowingBatchWritessByNameAndCreatedAtTest) run(t *testing.T) {
-	thingAllowingBatchWritess := []models.ThingAllowingBatchWrites{}
-	fn := func(m *models.ThingAllowingBatchWrites, lastThingAllowingBatchWrites bool) bool {
-		thingAllowingBatchWritess = append(thingAllowingBatchWritess, *m)
-		if lastThingAllowingBatchWrites {
-			return false
-		}
-		return true
-	}
-	err := g.d.GetThingAllowingBatchWritessByNameAndCreatedAt(g.input.ctx, g.input.input, fn)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	require.Equal(t, g.output.err, err)
-	require.Equal(t, g.output.thingAllowingBatchWritess, thingAllowingBatchWritess)
-}
-
-func GetThingAllowingBatchWritessByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.T) {
-	return func(t *testing.T) {
-		ctx := context.Background()
-		require.Nil(t, d.SaveThingAllowingBatchWrites(ctx, models.ThingAllowingBatchWrites{
-			Name:      "string1",
-			CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
-			Version:   1,
-		}))
-		require.Nil(t, d.SaveThingAllowingBatchWrites(ctx, models.ThingAllowingBatchWrites{
-			Name:      "string1",
-			CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
-			Version:   3,
-		}))
-		require.Nil(t, d.SaveThingAllowingBatchWrites(ctx, models.ThingAllowingBatchWrites{
-			Name:      "string1",
-			CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
-			Version:   2,
-		}))
-		limit := int64(3)
-		tests := []getThingAllowingBatchWritessByNameAndCreatedAtTest{
-			{
-				testName: "basic",
-				d:        d,
-				input: getThingAllowingBatchWritessByNameAndCreatedAtInput{
-					ctx: context.Background(),
-					input: db.GetThingAllowingBatchWritessByNameAndCreatedAtInput{
-						Name:  "string1",
-						Limit: &limit,
-					},
-				},
-				output: getThingAllowingBatchWritessByNameAndCreatedAtOutput{
-					thingAllowingBatchWritess: []models.ThingAllowingBatchWrites{
-						models.ThingAllowingBatchWrites{
-							Name:      "string1",
-							CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
-							Version:   1,
-						},
-						models.ThingAllowingBatchWrites{
-							Name:      "string1",
-							CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
-							Version:   3,
-						},
-						models.ThingAllowingBatchWrites{
-							Name:      "string1",
-							CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
-							Version:   2,
-						},
-					},
-					err: nil,
-				},
-			},
-			{
-				testName: "descending",
-				d:        d,
-				input: getThingAllowingBatchWritessByNameAndCreatedAtInput{
-					ctx: context.Background(),
-					input: db.GetThingAllowingBatchWritessByNameAndCreatedAtInput{
-						Name:       "string1",
-						Descending: true,
-					},
-				},
-				output: getThingAllowingBatchWritessByNameAndCreatedAtOutput{
-					thingAllowingBatchWritess: []models.ThingAllowingBatchWrites{
-						models.ThingAllowingBatchWrites{
-							Name:      "string1",
-							CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
-							Version:   2,
-						},
-						models.ThingAllowingBatchWrites{
-							Name:      "string1",
-							CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
-							Version:   3,
-						},
-						models.ThingAllowingBatchWrites{
-							Name:      "string1",
-							CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
-							Version:   1,
-						},
-					},
-					err: nil,
-				},
-			},
-			{
-				testName: "starting after",
-				d:        d,
-				input: getThingAllowingBatchWritessByNameAndCreatedAtInput{
-					ctx: context.Background(),
-					input: db.GetThingAllowingBatchWritessByNameAndCreatedAtInput{
-						Name: "string1",
-						StartingAfter: &models.ThingAllowingBatchWrites{
-							Name:      "string1",
-							CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
-							Version:   1,
-						},
-					},
-				},
-				output: getThingAllowingBatchWritessByNameAndCreatedAtOutput{
-					thingAllowingBatchWritess: []models.ThingAllowingBatchWrites{
-						models.ThingAllowingBatchWrites{
-							Name:      "string1",
-							CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
-							Version:   3,
-						},
-						models.ThingAllowingBatchWrites{
-							Name:      "string1",
-							CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
-							Version:   2,
-						},
-					},
-					err: nil,
-				},
-			},
-			{
-				testName: "starting after descending",
-				d:        d,
-				input: getThingAllowingBatchWritessByNameAndCreatedAtInput{
-					ctx: context.Background(),
-					input: db.GetThingAllowingBatchWritessByNameAndCreatedAtInput{
-						Name: "string1",
-						StartingAfter: &models.ThingAllowingBatchWrites{
-							Name:      "string1",
-							CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
-							Version:   2,
-						},
-						Descending: true,
-					},
-				},
-				output: getThingAllowingBatchWritessByNameAndCreatedAtOutput{
-					thingAllowingBatchWritess: []models.ThingAllowingBatchWrites{
-						models.ThingAllowingBatchWrites{
-							Name:      "string1",
-							CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
-							Version:   3,
-						},
-						models.ThingAllowingBatchWrites{
-							Name:      "string1",
-							CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
-							Version:   1,
-						},
-					},
-					err: nil,
-				},
-			},
-			{
-				testName: "starting at",
-				d:        d,
-				input: getThingAllowingBatchWritessByNameAndCreatedAtInput{
-					ctx: context.Background(),
-					input: db.GetThingAllowingBatchWritessByNameAndCreatedAtInput{
-						Name:                "string1",
-						CreatedAtStartingAt: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
-					},
-				},
-				output: getThingAllowingBatchWritessByNameAndCreatedAtOutput{
-					thingAllowingBatchWritess: []models.ThingAllowingBatchWrites{
-						models.ThingAllowingBatchWrites{
-							Name:      "string1",
-							CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
-							Version:   3,
-						},
-						models.ThingAllowingBatchWrites{
-							Name:      "string1",
-							CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
-							Version:   2,
-						},
-					},
-					err: nil,
-				},
-			},
-		}
-		for _, test := range tests {
-			t.Run(test.testName, test.run)
-		}
 	}
 }
 
