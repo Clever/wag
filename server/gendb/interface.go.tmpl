@@ -57,8 +57,9 @@ type Interface interface {
     {{- else }}
     // Get{{ $modelName }}By{{ $indexName }} retrieves a {{ $modelName }} from the database.
     Get{{ $modelName }}By{{ $indexName }}(ctx context.Context,
-      {{- range $_, $ks := $gsi.KeySchema }}
-      {{- varname $ks.AttributeName }} {{ goTypeForAttribute $xdbConfig $ks.AttributeName }},
+      {{- $gsiModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $gsi.KeySchema }}
+      {{- range $_, $attributeName := $gsiModelAttributeNames }}
+      {{- varname $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
       {{- end -}}
     ) (*models.{{ $modelName }}, error)
     {{- end }}
