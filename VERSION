@@ -1,4 +1,6 @@
-v8.1.4
+v8.1.5
+
+v8.1.5: Fix bug for generated interfaces on composite keys for dynamo models
 
 v8.1.4: Add dynamodb codegen support for batch writing arrays of objects
 
