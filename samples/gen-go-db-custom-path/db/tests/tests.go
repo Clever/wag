@@ -44,6 +44,7 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("DeleteNoRangeThingWithCompositeAttributes", DeleteNoRangeThingWithCompositeAttributes(dbFactory(), t))
 	t.Run("GetNoRangeThingWithCompositeAttributessByNameVersionAndDate", GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(dbFactory(), t))
 	t.Run("ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate", ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate(dbFactory(), t))
+	t.Run("GetNoRangeThingWithCompositeAttributesByNameDate", GetNoRangeThingWithCompositeAttributesByNameDate(dbFactory(), t))
 	t.Run("GetSimpleThing", GetSimpleThing(dbFactory(), t))
 	t.Run("ScanSimpleThings", ScanSimpleThings(dbFactory(), t))
 	t.Run("SaveSimpleThing", SaveSimpleThing(dbFactory(), t))
@@ -2427,6 +2428,29 @@ func ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface
 
 			require.Len(t, actual, 1)
 		})
+	}
+}
+
+func GetNoRangeThingWithCompositeAttributesByNameDate(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.NoRangeThingWithCompositeAttributes{
+			Branch:  db.String("string1"),
+			Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Name:    db.String("string1"),
+			Version: 1,
+		}
+		require.Nil(t, s.SaveNoRangeThingWithCompositeAttributes(ctx, m))
+		m2, err := s.GetNoRangeThingWithCompositeAttributesByNameDate(ctx, m.NameDate)
+		require.Nil(t, err)
+		require.Equal(t, m.Branch, m2.Branch)
+		require.Equal(t, m.Date.String(), m2.Date.String())
+		require.Equal(t, m.Name, m2.Name)
+		require.Equal(t, m.Version, m2.Version)
+
+		_, err = s.GetNoRangeThingWithCompositeAttributesByNameDate(ctx, "string2")
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrNoRangeThingWithCompositeAttributesByNameDateNotFound{})
 	}
 }
 

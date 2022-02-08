@@ -418,6 +418,21 @@ func (mr *MockInterfaceMockRecorder) GetNoRangeThingWithCompositeAttributes(ctx,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNoRangeThingWithCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).GetNoRangeThingWithCompositeAttributes), ctx, name, branch)
 }
 
+// GetNoRangeThingWithCompositeAttributesByNameDate mocks base method.
+func (m *MockInterface) GetNoRangeThingWithCompositeAttributesByNameDate(ctx context.Context, name string, date strfmt.DateTime) (*models.NoRangeThingWithCompositeAttributes, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetNoRangeThingWithCompositeAttributesByNameDate", ctx, name, date)
+	ret0, _ := ret[0].(*models.NoRangeThingWithCompositeAttributes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetNoRangeThingWithCompositeAttributesByNameDate indicates an expected call of GetNoRangeThingWithCompositeAttributesByNameDate.
+func (mr *MockInterfaceMockRecorder) GetNoRangeThingWithCompositeAttributesByNameDate(ctx, name, date interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNoRangeThingWithCompositeAttributesByNameDate", reflect.TypeOf((*MockInterface)(nil).GetNoRangeThingWithCompositeAttributesByNameDate), ctx, name, date)
+}
+
 // GetNoRangeThingWithCompositeAttributessByNameVersionAndDate mocks base method.
 func (m *MockInterface) GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input GetNoRangeThingWithCompositeAttributessByNameVersionAndDateInput, fn func(*models.NoRangeThingWithCompositeAttributes, bool) bool) error {
 	m.ctrl.T.Helper()

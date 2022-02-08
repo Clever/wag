@@ -37,6 +37,11 @@ type ddbNoRangeThingWithCompositeAttributesGSINameVersion struct {
 	Date        strfmt.DateTime `dynamodbav:"date"`
 }
 
+// ddbNoRangeThingWithCompositeAttributesGSINameDate represents the nameDate GSI.
+type ddbNoRangeThingWithCompositeAttributesGSINameDate struct {
+	NameDate string `dynamodbav:"name_date"`
+}
+
 // ddbNoRangeThingWithCompositeAttributes represents a NoRangeThingWithCompositeAttributes as stored in DynamoDB.
 type ddbNoRangeThingWithCompositeAttributes struct {
 	models.NoRangeThingWithCompositeAttributes
@@ -58,6 +63,10 @@ func (t NoRangeThingWithCompositeAttributesTable) create(ctx context.Context) er
 			},
 			{
 				AttributeName: aws.String("name_branch"),
+				AttributeType: aws.String("S"),
+			},
+			{
+				AttributeName: aws.String("name_date"),
 				AttributeType: aws.String("S"),
 			},
 			{
@@ -85,6 +94,22 @@ func (t NoRangeThingWithCompositeAttributesTable) create(ctx context.Context) er
 					{
 						AttributeName: aws.String("date"),
 						KeyType:       aws.String(dynamodb.KeyTypeRange),
+					},
+				},
+				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
+					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
+				},
+			},
+			{
+				IndexName: aws.String("nameDate"),
+				Projection: &dynamodb.Projection{
+					ProjectionType: aws.String("ALL"),
+				},
+				KeySchema: []*dynamodb.KeySchemaElement{
+					{
+						AttributeName: aws.String("name_date"),
+						KeyType:       aws.String(dynamodb.KeyTypeHash),
 					},
 				},
 				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
@@ -393,6 +418,42 @@ func (t NoRangeThingWithCompositeAttributesTable) scanNoRangeThingWithCompositeA
 	return err
 }
 
+func (t NoRangeThingWithCompositeAttributesTable) getNoRangeThingWithCompositeAttributesByNameDate(ctx context.Context, nameDate string) (*models.NoRangeThingWithCompositeAttributes, error) {
+	queryInput := &dynamodb.QueryInput{
+		TableName: aws.String(t.name()),
+		IndexName: aws.String("nameDate"),
+		ExpressionAttributeNames: map[string]*string{
+			"#NAME_DATE": aws.String("name_date"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":nameDate": &dynamodb.AttributeValue{
+				S: aws.String(nameDate),
+			},
+		},
+		KeyConditionExpression: aws.String("#NAME_DATE = :nameDate"),
+	}
+
+	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case dynamodb.ErrCodeResourceNotFoundException:
+				return nil, fmt.Errorf("table or index not found: %s", t.name())
+			}
+		}
+		return nil, err
+	}
+	if len(queryOutput.Items) == 0 {
+		return nil, db.ErrNoRangeThingWithCompositeAttributesByNameDateNotFound{NameDate: nameDate}
+	}
+
+	var noRangeThingWithCompositeAttributes models.NoRangeThingWithCompositeAttributes
+	if err := decodeNoRangeThingWithCompositeAttributes(queryOutput.Items[0], &noRangeThingWithCompositeAttributes); err != nil {
+		return nil, err
+	}
+	return &noRangeThingWithCompositeAttributes, nil
+}
+
 // encodeNoRangeThingWithCompositeAttributes encodes a NoRangeThingWithCompositeAttributes as a DynamoDB map of attribute values.
 func encodeNoRangeThingWithCompositeAttributes(m models.NoRangeThingWithCompositeAttributes) (map[string]*dynamodb.AttributeValue, error) {
 	val, err := dynamodbattribute.MarshalMap(ddbNoRangeThingWithCompositeAttributes{
@@ -429,6 +490,15 @@ func encodeNoRangeThingWithCompositeAttributes(m models.NoRangeThingWithComposit
 		return nil, err
 	}
 	for k, v := range nameVersion {
+		val[k] = v
+	}
+	nameDate, err := dynamodbattribute.MarshalMap(ddbNoRangeThingWithCompositeAttributesGSINameDate{
+		NameDate: fmt.Sprintf("%s:%s", *m.Name, *m.Date),
+	})
+	if err != nil {
+		return nil, err
+	}
+	for k, v := range nameDate {
 		val[k] = v
 	}
 	return val, err

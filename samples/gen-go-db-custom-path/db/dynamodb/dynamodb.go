@@ -558,6 +558,11 @@ func (d DB) ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx con
 	return d.noRangeThingWithCompositeAttributesTable.scanNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx, input, fn)
 }
 
+// GetNoRangeThingWithCompositeAttributesByNameDate retrieves a NoRangeThingWithCompositeAttributes from the database.
+func (d DB) GetNoRangeThingWithCompositeAttributesByNameDate(ctx context.Context, name string, date strfmt.DateTime) (*models.NoRangeThingWithCompositeAttributes, error) {
+	return d.noRangeThingWithCompositeAttributesTable.getNoRangeThingWithCompositeAttributesByNameDate(ctx, name, date)
+}
+
 // SaveSimpleThing saves a SimpleThing to the database.
 func (d DB) SaveSimpleThing(ctx context.Context, m models.SimpleThing) error {
 	return d.simpleThingTable.saveSimpleThing(ctx, m)

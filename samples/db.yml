@@ -413,6 +413,9 @@ definitions:
       - AttributeName: name_version
         Properties: [ name, version ]
         Separator: ":"
+      - AttributeName: name_date
+        Properties: [ name, date ]
+        Separator: ":"
       DynamoDB:
         KeySchema:
         - AttributeName: name_branch
@@ -426,6 +429,12 @@ definitions:
             KeyType: HASH
           - AttributeName: date
             KeyType: RANGE
+        - IndexName: nameDate
+          Projection:
+            ProjectionType: ALL
+          KeySchema:
+          - AttributeName: name_date
+            KeyType: HASH
     type: object
     required:
     - name
