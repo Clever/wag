@@ -24,6 +24,10 @@ type Interface interface {
     {{- $pkModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
     // Save{{ $modelName }} saves a {{ $modelName }} to the database.
     Save{{ $modelName }}(ctx context.Context, m models.{{ $modelName }}) error
+    {{- if $xdbConfig.AllowBatchWrites }}
+    // SaveArrayOf{{ $modelName }} batch saves all items in []{{ $modelName }} to the database.
+    SaveArrayOf{{ $modelName }}(ctx context.Context, ms []models.{{ $modelName }}) error
+    {{- end }}
     // Get{{ $modelName }} retrieves a {{ $modelName }} from the database.
     Get{{ $modelName }}(ctx context.Context,
 	{{- range $_, $attributeName := $pkModelAttributeNames }}

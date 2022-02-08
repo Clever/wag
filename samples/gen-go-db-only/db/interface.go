@@ -104,6 +104,19 @@ type Interface interface {
 	// ScanThingsByNameAndCreatedAt runs a scan on the NameAndCreatedAt index.
 	ScanThingsByNameAndCreatedAt(ctx context.Context, input ScanThingsByNameAndCreatedAtInput, fn func(m *models.Thing, lastThing bool) bool) error
 
+	// SaveThingAllowingBatchWrites saves a ThingAllowingBatchWrites to the database.
+	SaveThingAllowingBatchWrites(ctx context.Context, m models.ThingAllowingBatchWrites) error
+	// SaveArrayOfThingAllowingBatchWrites batch saves all items in []ThingAllowingBatchWrites to the database.
+	SaveArrayOfThingAllowingBatchWrites(ctx context.Context, ms []models.ThingAllowingBatchWrites) error
+	// GetThingAllowingBatchWrites retrieves a ThingAllowingBatchWrites from the database.
+	GetThingAllowingBatchWrites(ctx context.Context, name string, version int64) (*models.ThingAllowingBatchWrites, error)
+	// ScanThingAllowingBatchWritess runs a scan on the ThingAllowingBatchWritess table.
+	ScanThingAllowingBatchWritess(ctx context.Context, input ScanThingAllowingBatchWritessInput, fn func(m *models.ThingAllowingBatchWrites, lastThingAllowingBatchWrites bool) bool) error
+	// GetThingAllowingBatchWritessByNameAndVersion retrieves a page of ThingAllowingBatchWritess from the database.
+	GetThingAllowingBatchWritessByNameAndVersion(ctx context.Context, input GetThingAllowingBatchWritessByNameAndVersionInput, fn func(m *models.ThingAllowingBatchWrites, lastThingAllowingBatchWrites bool) bool) error
+	// DeleteThingAllowingBatchWrites deletes a ThingAllowingBatchWrites from the database.
+	DeleteThingAllowingBatchWrites(ctx context.Context, name string, version int64) error
+
 	// SaveThingWithCompositeAttributes saves a ThingWithCompositeAttributes to the database.
 	SaveThingWithCompositeAttributes(ctx context.Context, m models.ThingWithCompositeAttributes) error
 	// GetThingWithCompositeAttributes retrieves a ThingWithCompositeAttributes from the database.
@@ -766,6 +779,58 @@ var _ error = ErrThingAlreadyExists{}
 // Error returns a description of the error.
 func (e ErrThingAlreadyExists) Error() string {
 	return "Thing already exists"
+}
+
+// ScanThingAllowingBatchWritessInput is the input to the ScanThingAllowingBatchWritess method.
+type ScanThingAllowingBatchWritessInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingAllowingBatchWrites
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// GetThingAllowingBatchWritessByNameAndVersionInput is the query input to GetThingAllowingBatchWritessByNameAndVersion.
+type GetThingAllowingBatchWritessByNameAndVersionInput struct {
+	// Name is required
+	Name              string
+	VersionStartingAt *int64
+	// StartingAfter is a required specification of an exclusive starting point.
+	StartingAfter *models.ThingAllowingBatchWrites
+	Descending    bool
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+}
+
+// ErrThingAllowingBatchWritesNotFound is returned when the database fails to find a ThingAllowingBatchWrites.
+type ErrThingAllowingBatchWritesNotFound struct {
+	Name    string
+	Version int64
+}
+
+var _ error = ErrThingAllowingBatchWritesNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingAllowingBatchWritesNotFound) Error() string {
+	return "could not find ThingAllowingBatchWrites"
+}
+
+// ErrThingAllowingBatchWritesAlreadyExists is returned when trying to overwrite a ThingAllowingBatchWrites.
+type ErrThingAllowingBatchWritesAlreadyExists struct {
+	Name    string
+	Version int64
+}
+
+var _ error = ErrThingAllowingBatchWritesAlreadyExists{}
+
+// Error returns a description of the error.
+func (e ErrThingAllowingBatchWritesAlreadyExists) Error() string {
+	return "ThingAllowingBatchWrites already exists"
 }
 
 // ScanThingWithCompositeAttributessInput is the input to the ScanThingWithCompositeAttributess method.

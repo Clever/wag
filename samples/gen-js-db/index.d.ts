@@ -145,6 +145,15 @@ declare namespace SwaggerTest {
   version?: number;
 };
     
+    type ThingAllowingBatchWrites = {
+  category?: Category;
+  createdAt?: string;
+  id?: string;
+  name?: string;
+  nestedObject?: Object;
+  version?: number;
+};
+    
     type ThingWithCompositeAttributes = {
   branch: string;
   date: string;

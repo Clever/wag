@@ -40,6 +40,8 @@ type Config struct {
 	TeacherSharingRuleTable TeacherSharingRuleTable
 	// ThingTable configuration.
 	ThingTable ThingTable
+	// ThingAllowingBatchWritesTable configuration.
+	ThingAllowingBatchWritesTable ThingAllowingBatchWritesTable
 	// ThingWithCompositeAttributesTable configuration.
 	ThingWithCompositeAttributesTable ThingWithCompositeAttributesTable
 	// ThingWithCompositeEnumAttributesTable configuration.
@@ -63,6 +65,10 @@ type Config struct {
 	// ThingWithUnderscoresTable configuration.
 	ThingWithUnderscoresTable ThingWithUnderscoresTable
 }
+
+// maxDynamoDBBatchItems is the AWS-defined maximum number of items that can be written at once
+// https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_BatchWriteItem.html
+const maxDynamoDBBatchItems = 25
 
 // New creates a new DB object.
 func New(config Config) (*DB, error) {
@@ -162,6 +168,20 @@ func New(config Config) (*DB, error) {
 	}
 	if thingTable.WriteCapacityUnits == 0 {
 		thingTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
+	// configure ThingAllowingBatchWrites table
+	thingAllowingBatchWritesTable := config.ThingAllowingBatchWritesTable
+	if thingAllowingBatchWritesTable.DynamoDBAPI == nil {
+		thingAllowingBatchWritesTable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if thingAllowingBatchWritesTable.Prefix == "" {
+		thingAllowingBatchWritesTable.Prefix = config.DefaultPrefix
+	}
+	if thingAllowingBatchWritesTable.ReadCapacityUnits == 0 {
+		thingAllowingBatchWritesTable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if thingAllowingBatchWritesTable.WriteCapacityUnits == 0 {
+		thingAllowingBatchWritesTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
 	// configure ThingWithCompositeAttributes table
 	thingWithCompositeAttributesTable := config.ThingWithCompositeAttributesTable
@@ -325,6 +345,7 @@ func New(config Config) (*DB, error) {
 		simpleThingTable:                                     simpleThingTable,
 		teacherSharingRuleTable:                              teacherSharingRuleTable,
 		thingTable:                                           thingTable,
+		thingAllowingBatchWritesTable:                        thingAllowingBatchWritesTable,
 		thingWithCompositeAttributesTable:                    thingWithCompositeAttributesTable,
 		thingWithCompositeEnumAttributesTable:                thingWithCompositeEnumAttributesTable,
 		thingWithDateRangeTable:                              thingWithDateRangeTable,
@@ -347,6 +368,7 @@ type DB struct {
 	simpleThingTable                                     SimpleThingTable
 	teacherSharingRuleTable                              TeacherSharingRuleTable
 	thingTable                                           ThingTable
+	thingAllowingBatchWritesTable                        ThingAllowingBatchWritesTable
 	thingWithCompositeAttributesTable                    ThingWithCompositeAttributesTable
 	thingWithCompositeEnumAttributesTable                ThingWithCompositeEnumAttributesTable
 	thingWithDateRangeTable                              ThingWithDateRangeTable
@@ -380,6 +402,9 @@ func (d DB) CreateTables(ctx context.Context) error {
 		return err
 	}
 	if err := d.thingTable.create(ctx); err != nil {
+		return err
+	}
+	if err := d.thingAllowingBatchWritesTable.create(ctx); err != nil {
 		return err
 	}
 	if err := d.thingWithCompositeAttributesTable.create(ctx); err != nil {
@@ -631,6 +656,36 @@ func (d DB) GetThingsByNameAndCreatedAt(ctx context.Context, input db.GetThingsB
 // ScanThingsByNameAndCreatedAt runs a scan on the NameAndCreatedAt index.
 func (d DB) ScanThingsByNameAndCreatedAt(ctx context.Context, input db.ScanThingsByNameAndCreatedAtInput, fn func(m *models.Thing, lastThing bool) bool) error {
 	return d.thingTable.scanThingsByNameAndCreatedAt(ctx, input, fn)
+}
+
+// SaveThingAllowingBatchWrites saves a ThingAllowingBatchWrites to the database.
+func (d DB) SaveThingAllowingBatchWrites(ctx context.Context, m models.ThingAllowingBatchWrites) error {
+	return d.thingAllowingBatchWritesTable.saveThingAllowingBatchWrites(ctx, m)
+}
+
+// SaveArrayOfThingAllowingBatchWrites batch saves all items in the ThingAllowingBatchWrites slice to the database.
+func (d DB) SaveArrayOfThingAllowingBatchWrites(ctx context.Context, m []models.ThingAllowingBatchWrites) error {
+	return d.thingAllowingBatchWritesTable.saveArrayOfThingAllowingBatchWrites(ctx, m)
+}
+
+// GetThingAllowingBatchWrites retrieves a ThingAllowingBatchWrites from the database.
+func (d DB) GetThingAllowingBatchWrites(ctx context.Context, name string, version int64) (*models.ThingAllowingBatchWrites, error) {
+	return d.thingAllowingBatchWritesTable.getThingAllowingBatchWrites(ctx, name, version)
+}
+
+// ScanThingAllowingBatchWritess runs a scan on the ThingAllowingBatchWritess table.
+func (d DB) ScanThingAllowingBatchWritess(ctx context.Context, input db.ScanThingAllowingBatchWritessInput, fn func(m *models.ThingAllowingBatchWrites, lastThingAllowingBatchWrites bool) bool) error {
+	return d.thingAllowingBatchWritesTable.scanThingAllowingBatchWritess(ctx, input, fn)
+}
+
+// GetThingAllowingBatchWritessByNameAndVersion retrieves a page of ThingAllowingBatchWritess from the database.
+func (d DB) GetThingAllowingBatchWritessByNameAndVersion(ctx context.Context, input db.GetThingAllowingBatchWritessByNameAndVersionInput, fn func(m *models.ThingAllowingBatchWrites, lastThingAllowingBatchWrites bool) bool) error {
+	return d.thingAllowingBatchWritesTable.getThingAllowingBatchWritessByNameAndVersion(ctx, input, fn)
+}
+
+// DeleteThingAllowingBatchWrites deletes a ThingAllowingBatchWrites from the database.
+func (d DB) DeleteThingAllowingBatchWrites(ctx context.Context, name string, version int64) error {
+	return d.thingAllowingBatchWritesTable.deleteThingAllowingBatchWrites(ctx, name, version)
 }
 
 // SaveThingWithCompositeAttributes saves a ThingWithCompositeAttributes to the database.

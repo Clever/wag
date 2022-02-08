@@ -39,6 +39,10 @@ type Config struct {
   {{- end }}
 }
 
+// maxDynamoDBBatchItems is the AWS-defined maximum number of items that can be written at once
+// https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_BatchWriteItem.html
+const maxDynamoDBBatchItems = 25
+
 // New creates a new DB object.
 func New(config Config) (*DB, error) {
   if config.DynamoDBAPI == nil {
@@ -114,6 +118,13 @@ func (d DB) CreateTables(ctx context.Context) error {
 func (d DB) Save{{ $modelName }}(ctx context.Context, m models.{{ $modelName }}) error {
   return d.{{ $modelNameCamel }}Table.save{{ $modelName }}(ctx, m)
 }
+
+{{- if $xdbConfig.AllowBatchWrites }}
+// SaveArrayOf{{ $modelName }} batch saves all items in the {{ $modelName }} slice to the database.
+func (d DB) SaveArrayOf{{ $modelName }}(ctx context.Context, m []models.{{ $modelName }}) error {
+  return d.{{ $modelNameCamel }}Table.saveArrayOf{{ $modelName }}(ctx, m)
+}
+{{- end }}
 
 // Get{{ $modelName }} retrieves a {{ $modelName }} from the database.
 func (d DB) Get{{ $modelName }}(ctx context.Context,

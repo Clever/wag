@@ -64,6 +64,11 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("ScanThingsByID", ScanThingsByID(dbFactory(), t))
 	t.Run("GetThingsByNameAndCreatedAt", GetThingsByNameAndCreatedAt(dbFactory(), t))
 	t.Run("ScanThingsByNameAndCreatedAt", ScanThingsByNameAndCreatedAt(dbFactory(), t))
+	t.Run("GetThingAllowingBatchWrites", GetThingAllowingBatchWrites(dbFactory(), t))
+	t.Run("ScanThingAllowingBatchWritess", ScanThingAllowingBatchWritess(dbFactory(), t))
+	t.Run("GetThingAllowingBatchWritessByNameAndVersion", GetThingAllowingBatchWritessByNameAndVersion(dbFactory(), t))
+	t.Run("SaveThingAllowingBatchWrites", SaveThingAllowingBatchWrites(dbFactory(), t))
+	t.Run("DeleteThingAllowingBatchWrites", DeleteThingAllowingBatchWrites(dbFactory(), t))
 	t.Run("GetThingWithCompositeAttributes", GetThingWithCompositeAttributes(dbFactory(), t))
 	t.Run("ScanThingWithCompositeAttributess", ScanThingWithCompositeAttributess(dbFactory(), t))
 	t.Run("GetThingWithCompositeAttributessByNameBranchAndDate", GetThingWithCompositeAttributessByNameBranchAndDate(dbFactory(), t))
@@ -4133,6 +4138,345 @@ func ScanThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.
 
 			require.Len(t, actual, 1)
 		})
+	}
+}
+
+func GetThingAllowingBatchWrites(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingAllowingBatchWrites{
+			Name:    "string1",
+			Version: 1,
+		}
+		require.Nil(t, s.SaveThingAllowingBatchWrites(ctx, m))
+		m2, err := s.GetThingAllowingBatchWrites(ctx, m.Name, m.Version)
+		require.Nil(t, err)
+		require.Equal(t, m.Name, m2.Name)
+		require.Equal(t, m.Version, m2.Version)
+
+		_, err = s.GetThingAllowingBatchWrites(ctx, "string2", 2)
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrThingAllowingBatchWritesNotFound{})
+	}
+}
+
+type getThingAllowingBatchWritessByNameAndVersionInput struct {
+	ctx   context.Context
+	input db.GetThingAllowingBatchWritessByNameAndVersionInput
+}
+type getThingAllowingBatchWritessByNameAndVersionOutput struct {
+	thingAllowingBatchWritess []models.ThingAllowingBatchWrites
+	err                       error
+}
+type getThingAllowingBatchWritessByNameAndVersionTest struct {
+	testName string
+	d        db.Interface
+	input    getThingAllowingBatchWritessByNameAndVersionInput
+	output   getThingAllowingBatchWritessByNameAndVersionOutput
+}
+
+func (g getThingAllowingBatchWritessByNameAndVersionTest) run(t *testing.T) {
+	thingAllowingBatchWritess := []models.ThingAllowingBatchWrites{}
+	fn := func(m *models.ThingAllowingBatchWrites, lastThingAllowingBatchWrites bool) bool {
+		thingAllowingBatchWritess = append(thingAllowingBatchWritess, *m)
+		if lastThingAllowingBatchWrites {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingAllowingBatchWritessByNameAndVersion(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.thingAllowingBatchWritess, thingAllowingBatchWritess)
+}
+
+func GetThingAllowingBatchWritessByNameAndVersion(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingAllowingBatchWrites(ctx, models.ThingAllowingBatchWrites{
+			Name:    "string1",
+			Version: 1,
+		}))
+		require.Nil(t, d.SaveThingAllowingBatchWrites(ctx, models.ThingAllowingBatchWrites{
+			Name:    "string1",
+			Version: 2,
+		}))
+		require.Nil(t, d.SaveThingAllowingBatchWrites(ctx, models.ThingAllowingBatchWrites{
+			Name:    "string1",
+			Version: 3,
+		}))
+		limit := int64(3)
+		tests := []getThingAllowingBatchWritessByNameAndVersionTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getThingAllowingBatchWritessByNameAndVersionInput{
+					ctx: context.Background(),
+					input: db.GetThingAllowingBatchWritessByNameAndVersionInput{
+						Name:  "string1",
+						Limit: &limit,
+					},
+				},
+				output: getThingAllowingBatchWritessByNameAndVersionOutput{
+					thingAllowingBatchWritess: []models.ThingAllowingBatchWrites{
+						models.ThingAllowingBatchWrites{
+							Name:    "string1",
+							Version: 1,
+						},
+						models.ThingAllowingBatchWrites{
+							Name:    "string1",
+							Version: 2,
+						},
+						models.ThingAllowingBatchWrites{
+							Name:    "string1",
+							Version: 3,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getThingAllowingBatchWritessByNameAndVersionInput{
+					ctx: context.Background(),
+					input: db.GetThingAllowingBatchWritessByNameAndVersionInput{
+						Name:       "string1",
+						Descending: true,
+					},
+				},
+				output: getThingAllowingBatchWritessByNameAndVersionOutput{
+					thingAllowingBatchWritess: []models.ThingAllowingBatchWrites{
+						models.ThingAllowingBatchWrites{
+							Name:    "string1",
+							Version: 3,
+						},
+						models.ThingAllowingBatchWrites{
+							Name:    "string1",
+							Version: 2,
+						},
+						models.ThingAllowingBatchWrites{
+							Name:    "string1",
+							Version: 1,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getThingAllowingBatchWritessByNameAndVersionInput{
+					ctx: context.Background(),
+					input: db.GetThingAllowingBatchWritessByNameAndVersionInput{
+						Name: "string1",
+						StartingAfter: &models.ThingAllowingBatchWrites{
+							Name:    "string1",
+							Version: 1,
+						},
+					},
+				},
+				output: getThingAllowingBatchWritessByNameAndVersionOutput{
+					thingAllowingBatchWritess: []models.ThingAllowingBatchWrites{
+						models.ThingAllowingBatchWrites{
+							Name:    "string1",
+							Version: 2,
+						},
+						models.ThingAllowingBatchWrites{
+							Name:    "string1",
+							Version: 3,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after descending",
+				d:        d,
+				input: getThingAllowingBatchWritessByNameAndVersionInput{
+					ctx: context.Background(),
+					input: db.GetThingAllowingBatchWritessByNameAndVersionInput{
+						Name: "string1",
+						StartingAfter: &models.ThingAllowingBatchWrites{
+							Name:    "string1",
+							Version: 3,
+						},
+						Descending: true,
+					},
+				},
+				output: getThingAllowingBatchWritessByNameAndVersionOutput{
+					thingAllowingBatchWritess: []models.ThingAllowingBatchWrites{
+						models.ThingAllowingBatchWrites{
+							Name:    "string1",
+							Version: 2,
+						},
+						models.ThingAllowingBatchWrites{
+							Name:    "string1",
+							Version: 1,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingAllowingBatchWritessByNameAndVersionInput{
+					ctx: context.Background(),
+					input: db.GetThingAllowingBatchWritessByNameAndVersionInput{
+						Name:              "string1",
+						VersionStartingAt: db.Int64(2),
+					},
+				},
+				output: getThingAllowingBatchWritessByNameAndVersionOutput{
+					thingAllowingBatchWritess: []models.ThingAllowingBatchWrites{
+						models.ThingAllowingBatchWrites{
+							Name:    "string1",
+							Version: 2,
+						},
+						models.ThingAllowingBatchWrites{
+							Name:    "string1",
+							Version: 3,
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
+func ScanThingAllowingBatchWritess(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingAllowingBatchWrites(ctx, models.ThingAllowingBatchWrites{
+			Name:    "string1",
+			Version: 1,
+		}))
+		require.Nil(t, d.SaveThingAllowingBatchWrites(ctx, models.ThingAllowingBatchWrites{
+			Name:    "string2",
+			Version: 2,
+		}))
+		require.Nil(t, d.SaveThingAllowingBatchWrites(ctx, models.ThingAllowingBatchWrites{
+			Name:    "string3",
+			Version: 3,
+		}))
+
+		t.Run("basic", func(t *testing.T) {
+			expected := []models.ThingAllowingBatchWrites{
+				models.ThingAllowingBatchWrites{
+					Name:    "string1",
+					Version: 1,
+				},
+				models.ThingAllowingBatchWrites{
+					Name:    "string2",
+					Version: 2,
+				},
+				models.ThingAllowingBatchWrites{
+					Name:    "string3",
+					Version: 3,
+				},
+			}
+			actual := []models.ThingAllowingBatchWrites{}
+			err := d.ScanThingAllowingBatchWritess(ctx, db.ScanThingAllowingBatchWritessInput{}, func(m *models.ThingAllowingBatchWrites, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+			// We can't use Equal here because Scan doesn't return items in any specific order.
+			require.ElementsMatch(t, expected, actual)
+		})
+
+		t.Run("starting after", func(t *testing.T) {
+			// Scan for everything.
+			allItems := []models.ThingAllowingBatchWrites{}
+			err := d.ScanThingAllowingBatchWritess(ctx, db.ScanThingAllowingBatchWritessInput{}, func(m *models.ThingAllowingBatchWrites, last bool) bool {
+				allItems = append(allItems, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			firstItem := allItems[0]
+
+			// Scan for everything after the first item.
+			scanInput := db.ScanThingAllowingBatchWritessInput{
+				StartingAfter: &models.ThingAllowingBatchWrites{
+					Name:    firstItem.Name,
+					Version: firstItem.Version,
+				},
+			}
+			actual := []models.ThingAllowingBatchWrites{}
+			err = d.ScanThingAllowingBatchWritess(ctx, scanInput, func(m *models.ThingAllowingBatchWrites, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			expected := allItems[1:]
+			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingAllowingBatchWritessInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingAllowingBatchWrites{}
+			err := d.ScanThingAllowingBatchWritess(ctx, scanInput, func(m *models.ThingAllowingBatchWrites, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
+		})
+	}
+}
+
+func SaveThingAllowingBatchWrites(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingAllowingBatchWrites{
+			Name:    "string1",
+			Version: 1,
+		}
+		require.Nil(t, s.SaveThingAllowingBatchWrites(ctx, m))
+		require.IsType(t, db.ErrThingAllowingBatchWritesAlreadyExists{}, s.SaveThingAllowingBatchWrites(ctx, m))
+	}
+}
+
+func DeleteThingAllowingBatchWrites(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingAllowingBatchWrites{
+			Name:    "string1",
+			Version: 1,
+		}
+		require.Nil(t, s.SaveThingAllowingBatchWrites(ctx, m))
+		require.Nil(t, s.DeleteThingAllowingBatchWrites(ctx, m.Name, m.Version))
 	}
 }
 

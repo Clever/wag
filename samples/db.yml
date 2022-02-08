@@ -183,6 +183,33 @@ definitions:
       id_app:
         type: string
 
+  ThingAllowingBatchWrites:
+    x-db:
+      AllowOverwrites: false
+      AllowPrimaryIndexScan: true
+      AllowBatchWrites: true
+      DynamoDB:
+        KeySchema:
+          - AttributeName: name
+            KeyType: HASH
+          - AttributeName: version
+            KeyType: RANGE
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      version:
+        type: integer
+      createdAt:
+        type: string
+        format: date-time
+      category:
+        $ref: '#/definitions/Category'
+      nestedObject:
+        $ref: '#/definitions/Object'
+
   # Composite hash keys
   ThingWithCompositeAttributes:
     x-db:

@@ -120,6 +120,20 @@ func (mr *MockInterfaceMockRecorder) DeleteThing(ctx, name, version interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThing", reflect.TypeOf((*MockInterface)(nil).DeleteThing), ctx, name, version)
 }
 
+// DeleteThingAllowingBatchWrites mocks base method.
+func (m *MockInterface) DeleteThingAllowingBatchWrites(ctx context.Context, name string, version int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteThingAllowingBatchWrites", ctx, name, version)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteThingAllowingBatchWrites indicates an expected call of DeleteThingAllowingBatchWrites.
+func (mr *MockInterfaceMockRecorder) DeleteThingAllowingBatchWrites(ctx, name, version interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingAllowingBatchWrites", reflect.TypeOf((*MockInterface)(nil).DeleteThingAllowingBatchWrites), ctx, name, version)
+}
+
 // DeleteThingWithCompositeAttributes mocks base method.
 func (m *MockInterface) DeleteThingWithCompositeAttributes(ctx context.Context, name, branch string, date strfmt.DateTime) error {
 	m.ctrl.T.Helper()
@@ -489,6 +503,35 @@ func (m *MockInterface) GetThing(ctx context.Context, name string, version int64
 func (mr *MockInterfaceMockRecorder) GetThing(ctx, name, version interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThing", reflect.TypeOf((*MockInterface)(nil).GetThing), ctx, name, version)
+}
+
+// GetThingAllowingBatchWrites mocks base method.
+func (m *MockInterface) GetThingAllowingBatchWrites(ctx context.Context, name string, version int64) (*models.ThingAllowingBatchWrites, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetThingAllowingBatchWrites", ctx, name, version)
+	ret0, _ := ret[0].(*models.ThingAllowingBatchWrites)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingAllowingBatchWrites indicates an expected call of GetThingAllowingBatchWrites.
+func (mr *MockInterfaceMockRecorder) GetThingAllowingBatchWrites(ctx, name, version interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingAllowingBatchWrites", reflect.TypeOf((*MockInterface)(nil).GetThingAllowingBatchWrites), ctx, name, version)
+}
+
+// GetThingAllowingBatchWritessByNameAndVersion mocks base method.
+func (m *MockInterface) GetThingAllowingBatchWritessByNameAndVersion(ctx context.Context, input GetThingAllowingBatchWritessByNameAndVersionInput, fn func(*models.ThingAllowingBatchWrites, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetThingAllowingBatchWritessByNameAndVersion", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingAllowingBatchWritessByNameAndVersion indicates an expected call of GetThingAllowingBatchWritessByNameAndVersion.
+func (mr *MockInterfaceMockRecorder) GetThingAllowingBatchWritessByNameAndVersion(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingAllowingBatchWritessByNameAndVersion", reflect.TypeOf((*MockInterface)(nil).GetThingAllowingBatchWritessByNameAndVersion), ctx, input, fn)
 }
 
 // GetThingByID mocks base method.
@@ -881,6 +924,20 @@ func (mr *MockInterfaceMockRecorder) GetThingsByNameAndVersion(ctx, input, fn in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingsByNameAndVersion", reflect.TypeOf((*MockInterface)(nil).GetThingsByNameAndVersion), ctx, input, fn)
 }
 
+// SaveArrayOfThingAllowingBatchWrites mocks base method.
+func (m *MockInterface) SaveArrayOfThingAllowingBatchWrites(ctx context.Context, ms []models.ThingAllowingBatchWrites) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveArrayOfThingAllowingBatchWrites", ctx, ms)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveArrayOfThingAllowingBatchWrites indicates an expected call of SaveArrayOfThingAllowingBatchWrites.
+func (mr *MockInterfaceMockRecorder) SaveArrayOfThingAllowingBatchWrites(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveArrayOfThingAllowingBatchWrites", reflect.TypeOf((*MockInterface)(nil).SaveArrayOfThingAllowingBatchWrites), ctx, ms)
+}
+
 // SaveDeployment mocks base method.
 func (m_2 *MockInterface) SaveDeployment(ctx context.Context, m models.Deployment) error {
 	m_2.ctrl.T.Helper()
@@ -963,6 +1020,20 @@ func (m_2 *MockInterface) SaveThing(ctx context.Context, m models.Thing) error {
 func (mr *MockInterfaceMockRecorder) SaveThing(ctx, m interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThing", reflect.TypeOf((*MockInterface)(nil).SaveThing), ctx, m)
+}
+
+// SaveThingAllowingBatchWrites mocks base method.
+func (m_2 *MockInterface) SaveThingAllowingBatchWrites(ctx context.Context, m models.ThingAllowingBatchWrites) error {
+	m_2.ctrl.T.Helper()
+	ret := m_2.ctrl.Call(m_2, "SaveThingAllowingBatchWrites", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveThingAllowingBatchWrites indicates an expected call of SaveThingAllowingBatchWrites.
+func (mr *MockInterfaceMockRecorder) SaveThingAllowingBatchWrites(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingAllowingBatchWrites", reflect.TypeOf((*MockInterface)(nil).SaveThingAllowingBatchWrites), ctx, m)
 }
 
 // SaveThingWithCompositeAttributes mocks base method.
@@ -1257,6 +1328,20 @@ func (m *MockInterface) ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx
 func (mr *MockInterfaceMockRecorder) ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx, input, fn interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp", reflect.TypeOf((*MockInterface)(nil).ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp), ctx, input, fn)
+}
+
+// ScanThingAllowingBatchWritess mocks base method.
+func (m *MockInterface) ScanThingAllowingBatchWritess(ctx context.Context, input ScanThingAllowingBatchWritessInput, fn func(*models.ThingAllowingBatchWrites, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ScanThingAllowingBatchWritess", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ScanThingAllowingBatchWritess indicates an expected call of ScanThingAllowingBatchWritess.
+func (mr *MockInterfaceMockRecorder) ScanThingAllowingBatchWritess(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingAllowingBatchWritess", reflect.TypeOf((*MockInterface)(nil).ScanThingAllowingBatchWritess), ctx, input, fn)
 }
 
 // ScanThingWithCompositeAttributess mocks base method.
