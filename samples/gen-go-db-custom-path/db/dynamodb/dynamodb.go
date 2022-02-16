@@ -42,6 +42,8 @@ type Config struct {
 	ThingTable ThingTable
 	// ThingAllowingBatchWritesTable configuration.
 	ThingAllowingBatchWritesTable ThingAllowingBatchWritesTable
+	// ThingAllowingBatchWritesWithCompositeAttributesTable configuration.
+	ThingAllowingBatchWritesWithCompositeAttributesTable ThingAllowingBatchWritesWithCompositeAttributesTable
 	// ThingWithCompositeAttributesTable configuration.
 	ThingWithCompositeAttributesTable ThingWithCompositeAttributesTable
 	// ThingWithCompositeEnumAttributesTable configuration.
@@ -182,6 +184,20 @@ func New(config Config) (*DB, error) {
 	}
 	if thingAllowingBatchWritesTable.WriteCapacityUnits == 0 {
 		thingAllowingBatchWritesTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
+	// configure ThingAllowingBatchWritesWithCompositeAttributes table
+	thingAllowingBatchWritesWithCompositeAttributesTable := config.ThingAllowingBatchWritesWithCompositeAttributesTable
+	if thingAllowingBatchWritesWithCompositeAttributesTable.DynamoDBAPI == nil {
+		thingAllowingBatchWritesWithCompositeAttributesTable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if thingAllowingBatchWritesWithCompositeAttributesTable.Prefix == "" {
+		thingAllowingBatchWritesWithCompositeAttributesTable.Prefix = config.DefaultPrefix
+	}
+	if thingAllowingBatchWritesWithCompositeAttributesTable.ReadCapacityUnits == 0 {
+		thingAllowingBatchWritesWithCompositeAttributesTable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if thingAllowingBatchWritesWithCompositeAttributesTable.WriteCapacityUnits == 0 {
+		thingAllowingBatchWritesWithCompositeAttributesTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
 	// configure ThingWithCompositeAttributes table
 	thingWithCompositeAttributesTable := config.ThingWithCompositeAttributesTable
@@ -339,13 +355,14 @@ func New(config Config) (*DB, error) {
 	}
 
 	return &DB{
-		deploymentTable:                                      deploymentTable,
-		eventTable:                                           eventTable,
-		noRangeThingWithCompositeAttributesTable:             noRangeThingWithCompositeAttributesTable,
-		simpleThingTable:                                     simpleThingTable,
-		teacherSharingRuleTable:                              teacherSharingRuleTable,
-		thingTable:                                           thingTable,
-		thingAllowingBatchWritesTable:                        thingAllowingBatchWritesTable,
+		deploymentTable:                          deploymentTable,
+		eventTable:                               eventTable,
+		noRangeThingWithCompositeAttributesTable: noRangeThingWithCompositeAttributesTable,
+		simpleThingTable:                         simpleThingTable,
+		teacherSharingRuleTable:                  teacherSharingRuleTable,
+		thingTable:                               thingTable,
+		thingAllowingBatchWritesTable:            thingAllowingBatchWritesTable,
+		thingAllowingBatchWritesWithCompositeAttributesTable: thingAllowingBatchWritesWithCompositeAttributesTable,
 		thingWithCompositeAttributesTable:                    thingWithCompositeAttributesTable,
 		thingWithCompositeEnumAttributesTable:                thingWithCompositeEnumAttributesTable,
 		thingWithDateRangeTable:                              thingWithDateRangeTable,
@@ -369,6 +386,7 @@ type DB struct {
 	teacherSharingRuleTable                              TeacherSharingRuleTable
 	thingTable                                           ThingTable
 	thingAllowingBatchWritesTable                        ThingAllowingBatchWritesTable
+	thingAllowingBatchWritesWithCompositeAttributesTable ThingAllowingBatchWritesWithCompositeAttributesTable
 	thingWithCompositeAttributesTable                    ThingWithCompositeAttributesTable
 	thingWithCompositeEnumAttributesTable                ThingWithCompositeEnumAttributesTable
 	thingWithDateRangeTable                              ThingWithDateRangeTable
@@ -405,6 +423,9 @@ func (d DB) CreateTables(ctx context.Context) error {
 		return err
 	}
 	if err := d.thingAllowingBatchWritesTable.create(ctx); err != nil {
+		return err
+	}
+	if err := d.thingAllowingBatchWritesWithCompositeAttributesTable.create(ctx); err != nil {
 		return err
 	}
 	if err := d.thingWithCompositeAttributesTable.create(ctx); err != nil {
@@ -683,6 +704,11 @@ func (d DB) SaveArrayOfThingAllowingBatchWrites(ctx context.Context, m []models.
 	return d.thingAllowingBatchWritesTable.saveArrayOfThingAllowingBatchWrites(ctx, m)
 }
 
+// DeleteArrayOfThingAllowingBatchWrites batch deletes all items in the ThingAllowingBatchWrites slice in the database.
+func (d DB) DeleteArrayOfThingAllowingBatchWrites(ctx context.Context, m []models.ThingAllowingBatchWrites) error {
+	return d.thingAllowingBatchWritesTable.deleteArrayOfThingAllowingBatchWrites(ctx, m)
+}
+
 // GetThingAllowingBatchWrites retrieves a ThingAllowingBatchWrites from the database.
 func (d DB) GetThingAllowingBatchWrites(ctx context.Context, name string, version int64) (*models.ThingAllowingBatchWrites, error) {
 	return d.thingAllowingBatchWritesTable.getThingAllowingBatchWrites(ctx, name, version)
@@ -701,6 +727,41 @@ func (d DB) GetThingAllowingBatchWritessByNameAndVersion(ctx context.Context, in
 // DeleteThingAllowingBatchWrites deletes a ThingAllowingBatchWrites from the database.
 func (d DB) DeleteThingAllowingBatchWrites(ctx context.Context, name string, version int64) error {
 	return d.thingAllowingBatchWritesTable.deleteThingAllowingBatchWrites(ctx, name, version)
+}
+
+// SaveThingAllowingBatchWritesWithCompositeAttributes saves a ThingAllowingBatchWritesWithCompositeAttributes to the database.
+func (d DB) SaveThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, m models.ThingAllowingBatchWritesWithCompositeAttributes) error {
+	return d.thingAllowingBatchWritesWithCompositeAttributesTable.saveThingAllowingBatchWritesWithCompositeAttributes(ctx, m)
+}
+
+// SaveArrayOfThingAllowingBatchWritesWithCompositeAttributes batch saves all items in the ThingAllowingBatchWritesWithCompositeAttributes slice to the database.
+func (d DB) SaveArrayOfThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, m []models.ThingAllowingBatchWritesWithCompositeAttributes) error {
+	return d.thingAllowingBatchWritesWithCompositeAttributesTable.saveArrayOfThingAllowingBatchWritesWithCompositeAttributes(ctx, m)
+}
+
+// DeleteArrayOfThingAllowingBatchWritesWithCompositeAttributes batch deletes all items in the ThingAllowingBatchWritesWithCompositeAttributes slice in the database.
+func (d DB) DeleteArrayOfThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, m []models.ThingAllowingBatchWritesWithCompositeAttributes) error {
+	return d.thingAllowingBatchWritesWithCompositeAttributesTable.deleteArrayOfThingAllowingBatchWritesWithCompositeAttributes(ctx, m)
+}
+
+// GetThingAllowingBatchWritesWithCompositeAttributes retrieves a ThingAllowingBatchWritesWithCompositeAttributes from the database.
+func (d DB) GetThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) (*models.ThingAllowingBatchWritesWithCompositeAttributes, error) {
+	return d.thingAllowingBatchWritesWithCompositeAttributesTable.getThingAllowingBatchWritesWithCompositeAttributes(ctx, name, branch, date)
+}
+
+// ScanThingAllowingBatchWritesWithCompositeAttributess runs a scan on the ThingAllowingBatchWritesWithCompositeAttributess table.
+func (d DB) ScanThingAllowingBatchWritesWithCompositeAttributess(ctx context.Context, input db.ScanThingAllowingBatchWritesWithCompositeAttributessInput, fn func(m *models.ThingAllowingBatchWritesWithCompositeAttributes, lastThingAllowingBatchWritesWithCompositeAttributes bool) bool) error {
+	return d.thingAllowingBatchWritesWithCompositeAttributesTable.scanThingAllowingBatchWritesWithCompositeAttributess(ctx, input, fn)
+}
+
+// GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate retrieves a page of ThingAllowingBatchWritesWithCompositeAttributess from the database.
+func (d DB) GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input db.GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateInput, fn func(m *models.ThingAllowingBatchWritesWithCompositeAttributes, lastThingAllowingBatchWritesWithCompositeAttributes bool) bool) error {
+	return d.thingAllowingBatchWritesWithCompositeAttributesTable.getThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate(ctx, input, fn)
+}
+
+// DeleteThingAllowingBatchWritesWithCompositeAttributes deletes a ThingAllowingBatchWritesWithCompositeAttributes from the database.
+func (d DB) DeleteThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) error {
+	return d.thingAllowingBatchWritesWithCompositeAttributesTable.deleteThingAllowingBatchWritesWithCompositeAttributes(ctx, name, branch, date)
 }
 
 // SaveThingWithCompositeAttributes saves a ThingWithCompositeAttributes to the database.

@@ -235,7 +235,7 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		value += `)`
 		return value
 	},
-	"compositeValueFromArray": func(config XDBConfig, attributeName string, modelVarName string, sliceIdentifier string) string {
+	"compositeValueFromArray": func(config XDBConfig, attributeName string, sliceIdentifier string) string {
 		ca := findCompositeAttribute(config, attributeName)
 		if ca == nil {
 			return "not-a-composite-attribute"
@@ -254,15 +254,11 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		}
 		value += `",`
 		for i, prop := range ca.Properties {
-			value += sliceIdentifier + "."
-			if modelVarName == "m" {
-				// hackyaf: usually "m." signifies it could be a pointer
-				value += strings.Title(attributeToModelValue(config, prop, modelVarName+"."))
-			} else if modelVarName == "" {
-				value += strings.Title(attributeToModelValueNotPtr(config, prop, ""))
-			} else {
-				value += strings.Title(attributeToModelValueNotPtr(config, prop, modelVarName+"."))
+			if attributeIsPointer(config, prop) {
+				value += "*"
 			}
+			value += sliceIdentifier + "."
+			value += strings.Title(attributeToModelValueNotPtr(config, prop, ""))
 			if i != len(ca.Properties)-1 {
 				value += `, `
 			}

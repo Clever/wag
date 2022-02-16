@@ -36,6 +36,34 @@ func (m *MockInterface) EXPECT() *MockInterfaceMockRecorder {
 	return m.recorder
 }
 
+// DeleteArrayOfThingAllowingBatchWrites mocks base method.
+func (m *MockInterface) DeleteArrayOfThingAllowingBatchWrites(ctx context.Context, ms []models.ThingAllowingBatchWrites) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteArrayOfThingAllowingBatchWrites", ctx, ms)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteArrayOfThingAllowingBatchWrites indicates an expected call of DeleteArrayOfThingAllowingBatchWrites.
+func (mr *MockInterfaceMockRecorder) DeleteArrayOfThingAllowingBatchWrites(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteArrayOfThingAllowingBatchWrites", reflect.TypeOf((*MockInterface)(nil).DeleteArrayOfThingAllowingBatchWrites), ctx, ms)
+}
+
+// DeleteArrayOfThingAllowingBatchWritesWithCompositeAttributes mocks base method.
+func (m *MockInterface) DeleteArrayOfThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, ms []models.ThingAllowingBatchWritesWithCompositeAttributes) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteArrayOfThingAllowingBatchWritesWithCompositeAttributes", ctx, ms)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteArrayOfThingAllowingBatchWritesWithCompositeAttributes indicates an expected call of DeleteArrayOfThingAllowingBatchWritesWithCompositeAttributes.
+func (mr *MockInterfaceMockRecorder) DeleteArrayOfThingAllowingBatchWritesWithCompositeAttributes(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteArrayOfThingAllowingBatchWritesWithCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).DeleteArrayOfThingAllowingBatchWritesWithCompositeAttributes), ctx, ms)
+}
+
 // DeleteDeployment mocks base method.
 func (m *MockInterface) DeleteDeployment(ctx context.Context, environment, application, version string) error {
 	m.ctrl.T.Helper()
@@ -132,6 +160,20 @@ func (m *MockInterface) DeleteThingAllowingBatchWrites(ctx context.Context, name
 func (mr *MockInterfaceMockRecorder) DeleteThingAllowingBatchWrites(ctx, name, version interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingAllowingBatchWrites", reflect.TypeOf((*MockInterface)(nil).DeleteThingAllowingBatchWrites), ctx, name, version)
+}
+
+// DeleteThingAllowingBatchWritesWithCompositeAttributes mocks base method.
+func (m *MockInterface) DeleteThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name, branch string, date strfmt.DateTime) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteThingAllowingBatchWritesWithCompositeAttributes", ctx, name, branch, date)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteThingAllowingBatchWritesWithCompositeAttributes indicates an expected call of DeleteThingAllowingBatchWritesWithCompositeAttributes.
+func (mr *MockInterfaceMockRecorder) DeleteThingAllowingBatchWritesWithCompositeAttributes(ctx, name, branch, date interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingAllowingBatchWritesWithCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).DeleteThingAllowingBatchWritesWithCompositeAttributes), ctx, name, branch, date)
 }
 
 // DeleteThingWithCompositeAttributes mocks base method.
@@ -518,6 +560,35 @@ func (m *MockInterface) GetThingAllowingBatchWrites(ctx context.Context, name st
 func (mr *MockInterfaceMockRecorder) GetThingAllowingBatchWrites(ctx, name, version interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingAllowingBatchWrites", reflect.TypeOf((*MockInterface)(nil).GetThingAllowingBatchWrites), ctx, name, version)
+}
+
+// GetThingAllowingBatchWritesWithCompositeAttributes mocks base method.
+func (m *MockInterface) GetThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name, branch string, date strfmt.DateTime) (*models.ThingAllowingBatchWritesWithCompositeAttributes, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetThingAllowingBatchWritesWithCompositeAttributes", ctx, name, branch, date)
+	ret0, _ := ret[0].(*models.ThingAllowingBatchWritesWithCompositeAttributes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingAllowingBatchWritesWithCompositeAttributes indicates an expected call of GetThingAllowingBatchWritesWithCompositeAttributes.
+func (mr *MockInterfaceMockRecorder) GetThingAllowingBatchWritesWithCompositeAttributes(ctx, name, branch, date interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingAllowingBatchWritesWithCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).GetThingAllowingBatchWritesWithCompositeAttributes), ctx, name, branch, date)
+}
+
+// GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate mocks base method.
+func (m *MockInterface) GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateInput, fn func(*models.ThingAllowingBatchWritesWithCompositeAttributes, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate indicates an expected call of GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate.
+func (mr *MockInterfaceMockRecorder) GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate", reflect.TypeOf((*MockInterface)(nil).GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate), ctx, input, fn)
 }
 
 // GetThingAllowingBatchWritessByNameAndVersion mocks base method.
@@ -966,6 +1037,20 @@ func (mr *MockInterfaceMockRecorder) SaveArrayOfThingAllowingBatchWrites(ctx, ms
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveArrayOfThingAllowingBatchWrites", reflect.TypeOf((*MockInterface)(nil).SaveArrayOfThingAllowingBatchWrites), ctx, ms)
 }
 
+// SaveArrayOfThingAllowingBatchWritesWithCompositeAttributes mocks base method.
+func (m *MockInterface) SaveArrayOfThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, ms []models.ThingAllowingBatchWritesWithCompositeAttributes) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveArrayOfThingAllowingBatchWritesWithCompositeAttributes", ctx, ms)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveArrayOfThingAllowingBatchWritesWithCompositeAttributes indicates an expected call of SaveArrayOfThingAllowingBatchWritesWithCompositeAttributes.
+func (mr *MockInterfaceMockRecorder) SaveArrayOfThingAllowingBatchWritesWithCompositeAttributes(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveArrayOfThingAllowingBatchWritesWithCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).SaveArrayOfThingAllowingBatchWritesWithCompositeAttributes), ctx, ms)
+}
+
 // SaveDeployment mocks base method.
 func (m_2 *MockInterface) SaveDeployment(ctx context.Context, m models.Deployment) error {
 	m_2.ctrl.T.Helper()
@@ -1062,6 +1147,20 @@ func (m_2 *MockInterface) SaveThingAllowingBatchWrites(ctx context.Context, m mo
 func (mr *MockInterfaceMockRecorder) SaveThingAllowingBatchWrites(ctx, m interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingAllowingBatchWrites", reflect.TypeOf((*MockInterface)(nil).SaveThingAllowingBatchWrites), ctx, m)
+}
+
+// SaveThingAllowingBatchWritesWithCompositeAttributes mocks base method.
+func (m_2 *MockInterface) SaveThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, m models.ThingAllowingBatchWritesWithCompositeAttributes) error {
+	m_2.ctrl.T.Helper()
+	ret := m_2.ctrl.Call(m_2, "SaveThingAllowingBatchWritesWithCompositeAttributes", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveThingAllowingBatchWritesWithCompositeAttributes indicates an expected call of SaveThingAllowingBatchWritesWithCompositeAttributes.
+func (mr *MockInterfaceMockRecorder) SaveThingAllowingBatchWritesWithCompositeAttributes(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingAllowingBatchWritesWithCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).SaveThingAllowingBatchWritesWithCompositeAttributes), ctx, m)
 }
 
 // SaveThingWithCompositeAttributes mocks base method.
@@ -1356,6 +1455,20 @@ func (m *MockInterface) ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx
 func (mr *MockInterfaceMockRecorder) ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx, input, fn interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp", reflect.TypeOf((*MockInterface)(nil).ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp), ctx, input, fn)
+}
+
+// ScanThingAllowingBatchWritesWithCompositeAttributess mocks base method.
+func (m *MockInterface) ScanThingAllowingBatchWritesWithCompositeAttributess(ctx context.Context, input ScanThingAllowingBatchWritesWithCompositeAttributessInput, fn func(*models.ThingAllowingBatchWritesWithCompositeAttributes, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ScanThingAllowingBatchWritesWithCompositeAttributess", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ScanThingAllowingBatchWritesWithCompositeAttributess indicates an expected call of ScanThingAllowingBatchWritesWithCompositeAttributess.
+func (mr *MockInterfaceMockRecorder) ScanThingAllowingBatchWritesWithCompositeAttributess(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingAllowingBatchWritesWithCompositeAttributess", reflect.TypeOf((*MockInterface)(nil).ScanThingAllowingBatchWritesWithCompositeAttributess), ctx, input, fn)
 }
 
 // ScanThingAllowingBatchWritess mocks base method.

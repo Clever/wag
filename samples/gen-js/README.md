@@ -158,7 +158,7 @@ Returns a list of books
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | params | <code>Object</code> |  |  |
-| [params.authors] | <code>[ &#x27;Array&#x27; ].&lt;string&gt;</code> |  | A list of authors. Must specify at least one and at most two |
+| [params.authors] | <code>Array.&lt;string&gt;</code> |  | A list of authors. Must specify at least one and at most two |
 | [params.available] | <code>boolean</code> | <code>true</code> |  |
 | [params.state] | <code>string</code> | <code>&quot;finished&quot;</code> |  |
 | [params.published] | <code>string</code> |  |  |
@@ -185,7 +185,7 @@ Returns a list of books
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | params | <code>Object</code> |  |  |
-| [params.authors] | <code>[ &#x27;Array&#x27; ].&lt;string&gt;</code> |  | A list of authors. Must specify at least one and at most two |
+| [params.authors] | <code>Array.&lt;string&gt;</code> |  | A list of authors. Must specify at least one and at most two |
 | [params.available] | <code>boolean</code> | <code>true</code> |  |
 | [params.state] | <code>string</code> | <code>&quot;finished&quot;</code> |  |
 | [params.published] | <code>string</code> |  |  |
