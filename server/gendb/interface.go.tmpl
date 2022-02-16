@@ -27,6 +27,8 @@ type Interface interface {
     {{- if $xdbConfig.AllowBatchWrites }}
     // SaveArrayOf{{ $modelName }} batch saves all items in []{{ $modelName }} to the database.
     SaveArrayOf{{ $modelName }}(ctx context.Context, ms []models.{{ $modelName }}) error
+    // DeleteArrayOf{{ $modelName }} batch deletes all items in []{{ $modelName }} in the database.
+    DeleteArrayOf{{ $modelName }}(ctx context.Context, ms []models.{{ $modelName }}) error
     {{- end }}
     // Get{{ $modelName }} retrieves a {{ $modelName }} from the database.
     Get{{ $modelName }}(ctx context.Context,

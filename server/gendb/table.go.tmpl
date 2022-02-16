@@ -215,6 +215,45 @@ func (t {{ $modelName }}Table) saveArrayOf{{ $modelName }}(ctx context.Context, 
 	}
 	return nil
 }
+
+func (t {{ $modelName }}Table) deleteArrayOf{{ $modelName }}(ctx context.Context, ms []models.{{ $modelName }}) error {
+	if len(ms) > maxDynamoDBBatchItems {
+		return fmt.Errorf("deleteArrayOf{{ $modelName }} received %%d items to delete, which is greater than the maximum of %%d", len(ms), maxDynamoDBBatchItems)
+	}
+
+	batch := make([]*dynamodb.WriteRequest, len(ms))
+	for i := range ms {
+		key, err := dynamodbattribute.MarshalMap(ddb{{ $modelName }}PrimaryKey{
+		{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+		{{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValueFromArray $xdbConfig $pk.AttributeName "" "ms[i]"}}{{ else }}ms[i].{{ pascalize $pk.AttributeName }}{{ end }},
+		{{- end }}
+		})
+		if err != nil {
+			return err
+		}
+
+		batch[i] = &dynamodb.WriteRequest{
+			DeleteRequest: &dynamodb.DeleteRequest{
+				Key: key,
+			},
+		}
+	}
+	tname := t.name()
+	for {
+		if out, err := t.DynamoDBAPI.BatchWriteItemWithContext(ctx, &dynamodb.BatchWriteItemInput{
+			RequestItems: map[string][]*dynamodb.WriteRequest{
+				tname: batch,
+			},
+		}); err != nil {
+			return fmt.Errorf("BatchWriteItem: %%v", err)
+		} else if out.UnprocessedItems != nil && len(out.UnprocessedItems[tname]) > 0 {
+			batch = out.UnprocessedItems[tname]
+		} else {
+			break
+		}
+	}
+	return nil
+}
 {{- end }}
 
 {{ $pkModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $xdbConfig.DynamoDB.KeySchema }}

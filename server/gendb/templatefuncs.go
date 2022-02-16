@@ -235,6 +235,41 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		value += `)`
 		return value
 	},
+	"compositeValueFromArray": func(config XDBConfig, attributeName string, modelVarName string, sliceIdentifier string) string {
+		ca := findCompositeAttribute(config, attributeName)
+		if ca == nil {
+			return "not-a-composite-attribute"
+		}
+		value := `fmt.Sprintf("`
+		for i, prop := range ca.Properties {
+			goTyp := goTypeForAttribute(config, prop)
+			if goTyp == "int64" {
+				value += `%%d`
+			} else {
+				value += `%%s`
+			}
+			if i != len(ca.Properties)-1 {
+				value += ca.Separator
+			}
+		}
+		value += `",`
+		for i, prop := range ca.Properties {
+			value += sliceIdentifier + "."
+			if modelVarName == "m" {
+				// hackyaf: usually "m." signifies it could be a pointer
+				value += strings.Title(attributeToModelValue(config, prop, modelVarName+"."))
+			} else if modelVarName == "" {
+				value += strings.Title(attributeToModelValueNotPtr(config, prop, ""))
+			} else {
+				value += strings.Title(attributeToModelValueNotPtr(config, prop, modelVarName+"."))
+			}
+			if i != len(ca.Properties)-1 {
+				value += `, `
+			}
+		}
+		value += `)`
+		return value
+	},
 	"attributeNames": func(table AWSDynamoDBTable) []string {
 		attrnames := map[string]struct{}{}
 		for _, ks := range table.KeySchema {

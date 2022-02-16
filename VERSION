@@ -1,4 +1,6 @@
-v8.1.5
+v8.1.6
+
+v8.1.6: Add dynamodb codegen support for batch deleting arrays of objects
 
 v8.1.5: Fixed dynamodb codegen error involving fields marked with x-nullable
 
