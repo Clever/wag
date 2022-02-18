@@ -896,6 +896,20 @@ func (mr *MockInterfaceMockRecorder) GetThingWithUnderscores(ctx, iDApp interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithUnderscores", reflect.TypeOf((*MockInterface)(nil).GetThingWithUnderscores), ctx, iDApp)
 }
 
+// GetThingsByHashNullableAndName mocks base method.
+func (m *MockInterface) GetThingsByHashNullableAndName(ctx context.Context, input GetThingsByHashNullableAndNameInput, fn func(*models.Thing, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetThingsByHashNullableAndName", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingsByHashNullableAndName indicates an expected call of GetThingsByHashNullableAndName.
+func (mr *MockInterfaceMockRecorder) GetThingsByHashNullableAndName(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingsByHashNullableAndName", reflect.TypeOf((*MockInterface)(nil).GetThingsByHashNullableAndName), ctx, input, fn)
+}
+
 // GetThingsByNameAndCreatedAt mocks base method.
 func (m *MockInterface) GetThingsByNameAndCreatedAt(ctx context.Context, input GetThingsByNameAndCreatedAtInput, fn func(*models.Thing, bool) bool) error {
 	m.ctrl.T.Helper()
@@ -908,6 +922,20 @@ func (m *MockInterface) GetThingsByNameAndCreatedAt(ctx context.Context, input G
 func (mr *MockInterfaceMockRecorder) GetThingsByNameAndCreatedAt(ctx, input, fn interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingsByNameAndCreatedAt", reflect.TypeOf((*MockInterface)(nil).GetThingsByNameAndCreatedAt), ctx, input, fn)
+}
+
+// GetThingsByNameAndRangeNullable mocks base method.
+func (m *MockInterface) GetThingsByNameAndRangeNullable(ctx context.Context, input GetThingsByNameAndRangeNullableInput, fn func(*models.Thing, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetThingsByNameAndRangeNullable", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingsByNameAndRangeNullable indicates an expected call of GetThingsByNameAndRangeNullable.
+func (mr *MockInterfaceMockRecorder) GetThingsByNameAndRangeNullable(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingsByNameAndRangeNullable", reflect.TypeOf((*MockInterface)(nil).GetThingsByNameAndRangeNullable), ctx, input, fn)
 }
 
 // GetThingsByNameAndVersion mocks base method.
@@ -1608,4 +1636,18 @@ func (m *MockInterface) ScanThingsByNameAndCreatedAt(ctx context.Context, input 
 func (mr *MockInterfaceMockRecorder) ScanThingsByNameAndCreatedAt(ctx, input, fn interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingsByNameAndCreatedAt", reflect.TypeOf((*MockInterface)(nil).ScanThingsByNameAndCreatedAt), ctx, input, fn)
+}
+
+// ScanThingsByNameAndRangeNullable mocks base method.
+func (m *MockInterface) ScanThingsByNameAndRangeNullable(ctx context.Context, input ScanThingsByNameAndRangeNullableInput, fn func(*models.Thing, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ScanThingsByNameAndRangeNullable", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ScanThingsByNameAndRangeNullable indicates an expected call of ScanThingsByNameAndRangeNullable.
+func (mr *MockInterfaceMockRecorder) ScanThingsByNameAndRangeNullable(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingsByNameAndRangeNullable", reflect.TypeOf((*MockInterface)(nil).ScanThingsByNameAndRangeNullable), ctx, input, fn)
 }

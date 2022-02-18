@@ -103,6 +103,12 @@ type Interface interface {
 	GetThingsByNameAndCreatedAt(ctx context.Context, input GetThingsByNameAndCreatedAtInput, fn func(m *models.Thing, lastThing bool) bool) error
 	// ScanThingsByNameAndCreatedAt runs a scan on the NameAndCreatedAt index.
 	ScanThingsByNameAndCreatedAt(ctx context.Context, input ScanThingsByNameAndCreatedAtInput, fn func(m *models.Thing, lastThing bool) bool) error
+	// GetThingsByNameAndRangeNullable retrieves a page of Things from the database.
+	GetThingsByNameAndRangeNullable(ctx context.Context, input GetThingsByNameAndRangeNullableInput, fn func(m *models.Thing, lastThing bool) bool) error
+	// ScanThingsByNameAndRangeNullable runs a scan on the NameAndRangeNullable index.
+	ScanThingsByNameAndRangeNullable(ctx context.Context, input ScanThingsByNameAndRangeNullableInput, fn func(m *models.Thing, lastThing bool) bool) error
+	// GetThingsByHashNullableAndName retrieves a page of Things from the database.
+	GetThingsByHashNullableAndName(ctx context.Context, input GetThingsByHashNullableAndNameInput, fn func(m *models.Thing, lastThing bool) bool) error
 
 	// SaveThingAllowingBatchWrites saves a ThingAllowingBatchWrites to the database.
 	SaveThingAllowingBatchWrites(ctx context.Context, m models.ThingAllowingBatchWrites) error
@@ -766,6 +772,66 @@ type ScanThingsByNameAndCreatedAtInput struct {
 	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
+}
+
+// GetThingsByNameAndRangeNullableInput is the query input to GetThingsByNameAndRangeNullable.
+type GetThingsByNameAndRangeNullableInput struct {
+	// Name is required
+	Name                    string
+	RangeNullableStartingAt *strfmt.DateTime
+	StartingAfter           *models.Thing
+	Descending              bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+}
+
+// ErrThingByNameAndRangeNullableNotFound is returned when the database fails to find a Thing.
+type ErrThingByNameAndRangeNullableNotFound struct {
+	Name          string
+	RangeNullable strfmt.DateTime
+}
+
+var _ error = ErrThingByNameAndRangeNullableNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingByNameAndRangeNullableNotFound) Error() string {
+	return "could not find Thing"
+}
+
+// ScanThingsByNameAndRangeNullableInput is the input to the ScanThingsByNameAndRangeNullable method.
+type ScanThingsByNameAndRangeNullableInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.Thing
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// GetThingsByHashNullableAndNameInput is the query input to GetThingsByHashNullableAndName.
+type GetThingsByHashNullableAndNameInput struct {
+	// HashNullable is required
+	HashNullable   string
+	NameStartingAt *string
+	StartingAfter  *models.Thing
+	Descending     bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+}
+
+// ErrThingByHashNullableAndNameNotFound is returned when the database fails to find a Thing.
+type ErrThingByHashNullableAndNameNotFound struct {
+	HashNullable string
+	Name         string
+}
+
+var _ error = ErrThingByHashNullableAndNameNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingByHashNullableAndNameNotFound) Error() string {
+	return "could not find Thing"
 }
 
 // ErrThingAlreadyExists is returned when trying to overwrite a Thing.

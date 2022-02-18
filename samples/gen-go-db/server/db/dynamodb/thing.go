@@ -42,6 +42,18 @@ type ddbThingGSINameCreatedAt struct {
 	CreatedAt strfmt.DateTime `dynamodbav:"createdAt"`
 }
 
+// ddbThingGSINameRangeNullable represents the name-rangeNullable GSI.
+type ddbThingGSINameRangeNullable struct {
+	Name          string          `dynamodbav:"name"`
+	RangeNullable strfmt.DateTime `dynamodbav:"rangeNullable"`
+}
+
+// ddbThingGSINameHashNullable represents the name-hashNullable GSI.
+type ddbThingGSINameHashNullable struct {
+	HashNullable string `dynamodbav:"hashNullable"`
+	Name         string `dynamodbav:"name"`
+}
+
 // ddbThing represents a Thing as stored in DynamoDB.
 type ddbThing struct {
 	models.Thing
@@ -62,11 +74,19 @@ func (t ThingTable) create(ctx context.Context) error {
 				AttributeType: aws.String("S"),
 			},
 			{
+				AttributeName: aws.String("hashNullable"),
+				AttributeType: aws.String("S"),
+			},
+			{
 				AttributeName: aws.String("id"),
 				AttributeType: aws.String("S"),
 			},
 			{
 				AttributeName: aws.String("name"),
+				AttributeType: aws.String("S"),
+			},
+			{
+				AttributeName: aws.String("rangeNullable"),
 				AttributeType: aws.String("S"),
 			},
 			{
@@ -113,6 +133,46 @@ func (t ThingTable) create(ctx context.Context) error {
 					},
 					{
 						AttributeName: aws.String("createdAt"),
+						KeyType:       aws.String(dynamodb.KeyTypeRange),
+					},
+				},
+				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
+					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
+				},
+			},
+			{
+				IndexName: aws.String("name-rangeNullable"),
+				Projection: &dynamodb.Projection{
+					ProjectionType: aws.String("ALL"),
+				},
+				KeySchema: []*dynamodb.KeySchemaElement{
+					{
+						AttributeName: aws.String("name"),
+						KeyType:       aws.String(dynamodb.KeyTypeHash),
+					},
+					{
+						AttributeName: aws.String("rangeNullable"),
+						KeyType:       aws.String(dynamodb.KeyTypeRange),
+					},
+				},
+				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
+					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
+				},
+			},
+			{
+				IndexName: aws.String("name-hashNullable"),
+				Projection: &dynamodb.Projection{
+					ProjectionType: aws.String("ALL"),
+				},
+				KeySchema: []*dynamodb.KeySchemaElement{
+					{
+						AttributeName: aws.String("hashNullable"),
+						KeyType:       aws.String(dynamodb.KeyTypeHash),
+					},
+					{
+						AttributeName: aws.String("name"),
 						KeyType:       aws.String(dynamodb.KeyTypeRange),
 					},
 				},
@@ -603,6 +663,250 @@ func (t ThingTable) scanThingsByNameAndCreatedAt(ctx context.Context, input db.S
 		return innerErr
 	}
 	return err
+}
+
+func (t ThingTable) getThingsByNameAndRangeNullable(ctx context.Context, input db.GetThingsByNameAndRangeNullableInput, fn func(m *models.Thing, lastThing bool) bool) error {
+	if input.RangeNullableStartingAt != nil && input.StartingAfter != nil {
+		return fmt.Errorf("Can specify only one of input.RangeNullableStartingAt or input.StartingAfter")
+	}
+	if input.Name == "" {
+		return fmt.Errorf("Hash key input.Name cannot be empty")
+	}
+	queryInput := &dynamodb.QueryInput{
+		TableName: aws.String(t.name()),
+		IndexName: aws.String("name-rangeNullable"),
+		ExpressionAttributeNames: map[string]*string{
+			"#NAME": aws.String("name"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":name": &dynamodb.AttributeValue{
+				S: aws.String(input.Name),
+			},
+		},
+		ScanIndexForward: aws.Bool(!input.Descending),
+		ConsistentRead:   aws.Bool(false),
+	}
+	if input.Limit != nil {
+		queryInput.Limit = input.Limit
+	}
+	if input.RangeNullableStartingAt == nil {
+		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
+	} else {
+		queryInput.ExpressionAttributeNames["#RANGENULLABLE"] = aws.String("rangeNullable")
+		queryInput.ExpressionAttributeValues[":rangeNullable"] = &dynamodb.AttributeValue{
+			S: aws.String(toDynamoTimeString(*input.RangeNullableStartingAt)),
+		}
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #RANGENULLABLE <= :rangeNullable")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #RANGENULLABLE >= :rangeNullable")
+		}
+	}
+	if input.StartingAfter != nil {
+		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"rangeNullable": &dynamodb.AttributeValue{
+				S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.RangeNullable)),
+			},
+			"name": &dynamodb.AttributeValue{
+				S: aws.String(input.StartingAfter.Name),
+			},
+			"version": &dynamodb.AttributeValue{
+				N: aws.String(fmt.Sprintf("%d", input.StartingAfter.Version)),
+			},
+		}
+	}
+
+	totalRecordsProcessed := int64(0)
+	var pageFnErr error
+	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
+		if len(queryOutput.Items) == 0 {
+			return false
+		}
+		items, err := decodeThings(queryOutput.Items)
+		if err != nil {
+			pageFnErr = err
+			return false
+		}
+		hasMore := true
+		for i := range items {
+			if lastPage == true {
+				hasMore = i < len(items)-1
+			}
+			if !fn(&items[i], !hasMore) {
+				return false
+			}
+			totalRecordsProcessed++
+			// if the Limit of records have been passed to fn, don't pass anymore records.
+			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
+				return false
+			}
+		}
+		return true
+	}
+
+	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case dynamodb.ErrCodeResourceNotFoundException:
+				return fmt.Errorf("table or index not found: %s", t.name())
+			}
+		}
+		return err
+	}
+	if pageFnErr != nil {
+		return pageFnErr
+	}
+
+	return nil
+}
+func (t ThingTable) scanThingsByNameAndRangeNullable(ctx context.Context, input db.ScanThingsByNameAndRangeNullableInput, fn func(m *models.Thing, lastThing bool) bool) error {
+	scanInput := &dynamodb.ScanInput{
+		TableName:      aws.String(t.name()),
+		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
+		Limit:          input.Limit,
+		IndexName:      aws.String("name-rangeNullable"),
+	}
+	if input.StartingAfter != nil {
+		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		if err != nil {
+			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
+		}
+		// must provide the fields constituting the index and the primary key
+		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
+		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"name":          exclusiveStartKey["name"],
+			"version":       exclusiveStartKey["version"],
+			"rangeNullable": exclusiveStartKey["rangeNullable"],
+		}
+	}
+	totalRecordsProcessed := int64(0)
+	var innerErr error
+	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+		items, err := decodeThings(out.Items)
+		if err != nil {
+			innerErr = fmt.Errorf("error decoding %s", err.Error())
+			return false
+		}
+		for i := range items {
+			if input.Limiter != nil {
+				if err := input.Limiter.Wait(ctx); err != nil {
+					innerErr = err
+					return false
+				}
+			}
+			isLastModel := lastPage && i == len(items)-1
+			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
+				return false
+			}
+			totalRecordsProcessed++
+			// if the Limit of records have been passed to fn, don't pass anymore records.
+			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
+				return false
+			}
+		}
+		return true
+	})
+	if innerErr != nil {
+		return innerErr
+	}
+	return err
+}
+
+func (t ThingTable) getThingsByHashNullableAndName(ctx context.Context, input db.GetThingsByHashNullableAndNameInput, fn func(m *models.Thing, lastThing bool) bool) error {
+	if input.NameStartingAt != nil && input.StartingAfter != nil {
+		return fmt.Errorf("Can specify only one of input.NameStartingAt or input.StartingAfter")
+	}
+	if input.HashNullable == "" {
+		return fmt.Errorf("Hash key input.HashNullable cannot be empty")
+	}
+	queryInput := &dynamodb.QueryInput{
+		TableName: aws.String(t.name()),
+		IndexName: aws.String("name-hashNullable"),
+		ExpressionAttributeNames: map[string]*string{
+			"#HASHNULLABLE": aws.String("hashNullable"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":hashNullable": &dynamodb.AttributeValue{
+				S: aws.String(input.HashNullable),
+			},
+		},
+		ScanIndexForward: aws.Bool(!input.Descending),
+		ConsistentRead:   aws.Bool(false),
+	}
+	if input.Limit != nil {
+		queryInput.Limit = input.Limit
+	}
+	if input.NameStartingAt == nil {
+		queryInput.KeyConditionExpression = aws.String("#HASHNULLABLE = :hashNullable")
+	} else {
+		queryInput.ExpressionAttributeNames["#NAME"] = aws.String("name")
+		queryInput.ExpressionAttributeValues[":name"] = &dynamodb.AttributeValue{
+			S: aws.String(*input.NameStartingAt),
+		}
+		if input.Descending {
+			queryInput.KeyConditionExpression = aws.String("#HASHNULLABLE = :hashNullable AND #NAME <= :name")
+		} else {
+			queryInput.KeyConditionExpression = aws.String("#HASHNULLABLE = :hashNullable AND #NAME >= :name")
+		}
+	}
+	if input.StartingAfter != nil {
+		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+			"name": &dynamodb.AttributeValue{
+				S: aws.String(input.StartingAfter.Name),
+			},
+			"hashNullable": &dynamodb.AttributeValue{
+				S: aws.String(*input.StartingAfter.HashNullable),
+			},
+			"version": &dynamodb.AttributeValue{
+				N: aws.String(fmt.Sprintf("%d", input.StartingAfter.Version)),
+			},
+		}
+	}
+
+	totalRecordsProcessed := int64(0)
+	var pageFnErr error
+	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
+		if len(queryOutput.Items) == 0 {
+			return false
+		}
+		items, err := decodeThings(queryOutput.Items)
+		if err != nil {
+			pageFnErr = err
+			return false
+		}
+		hasMore := true
+		for i := range items {
+			if lastPage == true {
+				hasMore = i < len(items)-1
+			}
+			if !fn(&items[i], !hasMore) {
+				return false
+			}
+			totalRecordsProcessed++
+			// if the Limit of records have been passed to fn, don't pass anymore records.
+			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
+				return false
+			}
+		}
+		return true
+	}
+
+	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case dynamodb.ErrCodeResourceNotFoundException:
+				return fmt.Errorf("table or index not found: %s", t.name())
+			}
+		}
+		return err
+	}
+	if pageFnErr != nil {
+		return pageFnErr
+	}
+
+	return nil
 }
 
 // encodeThing encodes a Thing as a DynamoDB map of attribute values.

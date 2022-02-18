@@ -658,6 +658,21 @@ func (d DB) ScanThingsByNameAndCreatedAt(ctx context.Context, input db.ScanThing
 	return d.thingTable.scanThingsByNameAndCreatedAt(ctx, input, fn)
 }
 
+// GetThingsByNameAndRangeNullable retrieves a page of Things from the database.
+func (d DB) GetThingsByNameAndRangeNullable(ctx context.Context, input db.GetThingsByNameAndRangeNullableInput, fn func(m *models.Thing, lastThing bool) bool) error {
+	return d.thingTable.getThingsByNameAndRangeNullable(ctx, input, fn)
+}
+
+// ScanThingsByNameAndRangeNullable runs a scan on the NameAndRangeNullable index.
+func (d DB) ScanThingsByNameAndRangeNullable(ctx context.Context, input db.ScanThingsByNameAndRangeNullableInput, fn func(m *models.Thing, lastThing bool) bool) error {
+	return d.thingTable.scanThingsByNameAndRangeNullable(ctx, input, fn)
+}
+
+// GetThingsByHashNullableAndName retrieves a page of Things from the database.
+func (d DB) GetThingsByHashNullableAndName(ctx context.Context, input db.GetThingsByHashNullableAndNameInput, fn func(m *models.Thing, lastThing bool) bool) error {
+	return d.thingTable.getThingsByHashNullableAndName(ctx, input, fn)
+}
+
 // SaveThingAllowingBatchWrites saves a ThingAllowingBatchWrites to the database.
 func (d DB) SaveThingAllowingBatchWrites(ctx context.Context, m models.ThingAllowingBatchWrites) error {
 	return d.thingAllowingBatchWritesTable.saveThingAllowingBatchWrites(ctx, m)

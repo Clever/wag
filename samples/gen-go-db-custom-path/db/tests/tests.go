@@ -64,6 +64,9 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("ScanThingsByID", ScanThingsByID(dbFactory(), t))
 	t.Run("GetThingsByNameAndCreatedAt", GetThingsByNameAndCreatedAt(dbFactory(), t))
 	t.Run("ScanThingsByNameAndCreatedAt", ScanThingsByNameAndCreatedAt(dbFactory(), t))
+	t.Run("GetThingsByNameAndRangeNullable", GetThingsByNameAndRangeNullable(dbFactory(), t))
+	t.Run("ScanThingsByNameAndRangeNullable", ScanThingsByNameAndRangeNullable(dbFactory(), t))
+	t.Run("GetThingsByHashNullableAndName", GetThingsByHashNullableAndName(dbFactory(), t))
 	t.Run("GetThingAllowingBatchWrites", GetThingAllowingBatchWrites(dbFactory(), t))
 	t.Run("ScanThingAllowingBatchWritess", ScanThingAllowingBatchWritess(dbFactory(), t))
 	t.Run("GetThingAllowingBatchWritessByNameAndVersion", GetThingAllowingBatchWritessByNameAndVersion(dbFactory(), t))
@@ -3323,10 +3326,12 @@ func GetThing(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m := models.Thing{
-			CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
-			ID:        "string1",
-			Name:      "string1",
-			Version:   1,
+			CreatedAt:     mustTime("2018-03-11T15:04:01+07:00"),
+			HashNullable:  db.String("string1"),
+			ID:            "string1",
+			Name:          "string1",
+			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Version:       1,
 		}
 		require.Nil(t, s.SaveThing(ctx, m))
 		m2, err := s.GetThing(ctx, m.Name, m.Version)
@@ -3537,43 +3542,55 @@ func ScanThings(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		require.Nil(t, d.SaveThing(ctx, models.Thing{
-			CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
-			ID:        "string1",
-			Name:      "string1",
-			Version:   1,
+			CreatedAt:     mustTime("2018-03-11T15:04:01+07:00"),
+			HashNullable:  db.String("string1"),
+			ID:            "string1",
+			Name:          "string1",
+			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Version:       1,
 		}))
 		require.Nil(t, d.SaveThing(ctx, models.Thing{
-			CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
-			ID:        "string2",
-			Name:      "string2",
-			Version:   2,
+			CreatedAt:     mustTime("2018-03-11T15:04:02+07:00"),
+			HashNullable:  db.String("string2"),
+			ID:            "string2",
+			Name:          "string2",
+			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+			Version:       2,
 		}))
 		require.Nil(t, d.SaveThing(ctx, models.Thing{
-			CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
-			ID:        "string3",
-			Name:      "string3",
-			Version:   3,
+			CreatedAt:     mustTime("2018-03-11T15:04:03+07:00"),
+			HashNullable:  db.String("string3"),
+			ID:            "string3",
+			Name:          "string3",
+			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+			Version:       3,
 		}))
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.Thing{
 				models.Thing{
-					CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
-					ID:        "string1",
-					Name:      "string1",
-					Version:   1,
+					CreatedAt:     mustTime("2018-03-11T15:04:01+07:00"),
+					HashNullable:  db.String("string1"),
+					ID:            "string1",
+					Name:          "string1",
+					RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+					Version:       1,
 				},
 				models.Thing{
-					CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
-					ID:        "string2",
-					Name:      "string2",
-					Version:   2,
+					CreatedAt:     mustTime("2018-03-11T15:04:02+07:00"),
+					HashNullable:  db.String("string2"),
+					ID:            "string2",
+					Name:          "string2",
+					RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+					Version:       2,
 				},
 				models.Thing{
-					CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
-					ID:        "string3",
-					Name:      "string3",
-					Version:   3,
+					CreatedAt:     mustTime("2018-03-11T15:04:03+07:00"),
+					HashNullable:  db.String("string3"),
+					ID:            "string3",
+					Name:          "string3",
+					RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+					Version:       3,
 				},
 			}
 			actual := []models.Thing{}
@@ -3652,10 +3669,12 @@ func SaveThing(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m := models.Thing{
-			CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
-			ID:        "string1",
-			Name:      "string1",
-			Version:   1,
+			CreatedAt:     mustTime("2018-03-11T15:04:01+07:00"),
+			HashNullable:  db.String("string1"),
+			ID:            "string1",
+			Name:          "string1",
+			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Version:       1,
 		}
 		require.Nil(t, s.SaveThing(ctx, m))
 		require.IsType(t, db.ErrThingAlreadyExists{}, s.SaveThing(ctx, m))
@@ -3666,10 +3685,12 @@ func DeleteThing(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m := models.Thing{
-			CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
-			ID:        "string1",
-			Name:      "string1",
-			Version:   1,
+			CreatedAt:     mustTime("2018-03-11T15:04:01+07:00"),
+			HashNullable:  db.String("string1"),
+			ID:            "string1",
+			Name:          "string1",
+			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Version:       1,
 		}
 		require.Nil(t, s.SaveThing(ctx, m))
 		require.Nil(t, s.DeleteThing(ctx, m.Name, m.Version))
@@ -3680,17 +3701,21 @@ func GetThingByID(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m := models.Thing{
-			CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
-			ID:        "string1",
-			Name:      "string1",
-			Version:   1,
+			CreatedAt:     mustTime("2018-03-11T15:04:01+07:00"),
+			HashNullable:  db.String("string1"),
+			ID:            "string1",
+			Name:          "string1",
+			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Version:       1,
 		}
 		require.Nil(t, s.SaveThing(ctx, m))
 		m2, err := s.GetThingByID(ctx, m.ID)
 		require.Nil(t, err)
 		require.Equal(t, m.CreatedAt.String(), m2.CreatedAt.String())
+		require.Equal(t, m.HashNullable, m2.HashNullable)
 		require.Equal(t, m.ID, m2.ID)
 		require.Equal(t, m.Name, m2.Name)
+		require.Equal(t, m.RangeNullable.String(), m2.RangeNullable.String())
 		require.Equal(t, m.Version, m2.Version)
 
 		_, err = s.GetThingByID(ctx, "string2")
@@ -4138,6 +4163,539 @@ func ScanThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.
 
 			require.Len(t, actual, 1)
 		})
+	}
+}
+
+type getThingsByNameAndRangeNullableInput struct {
+	ctx   context.Context
+	input db.GetThingsByNameAndRangeNullableInput
+}
+type getThingsByNameAndRangeNullableOutput struct {
+	things []models.Thing
+	err    error
+}
+type getThingsByNameAndRangeNullableTest struct {
+	testName string
+	d        db.Interface
+	input    getThingsByNameAndRangeNullableInput
+	output   getThingsByNameAndRangeNullableOutput
+}
+
+func (g getThingsByNameAndRangeNullableTest) run(t *testing.T) {
+	things := []models.Thing{}
+	fn := func(m *models.Thing, lastThing bool) bool {
+		things = append(things, *m)
+		if lastThing {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingsByNameAndRangeNullable(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.things, things)
+}
+
+func GetThingsByNameAndRangeNullable(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThing(ctx, models.Thing{
+			Name:          "string1",
+			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Version:       1,
+		}))
+		require.Nil(t, d.SaveThing(ctx, models.Thing{
+			Name:          "string1",
+			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+			Version:       3,
+		}))
+		require.Nil(t, d.SaveThing(ctx, models.Thing{
+			Name:          "string1",
+			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+			Version:       2,
+		}))
+		limit := int64(3)
+		tests := []getThingsByNameAndRangeNullableTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getThingsByNameAndRangeNullableInput{
+					ctx: context.Background(),
+					input: db.GetThingsByNameAndRangeNullableInput{
+						Name:  "string1",
+						Limit: &limit,
+					},
+				},
+				output: getThingsByNameAndRangeNullableOutput{
+					things: []models.Thing{
+						models.Thing{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+							Version:       1,
+						},
+						models.Thing{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+							Version:       3,
+						},
+						models.Thing{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+							Version:       2,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getThingsByNameAndRangeNullableInput{
+					ctx: context.Background(),
+					input: db.GetThingsByNameAndRangeNullableInput{
+						Name:       "string1",
+						Descending: true,
+					},
+				},
+				output: getThingsByNameAndRangeNullableOutput{
+					things: []models.Thing{
+						models.Thing{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+							Version:       2,
+						},
+						models.Thing{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+							Version:       3,
+						},
+						models.Thing{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+							Version:       1,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getThingsByNameAndRangeNullableInput{
+					ctx: context.Background(),
+					input: db.GetThingsByNameAndRangeNullableInput{
+						Name: "string1",
+						StartingAfter: &models.Thing{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+							Version:       1,
+						},
+					},
+				},
+				output: getThingsByNameAndRangeNullableOutput{
+					things: []models.Thing{
+						models.Thing{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+							Version:       3,
+						},
+						models.Thing{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+							Version:       2,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after descending",
+				d:        d,
+				input: getThingsByNameAndRangeNullableInput{
+					ctx: context.Background(),
+					input: db.GetThingsByNameAndRangeNullableInput{
+						Name: "string1",
+						StartingAfter: &models.Thing{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+							Version:       2,
+						},
+						Descending: true,
+					},
+				},
+				output: getThingsByNameAndRangeNullableOutput{
+					things: []models.Thing{
+						models.Thing{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+							Version:       3,
+						},
+						models.Thing{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+							Version:       1,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingsByNameAndRangeNullableInput{
+					ctx: context.Background(),
+					input: db.GetThingsByNameAndRangeNullableInput{
+						Name:                    "string1",
+						RangeNullableStartingAt: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+					},
+				},
+				output: getThingsByNameAndRangeNullableOutput{
+					things: []models.Thing{
+						models.Thing{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+							Version:       3,
+						},
+						models.Thing{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+							Version:       2,
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
+func ScanThingsByNameAndRangeNullable(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThing(ctx, models.Thing{
+			Name:          "string1",
+			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Version:       1,
+		}))
+		require.Nil(t, d.SaveThing(ctx, models.Thing{
+			Name:          "string2",
+			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+			Version:       2,
+		}))
+		require.Nil(t, d.SaveThing(ctx, models.Thing{
+			Name:          "string3",
+			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+			Version:       3,
+		}))
+
+		t.Run("basic", func(t *testing.T) {
+			expected := []models.Thing{
+				models.Thing{
+					Name:          "string1",
+					RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+					Version:       1,
+				},
+				models.Thing{
+					Name:          "string2",
+					RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+					Version:       2,
+				},
+				models.Thing{
+					Name:          "string3",
+					RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+					Version:       3,
+				},
+			}
+			// Consistent read must be disabled when scaning a GSI.
+			scanInput := db.ScanThingsByNameAndRangeNullableInput{DisableConsistentRead: true}
+			actual := []models.Thing{}
+			err := d.ScanThingsByNameAndRangeNullable(ctx, scanInput, func(m *models.Thing, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+			// We can't use Equal here because Scan doesn't return items in any specific order.
+			require.ElementsMatch(t, expected, actual)
+		})
+
+		t.Run("starting after", func(t *testing.T) {
+			// Scan for everything.
+			allItems := []models.Thing{}
+			// Consistent read must be disabled when scaning a GSI.
+			scanInput := db.ScanThingsByNameAndRangeNullableInput{DisableConsistentRead: true}
+			err := d.ScanThingsByNameAndRangeNullable(ctx, scanInput, func(m *models.Thing, last bool) bool {
+				allItems = append(allItems, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			firstItem := allItems[0]
+
+			// Scan for everything after the first item.
+			scanInput = db.ScanThingsByNameAndRangeNullableInput{
+				DisableConsistentRead: true,
+				StartingAfter: &models.Thing{
+					Name:          firstItem.Name,
+					RangeNullable: firstItem.RangeNullable,
+					Version:       firstItem.Version,
+				},
+			}
+			actual := []models.Thing{}
+			err = d.ScanThingsByNameAndRangeNullable(ctx, scanInput, func(m *models.Thing, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			expected := allItems[1:]
+			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingsInput{
+				Limit: &limit,
+			}
+			actual := []models.Thing{}
+			err := d.ScanThings(ctx, scanInput, func(m *models.Thing, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
+		})
+	}
+}
+
+type getThingsByHashNullableAndNameInput struct {
+	ctx   context.Context
+	input db.GetThingsByHashNullableAndNameInput
+}
+type getThingsByHashNullableAndNameOutput struct {
+	things []models.Thing
+	err    error
+}
+type getThingsByHashNullableAndNameTest struct {
+	testName string
+	d        db.Interface
+	input    getThingsByHashNullableAndNameInput
+	output   getThingsByHashNullableAndNameOutput
+}
+
+func (g getThingsByHashNullableAndNameTest) run(t *testing.T) {
+	things := []models.Thing{}
+	fn := func(m *models.Thing, lastThing bool) bool {
+		things = append(things, *m)
+		if lastThing {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingsByHashNullableAndName(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.things, things)
+}
+
+func GetThingsByHashNullableAndName(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThing(ctx, models.Thing{
+			HashNullable: db.String("string1"),
+			Name:         "string1",
+			Version:      1,
+		}))
+		require.Nil(t, d.SaveThing(ctx, models.Thing{
+			HashNullable: db.String("string1"),
+			Name:         "string2",
+			Version:      3,
+		}))
+		require.Nil(t, d.SaveThing(ctx, models.Thing{
+			HashNullable: db.String("string1"),
+			Name:         "string3",
+			Version:      2,
+		}))
+		limit := int64(3)
+		tests := []getThingsByHashNullableAndNameTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getThingsByHashNullableAndNameInput{
+					ctx: context.Background(),
+					input: db.GetThingsByHashNullableAndNameInput{
+						HashNullable: "string1",
+						Limit:        &limit,
+					},
+				},
+				output: getThingsByHashNullableAndNameOutput{
+					things: []models.Thing{
+						models.Thing{
+							HashNullable: db.String("string1"),
+							Name:         "string1",
+							Version:      1,
+						},
+						models.Thing{
+							HashNullable: db.String("string1"),
+							Name:         "string2",
+							Version:      3,
+						},
+						models.Thing{
+							HashNullable: db.String("string1"),
+							Name:         "string3",
+							Version:      2,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getThingsByHashNullableAndNameInput{
+					ctx: context.Background(),
+					input: db.GetThingsByHashNullableAndNameInput{
+						HashNullable: "string1",
+						Descending:   true,
+					},
+				},
+				output: getThingsByHashNullableAndNameOutput{
+					things: []models.Thing{
+						models.Thing{
+							HashNullable: db.String("string1"),
+							Name:         "string3",
+							Version:      2,
+						},
+						models.Thing{
+							HashNullable: db.String("string1"),
+							Name:         "string2",
+							Version:      3,
+						},
+						models.Thing{
+							HashNullable: db.String("string1"),
+							Name:         "string1",
+							Version:      1,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getThingsByHashNullableAndNameInput{
+					ctx: context.Background(),
+					input: db.GetThingsByHashNullableAndNameInput{
+						HashNullable: "string1",
+						StartingAfter: &models.Thing{
+							HashNullable: db.String("string1"),
+							Name:         "string1",
+							Version:      1,
+						},
+					},
+				},
+				output: getThingsByHashNullableAndNameOutput{
+					things: []models.Thing{
+						models.Thing{
+							HashNullable: db.String("string1"),
+							Name:         "string2",
+							Version:      3,
+						},
+						models.Thing{
+							HashNullable: db.String("string1"),
+							Name:         "string3",
+							Version:      2,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after descending",
+				d:        d,
+				input: getThingsByHashNullableAndNameInput{
+					ctx: context.Background(),
+					input: db.GetThingsByHashNullableAndNameInput{
+						HashNullable: "string1",
+						StartingAfter: &models.Thing{
+							HashNullable: db.String("string1"),
+							Name:         "string3",
+							Version:      2,
+						},
+						Descending: true,
+					},
+				},
+				output: getThingsByHashNullableAndNameOutput{
+					things: []models.Thing{
+						models.Thing{
+							HashNullable: db.String("string1"),
+							Name:         "string2",
+							Version:      3,
+						},
+						models.Thing{
+							HashNullable: db.String("string1"),
+							Name:         "string1",
+							Version:      1,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingsByHashNullableAndNameInput{
+					ctx: context.Background(),
+					input: db.GetThingsByHashNullableAndNameInput{
+						HashNullable:   "string1",
+						NameStartingAt: db.String("string2"),
+					},
+				},
+				output: getThingsByHashNullableAndNameOutput{
+					things: []models.Thing{
+						models.Thing{
+							HashNullable: db.String("string1"),
+							Name:         "string2",
+							Version:      3,
+						},
+						models.Thing{
+							HashNullable: db.String("string1"),
+							Name:         "string3",
+							Version:      2,
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
 	}
 }
 

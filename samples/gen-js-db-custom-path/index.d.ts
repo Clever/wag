@@ -139,9 +139,11 @@ declare namespace SwaggerTest {
     type Thing = {
   category?: Category;
   createdAt?: string;
+  hashNullable?: string;
   id?: string;
   name?: string;
   nestedObject?: Object;
+  rangeNullable?: string;
   version?: number;
 };
     

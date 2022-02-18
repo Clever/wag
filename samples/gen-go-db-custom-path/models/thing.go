@@ -24,6 +24,9 @@ type Thing struct {
 	// Format: date-time
 	CreatedAt strfmt.DateTime `json:"createdAt,omitempty"`
 
+	// hash nullable
+	HashNullable *string `json:"hashNullable,omitempty"`
+
 	// id
 	ID string `json:"id,omitempty"`
 
@@ -32,6 +35,10 @@ type Thing struct {
 
 	// nested object
 	NestedObject *Object `json:"nestedObject,omitempty"`
+
+	// range nullable
+	// Format: date-time
+	RangeNullable *strfmt.DateTime `json:"rangeNullable,omitempty"`
 
 	// version
 	Version int64 `json:"version,omitempty"`
@@ -50,6 +57,10 @@ func (m *Thing) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateNestedObject(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateRangeNullable(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -101,6 +112,19 @@ func (m *Thing) validateNestedObject(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Thing) validateRangeNullable(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.RangeNullable) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("rangeNullable", "body", "date-time", m.RangeNullable.String(), formats); err != nil {
+		return err
 	}
 
 	return nil
