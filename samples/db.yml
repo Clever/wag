@@ -49,6 +49,7 @@ definitions:
       AllowSecondaryIndexScan:
         - thingID
         - name-createdAt
+        - name-rangeNullable
       DynamoDB:
         KeySchema:
           - AttributeName: name
@@ -70,6 +71,22 @@ definitions:
                 KeyType: HASH
               - AttributeName: createdAt
                 KeyType: RANGE
+          - IndexName: name-rangeNullable
+            Projection:
+              ProjectionType: ALL
+            KeySchema:
+              - AttributeName: name
+                KeyType: HASH
+              - AttributeName: rangeNullable
+                KeyType: RANGE
+          - IndexName: name-hashNullable
+            Projection:
+              ProjectionType: ALL
+            KeySchema:
+              - AttributeName: hashNullable
+                KeyType: HASH
+              - AttributeName: name
+                KeyType: RANGE
     type: object
     properties:
       id:
@@ -81,6 +98,13 @@ definitions:
       createdAt:
         type: string
         format: date-time
+      rangeNullable:
+        type: string
+        format: date-time
+        x-nullable: true
+      hashNullable:
+        type: string
+        x-nullable: true
       category:
         $ref: '#/definitions/Category'
       nestedObject:
@@ -662,3 +686,4 @@ definitions:
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
+

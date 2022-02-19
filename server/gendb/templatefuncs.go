@@ -494,7 +494,24 @@ func attributeIsPointer(config XDBConfig, attributeName string) bool {
 			return false
 		}
 	}
-	return contains(attributeName, config.Schema.Required)
+	return contains(attributeName, config.Schema.Required) || attributeIsXNullable(config, attributeName)
+}
+
+func attributeIsXNullable(config XDBConfig, attributeName string) bool {
+	propertySchema, ok := config.Schema.Properties[attributeName]
+	if !ok {
+		return false
+	}
+	res, ok := propertySchema.Extensions["x-nullable"]
+	if !ok {
+		return false
+	}
+
+	xNullable, ok := res.(bool)
+	if !ok {
+		return false
+	}
+	return xNullable
 }
 
 func attributeIsEnum(config XDBConfig, attributeName string) bool {

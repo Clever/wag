@@ -1,4 +1,6 @@
-v8.1.4
+v8.1.5
+
+v8.1.5: Fixed dynamodb codegen error involving fields marked with x-nullable
 
 v8.1.4: Add dynamodb codegen support for batch writing arrays of objects
 
