@@ -114,6 +114,8 @@ type Interface interface {
 	SaveThingAllowingBatchWrites(ctx context.Context, m models.ThingAllowingBatchWrites) error
 	// SaveArrayOfThingAllowingBatchWrites batch saves all items in []ThingAllowingBatchWrites to the database.
 	SaveArrayOfThingAllowingBatchWrites(ctx context.Context, ms []models.ThingAllowingBatchWrites) error
+	// DeleteArrayOfThingAllowingBatchWrites batch deletes all items in []ThingAllowingBatchWrites in the database.
+	DeleteArrayOfThingAllowingBatchWrites(ctx context.Context, ms []models.ThingAllowingBatchWrites) error
 	// GetThingAllowingBatchWrites retrieves a ThingAllowingBatchWrites from the database.
 	GetThingAllowingBatchWrites(ctx context.Context, name string, version int64) (*models.ThingAllowingBatchWrites, error)
 	// ScanThingAllowingBatchWritess runs a scan on the ThingAllowingBatchWritess table.
@@ -122,6 +124,21 @@ type Interface interface {
 	GetThingAllowingBatchWritessByNameAndVersion(ctx context.Context, input GetThingAllowingBatchWritessByNameAndVersionInput, fn func(m *models.ThingAllowingBatchWrites, lastThingAllowingBatchWrites bool) bool) error
 	// DeleteThingAllowingBatchWrites deletes a ThingAllowingBatchWrites from the database.
 	DeleteThingAllowingBatchWrites(ctx context.Context, name string, version int64) error
+
+	// SaveThingAllowingBatchWritesWithCompositeAttributes saves a ThingAllowingBatchWritesWithCompositeAttributes to the database.
+	SaveThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, m models.ThingAllowingBatchWritesWithCompositeAttributes) error
+	// SaveArrayOfThingAllowingBatchWritesWithCompositeAttributes batch saves all items in []ThingAllowingBatchWritesWithCompositeAttributes to the database.
+	SaveArrayOfThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, ms []models.ThingAllowingBatchWritesWithCompositeAttributes) error
+	// DeleteArrayOfThingAllowingBatchWritesWithCompositeAttributes batch deletes all items in []ThingAllowingBatchWritesWithCompositeAttributes in the database.
+	DeleteArrayOfThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, ms []models.ThingAllowingBatchWritesWithCompositeAttributes) error
+	// GetThingAllowingBatchWritesWithCompositeAttributes retrieves a ThingAllowingBatchWritesWithCompositeAttributes from the database.
+	GetThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) (*models.ThingAllowingBatchWritesWithCompositeAttributes, error)
+	// ScanThingAllowingBatchWritesWithCompositeAttributess runs a scan on the ThingAllowingBatchWritesWithCompositeAttributess table.
+	ScanThingAllowingBatchWritesWithCompositeAttributess(ctx context.Context, input ScanThingAllowingBatchWritesWithCompositeAttributessInput, fn func(m *models.ThingAllowingBatchWritesWithCompositeAttributes, lastThingAllowingBatchWritesWithCompositeAttributes bool) bool) error
+	// GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate retrieves a page of ThingAllowingBatchWritesWithCompositeAttributess from the database.
+	GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateInput, fn func(m *models.ThingAllowingBatchWritesWithCompositeAttributes, lastThingAllowingBatchWritesWithCompositeAttributes bool) bool) error
+	// DeleteThingAllowingBatchWritesWithCompositeAttributes deletes a ThingAllowingBatchWritesWithCompositeAttributes from the database.
+	DeleteThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) error
 
 	// SaveThingWithCompositeAttributes saves a ThingWithCompositeAttributes to the database.
 	SaveThingWithCompositeAttributes(ctx context.Context, m models.ThingWithCompositeAttributes) error
@@ -897,6 +914,61 @@ var _ error = ErrThingAllowingBatchWritesAlreadyExists{}
 // Error returns a description of the error.
 func (e ErrThingAllowingBatchWritesAlreadyExists) Error() string {
 	return "ThingAllowingBatchWrites already exists"
+}
+
+// ScanThingAllowingBatchWritesWithCompositeAttributessInput is the input to the ScanThingAllowingBatchWritesWithCompositeAttributess method.
+type ScanThingAllowingBatchWritesWithCompositeAttributessInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingAllowingBatchWritesWithCompositeAttributes
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateInput is the query input to GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate.
+type GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateInput struct {
+	// Name is required
+	Name string
+	// Branch is required
+	Branch         string
+	DateStartingAt *strfmt.DateTime
+	// StartingAfter is a required specification of an exclusive starting point.
+	StartingAfter *models.ThingAllowingBatchWritesWithCompositeAttributes
+	Descending    bool
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+}
+
+// ErrThingAllowingBatchWritesWithCompositeAttributesNotFound is returned when the database fails to find a ThingAllowingBatchWritesWithCompositeAttributes.
+type ErrThingAllowingBatchWritesWithCompositeAttributesNotFound struct {
+	Name   string
+	Branch string
+	Date   strfmt.DateTime
+}
+
+var _ error = ErrThingAllowingBatchWritesWithCompositeAttributesNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingAllowingBatchWritesWithCompositeAttributesNotFound) Error() string {
+	return "could not find ThingAllowingBatchWritesWithCompositeAttributes"
+}
+
+// ErrThingAllowingBatchWritesWithCompositeAttributesAlreadyExists is returned when trying to overwrite a ThingAllowingBatchWritesWithCompositeAttributes.
+type ErrThingAllowingBatchWritesWithCompositeAttributesAlreadyExists struct {
+	NameBranch string
+	Date       strfmt.DateTime
+}
+
+var _ error = ErrThingAllowingBatchWritesWithCompositeAttributesAlreadyExists{}
+
+// Error returns a description of the error.
+func (e ErrThingAllowingBatchWritesWithCompositeAttributesAlreadyExists) Error() string {
+	return "ThingAllowingBatchWritesWithCompositeAttributes already exists"
 }
 
 // ScanThingWithCompositeAttributessInput is the input to the ScanThingWithCompositeAttributess method.

@@ -234,6 +234,36 @@ definitions:
       nestedObject:
         $ref: '#/definitions/Object'
 
+  # Batch writes with composite hash keys
+  ThingAllowingBatchWritesWithCompositeAttributes:
+    x-db:
+      AllowOverwrites: false
+      AllowPrimaryIndexScan: true
+      AllowBatchwrites: true
+      CompositeAttributes:
+      - AttributeName: name_branch
+        Properties: [ name, branch ]
+        Separator: "@"
+      DynamoDB:
+        KeySchema:
+        - AttributeName: name_branch
+          KeyType: HASH
+        - AttributeName: date
+          KeyType: RANGE
+    type: object
+    required:
+    - name
+    - branch
+    - date
+    properties:
+      name:
+        type: string
+      branch:
+        type: string
+      date:
+        type: string
+        format: date-time
+
   # Composite hash keys
   ThingWithCompositeAttributes:
     x-db:

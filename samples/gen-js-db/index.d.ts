@@ -156,6 +156,12 @@ declare namespace SwaggerTest {
   version?: number;
 };
     
+    type ThingAllowingBatchWritesWithCompositeAttributes = {
+  branch: string;
+  date: string;
+  name: string;
+};
+    
     type ThingWithCompositeAttributes = {
   branch: string;
   date: string;

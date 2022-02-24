@@ -124,6 +124,11 @@ func (d DB) Save{{ $modelName }}(ctx context.Context, m models.{{ $modelName }})
 func (d DB) SaveArrayOf{{ $modelName }}(ctx context.Context, m []models.{{ $modelName }}) error {
   return d.{{ $modelNameCamel }}Table.saveArrayOf{{ $modelName }}(ctx, m)
 }
+
+// DeleteArrayOf{{ $modelName }} batch deletes all items in the {{ $modelName }} slice in the database.
+func (d DB) DeleteArrayOf{{ $modelName }}(ctx context.Context, m []models.{{ $modelName }}) error {
+  return d.{{ $modelNameCamel }}Table.deleteArrayOf{{ $modelName }}(ctx, m)
+}
 {{- end }}
 
 // Get{{ $modelName }} retrieves a {{ $modelName }} from the database.
