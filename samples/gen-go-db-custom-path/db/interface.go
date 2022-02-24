@@ -132,13 +132,13 @@ type Interface interface {
 	// DeleteArrayOfThingAllowingBatchWritesWithCompositeAttributes batch deletes all items in []ThingAllowingBatchWritesWithCompositeAttributes in the database.
 	DeleteArrayOfThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, ms []models.ThingAllowingBatchWritesWithCompositeAttributes) error
 	// GetThingAllowingBatchWritesWithCompositeAttributes retrieves a ThingAllowingBatchWritesWithCompositeAttributes from the database.
-	GetThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) (*models.ThingAllowingBatchWritesWithCompositeAttributes, error)
+	GetThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name string, id string, date strfmt.DateTime) (*models.ThingAllowingBatchWritesWithCompositeAttributes, error)
 	// ScanThingAllowingBatchWritesWithCompositeAttributess runs a scan on the ThingAllowingBatchWritesWithCompositeAttributess table.
 	ScanThingAllowingBatchWritesWithCompositeAttributess(ctx context.Context, input ScanThingAllowingBatchWritesWithCompositeAttributessInput, fn func(m *models.ThingAllowingBatchWritesWithCompositeAttributes, lastThingAllowingBatchWritesWithCompositeAttributes bool) bool) error
-	// GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate retrieves a page of ThingAllowingBatchWritesWithCompositeAttributess from the database.
-	GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateInput, fn func(m *models.ThingAllowingBatchWritesWithCompositeAttributes, lastThingAllowingBatchWritesWithCompositeAttributes bool) bool) error
+	// GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate retrieves a page of ThingAllowingBatchWritesWithCompositeAttributess from the database.
+	GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate(ctx context.Context, input GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateInput, fn func(m *models.ThingAllowingBatchWritesWithCompositeAttributes, lastThingAllowingBatchWritesWithCompositeAttributes bool) bool) error
 	// DeleteThingAllowingBatchWritesWithCompositeAttributes deletes a ThingAllowingBatchWritesWithCompositeAttributes from the database.
-	DeleteThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) error
+	DeleteThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name string, id string, date strfmt.DateTime) error
 
 	// SaveThingWithCompositeAttributes saves a ThingWithCompositeAttributes to the database.
 	SaveThingWithCompositeAttributes(ctx context.Context, m models.ThingWithCompositeAttributes) error
@@ -928,12 +928,12 @@ type ScanThingAllowingBatchWritesWithCompositeAttributessInput struct {
 	Limiter *rate.Limiter
 }
 
-// GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateInput is the query input to GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate.
-type GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateInput struct {
+// GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateInput is the query input to GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate.
+type GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateInput struct {
 	// Name is required
 	Name string
-	// Branch is required
-	Branch         string
+	// ID is required
+	ID             string
 	DateStartingAt *strfmt.DateTime
 	// StartingAfter is a required specification of an exclusive starting point.
 	StartingAfter *models.ThingAllowingBatchWritesWithCompositeAttributes
@@ -946,9 +946,9 @@ type GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateInput
 
 // ErrThingAllowingBatchWritesWithCompositeAttributesNotFound is returned when the database fails to find a ThingAllowingBatchWritesWithCompositeAttributes.
 type ErrThingAllowingBatchWritesWithCompositeAttributesNotFound struct {
-	Name   string
-	Branch string
-	Date   strfmt.DateTime
+	Name string
+	ID   string
+	Date strfmt.DateTime
 }
 
 var _ error = ErrThingAllowingBatchWritesWithCompositeAttributesNotFound{}
@@ -960,8 +960,8 @@ func (e ErrThingAllowingBatchWritesWithCompositeAttributesNotFound) Error() stri
 
 // ErrThingAllowingBatchWritesWithCompositeAttributesAlreadyExists is returned when trying to overwrite a ThingAllowingBatchWritesWithCompositeAttributes.
 type ErrThingAllowingBatchWritesWithCompositeAttributesAlreadyExists struct {
-	NameBranch string
-	Date       strfmt.DateTime
+	NameID string
+	Date   strfmt.DateTime
 }
 
 var _ error = ErrThingAllowingBatchWritesWithCompositeAttributesAlreadyExists{}

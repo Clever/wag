@@ -241,24 +241,24 @@ definitions:
       AllowPrimaryIndexScan: true
       AllowBatchwrites: true
       CompositeAttributes:
-      - AttributeName: name_branch
-        Properties: [ name, branch ]
+      - AttributeName: name_id
+        Properties: [ name, id ]
         Separator: "@"
       DynamoDB:
         KeySchema:
-        - AttributeName: name_branch
+        - AttributeName: name_id
           KeyType: HASH
         - AttributeName: date
           KeyType: RANGE
     type: object
     required:
     - name
-    - branch
+    - id
     - date
     properties:
       name:
         type: string
-      branch:
+      id:
         type: string
       date:
         type: string

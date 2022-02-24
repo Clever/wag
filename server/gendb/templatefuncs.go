@@ -6,6 +6,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/Clever/wag/v8/utils"
 	"github.com/awslabs/goformation/v2/cloudformation/resources"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
@@ -258,7 +259,7 @@ var funcMap = template.FuncMap(map[string]interface{}{
 				value += "*"
 			}
 			value += sliceIdentifier + "."
-			value += strings.Title(attributeToModelValueNotPtr(config, prop, ""))
+			value += utils.CamelCase(attributeToModelValueNotPtr(config, prop, ""), true)
 			if i != len(ca.Properties)-1 {
 				value += `, `
 			}

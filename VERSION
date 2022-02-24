@@ -1,4 +1,6 @@
-v8.1.6
+v8.1.7
+
+v8.1.7: Fix for dynamo batch deletes when using common initialisms in composite index
 
 v8.1.6: Add dynamodb codegen support for batch deleting arrays of objects
 
