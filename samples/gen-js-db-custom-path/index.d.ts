@@ -157,8 +157,8 @@ declare namespace SwaggerTest {
 };
     
     type ThingAllowingBatchWritesWithCompositeAttributes = {
-  branch: string;
   date: string;
+  id: string;
   name: string;
 };
     

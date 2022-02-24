@@ -28,8 +28,8 @@ type ThingAllowingBatchWritesWithCompositeAttributesTable struct {
 
 // ddbThingAllowingBatchWritesWithCompositeAttributesPrimaryKey represents the primary key of a ThingAllowingBatchWritesWithCompositeAttributes in DynamoDB.
 type ddbThingAllowingBatchWritesWithCompositeAttributesPrimaryKey struct {
-	NameBranch string          `dynamodbav:"name_branch"`
-	Date       strfmt.DateTime `dynamodbav:"date"`
+	NameID string          `dynamodbav:"name_id"`
+	Date   strfmt.DateTime `dynamodbav:"date"`
 }
 
 // ddbThingAllowingBatchWritesWithCompositeAttributes represents a ThingAllowingBatchWritesWithCompositeAttributes as stored in DynamoDB.
@@ -52,13 +52,13 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) create(ctx context
 				AttributeType: aws.String("S"),
 			},
 			{
-				AttributeName: aws.String("name_branch"),
+				AttributeName: aws.String("name_id"),
 				AttributeType: aws.String("S"),
 			},
 		},
 		KeySchema: []*dynamodb.KeySchemaElement{
 			{
-				AttributeName: aws.String("name_branch"),
+				AttributeName: aws.String("name_id"),
 				KeyType:       aws.String(dynamodb.KeyTypeHash),
 			},
 			{
@@ -86,18 +86,18 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) saveThingAllowingB
 		TableName: aws.String(t.name()),
 		Item:      data,
 		ExpressionAttributeNames: map[string]*string{
-			"#NAME_BRANCH": aws.String("name_branch"),
-			"#DATE":        aws.String("date"),
+			"#NAME_ID": aws.String("name_id"),
+			"#DATE":    aws.String("date"),
 		},
-		ConditionExpression: aws.String("attribute_not_exists(#NAME_BRANCH) AND attribute_not_exists(#DATE)"),
+		ConditionExpression: aws.String("attribute_not_exists(#NAME_ID) AND attribute_not_exists(#DATE)"),
 	})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case dynamodb.ErrCodeConditionalCheckFailedException:
 				return db.ErrThingAllowingBatchWritesWithCompositeAttributesAlreadyExists{
-					NameBranch: fmt.Sprintf("%s@%s", *m.Name, *m.Branch),
-					Date:       *m.Date,
+					NameID: fmt.Sprintf("%s@%s", *m.Name, *m.ID),
+					Date:   *m.Date,
 				}
 			case dynamodb.ErrCodeResourceNotFoundException:
 				return fmt.Errorf("table or index not found: %s", t.name())
@@ -149,8 +149,8 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) deleteArrayOfThing
 	batch := make([]*dynamodb.WriteRequest, len(ms))
 	for i := range ms {
 		key, err := dynamodbattribute.MarshalMap(ddbThingAllowingBatchWritesWithCompositeAttributesPrimaryKey{
-			NameBranch: fmt.Sprintf("%s@%s", *ms[i].Name, *ms[i].Branch),
-			Date:       *ms[i].Date,
+			NameID: fmt.Sprintf("%s@%s", *ms[i].Name, *ms[i].ID),
+			Date:   *ms[i].Date,
 		})
 		if err != nil {
 			return err
@@ -179,10 +179,10 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) deleteArrayOfThing
 	return nil
 }
 
-func (t ThingAllowingBatchWritesWithCompositeAttributesTable) getThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) (*models.ThingAllowingBatchWritesWithCompositeAttributes, error) {
+func (t ThingAllowingBatchWritesWithCompositeAttributesTable) getThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name string, id string, date strfmt.DateTime) (*models.ThingAllowingBatchWritesWithCompositeAttributes, error) {
 	key, err := dynamodbattribute.MarshalMap(ddbThingAllowingBatchWritesWithCompositeAttributesPrimaryKey{
-		NameBranch: fmt.Sprintf("%s@%s", name, branch),
-		Date:       date,
+		NameID: fmt.Sprintf("%s@%s", name, id),
+		Date:   date,
 	})
 	if err != nil {
 		return nil, err
@@ -204,9 +204,9 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) getThingAllowingBa
 
 	if len(res.Item) == 0 {
 		return nil, db.ErrThingAllowingBatchWritesWithCompositeAttributesNotFound{
-			Name:   name,
-			Branch: branch,
-			Date:   date,
+			Name: name,
+			ID:   id,
+			Date: date,
 		}
 	}
 
@@ -231,8 +231,8 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) scanThingAllowingB
 		}
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"name_branch": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
+			"name_id": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.ID)),
 			},
 			"date": exclusiveStartKey["date"],
 		}
@@ -270,24 +270,24 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) scanThingAllowingB
 	return err
 }
 
-func (t ThingAllowingBatchWritesWithCompositeAttributesTable) getThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input db.GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateInput, fn func(m *models.ThingAllowingBatchWritesWithCompositeAttributes, lastThingAllowingBatchWritesWithCompositeAttributes bool) bool) error {
+func (t ThingAllowingBatchWritesWithCompositeAttributesTable) getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate(ctx context.Context, input db.GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateInput, fn func(m *models.ThingAllowingBatchWritesWithCompositeAttributes, lastThingAllowingBatchWritesWithCompositeAttributes bool) bool) error {
 	if input.DateStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.DateStartingAt or input.StartingAfter")
 	}
 	if input.Name == "" {
 		return fmt.Errorf("Hash key input.Name cannot be empty")
 	}
-	if input.Branch == "" {
-		return fmt.Errorf("Hash key input.Branch cannot be empty")
+	if input.ID == "" {
+		return fmt.Errorf("Hash key input.ID cannot be empty")
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		ExpressionAttributeNames: map[string]*string{
-			"#NAME_BRANCH": aws.String("name_branch"),
+			"#NAME_ID": aws.String("name_id"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":nameBranch": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s@%s", input.Name, input.Branch)),
+			":nameId": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s@%s", input.Name, input.ID)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
@@ -297,16 +297,16 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) getThingAllowingBa
 		queryInput.Limit = input.Limit
 	}
 	if input.DateStartingAt == nil {
-		queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch")
+		queryInput.KeyConditionExpression = aws.String("#NAME_ID = :nameId")
 	} else {
 		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
 		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
 			S: aws.String(toDynamoTimeString(*input.DateStartingAt)),
 		}
 		if input.Descending {
-			queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE <= :date")
+			queryInput.KeyConditionExpression = aws.String("#NAME_ID = :nameId AND #DATE <= :date")
 		} else {
-			queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE >= :date")
+			queryInput.KeyConditionExpression = aws.String("#NAME_ID = :nameId AND #DATE >= :date")
 		}
 	}
 	if input.StartingAfter != nil {
@@ -314,8 +314,8 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) getThingAllowingBa
 			"date": &dynamodb.AttributeValue{
 				S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.Date)),
 			},
-			"name_branch": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
+			"name_id": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.ID)),
 			},
 		}
 	}
@@ -365,10 +365,10 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) getThingAllowingBa
 	return nil
 }
 
-func (t ThingAllowingBatchWritesWithCompositeAttributesTable) deleteThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) error {
+func (t ThingAllowingBatchWritesWithCompositeAttributesTable) deleteThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name string, id string, date strfmt.DateTime) error {
 	key, err := dynamodbattribute.MarshalMap(ddbThingAllowingBatchWritesWithCompositeAttributesPrimaryKey{
-		NameBranch: fmt.Sprintf("%s@%s", name, branch),
-		Date:       date,
+		NameID: fmt.Sprintf("%s@%s", name, id),
+		Date:   date,
 	})
 	if err != nil {
 		return err
@@ -399,16 +399,16 @@ func encodeThingAllowingBatchWritesWithCompositeAttributes(m models.ThingAllowin
 		return nil, err
 	}
 	// make sure composite attributes don't contain separator characters
-	if strings.Contains(*m.Branch, "@") {
-		return nil, fmt.Errorf("branch cannot contain '@': %s", *m.Branch)
+	if strings.Contains(*m.ID, "@") {
+		return nil, fmt.Errorf("id cannot contain '@': %s", *m.ID)
 	}
 	if strings.Contains(*m.Name, "@") {
 		return nil, fmt.Errorf("name cannot contain '@': %s", *m.Name)
 	}
 	// add in composite attributes
 	primaryKey, err := dynamodbattribute.MarshalMap(ddbThingAllowingBatchWritesWithCompositeAttributesPrimaryKey{
-		NameBranch: fmt.Sprintf("%s@%s", *m.Name, *m.Branch),
-		Date:       *m.Date,
+		NameID: fmt.Sprintf("%s@%s", *m.Name, *m.ID),
+		Date:   *m.Date,
 	})
 	if err != nil {
 		return nil, err

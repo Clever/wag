@@ -74,7 +74,7 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("DeleteThingAllowingBatchWrites", DeleteThingAllowingBatchWrites(dbFactory(), t))
 	t.Run("GetThingAllowingBatchWritesWithCompositeAttributes", GetThingAllowingBatchWritesWithCompositeAttributes(dbFactory(), t))
 	t.Run("ScanThingAllowingBatchWritesWithCompositeAttributess", ScanThingAllowingBatchWritesWithCompositeAttributess(dbFactory(), t))
-	t.Run("GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate", GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate(dbFactory(), t))
+	t.Run("GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate", GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate(dbFactory(), t))
 	t.Run("SaveThingAllowingBatchWritesWithCompositeAttributes", SaveThingAllowingBatchWritesWithCompositeAttributes(dbFactory(), t))
 	t.Run("DeleteThingAllowingBatchWritesWithCompositeAttributes", DeleteThingAllowingBatchWritesWithCompositeAttributes(dbFactory(), t))
 	t.Run("GetThingWithCompositeAttributes", GetThingWithCompositeAttributes(dbFactory(), t))
@@ -5047,15 +5047,15 @@ func GetThingAllowingBatchWritesWithCompositeAttributes(s db.Interface, t *testi
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m := models.ThingAllowingBatchWritesWithCompositeAttributes{
-			Branch: db.String("string1"),
-			Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
-			Name:   db.String("string1"),
+			Date: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			ID:   db.String("string1"),
+			Name: db.String("string1"),
 		}
 		require.Nil(t, s.SaveThingAllowingBatchWritesWithCompositeAttributes(ctx, m))
-		m2, err := s.GetThingAllowingBatchWritesWithCompositeAttributes(ctx, *m.Name, *m.Branch, *m.Date)
+		m2, err := s.GetThingAllowingBatchWritesWithCompositeAttributes(ctx, *m.Name, *m.ID, *m.Date)
 		require.Nil(t, err)
 		require.Equal(t, *m.Name, *m2.Name)
-		require.Equal(t, *m.Branch, *m2.Branch)
+		require.Equal(t, *m.ID, *m2.ID)
 		require.Equal(t, m.Date.String(), m2.Date.String())
 
 		_, err = s.GetThingAllowingBatchWritesWithCompositeAttributes(ctx, "string2", "string2", mustTime("2018-03-11T15:04:02+07:00"))
@@ -5064,22 +5064,22 @@ func GetThingAllowingBatchWritesWithCompositeAttributes(s db.Interface, t *testi
 	}
 }
 
-type getThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateInput struct {
+type getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateInput struct {
 	ctx   context.Context
-	input db.GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateInput
+	input db.GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateInput
 }
-type getThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateOutput struct {
+type getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateOutput struct {
 	thingAllowingBatchWritesWithCompositeAttributess []models.ThingAllowingBatchWritesWithCompositeAttributes
 	err                                              error
 }
-type getThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateTest struct {
+type getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateTest struct {
 	testName string
 	d        db.Interface
-	input    getThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateInput
-	output   getThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateOutput
+	input    getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateInput
+	output   getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateOutput
 }
 
-func (g getThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateTest) run(t *testing.T) {
+func (g getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateTest) run(t *testing.T) {
 	thingAllowingBatchWritesWithCompositeAttributess := []models.ThingAllowingBatchWritesWithCompositeAttributes{}
 	fn := func(m *models.ThingAllowingBatchWritesWithCompositeAttributes, lastThingAllowingBatchWritesWithCompositeAttributes bool) bool {
 		thingAllowingBatchWritesWithCompositeAttributess = append(thingAllowingBatchWritesWithCompositeAttributess, *m)
@@ -5088,7 +5088,7 @@ func (g getThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateTe
 		}
 		return true
 	}
-	err := g.d.GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate(g.input.ctx, g.input.input, fn)
+	err := g.d.GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate(g.input.ctx, g.input.input, fn)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -5096,53 +5096,53 @@ func (g getThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateTe
 	require.Equal(t, g.output.thingAllowingBatchWritesWithCompositeAttributess, thingAllowingBatchWritesWithCompositeAttributess)
 }
 
-func GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate(d db.Interface, t *testing.T) func(t *testing.T) {
+func GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate(d db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		require.Nil(t, d.SaveThingAllowingBatchWritesWithCompositeAttributes(ctx, models.ThingAllowingBatchWritesWithCompositeAttributes{
-			Name:   db.String("string1"),
-			Branch: db.String("string1"),
-			Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Name: db.String("string1"),
+			ID:   db.String("string1"),
+			Date: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 		}))
 		require.Nil(t, d.SaveThingAllowingBatchWritesWithCompositeAttributes(ctx, models.ThingAllowingBatchWritesWithCompositeAttributes{
-			Name:   db.String("string1"),
-			Branch: db.String("string1"),
-			Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+			Name: db.String("string1"),
+			ID:   db.String("string1"),
+			Date: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 		}))
 		require.Nil(t, d.SaveThingAllowingBatchWritesWithCompositeAttributes(ctx, models.ThingAllowingBatchWritesWithCompositeAttributes{
-			Name:   db.String("string1"),
-			Branch: db.String("string1"),
-			Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+			Name: db.String("string1"),
+			ID:   db.String("string1"),
+			Date: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 		}))
 		limit := int64(3)
-		tests := []getThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateTest{
+		tests := []getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateTest{
 			{
 				testName: "basic",
 				d:        d,
-				input: getThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateInput{
+				input: getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateInput{
 					ctx: context.Background(),
-					input: db.GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateInput{
-						Name:   "string1",
-						Branch: "string1",
-						Limit:  &limit,
+					input: db.GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateInput{
+						Name:  "string1",
+						ID:    "string1",
+						Limit: &limit,
 					},
 				},
-				output: getThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateOutput{
+				output: getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateOutput{
 					thingAllowingBatchWritesWithCompositeAttributess: []models.ThingAllowingBatchWritesWithCompositeAttributes{
 						models.ThingAllowingBatchWritesWithCompositeAttributes{
-							Name:   db.String("string1"),
-							Branch: db.String("string1"),
-							Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+							Name: db.String("string1"),
+							ID:   db.String("string1"),
+							Date: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 						},
 						models.ThingAllowingBatchWritesWithCompositeAttributes{
-							Name:   db.String("string1"),
-							Branch: db.String("string1"),
-							Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+							Name: db.String("string1"),
+							ID:   db.String("string1"),
+							Date: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 						},
 						models.ThingAllowingBatchWritesWithCompositeAttributes{
-							Name:   db.String("string1"),
-							Branch: db.String("string1"),
-							Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+							Name: db.String("string1"),
+							ID:   db.String("string1"),
+							Date: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 						},
 					},
 					err: nil,
@@ -5151,30 +5151,30 @@ func GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate(d db
 			{
 				testName: "descending",
 				d:        d,
-				input: getThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateInput{
+				input: getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateInput{
 					ctx: context.Background(),
-					input: db.GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateInput{
+					input: db.GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateInput{
 						Name:       "string1",
-						Branch:     "string1",
+						ID:         "string1",
 						Descending: true,
 					},
 				},
-				output: getThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateOutput{
+				output: getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateOutput{
 					thingAllowingBatchWritesWithCompositeAttributess: []models.ThingAllowingBatchWritesWithCompositeAttributes{
 						models.ThingAllowingBatchWritesWithCompositeAttributes{
-							Name:   db.String("string1"),
-							Branch: db.String("string1"),
-							Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+							Name: db.String("string1"),
+							ID:   db.String("string1"),
+							Date: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 						},
 						models.ThingAllowingBatchWritesWithCompositeAttributes{
-							Name:   db.String("string1"),
-							Branch: db.String("string1"),
-							Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+							Name: db.String("string1"),
+							ID:   db.String("string1"),
+							Date: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 						},
 						models.ThingAllowingBatchWritesWithCompositeAttributes{
-							Name:   db.String("string1"),
-							Branch: db.String("string1"),
-							Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+							Name: db.String("string1"),
+							ID:   db.String("string1"),
+							Date: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 						},
 					},
 					err: nil,
@@ -5183,29 +5183,29 @@ func GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate(d db
 			{
 				testName: "starting after",
 				d:        d,
-				input: getThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateInput{
+				input: getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateInput{
 					ctx: context.Background(),
-					input: db.GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateInput{
-						Name:   "string1",
-						Branch: "string1",
+					input: db.GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateInput{
+						Name: "string1",
+						ID:   "string1",
 						StartingAfter: &models.ThingAllowingBatchWritesWithCompositeAttributes{
-							Name:   db.String("string1"),
-							Branch: db.String("string1"),
-							Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+							Name: db.String("string1"),
+							ID:   db.String("string1"),
+							Date: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 						},
 					},
 				},
-				output: getThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateOutput{
+				output: getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateOutput{
 					thingAllowingBatchWritesWithCompositeAttributess: []models.ThingAllowingBatchWritesWithCompositeAttributes{
 						models.ThingAllowingBatchWritesWithCompositeAttributes{
-							Name:   db.String("string1"),
-							Branch: db.String("string1"),
-							Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+							Name: db.String("string1"),
+							ID:   db.String("string1"),
+							Date: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 						},
 						models.ThingAllowingBatchWritesWithCompositeAttributes{
-							Name:   db.String("string1"),
-							Branch: db.String("string1"),
-							Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+							Name: db.String("string1"),
+							ID:   db.String("string1"),
+							Date: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 						},
 					},
 					err: nil,
@@ -5214,30 +5214,30 @@ func GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate(d db
 			{
 				testName: "starting after descending",
 				d:        d,
-				input: getThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateInput{
+				input: getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateInput{
 					ctx: context.Background(),
-					input: db.GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateInput{
-						Name:   "string1",
-						Branch: "string1",
+					input: db.GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateInput{
+						Name: "string1",
+						ID:   "string1",
 						StartingAfter: &models.ThingAllowingBatchWritesWithCompositeAttributes{
-							Name:   db.String("string1"),
-							Branch: db.String("string1"),
-							Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+							Name: db.String("string1"),
+							ID:   db.String("string1"),
+							Date: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 						},
 						Descending: true,
 					},
 				},
-				output: getThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateOutput{
+				output: getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateOutput{
 					thingAllowingBatchWritesWithCompositeAttributess: []models.ThingAllowingBatchWritesWithCompositeAttributes{
 						models.ThingAllowingBatchWritesWithCompositeAttributes{
-							Name:   db.String("string1"),
-							Branch: db.String("string1"),
-							Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+							Name: db.String("string1"),
+							ID:   db.String("string1"),
+							Date: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 						},
 						models.ThingAllowingBatchWritesWithCompositeAttributes{
-							Name:   db.String("string1"),
-							Branch: db.String("string1"),
-							Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+							Name: db.String("string1"),
+							ID:   db.String("string1"),
+							Date: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 						},
 					},
 					err: nil,
@@ -5246,25 +5246,25 @@ func GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate(d db
 			{
 				testName: "starting at",
 				d:        d,
-				input: getThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateInput{
+				input: getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateInput{
 					ctx: context.Background(),
-					input: db.GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateInput{
+					input: db.GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateInput{
 						Name:           "string1",
-						Branch:         "string1",
+						ID:             "string1",
 						DateStartingAt: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 					},
 				},
-				output: getThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateOutput{
+				output: getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateOutput{
 					thingAllowingBatchWritesWithCompositeAttributess: []models.ThingAllowingBatchWritesWithCompositeAttributes{
 						models.ThingAllowingBatchWritesWithCompositeAttributes{
-							Name:   db.String("string1"),
-							Branch: db.String("string1"),
-							Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+							Name: db.String("string1"),
+							ID:   db.String("string1"),
+							Date: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 						},
 						models.ThingAllowingBatchWritesWithCompositeAttributes{
-							Name:   db.String("string1"),
-							Branch: db.String("string1"),
-							Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+							Name: db.String("string1"),
+							ID:   db.String("string1"),
+							Date: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 						},
 					},
 					err: nil,
@@ -5283,37 +5283,37 @@ func ScanThingAllowingBatchWritesWithCompositeAttributess(d db.Interface, t *tes
 	return func(t *testing.T) {
 		ctx := context.Background()
 		require.Nil(t, d.SaveThingAllowingBatchWritesWithCompositeAttributes(ctx, models.ThingAllowingBatchWritesWithCompositeAttributes{
-			Branch: db.String("string1"),
-			Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
-			Name:   db.String("string1"),
+			Date: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			ID:   db.String("string1"),
+			Name: db.String("string1"),
 		}))
 		require.Nil(t, d.SaveThingAllowingBatchWritesWithCompositeAttributes(ctx, models.ThingAllowingBatchWritesWithCompositeAttributes{
-			Branch: db.String("string2"),
-			Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
-			Name:   db.String("string2"),
+			Date: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+			ID:   db.String("string2"),
+			Name: db.String("string2"),
 		}))
 		require.Nil(t, d.SaveThingAllowingBatchWritesWithCompositeAttributes(ctx, models.ThingAllowingBatchWritesWithCompositeAttributes{
-			Branch: db.String("string3"),
-			Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
-			Name:   db.String("string3"),
+			Date: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+			ID:   db.String("string3"),
+			Name: db.String("string3"),
 		}))
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingAllowingBatchWritesWithCompositeAttributes{
 				models.ThingAllowingBatchWritesWithCompositeAttributes{
-					Branch: db.String("string1"),
-					Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
-					Name:   db.String("string1"),
+					Date: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+					ID:   db.String("string1"),
+					Name: db.String("string1"),
 				},
 				models.ThingAllowingBatchWritesWithCompositeAttributes{
-					Branch: db.String("string2"),
-					Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
-					Name:   db.String("string2"),
+					Date: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+					ID:   db.String("string2"),
+					Name: db.String("string2"),
 				},
 				models.ThingAllowingBatchWritesWithCompositeAttributes{
-					Branch: db.String("string3"),
-					Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
-					Name:   db.String("string3"),
+					Date: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+					ID:   db.String("string3"),
+					Name: db.String("string3"),
 				},
 			}
 			actual := []models.ThingAllowingBatchWritesWithCompositeAttributes{}
@@ -5348,9 +5348,9 @@ func ScanThingAllowingBatchWritesWithCompositeAttributess(d db.Interface, t *tes
 			// Scan for everything after the first item.
 			scanInput := db.ScanThingAllowingBatchWritesWithCompositeAttributessInput{
 				StartingAfter: &models.ThingAllowingBatchWritesWithCompositeAttributes{
-					Name:   firstItem.Name,
-					Branch: firstItem.Branch,
-					Date:   firstItem.Date,
+					Name: firstItem.Name,
+					ID:   firstItem.ID,
+					Date: firstItem.Date,
 				},
 			}
 			actual := []models.ThingAllowingBatchWritesWithCompositeAttributes{}
@@ -5393,9 +5393,9 @@ func SaveThingAllowingBatchWritesWithCompositeAttributes(s db.Interface, t *test
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m := models.ThingAllowingBatchWritesWithCompositeAttributes{
-			Branch: db.String("string1"),
-			Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
-			Name:   db.String("string1"),
+			Date: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			ID:   db.String("string1"),
+			Name: db.String("string1"),
 		}
 		require.Nil(t, s.SaveThingAllowingBatchWritesWithCompositeAttributes(ctx, m))
 		require.IsType(t, db.ErrThingAllowingBatchWritesWithCompositeAttributesAlreadyExists{}, s.SaveThingAllowingBatchWritesWithCompositeAttributes(ctx, m))
@@ -5406,12 +5406,12 @@ func DeleteThingAllowingBatchWritesWithCompositeAttributes(s db.Interface, t *te
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m := models.ThingAllowingBatchWritesWithCompositeAttributes{
-			Branch: db.String("string1"),
-			Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
-			Name:   db.String("string1"),
+			Date: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			ID:   db.String("string1"),
+			Name: db.String("string1"),
 		}
 		require.Nil(t, s.SaveThingAllowingBatchWritesWithCompositeAttributes(ctx, m))
-		require.Nil(t, s.DeleteThingAllowingBatchWritesWithCompositeAttributes(ctx, *m.Name, *m.Branch, *m.Date))
+		require.Nil(t, s.DeleteThingAllowingBatchWritesWithCompositeAttributes(ctx, *m.Name, *m.ID, *m.Date))
 	}
 }
 

@@ -17,14 +17,14 @@ import (
 // swagger:model ThingAllowingBatchWritesWithCompositeAttributes
 type ThingAllowingBatchWritesWithCompositeAttributes struct {
 
-	// branch
-	// Required: true
-	Branch *string `json:"branch"`
-
 	// date
 	// Required: true
 	// Format: date-time
 	Date *strfmt.DateTime `json:"date"`
+
+	// id
+	// Required: true
+	ID *string `json:"id"`
 
 	// name
 	// Required: true
@@ -35,11 +35,11 @@ type ThingAllowingBatchWritesWithCompositeAttributes struct {
 func (m *ThingAllowingBatchWritesWithCompositeAttributes) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateBranch(formats); err != nil {
+	if err := m.validateDate(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateDate(formats); err != nil {
+	if err := m.validateID(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -53,15 +53,6 @@ func (m *ThingAllowingBatchWritesWithCompositeAttributes) Validate(formats strfm
 	return nil
 }
 
-func (m *ThingAllowingBatchWritesWithCompositeAttributes) validateBranch(formats strfmt.Registry) error {
-
-	if err := validate.Required("branch", "body", m.Branch); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (m *ThingAllowingBatchWritesWithCompositeAttributes) validateDate(formats strfmt.Registry) error {
 
 	if err := validate.Required("date", "body", m.Date); err != nil {
@@ -69,6 +60,15 @@ func (m *ThingAllowingBatchWritesWithCompositeAttributes) validateDate(formats s
 	}
 
 	if err := validate.FormatOf("date", "body", "date-time", m.Date.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ThingAllowingBatchWritesWithCompositeAttributes) validateID(formats strfmt.Registry) error {
+
+	if err := validate.Required("id", "body", m.ID); err != nil {
 		return err
 	}
 

@@ -745,8 +745,8 @@ func (d DB) DeleteArrayOfThingAllowingBatchWritesWithCompositeAttributes(ctx con
 }
 
 // GetThingAllowingBatchWritesWithCompositeAttributes retrieves a ThingAllowingBatchWritesWithCompositeAttributes from the database.
-func (d DB) GetThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) (*models.ThingAllowingBatchWritesWithCompositeAttributes, error) {
-	return d.thingAllowingBatchWritesWithCompositeAttributesTable.getThingAllowingBatchWritesWithCompositeAttributes(ctx, name, branch, date)
+func (d DB) GetThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name string, id string, date strfmt.DateTime) (*models.ThingAllowingBatchWritesWithCompositeAttributes, error) {
+	return d.thingAllowingBatchWritesWithCompositeAttributesTable.getThingAllowingBatchWritesWithCompositeAttributes(ctx, name, id, date)
 }
 
 // ScanThingAllowingBatchWritesWithCompositeAttributess runs a scan on the ThingAllowingBatchWritesWithCompositeAttributess table.
@@ -754,14 +754,14 @@ func (d DB) ScanThingAllowingBatchWritesWithCompositeAttributess(ctx context.Con
 	return d.thingAllowingBatchWritesWithCompositeAttributesTable.scanThingAllowingBatchWritesWithCompositeAttributess(ctx, input, fn)
 }
 
-// GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate retrieves a page of ThingAllowingBatchWritesWithCompositeAttributess from the database.
-func (d DB) GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input db.GetThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDateInput, fn func(m *models.ThingAllowingBatchWritesWithCompositeAttributes, lastThingAllowingBatchWritesWithCompositeAttributes bool) bool) error {
-	return d.thingAllowingBatchWritesWithCompositeAttributesTable.getThingAllowingBatchWritesWithCompositeAttributessByNameBranchAndDate(ctx, input, fn)
+// GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate retrieves a page of ThingAllowingBatchWritesWithCompositeAttributess from the database.
+func (d DB) GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate(ctx context.Context, input db.GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateInput, fn func(m *models.ThingAllowingBatchWritesWithCompositeAttributes, lastThingAllowingBatchWritesWithCompositeAttributes bool) bool) error {
+	return d.thingAllowingBatchWritesWithCompositeAttributesTable.getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate(ctx, input, fn)
 }
 
 // DeleteThingAllowingBatchWritesWithCompositeAttributes deletes a ThingAllowingBatchWritesWithCompositeAttributes from the database.
-func (d DB) DeleteThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) error {
-	return d.thingAllowingBatchWritesWithCompositeAttributesTable.deleteThingAllowingBatchWritesWithCompositeAttributes(ctx, name, branch, date)
+func (d DB) DeleteThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name string, id string, date strfmt.DateTime) error {
+	return d.thingAllowingBatchWritesWithCompositeAttributesTable.deleteThingAllowingBatchWritesWithCompositeAttributes(ctx, name, id, date)
 }
 
 // SaveThingWithCompositeAttributes saves a ThingWithCompositeAttributes to the database.
