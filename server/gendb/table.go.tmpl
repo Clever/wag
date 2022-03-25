@@ -187,6 +187,10 @@ func (t {{ $modelName }}Table) saveArrayOf{{ $modelName }}(ctx context.Context, 
 		return fmt.Errorf("saveArrayOf{{ $modelName }} received %%d items to save, which is greater than the maximum of %%d", len(ms), maxDynamoDBBatchItems)
 	}
 
+	if len(ms) == 0 {
+		return nil
+	}
+
 	batch := make([]*dynamodb.WriteRequest, len(ms))
 	for i := range ms {
 	data, err := encode{{ $modelName }}(ms[i])
@@ -219,6 +223,10 @@ func (t {{ $modelName }}Table) saveArrayOf{{ $modelName }}(ctx context.Context, 
 func (t {{ $modelName }}Table) deleteArrayOf{{ $modelName }}(ctx context.Context, ms []models.{{ $modelName }}) error {
 	if len(ms) > maxDynamoDBBatchItems {
 		return fmt.Errorf("deleteArrayOf{{ $modelName }} received %%d items to delete, which is greater than the maximum of %%d", len(ms), maxDynamoDBBatchItems)
+	}
+  
+	if len(ms) == 0 {
+		return nil
 	}
 
 	batch := make([]*dynamodb.WriteRequest, len(ms))

@@ -112,6 +112,10 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) saveArrayOfThingAl
 		return fmt.Errorf("saveArrayOfThingAllowingBatchWritesWithCompositeAttributes received %d items to save, which is greater than the maximum of %d", len(ms), maxDynamoDBBatchItems)
 	}
 
+	if len(ms) == 0 {
+		return nil
+	}
+
 	batch := make([]*dynamodb.WriteRequest, len(ms))
 	for i := range ms {
 		data, err := encodeThingAllowingBatchWritesWithCompositeAttributes(ms[i])
@@ -144,6 +148,10 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) saveArrayOfThingAl
 func (t ThingAllowingBatchWritesWithCompositeAttributesTable) deleteArrayOfThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, ms []models.ThingAllowingBatchWritesWithCompositeAttributes) error {
 	if len(ms) > maxDynamoDBBatchItems {
 		return fmt.Errorf("deleteArrayOfThingAllowingBatchWritesWithCompositeAttributes received %d items to delete, which is greater than the maximum of %d", len(ms), maxDynamoDBBatchItems)
+	}
+
+	if len(ms) == 0 {
+		return nil
 	}
 
 	batch := make([]*dynamodb.WriteRequest, len(ms))
