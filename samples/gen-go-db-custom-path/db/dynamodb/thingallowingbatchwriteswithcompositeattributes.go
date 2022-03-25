@@ -149,6 +149,7 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) deleteArrayOfThing
 	if len(ms) > maxDynamoDBBatchItems {
 		return fmt.Errorf("deleteArrayOfThingAllowingBatchWritesWithCompositeAttributes received %d items to delete, which is greater than the maximum of %d", len(ms), maxDynamoDBBatchItems)
 	}
+
 	if len(ms) == 0 {
 		return nil
 	}
