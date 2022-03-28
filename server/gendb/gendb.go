@@ -100,6 +100,7 @@ func (config XDBConfig) attributeNameIsDefined(attributeName string) error {
 type AWSDynamoDBTable struct {
 	KeySchema              []resources.AWSDynamoDBTable_KeySchema            `json:"KeySchema,omitempty"`
 	GlobalSecondaryIndexes []resources.AWSDynamoDBTable_GlobalSecondaryIndex `json:"GlobalSecondaryIndexes,omitempty"`
+	AttributesDefinitions  []resources.AWSDynamoDBTable_AttributeDefinition  `json:"AttributeDefinitions,omitempty"`
 }
 
 // DecodeConfig extracts a db configuration from the schema definition, if one exists.
