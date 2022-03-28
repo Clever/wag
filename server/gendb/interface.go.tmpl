@@ -108,10 +108,19 @@ type Scan{{ $modelName }}sInput struct {
 {{- $indexName := indexName $xdbConfig.DynamoDB.KeySchema }}
 {{- $hashKey := index $xdbConfig.DynamoDB.KeySchema 0 }}
 {{- $pkModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
+{{- $nonIndexAttributeNames := nonIndexModelAttributeNames $xdbConfig $pkModelAttributeNames}}
+{{- $lenNonIndexAttributes := len $nonIndexAttributeNames }}
 {{- if indexHasRangeKey $xdbConfig.DynamoDB.KeySchema }}
 {{- $rangeKey := index $xdbConfig.DynamoDB.KeySchema 1 }}
 {{- $rangeKeyAttributes := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "RANGE" }}
 {{- $lenRangeKeyAttributes := len $rangeKeyAttributes }}
+{{- if gt $lenNonIndexAttributes 0 }}
+    // {{ $indexName }}FilterableField represents the fields we can apply filters to for queries on this index
+    type {{ $indexName }}FilterableField string
+    {{- range $attributeName := $nonIndexAttributeNames }}
+      const {{ $attributeName }} {{ $indexName }}FilterableField = "{{ $attributeName }}"
+    {{- end }}
+{{- end }}  
 // Get{{ $modelName }}sBy{{ $indexName }}Input is the query input to Get{{ $modelName }}sBy{{ $indexName }}.
 type Get{{ $modelName }}sBy{{ $indexName }}Input struct {
   {{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
@@ -136,6 +145,9 @@ type Get{{ $modelName }}sBy{{ $indexName }}Input struct {
   DisableConsistentRead bool
   // Limit is an optional limit of how many items to evaluate.
 	Limit  *int64
+  {{- if gt $lenNonIndexAttributes 0 }}
+    // Filters is an optional array of filters to apply on various table fields
+  {{- end }}  
 }
 {{- end }}
 

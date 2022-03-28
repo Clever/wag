@@ -6,6 +6,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/Clever/go-utils/stringset"
 	"github.com/Clever/wag/v8/utils"
 	"github.com/awslabs/goformation/v2/cloudformation/resources"
 	"github.com/go-openapi/spec"
@@ -284,34 +285,15 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		sort.Strings(attrs)
 		return attrs
 	},
-	"modelAttributeNames": func(config XDBConfig) []string {
-		table := config.DynamoDB
-		attrnames := map[string]struct{}{}
-		for _, ks := range table.KeySchema {
-			attrnames[ks.AttributeName] = struct{}{}
-		}
-		for _, gsi := range table.GlobalSecondaryIndexes {
-			for _, ks := range gsi.KeySchema {
-				attrnames[ks.AttributeName] = struct{}{}
-			}
-		}
-		for k := range attrnames {
-			if ca := findCompositeAttribute(config, k); ca != nil {
-				delete(attrnames, k)
-				for _, prop := range ca.Properties {
-					attrnames[prop] = struct{}{}
-				}
-			}
-		}
-
-		attrs := []string{}
-		for k := range attrnames {
-			attrs = append(attrs, k)
-		}
-		sort.Strings(attrs)
-		return attrs
-	},
+	"modelAttributeNames":         modelAttributeNames,
 	"modelAttributeNamesForIndex": modelAttributeNamesForIndex,
+	"nonIndexModelAttributeNames": func(config XDBConfig, indexAttributeNames []string) []string {
+		allAttributeNames := stringset.FromList(modelAttributeNames(config))
+		for _, ia := range indexAttributeNames {
+			allAttributeNames.Remove(ia)
+		}
+		return allAttributeNames.ToList()
+	},
 	"modelAttributeNamesForKeyType": func(config XDBConfig, keySchema []resources.AWSDynamoDBTable_KeySchema, keyType string) []string {
 		attributeNames := []string{}
 		for _, ks := range keySchema {
@@ -493,6 +475,37 @@ func modelAttributeNamesForIndex(config XDBConfig, keySchema []resources.AWSDyna
 		}
 	}
 	return attributeNames
+}
+
+func modelAttributeNames(config XDBConfig) []string {
+	table := config.DynamoDB
+	attrnames := map[string]struct{}{}
+	for _, ks := range table.KeySchema {
+		attrnames[ks.AttributeName] = struct{}{}
+	}
+	for _, gsi := range table.GlobalSecondaryIndexes {
+		for _, ks := range gsi.KeySchema {
+			attrnames[ks.AttributeName] = struct{}{}
+		}
+	}
+	for _, ad := range table.AttributesDefinitions {
+		attrnames[ad.AttributeName] = struct{}{}
+	}
+	for k := range attrnames {
+		if ca := findCompositeAttribute(config, k); ca != nil {
+			delete(attrnames, k)
+			for _, prop := range ca.Properties {
+				attrnames[prop] = struct{}{}
+			}
+		}
+	}
+
+	attrs := []string{}
+	for k := range attrnames {
+		attrs = append(attrs, k)
+	}
+	sort.Strings(attrs)
+	return attrs
 }
 
 func isComposite(config XDBConfig, attributeName string) bool {
