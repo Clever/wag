@@ -77,6 +77,18 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate", GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate(dbFactory(), t))
 	t.Run("SaveThingAllowingBatchWritesWithCompositeAttributes", SaveThingAllowingBatchWritesWithCompositeAttributes(dbFactory(), t))
 	t.Run("DeleteThingAllowingBatchWritesWithCompositeAttributes", DeleteThingAllowingBatchWritesWithCompositeAttributes(dbFactory(), t))
+	t.Run("GetThingWithAdditionalAttributes", GetThingWithAdditionalAttributes(dbFactory(), t))
+	t.Run("ScanThingWithAdditionalAttributess", ScanThingWithAdditionalAttributess(dbFactory(), t))
+	t.Run("GetThingWithAdditionalAttributessByNameAndVersion", GetThingWithAdditionalAttributessByNameAndVersion(dbFactory(), t))
+	t.Run("SaveThingWithAdditionalAttributes", SaveThingWithAdditionalAttributes(dbFactory(), t))
+	t.Run("DeleteThingWithAdditionalAttributes", DeleteThingWithAdditionalAttributes(dbFactory(), t))
+	t.Run("GetThingWithAdditionalAttributesByID", GetThingWithAdditionalAttributesByID(dbFactory(), t))
+	t.Run("ScanThingWithAdditionalAttributessByID", ScanThingWithAdditionalAttributessByID(dbFactory(), t))
+	t.Run("GetThingWithAdditionalAttributessByNameAndCreatedAt", GetThingWithAdditionalAttributessByNameAndCreatedAt(dbFactory(), t))
+	t.Run("ScanThingWithAdditionalAttributessByNameAndCreatedAt", ScanThingWithAdditionalAttributessByNameAndCreatedAt(dbFactory(), t))
+	t.Run("GetThingWithAdditionalAttributessByNameAndRangeNullable", GetThingWithAdditionalAttributessByNameAndRangeNullable(dbFactory(), t))
+	t.Run("ScanThingWithAdditionalAttributessByNameAndRangeNullable", ScanThingWithAdditionalAttributessByNameAndRangeNullable(dbFactory(), t))
+	t.Run("GetThingWithAdditionalAttributessByHashNullableAndName", GetThingWithAdditionalAttributessByHashNullableAndName(dbFactory(), t))
 	t.Run("GetThingWithCompositeAttributes", GetThingWithCompositeAttributes(dbFactory(), t))
 	t.Run("ScanThingWithCompositeAttributess", ScanThingWithCompositeAttributess(dbFactory(), t))
 	t.Run("GetThingWithCompositeAttributessByNameBranchAndDate", GetThingWithCompositeAttributessByNameBranchAndDate(dbFactory(), t))
@@ -5412,6 +5424,1405 @@ func DeleteThingAllowingBatchWritesWithCompositeAttributes(s db.Interface, t *te
 		}
 		require.Nil(t, s.SaveThingAllowingBatchWritesWithCompositeAttributes(ctx, m))
 		require.Nil(t, s.DeleteThingAllowingBatchWritesWithCompositeAttributes(ctx, *m.Name, *m.ID, *m.Date))
+	}
+}
+
+func GetThingWithAdditionalAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithAdditionalAttributes{
+			AdditionalNAttribute: db.Int64(1),
+			AdditionalSAttribute: db.String("string1"),
+			CreatedAt:            mustTime("2018-03-11T15:04:01+07:00"),
+			HashNullable:         db.String("string1"),
+			ID:                   "string1",
+			Name:                 "string1",
+			RangeNullable:        db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Version:              1,
+		}
+		require.Nil(t, s.SaveThingWithAdditionalAttributes(ctx, m))
+		m2, err := s.GetThingWithAdditionalAttributes(ctx, m.Name, m.Version)
+		require.Nil(t, err)
+		require.Equal(t, m.Name, m2.Name)
+		require.Equal(t, m.Version, m2.Version)
+
+		_, err = s.GetThingWithAdditionalAttributes(ctx, "string2", 2)
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrThingWithAdditionalAttributesNotFound{})
+	}
+}
+
+type getThingWithAdditionalAttributessByNameAndVersionInput struct {
+	ctx   context.Context
+	input db.GetThingWithAdditionalAttributessByNameAndVersionInput
+}
+type getThingWithAdditionalAttributessByNameAndVersionOutput struct {
+	thingWithAdditionalAttributess []models.ThingWithAdditionalAttributes
+	err                            error
+}
+type getThingWithAdditionalAttributessByNameAndVersionTest struct {
+	testName string
+	d        db.Interface
+	input    getThingWithAdditionalAttributessByNameAndVersionInput
+	output   getThingWithAdditionalAttributessByNameAndVersionOutput
+}
+
+func (g getThingWithAdditionalAttributessByNameAndVersionTest) run(t *testing.T) {
+	thingWithAdditionalAttributess := []models.ThingWithAdditionalAttributes{}
+	fn := func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool {
+		thingWithAdditionalAttributess = append(thingWithAdditionalAttributess, *m)
+		if lastThingWithAdditionalAttributes {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingWithAdditionalAttributessByNameAndVersion(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.thingWithAdditionalAttributess, thingWithAdditionalAttributess)
+}
+
+func GetThingWithAdditionalAttributessByNameAndVersion(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			Name:    "string1",
+			Version: 1,
+		}))
+		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			Name:    "string1",
+			Version: 2,
+		}))
+		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			Name:    "string1",
+			Version: 3,
+		}))
+		limit := int64(3)
+		tests := []getThingWithAdditionalAttributessByNameAndVersionTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getThingWithAdditionalAttributessByNameAndVersionInput{
+					ctx: context.Background(),
+					input: db.GetThingWithAdditionalAttributessByNameAndVersionInput{
+						Name:  "string1",
+						Limit: &limit,
+					},
+				},
+				output: getThingWithAdditionalAttributessByNameAndVersionOutput{
+					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
+						models.ThingWithAdditionalAttributes{
+							Name:    "string1",
+							Version: 1,
+						},
+						models.ThingWithAdditionalAttributes{
+							Name:    "string1",
+							Version: 2,
+						},
+						models.ThingWithAdditionalAttributes{
+							Name:    "string1",
+							Version: 3,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getThingWithAdditionalAttributessByNameAndVersionInput{
+					ctx: context.Background(),
+					input: db.GetThingWithAdditionalAttributessByNameAndVersionInput{
+						Name:       "string1",
+						Descending: true,
+					},
+				},
+				output: getThingWithAdditionalAttributessByNameAndVersionOutput{
+					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
+						models.ThingWithAdditionalAttributes{
+							Name:    "string1",
+							Version: 3,
+						},
+						models.ThingWithAdditionalAttributes{
+							Name:    "string1",
+							Version: 2,
+						},
+						models.ThingWithAdditionalAttributes{
+							Name:    "string1",
+							Version: 1,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getThingWithAdditionalAttributessByNameAndVersionInput{
+					ctx: context.Background(),
+					input: db.GetThingWithAdditionalAttributessByNameAndVersionInput{
+						Name: "string1",
+						StartingAfter: &models.ThingWithAdditionalAttributes{
+							Name:    "string1",
+							Version: 1,
+						},
+					},
+				},
+				output: getThingWithAdditionalAttributessByNameAndVersionOutput{
+					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
+						models.ThingWithAdditionalAttributes{
+							Name:    "string1",
+							Version: 2,
+						},
+						models.ThingWithAdditionalAttributes{
+							Name:    "string1",
+							Version: 3,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after descending",
+				d:        d,
+				input: getThingWithAdditionalAttributessByNameAndVersionInput{
+					ctx: context.Background(),
+					input: db.GetThingWithAdditionalAttributessByNameAndVersionInput{
+						Name: "string1",
+						StartingAfter: &models.ThingWithAdditionalAttributes{
+							Name:    "string1",
+							Version: 3,
+						},
+						Descending: true,
+					},
+				},
+				output: getThingWithAdditionalAttributessByNameAndVersionOutput{
+					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
+						models.ThingWithAdditionalAttributes{
+							Name:    "string1",
+							Version: 2,
+						},
+						models.ThingWithAdditionalAttributes{
+							Name:    "string1",
+							Version: 1,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingWithAdditionalAttributessByNameAndVersionInput{
+					ctx: context.Background(),
+					input: db.GetThingWithAdditionalAttributessByNameAndVersionInput{
+						Name:              "string1",
+						VersionStartingAt: db.Int64(2),
+					},
+				},
+				output: getThingWithAdditionalAttributessByNameAndVersionOutput{
+					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
+						models.ThingWithAdditionalAttributes{
+							Name:    "string1",
+							Version: 2,
+						},
+						models.ThingWithAdditionalAttributes{
+							Name:    "string1",
+							Version: 3,
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
+func ScanThingWithAdditionalAttributess(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			AdditionalNAttribute: db.Int64(1),
+			AdditionalSAttribute: db.String("string1"),
+			CreatedAt:            mustTime("2018-03-11T15:04:01+07:00"),
+			HashNullable:         db.String("string1"),
+			ID:                   "string1",
+			Name:                 "string1",
+			RangeNullable:        db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Version:              1,
+		}))
+		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			AdditionalNAttribute: db.Int64(2),
+			AdditionalSAttribute: db.String("string2"),
+			CreatedAt:            mustTime("2018-03-11T15:04:02+07:00"),
+			HashNullable:         db.String("string2"),
+			ID:                   "string2",
+			Name:                 "string2",
+			RangeNullable:        db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+			Version:              2,
+		}))
+		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			AdditionalNAttribute: db.Int64(3),
+			AdditionalSAttribute: db.String("string3"),
+			CreatedAt:            mustTime("2018-03-11T15:04:03+07:00"),
+			HashNullable:         db.String("string3"),
+			ID:                   "string3",
+			Name:                 "string3",
+			RangeNullable:        db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+			Version:              3,
+		}))
+
+		t.Run("basic", func(t *testing.T) {
+			expected := []models.ThingWithAdditionalAttributes{
+				models.ThingWithAdditionalAttributes{
+					AdditionalNAttribute: db.Int64(1),
+					AdditionalSAttribute: db.String("string1"),
+					CreatedAt:            mustTime("2018-03-11T15:04:01+07:00"),
+					HashNullable:         db.String("string1"),
+					ID:                   "string1",
+					Name:                 "string1",
+					RangeNullable:        db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+					Version:              1,
+				},
+				models.ThingWithAdditionalAttributes{
+					AdditionalNAttribute: db.Int64(2),
+					AdditionalSAttribute: db.String("string2"),
+					CreatedAt:            mustTime("2018-03-11T15:04:02+07:00"),
+					HashNullable:         db.String("string2"),
+					ID:                   "string2",
+					Name:                 "string2",
+					RangeNullable:        db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+					Version:              2,
+				},
+				models.ThingWithAdditionalAttributes{
+					AdditionalNAttribute: db.Int64(3),
+					AdditionalSAttribute: db.String("string3"),
+					CreatedAt:            mustTime("2018-03-11T15:04:03+07:00"),
+					HashNullable:         db.String("string3"),
+					ID:                   "string3",
+					Name:                 "string3",
+					RangeNullable:        db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+					Version:              3,
+				},
+			}
+			actual := []models.ThingWithAdditionalAttributes{}
+			err := d.ScanThingWithAdditionalAttributess(ctx, db.ScanThingWithAdditionalAttributessInput{}, func(m *models.ThingWithAdditionalAttributes, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+			// We can't use Equal here because Scan doesn't return items in any specific order.
+			require.ElementsMatch(t, expected, actual)
+		})
+
+		t.Run("starting after", func(t *testing.T) {
+			// Scan for everything.
+			allItems := []models.ThingWithAdditionalAttributes{}
+			err := d.ScanThingWithAdditionalAttributess(ctx, db.ScanThingWithAdditionalAttributessInput{}, func(m *models.ThingWithAdditionalAttributes, last bool) bool {
+				allItems = append(allItems, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			firstItem := allItems[0]
+
+			// Scan for everything after the first item.
+			scanInput := db.ScanThingWithAdditionalAttributessInput{
+				StartingAfter: &models.ThingWithAdditionalAttributes{
+					Name:    firstItem.Name,
+					Version: firstItem.Version,
+				},
+			}
+			actual := []models.ThingWithAdditionalAttributes{}
+			err = d.ScanThingWithAdditionalAttributess(ctx, scanInput, func(m *models.ThingWithAdditionalAttributes, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			expected := allItems[1:]
+			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithAdditionalAttributessInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithAdditionalAttributes{}
+			err := d.ScanThingWithAdditionalAttributess(ctx, scanInput, func(m *models.ThingWithAdditionalAttributes, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
+		})
+	}
+}
+
+func SaveThingWithAdditionalAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithAdditionalAttributes{
+			AdditionalNAttribute: db.Int64(1),
+			AdditionalSAttribute: db.String("string1"),
+			CreatedAt:            mustTime("2018-03-11T15:04:01+07:00"),
+			HashNullable:         db.String("string1"),
+			ID:                   "string1",
+			Name:                 "string1",
+			RangeNullable:        db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Version:              1,
+		}
+		require.Nil(t, s.SaveThingWithAdditionalAttributes(ctx, m))
+		require.IsType(t, db.ErrThingWithAdditionalAttributesAlreadyExists{}, s.SaveThingWithAdditionalAttributes(ctx, m))
+	}
+}
+
+func DeleteThingWithAdditionalAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithAdditionalAttributes{
+			AdditionalNAttribute: db.Int64(1),
+			AdditionalSAttribute: db.String("string1"),
+			CreatedAt:            mustTime("2018-03-11T15:04:01+07:00"),
+			HashNullable:         db.String("string1"),
+			ID:                   "string1",
+			Name:                 "string1",
+			RangeNullable:        db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Version:              1,
+		}
+		require.Nil(t, s.SaveThingWithAdditionalAttributes(ctx, m))
+		require.Nil(t, s.DeleteThingWithAdditionalAttributes(ctx, m.Name, m.Version))
+	}
+}
+
+func GetThingWithAdditionalAttributesByID(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithAdditionalAttributes{
+			AdditionalNAttribute: db.Int64(1),
+			AdditionalSAttribute: db.String("string1"),
+			CreatedAt:            mustTime("2018-03-11T15:04:01+07:00"),
+			HashNullable:         db.String("string1"),
+			ID:                   "string1",
+			Name:                 "string1",
+			RangeNullable:        db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Version:              1,
+		}
+		require.Nil(t, s.SaveThingWithAdditionalAttributes(ctx, m))
+		m2, err := s.GetThingWithAdditionalAttributesByID(ctx, m.ID)
+		require.Nil(t, err)
+		require.Equal(t, m.AdditionalNAttribute, m2.AdditionalNAttribute)
+		require.Equal(t, m.AdditionalSAttribute, m2.AdditionalSAttribute)
+		require.Equal(t, m.CreatedAt.String(), m2.CreatedAt.String())
+		require.Equal(t, m.HashNullable, m2.HashNullable)
+		require.Equal(t, m.ID, m2.ID)
+		require.Equal(t, m.Name, m2.Name)
+		require.Equal(t, m.RangeNullable.String(), m2.RangeNullable.String())
+		require.Equal(t, m.Version, m2.Version)
+
+		_, err = s.GetThingWithAdditionalAttributesByID(ctx, "string2")
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrThingWithAdditionalAttributesByIDNotFound{})
+	}
+}
+
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
+func ScanThingWithAdditionalAttributessByID(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			ID:      "string1",
+			Name:    "string1",
+			Version: 1,
+		}))
+		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			ID:      "string2",
+			Name:    "string2",
+			Version: 2,
+		}))
+		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			ID:      "string3",
+			Name:    "string3",
+			Version: 3,
+		}))
+
+		t.Run("basic", func(t *testing.T) {
+			expected := []models.ThingWithAdditionalAttributes{
+				models.ThingWithAdditionalAttributes{
+					ID:      "string1",
+					Name:    "string1",
+					Version: 1,
+				},
+				models.ThingWithAdditionalAttributes{
+					ID:      "string2",
+					Name:    "string2",
+					Version: 2,
+				},
+				models.ThingWithAdditionalAttributes{
+					ID:      "string3",
+					Name:    "string3",
+					Version: 3,
+				},
+			}
+			// Consistent read must be disabled when scaning a GSI.
+			scanInput := db.ScanThingWithAdditionalAttributessByIDInput{DisableConsistentRead: true}
+			actual := []models.ThingWithAdditionalAttributes{}
+			err := d.ScanThingWithAdditionalAttributessByID(ctx, scanInput, func(m *models.ThingWithAdditionalAttributes, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+			// We can't use Equal here because Scan doesn't return items in any specific order.
+			require.ElementsMatch(t, expected, actual)
+		})
+
+		t.Run("starting after", func(t *testing.T) {
+			// Scan for everything.
+			allItems := []models.ThingWithAdditionalAttributes{}
+			// Consistent read must be disabled when scaning a GSI.
+			scanInput := db.ScanThingWithAdditionalAttributessByIDInput{DisableConsistentRead: true}
+			err := d.ScanThingWithAdditionalAttributessByID(ctx, scanInput, func(m *models.ThingWithAdditionalAttributes, last bool) bool {
+				allItems = append(allItems, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			firstItem := allItems[0]
+
+			// Scan for everything after the first item.
+			scanInput = db.ScanThingWithAdditionalAttributessByIDInput{
+				DisableConsistentRead: true,
+				StartingAfter: &models.ThingWithAdditionalAttributes{
+					ID:      firstItem.ID,
+					Name:    firstItem.Name,
+					Version: firstItem.Version,
+				},
+			}
+			actual := []models.ThingWithAdditionalAttributes{}
+			err = d.ScanThingWithAdditionalAttributessByID(ctx, scanInput, func(m *models.ThingWithAdditionalAttributes, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			expected := allItems[1:]
+			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithAdditionalAttributessInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithAdditionalAttributes{}
+			err := d.ScanThingWithAdditionalAttributess(ctx, scanInput, func(m *models.ThingWithAdditionalAttributes, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
+		})
+	}
+}
+
+type getThingWithAdditionalAttributessByNameAndCreatedAtInput struct {
+	ctx   context.Context
+	input db.GetThingWithAdditionalAttributessByNameAndCreatedAtInput
+}
+type getThingWithAdditionalAttributessByNameAndCreatedAtOutput struct {
+	thingWithAdditionalAttributess []models.ThingWithAdditionalAttributes
+	err                            error
+}
+type getThingWithAdditionalAttributessByNameAndCreatedAtTest struct {
+	testName string
+	d        db.Interface
+	input    getThingWithAdditionalAttributessByNameAndCreatedAtInput
+	output   getThingWithAdditionalAttributessByNameAndCreatedAtOutput
+}
+
+func (g getThingWithAdditionalAttributessByNameAndCreatedAtTest) run(t *testing.T) {
+	thingWithAdditionalAttributess := []models.ThingWithAdditionalAttributes{}
+	fn := func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool {
+		thingWithAdditionalAttributess = append(thingWithAdditionalAttributess, *m)
+		if lastThingWithAdditionalAttributes {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingWithAdditionalAttributessByNameAndCreatedAt(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.thingWithAdditionalAttributess, thingWithAdditionalAttributess)
+}
+
+func GetThingWithAdditionalAttributessByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			Name:      "string1",
+			CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
+			Version:   1,
+		}))
+		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			Name:      "string1",
+			CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
+			Version:   3,
+		}))
+		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			Name:      "string1",
+			CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
+			Version:   2,
+		}))
+		limit := int64(3)
+		tests := []getThingWithAdditionalAttributessByNameAndCreatedAtTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getThingWithAdditionalAttributessByNameAndCreatedAtInput{
+					ctx: context.Background(),
+					input: db.GetThingWithAdditionalAttributessByNameAndCreatedAtInput{
+						Name:  "string1",
+						Limit: &limit,
+					},
+				},
+				output: getThingWithAdditionalAttributessByNameAndCreatedAtOutput{
+					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
+						models.ThingWithAdditionalAttributes{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
+							Version:   1,
+						},
+						models.ThingWithAdditionalAttributes{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
+							Version:   3,
+						},
+						models.ThingWithAdditionalAttributes{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
+							Version:   2,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getThingWithAdditionalAttributessByNameAndCreatedAtInput{
+					ctx: context.Background(),
+					input: db.GetThingWithAdditionalAttributessByNameAndCreatedAtInput{
+						Name:       "string1",
+						Descending: true,
+					},
+				},
+				output: getThingWithAdditionalAttributessByNameAndCreatedAtOutput{
+					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
+						models.ThingWithAdditionalAttributes{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
+							Version:   2,
+						},
+						models.ThingWithAdditionalAttributes{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
+							Version:   3,
+						},
+						models.ThingWithAdditionalAttributes{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
+							Version:   1,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getThingWithAdditionalAttributessByNameAndCreatedAtInput{
+					ctx: context.Background(),
+					input: db.GetThingWithAdditionalAttributessByNameAndCreatedAtInput{
+						Name: "string1",
+						StartingAfter: &models.ThingWithAdditionalAttributes{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
+							Version:   1,
+						},
+					},
+				},
+				output: getThingWithAdditionalAttributessByNameAndCreatedAtOutput{
+					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
+						models.ThingWithAdditionalAttributes{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
+							Version:   3,
+						},
+						models.ThingWithAdditionalAttributes{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
+							Version:   2,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after descending",
+				d:        d,
+				input: getThingWithAdditionalAttributessByNameAndCreatedAtInput{
+					ctx: context.Background(),
+					input: db.GetThingWithAdditionalAttributessByNameAndCreatedAtInput{
+						Name: "string1",
+						StartingAfter: &models.ThingWithAdditionalAttributes{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
+							Version:   2,
+						},
+						Descending: true,
+					},
+				},
+				output: getThingWithAdditionalAttributessByNameAndCreatedAtOutput{
+					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
+						models.ThingWithAdditionalAttributes{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
+							Version:   3,
+						},
+						models.ThingWithAdditionalAttributes{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
+							Version:   1,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingWithAdditionalAttributessByNameAndCreatedAtInput{
+					ctx: context.Background(),
+					input: db.GetThingWithAdditionalAttributessByNameAndCreatedAtInput{
+						Name:                "string1",
+						CreatedAtStartingAt: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+					},
+				},
+				output: getThingWithAdditionalAttributessByNameAndCreatedAtOutput{
+					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
+						models.ThingWithAdditionalAttributes{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
+							Version:   3,
+						},
+						models.ThingWithAdditionalAttributes{
+							Name:      "string1",
+							CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
+							Version:   2,
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
+func ScanThingWithAdditionalAttributessByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			Name:      "string1",
+			CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
+			Version:   1,
+		}))
+		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			Name:      "string2",
+			CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
+			Version:   2,
+		}))
+		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			Name:      "string3",
+			CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
+			Version:   3,
+		}))
+
+		t.Run("basic", func(t *testing.T) {
+			expected := []models.ThingWithAdditionalAttributes{
+				models.ThingWithAdditionalAttributes{
+					Name:      "string1",
+					CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
+					Version:   1,
+				},
+				models.ThingWithAdditionalAttributes{
+					Name:      "string2",
+					CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
+					Version:   2,
+				},
+				models.ThingWithAdditionalAttributes{
+					Name:      "string3",
+					CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
+					Version:   3,
+				},
+			}
+			// Consistent read must be disabled when scaning a GSI.
+			scanInput := db.ScanThingWithAdditionalAttributessByNameAndCreatedAtInput{DisableConsistentRead: true}
+			actual := []models.ThingWithAdditionalAttributes{}
+			err := d.ScanThingWithAdditionalAttributessByNameAndCreatedAt(ctx, scanInput, func(m *models.ThingWithAdditionalAttributes, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+			// We can't use Equal here because Scan doesn't return items in any specific order.
+			require.ElementsMatch(t, expected, actual)
+		})
+
+		t.Run("starting after", func(t *testing.T) {
+			// Scan for everything.
+			allItems := []models.ThingWithAdditionalAttributes{}
+			// Consistent read must be disabled when scaning a GSI.
+			scanInput := db.ScanThingWithAdditionalAttributessByNameAndCreatedAtInput{DisableConsistentRead: true}
+			err := d.ScanThingWithAdditionalAttributessByNameAndCreatedAt(ctx, scanInput, func(m *models.ThingWithAdditionalAttributes, last bool) bool {
+				allItems = append(allItems, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			firstItem := allItems[0]
+
+			// Scan for everything after the first item.
+			scanInput = db.ScanThingWithAdditionalAttributessByNameAndCreatedAtInput{
+				DisableConsistentRead: true,
+				StartingAfter: &models.ThingWithAdditionalAttributes{
+					Name:      firstItem.Name,
+					CreatedAt: firstItem.CreatedAt,
+					Version:   firstItem.Version,
+				},
+			}
+			actual := []models.ThingWithAdditionalAttributes{}
+			err = d.ScanThingWithAdditionalAttributessByNameAndCreatedAt(ctx, scanInput, func(m *models.ThingWithAdditionalAttributes, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			expected := allItems[1:]
+			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithAdditionalAttributessInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithAdditionalAttributes{}
+			err := d.ScanThingWithAdditionalAttributess(ctx, scanInput, func(m *models.ThingWithAdditionalAttributes, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
+		})
+	}
+}
+
+type getThingWithAdditionalAttributessByNameAndRangeNullableInput struct {
+	ctx   context.Context
+	input db.GetThingWithAdditionalAttributessByNameAndRangeNullableInput
+}
+type getThingWithAdditionalAttributessByNameAndRangeNullableOutput struct {
+	thingWithAdditionalAttributess []models.ThingWithAdditionalAttributes
+	err                            error
+}
+type getThingWithAdditionalAttributessByNameAndRangeNullableTest struct {
+	testName string
+	d        db.Interface
+	input    getThingWithAdditionalAttributessByNameAndRangeNullableInput
+	output   getThingWithAdditionalAttributessByNameAndRangeNullableOutput
+}
+
+func (g getThingWithAdditionalAttributessByNameAndRangeNullableTest) run(t *testing.T) {
+	thingWithAdditionalAttributess := []models.ThingWithAdditionalAttributes{}
+	fn := func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool {
+		thingWithAdditionalAttributess = append(thingWithAdditionalAttributess, *m)
+		if lastThingWithAdditionalAttributes {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingWithAdditionalAttributessByNameAndRangeNullable(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.thingWithAdditionalAttributess, thingWithAdditionalAttributess)
+}
+
+func GetThingWithAdditionalAttributessByNameAndRangeNullable(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			Name:          "string1",
+			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Version:       1,
+		}))
+		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			Name:          "string1",
+			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+			Version:       3,
+		}))
+		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			Name:          "string1",
+			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+			Version:       2,
+		}))
+		limit := int64(3)
+		tests := []getThingWithAdditionalAttributessByNameAndRangeNullableTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getThingWithAdditionalAttributessByNameAndRangeNullableInput{
+					ctx: context.Background(),
+					input: db.GetThingWithAdditionalAttributessByNameAndRangeNullableInput{
+						Name:  "string1",
+						Limit: &limit,
+					},
+				},
+				output: getThingWithAdditionalAttributessByNameAndRangeNullableOutput{
+					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
+						models.ThingWithAdditionalAttributes{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+							Version:       1,
+						},
+						models.ThingWithAdditionalAttributes{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+							Version:       3,
+						},
+						models.ThingWithAdditionalAttributes{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+							Version:       2,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getThingWithAdditionalAttributessByNameAndRangeNullableInput{
+					ctx: context.Background(),
+					input: db.GetThingWithAdditionalAttributessByNameAndRangeNullableInput{
+						Name:       "string1",
+						Descending: true,
+					},
+				},
+				output: getThingWithAdditionalAttributessByNameAndRangeNullableOutput{
+					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
+						models.ThingWithAdditionalAttributes{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+							Version:       2,
+						},
+						models.ThingWithAdditionalAttributes{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+							Version:       3,
+						},
+						models.ThingWithAdditionalAttributes{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+							Version:       1,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getThingWithAdditionalAttributessByNameAndRangeNullableInput{
+					ctx: context.Background(),
+					input: db.GetThingWithAdditionalAttributessByNameAndRangeNullableInput{
+						Name: "string1",
+						StartingAfter: &models.ThingWithAdditionalAttributes{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+							Version:       1,
+						},
+					},
+				},
+				output: getThingWithAdditionalAttributessByNameAndRangeNullableOutput{
+					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
+						models.ThingWithAdditionalAttributes{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+							Version:       3,
+						},
+						models.ThingWithAdditionalAttributes{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+							Version:       2,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after descending",
+				d:        d,
+				input: getThingWithAdditionalAttributessByNameAndRangeNullableInput{
+					ctx: context.Background(),
+					input: db.GetThingWithAdditionalAttributessByNameAndRangeNullableInput{
+						Name: "string1",
+						StartingAfter: &models.ThingWithAdditionalAttributes{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+							Version:       2,
+						},
+						Descending: true,
+					},
+				},
+				output: getThingWithAdditionalAttributessByNameAndRangeNullableOutput{
+					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
+						models.ThingWithAdditionalAttributes{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+							Version:       3,
+						},
+						models.ThingWithAdditionalAttributes{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+							Version:       1,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingWithAdditionalAttributessByNameAndRangeNullableInput{
+					ctx: context.Background(),
+					input: db.GetThingWithAdditionalAttributessByNameAndRangeNullableInput{
+						Name:                    "string1",
+						RangeNullableStartingAt: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+					},
+				},
+				output: getThingWithAdditionalAttributessByNameAndRangeNullableOutput{
+					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
+						models.ThingWithAdditionalAttributes{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+							Version:       3,
+						},
+						models.ThingWithAdditionalAttributes{
+							Name:          "string1",
+							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+							Version:       2,
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
+func ScanThingWithAdditionalAttributessByNameAndRangeNullable(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			Name:          "string1",
+			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Version:       1,
+		}))
+		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			Name:          "string2",
+			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+			Version:       2,
+		}))
+		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			Name:          "string3",
+			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+			Version:       3,
+		}))
+
+		t.Run("basic", func(t *testing.T) {
+			expected := []models.ThingWithAdditionalAttributes{
+				models.ThingWithAdditionalAttributes{
+					Name:          "string1",
+					RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+					Version:       1,
+				},
+				models.ThingWithAdditionalAttributes{
+					Name:          "string2",
+					RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+					Version:       2,
+				},
+				models.ThingWithAdditionalAttributes{
+					Name:          "string3",
+					RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
+					Version:       3,
+				},
+			}
+			// Consistent read must be disabled when scaning a GSI.
+			scanInput := db.ScanThingWithAdditionalAttributessByNameAndRangeNullableInput{DisableConsistentRead: true}
+			actual := []models.ThingWithAdditionalAttributes{}
+			err := d.ScanThingWithAdditionalAttributessByNameAndRangeNullable(ctx, scanInput, func(m *models.ThingWithAdditionalAttributes, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+			// We can't use Equal here because Scan doesn't return items in any specific order.
+			require.ElementsMatch(t, expected, actual)
+		})
+
+		t.Run("starting after", func(t *testing.T) {
+			// Scan for everything.
+			allItems := []models.ThingWithAdditionalAttributes{}
+			// Consistent read must be disabled when scaning a GSI.
+			scanInput := db.ScanThingWithAdditionalAttributessByNameAndRangeNullableInput{DisableConsistentRead: true}
+			err := d.ScanThingWithAdditionalAttributessByNameAndRangeNullable(ctx, scanInput, func(m *models.ThingWithAdditionalAttributes, last bool) bool {
+				allItems = append(allItems, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			firstItem := allItems[0]
+
+			// Scan for everything after the first item.
+			scanInput = db.ScanThingWithAdditionalAttributessByNameAndRangeNullableInput{
+				DisableConsistentRead: true,
+				StartingAfter: &models.ThingWithAdditionalAttributes{
+					Name:          firstItem.Name,
+					RangeNullable: firstItem.RangeNullable,
+					Version:       firstItem.Version,
+				},
+			}
+			actual := []models.ThingWithAdditionalAttributes{}
+			err = d.ScanThingWithAdditionalAttributessByNameAndRangeNullable(ctx, scanInput, func(m *models.ThingWithAdditionalAttributes, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			expected := allItems[1:]
+			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithAdditionalAttributessInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithAdditionalAttributes{}
+			err := d.ScanThingWithAdditionalAttributess(ctx, scanInput, func(m *models.ThingWithAdditionalAttributes, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
+		})
+	}
+}
+
+type getThingWithAdditionalAttributessByHashNullableAndNameInput struct {
+	ctx   context.Context
+	input db.GetThingWithAdditionalAttributessByHashNullableAndNameInput
+}
+type getThingWithAdditionalAttributessByHashNullableAndNameOutput struct {
+	thingWithAdditionalAttributess []models.ThingWithAdditionalAttributes
+	err                            error
+}
+type getThingWithAdditionalAttributessByHashNullableAndNameTest struct {
+	testName string
+	d        db.Interface
+	input    getThingWithAdditionalAttributessByHashNullableAndNameInput
+	output   getThingWithAdditionalAttributessByHashNullableAndNameOutput
+}
+
+func (g getThingWithAdditionalAttributessByHashNullableAndNameTest) run(t *testing.T) {
+	thingWithAdditionalAttributess := []models.ThingWithAdditionalAttributes{}
+	fn := func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool {
+		thingWithAdditionalAttributess = append(thingWithAdditionalAttributess, *m)
+		if lastThingWithAdditionalAttributes {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingWithAdditionalAttributessByHashNullableAndName(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.thingWithAdditionalAttributess, thingWithAdditionalAttributess)
+}
+
+func GetThingWithAdditionalAttributessByHashNullableAndName(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			HashNullable: db.String("string1"),
+			Name:         "string1",
+			Version:      1,
+		}))
+		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			HashNullable: db.String("string1"),
+			Name:         "string2",
+			Version:      3,
+		}))
+		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			HashNullable: db.String("string1"),
+			Name:         "string3",
+			Version:      2,
+		}))
+		limit := int64(3)
+		tests := []getThingWithAdditionalAttributessByHashNullableAndNameTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getThingWithAdditionalAttributessByHashNullableAndNameInput{
+					ctx: context.Background(),
+					input: db.GetThingWithAdditionalAttributessByHashNullableAndNameInput{
+						HashNullable: "string1",
+						Limit:        &limit,
+					},
+				},
+				output: getThingWithAdditionalAttributessByHashNullableAndNameOutput{
+					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
+						models.ThingWithAdditionalAttributes{
+							HashNullable: db.String("string1"),
+							Name:         "string1",
+							Version:      1,
+						},
+						models.ThingWithAdditionalAttributes{
+							HashNullable: db.String("string1"),
+							Name:         "string2",
+							Version:      3,
+						},
+						models.ThingWithAdditionalAttributes{
+							HashNullable: db.String("string1"),
+							Name:         "string3",
+							Version:      2,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getThingWithAdditionalAttributessByHashNullableAndNameInput{
+					ctx: context.Background(),
+					input: db.GetThingWithAdditionalAttributessByHashNullableAndNameInput{
+						HashNullable: "string1",
+						Descending:   true,
+					},
+				},
+				output: getThingWithAdditionalAttributessByHashNullableAndNameOutput{
+					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
+						models.ThingWithAdditionalAttributes{
+							HashNullable: db.String("string1"),
+							Name:         "string3",
+							Version:      2,
+						},
+						models.ThingWithAdditionalAttributes{
+							HashNullable: db.String("string1"),
+							Name:         "string2",
+							Version:      3,
+						},
+						models.ThingWithAdditionalAttributes{
+							HashNullable: db.String("string1"),
+							Name:         "string1",
+							Version:      1,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getThingWithAdditionalAttributessByHashNullableAndNameInput{
+					ctx: context.Background(),
+					input: db.GetThingWithAdditionalAttributessByHashNullableAndNameInput{
+						HashNullable: "string1",
+						StartingAfter: &models.ThingWithAdditionalAttributes{
+							HashNullable: db.String("string1"),
+							Name:         "string1",
+							Version:      1,
+						},
+					},
+				},
+				output: getThingWithAdditionalAttributessByHashNullableAndNameOutput{
+					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
+						models.ThingWithAdditionalAttributes{
+							HashNullable: db.String("string1"),
+							Name:         "string2",
+							Version:      3,
+						},
+						models.ThingWithAdditionalAttributes{
+							HashNullable: db.String("string1"),
+							Name:         "string3",
+							Version:      2,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after descending",
+				d:        d,
+				input: getThingWithAdditionalAttributessByHashNullableAndNameInput{
+					ctx: context.Background(),
+					input: db.GetThingWithAdditionalAttributessByHashNullableAndNameInput{
+						HashNullable: "string1",
+						StartingAfter: &models.ThingWithAdditionalAttributes{
+							HashNullable: db.String("string1"),
+							Name:         "string3",
+							Version:      2,
+						},
+						Descending: true,
+					},
+				},
+				output: getThingWithAdditionalAttributessByHashNullableAndNameOutput{
+					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
+						models.ThingWithAdditionalAttributes{
+							HashNullable: db.String("string1"),
+							Name:         "string2",
+							Version:      3,
+						},
+						models.ThingWithAdditionalAttributes{
+							HashNullable: db.String("string1"),
+							Name:         "string1",
+							Version:      1,
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingWithAdditionalAttributessByHashNullableAndNameInput{
+					ctx: context.Background(),
+					input: db.GetThingWithAdditionalAttributessByHashNullableAndNameInput{
+						HashNullable:   "string1",
+						NameStartingAt: db.String("string2"),
+					},
+				},
+				output: getThingWithAdditionalAttributessByHashNullableAndNameOutput{
+					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
+						models.ThingWithAdditionalAttributes{
+							HashNullable: db.String("string1"),
+							Name:         "string2",
+							Version:      3,
+						},
+						models.ThingWithAdditionalAttributes{
+							HashNullable: db.String("string1"),
+							Name:         "string3",
+							Version:      2,
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
 	}
 }
 

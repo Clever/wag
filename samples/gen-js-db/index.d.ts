@@ -162,6 +162,19 @@ declare namespace SwaggerTest {
   name: string;
 };
     
+    type ThingWithAdditionalAttributes = {
+  additionalNAttribute?: number;
+  additionalSAttribute?: string;
+  category?: Category;
+  createdAt?: string;
+  hashNullable?: string;
+  id?: string;
+  name?: string;
+  nestedObject?: Object;
+  rangeNullable?: string;
+  version?: number;
+};
+    
     type ThingWithCompositeAttributes = {
   branch: string;
   date: string;

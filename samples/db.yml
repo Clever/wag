@@ -717,3 +717,82 @@ definitions:
             Projection:
               ProjectionType: ALL
 
+  ThingWithAdditionalAttributes:
+    x-db:
+      AllowOverwrites: false
+      AllowPrimaryIndexScan: true
+      AllowSecondaryIndexScan:
+        - thingID
+        - name-createdAt
+        - name-rangeNullable
+      DynamoDB:
+        KeySchema:
+          - AttributeName: name
+            KeyType: HASH
+          - AttributeName: version
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: thingID # "id" is two chars, min IndexName length is 3
+            Projection:
+              ProjectionType: ALL
+            KeySchema:
+              - AttributeName: id
+                KeyType: HASH
+          - IndexName: name-createdAt
+            Projection:
+              ProjectionType: ALL
+            KeySchema:
+              - AttributeName: name
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+          - IndexName: name-rangeNullable
+            Projection:
+              ProjectionType: ALL
+            KeySchema:
+              - AttributeName: name
+                KeyType: HASH
+              - AttributeName: rangeNullable
+                KeyType: RANGE
+          - IndexName: name-hashNullable
+            Projection:
+              ProjectionType: ALL
+            KeySchema:
+              - AttributeName: hashNullable
+                KeyType: HASH
+              - AttributeName: name
+                KeyType: RANGE
+        AttributeDefinitions:
+          - AttributeName: additionalNAttribute
+            AttributeType: "N"
+          - AttributeName: additionalSAttribute
+            AttributeType: S
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      version:
+        type: integer
+      createdAt:
+        type: string
+        format: date-time
+      rangeNullable:
+        type: string
+        format: date-time
+        x-nullable: true
+      hashNullable:
+        type: string
+        x-nullable: true
+      additionalNAttribute:
+        type: integer
+        x-nullable: true
+      additionalSAttribute:
+        type: string
+        x-nullable: true
+      category:
+        $ref: '#/definitions/Category'
+      nestedObject:
+        $ref: '#/definitions/Object'
+

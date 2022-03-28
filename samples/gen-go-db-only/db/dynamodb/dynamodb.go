@@ -44,6 +44,8 @@ type Config struct {
 	ThingAllowingBatchWritesTable ThingAllowingBatchWritesTable
 	// ThingAllowingBatchWritesWithCompositeAttributesTable configuration.
 	ThingAllowingBatchWritesWithCompositeAttributesTable ThingAllowingBatchWritesWithCompositeAttributesTable
+	// ThingWithAdditionalAttributesTable configuration.
+	ThingWithAdditionalAttributesTable ThingWithAdditionalAttributesTable
 	// ThingWithCompositeAttributesTable configuration.
 	ThingWithCompositeAttributesTable ThingWithCompositeAttributesTable
 	// ThingWithCompositeEnumAttributesTable configuration.
@@ -198,6 +200,20 @@ func New(config Config) (*DB, error) {
 	}
 	if thingAllowingBatchWritesWithCompositeAttributesTable.WriteCapacityUnits == 0 {
 		thingAllowingBatchWritesWithCompositeAttributesTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
+	// configure ThingWithAdditionalAttributes table
+	thingWithAdditionalAttributesTable := config.ThingWithAdditionalAttributesTable
+	if thingWithAdditionalAttributesTable.DynamoDBAPI == nil {
+		thingWithAdditionalAttributesTable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if thingWithAdditionalAttributesTable.Prefix == "" {
+		thingWithAdditionalAttributesTable.Prefix = config.DefaultPrefix
+	}
+	if thingWithAdditionalAttributesTable.ReadCapacityUnits == 0 {
+		thingWithAdditionalAttributesTable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if thingWithAdditionalAttributesTable.WriteCapacityUnits == 0 {
+		thingWithAdditionalAttributesTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
 	// configure ThingWithCompositeAttributes table
 	thingWithCompositeAttributesTable := config.ThingWithCompositeAttributesTable
@@ -363,6 +379,7 @@ func New(config Config) (*DB, error) {
 		thingTable:                               thingTable,
 		thingAllowingBatchWritesTable:            thingAllowingBatchWritesTable,
 		thingAllowingBatchWritesWithCompositeAttributesTable: thingAllowingBatchWritesWithCompositeAttributesTable,
+		thingWithAdditionalAttributesTable:                   thingWithAdditionalAttributesTable,
 		thingWithCompositeAttributesTable:                    thingWithCompositeAttributesTable,
 		thingWithCompositeEnumAttributesTable:                thingWithCompositeEnumAttributesTable,
 		thingWithDateRangeTable:                              thingWithDateRangeTable,
@@ -387,6 +404,7 @@ type DB struct {
 	thingTable                                           ThingTable
 	thingAllowingBatchWritesTable                        ThingAllowingBatchWritesTable
 	thingAllowingBatchWritesWithCompositeAttributesTable ThingAllowingBatchWritesWithCompositeAttributesTable
+	thingWithAdditionalAttributesTable                   ThingWithAdditionalAttributesTable
 	thingWithCompositeAttributesTable                    ThingWithCompositeAttributesTable
 	thingWithCompositeEnumAttributesTable                ThingWithCompositeEnumAttributesTable
 	thingWithDateRangeTable                              ThingWithDateRangeTable
@@ -426,6 +444,9 @@ func (d DB) CreateTables(ctx context.Context) error {
 		return err
 	}
 	if err := d.thingAllowingBatchWritesWithCompositeAttributesTable.create(ctx); err != nil {
+		return err
+	}
+	if err := d.thingWithAdditionalAttributesTable.create(ctx); err != nil {
 		return err
 	}
 	if err := d.thingWithCompositeAttributesTable.create(ctx); err != nil {
@@ -762,6 +783,66 @@ func (d DB) GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate(c
 // DeleteThingAllowingBatchWritesWithCompositeAttributes deletes a ThingAllowingBatchWritesWithCompositeAttributes from the database.
 func (d DB) DeleteThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name string, id string, date strfmt.DateTime) error {
 	return d.thingAllowingBatchWritesWithCompositeAttributesTable.deleteThingAllowingBatchWritesWithCompositeAttributes(ctx, name, id, date)
+}
+
+// SaveThingWithAdditionalAttributes saves a ThingWithAdditionalAttributes to the database.
+func (d DB) SaveThingWithAdditionalAttributes(ctx context.Context, m models.ThingWithAdditionalAttributes) error {
+	return d.thingWithAdditionalAttributesTable.saveThingWithAdditionalAttributes(ctx, m)
+}
+
+// GetThingWithAdditionalAttributes retrieves a ThingWithAdditionalAttributes from the database.
+func (d DB) GetThingWithAdditionalAttributes(ctx context.Context, name string, version int64) (*models.ThingWithAdditionalAttributes, error) {
+	return d.thingWithAdditionalAttributesTable.getThingWithAdditionalAttributes(ctx, name, version)
+}
+
+// ScanThingWithAdditionalAttributess runs a scan on the ThingWithAdditionalAttributess table.
+func (d DB) ScanThingWithAdditionalAttributess(ctx context.Context, input db.ScanThingWithAdditionalAttributessInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
+	return d.thingWithAdditionalAttributesTable.scanThingWithAdditionalAttributess(ctx, input, fn)
+}
+
+// GetThingWithAdditionalAttributessByNameAndVersion retrieves a page of ThingWithAdditionalAttributess from the database.
+func (d DB) GetThingWithAdditionalAttributessByNameAndVersion(ctx context.Context, input db.GetThingWithAdditionalAttributessByNameAndVersionInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
+	return d.thingWithAdditionalAttributesTable.getThingWithAdditionalAttributessByNameAndVersion(ctx, input, fn)
+}
+
+// DeleteThingWithAdditionalAttributes deletes a ThingWithAdditionalAttributes from the database.
+func (d DB) DeleteThingWithAdditionalAttributes(ctx context.Context, name string, version int64) error {
+	return d.thingWithAdditionalAttributesTable.deleteThingWithAdditionalAttributes(ctx, name, version)
+}
+
+// GetThingWithAdditionalAttributesByID retrieves a ThingWithAdditionalAttributes from the database.
+func (d DB) GetThingWithAdditionalAttributesByID(ctx context.Context, id string) (*models.ThingWithAdditionalAttributes, error) {
+	return d.thingWithAdditionalAttributesTable.getThingWithAdditionalAttributesByID(ctx, id)
+}
+
+// ScanThingWithAdditionalAttributessByID runs a scan on the ID index.
+func (d DB) ScanThingWithAdditionalAttributessByID(ctx context.Context, input db.ScanThingWithAdditionalAttributessByIDInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
+	return d.thingWithAdditionalAttributesTable.scanThingWithAdditionalAttributessByID(ctx, input, fn)
+}
+
+// GetThingWithAdditionalAttributessByNameAndCreatedAt retrieves a page of ThingWithAdditionalAttributess from the database.
+func (d DB) GetThingWithAdditionalAttributessByNameAndCreatedAt(ctx context.Context, input db.GetThingWithAdditionalAttributessByNameAndCreatedAtInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
+	return d.thingWithAdditionalAttributesTable.getThingWithAdditionalAttributessByNameAndCreatedAt(ctx, input, fn)
+}
+
+// ScanThingWithAdditionalAttributessByNameAndCreatedAt runs a scan on the NameAndCreatedAt index.
+func (d DB) ScanThingWithAdditionalAttributessByNameAndCreatedAt(ctx context.Context, input db.ScanThingWithAdditionalAttributessByNameAndCreatedAtInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
+	return d.thingWithAdditionalAttributesTable.scanThingWithAdditionalAttributessByNameAndCreatedAt(ctx, input, fn)
+}
+
+// GetThingWithAdditionalAttributessByNameAndRangeNullable retrieves a page of ThingWithAdditionalAttributess from the database.
+func (d DB) GetThingWithAdditionalAttributessByNameAndRangeNullable(ctx context.Context, input db.GetThingWithAdditionalAttributessByNameAndRangeNullableInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
+	return d.thingWithAdditionalAttributesTable.getThingWithAdditionalAttributessByNameAndRangeNullable(ctx, input, fn)
+}
+
+// ScanThingWithAdditionalAttributessByNameAndRangeNullable runs a scan on the NameAndRangeNullable index.
+func (d DB) ScanThingWithAdditionalAttributessByNameAndRangeNullable(ctx context.Context, input db.ScanThingWithAdditionalAttributessByNameAndRangeNullableInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
+	return d.thingWithAdditionalAttributesTable.scanThingWithAdditionalAttributessByNameAndRangeNullable(ctx, input, fn)
+}
+
+// GetThingWithAdditionalAttributessByHashNullableAndName retrieves a page of ThingWithAdditionalAttributess from the database.
+func (d DB) GetThingWithAdditionalAttributessByHashNullableAndName(ctx context.Context, input db.GetThingWithAdditionalAttributessByHashNullableAndNameInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
+	return d.thingWithAdditionalAttributesTable.getThingWithAdditionalAttributessByHashNullableAndName(ctx, input, fn)
 }
 
 // SaveThingWithCompositeAttributes saves a ThingWithCompositeAttributes to the database.

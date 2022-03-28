@@ -176,6 +176,20 @@ func (mr *MockInterfaceMockRecorder) DeleteThingAllowingBatchWritesWithComposite
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingAllowingBatchWritesWithCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).DeleteThingAllowingBatchWritesWithCompositeAttributes), ctx, name, id, date)
 }
 
+// DeleteThingWithAdditionalAttributes mocks base method.
+func (m *MockInterface) DeleteThingWithAdditionalAttributes(ctx context.Context, name string, version int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteThingWithAdditionalAttributes", ctx, name, version)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteThingWithAdditionalAttributes indicates an expected call of DeleteThingWithAdditionalAttributes.
+func (mr *MockInterfaceMockRecorder) DeleteThingWithAdditionalAttributes(ctx, name, version interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithAdditionalAttributes", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithAdditionalAttributes), ctx, name, version)
+}
+
 // DeleteThingWithCompositeAttributes mocks base method.
 func (m *MockInterface) DeleteThingWithCompositeAttributes(ctx context.Context, name, branch string, date strfmt.DateTime) error {
 	m.ctrl.T.Helper()
@@ -618,6 +632,92 @@ func (m *MockInterface) GetThingByID(ctx context.Context, id string) (*models.Th
 func (mr *MockInterfaceMockRecorder) GetThingByID(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingByID", reflect.TypeOf((*MockInterface)(nil).GetThingByID), ctx, id)
+}
+
+// GetThingWithAdditionalAttributes mocks base method.
+func (m *MockInterface) GetThingWithAdditionalAttributes(ctx context.Context, name string, version int64) (*models.ThingWithAdditionalAttributes, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetThingWithAdditionalAttributes", ctx, name, version)
+	ret0, _ := ret[0].(*models.ThingWithAdditionalAttributes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingWithAdditionalAttributes indicates an expected call of GetThingWithAdditionalAttributes.
+func (mr *MockInterfaceMockRecorder) GetThingWithAdditionalAttributes(ctx, name, version interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithAdditionalAttributes", reflect.TypeOf((*MockInterface)(nil).GetThingWithAdditionalAttributes), ctx, name, version)
+}
+
+// GetThingWithAdditionalAttributesByID mocks base method.
+func (m *MockInterface) GetThingWithAdditionalAttributesByID(ctx context.Context, id string) (*models.ThingWithAdditionalAttributes, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetThingWithAdditionalAttributesByID", ctx, id)
+	ret0, _ := ret[0].(*models.ThingWithAdditionalAttributes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingWithAdditionalAttributesByID indicates an expected call of GetThingWithAdditionalAttributesByID.
+func (mr *MockInterfaceMockRecorder) GetThingWithAdditionalAttributesByID(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithAdditionalAttributesByID", reflect.TypeOf((*MockInterface)(nil).GetThingWithAdditionalAttributesByID), ctx, id)
+}
+
+// GetThingWithAdditionalAttributessByHashNullableAndName mocks base method.
+func (m *MockInterface) GetThingWithAdditionalAttributessByHashNullableAndName(ctx context.Context, input GetThingWithAdditionalAttributessByHashNullableAndNameInput, fn func(*models.ThingWithAdditionalAttributes, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetThingWithAdditionalAttributessByHashNullableAndName", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingWithAdditionalAttributessByHashNullableAndName indicates an expected call of GetThingWithAdditionalAttributessByHashNullableAndName.
+func (mr *MockInterfaceMockRecorder) GetThingWithAdditionalAttributessByHashNullableAndName(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithAdditionalAttributessByHashNullableAndName", reflect.TypeOf((*MockInterface)(nil).GetThingWithAdditionalAttributessByHashNullableAndName), ctx, input, fn)
+}
+
+// GetThingWithAdditionalAttributessByNameAndCreatedAt mocks base method.
+func (m *MockInterface) GetThingWithAdditionalAttributessByNameAndCreatedAt(ctx context.Context, input GetThingWithAdditionalAttributessByNameAndCreatedAtInput, fn func(*models.ThingWithAdditionalAttributes, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetThingWithAdditionalAttributessByNameAndCreatedAt", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingWithAdditionalAttributessByNameAndCreatedAt indicates an expected call of GetThingWithAdditionalAttributessByNameAndCreatedAt.
+func (mr *MockInterfaceMockRecorder) GetThingWithAdditionalAttributessByNameAndCreatedAt(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithAdditionalAttributessByNameAndCreatedAt", reflect.TypeOf((*MockInterface)(nil).GetThingWithAdditionalAttributessByNameAndCreatedAt), ctx, input, fn)
+}
+
+// GetThingWithAdditionalAttributessByNameAndRangeNullable mocks base method.
+func (m *MockInterface) GetThingWithAdditionalAttributessByNameAndRangeNullable(ctx context.Context, input GetThingWithAdditionalAttributessByNameAndRangeNullableInput, fn func(*models.ThingWithAdditionalAttributes, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetThingWithAdditionalAttributessByNameAndRangeNullable", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingWithAdditionalAttributessByNameAndRangeNullable indicates an expected call of GetThingWithAdditionalAttributessByNameAndRangeNullable.
+func (mr *MockInterfaceMockRecorder) GetThingWithAdditionalAttributessByNameAndRangeNullable(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithAdditionalAttributessByNameAndRangeNullable", reflect.TypeOf((*MockInterface)(nil).GetThingWithAdditionalAttributessByNameAndRangeNullable), ctx, input, fn)
+}
+
+// GetThingWithAdditionalAttributessByNameAndVersion mocks base method.
+func (m *MockInterface) GetThingWithAdditionalAttributessByNameAndVersion(ctx context.Context, input GetThingWithAdditionalAttributessByNameAndVersionInput, fn func(*models.ThingWithAdditionalAttributes, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetThingWithAdditionalAttributessByNameAndVersion", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingWithAdditionalAttributessByNameAndVersion indicates an expected call of GetThingWithAdditionalAttributessByNameAndVersion.
+func (mr *MockInterfaceMockRecorder) GetThingWithAdditionalAttributessByNameAndVersion(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithAdditionalAttributessByNameAndVersion", reflect.TypeOf((*MockInterface)(nil).GetThingWithAdditionalAttributessByNameAndVersion), ctx, input, fn)
 }
 
 // GetThingWithCompositeAttributes mocks base method.
@@ -1163,6 +1263,20 @@ func (mr *MockInterfaceMockRecorder) SaveThingAllowingBatchWritesWithCompositeAt
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingAllowingBatchWritesWithCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).SaveThingAllowingBatchWritesWithCompositeAttributes), ctx, m)
 }
 
+// SaveThingWithAdditionalAttributes mocks base method.
+func (m_2 *MockInterface) SaveThingWithAdditionalAttributes(ctx context.Context, m models.ThingWithAdditionalAttributes) error {
+	m_2.ctrl.T.Helper()
+	ret := m_2.ctrl.Call(m_2, "SaveThingWithAdditionalAttributes", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveThingWithAdditionalAttributes indicates an expected call of SaveThingWithAdditionalAttributes.
+func (mr *MockInterfaceMockRecorder) SaveThingWithAdditionalAttributes(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithAdditionalAttributes", reflect.TypeOf((*MockInterface)(nil).SaveThingWithAdditionalAttributes), ctx, m)
+}
+
 // SaveThingWithCompositeAttributes mocks base method.
 func (m_2 *MockInterface) SaveThingWithCompositeAttributes(ctx context.Context, m models.ThingWithCompositeAttributes) error {
 	m_2.ctrl.T.Helper()
@@ -1483,6 +1597,62 @@ func (m *MockInterface) ScanThingAllowingBatchWritess(ctx context.Context, input
 func (mr *MockInterfaceMockRecorder) ScanThingAllowingBatchWritess(ctx, input, fn interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingAllowingBatchWritess", reflect.TypeOf((*MockInterface)(nil).ScanThingAllowingBatchWritess), ctx, input, fn)
+}
+
+// ScanThingWithAdditionalAttributess mocks base method.
+func (m *MockInterface) ScanThingWithAdditionalAttributess(ctx context.Context, input ScanThingWithAdditionalAttributessInput, fn func(*models.ThingWithAdditionalAttributes, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ScanThingWithAdditionalAttributess", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ScanThingWithAdditionalAttributess indicates an expected call of ScanThingWithAdditionalAttributess.
+func (mr *MockInterfaceMockRecorder) ScanThingWithAdditionalAttributess(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithAdditionalAttributess", reflect.TypeOf((*MockInterface)(nil).ScanThingWithAdditionalAttributess), ctx, input, fn)
+}
+
+// ScanThingWithAdditionalAttributessByID mocks base method.
+func (m *MockInterface) ScanThingWithAdditionalAttributessByID(ctx context.Context, input ScanThingWithAdditionalAttributessByIDInput, fn func(*models.ThingWithAdditionalAttributes, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ScanThingWithAdditionalAttributessByID", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ScanThingWithAdditionalAttributessByID indicates an expected call of ScanThingWithAdditionalAttributessByID.
+func (mr *MockInterfaceMockRecorder) ScanThingWithAdditionalAttributessByID(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithAdditionalAttributessByID", reflect.TypeOf((*MockInterface)(nil).ScanThingWithAdditionalAttributessByID), ctx, input, fn)
+}
+
+// ScanThingWithAdditionalAttributessByNameAndCreatedAt mocks base method.
+func (m *MockInterface) ScanThingWithAdditionalAttributessByNameAndCreatedAt(ctx context.Context, input ScanThingWithAdditionalAttributessByNameAndCreatedAtInput, fn func(*models.ThingWithAdditionalAttributes, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ScanThingWithAdditionalAttributessByNameAndCreatedAt", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ScanThingWithAdditionalAttributessByNameAndCreatedAt indicates an expected call of ScanThingWithAdditionalAttributessByNameAndCreatedAt.
+func (mr *MockInterfaceMockRecorder) ScanThingWithAdditionalAttributessByNameAndCreatedAt(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithAdditionalAttributessByNameAndCreatedAt", reflect.TypeOf((*MockInterface)(nil).ScanThingWithAdditionalAttributessByNameAndCreatedAt), ctx, input, fn)
+}
+
+// ScanThingWithAdditionalAttributessByNameAndRangeNullable mocks base method.
+func (m *MockInterface) ScanThingWithAdditionalAttributessByNameAndRangeNullable(ctx context.Context, input ScanThingWithAdditionalAttributessByNameAndRangeNullableInput, fn func(*models.ThingWithAdditionalAttributes, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ScanThingWithAdditionalAttributessByNameAndRangeNullable", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ScanThingWithAdditionalAttributessByNameAndRangeNullable indicates an expected call of ScanThingWithAdditionalAttributessByNameAndRangeNullable.
+func (mr *MockInterfaceMockRecorder) ScanThingWithAdditionalAttributessByNameAndRangeNullable(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithAdditionalAttributessByNameAndRangeNullable", reflect.TypeOf((*MockInterface)(nil).ScanThingWithAdditionalAttributessByNameAndRangeNullable), ctx, input, fn)
 }
 
 // ScanThingWithCompositeAttributess mocks base method.
