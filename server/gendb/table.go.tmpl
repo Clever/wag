@@ -384,6 +384,9 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
 {{- $lenRangeKeyAttributes := len $rangeKeyAttributes }}
 {{- $hashKeyAttributes := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
 {{- $lenHashKeyAttributes := len $hashKeyAttributes }}
+{{- $pkModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
+{{- $nonIndexAttributeNames := nonIndexModelAttributeNames $xdbConfig $pkModelAttributeNames}}
+{{- $lenNonIndexAttributes := len $nonIndexAttributeNames }}
 func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx context.Context, input db.Get{{ $modelName }}sBy{{ $computedIndexName }}Input, fn func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool) error {
   {{- if gt $lenRangeKeyAttributes 1 }}
     if (input.StartingAt != nil && input.StartingAfter != nil) {

@@ -118,21 +118,15 @@ type Scan{{ $modelName }}sInput struct {
     // {{ $modelName }}By{{ $indexName }}FilterableAttribute represents the fields we can apply filters to for queries on this index
     type {{ $modelName }}By{{ $indexName }}FilterableAttribute string
     {{- range $attributeName := $nonIndexAttributeNames }}
-      const {{ $modelName }}{{ $attributeName }} {{ $modelName }}By{{ $indexName }}FilterableAttribute = "{{ $attributeName }}"
+      const {{ $modelName }}{{ pascalize $attributeName }} {{ $modelName }}By{{ $indexName }}FilterableAttribute = "{{ $attributeName }}"
     {{- end }}
 
     // {{ $modelName }}By{{ $indexName }}Filter represents a filter on a particular field to be included in the query
-    type {{ $modelName }}By{{ $indexName }}Filter struct {
+    type {{ $modelName }}By{{ $indexName }}FilterValues struct {
       // AttributeName is the attibute we are attempting to apply the filter to
       AttributeName {{ $modelName }}By{{ $indexName }}FilterableAttribute
       // AttributeValues is an optional parameter to be used when we want to compare the attibute to a single value or multiple values
       AttributeValues []interface{}
-      // Expression is the filter expression to be applied to our attribute  
-      // when referencing the attribute use :attribute_name
-      // when referencing one of the given values use :attribute_value0, :attribute_value1, etc.
-      // see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
-      // for guidance on building expressions
-      Expression  string
     }
 {{- end }}  
 // Get{{ $modelName }}sBy{{ $indexName }}Input is the query input to Get{{ $modelName }}sBy{{ $indexName }}.
@@ -161,7 +155,15 @@ type Get{{ $modelName }}sBy{{ $indexName }}Input struct {
 	Limit  *int64
   {{- if gt $lenNonIndexAttributes 0 }}
     // Filters is an optional array of filters to apply on various table attributes
-    Filters []{{ $modelName }}By{{ $indexName }}Filter 
+    FilterValues []{{ $modelName }}By{{ $indexName }}FilterValues
+    // FilterExpression is the filter expression to be applied to our fitlered attributes 
+    // when referencing an attribute use :{attribute_name}
+    // ex: if the attribute is called "created_at" in its wag definition use :created_at
+    // when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
+    // ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
+    // see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
+    // for guidance on building expressions
+    FilterExpression  string
   {{- end }}  
 }
 {{- end }}

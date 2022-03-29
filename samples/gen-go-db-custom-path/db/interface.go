@@ -325,20 +325,14 @@ type ScanDeploymentsInput struct {
 // DeploymentByEnvAppAndVersionFilterableAttribute represents the fields we can apply filters to for queries on this index
 type DeploymentByEnvAppAndVersionFilterableAttribute string
 
-const Deploymentdate DeploymentByEnvAppAndVersionFilterableAttribute = "date"
+const DeploymentDate DeploymentByEnvAppAndVersionFilterableAttribute = "date"
 
 // DeploymentByEnvAppAndVersionFilter represents a filter on a particular field to be included in the query
-type DeploymentByEnvAppAndVersionFilter struct {
+type DeploymentByEnvAppAndVersionFilterValues struct {
 	// AttributeName is the attibute we are attempting to apply the filter to
 	AttributeName DeploymentByEnvAppAndVersionFilterableAttribute
 	// AttributeValues is an optional parameter to be used when we want to compare the attibute to a single value or multiple values
 	AttributeValues []interface{}
-	// Expression is the filter expression to be applied to our attribute
-	// when referencing the attribute use :attribute_name
-	// when referencing one of the given values use :attribute_value0, :attribute_value1, etc.
-	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
-	// for guidance on building expressions
-	Expression string
 }
 
 // GetDeploymentsByEnvAppAndVersionInput is the query input to GetDeploymentsByEnvAppAndVersion.
@@ -356,7 +350,15 @@ type GetDeploymentsByEnvAppAndVersionInput struct {
 	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
 	// Filters is an optional array of filters to apply on various table attributes
-	Filters []DeploymentByEnvAppAndVersionFilter
+	FilterValues []DeploymentByEnvAppAndVersionFilterValues
+	// FilterExpression is the filter expression to be applied to our fitlered attributes
+	// when referencing an attribute use :{attribute_name}
+	// ex: if the attribute is called "created_at" in its wag definition use :created_at
+	// when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
+	// ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
+	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
+	// for guidance on building expressions
+	FilterExpression string
 }
 
 // ErrDeploymentNotFound is returned when the database fails to find a Deployment.
@@ -475,20 +477,14 @@ type ScanEventsInput struct {
 // EventByPkAndSkFilterableAttribute represents the fields we can apply filters to for queries on this index
 type EventByPkAndSkFilterableAttribute string
 
-const Eventdata EventByPkAndSkFilterableAttribute = "data"
+const EventData EventByPkAndSkFilterableAttribute = "data"
 
 // EventByPkAndSkFilter represents a filter on a particular field to be included in the query
-type EventByPkAndSkFilter struct {
+type EventByPkAndSkFilterValues struct {
 	// AttributeName is the attibute we are attempting to apply the filter to
 	AttributeName EventByPkAndSkFilterableAttribute
 	// AttributeValues is an optional parameter to be used when we want to compare the attibute to a single value or multiple values
 	AttributeValues []interface{}
-	// Expression is the filter expression to be applied to our attribute
-	// when referencing the attribute use :attribute_name
-	// when referencing one of the given values use :attribute_value0, :attribute_value1, etc.
-	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
-	// for guidance on building expressions
-	Expression string
 }
 
 // GetEventsByPkAndSkInput is the query input to GetEventsByPkAndSk.
@@ -504,7 +500,15 @@ type GetEventsByPkAndSkInput struct {
 	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
 	// Filters is an optional array of filters to apply on various table attributes
-	Filters []EventByPkAndSkFilter
+	FilterValues []EventByPkAndSkFilterValues
+	// FilterExpression is the filter expression to be applied to our fitlered attributes
+	// when referencing an attribute use :{attribute_name}
+	// ex: if the attribute is called "created_at" in its wag definition use :created_at
+	// when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
+	// ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
+	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
+	// for guidance on building expressions
+	FilterExpression string
 }
 
 // ErrEventNotFound is returned when the database fails to find a Event.
@@ -683,20 +687,14 @@ type ScanTeacherSharingRulesInput struct {
 // TeacherSharingRuleByTeacherAndSchoolAppFilterableAttribute represents the fields we can apply filters to for queries on this index
 type TeacherSharingRuleByTeacherAndSchoolAppFilterableAttribute string
 
-const TeacherSharingRuledistrict TeacherSharingRuleByTeacherAndSchoolAppFilterableAttribute = "district"
+const TeacherSharingRuleDistrict TeacherSharingRuleByTeacherAndSchoolAppFilterableAttribute = "district"
 
 // TeacherSharingRuleByTeacherAndSchoolAppFilter represents a filter on a particular field to be included in the query
-type TeacherSharingRuleByTeacherAndSchoolAppFilter struct {
+type TeacherSharingRuleByTeacherAndSchoolAppFilterValues struct {
 	// AttributeName is the attibute we are attempting to apply the filter to
 	AttributeName TeacherSharingRuleByTeacherAndSchoolAppFilterableAttribute
 	// AttributeValues is an optional parameter to be used when we want to compare the attibute to a single value or multiple values
 	AttributeValues []interface{}
-	// Expression is the filter expression to be applied to our attribute
-	// when referencing the attribute use :attribute_name
-	// when referencing one of the given values use :attribute_value0, :attribute_value1, etc.
-	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
-	// for guidance on building expressions
-	Expression string
 }
 
 // GetTeacherSharingRulesByTeacherAndSchoolAppInput is the query input to GetTeacherSharingRulesByTeacherAndSchoolApp.
@@ -712,7 +710,15 @@ type GetTeacherSharingRulesByTeacherAndSchoolAppInput struct {
 	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
 	// Filters is an optional array of filters to apply on various table attributes
-	Filters []TeacherSharingRuleByTeacherAndSchoolAppFilter
+	FilterValues []TeacherSharingRuleByTeacherAndSchoolAppFilterValues
+	// FilterExpression is the filter expression to be applied to our fitlered attributes
+	// when referencing an attribute use :{attribute_name}
+	// ex: if the attribute is called "created_at" in its wag definition use :created_at
+	// when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
+	// ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
+	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
+	// for guidance on building expressions
+	FilterExpression string
 }
 
 // ErrTeacherSharingRuleNotFound is returned when the database fails to find a TeacherSharingRule.
@@ -795,23 +801,17 @@ type ScanThingsInput struct {
 // ThingByNameAndVersionFilterableAttribute represents the fields we can apply filters to for queries on this index
 type ThingByNameAndVersionFilterableAttribute string
 
-const ThingcreatedAt ThingByNameAndVersionFilterableAttribute = "createdAt"
-const ThinghashNullable ThingByNameAndVersionFilterableAttribute = "hashNullable"
-const Thingid ThingByNameAndVersionFilterableAttribute = "id"
-const ThingrangeNullable ThingByNameAndVersionFilterableAttribute = "rangeNullable"
+const ThingID ThingByNameAndVersionFilterableAttribute = "id"
+const ThingRangeNullable ThingByNameAndVersionFilterableAttribute = "rangeNullable"
+const ThingCreatedAt ThingByNameAndVersionFilterableAttribute = "createdAt"
+const ThingHashNullable ThingByNameAndVersionFilterableAttribute = "hashNullable"
 
 // ThingByNameAndVersionFilter represents a filter on a particular field to be included in the query
-type ThingByNameAndVersionFilter struct {
+type ThingByNameAndVersionFilterValues struct {
 	// AttributeName is the attibute we are attempting to apply the filter to
 	AttributeName ThingByNameAndVersionFilterableAttribute
 	// AttributeValues is an optional parameter to be used when we want to compare the attibute to a single value or multiple values
 	AttributeValues []interface{}
-	// Expression is the filter expression to be applied to our attribute
-	// when referencing the attribute use :attribute_name
-	// when referencing one of the given values use :attribute_value0, :attribute_value1, etc.
-	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
-	// for guidance on building expressions
-	Expression string
 }
 
 // GetThingsByNameAndVersionInput is the query input to GetThingsByNameAndVersion.
@@ -827,7 +827,15 @@ type GetThingsByNameAndVersionInput struct {
 	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
 	// Filters is an optional array of filters to apply on various table attributes
-	Filters []ThingByNameAndVersionFilter
+	FilterValues []ThingByNameAndVersionFilterValues
+	// FilterExpression is the filter expression to be applied to our fitlered attributes
+	// when referencing an attribute use :{attribute_name}
+	// ex: if the attribute is called "created_at" in its wag definition use :created_at
+	// when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
+	// ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
+	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
+	// for guidance on building expressions
+	FilterExpression string
 }
 
 // ErrThingNotFound is returned when the database fails to find a Thing.
@@ -1098,25 +1106,19 @@ type ScanThingWithAdditionalAttributessInput struct {
 // ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute represents the fields we can apply filters to for queries on this index
 type ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute string
 
-const ThingWithAdditionalAttributesid ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "id"
-const ThingWithAdditionalAttributesrangeNullable ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "rangeNullable"
-const ThingWithAdditionalAttributesadditionalNAttribute ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "additionalNAttribute"
-const ThingWithAdditionalAttributesadditionalSAttribute ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "additionalSAttribute"
-const ThingWithAdditionalAttributescreatedAt ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "createdAt"
-const ThingWithAdditionalAttributeshashNullable ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "hashNullable"
+const ThingWithAdditionalAttributesAdditionalNAttribute ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "additionalNAttribute"
+const ThingWithAdditionalAttributesAdditionalSAttribute ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "additionalSAttribute"
+const ThingWithAdditionalAttributesCreatedAt ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "createdAt"
+const ThingWithAdditionalAttributesHashNullable ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "hashNullable"
+const ThingWithAdditionalAttributesID ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "id"
+const ThingWithAdditionalAttributesRangeNullable ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "rangeNullable"
 
 // ThingWithAdditionalAttributesByNameAndVersionFilter represents a filter on a particular field to be included in the query
-type ThingWithAdditionalAttributesByNameAndVersionFilter struct {
+type ThingWithAdditionalAttributesByNameAndVersionFilterValues struct {
 	// AttributeName is the attibute we are attempting to apply the filter to
 	AttributeName ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute
 	// AttributeValues is an optional parameter to be used when we want to compare the attibute to a single value or multiple values
 	AttributeValues []interface{}
-	// Expression is the filter expression to be applied to our attribute
-	// when referencing the attribute use :attribute_name
-	// when referencing one of the given values use :attribute_value0, :attribute_value1, etc.
-	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
-	// for guidance on building expressions
-	Expression string
 }
 
 // GetThingWithAdditionalAttributessByNameAndVersionInput is the query input to GetThingWithAdditionalAttributessByNameAndVersion.
@@ -1132,7 +1134,15 @@ type GetThingWithAdditionalAttributessByNameAndVersionInput struct {
 	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
 	// Filters is an optional array of filters to apply on various table attributes
-	Filters []ThingWithAdditionalAttributesByNameAndVersionFilter
+	FilterValues []ThingWithAdditionalAttributesByNameAndVersionFilterValues
+	// FilterExpression is the filter expression to be applied to our fitlered attributes
+	// when referencing an attribute use :{attribute_name}
+	// ex: if the attribute is called "created_at" in its wag definition use :created_at
+	// when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
+	// ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
+	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
+	// for guidance on building expressions
+	FilterExpression string
 }
 
 // ErrThingWithAdditionalAttributesNotFound is returned when the database fails to find a ThingWithAdditionalAttributes.
@@ -1296,20 +1306,14 @@ type ScanThingWithCompositeAttributessInput struct {
 // ThingWithCompositeAttributesByNameBranchAndDateFilterableAttribute represents the fields we can apply filters to for queries on this index
 type ThingWithCompositeAttributesByNameBranchAndDateFilterableAttribute string
 
-const ThingWithCompositeAttributesversion ThingWithCompositeAttributesByNameBranchAndDateFilterableAttribute = "version"
+const ThingWithCompositeAttributesVersion ThingWithCompositeAttributesByNameBranchAndDateFilterableAttribute = "version"
 
 // ThingWithCompositeAttributesByNameBranchAndDateFilter represents a filter on a particular field to be included in the query
-type ThingWithCompositeAttributesByNameBranchAndDateFilter struct {
+type ThingWithCompositeAttributesByNameBranchAndDateFilterValues struct {
 	// AttributeName is the attibute we are attempting to apply the filter to
 	AttributeName ThingWithCompositeAttributesByNameBranchAndDateFilterableAttribute
 	// AttributeValues is an optional parameter to be used when we want to compare the attibute to a single value or multiple values
 	AttributeValues []interface{}
-	// Expression is the filter expression to be applied to our attribute
-	// when referencing the attribute use :attribute_name
-	// when referencing one of the given values use :attribute_value0, :attribute_value1, etc.
-	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
-	// for guidance on building expressions
-	Expression string
 }
 
 // GetThingWithCompositeAttributessByNameBranchAndDateInput is the query input to GetThingWithCompositeAttributessByNameBranchAndDate.
@@ -1327,7 +1331,15 @@ type GetThingWithCompositeAttributessByNameBranchAndDateInput struct {
 	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
 	// Filters is an optional array of filters to apply on various table attributes
-	Filters []ThingWithCompositeAttributesByNameBranchAndDateFilter
+	FilterValues []ThingWithCompositeAttributesByNameBranchAndDateFilterValues
+	// FilterExpression is the filter expression to be applied to our fitlered attributes
+	// when referencing an attribute use :{attribute_name}
+	// ex: if the attribute is called "created_at" in its wag definition use :created_at
+	// when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
+	// ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
+	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
+	// for guidance on building expressions
+	FilterExpression string
 }
 
 // ErrThingWithCompositeAttributesNotFound is returned when the database fails to find a ThingWithCompositeAttributes.
@@ -1554,20 +1566,14 @@ type ScanThingWithEnumHashKeysInput struct {
 // ThingWithEnumHashKeyByBranchAndDateFilterableAttribute represents the fields we can apply filters to for queries on this index
 type ThingWithEnumHashKeyByBranchAndDateFilterableAttribute string
 
-const ThingWithEnumHashKeydate2 ThingWithEnumHashKeyByBranchAndDateFilterableAttribute = "date2"
+const ThingWithEnumHashKeyDate2 ThingWithEnumHashKeyByBranchAndDateFilterableAttribute = "date2"
 
 // ThingWithEnumHashKeyByBranchAndDateFilter represents a filter on a particular field to be included in the query
-type ThingWithEnumHashKeyByBranchAndDateFilter struct {
+type ThingWithEnumHashKeyByBranchAndDateFilterValues struct {
 	// AttributeName is the attibute we are attempting to apply the filter to
 	AttributeName ThingWithEnumHashKeyByBranchAndDateFilterableAttribute
 	// AttributeValues is an optional parameter to be used when we want to compare the attibute to a single value or multiple values
 	AttributeValues []interface{}
-	// Expression is the filter expression to be applied to our attribute
-	// when referencing the attribute use :attribute_name
-	// when referencing one of the given values use :attribute_value0, :attribute_value1, etc.
-	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
-	// for guidance on building expressions
-	Expression string
 }
 
 // GetThingWithEnumHashKeysByBranchAndDateInput is the query input to GetThingWithEnumHashKeysByBranchAndDate.
@@ -1583,7 +1589,15 @@ type GetThingWithEnumHashKeysByBranchAndDateInput struct {
 	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
 	// Filters is an optional array of filters to apply on various table attributes
-	Filters []ThingWithEnumHashKeyByBranchAndDateFilter
+	FilterValues []ThingWithEnumHashKeyByBranchAndDateFilterValues
+	// FilterExpression is the filter expression to be applied to our fitlered attributes
+	// when referencing an attribute use :{attribute_name}
+	// ex: if the attribute is called "created_at" in its wag definition use :created_at
+	// when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
+	// ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
+	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
+	// for guidance on building expressions
+	FilterExpression string
 }
 
 // ErrThingWithEnumHashKeyNotFound is returned when the database fails to find a ThingWithEnumHashKey.
@@ -1663,20 +1677,14 @@ type ScanThingWithMatchingKeyssInput struct {
 // ThingWithMatchingKeysByBearAndAssocTypeIDFilterableAttribute represents the fields we can apply filters to for queries on this index
 type ThingWithMatchingKeysByBearAndAssocTypeIDFilterableAttribute string
 
-const ThingWithMatchingKeyscreated ThingWithMatchingKeysByBearAndAssocTypeIDFilterableAttribute = "created"
+const ThingWithMatchingKeysCreated ThingWithMatchingKeysByBearAndAssocTypeIDFilterableAttribute = "created"
 
 // ThingWithMatchingKeysByBearAndAssocTypeIDFilter represents a filter on a particular field to be included in the query
-type ThingWithMatchingKeysByBearAndAssocTypeIDFilter struct {
+type ThingWithMatchingKeysByBearAndAssocTypeIDFilterValues struct {
 	// AttributeName is the attibute we are attempting to apply the filter to
 	AttributeName ThingWithMatchingKeysByBearAndAssocTypeIDFilterableAttribute
 	// AttributeValues is an optional parameter to be used when we want to compare the attibute to a single value or multiple values
 	AttributeValues []interface{}
-	// Expression is the filter expression to be applied to our attribute
-	// when referencing the attribute use :attribute_name
-	// when referencing one of the given values use :attribute_value0, :attribute_value1, etc.
-	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
-	// for guidance on building expressions
-	Expression string
 }
 
 // GetThingWithMatchingKeyssByBearAndAssocTypeIDInput is the query input to GetThingWithMatchingKeyssByBearAndAssocTypeID.
@@ -1692,7 +1700,15 @@ type GetThingWithMatchingKeyssByBearAndAssocTypeIDInput struct {
 	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
 	// Filters is an optional array of filters to apply on various table attributes
-	Filters []ThingWithMatchingKeysByBearAndAssocTypeIDFilter
+	FilterValues []ThingWithMatchingKeysByBearAndAssocTypeIDFilterValues
+	// FilterExpression is the filter expression to be applied to our fitlered attributes
+	// when referencing an attribute use :{attribute_name}
+	// ex: if the attribute is called "created_at" in its wag definition use :created_at
+	// when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
+	// ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
+	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
+	// for guidance on building expressions
+	FilterExpression string
 }
 
 // ErrThingWithMatchingKeysNotFound is returned when the database fails to find a ThingWithMatchingKeys.
