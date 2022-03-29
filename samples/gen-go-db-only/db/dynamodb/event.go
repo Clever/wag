@@ -201,6 +201,20 @@ func (t EventTable) scanEvents(ctx context.Context, input db.ScanEventsInput, fn
 	return err
 }
 
+func (t EventTable) getEventsByPkAndSkParseFilters(queryInput *dynamodb.QueryInput, input db.GetEventsByPkAndSkInput) {
+	for _, filterValue := range input.FilterValues {
+		switch filterValue.AttributeName {
+		case db.EventData:
+			queryInput.ExpressionAttributeNames["#DATA"] = aws.String(string(db.EventData))
+			for i, attributeValue := range filterValue.AttributeValues {
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.EventData), i)] = &dynamodb.AttributeValue{
+					B: attributeValue.([]byte),
+				}
+			}
+		}
+	}
+}
+
 func (t EventTable) getEventsByPkAndSk(ctx context.Context, input db.GetEventsByPkAndSkInput, fn func(m *models.Event, lastEvent bool) bool) error {
 	if input.SkStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.SkStartingAt or input.StartingAfter")
@@ -247,11 +261,16 @@ func (t EventTable) getEventsByPkAndSk(ctx context.Context, input db.GetEventsBy
 			},
 		}
 	}
+	if len(input.FilterValues) > 0 && input.FilterExpression != "" {
+		t.getEventsByPkAndSkParseFilters(queryInput, input)
+		queryInput.FilterExpression = aws.String(input.FilterExpression)
+	}
 
 	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
-		if len(queryOutput.Items) == 0 {
+		// Only assume an empty page means no more results if there are no filters applied
+		if (len(input.FilterValues) == 0 || input.FilterExpression == "") && len(queryOutput.Items) == 0 {
 			return false
 		}
 		items, err := decodeEvents(queryOutput.Items)

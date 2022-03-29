@@ -157,8 +157,8 @@ type Get{{ $modelName }}sBy{{ $indexName }}Input struct {
     // Filters is an optional array of filters to apply on various table attributes
     FilterValues []{{ $modelName }}By{{ $indexName }}FilterValues
     // FilterExpression is the filter expression to be applied to our fitlered attributes 
-    // when referencing an attribute use :{attribute_name}
-    // ex: if the attribute is called "created_at" in its wag definition use :created_at
+    // when referencing an attribute use #ATTRIBUTE_NAME
+    // ex: if the attribute is called "created_at" in its wag definition use #CREATED_AT
     // when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
     // ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
     // see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions

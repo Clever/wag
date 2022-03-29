@@ -767,6 +767,8 @@ definitions:
             AttributeType: "N"
           - AttributeName: additionalSAttribute
             AttributeType: S
+          - AttributeName: additionalBAttribute
+            AttributeType: B
     type: object
     properties:
       id:
@@ -791,6 +793,9 @@ definitions:
       additionalSAttribute:
         type: string
         x-nullable: true
+      additionalBAttribute:
+        type: string
+        format: byte
       category:
         $ref: '#/definitions/Category'
       nestedObject:

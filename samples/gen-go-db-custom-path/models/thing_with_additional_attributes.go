@@ -17,6 +17,10 @@ import (
 // swagger:model ThingWithAdditionalAttributes
 type ThingWithAdditionalAttributes struct {
 
+	// additional b attribute
+	// Format: byte
+	AdditionalBAttribute strfmt.Base64 `json:"additionalBAttribute,omitempty"`
+
 	// additional n attribute
 	AdditionalNAttribute *int64 `json:"additionalNAttribute,omitempty"`
 

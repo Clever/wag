@@ -387,6 +387,43 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
 {{- $pkModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
 {{- $nonIndexAttributeNames := nonIndexModelAttributeNames $xdbConfig $pkModelAttributeNames}}
 {{- $lenNonIndexAttributes := len $nonIndexAttributeNames }}
+
+{{- if gt $lenNonIndexAttributes 0 }}
+  func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}ParseFilters(queryInput *dynamodb.QueryInput, input db.Get{{ $modelName }}sBy{{ $computedIndexName }}Input) {
+    for _, filterValue := range input.FilterValues {
+      switch filterValue.AttributeName {
+      {{- range $attributeName := $nonIndexAttributeNames}}
+      case db.{{ $modelName }}{{ pascalize $attributeName }}:
+        queryInput.ExpressionAttributeNames["#{{ upper $attributeName }}"] = aws.String(string(db.{{ $modelName }}{{ pascalize $attributeName }}))
+        {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $attributeName }}
+        {{- $attrGoType := goTypeForAttribute $xdbConfig $attributeName }}
+        for i, attributeValue := range filterValue.AttributeValues {
+          {{- if eq $attrDynamoDBType "S" }}
+            {{- if eq $attrGoType "strfmt.DateTime" }}
+              queryInput.ExpressionAttributeValues[fmt.Sprintf(":%%s_value%%d", string(db.{{ $modelName }}{{ pascalize $attributeName }}), i)] = &dynamodb.AttributeValue{
+                S: aws.String(toDynamoTimeString(attributeValue.({{$attrGoType}}))),
+              }
+            {{- else }}
+              queryInput.ExpressionAttributeValues[fmt.Sprintf(":%%s_value%%d", string(db.{{ $modelName }}{{ pascalize $attributeName }}), i)] = &dynamodb.AttributeValue{
+                S: aws.String(attributeValue.({{$attrGoType}})),
+              }
+            {{- end }}
+          {{- else if eq $attrDynamoDBType "N" }}
+            queryInput.ExpressionAttributeValues[fmt.Sprintf(":%%s_value%%d", string(db.{{ $modelName }}{{ pascalize $attributeName }}), i)] = &dynamodb.AttributeValue{
+              N: aws.String(fmt.Sprint(attributeValue.({{$attrGoType}}))),
+            }
+          {{- else if eq $attrDynamoDBType "B" }}
+            queryInput.ExpressionAttributeValues[fmt.Sprintf(":%%s_value%%d", string(db.{{ $modelName }}{{ pascalize $attributeName }}), i)] = &dynamodb.AttributeValue{
+              B: attributeValue.({{$attrGoType}}),
+            }
+          {{- end }}
+        }
+      {{- end }}
+      }
+    }
+  }
+{{- end }}
+
 func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx context.Context, input db.Get{{ $modelName }}sBy{{ $computedIndexName }}Input, fn func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool) error {
   {{- if gt $lenRangeKeyAttributes 1 }}
     if (input.StartingAt != nil && input.StartingAfter != nil) {
@@ -516,12 +553,26 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
     }
   }
 
+  {{- if gt $lenNonIndexAttributes 0 }}
+    if len(input.FilterValues) > 0 && input.FilterExpression != "" {
+      t.get{{ $modelName }}sBy{{ $computedIndexName }}ParseFilters(queryInput, input)
+      queryInput.FilterExpression = aws.String(input.FilterExpression) 
+    }
+  {{- end }}
+
   totalRecordsProcessed := int64(0)
   var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
-		if len(queryOutput.Items) == 0 {
-			return false
-		}
+		{{- if gt $lenNonIndexAttributes 0 }}
+      // Only assume an empty page means no more results if there are no filters applied
+      if (len(input.FilterValues) == 0 || input.FilterExpression == "") && len(queryOutput.Items) == 0 {
+			  return false
+		  }
+    {{- else }}
+      if len(queryOutput.Items) == 0 {
+			  return false
+		  }
+    {{- end }}
 		items, err := decode{{ $modelName }}s(queryOutput.Items)
     if err != nil {
       pageFnErr = err

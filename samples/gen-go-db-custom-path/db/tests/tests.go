@@ -5431,6 +5431,7 @@ func GetThingWithAdditionalAttributes(s db.Interface, t *testing.T) func(t *test
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m := models.ThingWithAdditionalAttributes{
+			AdditionalBAttribute: []byte("string1"),
 			AdditionalNAttribute: db.Int64(1),
 			AdditionalSAttribute: db.String("string1"),
 			CreatedAt:            mustTime("2018-03-11T15:04:01+07:00"),
@@ -5649,6 +5650,7 @@ func ScanThingWithAdditionalAttributess(d db.Interface, t *testing.T) func(t *te
 	return func(t *testing.T) {
 		ctx := context.Background()
 		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			AdditionalBAttribute: []byte("string1"),
 			AdditionalNAttribute: db.Int64(1),
 			AdditionalSAttribute: db.String("string1"),
 			CreatedAt:            mustTime("2018-03-11T15:04:01+07:00"),
@@ -5659,6 +5661,7 @@ func ScanThingWithAdditionalAttributess(d db.Interface, t *testing.T) func(t *te
 			Version:              1,
 		}))
 		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			AdditionalBAttribute: []byte("string2"),
 			AdditionalNAttribute: db.Int64(2),
 			AdditionalSAttribute: db.String("string2"),
 			CreatedAt:            mustTime("2018-03-11T15:04:02+07:00"),
@@ -5669,6 +5672,7 @@ func ScanThingWithAdditionalAttributess(d db.Interface, t *testing.T) func(t *te
 			Version:              2,
 		}))
 		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
+			AdditionalBAttribute: []byte("string3"),
 			AdditionalNAttribute: db.Int64(3),
 			AdditionalSAttribute: db.String("string3"),
 			CreatedAt:            mustTime("2018-03-11T15:04:03+07:00"),
@@ -5682,6 +5686,7 @@ func ScanThingWithAdditionalAttributess(d db.Interface, t *testing.T) func(t *te
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithAdditionalAttributes{
 				models.ThingWithAdditionalAttributes{
+					AdditionalBAttribute: []byte("string1"),
 					AdditionalNAttribute: db.Int64(1),
 					AdditionalSAttribute: db.String("string1"),
 					CreatedAt:            mustTime("2018-03-11T15:04:01+07:00"),
@@ -5692,6 +5697,7 @@ func ScanThingWithAdditionalAttributess(d db.Interface, t *testing.T) func(t *te
 					Version:              1,
 				},
 				models.ThingWithAdditionalAttributes{
+					AdditionalBAttribute: []byte("string2"),
 					AdditionalNAttribute: db.Int64(2),
 					AdditionalSAttribute: db.String("string2"),
 					CreatedAt:            mustTime("2018-03-11T15:04:02+07:00"),
@@ -5702,6 +5708,7 @@ func ScanThingWithAdditionalAttributess(d db.Interface, t *testing.T) func(t *te
 					Version:              2,
 				},
 				models.ThingWithAdditionalAttributes{
+					AdditionalBAttribute: []byte("string3"),
 					AdditionalNAttribute: db.Int64(3),
 					AdditionalSAttribute: db.String("string3"),
 					CreatedAt:            mustTime("2018-03-11T15:04:03+07:00"),
@@ -5788,6 +5795,7 @@ func SaveThingWithAdditionalAttributes(s db.Interface, t *testing.T) func(t *tes
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m := models.ThingWithAdditionalAttributes{
+			AdditionalBAttribute: []byte("string1"),
 			AdditionalNAttribute: db.Int64(1),
 			AdditionalSAttribute: db.String("string1"),
 			CreatedAt:            mustTime("2018-03-11T15:04:01+07:00"),
@@ -5806,6 +5814,7 @@ func DeleteThingWithAdditionalAttributes(s db.Interface, t *testing.T) func(t *t
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m := models.ThingWithAdditionalAttributes{
+			AdditionalBAttribute: []byte("string1"),
 			AdditionalNAttribute: db.Int64(1),
 			AdditionalSAttribute: db.String("string1"),
 			CreatedAt:            mustTime("2018-03-11T15:04:01+07:00"),
@@ -5824,6 +5833,7 @@ func GetThingWithAdditionalAttributesByID(s db.Interface, t *testing.T) func(t *
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m := models.ThingWithAdditionalAttributes{
+			AdditionalBAttribute: []byte("string1"),
 			AdditionalNAttribute: db.Int64(1),
 			AdditionalSAttribute: db.String("string1"),
 			CreatedAt:            mustTime("2018-03-11T15:04:01+07:00"),
@@ -5836,6 +5846,7 @@ func GetThingWithAdditionalAttributesByID(s db.Interface, t *testing.T) func(t *
 		require.Nil(t, s.SaveThingWithAdditionalAttributes(ctx, m))
 		m2, err := s.GetThingWithAdditionalAttributesByID(ctx, m.ID)
 		require.Nil(t, err)
+		require.Equal(t, m.AdditionalBAttribute, m2.AdditionalBAttribute)
 		require.Equal(t, m.AdditionalNAttribute, m2.AdditionalNAttribute)
 		require.Equal(t, m.AdditionalSAttribute, m2.AdditionalSAttribute)
 		require.Equal(t, m.CreatedAt.String(), m2.CreatedAt.String())

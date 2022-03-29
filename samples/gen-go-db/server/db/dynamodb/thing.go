@@ -312,6 +312,41 @@ func (t ThingTable) scanThings(ctx context.Context, input db.ScanThingsInput, fn
 	return err
 }
 
+func (t ThingTable) getThingsByNameAndVersionParseFilters(queryInput *dynamodb.QueryInput, input db.GetThingsByNameAndVersionInput) {
+	for _, filterValue := range input.FilterValues {
+		switch filterValue.AttributeName {
+		case db.ThingCreatedAt:
+			queryInput.ExpressionAttributeNames["#CREATEDAT"] = aws.String(string(db.ThingCreatedAt))
+			for i, attributeValue := range filterValue.AttributeValues {
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingCreatedAt), i)] = &dynamodb.AttributeValue{
+					S: aws.String(toDynamoTimeString(attributeValue.(strfmt.DateTime))),
+				}
+			}
+		case db.ThingHashNullable:
+			queryInput.ExpressionAttributeNames["#HASHNULLABLE"] = aws.String(string(db.ThingHashNullable))
+			for i, attributeValue := range filterValue.AttributeValues {
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingHashNullable), i)] = &dynamodb.AttributeValue{
+					S: aws.String(attributeValue.(string)),
+				}
+			}
+		case db.ThingID:
+			queryInput.ExpressionAttributeNames["#ID"] = aws.String(string(db.ThingID))
+			for i, attributeValue := range filterValue.AttributeValues {
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingID), i)] = &dynamodb.AttributeValue{
+					S: aws.String(attributeValue.(string)),
+				}
+			}
+		case db.ThingRangeNullable:
+			queryInput.ExpressionAttributeNames["#RANGENULLABLE"] = aws.String(string(db.ThingRangeNullable))
+			for i, attributeValue := range filterValue.AttributeValues {
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingRangeNullable), i)] = &dynamodb.AttributeValue{
+					S: aws.String(toDynamoTimeString(attributeValue.(strfmt.DateTime))),
+				}
+			}
+		}
+	}
+}
+
 func (t ThingTable) getThingsByNameAndVersion(ctx context.Context, input db.GetThingsByNameAndVersionInput, fn func(m *models.Thing, lastThing bool) bool) error {
 	if input.VersionStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.VersionStartingAt or input.StartingAfter")
@@ -358,11 +393,16 @@ func (t ThingTable) getThingsByNameAndVersion(ctx context.Context, input db.GetT
 			},
 		}
 	}
+	if len(input.FilterValues) > 0 && input.FilterExpression != "" {
+		t.getThingsByNameAndVersionParseFilters(queryInput, input)
+		queryInput.FilterExpression = aws.String(input.FilterExpression)
+	}
 
 	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
-		if len(queryOutput.Items) == 0 {
+		// Only assume an empty page means no more results if there are no filters applied
+		if (len(input.FilterValues) == 0 || input.FilterExpression == "") && len(queryOutput.Items) == 0 {
 			return false
 		}
 		items, err := decodeThings(queryOutput.Items)

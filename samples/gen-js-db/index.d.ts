@@ -163,6 +163,7 @@ declare namespace SwaggerTest {
 };
     
     type ThingWithAdditionalAttributes = {
+  additionalBAttribute?: string;
   additionalNAttribute?: number;
   additionalSAttribute?: string;
   category?: Category;

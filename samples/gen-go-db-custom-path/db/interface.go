@@ -352,8 +352,8 @@ type GetDeploymentsByEnvAppAndVersionInput struct {
 	// Filters is an optional array of filters to apply on various table attributes
 	FilterValues []DeploymentByEnvAppAndVersionFilterValues
 	// FilterExpression is the filter expression to be applied to our fitlered attributes
-	// when referencing an attribute use :{attribute_name}
-	// ex: if the attribute is called "created_at" in its wag definition use :created_at
+	// when referencing an attribute use #ATTRIBUTE_NAME
+	// ex: if the attribute is called "created_at" in its wag definition use #CREATED_AT
 	// when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
 	// ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
 	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
@@ -502,8 +502,8 @@ type GetEventsByPkAndSkInput struct {
 	// Filters is an optional array of filters to apply on various table attributes
 	FilterValues []EventByPkAndSkFilterValues
 	// FilterExpression is the filter expression to be applied to our fitlered attributes
-	// when referencing an attribute use :{attribute_name}
-	// ex: if the attribute is called "created_at" in its wag definition use :created_at
+	// when referencing an attribute use #ATTRIBUTE_NAME
+	// ex: if the attribute is called "created_at" in its wag definition use #CREATED_AT
 	// when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
 	// ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
 	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
@@ -712,8 +712,8 @@ type GetTeacherSharingRulesByTeacherAndSchoolAppInput struct {
 	// Filters is an optional array of filters to apply on various table attributes
 	FilterValues []TeacherSharingRuleByTeacherAndSchoolAppFilterValues
 	// FilterExpression is the filter expression to be applied to our fitlered attributes
-	// when referencing an attribute use :{attribute_name}
-	// ex: if the attribute is called "created_at" in its wag definition use :created_at
+	// when referencing an attribute use #ATTRIBUTE_NAME
+	// ex: if the attribute is called "created_at" in its wag definition use #CREATED_AT
 	// when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
 	// ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
 	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
@@ -801,10 +801,10 @@ type ScanThingsInput struct {
 // ThingByNameAndVersionFilterableAttribute represents the fields we can apply filters to for queries on this index
 type ThingByNameAndVersionFilterableAttribute string
 
-const ThingID ThingByNameAndVersionFilterableAttribute = "id"
-const ThingRangeNullable ThingByNameAndVersionFilterableAttribute = "rangeNullable"
 const ThingCreatedAt ThingByNameAndVersionFilterableAttribute = "createdAt"
 const ThingHashNullable ThingByNameAndVersionFilterableAttribute = "hashNullable"
+const ThingID ThingByNameAndVersionFilterableAttribute = "id"
+const ThingRangeNullable ThingByNameAndVersionFilterableAttribute = "rangeNullable"
 
 // ThingByNameAndVersionFilter represents a filter on a particular field to be included in the query
 type ThingByNameAndVersionFilterValues struct {
@@ -829,8 +829,8 @@ type GetThingsByNameAndVersionInput struct {
 	// Filters is an optional array of filters to apply on various table attributes
 	FilterValues []ThingByNameAndVersionFilterValues
 	// FilterExpression is the filter expression to be applied to our fitlered attributes
-	// when referencing an attribute use :{attribute_name}
-	// ex: if the attribute is called "created_at" in its wag definition use :created_at
+	// when referencing an attribute use #ATTRIBUTE_NAME
+	// ex: if the attribute is called "created_at" in its wag definition use #CREATED_AT
 	// when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
 	// ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
 	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
@@ -1106,12 +1106,13 @@ type ScanThingWithAdditionalAttributessInput struct {
 // ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute represents the fields we can apply filters to for queries on this index
 type ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute string
 
-const ThingWithAdditionalAttributesAdditionalNAttribute ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "additionalNAttribute"
-const ThingWithAdditionalAttributesAdditionalSAttribute ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "additionalSAttribute"
+const ThingWithAdditionalAttributesAdditionalBAttribute ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "additionalBAttribute"
 const ThingWithAdditionalAttributesCreatedAt ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "createdAt"
 const ThingWithAdditionalAttributesHashNullable ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "hashNullable"
 const ThingWithAdditionalAttributesID ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "id"
 const ThingWithAdditionalAttributesRangeNullable ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "rangeNullable"
+const ThingWithAdditionalAttributesAdditionalNAttribute ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "additionalNAttribute"
+const ThingWithAdditionalAttributesAdditionalSAttribute ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "additionalSAttribute"
 
 // ThingWithAdditionalAttributesByNameAndVersionFilter represents a filter on a particular field to be included in the query
 type ThingWithAdditionalAttributesByNameAndVersionFilterValues struct {
@@ -1136,8 +1137,8 @@ type GetThingWithAdditionalAttributessByNameAndVersionInput struct {
 	// Filters is an optional array of filters to apply on various table attributes
 	FilterValues []ThingWithAdditionalAttributesByNameAndVersionFilterValues
 	// FilterExpression is the filter expression to be applied to our fitlered attributes
-	// when referencing an attribute use :{attribute_name}
-	// ex: if the attribute is called "created_at" in its wag definition use :created_at
+	// when referencing an attribute use #ATTRIBUTE_NAME
+	// ex: if the attribute is called "created_at" in its wag definition use #CREATED_AT
 	// when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
 	// ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
 	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
@@ -1333,8 +1334,8 @@ type GetThingWithCompositeAttributessByNameBranchAndDateInput struct {
 	// Filters is an optional array of filters to apply on various table attributes
 	FilterValues []ThingWithCompositeAttributesByNameBranchAndDateFilterValues
 	// FilterExpression is the filter expression to be applied to our fitlered attributes
-	// when referencing an attribute use :{attribute_name}
-	// ex: if the attribute is called "created_at" in its wag definition use :created_at
+	// when referencing an attribute use #ATTRIBUTE_NAME
+	// ex: if the attribute is called "created_at" in its wag definition use #CREATED_AT
 	// when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
 	// ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
 	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
@@ -1591,8 +1592,8 @@ type GetThingWithEnumHashKeysByBranchAndDateInput struct {
 	// Filters is an optional array of filters to apply on various table attributes
 	FilterValues []ThingWithEnumHashKeyByBranchAndDateFilterValues
 	// FilterExpression is the filter expression to be applied to our fitlered attributes
-	// when referencing an attribute use :{attribute_name}
-	// ex: if the attribute is called "created_at" in its wag definition use :created_at
+	// when referencing an attribute use #ATTRIBUTE_NAME
+	// ex: if the attribute is called "created_at" in its wag definition use #CREATED_AT
 	// when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
 	// ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
 	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
@@ -1702,8 +1703,8 @@ type GetThingWithMatchingKeyssByBearAndAssocTypeIDInput struct {
 	// Filters is an optional array of filters to apply on various table attributes
 	FilterValues []ThingWithMatchingKeysByBearAndAssocTypeIDFilterValues
 	// FilterExpression is the filter expression to be applied to our fitlered attributes
-	// when referencing an attribute use :{attribute_name}
-	// ex: if the attribute is called "created_at" in its wag definition use :created_at
+	// when referencing an attribute use #ATTRIBUTE_NAME
+	// ex: if the attribute is called "created_at" in its wag definition use #CREATED_AT
 	// when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
 	// ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
 	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions

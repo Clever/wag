@@ -231,6 +231,20 @@ func (t ThingWithCompositeAttributesTable) scanThingWithCompositeAttributess(ctx
 	return err
 }
 
+func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNameBranchAndDateParseFilters(queryInput *dynamodb.QueryInput, input db.GetThingWithCompositeAttributessByNameBranchAndDateInput) {
+	for _, filterValue := range input.FilterValues {
+		switch filterValue.AttributeName {
+		case db.ThingWithCompositeAttributesVersion:
+			queryInput.ExpressionAttributeNames["#VERSION"] = aws.String(string(db.ThingWithCompositeAttributesVersion))
+			for i, attributeValue := range filterValue.AttributeValues {
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithCompositeAttributesVersion), i)] = &dynamodb.AttributeValue{
+					N: aws.String(fmt.Sprint(attributeValue.(int64))),
+				}
+			}
+		}
+	}
+}
+
 func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input db.GetThingWithCompositeAttributessByNameBranchAndDateInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error {
 	if input.DateStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.DateStartingAt or input.StartingAfter")
@@ -280,11 +294,16 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 			},
 		}
 	}
+	if len(input.FilterValues) > 0 && input.FilterExpression != "" {
+		t.getThingWithCompositeAttributessByNameBranchAndDateParseFilters(queryInput, input)
+		queryInput.FilterExpression = aws.String(input.FilterExpression)
+	}
 
 	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
-		if len(queryOutput.Items) == 0 {
+		// Only assume an empty page means no more results if there are no filters applied
+		if (len(input.FilterValues) == 0 || input.FilterExpression == "") && len(queryOutput.Items) == 0 {
 			return false
 		}
 		items, err := decodeThingWithCompositeAttributess(queryOutput.Items)
