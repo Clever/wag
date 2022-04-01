@@ -315,13 +315,6 @@ func (t ThingTable) scanThings(ctx context.Context, input db.ScanThingsInput, fn
 func (t ThingTable) getThingsByNameAndVersionParseFilters(queryInput *dynamodb.QueryInput, input db.GetThingsByNameAndVersionInput) {
 	for _, filterValue := range input.FilterValues {
 		switch filterValue.AttributeName {
-		case db.ThingCreatedAt:
-			queryInput.ExpressionAttributeNames["#CREATEDAT"] = aws.String(string(db.ThingCreatedAt))
-			for i, attributeValue := range filterValue.AttributeValues {
-				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingCreatedAt), i)] = &dynamodb.AttributeValue{
-					S: aws.String(toDynamoTimeString(attributeValue.(strfmt.DateTime))),
-				}
-			}
 		case db.ThingHashNullable:
 			queryInput.ExpressionAttributeNames["#HASHNULLABLE"] = aws.String(string(db.ThingHashNullable))
 			for i, attributeValue := range filterValue.AttributeValues {
@@ -340,6 +333,13 @@ func (t ThingTable) getThingsByNameAndVersionParseFilters(queryInput *dynamodb.Q
 			queryInput.ExpressionAttributeNames["#RANGENULLABLE"] = aws.String(string(db.ThingRangeNullable))
 			for i, attributeValue := range filterValue.AttributeValues {
 				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingRangeNullable), i)] = &dynamodb.AttributeValue{
+					S: aws.String(toDynamoTimeString(attributeValue.(strfmt.DateTime))),
+				}
+			}
+		case db.ThingCreatedAt:
+			queryInput.ExpressionAttributeNames["#CREATEDAT"] = aws.String(string(db.ThingCreatedAt))
+			for i, attributeValue := range filterValue.AttributeValues {
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingCreatedAt), i)] = &dynamodb.AttributeValue{
 					S: aws.String(toDynamoTimeString(attributeValue.(strfmt.DateTime))),
 				}
 			}

@@ -3,6 +3,7 @@ package tests
 import (
 	"context"
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
 	"testing"
 	"time"
 
@@ -2648,19 +2649,19 @@ func GetTeacherSharingRulesByTeacherAndSchoolApp(d db.Interface, t *testing.T) f
 			Teacher:  "string1",
 			School:   "string1",
 			App:      "string1",
-			District: "district",
+			District: "district0",
 		}))
 		require.Nil(t, d.SaveTeacherSharingRule(ctx, models.TeacherSharingRule{
 			Teacher:  "string1",
 			School:   "string2",
 			App:      "string2",
-			District: "district",
+			District: "district1",
 		}))
 		require.Nil(t, d.SaveTeacherSharingRule(ctx, models.TeacherSharingRule{
 			Teacher:  "string1",
 			School:   "string3",
 			App:      "string3",
-			District: "district",
+			District: "district2",
 		}))
 		limit := int64(3)
 		tests := []getTeacherSharingRulesByTeacherAndSchoolAppTest{
@@ -2680,19 +2681,19 @@ func GetTeacherSharingRulesByTeacherAndSchoolApp(d db.Interface, t *testing.T) f
 							Teacher:  "string1",
 							School:   "string1",
 							App:      "string1",
-							District: "district",
+							District: "district0",
 						},
 						models.TeacherSharingRule{
 							Teacher:  "string1",
 							School:   "string2",
 							App:      "string2",
-							District: "district",
+							District: "district1",
 						},
 						models.TeacherSharingRule{
 							Teacher:  "string1",
 							School:   "string3",
 							App:      "string3",
-							District: "district",
+							District: "district2",
 						},
 					},
 					err: nil,
@@ -2714,19 +2715,19 @@ func GetTeacherSharingRulesByTeacherAndSchoolApp(d db.Interface, t *testing.T) f
 							Teacher:  "string1",
 							School:   "string3",
 							App:      "string3",
-							District: "district",
+							District: "district2",
 						},
 						models.TeacherSharingRule{
 							Teacher:  "string1",
 							School:   "string2",
 							App:      "string2",
-							District: "district",
+							District: "district1",
 						},
 						models.TeacherSharingRule{
 							Teacher:  "string1",
 							School:   "string1",
 							App:      "string1",
-							District: "district",
+							District: "district0",
 						},
 					},
 					err: nil,
@@ -2743,7 +2744,7 @@ func GetTeacherSharingRulesByTeacherAndSchoolApp(d db.Interface, t *testing.T) f
 							Teacher:  "string1",
 							School:   "string1",
 							App:      "string1",
-							District: "district",
+							District: "district0",
 						},
 					},
 				},
@@ -2753,13 +2754,13 @@ func GetTeacherSharingRulesByTeacherAndSchoolApp(d db.Interface, t *testing.T) f
 							Teacher:  "string1",
 							School:   "string2",
 							App:      "string2",
-							District: "district",
+							District: "district1",
 						},
 						models.TeacherSharingRule{
 							Teacher:  "string1",
 							School:   "string3",
 							App:      "string3",
-							District: "district",
+							District: "district2",
 						},
 					},
 					err: nil,
@@ -2776,7 +2777,7 @@ func GetTeacherSharingRulesByTeacherAndSchoolApp(d db.Interface, t *testing.T) f
 							Teacher:  "string1",
 							School:   "string3",
 							App:      "string3",
-							District: "district",
+							District: "district2",
 						},
 						Descending: true,
 					},
@@ -2787,13 +2788,13 @@ func GetTeacherSharingRulesByTeacherAndSchoolApp(d db.Interface, t *testing.T) f
 							Teacher:  "string1",
 							School:   "string2",
 							App:      "string2",
-							District: "district",
+							District: "district1",
 						},
 						models.TeacherSharingRule{
 							Teacher:  "string1",
 							School:   "string1",
 							App:      "string1",
-							District: "district",
+							District: "district0",
 						},
 					},
 					err: nil,
@@ -2818,13 +2819,42 @@ func GetTeacherSharingRulesByTeacherAndSchoolApp(d db.Interface, t *testing.T) f
 							Teacher:  "string1",
 							School:   "string2",
 							App:      "string2",
-							District: "district",
+							District: "district1",
 						},
 						models.TeacherSharingRule{
 							Teacher:  "string1",
 							School:   "string3",
 							App:      "string3",
-							District: "district",
+							District: "district2",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "filtering",
+				d:        d,
+				input: getTeacherSharingRulesByTeacherAndSchoolAppInput{
+					ctx: context.Background(),
+					input: db.GetTeacherSharingRulesByTeacherAndSchoolAppInput{
+						Teacher: "string1",
+						FilterValues: []db.TeacherSharingRuleByTeacherAndSchoolAppFilterValues{
+							db.TeacherSharingRuleByTeacherAndSchoolAppFilterValues{
+								AttributeName:   db.TeacherSharingRuleDistrict,
+								AttributeValues: []interface{}{"district0"},
+							},
+						},
+						FilterExpression: "#DISTRICT = :district_value0",
+						Limit:            &limit,
+					},
+				},
+				output: getTeacherSharingRulesByTeacherAndSchoolAppOutput{
+					teacherSharingRules: []models.TeacherSharingRule{
+						models.TeacherSharingRule{
+							Teacher:  "string1",
+							School:   "string1",
+							App:      "string1",
+							District: "district0",
 						},
 					},
 					err: nil,
@@ -2920,7 +2950,7 @@ func ScanTeacherSharingRules(d db.Interface, t *testing.T) func(t *testing.T) {
 					// must specify non-empty string values for attributes
 					// in secondary indexes, since dynamodb doesn't support
 					// empty strings:
-					District: firstItem.District,
+					District: "district",
 				},
 			}
 			actual := []models.TeacherSharingRule{}
@@ -5489,16 +5519,19 @@ func GetThingWithAdditionalAttributessByNameAndVersion(d db.Interface, t *testin
 	return func(t *testing.T) {
 		ctx := context.Background()
 		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
-			Name:    "string1",
-			Version: 1,
+			Name:                 "string1",
+			Version:              1,
+			AdditionalSAttribute: aws.String("additionalSAttribute0"),
 		}))
 		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
-			Name:    "string1",
-			Version: 2,
+			Name:                 "string1",
+			Version:              2,
+			AdditionalSAttribute: aws.String("additionalSAttribute1"),
 		}))
 		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
-			Name:    "string1",
-			Version: 3,
+			Name:                 "string1",
+			Version:              3,
+			AdditionalSAttribute: aws.String("additionalSAttribute2"),
 		}))
 		limit := int64(3)
 		tests := []getThingWithAdditionalAttributessByNameAndVersionTest{
@@ -5515,16 +5548,19 @@ func GetThingWithAdditionalAttributessByNameAndVersion(d db.Interface, t *testin
 				output: getThingWithAdditionalAttributessByNameAndVersionOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
 						models.ThingWithAdditionalAttributes{
-							Name:    "string1",
-							Version: 1,
+							Name:                 "string1",
+							Version:              1,
+							AdditionalSAttribute: aws.String("additionalSAttribute0"),
 						},
 						models.ThingWithAdditionalAttributes{
-							Name:    "string1",
-							Version: 2,
+							Name:                 "string1",
+							Version:              2,
+							AdditionalSAttribute: aws.String("additionalSAttribute1"),
 						},
 						models.ThingWithAdditionalAttributes{
-							Name:    "string1",
-							Version: 3,
+							Name:                 "string1",
+							Version:              3,
+							AdditionalSAttribute: aws.String("additionalSAttribute2"),
 						},
 					},
 					err: nil,
@@ -5543,16 +5579,19 @@ func GetThingWithAdditionalAttributessByNameAndVersion(d db.Interface, t *testin
 				output: getThingWithAdditionalAttributessByNameAndVersionOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
 						models.ThingWithAdditionalAttributes{
-							Name:    "string1",
-							Version: 3,
+							Name:                 "string1",
+							Version:              3,
+							AdditionalSAttribute: aws.String("additionalSAttribute2"),
 						},
 						models.ThingWithAdditionalAttributes{
-							Name:    "string1",
-							Version: 2,
+							Name:                 "string1",
+							Version:              2,
+							AdditionalSAttribute: aws.String("additionalSAttribute1"),
 						},
 						models.ThingWithAdditionalAttributes{
-							Name:    "string1",
-							Version: 1,
+							Name:                 "string1",
+							Version:              1,
+							AdditionalSAttribute: aws.String("additionalSAttribute0"),
 						},
 					},
 					err: nil,
@@ -5566,20 +5605,23 @@ func GetThingWithAdditionalAttributessByNameAndVersion(d db.Interface, t *testin
 					input: db.GetThingWithAdditionalAttributessByNameAndVersionInput{
 						Name: "string1",
 						StartingAfter: &models.ThingWithAdditionalAttributes{
-							Name:    "string1",
-							Version: 1,
+							Name:                 "string1",
+							Version:              1,
+							AdditionalSAttribute: aws.String("additionalSAttribute0"),
 						},
 					},
 				},
 				output: getThingWithAdditionalAttributessByNameAndVersionOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
 						models.ThingWithAdditionalAttributes{
-							Name:    "string1",
-							Version: 2,
+							Name:                 "string1",
+							Version:              2,
+							AdditionalSAttribute: aws.String("additionalSAttribute1"),
 						},
 						models.ThingWithAdditionalAttributes{
-							Name:    "string1",
-							Version: 3,
+							Name:                 "string1",
+							Version:              3,
+							AdditionalSAttribute: aws.String("additionalSAttribute2"),
 						},
 					},
 					err: nil,
@@ -5593,8 +5635,9 @@ func GetThingWithAdditionalAttributessByNameAndVersion(d db.Interface, t *testin
 					input: db.GetThingWithAdditionalAttributessByNameAndVersionInput{
 						Name: "string1",
 						StartingAfter: &models.ThingWithAdditionalAttributes{
-							Name:    "string1",
-							Version: 3,
+							Name:                 "string1",
+							Version:              3,
+							AdditionalSAttribute: aws.String("additionalSAttribute2"),
 						},
 						Descending: true,
 					},
@@ -5602,12 +5645,14 @@ func GetThingWithAdditionalAttributessByNameAndVersion(d db.Interface, t *testin
 				output: getThingWithAdditionalAttributessByNameAndVersionOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
 						models.ThingWithAdditionalAttributes{
-							Name:    "string1",
-							Version: 2,
+							Name:                 "string1",
+							Version:              2,
+							AdditionalSAttribute: aws.String("additionalSAttribute1"),
 						},
 						models.ThingWithAdditionalAttributes{
-							Name:    "string1",
-							Version: 1,
+							Name:                 "string1",
+							Version:              1,
+							AdditionalSAttribute: aws.String("additionalSAttribute0"),
 						},
 					},
 					err: nil,
@@ -5626,12 +5671,42 @@ func GetThingWithAdditionalAttributessByNameAndVersion(d db.Interface, t *testin
 				output: getThingWithAdditionalAttributessByNameAndVersionOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
 						models.ThingWithAdditionalAttributes{
-							Name:    "string1",
-							Version: 2,
+							Name:                 "string1",
+							Version:              2,
+							AdditionalSAttribute: aws.String("additionalSAttribute1"),
 						},
 						models.ThingWithAdditionalAttributes{
-							Name:    "string1",
-							Version: 3,
+							Name:                 "string1",
+							Version:              3,
+							AdditionalSAttribute: aws.String("additionalSAttribute2"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "filtering",
+				d:        d,
+				input: getThingWithAdditionalAttributessByNameAndVersionInput{
+					ctx: context.Background(),
+					input: db.GetThingWithAdditionalAttributessByNameAndVersionInput{
+						Name: "string1",
+						FilterValues: []db.ThingWithAdditionalAttributesByNameAndVersionFilterValues{
+							db.ThingWithAdditionalAttributesByNameAndVersionFilterValues{
+								AttributeName:   db.ThingWithAdditionalAttributesAdditionalSAttribute,
+								AttributeValues: []interface{}{"additionalSAttribute0"},
+							},
+						},
+						FilterExpression: "#ADDITIONALSATTRIBUTE = :additionalSAttribute_value0",
+						Limit:            &limit,
+					},
+				},
+				output: getThingWithAdditionalAttributessByNameAndVersionOutput{
+					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
+						models.ThingWithAdditionalAttributes{
+							Name:                 "string1",
+							Version:              1,
+							AdditionalSAttribute: aws.String("additionalSAttribute0"),
 						},
 					},
 					err: nil,
@@ -5753,6 +5828,10 @@ func ScanThingWithAdditionalAttributess(d db.Interface, t *testing.T) func(t *te
 				StartingAfter: &models.ThingWithAdditionalAttributes{
 					Name:    firstItem.Name,
 					Version: firstItem.Version,
+					// must specify non-empty string values for attributes
+					// in secondary indexes, since dynamodb doesn't support
+					// empty strings:
+					AdditionalSAttribute: aws.String("additionalSAttribute"),
 				},
 			}
 			actual := []models.ThingWithAdditionalAttributes{}
@@ -11051,8 +11130,8 @@ func ScanThingWithRequiredCompositePropertiesAndKeysOnlys(d db.Interface, t *tes
 					// must specify non-empty string values for attributes
 					// in secondary indexes, since dynamodb doesn't support
 					// empty strings:
-					PropertyOne: firstItem.PropertyOne,
-					PropertyTwo: firstItem.PropertyTwo,
+					PropertyOne: aws.String("propertyOne"),
+					PropertyTwo: aws.String("propertyTwo"),
 				},
 			}
 			actual := []models.ThingWithRequiredCompositePropertiesAndKeysOnly{}

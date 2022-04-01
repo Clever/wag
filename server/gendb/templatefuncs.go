@@ -336,6 +336,13 @@ var funcMap = template.FuncMap(map[string]interface{}{
 				secondaryStringAttributes = append(secondaryStringAttributes, attrName)
 			}
 		}
+		for _, additionalProperty := range config.DynamoDB.AttributesDefinitions {
+			if dynamoDBTypeForAttribute(config, additionalProperty.AttributeName) != "S" {
+				// only care about string properties
+				continue
+			}
+			secondaryStringAttributes = append(secondaryStringAttributes, additionalProperty.AttributeName)
+		}
 		pkAttributes := modelAttributeNamesForIndex(config, config.DynamoDB.KeySchema)
 		return difference(secondaryStringAttributes, pkAttributes)
 	},

@@ -315,39 +315,11 @@ func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributess(c
 func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByNameAndVersionParseFilters(queryInput *dynamodb.QueryInput, input db.GetThingWithAdditionalAttributessByNameAndVersionInput) {
 	for _, filterValue := range input.FilterValues {
 		switch filterValue.AttributeName {
-		case db.ThingWithAdditionalAttributesRangeNullable:
-			queryInput.ExpressionAttributeNames["#RANGENULLABLE"] = aws.String(string(db.ThingWithAdditionalAttributesRangeNullable))
-			for i, attributeValue := range filterValue.AttributeValues {
-				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesRangeNullable), i)] = &dynamodb.AttributeValue{
-					S: aws.String(toDynamoTimeString(attributeValue.(strfmt.DateTime))),
-				}
-			}
 		case db.ThingWithAdditionalAttributesAdditionalBAttribute:
 			queryInput.ExpressionAttributeNames["#ADDITIONALBATTRIBUTE"] = aws.String(string(db.ThingWithAdditionalAttributesAdditionalBAttribute))
 			for i, attributeValue := range filterValue.AttributeValues {
 				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesAdditionalBAttribute), i)] = &dynamodb.AttributeValue{
 					B: attributeValue.([]byte),
-				}
-			}
-		case db.ThingWithAdditionalAttributesCreatedAt:
-			queryInput.ExpressionAttributeNames["#CREATEDAT"] = aws.String(string(db.ThingWithAdditionalAttributesCreatedAt))
-			for i, attributeValue := range filterValue.AttributeValues {
-				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesCreatedAt), i)] = &dynamodb.AttributeValue{
-					S: aws.String(toDynamoTimeString(attributeValue.(strfmt.DateTime))),
-				}
-			}
-		case db.ThingWithAdditionalAttributesID:
-			queryInput.ExpressionAttributeNames["#ID"] = aws.String(string(db.ThingWithAdditionalAttributesID))
-			for i, attributeValue := range filterValue.AttributeValues {
-				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesID), i)] = &dynamodb.AttributeValue{
-					S: aws.String(attributeValue.(string)),
-				}
-			}
-		case db.ThingWithAdditionalAttributesAdditionalNAttribute:
-			queryInput.ExpressionAttributeNames["#ADDITIONALNATTRIBUTE"] = aws.String(string(db.ThingWithAdditionalAttributesAdditionalNAttribute))
-			for i, attributeValue := range filterValue.AttributeValues {
-				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesAdditionalNAttribute), i)] = &dynamodb.AttributeValue{
-					N: aws.String(fmt.Sprint(attributeValue.(int64))),
 				}
 			}
 		case db.ThingWithAdditionalAttributesAdditionalSAttribute:
@@ -357,10 +329,38 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 					S: aws.String(attributeValue.(string)),
 				}
 			}
+		case db.ThingWithAdditionalAttributesRangeNullable:
+			queryInput.ExpressionAttributeNames["#RANGENULLABLE"] = aws.String(string(db.ThingWithAdditionalAttributesRangeNullable))
+			for i, attributeValue := range filterValue.AttributeValues {
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesRangeNullable), i)] = &dynamodb.AttributeValue{
+					S: aws.String(toDynamoTimeString(attributeValue.(strfmt.DateTime))),
+				}
+			}
+		case db.ThingWithAdditionalAttributesAdditionalNAttribute:
+			queryInput.ExpressionAttributeNames["#ADDITIONALNATTRIBUTE"] = aws.String(string(db.ThingWithAdditionalAttributesAdditionalNAttribute))
+			for i, attributeValue := range filterValue.AttributeValues {
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesAdditionalNAttribute), i)] = &dynamodb.AttributeValue{
+					N: aws.String(fmt.Sprint(attributeValue.(int64))),
+				}
+			}
+		case db.ThingWithAdditionalAttributesCreatedAt:
+			queryInput.ExpressionAttributeNames["#CREATEDAT"] = aws.String(string(db.ThingWithAdditionalAttributesCreatedAt))
+			for i, attributeValue := range filterValue.AttributeValues {
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesCreatedAt), i)] = &dynamodb.AttributeValue{
+					S: aws.String(toDynamoTimeString(attributeValue.(strfmt.DateTime))),
+				}
+			}
 		case db.ThingWithAdditionalAttributesHashNullable:
 			queryInput.ExpressionAttributeNames["#HASHNULLABLE"] = aws.String(string(db.ThingWithAdditionalAttributesHashNullable))
 			for i, attributeValue := range filterValue.AttributeValues {
 				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesHashNullable), i)] = &dynamodb.AttributeValue{
+					S: aws.String(attributeValue.(string)),
+				}
+			}
+		case db.ThingWithAdditionalAttributesID:
+			queryInput.ExpressionAttributeNames["#ID"] = aws.String(string(db.ThingWithAdditionalAttributesID))
+			for i, attributeValue := range filterValue.AttributeValues {
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesID), i)] = &dynamodb.AttributeValue{
 					S: aws.String(attributeValue.(string)),
 				}
 			}
