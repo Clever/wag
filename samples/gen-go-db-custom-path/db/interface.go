@@ -801,10 +801,10 @@ type ScanThingsInput struct {
 // ThingByNameAndVersionFilterableAttribute represents the fields we can apply filters to for queries on this index
 type ThingByNameAndVersionFilterableAttribute string
 
-const ThingRangeNullable ThingByNameAndVersionFilterableAttribute = "rangeNullable"
 const ThingCreatedAt ThingByNameAndVersionFilterableAttribute = "createdAt"
 const ThingHashNullable ThingByNameAndVersionFilterableAttribute = "hashNullable"
 const ThingID ThingByNameAndVersionFilterableAttribute = "id"
+const ThingRangeNullable ThingByNameAndVersionFilterableAttribute = "rangeNullable"
 
 // ThingByNameAndVersionFilter represents a filter on a particular field to be included in the query
 type ThingByNameAndVersionFilterValues struct {
@@ -1106,13 +1106,13 @@ type ScanThingWithAdditionalAttributessInput struct {
 // ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute represents the fields we can apply filters to for queries on this index
 type ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute string
 
-const ThingWithAdditionalAttributesHashNullable ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "hashNullable"
 const ThingWithAdditionalAttributesRangeNullable ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "rangeNullable"
+const ThingWithAdditionalAttributesAdditionalBAttribute ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "additionalBAttribute"
 const ThingWithAdditionalAttributesCreatedAt ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "createdAt"
+const ThingWithAdditionalAttributesID ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "id"
 const ThingWithAdditionalAttributesAdditionalNAttribute ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "additionalNAttribute"
 const ThingWithAdditionalAttributesAdditionalSAttribute ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "additionalSAttribute"
-const ThingWithAdditionalAttributesID ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "id"
-const ThingWithAdditionalAttributesAdditionalBAttribute ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "additionalBAttribute"
+const ThingWithAdditionalAttributesHashNullable ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "hashNullable"
 
 // ThingWithAdditionalAttributesByNameAndVersionFilter represents a filter on a particular field to be included in the query
 type ThingWithAdditionalAttributesByNameAndVersionFilterValues struct {
