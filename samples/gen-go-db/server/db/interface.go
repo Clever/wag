@@ -327,7 +327,7 @@ type DeploymentByEnvAppAndVersionFilterableAttribute string
 
 const DeploymentDate DeploymentByEnvAppAndVersionFilterableAttribute = "date"
 
-// DeploymentByEnvAppAndVersionFilter represents a filter on a particular field to be included in the query
+// DeploymentByEnvAppAndVersionFilterValues represents a filter on a particular field to be included in the query
 type DeploymentByEnvAppAndVersionFilterValues struct {
 	// AttributeName is the attibute we are attempting to apply the filter to
 	AttributeName DeploymentByEnvAppAndVersionFilterableAttribute
@@ -349,7 +349,7 @@ type GetDeploymentsByEnvAppAndVersionInput struct {
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
-	// Filters is an optional array of filters to apply on various table attributes
+	// FilterValues is an optional array of filters to apply on various table attributes
 	FilterValues []DeploymentByEnvAppAndVersionFilterValues
 	// FilterExpression is the filter expression to be applied to our fitlered attributes
 	// when referencing an attribute use #ATTRIBUTE_NAME
@@ -479,7 +479,7 @@ type EventByPkAndSkFilterableAttribute string
 
 const EventData EventByPkAndSkFilterableAttribute = "data"
 
-// EventByPkAndSkFilter represents a filter on a particular field to be included in the query
+// EventByPkAndSkFilterValues represents a filter on a particular field to be included in the query
 type EventByPkAndSkFilterValues struct {
 	// AttributeName is the attibute we are attempting to apply the filter to
 	AttributeName EventByPkAndSkFilterableAttribute
@@ -499,7 +499,7 @@ type GetEventsByPkAndSkInput struct {
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
-	// Filters is an optional array of filters to apply on various table attributes
+	// FilterValues is an optional array of filters to apply on various table attributes
 	FilterValues []EventByPkAndSkFilterValues
 	// FilterExpression is the filter expression to be applied to our fitlered attributes
 	// when referencing an attribute use #ATTRIBUTE_NAME
@@ -689,7 +689,7 @@ type TeacherSharingRuleByTeacherAndSchoolAppFilterableAttribute string
 
 const TeacherSharingRuleDistrict TeacherSharingRuleByTeacherAndSchoolAppFilterableAttribute = "district"
 
-// TeacherSharingRuleByTeacherAndSchoolAppFilter represents a filter on a particular field to be included in the query
+// TeacherSharingRuleByTeacherAndSchoolAppFilterValues represents a filter on a particular field to be included in the query
 type TeacherSharingRuleByTeacherAndSchoolAppFilterValues struct {
 	// AttributeName is the attibute we are attempting to apply the filter to
 	AttributeName TeacherSharingRuleByTeacherAndSchoolAppFilterableAttribute
@@ -709,7 +709,7 @@ type GetTeacherSharingRulesByTeacherAndSchoolAppInput struct {
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
-	// Filters is an optional array of filters to apply on various table attributes
+	// FilterValues is an optional array of filters to apply on various table attributes
 	FilterValues []TeacherSharingRuleByTeacherAndSchoolAppFilterValues
 	// FilterExpression is the filter expression to be applied to our fitlered attributes
 	// when referencing an attribute use #ATTRIBUTE_NAME
@@ -801,12 +801,12 @@ type ScanThingsInput struct {
 // ThingByNameAndVersionFilterableAttribute represents the fields we can apply filters to for queries on this index
 type ThingByNameAndVersionFilterableAttribute string
 
-const ThingID ThingByNameAndVersionFilterableAttribute = "id"
-const ThingRangeNullable ThingByNameAndVersionFilterableAttribute = "rangeNullable"
 const ThingCreatedAt ThingByNameAndVersionFilterableAttribute = "createdAt"
 const ThingHashNullable ThingByNameAndVersionFilterableAttribute = "hashNullable"
+const ThingID ThingByNameAndVersionFilterableAttribute = "id"
+const ThingRangeNullable ThingByNameAndVersionFilterableAttribute = "rangeNullable"
 
-// ThingByNameAndVersionFilter represents a filter on a particular field to be included in the query
+// ThingByNameAndVersionFilterValues represents a filter on a particular field to be included in the query
 type ThingByNameAndVersionFilterValues struct {
 	// AttributeName is the attibute we are attempting to apply the filter to
 	AttributeName ThingByNameAndVersionFilterableAttribute
@@ -826,7 +826,7 @@ type GetThingsByNameAndVersionInput struct {
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
-	// Filters is an optional array of filters to apply on various table attributes
+	// FilterValues is an optional array of filters to apply on various table attributes
 	FilterValues []ThingByNameAndVersionFilterValues
 	// FilterExpression is the filter expression to be applied to our fitlered attributes
 	// when referencing an attribute use #ATTRIBUTE_NAME
@@ -1106,15 +1106,15 @@ type ScanThingWithAdditionalAttributessInput struct {
 // ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute represents the fields we can apply filters to for queries on this index
 type ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute string
 
-const ThingWithAdditionalAttributesRangeNullable ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "rangeNullable"
+const ThingWithAdditionalAttributesCreatedAt ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "createdAt"
 const ThingWithAdditionalAttributesHashNullable ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "hashNullable"
+const ThingWithAdditionalAttributesID ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "id"
+const ThingWithAdditionalAttributesRangeNullable ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "rangeNullable"
+const ThingWithAdditionalAttributesAdditionalBAttribute ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "additionalBAttribute"
 const ThingWithAdditionalAttributesAdditionalNAttribute ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "additionalNAttribute"
 const ThingWithAdditionalAttributesAdditionalSAttribute ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "additionalSAttribute"
-const ThingWithAdditionalAttributesCreatedAt ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "createdAt"
-const ThingWithAdditionalAttributesID ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "id"
-const ThingWithAdditionalAttributesAdditionalBAttribute ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "additionalBAttribute"
 
-// ThingWithAdditionalAttributesByNameAndVersionFilter represents a filter on a particular field to be included in the query
+// ThingWithAdditionalAttributesByNameAndVersionFilterValues represents a filter on a particular field to be included in the query
 type ThingWithAdditionalAttributesByNameAndVersionFilterValues struct {
 	// AttributeName is the attibute we are attempting to apply the filter to
 	AttributeName ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute
@@ -1134,7 +1134,7 @@ type GetThingWithAdditionalAttributessByNameAndVersionInput struct {
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
-	// Filters is an optional array of filters to apply on various table attributes
+	// FilterValues is an optional array of filters to apply on various table attributes
 	FilterValues []ThingWithAdditionalAttributesByNameAndVersionFilterValues
 	// FilterExpression is the filter expression to be applied to our fitlered attributes
 	// when referencing an attribute use #ATTRIBUTE_NAME
@@ -1309,7 +1309,7 @@ type ThingWithCompositeAttributesByNameBranchAndDateFilterableAttribute string
 
 const ThingWithCompositeAttributesVersion ThingWithCompositeAttributesByNameBranchAndDateFilterableAttribute = "version"
 
-// ThingWithCompositeAttributesByNameBranchAndDateFilter represents a filter on a particular field to be included in the query
+// ThingWithCompositeAttributesByNameBranchAndDateFilterValues represents a filter on a particular field to be included in the query
 type ThingWithCompositeAttributesByNameBranchAndDateFilterValues struct {
 	// AttributeName is the attibute we are attempting to apply the filter to
 	AttributeName ThingWithCompositeAttributesByNameBranchAndDateFilterableAttribute
@@ -1331,7 +1331,7 @@ type GetThingWithCompositeAttributessByNameBranchAndDateInput struct {
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
-	// Filters is an optional array of filters to apply on various table attributes
+	// FilterValues is an optional array of filters to apply on various table attributes
 	FilterValues []ThingWithCompositeAttributesByNameBranchAndDateFilterValues
 	// FilterExpression is the filter expression to be applied to our fitlered attributes
 	// when referencing an attribute use #ATTRIBUTE_NAME
@@ -1569,7 +1569,7 @@ type ThingWithEnumHashKeyByBranchAndDateFilterableAttribute string
 
 const ThingWithEnumHashKeyDate2 ThingWithEnumHashKeyByBranchAndDateFilterableAttribute = "date2"
 
-// ThingWithEnumHashKeyByBranchAndDateFilter represents a filter on a particular field to be included in the query
+// ThingWithEnumHashKeyByBranchAndDateFilterValues represents a filter on a particular field to be included in the query
 type ThingWithEnumHashKeyByBranchAndDateFilterValues struct {
 	// AttributeName is the attibute we are attempting to apply the filter to
 	AttributeName ThingWithEnumHashKeyByBranchAndDateFilterableAttribute
@@ -1589,7 +1589,7 @@ type GetThingWithEnumHashKeysByBranchAndDateInput struct {
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
-	// Filters is an optional array of filters to apply on various table attributes
+	// FilterValues is an optional array of filters to apply on various table attributes
 	FilterValues []ThingWithEnumHashKeyByBranchAndDateFilterValues
 	// FilterExpression is the filter expression to be applied to our fitlered attributes
 	// when referencing an attribute use #ATTRIBUTE_NAME
@@ -1680,7 +1680,7 @@ type ThingWithMatchingKeysByBearAndAssocTypeIDFilterableAttribute string
 
 const ThingWithMatchingKeysCreated ThingWithMatchingKeysByBearAndAssocTypeIDFilterableAttribute = "created"
 
-// ThingWithMatchingKeysByBearAndAssocTypeIDFilter represents a filter on a particular field to be included in the query
+// ThingWithMatchingKeysByBearAndAssocTypeIDFilterValues represents a filter on a particular field to be included in the query
 type ThingWithMatchingKeysByBearAndAssocTypeIDFilterValues struct {
 	// AttributeName is the attibute we are attempting to apply the filter to
 	AttributeName ThingWithMatchingKeysByBearAndAssocTypeIDFilterableAttribute
@@ -1700,7 +1700,7 @@ type GetThingWithMatchingKeyssByBearAndAssocTypeIDInput struct {
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
-	// Filters is an optional array of filters to apply on various table attributes
+	// FilterValues is an optional array of filters to apply on various table attributes
 	FilterValues []ThingWithMatchingKeysByBearAndAssocTypeIDFilterValues
 	// FilterExpression is the filter expression to be applied to our fitlered attributes
 	// when referencing an attribute use #ATTRIBUTE_NAME
