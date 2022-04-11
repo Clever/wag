@@ -6,7 +6,7 @@ require (
 	github.com/Clever/go-utils v0.0.0-20150501165843-abc25366fa8e
 	github.com/awslabs/goformation/v2 v2.3.1
 	github.com/go-openapi/errors v0.19.4
-	github.com/go-openapi/jsonreference v0.19.6
+	github.com/go-openapi/jsonreference v0.20.0
 	github.com/go-openapi/loads v0.19.7
 	github.com/go-openapi/spec v0.19.8
 	github.com/go-openapi/strfmt v0.19.5
@@ -18,6 +18,7 @@ require (
 	github.com/kevinburke/go-bindata v3.23.0+incompatible
 	github.com/pelletier/go-toml v1.9.1 // indirect
 	github.com/stretchr/testify v1.7.1
+	golang.org/x/text v0.3.6 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce
 )
 
