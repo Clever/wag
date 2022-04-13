@@ -205,6 +205,20 @@ func (t ThingWithMatchingKeysTable) scanThingWithMatchingKeyss(ctx context.Conte
 	return err
 }
 
+func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByBearAndAssocTypeIDParseFilters(queryInput *dynamodb.QueryInput, input db.GetThingWithMatchingKeyssByBearAndAssocTypeIDInput) {
+	for _, filterValue := range input.FilterValues {
+		switch filterValue.AttributeName {
+		case db.ThingWithMatchingKeysCreated:
+			queryInput.ExpressionAttributeNames["#CREATED"] = aws.String(string(db.ThingWithMatchingKeysCreated))
+			for i, attributeValue := range filterValue.AttributeValues {
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithMatchingKeysCreated), i)] = &dynamodb.AttributeValue{
+					S: aws.String(toDynamoTimeString(attributeValue.(strfmt.DateTime))),
+				}
+			}
+		}
+	}
+}
+
 func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByBearAndAssocTypeID(ctx context.Context, input db.GetThingWithMatchingKeyssByBearAndAssocTypeIDInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error {
 	if input.StartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of StartingAt or StartingAfter")
@@ -251,11 +265,16 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByBearAndAssocTypeI
 			},
 		}
 	}
+	if len(input.FilterValues) > 0 && input.FilterExpression != "" {
+		t.getThingWithMatchingKeyssByBearAndAssocTypeIDParseFilters(queryInput, input)
+		queryInput.FilterExpression = aws.String(input.FilterExpression)
+	}
 
 	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
-		if len(queryOutput.Items) == 0 {
+		// Only assume an empty page means no more results if there are no filters applied
+		if (len(input.FilterValues) == 0 || input.FilterExpression == "") && len(queryOutput.Items) == 0 {
 			return false
 		}
 		items, err := decodeThingWithMatchingKeyss(queryOutput.Items)

@@ -108,10 +108,27 @@ type Scan{{ $modelName }}sInput struct {
 {{- $indexName := indexName $xdbConfig.DynamoDB.KeySchema }}
 {{- $hashKey := index $xdbConfig.DynamoDB.KeySchema 0 }}
 {{- $pkModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
+{{- $nonIndexAttributeNames := nonIndexModelAttributeNames $xdbConfig $pkModelAttributeNames}}
+{{- $lenNonIndexAttributes := len $nonIndexAttributeNames }}
 {{- if indexHasRangeKey $xdbConfig.DynamoDB.KeySchema }}
 {{- $rangeKey := index $xdbConfig.DynamoDB.KeySchema 1 }}
 {{- $rangeKeyAttributes := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "RANGE" }}
 {{- $lenRangeKeyAttributes := len $rangeKeyAttributes }}
+{{- if gt $lenNonIndexAttributes 0 }}
+    // {{ $modelName }}By{{ $indexName }}FilterableAttribute represents the fields we can apply filters to for queries on this index
+    type {{ $modelName }}By{{ $indexName }}FilterableAttribute string
+    {{- range $attributeName := $nonIndexAttributeNames }}
+      const {{ $modelName }}{{ pascalize $attributeName }} {{ $modelName }}By{{ $indexName }}FilterableAttribute = "{{ $attributeName }}"
+    {{- end }}
+
+    // {{ $modelName }}By{{ $indexName }}FilterValues represents a filter on a particular field to be included in the query
+    type {{ $modelName }}By{{ $indexName }}FilterValues struct {
+      // AttributeName is the attibute we are attempting to apply the filter to
+      AttributeName {{ $modelName }}By{{ $indexName }}FilterableAttribute
+      // AttributeValues is an optional parameter to be used when we want to compare the attibute to a single value or multiple values
+      AttributeValues []interface{}
+    }
+{{- end }}  
 // Get{{ $modelName }}sBy{{ $indexName }}Input is the query input to Get{{ $modelName }}sBy{{ $indexName }}.
 type Get{{ $modelName }}sBy{{ $indexName }}Input struct {
   {{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
@@ -136,6 +153,18 @@ type Get{{ $modelName }}sBy{{ $indexName }}Input struct {
   DisableConsistentRead bool
   // Limit is an optional limit of how many items to evaluate.
 	Limit  *int64
+  {{- if gt $lenNonIndexAttributes 0 }}
+    // FilterValues is an optional array of filters to apply on various table attributes
+    FilterValues []{{ $modelName }}By{{ $indexName }}FilterValues
+    // FilterExpression is the filter expression to be applied to our fitlered attributes 
+    // when referencing an attribute use #ATTRIBUTE_NAME
+    // ex: if the attribute is called "created_at" in its wag definition use #CREATED_AT
+    // when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
+    // ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
+    // see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
+    // for guidance on building expressions
+    FilterExpression  string
+  {{- end }}  
 }
 {{- end }}
 

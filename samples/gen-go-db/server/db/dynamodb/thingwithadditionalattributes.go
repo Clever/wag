@@ -16,8 +16,8 @@ import (
 
 var _ = strfmt.DateTime{}
 
-// ThingTable represents the user-configurable properties of the Thing table.
-type ThingTable struct {
+// ThingWithAdditionalAttributesTable represents the user-configurable properties of the ThingWithAdditionalAttributes table.
+type ThingWithAdditionalAttributesTable struct {
 	DynamoDBAPI        dynamodbiface.DynamoDBAPI
 	Prefix             string
 	TableName          string
@@ -25,48 +25,48 @@ type ThingTable struct {
 	WriteCapacityUnits int64
 }
 
-// ddbThingPrimaryKey represents the primary key of a Thing in DynamoDB.
-type ddbThingPrimaryKey struct {
+// ddbThingWithAdditionalAttributesPrimaryKey represents the primary key of a ThingWithAdditionalAttributes in DynamoDB.
+type ddbThingWithAdditionalAttributesPrimaryKey struct {
 	Name    string `dynamodbav:"name"`
 	Version int64  `dynamodbav:"version"`
 }
 
-// ddbThingGSIThingID represents the thingID GSI.
-type ddbThingGSIThingID struct {
+// ddbThingWithAdditionalAttributesGSIThingID represents the thingID GSI.
+type ddbThingWithAdditionalAttributesGSIThingID struct {
 	ID string `dynamodbav:"id"`
 }
 
-// ddbThingGSINameCreatedAt represents the name-createdAt GSI.
-type ddbThingGSINameCreatedAt struct {
+// ddbThingWithAdditionalAttributesGSINameCreatedAt represents the name-createdAt GSI.
+type ddbThingWithAdditionalAttributesGSINameCreatedAt struct {
 	Name      string          `dynamodbav:"name"`
 	CreatedAt strfmt.DateTime `dynamodbav:"createdAt"`
 }
 
-// ddbThingGSINameRangeNullable represents the name-rangeNullable GSI.
-type ddbThingGSINameRangeNullable struct {
+// ddbThingWithAdditionalAttributesGSINameRangeNullable represents the name-rangeNullable GSI.
+type ddbThingWithAdditionalAttributesGSINameRangeNullable struct {
 	Name          string          `dynamodbav:"name"`
 	RangeNullable strfmt.DateTime `dynamodbav:"rangeNullable"`
 }
 
-// ddbThingGSINameHashNullable represents the name-hashNullable GSI.
-type ddbThingGSINameHashNullable struct {
+// ddbThingWithAdditionalAttributesGSINameHashNullable represents the name-hashNullable GSI.
+type ddbThingWithAdditionalAttributesGSINameHashNullable struct {
 	HashNullable string `dynamodbav:"hashNullable"`
 	Name         string `dynamodbav:"name"`
 }
 
-// ddbThing represents a Thing as stored in DynamoDB.
-type ddbThing struct {
-	models.Thing
+// ddbThingWithAdditionalAttributes represents a ThingWithAdditionalAttributes as stored in DynamoDB.
+type ddbThingWithAdditionalAttributes struct {
+	models.ThingWithAdditionalAttributes
 }
 
-func (t ThingTable) name() string {
+func (t ThingWithAdditionalAttributesTable) name() string {
 	if t.TableName != "" {
 		return t.TableName
 	}
-	return fmt.Sprintf("%s-things", t.Prefix)
+	return fmt.Sprintf("%s-thing-with-additional-attributess", t.Prefix)
 }
 
-func (t ThingTable) create(ctx context.Context) error {
+func (t ThingWithAdditionalAttributesTable) create(ctx context.Context) error {
 	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
 			{
@@ -193,8 +193,8 @@ func (t ThingTable) create(ctx context.Context) error {
 	return nil
 }
 
-func (t ThingTable) saveThing(ctx context.Context, m models.Thing) error {
-	data, err := encodeThing(m)
+func (t ThingWithAdditionalAttributesTable) saveThingWithAdditionalAttributes(ctx context.Context, m models.ThingWithAdditionalAttributes) error {
+	data, err := encodeThingWithAdditionalAttributes(m)
 	if err != nil {
 		return err
 	}
@@ -211,7 +211,7 @@ func (t ThingTable) saveThing(ctx context.Context, m models.Thing) error {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case dynamodb.ErrCodeConditionalCheckFailedException:
-				return db.ErrThingAlreadyExists{
+				return db.ErrThingWithAdditionalAttributesAlreadyExists{
 					Name:    m.Name,
 					Version: m.Version,
 				}
@@ -224,8 +224,8 @@ func (t ThingTable) saveThing(ctx context.Context, m models.Thing) error {
 	return nil
 }
 
-func (t ThingTable) getThing(ctx context.Context, name string, version int64) (*models.Thing, error) {
-	key, err := dynamodbattribute.MarshalMap(ddbThingPrimaryKey{
+func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributes(ctx context.Context, name string, version int64) (*models.ThingWithAdditionalAttributes, error) {
+	key, err := dynamodbattribute.MarshalMap(ddbThingWithAdditionalAttributesPrimaryKey{
 		Name:    name,
 		Version: version,
 	})
@@ -248,21 +248,21 @@ func (t ThingTable) getThing(ctx context.Context, name string, version int64) (*
 	}
 
 	if len(res.Item) == 0 {
-		return nil, db.ErrThingNotFound{
+		return nil, db.ErrThingWithAdditionalAttributesNotFound{
 			Name:    name,
 			Version: version,
 		}
 	}
 
-	var m models.Thing
-	if err := decodeThing(res.Item, &m); err != nil {
+	var m models.ThingWithAdditionalAttributes
+	if err := decodeThingWithAdditionalAttributes(res.Item, &m); err != nil {
 		return nil, err
 	}
 
 	return &m, nil
 }
 
-func (t ThingTable) scanThings(ctx context.Context, input db.ScanThingsInput, fn func(m *models.Thing, lastThing bool) bool) error {
+func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributess(ctx context.Context, input db.ScanThingWithAdditionalAttributessInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.name()),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -282,7 +282,7 @@ func (t ThingTable) scanThings(ctx context.Context, input db.ScanThingsInput, fn
 	totalRecordsProcessed := int64(0)
 	var innerErr error
 	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
-		items, err := decodeThings(out.Items)
+		items, err := decodeThingWithAdditionalAttributess(out.Items)
 		if err != nil {
 			innerErr = fmt.Errorf("error decoding %s", err.Error())
 			return false
@@ -312,42 +312,63 @@ func (t ThingTable) scanThings(ctx context.Context, input db.ScanThingsInput, fn
 	return err
 }
 
-func (t ThingTable) getThingsByNameAndVersionParseFilters(queryInput *dynamodb.QueryInput, input db.GetThingsByNameAndVersionInput) {
+func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByNameAndVersionParseFilters(queryInput *dynamodb.QueryInput, input db.GetThingWithAdditionalAttributessByNameAndVersionInput) {
 	for _, filterValue := range input.FilterValues {
 		switch filterValue.AttributeName {
-		case db.ThingHashNullable:
-			queryInput.ExpressionAttributeNames["#HASHNULLABLE"] = aws.String(string(db.ThingHashNullable))
+		case db.ThingWithAdditionalAttributesAdditionalNAttribute:
+			queryInput.ExpressionAttributeNames["#ADDITIONALNATTRIBUTE"] = aws.String(string(db.ThingWithAdditionalAttributesAdditionalNAttribute))
 			for i, attributeValue := range filterValue.AttributeValues {
-				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingHashNullable), i)] = &dynamodb.AttributeValue{
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesAdditionalNAttribute), i)] = &dynamodb.AttributeValue{
+					N: aws.String(fmt.Sprint(attributeValue.(int64))),
+				}
+			}
+		case db.ThingWithAdditionalAttributesAdditionalSAttribute:
+			queryInput.ExpressionAttributeNames["#ADDITIONALSATTRIBUTE"] = aws.String(string(db.ThingWithAdditionalAttributesAdditionalSAttribute))
+			for i, attributeValue := range filterValue.AttributeValues {
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesAdditionalSAttribute), i)] = &dynamodb.AttributeValue{
 					S: aws.String(attributeValue.(string)),
 				}
 			}
-		case db.ThingID:
-			queryInput.ExpressionAttributeNames["#ID"] = aws.String(string(db.ThingID))
+		case db.ThingWithAdditionalAttributesRangeNullable:
+			queryInput.ExpressionAttributeNames["#RANGENULLABLE"] = aws.String(string(db.ThingWithAdditionalAttributesRangeNullable))
 			for i, attributeValue := range filterValue.AttributeValues {
-				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingID), i)] = &dynamodb.AttributeValue{
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesRangeNullable), i)] = &dynamodb.AttributeValue{
+					S: aws.String(toDynamoTimeString(attributeValue.(strfmt.DateTime))),
+				}
+			}
+		case db.ThingWithAdditionalAttributesAdditionalBAttribute:
+			queryInput.ExpressionAttributeNames["#ADDITIONALBATTRIBUTE"] = aws.String(string(db.ThingWithAdditionalAttributesAdditionalBAttribute))
+			for i, attributeValue := range filterValue.AttributeValues {
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesAdditionalBAttribute), i)] = &dynamodb.AttributeValue{
+					B: attributeValue.([]byte),
+				}
+			}
+		case db.ThingWithAdditionalAttributesCreatedAt:
+			queryInput.ExpressionAttributeNames["#CREATEDAT"] = aws.String(string(db.ThingWithAdditionalAttributesCreatedAt))
+			for i, attributeValue := range filterValue.AttributeValues {
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesCreatedAt), i)] = &dynamodb.AttributeValue{
+					S: aws.String(toDynamoTimeString(attributeValue.(strfmt.DateTime))),
+				}
+			}
+		case db.ThingWithAdditionalAttributesHashNullable:
+			queryInput.ExpressionAttributeNames["#HASHNULLABLE"] = aws.String(string(db.ThingWithAdditionalAttributesHashNullable))
+			for i, attributeValue := range filterValue.AttributeValues {
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesHashNullable), i)] = &dynamodb.AttributeValue{
 					S: aws.String(attributeValue.(string)),
 				}
 			}
-		case db.ThingRangeNullable:
-			queryInput.ExpressionAttributeNames["#RANGENULLABLE"] = aws.String(string(db.ThingRangeNullable))
+		case db.ThingWithAdditionalAttributesID:
+			queryInput.ExpressionAttributeNames["#ID"] = aws.String(string(db.ThingWithAdditionalAttributesID))
 			for i, attributeValue := range filterValue.AttributeValues {
-				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingRangeNullable), i)] = &dynamodb.AttributeValue{
-					S: aws.String(toDynamoTimeString(attributeValue.(strfmt.DateTime))),
-				}
-			}
-		case db.ThingCreatedAt:
-			queryInput.ExpressionAttributeNames["#CREATEDAT"] = aws.String(string(db.ThingCreatedAt))
-			for i, attributeValue := range filterValue.AttributeValues {
-				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingCreatedAt), i)] = &dynamodb.AttributeValue{
-					S: aws.String(toDynamoTimeString(attributeValue.(strfmt.DateTime))),
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesID), i)] = &dynamodb.AttributeValue{
+					S: aws.String(attributeValue.(string)),
 				}
 			}
 		}
 	}
 }
 
-func (t ThingTable) getThingsByNameAndVersion(ctx context.Context, input db.GetThingsByNameAndVersionInput, fn func(m *models.Thing, lastThing bool) bool) error {
+func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByNameAndVersion(ctx context.Context, input db.GetThingWithAdditionalAttributessByNameAndVersionInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
 	if input.VersionStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.VersionStartingAt or input.StartingAfter")
 	}
@@ -394,7 +415,7 @@ func (t ThingTable) getThingsByNameAndVersion(ctx context.Context, input db.GetT
 		}
 	}
 	if len(input.FilterValues) > 0 && input.FilterExpression != "" {
-		t.getThingsByNameAndVersionParseFilters(queryInput, input)
+		t.getThingWithAdditionalAttributessByNameAndVersionParseFilters(queryInput, input)
 		queryInput.FilterExpression = aws.String(input.FilterExpression)
 	}
 
@@ -405,7 +426,7 @@ func (t ThingTable) getThingsByNameAndVersion(ctx context.Context, input db.GetT
 		if (len(input.FilterValues) == 0 || input.FilterExpression == "") && len(queryOutput.Items) == 0 {
 			return false
 		}
-		items, err := decodeThings(queryOutput.Items)
+		items, err := decodeThingWithAdditionalAttributess(queryOutput.Items)
 		if err != nil {
 			pageFnErr = err
 			return false
@@ -444,8 +465,8 @@ func (t ThingTable) getThingsByNameAndVersion(ctx context.Context, input db.GetT
 	return nil
 }
 
-func (t ThingTable) deleteThing(ctx context.Context, name string, version int64) error {
-	key, err := dynamodbattribute.MarshalMap(ddbThingPrimaryKey{
+func (t ThingWithAdditionalAttributesTable) deleteThingWithAdditionalAttributes(ctx context.Context, name string, version int64) error {
+	key, err := dynamodbattribute.MarshalMap(ddbThingWithAdditionalAttributesPrimaryKey{
 		Name:    name,
 		Version: version,
 	})
@@ -469,7 +490,7 @@ func (t ThingTable) deleteThing(ctx context.Context, name string, version int64)
 	return nil
 }
 
-func (t ThingTable) getThingByID(ctx context.Context, id string) (*models.Thing, error) {
+func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributesByID(ctx context.Context, id string) (*models.ThingWithAdditionalAttributes, error) {
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
 		IndexName: aws.String("thingID"),
@@ -495,16 +516,16 @@ func (t ThingTable) getThingByID(ctx context.Context, id string) (*models.Thing,
 		return nil, err
 	}
 	if len(queryOutput.Items) == 0 {
-		return nil, db.ErrThingByIDNotFound{ID: id}
+		return nil, db.ErrThingWithAdditionalAttributesByIDNotFound{ID: id}
 	}
 
-	var thing models.Thing
-	if err := decodeThing(queryOutput.Items[0], &thing); err != nil {
+	var thingWithAdditionalAttributes models.ThingWithAdditionalAttributes
+	if err := decodeThingWithAdditionalAttributes(queryOutput.Items[0], &thingWithAdditionalAttributes); err != nil {
 		return nil, err
 	}
-	return &thing, nil
+	return &thingWithAdditionalAttributes, nil
 }
-func (t ThingTable) scanThingsByID(ctx context.Context, input db.ScanThingsByIDInput, fn func(m *models.Thing, lastThing bool) bool) error {
+func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributessByID(ctx context.Context, input db.ScanThingWithAdditionalAttributessByIDInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.name()),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -527,7 +548,7 @@ func (t ThingTable) scanThingsByID(ctx context.Context, input db.ScanThingsByIDI
 	totalRecordsProcessed := int64(0)
 	var innerErr error
 	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
-		items, err := decodeThings(out.Items)
+		items, err := decodeThingWithAdditionalAttributess(out.Items)
 		if err != nil {
 			innerErr = fmt.Errorf("error decoding %s", err.Error())
 			return false
@@ -557,7 +578,7 @@ func (t ThingTable) scanThingsByID(ctx context.Context, input db.ScanThingsByIDI
 	return err
 }
 
-func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.GetThingsByNameAndCreatedAtInput, fn func(m *models.Thing, lastThing bool) bool) error {
+func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByNameAndCreatedAt(ctx context.Context, input db.GetThingWithAdditionalAttributessByNameAndCreatedAtInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
 	if input.CreatedAtStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.CreatedAtStartingAt or input.StartingAfter")
 	}
@@ -614,7 +635,7 @@ func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.Ge
 		if len(queryOutput.Items) == 0 {
 			return false
 		}
-		items, err := decodeThings(queryOutput.Items)
+		items, err := decodeThingWithAdditionalAttributess(queryOutput.Items)
 		if err != nil {
 			pageFnErr = err
 			return false
@@ -652,7 +673,7 @@ func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.Ge
 
 	return nil
 }
-func (t ThingTable) scanThingsByNameAndCreatedAt(ctx context.Context, input db.ScanThingsByNameAndCreatedAtInput, fn func(m *models.Thing, lastThing bool) bool) error {
+func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributessByNameAndCreatedAt(ctx context.Context, input db.ScanThingWithAdditionalAttributessByNameAndCreatedAtInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.name()),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -675,7 +696,7 @@ func (t ThingTable) scanThingsByNameAndCreatedAt(ctx context.Context, input db.S
 	totalRecordsProcessed := int64(0)
 	var innerErr error
 	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
-		items, err := decodeThings(out.Items)
+		items, err := decodeThingWithAdditionalAttributess(out.Items)
 		if err != nil {
 			innerErr = fmt.Errorf("error decoding %s", err.Error())
 			return false
@@ -705,7 +726,7 @@ func (t ThingTable) scanThingsByNameAndCreatedAt(ctx context.Context, input db.S
 	return err
 }
 
-func (t ThingTable) getThingsByNameAndRangeNullable(ctx context.Context, input db.GetThingsByNameAndRangeNullableInput, fn func(m *models.Thing, lastThing bool) bool) error {
+func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByNameAndRangeNullable(ctx context.Context, input db.GetThingWithAdditionalAttributessByNameAndRangeNullableInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
 	if input.RangeNullableStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.RangeNullableStartingAt or input.StartingAfter")
 	}
@@ -762,7 +783,7 @@ func (t ThingTable) getThingsByNameAndRangeNullable(ctx context.Context, input d
 		if len(queryOutput.Items) == 0 {
 			return false
 		}
-		items, err := decodeThings(queryOutput.Items)
+		items, err := decodeThingWithAdditionalAttributess(queryOutput.Items)
 		if err != nil {
 			pageFnErr = err
 			return false
@@ -800,7 +821,7 @@ func (t ThingTable) getThingsByNameAndRangeNullable(ctx context.Context, input d
 
 	return nil
 }
-func (t ThingTable) scanThingsByNameAndRangeNullable(ctx context.Context, input db.ScanThingsByNameAndRangeNullableInput, fn func(m *models.Thing, lastThing bool) bool) error {
+func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributessByNameAndRangeNullable(ctx context.Context, input db.ScanThingWithAdditionalAttributessByNameAndRangeNullableInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.name()),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -823,7 +844,7 @@ func (t ThingTable) scanThingsByNameAndRangeNullable(ctx context.Context, input 
 	totalRecordsProcessed := int64(0)
 	var innerErr error
 	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
-		items, err := decodeThings(out.Items)
+		items, err := decodeThingWithAdditionalAttributess(out.Items)
 		if err != nil {
 			innerErr = fmt.Errorf("error decoding %s", err.Error())
 			return false
@@ -853,7 +874,7 @@ func (t ThingTable) scanThingsByNameAndRangeNullable(ctx context.Context, input 
 	return err
 }
 
-func (t ThingTable) getThingsByHashNullableAndName(ctx context.Context, input db.GetThingsByHashNullableAndNameInput, fn func(m *models.Thing, lastThing bool) bool) error {
+func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByHashNullableAndName(ctx context.Context, input db.GetThingWithAdditionalAttributessByHashNullableAndNameInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
 	if input.NameStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.NameStartingAt or input.StartingAfter")
 	}
@@ -910,7 +931,7 @@ func (t ThingTable) getThingsByHashNullableAndName(ctx context.Context, input db
 		if len(queryOutput.Items) == 0 {
 			return false
 		}
-		items, err := decodeThings(queryOutput.Items)
+		items, err := decodeThingWithAdditionalAttributess(queryOutput.Items)
 		if err != nil {
 			pageFnErr = err
 			return false
@@ -949,32 +970,32 @@ func (t ThingTable) getThingsByHashNullableAndName(ctx context.Context, input db
 	return nil
 }
 
-// encodeThing encodes a Thing as a DynamoDB map of attribute values.
-func encodeThing(m models.Thing) (map[string]*dynamodb.AttributeValue, error) {
-	return dynamodbattribute.MarshalMap(ddbThing{
-		Thing: m,
+// encodeThingWithAdditionalAttributes encodes a ThingWithAdditionalAttributes as a DynamoDB map of attribute values.
+func encodeThingWithAdditionalAttributes(m models.ThingWithAdditionalAttributes) (map[string]*dynamodb.AttributeValue, error) {
+	return dynamodbattribute.MarshalMap(ddbThingWithAdditionalAttributes{
+		ThingWithAdditionalAttributes: m,
 	})
 }
 
-// decodeThing translates a Thing stored in DynamoDB to a Thing struct.
-func decodeThing(m map[string]*dynamodb.AttributeValue, out *models.Thing) error {
-	var ddbThing ddbThing
-	if err := dynamodbattribute.UnmarshalMap(m, &ddbThing); err != nil {
+// decodeThingWithAdditionalAttributes translates a ThingWithAdditionalAttributes stored in DynamoDB to a ThingWithAdditionalAttributes struct.
+func decodeThingWithAdditionalAttributes(m map[string]*dynamodb.AttributeValue, out *models.ThingWithAdditionalAttributes) error {
+	var ddbThingWithAdditionalAttributes ddbThingWithAdditionalAttributes
+	if err := dynamodbattribute.UnmarshalMap(m, &ddbThingWithAdditionalAttributes); err != nil {
 		return err
 	}
-	*out = ddbThing.Thing
+	*out = ddbThingWithAdditionalAttributes.ThingWithAdditionalAttributes
 	return nil
 }
 
-// decodeThings translates a list of Things stored in DynamoDB to a slice of Thing structs.
-func decodeThings(ms []map[string]*dynamodb.AttributeValue) ([]models.Thing, error) {
-	things := make([]models.Thing, len(ms))
+// decodeThingWithAdditionalAttributess translates a list of ThingWithAdditionalAttributess stored in DynamoDB to a slice of ThingWithAdditionalAttributes structs.
+func decodeThingWithAdditionalAttributess(ms []map[string]*dynamodb.AttributeValue) ([]models.ThingWithAdditionalAttributes, error) {
+	thingWithAdditionalAttributess := make([]models.ThingWithAdditionalAttributes, len(ms))
 	for i, m := range ms {
-		var thing models.Thing
-		if err := decodeThing(m, &thing); err != nil {
+		var thingWithAdditionalAttributes models.ThingWithAdditionalAttributes
+		if err := decodeThingWithAdditionalAttributes(m, &thingWithAdditionalAttributes); err != nil {
 			return nil, err
 		}
-		things[i] = thing
+		thingWithAdditionalAttributess[i] = thingWithAdditionalAttributes
 	}
-	return things, nil
+	return thingWithAdditionalAttributess, nil
 }

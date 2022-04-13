@@ -256,6 +256,20 @@ func (t DeploymentTable) scanDeployments(ctx context.Context, input db.ScanDeplo
 	return err
 }
 
+func (t DeploymentTable) getDeploymentsByEnvAppAndVersionParseFilters(queryInput *dynamodb.QueryInput, input db.GetDeploymentsByEnvAppAndVersionInput) {
+	for _, filterValue := range input.FilterValues {
+		switch filterValue.AttributeName {
+		case db.DeploymentDate:
+			queryInput.ExpressionAttributeNames["#DATE"] = aws.String(string(db.DeploymentDate))
+			for i, attributeValue := range filterValue.AttributeValues {
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.DeploymentDate), i)] = &dynamodb.AttributeValue{
+					S: aws.String(toDynamoTimeString(attributeValue.(strfmt.DateTime))),
+				}
+			}
+		}
+	}
+}
+
 func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, input db.GetDeploymentsByEnvAppAndVersionInput, fn func(m *models.Deployment, lastDeployment bool) bool) error {
 	if input.VersionStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.VersionStartingAt or input.StartingAfter")
@@ -305,11 +319,16 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, i
 			},
 		}
 	}
+	if len(input.FilterValues) > 0 && input.FilterExpression != "" {
+		t.getDeploymentsByEnvAppAndVersionParseFilters(queryInput, input)
+		queryInput.FilterExpression = aws.String(input.FilterExpression)
+	}
 
 	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
-		if len(queryOutput.Items) == 0 {
+		// Only assume an empty page means no more results if there are no filters applied
+		if (len(input.FilterValues) == 0 || input.FilterExpression == "") && len(queryOutput.Items) == 0 {
 			return false
 		}
 		items, err := decodeDeployments(queryOutput.Items)

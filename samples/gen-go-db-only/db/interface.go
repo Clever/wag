@@ -140,6 +140,31 @@ type Interface interface {
 	// DeleteThingAllowingBatchWritesWithCompositeAttributes deletes a ThingAllowingBatchWritesWithCompositeAttributes from the database.
 	DeleteThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name string, id string, date strfmt.DateTime) error
 
+	// SaveThingWithAdditionalAttributes saves a ThingWithAdditionalAttributes to the database.
+	SaveThingWithAdditionalAttributes(ctx context.Context, m models.ThingWithAdditionalAttributes) error
+	// GetThingWithAdditionalAttributes retrieves a ThingWithAdditionalAttributes from the database.
+	GetThingWithAdditionalAttributes(ctx context.Context, name string, version int64) (*models.ThingWithAdditionalAttributes, error)
+	// ScanThingWithAdditionalAttributess runs a scan on the ThingWithAdditionalAttributess table.
+	ScanThingWithAdditionalAttributess(ctx context.Context, input ScanThingWithAdditionalAttributessInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error
+	// GetThingWithAdditionalAttributessByNameAndVersion retrieves a page of ThingWithAdditionalAttributess from the database.
+	GetThingWithAdditionalAttributessByNameAndVersion(ctx context.Context, input GetThingWithAdditionalAttributessByNameAndVersionInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error
+	// DeleteThingWithAdditionalAttributes deletes a ThingWithAdditionalAttributes from the database.
+	DeleteThingWithAdditionalAttributes(ctx context.Context, name string, version int64) error
+	// GetThingWithAdditionalAttributesByID retrieves a ThingWithAdditionalAttributes from the database.
+	GetThingWithAdditionalAttributesByID(ctx context.Context, id string) (*models.ThingWithAdditionalAttributes, error)
+	// ScanThingWithAdditionalAttributessByID runs a scan on the ID index.
+	ScanThingWithAdditionalAttributessByID(ctx context.Context, input ScanThingWithAdditionalAttributessByIDInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error
+	// GetThingWithAdditionalAttributessByNameAndCreatedAt retrieves a page of ThingWithAdditionalAttributess from the database.
+	GetThingWithAdditionalAttributessByNameAndCreatedAt(ctx context.Context, input GetThingWithAdditionalAttributessByNameAndCreatedAtInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error
+	// ScanThingWithAdditionalAttributessByNameAndCreatedAt runs a scan on the NameAndCreatedAt index.
+	ScanThingWithAdditionalAttributessByNameAndCreatedAt(ctx context.Context, input ScanThingWithAdditionalAttributessByNameAndCreatedAtInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error
+	// GetThingWithAdditionalAttributessByNameAndRangeNullable retrieves a page of ThingWithAdditionalAttributess from the database.
+	GetThingWithAdditionalAttributessByNameAndRangeNullable(ctx context.Context, input GetThingWithAdditionalAttributessByNameAndRangeNullableInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error
+	// ScanThingWithAdditionalAttributessByNameAndRangeNullable runs a scan on the NameAndRangeNullable index.
+	ScanThingWithAdditionalAttributessByNameAndRangeNullable(ctx context.Context, input ScanThingWithAdditionalAttributessByNameAndRangeNullableInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error
+	// GetThingWithAdditionalAttributessByHashNullableAndName retrieves a page of ThingWithAdditionalAttributess from the database.
+	GetThingWithAdditionalAttributessByHashNullableAndName(ctx context.Context, input GetThingWithAdditionalAttributessByHashNullableAndNameInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error
+
 	// SaveThingWithCompositeAttributes saves a ThingWithCompositeAttributes to the database.
 	SaveThingWithCompositeAttributes(ctx context.Context, m models.ThingWithCompositeAttributes) error
 	// GetThingWithCompositeAttributes retrieves a ThingWithCompositeAttributes from the database.
@@ -297,6 +322,19 @@ type ScanDeploymentsInput struct {
 	Limiter *rate.Limiter
 }
 
+// DeploymentByEnvAppAndVersionFilterableAttribute represents the fields we can apply filters to for queries on this index
+type DeploymentByEnvAppAndVersionFilterableAttribute string
+
+const DeploymentDate DeploymentByEnvAppAndVersionFilterableAttribute = "date"
+
+// DeploymentByEnvAppAndVersionFilterValues represents a filter on a particular field to be included in the query
+type DeploymentByEnvAppAndVersionFilterValues struct {
+	// AttributeName is the attibute we are attempting to apply the filter to
+	AttributeName DeploymentByEnvAppAndVersionFilterableAttribute
+	// AttributeValues is an optional parameter to be used when we want to compare the attibute to a single value or multiple values
+	AttributeValues []interface{}
+}
+
 // GetDeploymentsByEnvAppAndVersionInput is the query input to GetDeploymentsByEnvAppAndVersion.
 type GetDeploymentsByEnvAppAndVersionInput struct {
 	// Environment is required
@@ -311,6 +349,16 @@ type GetDeploymentsByEnvAppAndVersionInput struct {
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
+	// FilterValues is an optional array of filters to apply on various table attributes
+	FilterValues []DeploymentByEnvAppAndVersionFilterValues
+	// FilterExpression is the filter expression to be applied to our fitlered attributes
+	// when referencing an attribute use #ATTRIBUTE_NAME
+	// ex: if the attribute is called "created_at" in its wag definition use #CREATED_AT
+	// when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
+	// ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
+	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
+	// for guidance on building expressions
+	FilterExpression string
 }
 
 // ErrDeploymentNotFound is returned when the database fails to find a Deployment.
@@ -426,6 +474,19 @@ type ScanEventsInput struct {
 	Limiter *rate.Limiter
 }
 
+// EventByPkAndSkFilterableAttribute represents the fields we can apply filters to for queries on this index
+type EventByPkAndSkFilterableAttribute string
+
+const EventData EventByPkAndSkFilterableAttribute = "data"
+
+// EventByPkAndSkFilterValues represents a filter on a particular field to be included in the query
+type EventByPkAndSkFilterValues struct {
+	// AttributeName is the attibute we are attempting to apply the filter to
+	AttributeName EventByPkAndSkFilterableAttribute
+	// AttributeValues is an optional parameter to be used when we want to compare the attibute to a single value or multiple values
+	AttributeValues []interface{}
+}
+
 // GetEventsByPkAndSkInput is the query input to GetEventsByPkAndSk.
 type GetEventsByPkAndSkInput struct {
 	// Pk is required
@@ -438,6 +499,16 @@ type GetEventsByPkAndSkInput struct {
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
+	// FilterValues is an optional array of filters to apply on various table attributes
+	FilterValues []EventByPkAndSkFilterValues
+	// FilterExpression is the filter expression to be applied to our fitlered attributes
+	// when referencing an attribute use #ATTRIBUTE_NAME
+	// ex: if the attribute is called "created_at" in its wag definition use #CREATED_AT
+	// when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
+	// ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
+	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
+	// for guidance on building expressions
+	FilterExpression string
 }
 
 // ErrEventNotFound is returned when the database fails to find a Event.
@@ -613,6 +684,19 @@ type ScanTeacherSharingRulesInput struct {
 	Limiter *rate.Limiter
 }
 
+// TeacherSharingRuleByTeacherAndSchoolAppFilterableAttribute represents the fields we can apply filters to for queries on this index
+type TeacherSharingRuleByTeacherAndSchoolAppFilterableAttribute string
+
+const TeacherSharingRuleDistrict TeacherSharingRuleByTeacherAndSchoolAppFilterableAttribute = "district"
+
+// TeacherSharingRuleByTeacherAndSchoolAppFilterValues represents a filter on a particular field to be included in the query
+type TeacherSharingRuleByTeacherAndSchoolAppFilterValues struct {
+	// AttributeName is the attibute we are attempting to apply the filter to
+	AttributeName TeacherSharingRuleByTeacherAndSchoolAppFilterableAttribute
+	// AttributeValues is an optional parameter to be used when we want to compare the attibute to a single value or multiple values
+	AttributeValues []interface{}
+}
+
 // GetTeacherSharingRulesByTeacherAndSchoolAppInput is the query input to GetTeacherSharingRulesByTeacherAndSchoolApp.
 type GetTeacherSharingRulesByTeacherAndSchoolAppInput struct {
 	// Teacher is required
@@ -625,6 +709,16 @@ type GetTeacherSharingRulesByTeacherAndSchoolAppInput struct {
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
+	// FilterValues is an optional array of filters to apply on various table attributes
+	FilterValues []TeacherSharingRuleByTeacherAndSchoolAppFilterValues
+	// FilterExpression is the filter expression to be applied to our fitlered attributes
+	// when referencing an attribute use #ATTRIBUTE_NAME
+	// ex: if the attribute is called "created_at" in its wag definition use #CREATED_AT
+	// when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
+	// ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
+	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
+	// for guidance on building expressions
+	FilterExpression string
 }
 
 // ErrTeacherSharingRuleNotFound is returned when the database fails to find a TeacherSharingRule.
@@ -704,6 +798,22 @@ type ScanThingsInput struct {
 	Limiter *rate.Limiter
 }
 
+// ThingByNameAndVersionFilterableAttribute represents the fields we can apply filters to for queries on this index
+type ThingByNameAndVersionFilterableAttribute string
+
+const ThingCreatedAt ThingByNameAndVersionFilterableAttribute = "createdAt"
+const ThingHashNullable ThingByNameAndVersionFilterableAttribute = "hashNullable"
+const ThingID ThingByNameAndVersionFilterableAttribute = "id"
+const ThingRangeNullable ThingByNameAndVersionFilterableAttribute = "rangeNullable"
+
+// ThingByNameAndVersionFilterValues represents a filter on a particular field to be included in the query
+type ThingByNameAndVersionFilterValues struct {
+	// AttributeName is the attibute we are attempting to apply the filter to
+	AttributeName ThingByNameAndVersionFilterableAttribute
+	// AttributeValues is an optional parameter to be used when we want to compare the attibute to a single value or multiple values
+	AttributeValues []interface{}
+}
+
 // GetThingsByNameAndVersionInput is the query input to GetThingsByNameAndVersion.
 type GetThingsByNameAndVersionInput struct {
 	// Name is required
@@ -716,6 +826,16 @@ type GetThingsByNameAndVersionInput struct {
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
+	// FilterValues is an optional array of filters to apply on various table attributes
+	FilterValues []ThingByNameAndVersionFilterValues
+	// FilterExpression is the filter expression to be applied to our fitlered attributes
+	// when referencing an attribute use #ATTRIBUTE_NAME
+	// ex: if the attribute is called "created_at" in its wag definition use #CREATED_AT
+	// when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
+	// ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
+	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
+	// for guidance on building expressions
+	FilterExpression string
 }
 
 // ErrThingNotFound is returned when the database fails to find a Thing.
@@ -971,6 +1091,207 @@ func (e ErrThingAllowingBatchWritesWithCompositeAttributesAlreadyExists) Error()
 	return "ThingAllowingBatchWritesWithCompositeAttributes already exists"
 }
 
+// ScanThingWithAdditionalAttributessInput is the input to the ScanThingWithAdditionalAttributess method.
+type ScanThingWithAdditionalAttributessInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithAdditionalAttributes
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute represents the fields we can apply filters to for queries on this index
+type ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute string
+
+const ThingWithAdditionalAttributesAdditionalSAttribute ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "additionalSAttribute"
+const ThingWithAdditionalAttributesHashNullable ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "hashNullable"
+const ThingWithAdditionalAttributesAdditionalBAttribute ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "additionalBAttribute"
+const ThingWithAdditionalAttributesCreatedAt ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "createdAt"
+const ThingWithAdditionalAttributesID ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "id"
+const ThingWithAdditionalAttributesRangeNullable ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "rangeNullable"
+const ThingWithAdditionalAttributesAdditionalNAttribute ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute = "additionalNAttribute"
+
+// ThingWithAdditionalAttributesByNameAndVersionFilterValues represents a filter on a particular field to be included in the query
+type ThingWithAdditionalAttributesByNameAndVersionFilterValues struct {
+	// AttributeName is the attibute we are attempting to apply the filter to
+	AttributeName ThingWithAdditionalAttributesByNameAndVersionFilterableAttribute
+	// AttributeValues is an optional parameter to be used when we want to compare the attibute to a single value or multiple values
+	AttributeValues []interface{}
+}
+
+// GetThingWithAdditionalAttributessByNameAndVersionInput is the query input to GetThingWithAdditionalAttributessByNameAndVersion.
+type GetThingWithAdditionalAttributessByNameAndVersionInput struct {
+	// Name is required
+	Name              string
+	VersionStartingAt *int64
+	// StartingAfter is a required specification of an exclusive starting point.
+	StartingAfter *models.ThingWithAdditionalAttributes
+	Descending    bool
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+	// FilterValues is an optional array of filters to apply on various table attributes
+	FilterValues []ThingWithAdditionalAttributesByNameAndVersionFilterValues
+	// FilterExpression is the filter expression to be applied to our fitlered attributes
+	// when referencing an attribute use #ATTRIBUTE_NAME
+	// ex: if the attribute is called "created_at" in its wag definition use #CREATED_AT
+	// when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
+	// ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
+	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
+	// for guidance on building expressions
+	FilterExpression string
+}
+
+// ErrThingWithAdditionalAttributesNotFound is returned when the database fails to find a ThingWithAdditionalAttributes.
+type ErrThingWithAdditionalAttributesNotFound struct {
+	Name    string
+	Version int64
+}
+
+var _ error = ErrThingWithAdditionalAttributesNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithAdditionalAttributesNotFound) Error() string {
+	return "could not find ThingWithAdditionalAttributes"
+}
+
+// ErrThingWithAdditionalAttributesByIDNotFound is returned when the database fails to find a ThingWithAdditionalAttributes.
+type ErrThingWithAdditionalAttributesByIDNotFound struct {
+	ID string
+}
+
+var _ error = ErrThingWithAdditionalAttributesByIDNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithAdditionalAttributesByIDNotFound) Error() string {
+	return "could not find ThingWithAdditionalAttributes"
+}
+
+// ScanThingWithAdditionalAttributessByIDInput is the input to the ScanThingWithAdditionalAttributessByID method.
+type ScanThingWithAdditionalAttributessByIDInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithAdditionalAttributes
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// GetThingWithAdditionalAttributessByNameAndCreatedAtInput is the query input to GetThingWithAdditionalAttributessByNameAndCreatedAt.
+type GetThingWithAdditionalAttributessByNameAndCreatedAtInput struct {
+	// Name is required
+	Name                string
+	CreatedAtStartingAt *strfmt.DateTime
+	StartingAfter       *models.ThingWithAdditionalAttributes
+	Descending          bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+}
+
+// ErrThingWithAdditionalAttributesByNameAndCreatedAtNotFound is returned when the database fails to find a ThingWithAdditionalAttributes.
+type ErrThingWithAdditionalAttributesByNameAndCreatedAtNotFound struct {
+	Name      string
+	CreatedAt strfmt.DateTime
+}
+
+var _ error = ErrThingWithAdditionalAttributesByNameAndCreatedAtNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithAdditionalAttributesByNameAndCreatedAtNotFound) Error() string {
+	return "could not find ThingWithAdditionalAttributes"
+}
+
+// ScanThingWithAdditionalAttributessByNameAndCreatedAtInput is the input to the ScanThingWithAdditionalAttributessByNameAndCreatedAt method.
+type ScanThingWithAdditionalAttributessByNameAndCreatedAtInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithAdditionalAttributes
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// GetThingWithAdditionalAttributessByNameAndRangeNullableInput is the query input to GetThingWithAdditionalAttributessByNameAndRangeNullable.
+type GetThingWithAdditionalAttributessByNameAndRangeNullableInput struct {
+	// Name is required
+	Name                    string
+	RangeNullableStartingAt *strfmt.DateTime
+	StartingAfter           *models.ThingWithAdditionalAttributes
+	Descending              bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+}
+
+// ErrThingWithAdditionalAttributesByNameAndRangeNullableNotFound is returned when the database fails to find a ThingWithAdditionalAttributes.
+type ErrThingWithAdditionalAttributesByNameAndRangeNullableNotFound struct {
+	Name          string
+	RangeNullable strfmt.DateTime
+}
+
+var _ error = ErrThingWithAdditionalAttributesByNameAndRangeNullableNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithAdditionalAttributesByNameAndRangeNullableNotFound) Error() string {
+	return "could not find ThingWithAdditionalAttributes"
+}
+
+// ScanThingWithAdditionalAttributessByNameAndRangeNullableInput is the input to the ScanThingWithAdditionalAttributessByNameAndRangeNullable method.
+type ScanThingWithAdditionalAttributessByNameAndRangeNullableInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithAdditionalAttributes
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// GetThingWithAdditionalAttributessByHashNullableAndNameInput is the query input to GetThingWithAdditionalAttributessByHashNullableAndName.
+type GetThingWithAdditionalAttributessByHashNullableAndNameInput struct {
+	// HashNullable is required
+	HashNullable   string
+	NameStartingAt *string
+	StartingAfter  *models.ThingWithAdditionalAttributes
+	Descending     bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+}
+
+// ErrThingWithAdditionalAttributesByHashNullableAndNameNotFound is returned when the database fails to find a ThingWithAdditionalAttributes.
+type ErrThingWithAdditionalAttributesByHashNullableAndNameNotFound struct {
+	HashNullable string
+	Name         string
+}
+
+var _ error = ErrThingWithAdditionalAttributesByHashNullableAndNameNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithAdditionalAttributesByHashNullableAndNameNotFound) Error() string {
+	return "could not find ThingWithAdditionalAttributes"
+}
+
+// ErrThingWithAdditionalAttributesAlreadyExists is returned when trying to overwrite a ThingWithAdditionalAttributes.
+type ErrThingWithAdditionalAttributesAlreadyExists struct {
+	Name    string
+	Version int64
+}
+
+var _ error = ErrThingWithAdditionalAttributesAlreadyExists{}
+
+// Error returns a description of the error.
+func (e ErrThingWithAdditionalAttributesAlreadyExists) Error() string {
+	return "ThingWithAdditionalAttributes already exists"
+}
+
 // ScanThingWithCompositeAttributessInput is the input to the ScanThingWithCompositeAttributess method.
 type ScanThingWithCompositeAttributessInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
@@ -981,6 +1302,19 @@ type ScanThingWithCompositeAttributessInput struct {
 	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
+}
+
+// ThingWithCompositeAttributesByNameBranchAndDateFilterableAttribute represents the fields we can apply filters to for queries on this index
+type ThingWithCompositeAttributesByNameBranchAndDateFilterableAttribute string
+
+const ThingWithCompositeAttributesVersion ThingWithCompositeAttributesByNameBranchAndDateFilterableAttribute = "version"
+
+// ThingWithCompositeAttributesByNameBranchAndDateFilterValues represents a filter on a particular field to be included in the query
+type ThingWithCompositeAttributesByNameBranchAndDateFilterValues struct {
+	// AttributeName is the attibute we are attempting to apply the filter to
+	AttributeName ThingWithCompositeAttributesByNameBranchAndDateFilterableAttribute
+	// AttributeValues is an optional parameter to be used when we want to compare the attibute to a single value or multiple values
+	AttributeValues []interface{}
 }
 
 // GetThingWithCompositeAttributessByNameBranchAndDateInput is the query input to GetThingWithCompositeAttributessByNameBranchAndDate.
@@ -997,6 +1331,16 @@ type GetThingWithCompositeAttributessByNameBranchAndDateInput struct {
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
+	// FilterValues is an optional array of filters to apply on various table attributes
+	FilterValues []ThingWithCompositeAttributesByNameBranchAndDateFilterValues
+	// FilterExpression is the filter expression to be applied to our fitlered attributes
+	// when referencing an attribute use #ATTRIBUTE_NAME
+	// ex: if the attribute is called "created_at" in its wag definition use #CREATED_AT
+	// when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
+	// ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
+	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
+	// for guidance on building expressions
+	FilterExpression string
 }
 
 // ErrThingWithCompositeAttributesNotFound is returned when the database fails to find a ThingWithCompositeAttributes.
@@ -1220,6 +1564,19 @@ type ScanThingWithEnumHashKeysInput struct {
 	Limiter *rate.Limiter
 }
 
+// ThingWithEnumHashKeyByBranchAndDateFilterableAttribute represents the fields we can apply filters to for queries on this index
+type ThingWithEnumHashKeyByBranchAndDateFilterableAttribute string
+
+const ThingWithEnumHashKeyDate2 ThingWithEnumHashKeyByBranchAndDateFilterableAttribute = "date2"
+
+// ThingWithEnumHashKeyByBranchAndDateFilterValues represents a filter on a particular field to be included in the query
+type ThingWithEnumHashKeyByBranchAndDateFilterValues struct {
+	// AttributeName is the attibute we are attempting to apply the filter to
+	AttributeName ThingWithEnumHashKeyByBranchAndDateFilterableAttribute
+	// AttributeValues is an optional parameter to be used when we want to compare the attibute to a single value or multiple values
+	AttributeValues []interface{}
+}
+
 // GetThingWithEnumHashKeysByBranchAndDateInput is the query input to GetThingWithEnumHashKeysByBranchAndDate.
 type GetThingWithEnumHashKeysByBranchAndDateInput struct {
 	// Branch is required
@@ -1232,6 +1589,16 @@ type GetThingWithEnumHashKeysByBranchAndDateInput struct {
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
+	// FilterValues is an optional array of filters to apply on various table attributes
+	FilterValues []ThingWithEnumHashKeyByBranchAndDateFilterValues
+	// FilterExpression is the filter expression to be applied to our fitlered attributes
+	// when referencing an attribute use #ATTRIBUTE_NAME
+	// ex: if the attribute is called "created_at" in its wag definition use #CREATED_AT
+	// when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
+	// ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
+	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
+	// for guidance on building expressions
+	FilterExpression string
 }
 
 // ErrThingWithEnumHashKeyNotFound is returned when the database fails to find a ThingWithEnumHashKey.
@@ -1308,6 +1675,19 @@ type ScanThingWithMatchingKeyssInput struct {
 	Limiter *rate.Limiter
 }
 
+// ThingWithMatchingKeysByBearAndAssocTypeIDFilterableAttribute represents the fields we can apply filters to for queries on this index
+type ThingWithMatchingKeysByBearAndAssocTypeIDFilterableAttribute string
+
+const ThingWithMatchingKeysCreated ThingWithMatchingKeysByBearAndAssocTypeIDFilterableAttribute = "created"
+
+// ThingWithMatchingKeysByBearAndAssocTypeIDFilterValues represents a filter on a particular field to be included in the query
+type ThingWithMatchingKeysByBearAndAssocTypeIDFilterValues struct {
+	// AttributeName is the attibute we are attempting to apply the filter to
+	AttributeName ThingWithMatchingKeysByBearAndAssocTypeIDFilterableAttribute
+	// AttributeValues is an optional parameter to be used when we want to compare the attibute to a single value or multiple values
+	AttributeValues []interface{}
+}
+
 // GetThingWithMatchingKeyssByBearAndAssocTypeIDInput is the query input to GetThingWithMatchingKeyssByBearAndAssocTypeID.
 type GetThingWithMatchingKeyssByBearAndAssocTypeIDInput struct {
 	// Bear is required
@@ -1320,6 +1700,16 @@ type GetThingWithMatchingKeyssByBearAndAssocTypeIDInput struct {
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
 	Limit *int64
+	// FilterValues is an optional array of filters to apply on various table attributes
+	FilterValues []ThingWithMatchingKeysByBearAndAssocTypeIDFilterValues
+	// FilterExpression is the filter expression to be applied to our fitlered attributes
+	// when referencing an attribute use #ATTRIBUTE_NAME
+	// ex: if the attribute is called "created_at" in its wag definition use #CREATED_AT
+	// when referencing one of the given values use :{attribute_name}_value0, :{attribute_name}_value1, etc.
+	// ex: if the attribute is called "created_at" in its wag definition use :created_at_value0, created_at_value1, etc.
+	// see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions
+	// for guidance on building expressions
+	FilterExpression string
 }
 
 // ErrThingWithMatchingKeysNotFound is returned when the database fails to find a ThingWithMatchingKeys.
