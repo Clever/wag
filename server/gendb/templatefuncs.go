@@ -292,7 +292,10 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		for _, ia := range indexAttributeNames {
 			allAttributeNames.Remove(ia)
 		}
-		return allAttributeNames.ToList()
+
+		allAttributeNamesList := allAttributeNames.ToList()
+		sort.Strings(allAttributeNamesList)
+		return allAttributeNamesList
 	},
 	"modelAttributeNamesForKeyType": func(config XDBConfig, keySchema []resources.AWSDynamoDBTable_KeySchema, keyType string) []string {
 		attributeNames := []string{}
