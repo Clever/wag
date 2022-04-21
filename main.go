@@ -38,7 +38,6 @@ type config struct {
 	goPackageName      *string
 
 	dynamoPath            string
-	goPackagePath         string
 	goAbsolutePackagePath string
 	jsClientPath          string
 
@@ -269,20 +268,20 @@ func (c *config) setGoPaths(outputPath, goPackageName string) error {
 			return fmt.Errorf("go-package is required")
 		}
 		// if the repo does not use modules, the package name is equivalent to the package path
-		c.goPackagePath = goPackageName
+		c.goAbsolutePackagePath = filepath.Join(os.Getenv("GOPATH"), "src", goPackageName)
 	} else {
 		defer modFile.Close()
-		// TODO: do not rely on GOPATH when repo uses modules
-		goPath := os.Getenv("GOPATH")
-		if goPath == "" {
-			return fmt.Errorf("GOPATH must be set")
-		}
 		if outputPath == "" {
 			return fmt.Errorf("output-path is required")
 		}
 
-		c.goPackagePath = getModulePackagePath(goPath, path.Clean(outputPath))
+		absolutePath, err := filepath.Abs(outputPath)
+		if err != nil {
+			return fmt.Errorf("converting output-path to absolute path: %v", err)
+		}
+		c.goAbsolutePackagePath = absolutePath
 		*c.goPackageName = getModulePackageName(modFile, path.Clean(outputPath))
+
 	}
 	return nil
 }
@@ -319,7 +318,6 @@ func (c *config) setClientLanguage(clientLanguage, jsModulePath string) error {
 func (c *config) setGeneratedFilePaths() {
 	const serverDir = "server"
 
-	c.goAbsolutePackagePath = filepath.Join(os.Getenv("GOPATH"), "src", c.goPackagePath)
 	if c.generateDynamo {
 		// set path of generated dynamo code if none specified
 		if swag.StringValue(c.relativeDynamoPath) == "" {
@@ -331,15 +329,6 @@ func (c *config) setGeneratedFilePaths() {
 		}
 		c.dynamoPath = path.Join(c.goAbsolutePackagePath, *c.relativeDynamoPath)
 	}
-}
-
-func getModulePackagePath(goPath, outputPath string) string {
-	pwd, err := os.Getwd()
-	if err != nil {
-		log.Fatalf("Error getting current directory: %s", err.Error())
-	}
-	goSrcPath := fmt.Sprintf("%v%v", goPath, "/src/")
-	return path.Join(strings.TrimPrefix(pwd, goSrcPath), outputPath)
 }
 
 // getModulePackageName gets the package name of the generated code
