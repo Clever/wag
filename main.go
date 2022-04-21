@@ -39,12 +39,7 @@ type config struct {
 
 	dynamoPath            string
 	goAbsolutePackagePath string
-	goClientPath          string
-	goPackagePath         string
 	jsClientPath          string
-	modelsPath            string
-	serverPath            string
-	tracingPath           string
 
 	generateDynamo   bool
 	generateGoClient bool
@@ -95,31 +90,31 @@ func main() {
 	}
 
 	if conf.generateGoModels {
-		if err := generateGoModels(conf.modelsPath, conf.goPackagePath, swaggerSpec); err != nil {
+		if err := generateGoModels(conf.goAbsolutePackagePath, swaggerSpec); err != nil {
 			log.Fatal(err.Error())
 		}
 	}
 
 	if conf.generateServer {
-		if err := generateServer(conf.serverPath, *conf.goPackageName, conf.goPackagePath, swaggerSpec); err != nil {
+		if err := generateServer(*conf.goPackageName, conf.goAbsolutePackagePath, swaggerSpec); err != nil {
 			log.Fatal(err.Error())
 		}
 	}
 
 	if conf.generateTracing {
-		if err := generateTracing(conf.tracingPath, conf.goPackagePath); err != nil {
+		if err := generateTracing(conf.goAbsolutePackagePath); err != nil {
 			log.Fatal(err.Error())
 		}
 	}
 
 	if conf.generateDynamo {
-		if err := generateDynamo(conf.dynamoPath, *conf.goPackageName, conf.goPackagePath, *conf.relativeDynamoPath, swaggerSpec); err != nil {
+		if err := generateDynamo(conf.dynamoPath, *conf.goPackageName, conf.goAbsolutePackagePath, *conf.relativeDynamoPath, swaggerSpec); err != nil {
 			log.Fatal(err.Error())
 		}
 	}
 
 	if conf.generateGoClient {
-		if err := generateGoClient(conf.goClientPath, *conf.goPackageName, conf.goPackagePath, swaggerSpec); err != nil {
+		if err := generateGoClient(*conf.goPackageName, conf.goAbsolutePackagePath, swaggerSpec); err != nil {
 			log.Fatal(err.Error())
 		}
 	}
@@ -131,24 +126,24 @@ func main() {
 	}
 }
 
-func generateGoModels(modelsPath, goPackagePath string, swaggerSpec spec.Swagger) error {
-	if err := prepareDir(modelsPath); err != nil {
+func generateGoModels(basePath string, swaggerSpec spec.Swagger) error {
+	if err := prepareDir(filepath.Join(basePath, "models")); err != nil {
 		return err
 	}
-	if err := models.Generate(goPackagePath, swaggerSpec); err != nil {
+	if err := models.Generate(basePath, swaggerSpec); err != nil {
 		return fmt.Errorf("Error generating models: %s", err)
 	}
 	return nil
 }
 
-func generateServer(serverPath, goPackageName, goPackagePath string, swaggerSpec spec.Swagger) error {
-	if err := prepareDir(serverPath); err != nil {
+func generateServer(goPackageName, basePath string, swaggerSpec spec.Swagger) error {
+	if err := prepareDir(filepath.Join(basePath, "server")); err != nil {
 		return err
 	}
-	if err := server.Generate(goPackageName, goPackagePath, swaggerSpec); err != nil {
+	if err := server.Generate(goPackageName, basePath, swaggerSpec); err != nil {
 		return fmt.Errorf("Failed to generate server: %s", err)
 	}
-	middlewareGenerator := swagger.Generator{PackagePath: goPackagePath}
+	middlewareGenerator := swagger.Generator{BasePath: basePath}
 	middlewareGenerator.Write(hardcoded.MustAsset("../_hardcoded/middleware.go"))
 	if err := middlewareGenerator.WriteFile("server/middleware.go"); err != nil {
 		return fmt.Errorf("Failed to copy middleware.go: %s", err)
@@ -157,12 +152,12 @@ func generateServer(serverPath, goPackageName, goPackagePath string, swaggerSpec
 	return nil
 }
 
-func generateTracing(tracingPath, goPackagePath string) error {
-	if err := prepareDir(tracingPath); err != nil {
+func generateTracing(basePath string) error {
+	if err := prepareDir(filepath.Join(basePath, "tracing")); err != nil {
 		return err
 	}
 
-	tracingGenerator := swagger.Generator{PackagePath: goPackagePath}
+	tracingGenerator := swagger.Generator{BasePath: basePath}
 	tracingGenerator.Write(hardcoded.MustAsset("../_hardcoded/tracing.go"))
 	if err := tracingGenerator.WriteFile("tracing/tracing.go"); err != nil {
 		log.Fatalf("Failed to copy tracing.go: %s", err)
@@ -171,24 +166,24 @@ func generateTracing(tracingPath, goPackagePath string) error {
 	return nil
 }
 
-func generateDynamo(dynamoPath, goPackageName, goPackagePath, outputPath string, swaggerSpec spec.Swagger) error {
+func generateDynamo(dynamoPath, goPackageName, basePath, outputPath string, swaggerSpec spec.Swagger) error {
 	if err := prepareDir(dynamoPath); err != nil {
 		return err
 	}
-	if err := gendb.GenerateDB(goPackageName, goPackagePath, &swaggerSpec, outputPath); err != nil {
+	if err := gendb.GenerateDB(goPackageName, basePath, &swaggerSpec, outputPath); err != nil {
 		return fmt.Errorf("Failed to generate database: %s", err)
 	}
 	return nil
 }
 
-func generateGoClient(goClientPath, goPackageName, goPackagePath string, swaggerSpec spec.Swagger) error {
-	if err := prepareDir(goClientPath); err != nil {
+func generateGoClient(goPackageName, basePath string, swaggerSpec spec.Swagger) error {
+	if err := prepareDir(filepath.Join(basePath, "client")); err != nil {
 		return err
 	}
-	if err := goclient.Generate(goPackageName, goPackagePath, swaggerSpec); err != nil {
+	if err := goclient.Generate(goPackageName, basePath, swaggerSpec); err != nil {
 		return fmt.Errorf("Failed generating go client %s", err)
 	}
-	doerGenerator := swagger.Generator{PackagePath: goPackagePath}
+	doerGenerator := swagger.Generator{BasePath: basePath}
 	doerGenerator.Write(hardcoded.MustAsset("../_hardcoded/doer.go"))
 	if err := doerGenerator.WriteFile("client/doer.go"); err != nil {
 		return fmt.Errorf("Failed to copy doer.go: %s", err)
@@ -273,20 +268,20 @@ func (c *config) setGoPaths(outputPath, goPackageName string) error {
 			return fmt.Errorf("go-package is required")
 		}
 		// if the repo does not use modules, the package name is equivalent to the package path
-		c.goPackagePath = goPackageName
+		c.goAbsolutePackagePath = filepath.Join(os.Getenv("GOPATH"), "src", goPackageName)
 	} else {
 		defer modFile.Close()
-		// TODO: do not rely on GOPATH when repo uses modules
-		goPath := os.Getenv("GOPATH")
-		if goPath == "" {
-			return fmt.Errorf("GOPATH must be set")
-		}
 		if outputPath == "" {
 			return fmt.Errorf("output-path is required")
 		}
 
-		c.goPackagePath = getModulePackagePath(goPath, path.Clean(outputPath))
+		absolutePath, err := filepath.Abs(outputPath)
+		if err != nil {
+			return fmt.Errorf("converting output-path to absolute path: %v", err)
+		}
+		c.goAbsolutePackagePath = absolutePath
 		*c.goPackageName = getModulePackageName(modFile, path.Clean(outputPath))
+
 	}
 	return nil
 }
@@ -322,14 +317,6 @@ func (c *config) setClientLanguage(clientLanguage, jsModulePath string) error {
 // setGeneratedFilePaths determines where to output the generated files.
 func (c *config) setGeneratedFilePaths() {
 	const serverDir = "server"
-	const tracingDir = "tracing"
-
-	// determine paths for generated files
-	c.goAbsolutePackagePath = filepath.Join(os.Getenv("GOPATH"), "src", c.goPackagePath)
-	c.modelsPath = filepath.Join(c.goAbsolutePackagePath, "models")
-	c.serverPath = filepath.Join(c.goAbsolutePackagePath, serverDir)
-	c.tracingPath = filepath.Join(c.goAbsolutePackagePath, tracingDir)
-	c.goClientPath = filepath.Join(c.goAbsolutePackagePath, "client")
 
 	if c.generateDynamo {
 		// set path of generated dynamo code if none specified
@@ -342,15 +329,6 @@ func (c *config) setGeneratedFilePaths() {
 		}
 		c.dynamoPath = path.Join(c.goAbsolutePackagePath, *c.relativeDynamoPath)
 	}
-}
-
-func getModulePackagePath(goPath, outputPath string) string {
-	pwd, err := os.Getwd()
-	if err != nil {
-		log.Fatalf("Error getting current directory: %s", err.Error())
-	}
-	goSrcPath := fmt.Sprintf("%v%v", goPath, "/src/")
-	return path.Join(strings.TrimPrefix(pwd, goSrcPath), outputPath)
 }
 
 // getModulePackageName gets the package name of the generated code
