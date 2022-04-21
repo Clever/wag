@@ -217,10 +217,6 @@ func Test_config_validate(t *testing.T) {
 				t.Errorf("config.validate() error = %v, wantErr %v", err, tt.wantErr)
 			} else if !tt.wantErr {
 				// clear paths so they are not diffed
-				tt.input.modelsPath = ""
-				tt.input.serverPath = ""
-				tt.input.tracingPath = ""
-				tt.input.goClientPath = ""
 				tt.input.jsClientPath = ""
 				tt.input.dynamoPath = ""
 				tt.input.goAbsolutePackagePath = ""

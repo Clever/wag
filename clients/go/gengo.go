@@ -14,11 +14,11 @@ import (
 )
 
 // Generate generates a client
-func Generate(packageName, packagePath string, s spec.Swagger) error {
-	if err := generateClient(packageName, packagePath, s); err != nil {
+func Generate(packageName, basePath string, s spec.Swagger) error {
+	if err := generateClient(packageName, basePath, s); err != nil {
 		return err
 	}
-	return generateInterface(packageName, packagePath, &s, s.Info.InfoProps.Title, s.Paths)
+	return generateInterface(packageName, basePath, &s, s.Info.InfoProps.Title, s.Paths)
 }
 
 type clientCodeTemplate struct {
@@ -197,8 +197,7 @@ func shortHash(s string) string {
 }
 `
 
-func generateClient(packageName, packagePath string, s spec.Swagger) error {
-
+func generateClient(packageName, basePath string, s spec.Swagger) error {
 	codeTemplate := clientCodeTemplate{
 		PackageName:          packageName,
 		ServiceName:          s.Info.InfoProps.Title,
@@ -227,7 +226,7 @@ func generateClient(packageName, packagePath string, s spec.Swagger) error {
 		return err
 	}
 
-	g := swagger.Generator{PackagePath: packagePath}
+	g := swagger.Generator{BasePath: basePath}
 	g.Printf(clientCode)
 	return g.WriteFile("client/client.go")
 }
@@ -248,8 +247,8 @@ func IsBinaryParam(param spec.Parameter, definitions map[string]spec.Schema) boo
 	return definitions[definitionName].Format == "binary"
 }
 
-func generateInterface(packageName, packagePath string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
-	g := swagger.Generator{PackagePath: packagePath}
+func generateInterface(packageName, basePath string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
+	g := swagger.Generator{BasePath: basePath}
 	g.Printf("package client\n\n")
 	g.Printf(swagger.ImportStatements([]string{"context", packageName + "/models"}))
 	g.Printf("//go:generate mockgen -source=$GOFILE -destination=mock_client.go -package=client\n\n")
