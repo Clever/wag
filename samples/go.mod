@@ -2,6 +2,8 @@ module github.com/Clever/wag/samples/v8
 
 go 1.16
 
+replace github.com/Clever/discovery-go => /Users/chris.martin/go/src/github.com/Clever/discovery-go
+
 require (
 	github.com/Clever/discovery-go v1.7.2
 	github.com/Clever/go-process-metrics v0.2.0

@@ -1,0 +1,485 @@
+make all --print-data-base --no-builtin-variables --no-builtin-rules --question
+# GNU Make 3.81
+# Copyright (C) 2006  Free Software Foundation, Inc.
+# This is free software; see the source for copying conditions.
+# There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
+
+# This program built for i386-apple-darwin11.3.0
+ 
+Makefile:5: *** "Node "v7" is required, use nvm to install / use it".  Stop.
+
+
+# Make data base, printed on Thu Jun 16 11:40:58 2022
+
+# Variables
+
+# automatic
+<D = $(patsubst %/,%,$(dir $<))
+ 
+# automatic
+?F = $(notdir $?)
+# makefile (from `golang.mk', line 4)
+GOLANG_MK_VERSION := 1.0.1
+# environment
+VSCODE_LOG_NATIVE = false
+# makefile (from `Makefile', line 4)
+NODE_VERSION := "v7"
+# makefile (from `golang.mk', line 133)
+define golang-test-all-strict
+$(call golang-fmt,$(1))
+$(call golang-lint-strict,$(1))
+$(call golang-vet,$(1))
+$(call golang-test-strict,$(1))
+endef
+# automatic
+?D = $(patsubst %/,%,$(dir $?))
+# environment
+SSH_AUTH_SOCK = ~/.ssh/agent
+# automatic
+@D = $(patsubst %/,%,$(dir $@))
+# automatic
+@F = $(notdir $@)
+# makefile
+CURDIR := /Users/chris.martin/go/src/github.com/Clever/wag
+# makefile (from `node.mk', line 5)
+SHELL := /bin/bash
+# environment
+VSCODE_NLS_CONFIG = {"locale":"en-us","availableLanguages":{},"_languagePackSupport":true}
+# makefile (from `golang.mk', line 11)
+TZ = UTC
+# environment
+_ = /usr/bin/make
+# makefile (from `node.mk', line 1)
+MAKEFILE_LIST :=  Makefile golang.mk node.mk
+# makefile (from `golang.mk', line 110)
+define golang-vet
+@echo "VETTING $(1)..."
+@go vet $(1)
+endef
+# environment
+VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
+# environment
+VSCODE_VERBOSE_LOGGING = true
+# makefile (from `golang.mk', line 7)
+SYSTEM := darwin
+# environment
+__CFBundleIdentifier = com.microsoft.VSCode
+# environment
+INFOPATH = /opt/homebrew/share/info:
+# environment
+VSCODE_IPC_HOOK_EXTHOST = /var/folders/b7/x7tpm4rs7l10c3mcml9vjssr0000gn/T/vscode-ipc-c52b484c-97d5-4550-8b69-79c60d095171.sock
+# makefile (from `golang.mk', line 23)
+golang-version-check = _ := $(if $(shell expr >/dev/null `go version | cut -d" " -f3 | cut -c3- | cut -d. -f2 | sed -E 's/beta[0-9]+//'` \>= `echo $(1) | cut -d. -f2` \& `go version | cut -d" " -f3 | cut -c3- | cut -d. -f1` = `echo $(1) | cut -d. -f1` && echo 1), @echo "", $(error must be running Go version ^$(1) - you are running $(shell go version | cut -d" " -f3 | cut -c3-)))
+# environment
+VSCODE_CWD = /
+# environment
+GOPROXY = https://proxy.golang.org,direct
+# environment
+PATH = /Users/chris.martin/.nvm/versions/node/v14.19.2/bin:/Library/Frameworks/Python.framework/Versions/2.7/bin:/Applications/SnowSQL.app/Contents/MacOS:/opt/homebrew/bin:/opt/homebrew/sbin:/Library/Frameworks/Python.framework/Versions/3.10/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Applications/VMware Fusion Tech Preview.app/Contents/Public:/usr/local/go/bin:/Users/chris.martin/go/bin
+# makefile (from `golang.mk', line 59)
+define golang-fmt
+@echo "FORMATTING $(1)..."
+@PKG_PATH=$$(go list -f '{{.Dir}}' $(1)); $(FGT) gofmt -l=true $${PKG_PATH}/*.go
+endef
+# makefile (from `golang.mk', line 50)
+GOLINT := /Users/chris.martin/go/bin/golint
+# makefile (from `golang.mk', line 17)
+GOPATH = $(shell echo $$GOPATH | cut -d: -f1)
+# environment
+NVM_BIN = /Users/chris.martin/.nvm/versions/node/v14.19.2/bin
+# environment
+LaunchInstanceID = F0B01F65-83DF-4BE1-8124-DE1EABBEE31D
+# environment
+VSCODE_LOG_STACK = false
+# environment
+ELECTRON_RUN_AS_NODE = 1
+# default
+.FEATURES := target-specific order-only second-expansion else-if archives jobserver check-symlink
+# environment
+GITHUB_API_TOKEN = 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
+# automatic
+%F = $(notdir $%)
+# makefile (from `node.mk', line 9)
+node-version-check = _ := $(if $(shell node -v | grep $(1)), @echo "", $(error "Node $(1) is required, use nvm to install / use it"))
+# environment
+VSCODE_PIPE_LOGGING = true
+# environment
+PWD = /Users/chris.martin/go/src/github.com/Clever/wag
+# environment
+HOMEBREW_CELLAR = /opt/homebrew/Cellar
+# environment
+ORIGINAL_XDG_CURRENT_DESKTOP = undefined
+# environment
+MANPATH = /Users/chris.martin/.nvm/versions/node/v14.19.2/share/man:/opt/homebrew/share/man::
+# makefile (from `node.mk', line 4)
+NODE_MK_VERSION := 0.3.3
+# environment
+GOMODCACHE = /Users/chris.martin/go/pkg/mod
+# environment
+HOME = /Users/chris.martin
+# makefile (from `node.mk', line 87)
+NODE_ALL_FILES := ./samples/gen-js/index.d.ts ./samples/test/js/paging.ts ./samples/test/js/circuit_breaker.ts ./samples/gen-js-deprecated/index.d.ts ./samples/gen-js-db/index.d.ts ./samples/gen-js-client-only/index.d.ts ./samples/gen-js-db-custom-path/index.d.ts ./samples/gen-js-nils/index.d.ts ./samples/gen-js-errors/index.d.ts ./samples/gen-js-blog/index.d.ts
+# makefile (from `golang.mk', line 143)
+define golang-build
+@echo "BUILDING..."
+@if [ -z "$$CI" ]; then go build -o bin/$(2) $(1); else echo "-> Building CGO binary"; CGO_ENABLED=0 go build -installsuffix cgo -o bin/$(2) $(1); fi;
+endef
+# default
+MAKEFILEPATH = $(shell /usr/bin/xcode-select -print-path 2>/dev/null || echo /Developer)/Makefiles
+# environment
+VSCODE_CODE_CACHE_PATH = /Users/chris.martin/Library/Application Support/Code/CachedData/da15b6fd3ef856477bf6f4fb29ba1b7af717770d
+# environment
+LOGNAME = chris.martin
+# environment
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
+# environment
+NVM_CD_FLAGS = -q
+# environment
+VSCODE_HANDLES_UNCAUGHT_ERRORS = true
+# automatic
+^D = $(patsubst %/,%,$(dir $^))
+# environment
+XPC_FLAGS = 0x0
+# default
+MAKE = $(MAKE_COMMAND)
+# default
+MAKECMDGOALS := all
+# environment
+SHLVL = 1
+# environment
+CODE_HOME = /Users/chris.martin/go/src/github.com/Clever
+# environment
+AWS_PROFILE = main-engineer
+# default
+MAKE_VERSION := 3.81
+# environment
+USER = chris.martin
+# makefile (from `Makefile', line 3)
+.DEFAULT_GOAL := test 
+# makefile (from `node.mk', line 39)
+define node-guarded-lint
+@$(2) $(3) > /tmp/lint-output.txt || true
+@# look for eslint/tslint-esque problem count, fall back to counting number of ✖'s
+@sed -n 's/^✖ \(.*\) problems.*/\1/p' /tmp/lint-output.txt > /tmp/lint-problem-count
+@if [[ `cat /tmp/lint-problem-count` = "" ]]; then cat /tmp/lint-output.txt | sed -e 's/\(.\)/\1\n/g' | grep '✖' | wc -l > /tmp/lint-problem-count; fi
+@if [ "`cat /tmp/lint-problem-count`" -gt "$(4)" ]; then cat /tmp/lint-output.txt; echo -e "\033[0;31m✖  Added $(1) errors. Please don't introduce new lint errors! If you are decaffeinating a file, you may increase the $(1) problem count in the Makefile.\033[0m"; echo "  Expected: $(4)"; echo -e "  Actual: \033[0;31m`cat /tmp/lint-problem-count`\033[0m\n"; exit 1; elif [ "`cat /tmp/lint-problem-count`" -lt "$(4)" ]; then echo -e "\033[0;31m✖  Congrats! You have decreased the $(1) problem count. Please lower the count in the Makefile.\033[0m"; echo "  Expected: $(4)"; echo -e "  Actual: \033[0;32m`cat /tmp/lint-problem-count`\033[0m\n"; exit 1; else echo "✓  No new $(1) errors found."; fi
+endef
+# automatic
+%D = $(patsubst %/,%,$(dir $%))
+# default
+MAKE_COMMAND := /Library/Developer/CommandLineTools/usr/bin/make
+# default
+.VARIABLES := 
+# environment
+TMPDIR = /var/folders/b7/x7tpm4rs7l10c3mcml9vjssr0000gn/T/
+ 
+# automatic
+*F = $(notdir $*)
+# environment
+VSCODE_IPC_HOOK = /Users/chris.martin/Library/Application Support/Code/1.67.1-main.sock
+# makefile
+MAKEFLAGS = Rrqp
+# environment
+MFLAGS = -Rrqp
+# automatic
+*D = $(patsubst %/,%,$(dir $*))
+# environment
+NVM_DIR = /Users/chris.martin/.nvm
+# environment
+XPC_SERVICE_NAME = application.com.microsoft.VSCode.9883385.9883391
+# environment
+HOMEBREW_PREFIX = /opt/homebrew
+# automatic
++D = $(patsubst %/,%,$(dir $+))
+# automatic
++F = $(notdir $+)
+# makefile (from `golang.mk', line 80)
+define golang-lint-strict
+@echo "LINTING $(1)..."
+@PKG_PATH=$$(go list -f '{{.Dir}}' $(1)); find $${PKG_PATH}/*.go -type f | grep -v gen_ | xargs $(FGT) $(GOLINT)
+endef
+# makefile (from `node.mk', line 19)
+define node-coffeescript-file-count-check
+@echo -e "\nChecking count of coffeescript files"
+@git ls-files '*.coffee' | wc -l | tr -d ' ' > /tmp/node-coffee-file-count
+@if [ "`cat /tmp/node-coffee-file-count`" -eq "$(1)" ]; then echo -e "\033[0;32m✓ No change in file count.\033[0m\n"; elif [ "`cat /tmp/node-coffee-file-count`" -gt "$(1)" ]; then echo -e "\033[0;31m✖ Found new coffeescript file(s). All new modules should be written in ES6.\033[0m\n"; exit 1; else echo -e "\033[0;31m✖ Congrats! You have reduced the file count to `cat /tmp/node-coffee-file-count`. Please lower the expected count in the Makefile.\033[0m\n"; exit 1; fi
+endef
+# environment
+HOMEBREW_REPOSITORY = /opt/homebrew
+# environment
+__CF_USER_TEXT_ENCODING = 0x1F5:0x0:0x0
+# makefile (from `golang.mk', line 69)
+define golang-lint
+@echo "LINTING $(1)..."
+@PKG_PATH=$$(go list -f '{{.Dir}}' $(1)); find $${PKG_PATH}/*.go -type f | grep -v gen_ | xargs $(GOLINT)
+endef
+# environment
+COMMAND_MODE = unix2003
+# default
+MAKEFILES := 
+# automatic
+<F = $(notdir $<)
+# environment
+GOPRIVATE = github.com/Clever/*
+# makefile (from `golang.mk', line 14)
+GOFLAGS := -mod=vendor 
+# environment
+LC_ALL = C
+# makefile (from `golang.mk', line 120)
+define golang-test-all
+$(call golang-fmt,$(1))
+$(call golang-lint,$(1))
+$(call golang-vet,$(1))
+$(call golang-test,$(1))
+endef
+# environment
+AWS_ACCOUNT_NUMBER = 5896-9093-2525
+# environment
+SECURITYSESSIONID = 186b3
+# automatic
+^F = $(notdir $^)
+# default
+SUFFIXES := 
+# default
+.INCLUDE_DIRS = /usr/local/include
+# makefile (from `golang.mk', line 40)
+FGT := /Users/chris.martin/go/bin/fgt
+# environment
+MAKELEVEL := 0
+# makefile (from `golang.mk', line 100)
+define golang-test-strict
+@echo "TESTING $(1)..."
+@go test -v -race $(1)
+endef
+# environment
+LANG = C
+# environment
+VSCODE_PID = 685
+# makefile (from `golang.mk', line 90)
+define golang-test
+@echo "TESTING $(1)..."
+@go test -v $(1)
+endef
+# variable set hash-table stats:
+# Load=102/1024=10%, Rehash=0, Collisions=8/147=5%
+
+# Pattern-specific Variable Values
+
+# No pattern-specific variable values.
+
+# Directories
+
+# . (device 16777234, inode 14858684): 33 files, no impossibilities.
+
+# 33 files, no impossibilities in 1 directories.
+
+# Implicit Rules
+
+# No implicit rules.
+
+# Files
+
+node-prettier-format:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `node.mk', line 107):
+	@echo "Running prettier..."
+	@./node_modules/.bin/prettier --write $(NODE_ALL_FILES)
+	
+
+# Not a target:
+golang.mk:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+all:
+#  Command-line target.
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+.PHONY: golang-test-deps golang-ensure-curl-installed node-coffee-edit-check node-update-makefile node-format node-lint node-prettier-lint node-tslint node-prettier-format node-tslint-fix
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+golang-ensure-curl-installed:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `golang.mk', line 45):
+	@command -v curl >/dev/null 2>&1 || { echo >&2 "curl not installed. Please install curl."; exit 1; }
+	
+
+golang-lint-deps: /Users/chris.martin/go/bin/golint
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+/Users/chris.martin/go/bin/fgt:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `golang.mk', line 42):
+	go install -mod=readonly github.com/GeertJohan/fgt@262f7b11eec07dc7b147c44641236f3212fee89d
+	
+
+# Not a target:
+.SUFFIXES:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+Makefile:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+node-tslint:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `node.mk', line 102):
+	@echo "Running tslint..."
+	@./node_modules/.bin/tslint --project tsconfig.json -t verbose $(NODE_ALL_FILES)
+	
+
+node-tslint-fix:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `node.mk', line 112):
+	@echo "Running tslint fix..."
+	@./node_modules/.bin/tslint --fix --project tsconfig.json -t verbose $(NODE_ALL_FILES)
+	
+
+golang-fmt-deps: /Users/chris.martin/go/bin/fgt
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+/Users/chris.martin/go/bin/golint:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `golang.mk', line 52):
+	go install -mod=readonly golang.org/x/lint/golint@738671d3881b9731cc63024d5d88cf28db875626
+	
+
+golang-lint-deps-strict: /Users/chris.martin/go/bin/golint /Users/chris.martin/go/bin/fgt
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+.DEFAULT:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+node-lint: node-prettier-lint node-tslint
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+node-coffee-edit-check:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `node.mk', line 67):
+	@coffee_edits=$$(git diff $(git merge-base master HEAD) --stat | grep '\.coffee.*+');  \
+	if [[ $$? != 1 ]]; then  \
+	echo "You're not allowed to edit coffeescript files. Please decaffeinate the following files: ";  \
+	echo "$$coffee_edits" | awk '{ print "-", $$1 }';  \
+	echo;  \
+	echo "Don't know how to do this? Read https://clever.atlassian.net/wiki/display/ENG/ES6+at+Clever#ES6atClever-decaffeinate.";  \
+	echo;  \
+	exit 1;  \
+	fi
+	
+
+golang-test-strict-deps:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+golang-test-deps:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+node-prettier-lint:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `node.mk', line 97):
+	@echo "Running prettier lint..."
+	@./node_modules/.bin/prettier -l $(NODE_ALL_FILES)
+	
+
+node-update-makefile:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `node.mk', line 80):
+	@wget https://raw.githubusercontent.com/Clever/dev-handbook/master/make/node.mk -O /tmp/node.mk 2>/dev/null
+	@if ! grep -q $(NODE_MK_VERSION) /tmp/node.mk; then cp /tmp/node.mk node.mk && echo "node.mk updated"; else echo "node.mk is up-to-date"; fi
+	
+
+golang-test-all-strict-deps: golang-fmt-deps golang-lint-deps-strict golang-test-strict-deps golang-vet-deps
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+ 
+#  File has not been updated.
+
+golang-test-all-deps: golang-fmt-deps golang-lint-deps golang-test-deps golang-vet-deps
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+golang-update-makefile:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `golang.mk', line 155):
+	@wget https://raw.githubusercontent.com/Clever/dev-handbook/master/make/golang-v1.mk -O /tmp/golang.mk 2>/dev/null
+	@if ! grep -q $(GOLANG_MK_VERSION) /tmp/golang.mk; then cp /tmp/golang.mk golang.mk && echo "golang.mk updated"; else echo "golang.mk is up-to-date"; fi
+	
+
+node-format: node-prettier-format node-tslint-fix
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+golang-vet-deps:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+node.mk:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# files hash-table stats:
+# Load=27/1024=3%, Rehash=0, Collisions=1/38=3%
+# VPATH Search Paths
+
+# No `vpath' search paths.
+
+# No general (`VPATH' variable) search path.
+
+# # of strings in strcache: 3
+# # of strcache buffers: 1
+# strcache size: total = 4096 / max = 4096 / min = 4096 / avg = 4096
+# strcache free: total = 4069 / max = 4069 / min = 4069 / avg = 4069
+
+# Finished Make data base on Thu Jun 16 11:40:58 2022
+
+ 
