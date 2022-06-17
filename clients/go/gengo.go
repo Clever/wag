@@ -32,7 +32,7 @@ type clientCodeTemplate struct {
 var clientCodeTemplateStr = `
 package client
 
-// Using Alpha version of WAG
+// Using Alpha version of WAG Yay!
 
 import (
 		"context"
@@ -50,7 +50,6 @@ import (
 		"{{.PackageName}}/tracing"
 		discovery "github.com/Clever/discovery-go"
 		"github.com/afex/hystrix-go/hystrix"
-		logger "gopkg.in/Clever/kayvee-go.v6/logger"
 )
 
 var _ = json.Marshal
@@ -74,7 +73,7 @@ type WagClient struct {
 	// Keep the circuit doer around so that we can turn it on / off
 	circuitDoer    *circuitBreakerDoer
 	defaultTimeout time.Duration
-	logger       logger.KayveeLogger
+	// logger       logger.KayveeLogger
 }
 
 var _ Client = (*WagClient)(nil)
@@ -86,14 +85,14 @@ func New(basePath string) *WagClient {
 	// For the short-term don't use the default retry policy since its 5 retries can 5X
 	// the traffic. Once we've enabled circuit breakers by default we can turn it on.
 	retry := retryDoer{d: base, retryPolicy: SingleRetryPolicy{}}
-	logger := logger.New("{{.ServiceName}}-wagclient")
+	// logger := logger.New("{{.ServiceName}}-wagclient")
 	circuit := &circuitBreakerDoer{
 		d:     &retry,
 		// TODO: INFRANG-4404 allow passing circuitBreakerOptions
 		debug: true,
 		// one circuit for each service + url pair
 		circuitName: fmt.Sprintf("{{.ServiceName}}-%%s", shortHash(basePath)),
-		logger: logger,
+		// logger: logger,
 	}
 	circuit.init()
 	client := &WagClient{
@@ -105,7 +104,7 @@ func New(basePath string) *WagClient {
 		retryDoer: &retry,
 		circuitDoer: circuit,
 		defaultTimeout: 5 * time.Second,
-		logger: logger,
+		// logger: logger,
 	}
 	client.SetCircuitBreakerSettings(DefaultCircuitBreakerSettings)
 	return client
@@ -135,10 +134,10 @@ func (c *WagClient) SetCircuitBreakerDebug(b bool) {
 }
 
 // SetLogger allows for setting a custom logger
-func (c *WagClient) SetLogger(logger logger.KayveeLogger) {
-	c.logger = logger
-	c.circuitDoer.logger = logger
-}
+// func (c *WagClient) SetLogger(logger logger.KayveeLogger) {
+// 	c.logger = logger
+// 	c.circuitDoer.logger = logger
+// }
 
 // CircuitBreakerSettings are the parameters that govern the client's circuit breaker.
 type CircuitBreakerSettings struct {
@@ -429,19 +428,19 @@ func (c *WagClient) do%sRequest(ctx context.Context, req *http.Request, headers 
 	}
 
 	// log all client failures and non-successful HT
-	logData := logger.M{
-		"backend": "%s",
-		"method": req.Method,
-		"uri": req.URL,
-		"status_code": retCode,
-	}
+	// logData := logger.M{
+	// 	"backend": "%s",
+	// 	"method": req.Method,
+	// 	"uri": req.URL,
+	// 	"status_code": retCode,
+	// }
 	if err == nil && retCode > 399 {
-		logData["message"] = resp.Status
-		c.logger.ErrorD("client-request-finished", logData)
+		// logData["message"] = resp.Status
+		// c.logger.ErrorD("client-request-finished", logData)
 	}
 	if err != nil {
-		logData["message"] = err.Error()
-		c.logger.ErrorD("client-request-finished", logData)
+		// logData["message"] = err.Error()
+		// c.logger.ErrorD("client-request-finished", logData)
 		return %serr
 	}
 	defer resp.Body.Close()

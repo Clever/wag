@@ -15,7 +15,6 @@ import (
 
 	"github.com/afex/hystrix-go/hystrix"
 	"github.com/donovanhide/eventsource"
-	"golang.org/x/net/context/ctxhttp"
 	logger "gopkg.in/Clever/kayvee-go.v6/logger"
 )
 
@@ -30,7 +29,8 @@ type opNameCtx struct{}
 type baseDoer struct{}
 
 func (d baseDoer) Do(c *http.Client, r *http.Request) (*http.Response, error) {
-	return ctxhttp.Do(r.Context(), c, r)
+	return c.Do(r)
+	// return ctxhttp.Do(r.Context(), c, r)
 }
 
 // retryHandler retries 50X http requests
