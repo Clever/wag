@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -51,9 +52,47 @@ func Generate(packagePath string, s spec.Swagger) error {
 	if err := generateInputs(packagePath, s); err != nil {
 		return fmt.Errorf("error generating inputs: %s", err)
 	}
+	if err := CreateModFile("models/go.mod", packagePath); err != nil {
+		return fmt.Errorf("error creating go.mod file: %s", err)
+	}
 	return nil
 }
 
+//CreateModFile creates a go.mod file for the client module.
+func CreateModFile(path string, packagePath string) error {
+
+	absPath := filepath.Join(os.Getenv("GOPATH"), "src", packagePath, path)
+	f, err := os.Create(absPath)
+
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+	modFileString := `
+module github.com/Clever/dapple/models
+
+go 1.16
+
+require (
+	github.com/go-openapi/errors v0.20.2
+	github.com/go-openapi/strfmt v0.21.2
+	github.com/go-openapi/swag v0.21.1
+	github.com/go-openapi/validate v0.22.0
+	github.com/google/go-cmp v0.5.5 // indirect
+	github.com/google/uuid v1.1.2 // indirect
+	golang.org/x/net v0.0.0-20210614182718-04defd469f4e // indirect
+)
+
+	`
+	_, err = f.WriteString(modFileString)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 func generateInputs(packagePath string, s spec.Swagger) error {
 
 	g := swagger.Generator{PackagePath: packagePath}
