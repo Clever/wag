@@ -25,6 +25,7 @@ func Generate(packageName, packagePath string, s spec.Swagger) error {
 
 type clientCodeTemplate struct {
 	PackageName          string
+	PackagePath          string
 	ServiceName          string
 	FormattedServiceName string
 	Operations           []string
@@ -48,7 +49,7 @@ import (
 		"fmt"
 		"crypto/md5"
 
-		"{{.PackageName}}/models"
+		"{{.PackagePath}}/models"
 		discovery "github.com/Clever/discovery-go"
 		"github.com/afex/hystrix-go/hystrix"
 )
@@ -87,10 +88,11 @@ func (w WagClientPrintlnLogger) Log(level int, message string, m map[string]inte
 type WagClientLogger interface {
 	Log(level int, message string, pairs map[string]interface{})
 }
-
+var CRITICALD int = 0
 var ERRORD int = 1
 var WARND int = 2
 var INFOD int = 3
+var DEBUGD int = 4
 
 // WagClient is used to make requests to the {{.ServiceName}} service.
 type WagClient struct {
@@ -230,6 +232,7 @@ func shortHash(s string) string {
 func generateClient(packageName, packagePath string, s spec.Swagger) error {
 
 	codeTemplate := clientCodeTemplate{
+		PackagePath:          packagePath,
 		PackageName:          packageName,
 		ServiceName:          s.Info.InfoProps.Title,
 		FormattedServiceName: strings.ToUpper(strings.Replace(s.Info.InfoProps.Title, "-", "_", -1)),
@@ -280,12 +283,12 @@ func CreateModFile(path string, packagePath string, packageName string) error {
 
 	defer f.Close()
 	modFileString := `
-module ` + packagePath + `/client
+module ` + packageName + `/client
 
 go 1.16
 
 require (
-	` + packageName + `/models v0.0.0-00010101000000-000000000000
+	` + packagePath + `/models v0.0.0
 	github.com/Clever/discovery-go v1.7.2
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b
@@ -321,8 +324,6 @@ require (
 	gopkg.in/Clever/kayvee-go.v6 v6.27.0 // indirect //Still want to remove this once I merge discovery-go PR. 
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
-
-replace github.com/Clever/dapple/gen-go/models => ../models
 `
 	_, err = f.WriteString(modFileString)
 

@@ -15,9 +15,10 @@ require (
 	github.com/go-openapi/validate v0.19.15
 	github.com/go-swagger/go-swagger v0.23.0
 	github.com/golang/mock v1.6.0
+	github.com/google/go-cmp v0.5.6 // indirect
+	github.com/google/uuid v1.1.2 // indirect
 	github.com/kevinburke/go-bindata v3.23.0+incompatible
 	github.com/stretchr/testify v1.7.2
-	google.golang.org/grpc v1.37.0 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
 )
 

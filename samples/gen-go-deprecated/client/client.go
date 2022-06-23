@@ -14,7 +14,7 @@ import (
 	"time"
 
 	discovery "github.com/Clever/discovery-go"
-	"github.com/Clever/wag/samples/v8/gen-go-deprecated/models"
+	"github.com/Clever/wag/samples/gen-go-deprecated/models"
 	"github.com/afex/hystrix-go/hystrix"
 )
 
