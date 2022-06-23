@@ -15,14 +15,14 @@ import (
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
 
-	goclient "github.com/Clever/wag/v8/clients/go"
 	jsclient "github.com/Clever/wag/v8/clients/js"
 	"github.com/Clever/wag/v8/hardcoded"
-	"github.com/Clever/wag/v8/models"
 	"github.com/Clever/wag/v8/server"
 	"github.com/Clever/wag/v8/server/gendb"
 	"github.com/Clever/wag/v8/swagger"
 	"github.com/Clever/wag/v8/validation"
+	goclient "github.com/Clever/wag/v9/clients/go"
+	"github.com/Clever/wag/v9/models"
 )
 
 // config contains the configuration of command line flags and configuration derived from command line flags
@@ -193,6 +193,8 @@ func generateGoClient(goClientPath, goPackageName, goPackagePath string, swagger
 	if err := doerGenerator.WriteFile("client/doer.go"); err != nil {
 		return fmt.Errorf("Failed to copy doer.go: %s", err)
 	}
+	fmt.Println("---- I should now have created the DOER ----")
+
 	return nil
 }
 

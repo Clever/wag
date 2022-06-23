@@ -1,5 +1,7 @@
 package client
 
+// Using Alpha version of WAG Yay!
+
 import (
 	"bytes"
 	"context"
@@ -13,9 +15,7 @@ import (
 
 	discovery "github.com/Clever/discovery-go"
 	"github.com/Clever/wag/samples/v8/gen-go-client-only/models"
-	"github.com/Clever/wag/samples/v8/gen-go-client-only/tracing"
 	"github.com/afex/hystrix-go/hystrix"
-	logger "gopkg.in/Clever/kayvee-go.v6/logger"
 )
 
 var _ = json.Marshal
@@ -29,6 +29,34 @@ const Version = "0.1.0"
 // VersionHeader is sent with every request.
 const VersionHeader = "X-Client-Version"
 
+func NewLogger(id string, level int) WagClientLogger {
+	return WagClientPrintlnLogger{id: id, level: level}
+}
+
+type WagClientPrintlnLogger struct {
+	level int
+	id    string
+}
+
+func (w WagClientPrintlnLogger) Log(level int, message string, m map[string]interface{}) {
+	if w.level >= level {
+		fmt.Print(w.id, ": ")
+		fmt.Print(message)
+		for k, v := range m {
+			fmt.Print(" ", k, " : ", v)
+		}
+		fmt.Println()
+	}
+}
+
+type WagClientLogger interface {
+	Log(level int, message string, pairs map[string]interface{})
+}
+
+var ERRORD int = 1
+var WARND int = 2
+var INFOD int = 3
+
 // WagClient is used to make requests to the swagger-test service.
 type WagClient struct {
 	basePath    string
@@ -39,7 +67,7 @@ type WagClient struct {
 	// Keep the circuit doer around so that we can turn it on / off
 	circuitDoer    *circuitBreakerDoer
 	defaultTimeout time.Duration
-	logger         logger.KayveeLogger
+	logger         WagClientLogger
 }
 
 var _ Client = (*WagClient)(nil)
@@ -51,7 +79,7 @@ func New(basePath string) *WagClient {
 	// For the short-term don't use the default retry policy since its 5 retries can 5X
 	// the traffic. Once we've enabled circuit breakers by default we can turn it on.
 	retry := retryDoer{d: base, retryPolicy: SingleRetryPolicy{}}
-	logger := logger.New("swagger-test-wagclient")
+	logger := NewLogger("swagger-test-wagclient", 3)
 	circuit := &circuitBreakerDoer{
 		d: &retry,
 		// TODO: INFRANG-4404 allow passing circuitBreakerOptions
@@ -64,8 +92,8 @@ func New(basePath string) *WagClient {
 	client := &WagClient{
 		basePath:    basePath,
 		requestDoer: circuit,
-		client: &http.Client{
-			Transport: tracing.NewTransport(http.DefaultTransport, opNameCtx{}),
+		client:      &http.Client{
+			// Transport: tracing.NewTransport(http.DefaultTransport, opNameCtx{}),
 		},
 		retryDoer:      &retry,
 		circuitDoer:    circuit,
@@ -100,7 +128,7 @@ func (c *WagClient) SetCircuitBreakerDebug(b bool) {
 }
 
 // SetLogger allows for setting a custom logger
-func (c *WagClient) SetLogger(logger logger.KayveeLogger) {
+func (c *WagClient) SetLogger(logger WagClientLogger) {
 	c.logger = logger
 	c.circuitDoer.logger = logger
 }
@@ -152,7 +180,7 @@ func (c *WagClient) SetTimeout(timeout time.Duration) {
 
 // SetTransport sets the http transport used by the client.
 func (c *WagClient) SetTransport(t http.RoundTripper) {
-	c.client.Transport = tracing.NewTransport(t, opNameCtx{})
+	// c.client.Transport = tracing.NewTransport(t, opNameCtx{})
 }
 
 // GetAuthors makes a GET request to /authors
@@ -295,7 +323,7 @@ func (c *WagClient) doGetAuthorsRequest(ctx context.Context, req *http.Request, 
 	}
 
 	// log all client failures and non-successful HT
-	logData := logger.M{
+	logData := map[string]interface{}{
 		"backend":     "swagger-test",
 		"method":      req.Method,
 		"uri":         req.URL,
@@ -303,11 +331,11 @@ func (c *WagClient) doGetAuthorsRequest(ctx context.Context, req *http.Request, 
 	}
 	if err == nil && retCode > 399 {
 		logData["message"] = resp.Status
-		c.logger.ErrorD("client-request-finished", logData)
+		c.logger.Log(ERRORD, "client-request-finished", logData)
 	}
 	if err != nil {
 		logData["message"] = err.Error()
-		c.logger.ErrorD("client-request-finished", logData)
+		c.logger.Log(ERRORD, "client-request-finished", logData)
 		return nil, "", err
 	}
 	defer resp.Body.Close()
@@ -505,7 +533,7 @@ func (c *WagClient) doGetAuthorsWithPutRequest(ctx context.Context, req *http.Re
 	}
 
 	// log all client failures and non-successful HT
-	logData := logger.M{
+	logData := map[string]interface{}{
 		"backend":     "swagger-test",
 		"method":      req.Method,
 		"uri":         req.URL,
@@ -513,11 +541,11 @@ func (c *WagClient) doGetAuthorsWithPutRequest(ctx context.Context, req *http.Re
 	}
 	if err == nil && retCode > 399 {
 		logData["message"] = resp.Status
-		c.logger.ErrorD("client-request-finished", logData)
+		c.logger.Log(ERRORD, "client-request-finished", logData)
 	}
 	if err != nil {
 		logData["message"] = err.Error()
-		c.logger.ErrorD("client-request-finished", logData)
+		c.logger.Log(ERRORD, "client-request-finished", logData)
 		return nil, "", err
 	}
 	defer resp.Body.Close()
@@ -697,7 +725,7 @@ func (c *WagClient) doGetBooksRequest(ctx context.Context, req *http.Request, he
 	}
 
 	// log all client failures and non-successful HT
-	logData := logger.M{
+	logData := map[string]interface{}{
 		"backend":     "swagger-test",
 		"method":      req.Method,
 		"uri":         req.URL,
@@ -705,11 +733,11 @@ func (c *WagClient) doGetBooksRequest(ctx context.Context, req *http.Request, he
 	}
 	if err == nil && retCode > 399 {
 		logData["message"] = resp.Status
-		c.logger.ErrorD("client-request-finished", logData)
+		c.logger.Log(ERRORD, "client-request-finished", logData)
 	}
 	if err != nil {
 		logData["message"] = err.Error()
-		c.logger.ErrorD("client-request-finished", logData)
+		c.logger.Log(ERRORD, "client-request-finished", logData)
 		return nil, "", err
 	}
 	defer resp.Body.Close()
@@ -804,7 +832,7 @@ func (c *WagClient) doCreateBookRequest(ctx context.Context, req *http.Request, 
 	}
 
 	// log all client failures and non-successful HT
-	logData := logger.M{
+	logData := map[string]interface{}{
 		"backend":     "swagger-test",
 		"method":      req.Method,
 		"uri":         req.URL,
@@ -812,11 +840,11 @@ func (c *WagClient) doCreateBookRequest(ctx context.Context, req *http.Request, 
 	}
 	if err == nil && retCode > 399 {
 		logData["message"] = resp.Status
-		c.logger.ErrorD("client-request-finished", logData)
+		c.logger.Log(ERRORD, "client-request-finished", logData)
 	}
 	if err != nil {
 		logData["message"] = err.Error()
-		c.logger.ErrorD("client-request-finished", logData)
+		c.logger.Log(ERRORD, "client-request-finished", logData)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -911,7 +939,7 @@ func (c *WagClient) doPutBookRequest(ctx context.Context, req *http.Request, hea
 	}
 
 	// log all client failures and non-successful HT
-	logData := logger.M{
+	logData := map[string]interface{}{
 		"backend":     "swagger-test",
 		"method":      req.Method,
 		"uri":         req.URL,
@@ -919,11 +947,11 @@ func (c *WagClient) doPutBookRequest(ctx context.Context, req *http.Request, hea
 	}
 	if err == nil && retCode > 399 {
 		logData["message"] = resp.Status
-		c.logger.ErrorD("client-request-finished", logData)
+		c.logger.Log(ERRORD, "client-request-finished", logData)
 	}
 	if err != nil {
 		logData["message"] = err.Error()
-		c.logger.ErrorD("client-request-finished", logData)
+		c.logger.Log(ERRORD, "client-request-finished", logData)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -1019,7 +1047,7 @@ func (c *WagClient) doGetBookByIDRequest(ctx context.Context, req *http.Request,
 	}
 
 	// log all client failures and non-successful HT
-	logData := logger.M{
+	logData := map[string]interface{}{
 		"backend":     "swagger-test",
 		"method":      req.Method,
 		"uri":         req.URL,
@@ -1027,11 +1055,11 @@ func (c *WagClient) doGetBookByIDRequest(ctx context.Context, req *http.Request,
 	}
 	if err == nil && retCode > 399 {
 		logData["message"] = resp.Status
-		c.logger.ErrorD("client-request-finished", logData)
+		c.logger.Log(ERRORD, "client-request-finished", logData)
 	}
 	if err != nil {
 		logData["message"] = err.Error()
-		c.logger.ErrorD("client-request-finished", logData)
+		c.logger.Log(ERRORD, "client-request-finished", logData)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -1138,7 +1166,7 @@ func (c *WagClient) doGetBookByID2Request(ctx context.Context, req *http.Request
 	}
 
 	// log all client failures and non-successful HT
-	logData := logger.M{
+	logData := map[string]interface{}{
 		"backend":     "swagger-test",
 		"method":      req.Method,
 		"uri":         req.URL,
@@ -1146,11 +1174,11 @@ func (c *WagClient) doGetBookByID2Request(ctx context.Context, req *http.Request
 	}
 	if err == nil && retCode > 399 {
 		logData["message"] = resp.Status
-		c.logger.ErrorD("client-request-finished", logData)
+		c.logger.Log(ERRORD, "client-request-finished", logData)
 	}
 	if err != nil {
 		logData["message"] = err.Error()
-		c.logger.ErrorD("client-request-finished", logData)
+		c.logger.Log(ERRORD, "client-request-finished", logData)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -1242,7 +1270,7 @@ func (c *WagClient) doHealthCheckRequest(ctx context.Context, req *http.Request,
 	}
 
 	// log all client failures and non-successful HT
-	logData := logger.M{
+	logData := map[string]interface{}{
 		"backend":     "swagger-test",
 		"method":      req.Method,
 		"uri":         req.URL,
@@ -1250,11 +1278,11 @@ func (c *WagClient) doHealthCheckRequest(ctx context.Context, req *http.Request,
 	}
 	if err == nil && retCode > 399 {
 		logData["message"] = resp.Status
-		c.logger.ErrorD("client-request-finished", logData)
+		c.logger.Log(ERRORD, "client-request-finished", logData)
 	}
 	if err != nil {
 		logData["message"] = err.Error()
-		c.logger.ErrorD("client-request-finished", logData)
+		c.logger.Log(ERRORD, "client-request-finished", logData)
 		return err
 	}
 	defer resp.Body.Close()

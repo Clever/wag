@@ -60,7 +60,7 @@ func Generate(packagePath string, s spec.Swagger) error {
 
 //CreateModFile creates a go.mod file for the client module.
 func CreateModFile(path string, packagePath string) error {
-
+	fmt.Println(packagePath)
 	absPath := filepath.Join(os.Getenv("GOPATH"), "src", packagePath, path)
 	f, err := os.Create(absPath)
 
@@ -70,7 +70,8 @@ func CreateModFile(path string, packagePath string) error {
 
 	defer f.Close()
 	modFileString := `
-module github.com/Clever/dapple/models
+module ` + packagePath + `/models
+
 
 go 1.16
 

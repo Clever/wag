@@ -64,6 +64,34 @@ const Version = "{{ .Version }}"
 // VersionHeader is sent with every request.
 const VersionHeader = "X-Client-Version"
 
+func NewLogger(id string, level int) WagClientLogger {
+	return WagClientPrintlnLogger{id: id, level: level}
+}
+
+type WagClientPrintlnLogger struct {
+	level int
+	id    string
+}
+
+func (w WagClientPrintlnLogger) Log(level int, message string, m map[string]interface{}) {
+	if w.level >= level {
+		fmt.Print(w.id, ": ")
+		fmt.Print(message)
+		for k, v := range m {
+			fmt.Print(" ", k, " : ", v)
+		}
+		fmt.Println()
+	}
+}
+
+type WagClientLogger interface {
+	Log(level int, message string, pairs map[string]interface{})
+}
+
+var ERRORD int = 1
+var WARND int = 2
+var INFOD int = 3
+
 // WagClient is used to make requests to the {{.ServiceName}} service.
 type WagClient struct {
 	basePath    string
@@ -74,7 +102,7 @@ type WagClient struct {
 	// Keep the circuit doer around so that we can turn it on / off
 	circuitDoer    *circuitBreakerDoer
 	defaultTimeout time.Duration
-	// logger       logger.KayveeLogger
+	logger      WagClientLogger
 }
 
 var _ Client = (*WagClient)(nil)
@@ -86,14 +114,14 @@ func New(basePath string) *WagClient {
 	// For the short-term don't use the default retry policy since its 5 retries can 5X
 	// the traffic. Once we've enabled circuit breakers by default we can turn it on.
 	retry := retryDoer{d: base, retryPolicy: SingleRetryPolicy{}}
-	// logger := logger.New("{{.ServiceName}}-wagclient")
+	logger := NewLogger("{{.ServiceName}}-wagclient", 3)
 	circuit := &circuitBreakerDoer{
 		d:     &retry,
 		// TODO: INFRANG-4404 allow passing circuitBreakerOptions
 		debug: true,
 		// one circuit for each service + url pair
 		circuitName: fmt.Sprintf("{{.ServiceName}}-%%s", shortHash(basePath)),
-		// logger: logger,
+		logger: logger,
 	}
 	circuit.init()
 	client := &WagClient{
@@ -105,7 +133,7 @@ func New(basePath string) *WagClient {
 		retryDoer: &retry,
 		circuitDoer: circuit,
 		defaultTimeout: 5 * time.Second,
-		// logger: logger,
+		 logger: logger,
 	}
 	client.SetCircuitBreakerSettings(DefaultCircuitBreakerSettings)
 	return client
@@ -135,10 +163,10 @@ func (c *WagClient) SetCircuitBreakerDebug(b bool) {
 }
 
 // SetLogger allows for setting a custom logger
-// func (c *WagClient) SetLogger(logger logger.KayveeLogger) {
-// 	c.logger = logger
-// 	c.circuitDoer.logger = logger
-// }
+func (c *WagClient) SetLogger(logger WagClientLogger) {
+	c.logger = logger
+	c.circuitDoer.logger = logger
+}
 
 // CircuitBreakerSettings are the parameters that govern the client's circuit breaker.
 type CircuitBreakerSettings struct {
@@ -236,12 +264,12 @@ func generateClient(packageName, packagePath string, s spec.Swagger) error {
 		return err
 	}
 
-	return CreateModFile("client/go.mod", packagePath)
+	return CreateModFile("client/go.mod", packagePath, packageName)
 
 }
 
 //CreateModFile creates a go.mod file for the client module.
-func CreateModFile(path string, packagePath string) error {
+func CreateModFile(path string, packagePath string, packageName string) error {
 
 	absPath := filepath.Join(os.Getenv("GOPATH"), "src", packagePath, path)
 	f, err := os.Create(absPath)
@@ -252,12 +280,12 @@ func CreateModFile(path string, packagePath string) error {
 
 	defer f.Close()
 	modFileString := `
-module github.com/Clever/dapple/client
+module ` + packagePath + `/client
 
 go 1.16
 
 require (
-	github.com/Clever/dapple/gen-go/models v0.0.0-00010101000000-000000000000
+	` + packageName + `/models v0.0.0-00010101000000-000000000000
 	github.com/Clever/discovery-go v1.7.2
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b
@@ -500,19 +528,19 @@ func (c *WagClient) do%sRequest(ctx context.Context, req *http.Request, headers 
 	}
 
 	// log all client failures and non-successful HT
-	// logData := logger.M{
-	// 	"backend": "%s",
-	// 	"method": req.Method,
-	// 	"uri": req.URL,
-	// 	"status_code": retCode,
-	// }
+	logData := map[string]interface{}{
+		"backend": "%s",
+		"method": req.Method,
+		"uri": req.URL,
+		"status_code": retCode,
+	}
 	if err == nil && retCode > 399 {
-		// logData["message"] = resp.Status
-		// c.logger.ErrorD("client-request-finished", logData)
+		logData["message"] = resp.Status
+		c.logger.Log(ERRORD, "client-request-finished", logData)
 	}
 	if err != nil {
-		// logData["message"] = err.Error()
-		// c.logger.ErrorD("client-request-finished", logData)
+		logData["message"] = err.Error()
+		c.logger.Log(ERRORD, "client-request-finished", logData)
 		return %serr
 	}
 	defer resp.Body.Close()

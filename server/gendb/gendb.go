@@ -15,7 +15,8 @@ import (
 	"github.com/go-swagger/go-swagger/generator"
 )
 
-//go:generate go-bindata -nometadata -ignore .*\.go$ -pkg gendb -prefix $PWD/server/gendb/ $PWD/server/gendb/
+//Originally: $PWD/server/gendb/ $PWD/server/gendb/ had to remove to build locally.
+//go:generate go-bindata -nometadata -ignore .*\.go$ -pkg gendb -prefix $PWD $PWD
 //go:generate gofmt -w bindata.go
 
 const xdbExtensionKey = "x-db"
