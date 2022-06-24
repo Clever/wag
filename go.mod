@@ -1,10 +1,9 @@
-module github.com/Clever/wag/v9
+module github.com/Clever/wag/v8
 
 go 1.16
 
 require (
 	github.com/Clever/go-utils v0.0.0-20180917210021-2dac0ec6f2ac
-	github.com/Clever/wag/v8 v8.2.1
 	github.com/awslabs/goformation/v2 v2.3.1
 	github.com/go-openapi/errors v0.19.4
 	github.com/go-openapi/jsonreference v0.20.0
@@ -18,7 +17,9 @@ require (
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/kevinburke/go-bindata v3.23.0+incompatible
+	github.com/pelletier/go-toml v1.9.1 // indirect
 	github.com/stretchr/testify v1.7.2
+	golang.org/x/text v0.3.6 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
 )
 

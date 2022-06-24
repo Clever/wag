@@ -4,7 +4,7 @@ module github.com/Clever/wag/samples/v8/gen-go-db-custom-path/client
 go 1.16
 
 require (
-	github.com/Clever/wag/samples/gen-go-db-custom-path/models v0.0.0
+	github.com/Clever/wag/samples/v8/gen-go-db-custom-path/models v0.0.0
 	github.com/Clever/discovery-go v1.7.2
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b
@@ -39,4 +39,6 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/Clever/kayvee-go.v6 v6.27.0 // indirect //Still want to remove this once I merge discovery-go PR. 
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+
+	replace github.com/Clever/wag/samples/v8/gen-go-db-custom-path/models => ../models
 )

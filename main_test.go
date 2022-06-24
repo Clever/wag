@@ -25,7 +25,6 @@ func Test_config_validate(t *testing.T) {
 				outputPath:         swag.String("output-path"),
 				goPackageName:      swag.String("github.com/Clever/wag/v9/output-path"),
 				jsModulePath:       swag.String("jsModulePath"),
-				goPackagePath:      "github.com/Clever/wag/output-path",
 				relativeDynamoPath: swag.String("server/db"),
 				generateDynamo:     true,
 				generateServer:     true,
@@ -48,7 +47,6 @@ func Test_config_validate(t *testing.T) {
 				outputPath:       swag.String("output-path"),
 				goPackageName:    swag.String("github.com/Clever/wag/v9/output-path"),
 				jsModulePath:     swag.String("jsModulePath"),
-				goPackagePath:    "github.com/Clever/wag/output-path",
 				generateServer:   false,
 				generateDynamo:   false,
 				generateTracing:  true,
@@ -70,7 +68,6 @@ func Test_config_validate(t *testing.T) {
 				clientLanguage:   swag.String("go"),
 				outputPath:       swag.String("output-path"),
 				goPackageName:    swag.String("github.com/Clever/wag/v9/output-path"),
-				goPackagePath:    "github.com/Clever/wag/output-path",
 				generateServer:   false,
 				generateDynamo:   false,
 				generateTracing:  true,
@@ -94,7 +91,6 @@ func Test_config_validate(t *testing.T) {
 				outputPath:       swag.String("output-path"),
 				goPackageName:    swag.String("github.com/Clever/wag/v9/output-path"),
 				jsModulePath:     swag.String("jsModulePath"),
-				goPackagePath:    "github.com/Clever/wag/output-path",
 				generateServer:   false,
 				generateDynamo:   false,
 				generateTracing:  false,
@@ -117,7 +113,6 @@ func Test_config_validate(t *testing.T) {
 				goPackageName:      swag.String("github.com/Clever/wag/v9/output-path"),
 				jsModulePath:       swag.String("jsModulePath"),
 				relativeDynamoPath: swag.String("server/db"),
-				goPackagePath:      "github.com/Clever/wag/output-path",
 				generateServer:     true,
 				generateDynamo:     true,
 				generateTracing:    true,
@@ -138,7 +133,6 @@ func Test_config_validate(t *testing.T) {
 				outputPath:         swag.String("output-path"),
 				goPackageName:      swag.String("github.com/Clever/wag/v9/output-path"),
 				relativeDynamoPath: swag.String("server/db"),
-				goPackagePath:      "github.com/Clever/wag/output-path",
 				generateServer:     true,
 				generateTracing:    true,
 				generateGoClient:   true,
@@ -177,7 +171,6 @@ func Test_config_validate(t *testing.T) {
 			output: config{
 				outputPath:         swag.String("output-path"),
 				goPackageName:      swag.String("github.com/Clever/wag/v9/output-path"),
-				goPackagePath:      "github.com/Clever/wag/output-path",
 				relativeDynamoPath: swag.String("gen-db/db"),
 				dynamoOnly:         swag.Bool(true),
 				generateServer:     false,
@@ -198,7 +191,6 @@ func Test_config_validate(t *testing.T) {
 			output: config{
 				outputPath:         swag.String("output-path"),
 				goPackageName:      swag.String("github.com/Clever/wag/v9/output-path"),
-				goPackagePath:      "github.com/Clever/wag/output-path",
 				relativeDynamoPath: swag.String("db"),
 				dynamoOnly:         swag.Bool(true),
 				generateServer:     false,
@@ -217,10 +209,6 @@ func Test_config_validate(t *testing.T) {
 				t.Errorf("config.validate() error = %v, wantErr %v", err, tt.wantErr)
 			} else if !tt.wantErr {
 				// clear paths so they are not diffed
-				tt.input.modelsPath = ""
-				tt.input.serverPath = ""
-				tt.input.tracingPath = ""
-				tt.input.goClientPath = ""
 				tt.input.jsClientPath = ""
 				tt.input.dynamoPath = ""
 				tt.input.goAbsolutePackagePath = ""

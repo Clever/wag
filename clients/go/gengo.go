@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 
 	"github.com/go-openapi/spec"
@@ -16,16 +15,15 @@ import (
 )
 
 // Generate generates a client
-func Generate(packageName, packagePath string, s spec.Swagger) error {
-	if err := generateClient(packageName, packagePath, s); err != nil {
+func Generate(packageName, basePath string, s spec.Swagger) error {
+	if err := generateClient(packageName, basePath, s); err != nil {
 		return err
 	}
-	return generateInterface(packageName, packagePath, &s, s.Info.InfoProps.Title, s.Paths)
+	return generateInterface(packageName, basePath, &s, s.Info.InfoProps.Title, s.Paths)
 }
 
 type clientCodeTemplate struct {
 	PackageName          string
-	PackagePath          string
 	ServiceName          string
 	FormattedServiceName string
 	Operations           []string
@@ -49,7 +47,7 @@ import (
 		"fmt"
 		"crypto/md5"
 
-		"{{.PackagePath}}/models"
+		"{{.PackageName}}/models"
 		discovery "github.com/Clever/discovery-go"
 		"github.com/afex/hystrix-go/hystrix"
 )
@@ -229,10 +227,9 @@ func shortHash(s string) string {
 }
 `
 
-func generateClient(packageName, packagePath string, s spec.Swagger) error {
+func generateClient(packageName, basePath string, s spec.Swagger) error {
 
 	codeTemplate := clientCodeTemplate{
-		PackagePath:          packagePath,
 		PackageName:          packageName,
 		ServiceName:          s.Info.InfoProps.Title,
 		FormattedServiceName: strings.ToUpper(strings.Replace(s.Info.InfoProps.Title, "-", "_", -1)),
@@ -260,21 +257,21 @@ func generateClient(packageName, packagePath string, s spec.Swagger) error {
 		return err
 	}
 
-	g := swagger.Generator{PackagePath: packagePath}
+	g := swagger.Generator{BasePath: basePath}
 	g.Printf(clientCode)
 	err = g.WriteFile("client/client.go")
 	if err != nil {
 		return err
 	}
 
-	return CreateModFile("client/go.mod", packagePath, packageName)
+	return CreateModFile("client/go.mod", basePath, packageName)
 
 }
 
 //CreateModFile creates a go.mod file for the client module.
-func CreateModFile(path string, packagePath string, packageName string) error {
+func CreateModFile(path string, basePath string, packageName string) error {
 
-	absPath := filepath.Join(os.Getenv("GOPATH"), "src", packagePath, path)
+	absPath := basePath + "/" + path
 	f, err := os.Create(absPath)
 
 	if err != nil {
@@ -288,7 +285,7 @@ module ` + packageName + `/client
 go 1.16
 
 require (
-	` + packagePath + `/models v0.0.0
+	` + packageName + `/models v0.0.0
 	github.com/Clever/discovery-go v1.7.2
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b
@@ -323,6 +320,8 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/Clever/kayvee-go.v6 v6.27.0 // indirect //Still want to remove this once I merge discovery-go PR. 
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+
+	replace ` + packageName + `/models => ../models
 )
 `
 	_, err = f.WriteString(modFileString)
@@ -349,9 +348,8 @@ func IsBinaryParam(param spec.Parameter, definitions map[string]spec.Schema) boo
 	definitionName := path.Base(param.Schema.Ref.Ref.GetURL().String())
 	return definitions[definitionName].Format == "binary"
 }
-
-func generateInterface(packageName, packagePath string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
-	g := swagger.Generator{PackagePath: packagePath}
+func generateInterface(packageName, basePath string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
+	g := swagger.Generator{BasePath: basePath}
 	g.Printf("package client\n\n")
 	g.Printf(swagger.ImportStatements([]string{"context", packageName + "/models"}))
 	g.Printf("//go:generate mockgen -source=$GOFILE -destination=mock_client.go -package=client\n\n")

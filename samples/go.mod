@@ -5,7 +5,6 @@ go 1.16
 require (
 	github.com/Clever/discovery-go v1.7.3
 	github.com/Clever/go-process-metrics v0.2.0
-	github.com/Clever/wag/v9 v9.0.2-alpha
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/aws/aws-sdk-go v1.38.25
 	github.com/donovanhide/eventsource v0.0.0-20210830082556-c59027999da0

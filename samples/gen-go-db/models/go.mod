@@ -1,5 +1,5 @@
 
-module github.com/Clever/wag/samples/gen-go-db/models
+module github.com/Clever/wag/samples/v8/gen-go-db/models
 
 
 go 1.16

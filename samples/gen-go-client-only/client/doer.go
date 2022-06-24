@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Clever/wag/logger"
 	"github.com/afex/hystrix-go/hystrix"
 	"github.com/donovanhide/eventsource"
 )
@@ -159,7 +160,7 @@ type circuitBreakerDoer struct {
 	d           doer
 	debug       bool
 	circuitName string
-	// logger      logger.KayveeLogger
+	logger      WagClientLogger
 }
 
 var circuitSSEOnce sync.Once
@@ -184,24 +185,23 @@ type HystrixSSEEvent struct {
 	LatencyTotalMean                int    `json:"latencyTotal_mean"`
 }
 
-// func logEvent(l logger.KayveeLogger, e HystrixSSEEvent) {
-// 	l.InfoD(e.Name, map[string]interface{}{
-// 		"requestCount":                    e.RequestCount,
-// 		"errorCount":                      e.ErrorCount,
-// 		"errorPercentage":                 e.ErrorPercentage,
-// 		"isCircuitBreakerOpen":            e.IsCircuitBreakerOpen,
-// 		"rollingCountFailure":             e.RollingCountFailure,
-// 		"rollingCountFallbackFailure":     e.RollingCountFallbackFailure,
-// 		"rollingCountFallbackSuccess":     e.RollingCountFallbackSuccess,
-// 		"rollingCountShortCircuited":      e.RollingCountShortCircuited,
-// 		"rollingCountSuccess":             e.RollingCountSuccess,
-// 		"rollingCountThreadPoolRejected":  e.RollingCountThreadPoolRejected,
-// 		"rollingCountTimeout":             e.RollingCountTimeout,
-// 		"currentConcurrentExecutionCount": e.CurrentConcurrentExecutionCount,
-// 		"latencyTotalMean":                e.LatencyTotalMean,
-// 	})
-
-// }
+func logEvent(l logger, e HystrixSSEEvent) {
+	l.Log("info", map[string]interface{}{
+		"requestCount":                    e.RequestCount,
+		"errorCount":                      e.ErrorCount,
+		"errorPercentage":                 e.ErrorPercentage,
+		"isCircuitBreakerOpen":            e.IsCircuitBreakerOpen,
+		"rollingCountFailure":             e.RollingCountFailure,
+		"rollingCountFallbackFailure":     e.RollingCountFallbackFailure,
+		"rollingCountFallbackSuccess":     e.RollingCountFallbackSuccess,
+		"rollingCountShortCircuited":      e.RollingCountShortCircuited,
+		"rollingCountSuccess":             e.RollingCountSuccess,
+		"rollingCountThreadPoolRejected":  e.RollingCountThreadPoolRejected,
+		"rollingCountTimeout":             e.RollingCountTimeout,
+		"currentConcurrentExecutionCount": e.CurrentConcurrentExecutionCount,
+		"latencyTotalMean":                e.LatencyTotalMean,
+	})
+}
 
 func (d *circuitBreakerDoer) init() {
 	// Periodically log internal circuit state to assist in setting
@@ -267,15 +267,15 @@ func (d *circuitBreakerDoer) init() {
 					// (3) 10 seconds have passed since we logged something for the circuit
 					if !ok {
 						lastEventLogTime[e.Name] = time.Now()
-						// logEvent(d.logger, e)
+						logEvent(d.logger, e)
 						continue
 					}
 					if lastSeen.IsCircuitBreakerOpen != e.IsCircuitBreakerOpen {
 						lastEventLogTime[e.Name] = time.Now()
-						// logEvent(d.logger, e)
+						logEvent(d.logger, e)
 					} else if time.Now().Sub(lastEventLogTime[e.Name]) > logFrequency {
 						lastEventLogTime[e.Name] = time.Now()
-						// logEvent(d.logger, e)
+						logEvent(d.logger, e)
 					}
 				}
 			}

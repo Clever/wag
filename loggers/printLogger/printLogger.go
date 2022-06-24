@@ -1,4 +1,4 @@
-package printlnLoggerInterface
+package printlnLogger
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 )
 
 //NewLogger creates a logger for id that produces logs at and below the indicated level.
-func NewLogger(id string, level int) logger.WagClientLogger {
+func NewLogger(id string, level string) logger.WagClientLogger {
 	return PrintlnLogger{id: id, level: level}
 }
 
@@ -16,8 +16,10 @@ type PrintlnLogger struct {
 	id    string
 }
 
-func (w PrintlnLogger) Log(level int, message string, m map[string]interface{}) {
-	if w.level >= level {
+func (w PrintlnLogger) Log(level string, message string, m map[string]interface{}) {
+	intLevel := w.strLvlToInt(level)
+
+	if w.level >= intLevel {
 		fmt.Print(w.id, ": ")
 		fmt.Print(message)
 		for k, v := range m {
@@ -25,4 +27,22 @@ func (w PrintlnLogger) Log(level int, message string, m map[string]interface{}) 
 		}
 		fmt.Println()
 	}
+}
+
+func (w PrintlnLogger) strLvlToInt(s string) int {
+	switch s {
+	case "Critical":
+		return 0
+	case "Error":
+		return 1
+	case "Warning":
+		return 2
+	case "Info":
+		return 3
+	case "Debug":
+		return 4
+	case "Trace":
+		return 5
+	}
+	return -1
 }

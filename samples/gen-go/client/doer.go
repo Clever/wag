@@ -13,10 +13,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Clever/wag/logger"
 	"github.com/afex/hystrix-go/hystrix"
 	"github.com/donovanhide/eventsource"
-	"golang.org/x/net/context/ctxhttp"
-	logger "gopkg.in/Clever/kayvee-go.v6/logger"
 )
 
 // doer is an interface for "doing" http requests possibly with wrapping
@@ -30,7 +29,8 @@ type opNameCtx struct{}
 type baseDoer struct{}
 
 func (d baseDoer) Do(c *http.Client, r *http.Request) (*http.Response, error) {
-	return ctxhttp.Do(r.Context(), c, r)
+	return c.Do(r)
+	// return ctxhttp.Do(r.Context(), c, r)
 }
 
 // retryHandler retries 50X http requests
@@ -160,7 +160,7 @@ type circuitBreakerDoer struct {
 	d           doer
 	debug       bool
 	circuitName string
-	logger      logger.KayveeLogger
+	logger      WagClientLogger
 }
 
 var circuitSSEOnce sync.Once
@@ -185,8 +185,8 @@ type HystrixSSEEvent struct {
 	LatencyTotalMean                int    `json:"latencyTotal_mean"`
 }
 
-func logEvent(l logger.KayveeLogger, e HystrixSSEEvent) {
-	l.InfoD(e.Name, map[string]interface{}{
+func logEvent(l logger, e HystrixSSEEvent) {
+	l.Log("info", map[string]interface{}{
 		"requestCount":                    e.RequestCount,
 		"errorCount":                      e.ErrorCount,
 		"errorPercentage":                 e.ErrorPercentage,
@@ -201,7 +201,6 @@ func logEvent(l logger.KayveeLogger, e HystrixSSEEvent) {
 		"currentConcurrentExecutionCount": e.CurrentConcurrentExecutionCount,
 		"latencyTotalMean":                e.LatencyTotalMean,
 	})
-
 }
 
 func (d *circuitBreakerDoer) init() {

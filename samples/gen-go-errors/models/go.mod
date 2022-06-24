@@ -1,5 +1,5 @@
 
-module github.com/Clever/wag/samples/gen-go-errors/models
+module github.com/Clever/wag/samples/v8/gen-go-errors/models
 
 
 go 1.16

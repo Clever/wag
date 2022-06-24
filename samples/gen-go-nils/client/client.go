@@ -14,7 +14,7 @@ import (
 	"time"
 
 	discovery "github.com/Clever/discovery-go"
-	"github.com/Clever/wag/samples/gen-go-nils/models"
+	"github.com/Clever/wag/samples/v8/gen-go-nils/models"
 	"github.com/afex/hystrix-go/hystrix"
 )
 
@@ -53,9 +53,11 @@ type WagClientLogger interface {
 	Log(level int, message string, pairs map[string]interface{})
 }
 
+var CRITICALD int = 0
 var ERRORD int = 1
 var WARND int = 2
 var INFOD int = 3
+var DEBUGD int = 4
 
 // WagClient is used to make requests to the nil-test service.
 type WagClient struct {
