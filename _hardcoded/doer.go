@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Clever/wag/loggers"
+	"github.com/Clever/wag/logger"
 	"github.com/afex/hystrix-go/hystrix"
 	"github.com/donovanhide/eventsource"
 )
@@ -160,7 +160,7 @@ type circuitBreakerDoer struct {
 	d           doer
 	debug       bool
 	circuitName string
-	logger      WagClientLogger
+	logger      logger.WagClientLogger
 }
 
 var circuitSSEOnce sync.Once

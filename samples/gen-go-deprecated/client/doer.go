@@ -160,7 +160,7 @@ type circuitBreakerDoer struct {
 	d           doer
 	debug       bool
 	circuitName string
-	logger      WagClientLogger
+	logger      logger.WagClientLogger
 }
 
 var circuitSSEOnce sync.Once
