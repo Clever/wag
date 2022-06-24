@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Clever/wag/logger"
+	"github.com/Clever/wag/loggers"
 	"github.com/afex/hystrix-go/hystrix"
 	"github.com/donovanhide/eventsource"
 )
