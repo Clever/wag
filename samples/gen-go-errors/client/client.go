@@ -225,11 +225,11 @@ func (c *WagClient) doGetBookRequest(ctx context.Context, req *http.Request, hea
 	}
 	if err == nil && retCode > 399 {
 		logData["message"] = resp.Status
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 	}
 	if err != nil {
 		logData["message"] = err.Error()
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 		return err
 	}
 	defer resp.Body.Close()

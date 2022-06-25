@@ -4,7 +4,8 @@ module github.com/Clever/wag/samples/v8/gen-go-blog/client
 go 1.16
 
 require (
-	github.com/Clever/wag/samples/v8/gen-go-blog/models v0.0.0
+	//removed this because it can never get the right version. Adding with: go get github.com/Clever/wag/logger@wag-nightly-build
+	//	github.com/Clever/wag/samples/v8/gen-go-blog/models v0.0.0
 	github.com/Clever/discovery-go v1.7.2
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b
@@ -40,5 +41,4 @@ require (
 	gopkg.in/Clever/kayvee-go.v6 v6.27.0 // indirect //Still want to remove this once I merge discovery-go PR. 
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 
-	replace github.com/Clever/wag/samples/v8/gen-go-blog/models => ../models
 )

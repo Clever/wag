@@ -263,7 +263,7 @@ module ` + packageName + `/client
 go 1.16
 
 require (
-	//removed this because it can never get the right version. Adding with a go get instead. 
+	//removed this because it can never get the right version. Adding with: go get github.com/Clever/wag/logger@wag-nightly-build
 	//	` + packageName + `/models v0.0.0
 	github.com/Clever/discovery-go v1.7.2
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
@@ -513,11 +513,11 @@ func (c *WagClient) do%sRequest(ctx context.Context, req *http.Request, headers 
 	}
 	if err == nil && retCode > 399 {
 		logData["message"] = resp.Status
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 	}
 	if err != nil {
 		logData["message"] = err.Error()
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 		return %serr
 	}
 	defer resp.Body.Close()

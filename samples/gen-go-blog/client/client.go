@@ -223,11 +223,11 @@ func (c *WagClient) doPostGradeFileForStudentRequest(ctx context.Context, req *h
 	}
 	if err == nil && retCode > 399 {
 		logData["message"] = resp.Status
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 	}
 	if err != nil {
 		logData["message"] = err.Error()
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 		return err
 	}
 	defer resp.Body.Close()
@@ -320,11 +320,11 @@ func (c *WagClient) doGetSectionsForStudentRequest(ctx context.Context, req *htt
 	}
 	if err == nil && retCode > 399 {
 		logData["message"] = resp.Status
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 	}
 	if err != nil {
 		logData["message"] = err.Error()
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -422,11 +422,11 @@ func (c *WagClient) doPostSectionsForStudentRequest(ctx context.Context, req *ht
 	}
 	if err == nil && retCode > 399 {
 		logData["message"] = resp.Status
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 	}
 	if err != nil {
 		logData["message"] = err.Error()
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 		return nil, err
 	}
 	defer resp.Body.Close()

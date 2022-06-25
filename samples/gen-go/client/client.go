@@ -310,11 +310,11 @@ func (c *WagClient) doGetAuthorsRequest(ctx context.Context, req *http.Request, 
 	}
 	if err == nil && retCode > 399 {
 		logData["message"] = resp.Status
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 	}
 	if err != nil {
 		logData["message"] = err.Error()
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 		return nil, "", err
 	}
 	defer resp.Body.Close()
@@ -520,11 +520,11 @@ func (c *WagClient) doGetAuthorsWithPutRequest(ctx context.Context, req *http.Re
 	}
 	if err == nil && retCode > 399 {
 		logData["message"] = resp.Status
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 	}
 	if err != nil {
 		logData["message"] = err.Error()
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 		return nil, "", err
 	}
 	defer resp.Body.Close()
@@ -712,11 +712,11 @@ func (c *WagClient) doGetBooksRequest(ctx context.Context, req *http.Request, he
 	}
 	if err == nil && retCode > 399 {
 		logData["message"] = resp.Status
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 	}
 	if err != nil {
 		logData["message"] = err.Error()
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 		return nil, "", err
 	}
 	defer resp.Body.Close()
@@ -819,11 +819,11 @@ func (c *WagClient) doCreateBookRequest(ctx context.Context, req *http.Request, 
 	}
 	if err == nil && retCode > 399 {
 		logData["message"] = resp.Status
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 	}
 	if err != nil {
 		logData["message"] = err.Error()
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -926,11 +926,11 @@ func (c *WagClient) doPutBookRequest(ctx context.Context, req *http.Request, hea
 	}
 	if err == nil && retCode > 399 {
 		logData["message"] = resp.Status
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 	}
 	if err != nil {
 		logData["message"] = err.Error()
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -1034,11 +1034,11 @@ func (c *WagClient) doGetBookByIDRequest(ctx context.Context, req *http.Request,
 	}
 	if err == nil && retCode > 399 {
 		logData["message"] = resp.Status
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 	}
 	if err != nil {
 		logData["message"] = err.Error()
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -1153,11 +1153,11 @@ func (c *WagClient) doGetBookByID2Request(ctx context.Context, req *http.Request
 	}
 	if err == nil && retCode > 399 {
 		logData["message"] = resp.Status
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 	}
 	if err != nil {
 		logData["message"] = err.Error()
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -1257,11 +1257,11 @@ func (c *WagClient) doHealthCheckRequest(ctx context.Context, req *http.Request,
 	}
 	if err == nil && retCode > 399 {
 		logData["message"] = resp.Status
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 	}
 	if err != nil {
 		logData["message"] = err.Error()
-		c.logger.Log(ERRORD, "client-request-finished", logData)
+		c.logger.Log("error", "client-request-finished", logData)
 		return err
 	}
 	defer resp.Body.Close()
