@@ -47,6 +47,7 @@ import (
 		"fmt"
 		"crypto/md5"
 
+		"github.com/Clever/wag/logger"
 		"{{.PackageName}}/models"
 		discovery "github.com/Clever/discovery-go"
 		"github.com/afex/hystrix-go/hystrix"
@@ -63,29 +64,6 @@ const Version = "{{ .Version }}"
 // VersionHeader is sent with every request.
 const VersionHeader = "X-Client-Version"
 
-func NewLogger(id string, level int) WagClientLogger {
-	return WagClientPrintlnLogger{id: id, level: level}
-}
-
-type WagClientPrintlnLogger struct {
-	level int
-	id    string
-}
-
-func (w WagClientPrintlnLogger) Log(level int, message string, m map[string]interface{}) {
-	if w.level >= level {
-		fmt.Print(w.id, ": ")
-		fmt.Print(message)
-		for k, v := range m {
-			fmt.Print(" ", k, " : ", v)
-		}
-		fmt.Println()
-	}
-}
-
-type WagClientLogger interface {
-	Log(level int, message string, pairs map[string]interface{})
-}
 var CRITICALD int = 0
 var ERRORD int = 1
 var WARND int = 2
@@ -102,7 +80,7 @@ type WagClient struct {
 	// Keep the circuit doer around so that we can turn it on / off
 	circuitDoer    *circuitBreakerDoer
 	defaultTimeout time.Duration
-	logger      WagClientLogger
+	logger      logger.WagClientLogger
 }
 
 var _ Client = (*WagClient)(nil)
@@ -163,9 +141,9 @@ func (c *WagClient) SetCircuitBreakerDebug(b bool) {
 }
 
 // SetLogger allows for setting a custom logger
-func (c *WagClient) SetLogger(logger WagClientLogger) {
-	c.logger = logger
-	c.circuitDoer.logger = logger
+func (c *WagClient) SetLogger(l logger.WagClientLogger) {
+	c.logger = l
+	c.circuitDoer.logger = l
 }
 
 // CircuitBreakerSettings are the parameters that govern the client's circuit breaker.
