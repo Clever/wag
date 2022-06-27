@@ -2,7 +2,6 @@ package printlogger
 
 import (
 	"fmt"
-	"github.com/Clever/wag/loggers/printlogger"
 	logger "github.com/Clever/wag/loggers/waglogger"
 )
 
