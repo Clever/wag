@@ -1,3 +1,3 @@
-module github.com/Clever/wag/logger/printlogger
+module github.com/Clever/wag/loggers/printlogger
 
 go 1.16

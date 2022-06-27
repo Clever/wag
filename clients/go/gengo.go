@@ -47,7 +47,7 @@ import (
 		"fmt"
 		"crypto/md5"
 
-		"github.com/Clever/wag/logger"
+		"github.com/Clever/wag/loggers/waglogger"
 		"{{.PackageName}}/models"
 		discovery "github.com/Clever/discovery-go"
 		"github.com/afex/hystrix-go/hystrix"

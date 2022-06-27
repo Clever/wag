@@ -2,8 +2,8 @@ package printlogger
 
 import (
 	"fmt"
-
 	"github.com/Clever/wag/loggers/printlogger"
+	logger "github.com/Clever/wag/loggers/waglogger"
 )
 
 //NewLogger creates a logger for id that produces logs at and below the indicated level.
