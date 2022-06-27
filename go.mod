@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/Clever/go-utils v0.0.0-20180917210021-2dac0ec6f2ac
+	github.com/Clever/wag/loggers/printlogger v0.0.0-20220627165618-1bd4f73bc4d8 // indirect
 	github.com/Clever/wag/loggers/waglogger v0.0.0-20220627165333-1da7fb040613 // indirect
 	github.com/awslabs/goformation/v2 v2.3.1
 	github.com/go-openapi/errors v0.19.4

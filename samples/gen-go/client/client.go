@@ -14,7 +14,8 @@ import (
 	"time"
 
 	discovery "github.com/Clever/discovery-go"
-	"github.com/Clever/wag/logger"
+	"github.com/Clever/wag/loggers/printlogger"
+	"github.com/Clever/wag/loggers/waglogger"
 	"github.com/Clever/wag/samples/v8/gen-go/models"
 	"github.com/afex/hystrix-go/hystrix"
 )
@@ -52,13 +53,16 @@ type WagClient struct {
 var _ Client = (*WagClient)(nil)
 
 // New creates a new client. The base path and http transport are configurable.
-func New(basePath string) *WagClient {
+func New(basePath string, opts ...Option) *WagClient {
 	basePath = strings.TrimSuffix(basePath, "/")
 	base := baseDoer{}
 	// For the short-term don't use the default retry policy since its 5 retries can 5X
 	// the traffic. Once we've enabled circuit breakers by default we can turn it on.
 	retry := retryDoer{d: base, retryPolicy: SingleRetryPolicy{}}
-	logger := NewLogger("swagger-test-wagclient", 3)
+	options := options{
+		cache:  defaultCache,
+		logger: printlogger.NewLogger("swagger-test-wagclient", 3),
+	}
 	circuit := &circuitBreakerDoer{
 		d: &retry,
 		// TODO: INFRANG-4404 allow passing circuitBreakerOptions

@@ -3,6 +3,8 @@ cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMT
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/Clever/go-utils v0.0.0-20180917210021-2dac0ec6f2ac h1:eoofDGlVjiTro1kr97QnRkW4b/MGDSmm4E0ta2rqFos=
 github.com/Clever/go-utils v0.0.0-20180917210021-2dac0ec6f2ac/go.mod h1:XXTA9F/953CGhnDRslFaBp7S0560745gMZSDm+C4ebw=
+github.com/Clever/wag/loggers/printlogger v0.0.0-20220627165618-1bd4f73bc4d8 h1:QCFuEtQTXXPxVXpdzD9ZsSvsb7pg2vSPnbW86ljur40=
+github.com/Clever/wag/loggers/printlogger v0.0.0-20220627165618-1bd4f73bc4d8/go.mod h1:KkPJFcnprzj2UNUue87W5+LrjaRMt00jEoKav0RWh20=
 github.com/Clever/wag/loggers/waglogger v0.0.0-20220627165333-1da7fb040613 h1:qd6x0QWFZ+6mYJ/n2eOdlHR5lfz1WKC0eR4IeYgn8Z4=
 github.com/Clever/wag/loggers/waglogger v0.0.0-20220627165333-1da7fb040613/go.mod h1:wCYwOynv1y5ePqwkSdVcjrO6AZn99vCixp6NDqO6QFQ=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
