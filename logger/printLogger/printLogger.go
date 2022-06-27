@@ -1,4 +1,4 @@
-package printlnLogger
+package printlogger
 
 import (
 	"fmt"
