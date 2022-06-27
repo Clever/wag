@@ -12,14 +12,13 @@ func NewLogger(id string, level string) logger.WagClientLogger {
 }
 
 type PrintlnLogger struct {
-	level int
+	level string
 	id    string
 }
 
 func (w PrintlnLogger) Log(level string, message string, m map[string]interface{}) {
-	intLevel := w.strLvlToInt(level)
 
-	if w.level >= intLevel {
+	if w.strLvlToInt(w.level) >= w.strLvlToInt(level) {
 		fmt.Print(w.id, ": ")
 		fmt.Print(message)
 		for k, v := range m {
