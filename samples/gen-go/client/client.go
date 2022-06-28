@@ -13,9 +13,10 @@ import (
 	"strings"
 	"time"
 
-	discovery "github.com/Clever/discovery-go"
 	"github.com/Clever/wag/loggers/printlogger"
 	"github.com/Clever/wag/loggers/waglogger"
+
+	discovery "github.com/Clever/discovery-go"
 	"github.com/Clever/wag/samples/v8/gen-go/models"
 	"github.com/afex/hystrix-go/hystrix"
 )
@@ -47,29 +48,69 @@ type WagClient struct {
 	// Keep the circuit doer around so that we can turn it on / off
 	circuitDoer    *circuitBreakerDoer
 	defaultTimeout time.Duration
-	logger         logger.WagClientLogger
+	logger         waglogger.WagClientLogger
 }
 
 var _ Client = (*WagClient)(nil)
 
+//This pattern is used instead of using closures for greater transparency and the ability to implement additional interfaces.
+type options struct {
+	tracing interface{}
+	logger  waglogger.WagClientLogger
+}
+
+type Option interface {
+	apply(*options)
+}
+
+//WithLogger sets client logger option.
+func WithLogger(log waglogger.WagClientLogger) Option {
+	return loggerOption{Log: log}
+}
+
+type loggerOption struct {
+	Log *waglogger.WagClientLogger
+}
+
+func (l loggerOption) apply(opts *options) {
+	opts.logger = l.Log
+}
+
+type tracingOption interface{}
+
+func (t tracingOption) apply(opts *options) {
+	opts.tracing = t //This is where I would normally have a : tracing.NewTransport(http.DefaultTransport, opNameCtx{})
+}
+
+//WithTracingProvider defines the tracing provider for
+func WithTracingProvider(t interface{}) Option {
+	return tracingOption(t)
+}
+
 // New creates a new client. The base path and http transport are configurable.
-func New(basePath string, opts ...Option) *WagClient {
+func New(basePath string) *WagClient {
+	defaultTracing := tracing.NewTransport(http.DefaultTransport, opNameCtx{})
 	basePath = strings.TrimSuffix(basePath, "/")
 	base := baseDoer{}
 	// For the short-term don't use the default retry policy since its 5 retries can 5X
 	// the traffic. Once we've enabled circuit breakers by default we can turn it on.
 	retry := retryDoer{d: base, retryPolicy: SingleRetryPolicy{}}
 	options := options{
-		cache:  defaultCache,
-		logger: printlogger.NewLogger("swagger-test-wagclient", 3),
+		tracing: defaultTracing,
+		logger:  printlogger.NewLogger("swagger-test-wagclient", 3),
 	}
+
+	for _, o := range opts {
+		o.apply(&options)
+	}
+
 	circuit := &circuitBreakerDoer{
 		d: &retry,
 		// TODO: INFRANG-4404 allow passing circuitBreakerOptions
 		debug: true,
 		// one circuit for each service + url pair
 		circuitName: fmt.Sprintf("swagger-test-%s", shortHash(basePath)),
-		logger:      logger,
+		logger:      options.logger,
 	}
 	circuit.init()
 	client := &WagClient{
@@ -81,7 +122,7 @@ func New(basePath string, opts ...Option) *WagClient {
 		retryDoer:      &retry,
 		circuitDoer:    circuit,
 		defaultTimeout: 5 * time.Second,
-		logger:         logger,
+		logger:         options.logger,
 	}
 	client.SetCircuitBreakerSettings(DefaultCircuitBreakerSettings)
 	return client
