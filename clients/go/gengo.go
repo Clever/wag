@@ -47,10 +47,11 @@ import (
 		"fmt"
 		"crypto/md5"
 
-		"github.com/Clever/wag/loggers/waglogger"
+		waglogger "github.com/Clever/wag/loggers/waglogger"
 		"github.com/Clever/wag/loggers/printlogger"
 
 		"{{.PackageName}}/models"
+		"{{.PackageName}}/tracing"
 		discovery "github.com/Clever/discovery-go"
 		"github.com/afex/hystrix-go/hystrix"
 )
@@ -104,26 +105,28 @@ func WithLogger(log waglogger.WagClientLogger) Option {
 }
 
 type loggerOption struct {
-	Log *waglogger.WagClientLogger
+	Log waglogger.WagClientLogger
 }
 
 func (l loggerOption) apply(opts *options) {
 	opts.logger = l.Log
 }
 
-type tracingOption interface{}
+// type tracingOption interface{}
 
-func (t tracingOption) apply(opts *options) {
-	opts.tracing = t //This is where I would normally have a : tracing.NewTransport(http.DefaultTransport, opNameCtx{})
-}
+// func (t tracingOption) apply(opts *options) {
+// 	opts.tracing = t //This is where I would normally have a : tracing.NewTransport(http.DefaultTransport, opNameCtx{})
+// }
 
-//WithTracingProvider defines the tracing provider for
-func WithTracingProvider(t interface{}) Option {
-	return tracingOption(t)
-}
+// //WithTracingProvider defines the tracing provider for
+// func WithTracingProvider(t interface{}) Option {
+// 	return tracingOption(t)
+// }
 
 // New creates a new client. The base path and http transport are configurable.
-func New(basePath string) *WagClient {
+func New(basePath string, opts ...Option) *WagClient {
+	defaultTracing := tracing.NewTransport(http.DefaultTransport, opNameCtx{})
+	defaultLogger := printlogger.NewLogger("dapple-wagclient", "info")
 	basePath = strings.TrimSuffix(basePath, "/")
 	base := baseDoer{}
 	// For the short-term don't use the default retry policy since its 5 retries can 5X
@@ -151,7 +154,7 @@ func New(basePath string) *WagClient {
 		basePath: basePath,
 		requestDoer: circuit,
 		client: &http.Client{
-			// Transport: tracing.NewTransport(http.DefaultTransport, opNameCtx{}),
+			Transport: defaultTracing, //tracing.NewTransport(http.DefaultTransport, opNameCtx{}),
 		},
 		retryDoer: &retry,
 		circuitDoer: circuit,
@@ -186,7 +189,7 @@ func (c *WagClient) SetCircuitBreakerDebug(b bool) {
 }
 
 // SetLogger allows for setting a custom logger
-func (c *WagClient) SetLogger(l logger.WagClientLogger) {
+func (c *WagClient) SetLogger(l waglogger.WagClientLogger) {
 	c.logger = l
 	c.circuitDoer.logger = l
 }

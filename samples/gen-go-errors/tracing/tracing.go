@@ -10,10 +10,12 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
-
+	"go.opentelemetry.io/otel/exporters/otlp"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpgrpc"
 	"go.opentelemetry.io/otel/propagation"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
@@ -41,6 +43,7 @@ func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdktrace.SpanExpo
 	samplingProbability := 0.01
 	isLocal := os.Getenv("_IS_LOCAL") == "true"
 	if isLocal {
+		fmt.Println("Set to Local")
 		samplingProbability = 1.0
 	} else if v := os.Getenv("TRACING_SAMPLING_PROBABILITY"); v != "" {
 		samplingProbabilityFromEnv, err := strconv.ParseFloat(v, 64)
@@ -61,6 +64,8 @@ func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdktrace.SpanExpo
 		otlpgrpc.WithEndpoint(addr),
 		otlpgrpc.WithInsecure(),
 	)
+	fmt.Println("---driver---")
+	spew.Dump(driver)
 	exporter, err := otlp.NewExporter(
 		ctx,
 		driver,
@@ -68,8 +73,14 @@ func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdktrace.SpanExpo
 	if err != nil {
 		return nil, nil, fmt.Errorf("error creating exporter: %v", err)
 	}
+	fmt.Println("---exporter---")
+	spew.Dump(exporter)
 
 	tp := newTracerProvider(exporter, samplingProbability)
+
+	fmt.Println("---trace provider---")
+	spew.Dump(tp)
+
 	otel.SetTracerProvider(tp)
 	logger.FromContext(ctx).InfoD("starting-tracer", logger.M{
 		"address":       addr,
@@ -113,6 +124,7 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 		return otlmux(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			// otelmux has extracted the span. now put it into the ctx-specific logger
 			s := trace.SpanFromContext(r.Context())
+			fmt.Println(s)
 			if sc := s.SpanContext(); sc.HasTraceID() {
 				spanID, traceID := sc.SpanID().String(), sc.TraceID().String()
 				// datadog converts hex strings to uint64 IDs, so log those so that correlating logs and traces works
@@ -136,6 +148,8 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 // The exporter is pulled from the global one on each request, so tracing won't
 // begin until that is initialized (e.g, in in server startup).
 func NewTransport(baseTransport http.RoundTripper, spanNameCtxValue interface{}) http.RoundTripper {
+	fmt.Println("Creating roundtripper")
+	spew.Dump(roundTripper{baseTransport: baseTransport, spanNameCtxValue: spanNameCtxValue})
 	return roundTripper{baseTransport: baseTransport, spanNameCtxValue: spanNameCtxValue}
 }
 
@@ -152,6 +166,8 @@ func (rt roundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 		otelhttp.WithSpanNameFormatter(func(method string, r *http.Request) string {
 			v, ok := r.Context().Value(rt.spanNameCtxValue).(string)
 			if ok {
+				fmt.Println("---v---")
+				spew.Dump(v)
 				return v
 			}
 			return r.Method // same as otelhttp's default span naming
@@ -161,6 +177,7 @@ func (rt roundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 
 // ExtractSpanAndTraceID extracts span and trace IDs from an http request header.
 func ExtractSpanAndTraceID(r *http.Request) (traceID, spanID string) {
+	fmt.Println("Extracting TraceID")
 	s := trace.SpanFromContext(r.Context())
 	if s.SpanContext().HasTraceID() {
 		return s.SpanContext().TraceID().String(), s.SpanContext().SpanID().String()

@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Clever/wag/loggers/waglogger"
+	logger "github.com/Clever/wag/loggers/waglogger"
 	"github.com/afex/hystrix-go/hystrix"
 	"github.com/donovanhide/eventsource"
 )
@@ -185,8 +185,8 @@ type HystrixSSEEvent struct {
 	LatencyTotalMean                int    `json:"latencyTotal_mean"`
 }
 
-func logEvent(l logger, e HystrixSSEEvent) {
-	l.Log("info", map[string]interface{}{
+func logEvent(l logger.WagClientLogger, e HystrixSSEEvent) {
+	l.Log("info", "", map[string]interface{}{
 		"requestCount":                    e.RequestCount,
 		"errorCount":                      e.ErrorCount,
 		"errorPercentage":                 e.ErrorPercentage,

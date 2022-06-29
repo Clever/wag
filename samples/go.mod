@@ -7,6 +7,7 @@ require (
 	github.com/Clever/go-process-metrics v0.2.0
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/aws/aws-sdk-go v1.38.25
+	github.com/davecgh/go-spew v1.1.1
 	github.com/donovanhide/eventsource v0.0.0-20210830082556-c59027999da0
 	github.com/go-errors/errors v1.1.1
 	github.com/go-openapi/errors v0.20.2
