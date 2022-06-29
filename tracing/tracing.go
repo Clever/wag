@@ -5,15 +5,22 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
-	"time"
 
 	"github.com/davecgh/go-spew/spew"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
+	"go.opentelemetry.io/otel/sdk/resource"
+	"go.opentelemetry.io/otel/trace"
+
+	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 
 	"go.opentelemetry.io/otel/propagation"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
@@ -22,12 +29,41 @@ import (
 	"gopkg.in/Clever/kayvee-go.v6/logger"
 )
 
+const (
+	instrumentationName    = "github.com/Clever/wag/instrumentation"
+	instrumentationVersion = "v0.1.0"
+)
+
 // propagator to use.
 var propagator propagation.TextMapPropagator = propagation.TraceContext{} // traceparent header
 
 // defaultCollectorPort was changed from 55860 in November and the Go library
 // hasn't been updated when it is updated we can use otlp.DefaultCollectorPort
 var defaultCollectorPort uint16 = 4317
+
+func newExporter(w io.Writer) (trace.SpanExporter, error) {
+	return stdouttrace.New(
+		stdouttrace.WithWriter(w),
+		// Use human-readable output.
+		stdouttrace.WithPrettyPrint(),
+		// Do not print timestamps for the demo.
+		// stdouttrace.WithoutTimestamps(),
+	)
+}
+
+// newResource returns a resource describing this application.
+func newResource() *resource.Resource {
+	r, _ := resource.Merge(
+		resource.Default(),
+		resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceNameKey.String("fib"),
+			semconv.ServiceVersionKey.String("v0.1.0"),
+			attribute.String("environment", "demo"),
+		),
+	)
+	return r
+}
 
 // SetupGlobalTraceProviderAndExporter sets up an exporter to export,
 // as well as the opentelemetry global trace provider for trace generators to use.
@@ -39,6 +75,7 @@ func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdktrace.SpanExpo
 
 	// If we're running locally, then turn off sampling. Otherwise sample
 	// 1% or whatever TRACING_SAMPLING_PROBABILITY specifies.
+	DefaultCollectorHost := "localhost"
 	samplingProbability := 0.01
 	isLocal := os.Getenv("_IS_LOCAL") == "true"
 	if isLocal {
@@ -52,40 +89,60 @@ func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdktrace.SpanExpo
 		samplingProbability = samplingProbabilityFromEnv
 	}
 
-	addr := fmt.Sprintf("%s:%d", otlp.DefaultCollectorHost, defaultCollectorPort)
+	addr := fmt.Sprintf("%s:%d", DefaultCollectorHost, defaultCollectorPort)
 
 	// Every 15 seconds we'll try to connect to opentelemetry collector at
 	// the default location of localhost:4317
 	// When running in production this is a sidecar, and when running
 	// locally this is a locally running opetelemetry-collector.
-	driver := otlpgrpc.NewDriver(
-		otlpgrpc.WithReconnectionPeriod(15*time.Second),
-		otlpgrpc.WithEndpoint(addr),
-		otlpgrpc.WithInsecure(),
-	)
-	fmt.Println("---driver---")
-	spew.Dump(driver)
-	exporter, err := otlp.NewExporter(
-		ctx,
-		driver,
-	)
-	if err != nil {
-		return nil, nil, fmt.Errorf("error creating exporter: %v", err)
-	}
-	fmt.Println("---exporter---")
-	spew.Dump(exporter)
+	// driver := otlpgrpc.NewDriver(
+	// 	otlpgrpc.WithReconnectionPeriod(15*time.Second),
+	// 	otlpgrpc.WithEndpoint(addr),
+	// 	otlpgrpc.WithInsecure(),
+	// )
+	// fmt.Println("---driver---")
+	// spew.Dump(driver)
+	// exporter, err := otlp.NewExporter(
+	// 	ctx,
+	// 	driver,
+	// )
+	// if err != nil {
+	// 	return nil, nil, fmt.Errorf("error creating exporter: %v", err)
+	// }
+	// fmt.Println("---exporter---")
+	// spew.Dump(exporter)
 
-	tp := newTracerProvider(exporter, samplingProbability)
+	l := log.New(os.Stdout, "", 0)
+	f, err := os.Create("traces.txt")
+	if err != nil {
+		l.Fatal(err)
+	}
+	defer f.Close()
+	exp, err := newExporter(f)
+	if err != nil {
+		l.Fatal(err)
+	}
+
+	tp := trace.NewTracerProvider(
+		samplingProbability,
+		trace.WithBatcher(exp),
+		trace.WithResource(newResource()),
+	)
 
 	fmt.Println("---trace provider---")
 	spew.Dump(tp)
 
+	defer func() {
+		if err := tp.Shutdown(context.Background()); err != nil {
+			l.Fatal(err)
+		}
+	}()
 	otel.SetTracerProvider(tp)
 	logger.FromContext(ctx).InfoD("starting-tracer", logger.M{
 		"address":       addr,
 		"sampling-rate": samplingProbability,
 	})
-	return exporter, tp, nil
+	return exp, tp, nil
 }
 
 // SetupGlobalTraceProviderAndExporterForTest is meant to be used in unit testing,
@@ -158,9 +215,11 @@ type roundTripper struct {
 }
 
 func (rt roundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
+
 	return otelhttp.NewTransport(
 		rt.baseTransport,
 		otelhttp.WithTracerProvider(otel.GetTracerProvider()),
+		// otelhttp.WithTracerProvider(tracer),
 		otelhttp.WithPropagators(propagator),
 		otelhttp.WithSpanNameFormatter(func(method string, r *http.Request) string {
 			v, ok := r.Context().Value(rt.spanNameCtxValue).(string)
