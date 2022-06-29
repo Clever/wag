@@ -3,6 +3,7 @@ module github.com/Clever/wag/tracing
 go 1.16
 
 require (
+	github.com/davecgh/go-spew v1.1.0
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.32.0
