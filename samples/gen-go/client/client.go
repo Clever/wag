@@ -17,8 +17,7 @@ import (
 	"github.com/Clever/wag/loggers/waglogger"
 
 	discovery "github.com/Clever/discovery-go"
-	tracing "github.com/Clever/wag/samples/gen-go/clienttracing"
-	"github.com/Clever/wag/samples/gen-go/models"
+	"github.com/Clever/wag/samples/v8/gen-go/models"
 	"github.com/afex/hystrix-go/hystrix"
 )
 
@@ -90,7 +89,6 @@ func WithTracingProvider(t interface{}) Option {
 
 // New creates a new client. The base path and http transport are configurable.
 func New(basePath string) *WagClient {
-	defaultTracing := tracing.NewTransport(http.DefaultTransport, opNameCtx{})
 	basePath = strings.TrimSuffix(basePath, "/")
 	base := baseDoer{}
 	// For the short-term don't use the default retry policy since its 5 retries can 5X

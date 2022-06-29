@@ -3,6 +3,7 @@ package printlogger
 import (
 	"encoding/json"
 	"fmt"
+
 	logger "github.com/Clever/wag/loggers/waglogger"
 )
 
@@ -23,7 +24,7 @@ func (w PrintlnLogger) Log(level string, message string, m map[string]interface{
 		m["id"] = w.id
 		jsonLog, err := json.Marshal(m)
 		if err != nil {
-			jsonLog := json.Marshall(map[string]interface{}{"Error Marshalling Log", err})
+			jsonLog, err = json.Marshal(map[string]interface{}{"Error Marshalling Log": err})
 		}
 		fmt.Println(string(jsonLog))
 	}
