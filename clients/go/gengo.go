@@ -126,7 +126,7 @@ func (l loggerOption) apply(opts *options) {
 // New creates a new client. The base path and http transport are configurable.
 func New(basePath string, opts ...Option) *WagClient {
 	defaultTracing := tracing.NewTransport(http.DefaultTransport, opNameCtx{})
-	defaultLogger := printlogger.NewLogger("dapple-wagclient", "info")
+	defaultLogger := printlogger.NewLogger("{{.ServiceName}}-wagclient", "info")
 	basePath = strings.TrimSuffix(basePath, "/")
 	base := baseDoer{}
 	// For the short-term don't use the default retry policy since its 5 retries can 5X
@@ -134,7 +134,7 @@ func New(basePath string, opts ...Option) *WagClient {
 	retry := retryDoer{d: base, retryPolicy: SingleRetryPolicy{}}
 	options := options{
 		tracing: defaultTracing,
-		logger:  printlogger.NewLogger("{{.ServiceName}}-wagclient", 3),
+		logger:  defaultLogger,
 	}
 
 	for _, o := range opts {
