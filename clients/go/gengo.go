@@ -48,6 +48,8 @@ import (
 		"crypto/md5"
 
 		"github.com/Clever/wag/loggers/waglogger"
+		"github.com/Clever/wag/loggers/printlogger"
+
 		"{{.PackageName}}/models"
 		discovery "github.com/Clever/discovery-go"
 		"github.com/afex/hystrix-go/hystrix"
@@ -80,10 +82,45 @@ type WagClient struct {
 	// Keep the circuit doer around so that we can turn it on / off
 	circuitDoer    *circuitBreakerDoer
 	defaultTimeout time.Duration
-	logger      logger.WagClientLogger
+	logger      waglogger.WagClientLogger
 }
 
 var _ Client = (*WagClient)(nil)
+
+
+//This pattern is used instead of using closures for greater transparency and the ability to implement additional interfaces.
+type options struct {
+	tracing interface{}
+	logger  waglogger.WagClientLogger
+}
+
+type Option interface {
+	apply(*options)
+}
+
+//WithLogger sets client logger option.
+func WithLogger(log waglogger.WagClientLogger) Option {
+	return loggerOption{Log: log}
+}
+
+type loggerOption struct {
+	Log *waglogger.WagClientLogger
+}
+
+func (l loggerOption) apply(opts *options) {
+	opts.logger = l.Log
+}
+
+type tracingOption interface{}
+
+func (t tracingOption) apply(opts *options) {
+	opts.tracing = t //This is where I would normally have a : tracing.NewTransport(http.DefaultTransport, opNameCtx{})
+}
+
+//WithTracingProvider defines the tracing provider for
+func WithTracingProvider(t interface{}) Option {
+	return tracingOption(t)
+}
 
 // New creates a new client. The base path and http transport are configurable.
 func New(basePath string) *WagClient {
@@ -92,14 +129,22 @@ func New(basePath string) *WagClient {
 	// For the short-term don't use the default retry policy since its 5 retries can 5X
 	// the traffic. Once we've enabled circuit breakers by default we can turn it on.
 	retry := retryDoer{d: base, retryPolicy: SingleRetryPolicy{}}
-	logger := NewLogger("{{.ServiceName}}-wagclient", 3)
+	options := options{
+		tracing: defaultTracing,
+		logger:  printlogger.NewLogger("{{.ServiceName}}-wagclient", 3),
+	}
+
+	for _, o := range opts {
+		o.apply(&options)
+	}
+
 	circuit := &circuitBreakerDoer{
 		d:     &retry,
 		// TODO: INFRANG-4404 allow passing circuitBreakerOptions
 		debug: true,
 		// one circuit for each service + url pair
 		circuitName: fmt.Sprintf("{{.ServiceName}}-%%s", shortHash(basePath)),
-		logger: logger,
+		logger: options.logger,
 	}
 	circuit.init()
 	client := &WagClient{
@@ -111,7 +156,7 @@ func New(basePath string) *WagClient {
 		retryDoer: &retry,
 		circuitDoer: circuit,
 		defaultTimeout: 5 * time.Second,
-		 logger: logger,
+		 logger: options.logger,
 	}
 	client.SetCircuitBreakerSettings(DefaultCircuitBreakerSettings)
 	return client
@@ -297,7 +342,6 @@ require (
 	go.mongodb.org/mongo-driver v1.7.5 // indirect
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e // indirect
 	golang.org/x/text v0.3.7 // indirect
-	gopkg.in/Clever/kayvee-go.v6 v6.27.0 // indirect //Still want to remove this once I merge discovery-go PR. 
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 
 )

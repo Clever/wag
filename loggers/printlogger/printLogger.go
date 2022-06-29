@@ -1,11 +1,13 @@
 package printlogger
 
 import (
+	"encoding/json"
 	"fmt"
 	logger "github.com/Clever/wag/loggers/waglogger"
 )
 
 //NewLogger creates a logger for id that produces logs at and below the indicated level.
+//Level indicated the level at and below which logs are created.
 func NewLogger(id string, level string) logger.WagClientLogger {
 	return PrintlnLogger{id: id, level: level}
 }
@@ -18,12 +20,12 @@ type PrintlnLogger struct {
 func (w PrintlnLogger) Log(level string, message string, m map[string]interface{}) {
 
 	if w.strLvlToInt(w.level) >= w.strLvlToInt(level) {
-		fmt.Print(w.id, ": ")
-		fmt.Print(message)
-		for k, v := range m {
-			fmt.Print(" ", k, " : ", v)
+		m["id"] = w.id
+		jsonLog, err := json.Marshal(m)
+		if err != nil {
+			jsonLog := json.Marshall(map[string]interface{}{"Error Marshalling Log", err})
 		}
-		fmt.Println()
+		fmt.Println(string(jsonLog))
 	}
 }
 

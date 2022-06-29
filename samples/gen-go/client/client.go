@@ -17,7 +17,8 @@ import (
 	"github.com/Clever/wag/loggers/waglogger"
 
 	discovery "github.com/Clever/discovery-go"
-	"github.com/Clever/wag/samples/v8/gen-go/models"
+	tracing "github.com/Clever/wag/samples/gen-go/clienttracing"
+	"github.com/Clever/wag/samples/gen-go/models"
 	"github.com/afex/hystrix-go/hystrix"
 )
 
