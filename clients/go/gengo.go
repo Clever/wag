@@ -51,7 +51,7 @@ import (
 		"github.com/Clever/wag/loggers/printlogger"
 
 		"{{.PackageName}}/models"
-		"{{.PackageName}}/tracing"
+		"github.com/Clever/wag/tracing"
 		discovery "github.com/Clever/discovery-go"
 		"github.com/afex/hystrix-go/hystrix"
 )

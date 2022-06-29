@@ -18,7 +18,7 @@ import (
 
 	discovery "github.com/Clever/discovery-go"
 	"github.com/Clever/wag/samples/v8/gen-go-client-only/models"
-	"github.com/Clever/wag/samples/v8/gen-go-client-only/tracing"
+	"github.com/Clever/wag/tracing"
 	"github.com/afex/hystrix-go/hystrix"
 )
 
