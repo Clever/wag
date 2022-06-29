@@ -24,7 +24,7 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
-	trace "go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/trace"
 	"gopkg.in/Clever/kayvee-go.v6/logger"
 )
 
@@ -40,7 +40,7 @@ var propagator propagation.TextMapPropagator = propagation.TraceContext{} // tra
 // hasn't been updated when it is updated we can use otlp.DefaultCollectorPort
 var defaultCollectorPort uint16 = 4317
 
-func newExporter(w io.Writer) (trace.SpanExporter, error) {
+func newExporter(w io.Writer) (sdktrace.SpanExporter, error) {
 	return stdouttrace.New(
 		stdouttrace.WithWriter(w),
 		// Use human-readable output.
@@ -122,10 +122,10 @@ func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdktrace.SpanExpo
 		l.Fatal(err)
 	}
 
-	tp := trace.NewTracerProvider(
+	tp := sdktrace.NewTracerProvider(
 		samplingProbability,
-		trace.WithBatcher(exp),
-		trace.WithResource(newResource()),
+		sdktrace.WithBatcher(exp),
+		sdktrace.WithResource(newResource()),
 	)
 
 	fmt.Println("---trace provider---")
