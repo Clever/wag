@@ -24,7 +24,7 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
-	"go.opentelemetry.io/otel/trace"
+	trace "go.opentelemetry.io/otel/trace"
 	"gopkg.in/Clever/kayvee-go.v6/logger"
 )
 
