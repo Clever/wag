@@ -20,7 +20,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	"go.opentelemetry.io/otel/trace"
 	"gopkg.in/Clever/kayvee-go.v6/logger"
-))
+)
 
 // propagator to use.
 var propagator propagation.TextMapPropagator = propagation.TraceContext{} // traceparent header
