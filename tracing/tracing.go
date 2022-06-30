@@ -123,7 +123,7 @@ func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdktrace.SpanExpo
 	}
 
 	tp := sdktrace.NewTracerProvider(
-		samplingProbability,
+		// samplingProbability,
 		sdktrace.WithBatcher(exp),
 		sdktrace.WithResource(newResource()),
 	)

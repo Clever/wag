@@ -67,12 +67,6 @@ const Version = "{{ .Version }}"
 // VersionHeader is sent with every request.
 const VersionHeader = "X-Client-Version"
 
-var CRITICALD int = 0
-var ERRORD int = 1
-var WARND int = 2
-var INFOD int = 3
-var DEBUGD int = 4
-
 // WagClient is used to make requests to the {{.ServiceName}} service.
 type WagClient struct {
 	basePath    string
