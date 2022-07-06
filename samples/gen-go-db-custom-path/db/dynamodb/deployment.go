@@ -529,7 +529,6 @@ func (t DeploymentTable) scanDeploymentsByEnvAppAndDate(ctx context.Context, inp
 	}
 	return err
 }
-
 func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context, input db.GetDeploymentsByEnvironmentAndDateInput, fn func(m *models.Deployment, lastDeployment bool) bool) error {
 	if input.DateStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.DateStartingAt or input.StartingAfter")
@@ -622,7 +621,6 @@ func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context,
 
 	return nil
 }
-
 func (t DeploymentTable) getDeploymentByVersion(ctx context.Context, version string) (*models.Deployment, error) {
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),

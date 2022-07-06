@@ -385,7 +385,6 @@ func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseComposite
 	}
 	return err
 }
-
 func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx context.Context, input db.GetThingWithMultiUseCompositeAttributesByFourAndOneTwoInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error {
 	if input.StartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.StartingAt or input.StartingAfter")
