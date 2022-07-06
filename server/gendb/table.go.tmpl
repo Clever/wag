@@ -1023,6 +1023,7 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}sBy{{ $computedIndexName }}(c
   return err
 }
 {{- end }}
+{{- end }}
 
 {{- if transactionsEnabled $xdbConfig }}
 {{- range $transactWithSchemaName := $xdbConfig.EnableTransactions }}
@@ -1093,8 +1094,6 @@ func buildCondExpr(conditions *expression.ConditionBuilder) (*string, map[string
 }
 
 {{- end }}
-
-{{ end }}
 
 // encode{{ $modelName }} encodes a {{ $modelName }} as a DynamoDB map of attribute values.
 func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]*dynamodb.AttributeValue, error) {
