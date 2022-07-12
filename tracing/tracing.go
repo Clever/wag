@@ -5,25 +5,21 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
-	"io"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/davecgh/go-spew/spew"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
-	"go.opentelemetry.io/otel/sdk/resource"
 
-	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
-
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	"go.opentelemetry.io/otel/trace"
 	"gopkg.in/Clever/kayvee-go.v6/logger"
 )
@@ -33,49 +29,68 @@ const (
 	instrumentationVersion = "v0.1.0"
 )
 
-// propagator to use.
+//propagator to use
 var propagator propagation.TextMapPropagator = propagation.TraceContext{} // traceparent header
+type tracerProviderCreator func(*otlptrace.Exporter, float64) *sdktrace.TracerProvider
 
-// defaultCollectorPort was changed from 55860 in November and the Go library
-// hasn't been updated when it is updated we can use otlp.DefaultCollectorPort
-var defaultCollectorPort uint16 = 4317
+func RoundTripperInstrumentor(tp sdktrace.TracerProvider, baseRT http.RoundTripper, ctx context.Context) (http.RoundTripper, error) {
+	return NewTransport(baseRT, ctx)
+	// DefaultCollectorHost := "localhost"
 
-func newExporter(w io.Writer) (sdktrace.SpanExporter, error) {
-	return stdouttrace.New(
-		stdouttrace.WithWriter(w),
-		// Use human-readable output.
-		stdouttrace.WithPrettyPrint(),
-		// Do not print timestamps for the demo.
-		// stdouttrace.WithoutTimestamps(),
-	)
+	// var defaultCollectorPort uint16 = 4317
+	// addr := fmt.Sprintf("%s:%d", DefaultCollectorHost, defaultCollectorPort)
 }
 
-// newResource returns a resource describing this application.
-func newResource() *resource.Resource {
-	r, _ := resource.Merge(
-		resource.Default(),
-		resource.NewWithAttributes(
-			semconv.SchemaURL,
-			semconv.ServiceNameKey.String("fib"),
-			semconv.ServiceVersionKey.String("v0.1.0"),
-			attribute.String("environment", "demo"),
-		),
+//OurDefaultRoundTripper will return an instrumented round tripper with default tracing and logging
+//These defaults are overridden with WithExporter() and WithLogger() at time of client creation (wagclient.New())
+func OurDefaultRoundTripper(ctx context.Context, resource *resource.Resource) (http.RoundTripper, error) {
+	DefaultCollectorHost := "localhost"
+	// defaultCollectorPort was changed from 55860 in November and the Go library
+	// hasn't been updated when it is updated we can use otlp.DefaultCollectorPort
+	var defaultCollectorPort uint16 = 4317
+	// I want to see if this is still true or if I can use otlp.DefaultCollectorPort now.
+	// fmt.Println("Are these the same now?: ", otel.defaultCollectorPort, defaultCollectorPort)
+
+	addr := fmt.Sprintf("%s:%d", DefaultCollectorHost, defaultCollectorPort)
+
+	samplingProbability, err := determineSampling()
+
+	samplingProbability = 1 //Temp so I can run without ark start -l and still get sampling
+
+	if err != nil {
+		return nil, fmt.Errorf("error determining sampling: %s", err)
+	}
+
+	otlpClient := otlptracegrpc.NewClient(
+		otlptracegrpc.WithEndpoint(addr), //Not strictly needed as we use the defaults
+		otlptracegrpc.WithReconnectionPeriod(15*time.Second),
+		otlptracegrpc.WithInsecure(),
 	)
-	return r
+
+	// //Is this part necessary here?
+	// otlpTraceExporter, err := otlptracegrpc.New(
+	// 	ctx,
+	// 	otlptracegrpc.WithReconnectionPeriod(15*time.Second),
+	// 	otlptracegrpc.WithInsecure(),
+	// 	otlptracegrpc.WithEndpoint(addr),
+	// )
+
+	spanExporter, err := otlptrace.New(ctx, otlpClient)
+
+	tracerProvider := newTracerProvider(spanExporter, samplingProbability, resource)
+
+	otel.SetTracerProvider(tracerProvider)
+
+	return NewTransport(http.DefaultTransport, ctx), nil
+
+	//...
 }
 
-// SetupGlobalTraceProviderAndExporter sets up an exporter to export,
-// as well as the opentelemetry global trace provider for trace generators to use.
-// The exporter and provider are returned in order for the caller to defer shutdown.
-func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdktrace.SpanExporter, *sdktrace.TracerProvider, error) {
-	// 1. set up exporter
-	// 2. set up tracer provider
-	// 3. assign global tracer provider
+func determineSampling() (samplingProbability float64, err error) {
 
 	// If we're running locally, then turn off sampling. Otherwise sample
 	// 1% or whatever TRACING_SAMPLING_PROBABILITY specifies.
-	DefaultCollectorHost := "localhost"
-	samplingProbability := 0.01
+	samplingProbability = 0.01
 	isLocal := os.Getenv("_IS_LOCAL") == "true"
 	if isLocal {
 		fmt.Println("Set to Local")
@@ -83,78 +98,30 @@ func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdktrace.SpanExpo
 	} else if v := os.Getenv("TRACING_SAMPLING_PROBABILITY"); v != "" {
 		samplingProbabilityFromEnv, err := strconv.ParseFloat(v, 64)
 		if err != nil {
-			return nil, nil, fmt.Errorf("could not parse '%s' to float", v)
+			return 0, fmt.Errorf("could not parse '%s' to float", v)
 		}
 		samplingProbability = samplingProbabilityFromEnv
 	}
-
-	addr := fmt.Sprintf("%s:%d", DefaultCollectorHost, defaultCollectorPort)
-
-	// Every 15 seconds we'll try to connect to opentelemetry collector at
-	// the default location of localhost:4317
-	// When running in production this is a sidecar, and when running
-	// locally this is a locally running opetelemetry-collector.
-	// driver := otlpgrpc.NewDriver(
-	// 	otlpgrpc.WithReconnectionPeriod(15*time.Second),
-	// 	otlpgrpc.WithEndpoint(addr),
-	// 	otlpgrpc.WithInsecure(),
-	// )
-	// fmt.Println("---driver---")
-	// spew.Dump(driver)
-	// exporter, err := otlp.NewExporter(
-	// 	ctx,
-	// 	driver,
-	// )
-	// if err != nil {
-	// 	return nil, nil, fmt.Errorf("error creating exporter: %v", err)
-	// }
-	// fmt.Println("---exporter---")
-	// spew.Dump(exporter)
-
-	l := log.New(os.Stdout, "", 0)
-	f, err := os.Create("traces.txt")
-	if err != nil {
-		l.Fatal(err)
-	}
-	defer f.Close()
-	exp, err := newExporter(f)
-	if err != nil {
-		l.Fatal(err)
-	}
-
-	tp := sdktrace.NewTracerProvider(
-		// samplingProbability,
-		sdktrace.WithBatcher(exp),
-		sdktrace.WithResource(newResource()),
-	)
-
-	fmt.Println("---trace provider---")
-	spew.Dump(tp)
-
-	defer func() {
-		if err := tp.Shutdown(context.Background()); err != nil {
-			l.Fatal(err)
-		}
-	}()
-	otel.SetTracerProvider(tp)
-	logger.FromContext(ctx).InfoD("starting-tracer", logger.M{
-		"address":       addr,
-		"sampling-rate": samplingProbability,
-	})
-	return exp, tp, nil
+	return
 }
 
-// SetupGlobalTraceProviderAndExporterForTest is meant to be used in unit testing,
-// and mirrors the setup above for outside of unit testing. It returns an in-memory
-// exporter for examining generated spans.
-func SetupGlobalTraceProviderAndExporterForTest() (*tracetest.InMemoryExporter, *sdktrace.TracerProvider, error) {
-	exporter := tracetest.NewInMemoryExporter()
-	tp := newTracerProvider(exporter, 1.0)
-	otel.SetTracerProvider(tp)
-	return exporter, tp, nil
-}
+// My thought is this should be created in either the client or the app using the client and then passed in. Haven't decided yet.
+//Perhaps since the client module relies on a "generated" gen-go/tracing.go this could live in there.
 
-func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float64) *sdktrace.TracerProvider {
+// func newResource() *resource.Resource {
+// 	r, _ := resource.Merge(
+// 		resource.Default(),
+// 		resource.NewWithAttributes(
+// 			semconv.SchemaURL,
+// 			semconv.ServiceNameKey.String("service-name-goes-here"),
+// 			semconv.ServiceVersionKey.String("service-name-version-goes-here"),
+// 			attribute.String("environment", "demo"),
+// 		),
+// 	)
+// 	return r
+// }
+
+func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float64, resource *resource.Resource) *sdktrace.TracerProvider {
 	return sdktrace.NewTracerProvider(
 		// We use the default ID generator. In order for sampling to work (at least with this sampler)
 		// the ID generator must generate trace IDs uniformly at random from the entire space of uint64.
@@ -166,7 +133,11 @@ func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float
 			EventCountLimit:     100,
 			LinkCountLimit:      100,
 		}),
+		//Batcher is more efficient, switch to it after testing
 		sdktrace.WithSyncer(exporter),
+		//sdktrace.WithBatcher(exporter),
+		//Have to figure out how I'm going to generate this resource first.
+		sdktrace.WithResource(resource),
 	)
 }
 
@@ -179,7 +150,6 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 		return otlmux(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			// otelmux has extracted the span. now put it into the ctx-specific logger
 			s := trace.SpanFromContext(r.Context())
-			fmt.Println(s)
 			if sc := s.SpanContext(); sc.HasTraceID() {
 				spanID, traceID := sc.SpanID().String(), sc.TraceID().String()
 				// datadog converts hex strings to uint64 IDs, so log those so that correlating logs and traces works
@@ -197,27 +167,24 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 	}
 }
 
-// NewTransport returns the transport to use in client requests.
+// InstrumentedTransport returns the transport to use in client requests.
 // It takes in a transport to wrap, e.g. http.DefaultTransport, and the request
 // context value to pull the span name out from.
-// The exporter is pulled from the global one on each request, so tracing won't
-// begin until that is initialized (e.g, in in server startup).
-func NewTransport(baseTransport http.RoundTripper, spanNameCtxValue interface{}) http.RoundTripper {
-	fmt.Println("Creating roundtripper")
-	spew.Dump(roundTripper{baseTransport: baseTransport, spanNameCtxValue: spanNameCtxValue})
-	return roundTripper{baseTransport: baseTransport, spanNameCtxValue: spanNameCtxValue}
+func InstrumentedTransport(baseTransport http.RoundTripper, spanNameCtxValue interface{}, tp sdktrace.TracerProvider) http.RoundTripper {
+	return roundTripperWithTracing{baseTransport: baseTransport, spanNameCtxValue: spanNameCtxValue, tp: tp}
 }
 
-type roundTripper struct {
+type roundTripperWithTracing struct {
 	baseTransport    http.RoundTripper
 	spanNameCtxValue interface{}
+	tp               sdktrace.TracerProvider
 }
 
-func (rt roundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
+func (rt roundTripperWithTracing) RoundTrip(r *http.Request) (*http.Response, error) {
 
 	return otelhttp.NewTransport(
 		rt.baseTransport,
-		otelhttp.WithTracerProvider(otel.GetTracerProvider()),
+		otelhttp.WithTracerProvider(&rt.tp),
 		// otelhttp.WithTracerProvider(tracer),
 		otelhttp.WithPropagators(propagator),
 		otelhttp.WithSpanNameFormatter(func(method string, r *http.Request) string {

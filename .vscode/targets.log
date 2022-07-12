@@ -10,7 +10,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 Makefile:5: *** "Node "v7" is required, use nvm to install / use it".  Stop.
 
 
-# Make data base, printed on Wed Jun 29 10:36:48 2022
+# Make data base, printed on Fri Jul  8 12:21:50 2022
 
 # Variables
 
@@ -69,7 +69,7 @@ __CFBundleIdentifier = com.microsoft.VSCode
 # environment
 INFOPATH = /opt/homebrew/share/info:
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /var/folders/b7/x7tpm4rs7l10c3mcml9vjssr0000gn/T/vscode-ipc-8fb6b7f3-3871-43a4-802f-66fa1544960a.sock
+VSCODE_IPC_HOOK_EXTHOST = /var/folders/b7/x7tpm4rs7l10c3mcml9vjssr0000gn/T/vscode-ipc-dfac7cf4-f825-404f-83ad-1014d5135dbd.sock
 # makefile (from `golang.mk', line 23)
 golang-version-check = _ := $(if $(shell expr >/dev/null `go version | cut -d" " -f3 | cut -c3- | cut -d. -f2 | sed -E 's/beta[0-9]+//'` \>= `echo $(1) | cut -d. -f2` \& `go version | cut -d" " -f3 | cut -c3- | cut -d. -f1` = `echo $(1) | cut -d. -f1` && echo 1), @echo "", $(error must be running Go version ^$(1) - you are running $(shell go version | cut -d" " -f3 | cut -c3-)))
 # environment
@@ -90,15 +90,13 @@ GOPATH = $(shell echo $$GOPATH | cut -d: -f1)
 # environment
 NVM_BIN = /Users/chris.martin/.nvm/versions/node/v14.19.2/bin
 # environment
-LaunchInstanceID = F0B01F65-83DF-4BE1-8124-DE1EABBEE31D
-# environment
 VSCODE_LOG_STACK = false
 # environment
 ELECTRON_RUN_AS_NODE = 1
 # default
 .FEATURES := target-specific order-only second-expansion else-if archives jobserver check-symlink
 # environment
-GITHUB_API_TOKEN = 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
+GITHUB_API_TOKEN = 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
 # automatic
 %F = $(notdir $%)
 # makefile (from `node.mk', line 9)
@@ -137,11 +135,11 @@ endef
 # default
 MAKEFILEPATH = $(shell /usr/bin/xcode-select -print-path 2>/dev/null || echo /Developer)/Makefiles
 # environment
-VSCODE_CODE_CACHE_PATH = /Users/chris.martin/Library/Application Support/Code/CachedData/da15b6fd3ef856477bf6f4fb29ba1b7af717770d
+VSCODE_CODE_CACHE_PATH = /Users/chris.martin/Library/Application Support/Code/CachedData/30d9c6cd9483b2cc586687151bcbcd635f373630
 # environment
 LOGNAME = chris.martin
 # environment
-APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = true
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
 # environment
 NVM_CD_FLAGS = -q
 # environment
@@ -185,7 +183,7 @@ TMPDIR = /var/folders/b7/x7tpm4rs7l10c3mcml9vjssr0000gn/T/
 # automatic
 *F = $(notdir $*)
 # environment
-VSCODE_IPC_HOOK = /Users/chris.martin/Library/Application Support/Code/1.67.1-main.sock
+VSCODE_IPC_HOOK = /Users/chris.martin/Library/Application Support/Code/1.68.1-main.sock
 # makefile
 MAKEFLAGS = Rrqp
 # environment
@@ -195,7 +193,7 @@ MFLAGS = -Rrqp
 # environment
 NVM_DIR = /Users/chris.martin/.nvm
 # environment
-XPC_SERVICE_NAME = application.com.microsoft.VSCode.9883385.9883391
+XPC_SERVICE_NAME = application.com.microsoft.VSCode.18349245.18349251
 # environment
 HOMEBREW_PREFIX = /opt/homebrew
 # automatic
@@ -203,6 +201,7 @@ HOMEBREW_PREFIX = /opt/homebrew
 # automatic
 +F = $(notdir $+)
 # makefile (from `golang.mk', line 80)
+ 
 define golang-lint-strict
 @echo "LINTING $(1)..."
 @PKG_PATH=$$(go list -f '{{.Dir}}' $(1)); find $${PKG_PATH}/*.go -type f | grep -v gen_ | xargs $(FGT) $(GOLINT)
@@ -243,8 +242,6 @@ $(call golang-test,$(1))
 endef
 # environment
 AWS_ACCOUNT_NUMBER = 5896-9093-2525
-# environment
-SECURITYSESSIONID = 186b3
 # automatic
 ^F = $(notdir $^)
 # default
@@ -263,14 +260,14 @@ endef
 # environment
 LANG = C
 # environment
-VSCODE_PID = 87182
+VSCODE_PID = 27811
 # makefile (from `golang.mk', line 90)
 define golang-test
 @echo "TESTING $(1)..."
 @go test -v $(1)
 endef
 # variable set hash-table stats:
-# Load=103/1024=10%, Rehash=0, Collisions=8/148=5%
+# Load=101/1024=10%, Rehash=0, Collisions=8/146=5%
 
 # Pattern-specific Variable Values
 
@@ -329,7 +326,6 @@ golang-lint-deps: /Users/chris.martin/go/bin/golint
 #  File has not been updated.
 
 /Users/chris.martin/go/bin/fgt:
- 
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -456,6 +452,7 @@ golang-update-makefile:
 #  File has not been updated.
 #  commands to execute (from `golang.mk', line 155):
 	@wget https://raw.githubusercontent.com/Clever/dev-handbook/master/make/golang-v1.mk -O /tmp/golang.mk 2>/dev/null
+ 
 	@if ! grep -q $(GOLANG_MK_VERSION) /tmp/golang.mk; then cp /tmp/golang.mk golang.mk && echo "golang.mk updated"; else echo "golang.mk is up-to-date"; fi
 	
 
@@ -488,6 +485,6 @@ node.mk:
 # strcache size: total = 4096 / max = 4096 / min = 4096 / avg = 4096
 # strcache free: total = 4069 / max = 4069 / min = 4069 / avg = 4069
 
-# Finished Make data base on Wed Jun 29 10:36:48 2022
+# Finished Make data base on Fri Jul  8 12:21:50 2022
 
  

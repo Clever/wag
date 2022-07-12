@@ -16,10 +16,15 @@ import (
 	"github.com/Clever/wag/loggers/printlogger"
 	waglogger "github.com/Clever/wag/loggers/waglogger"
 
-	discovery "github.com/Clever/discovery-go"
 	"github.com/Clever/wag/samples/v8/gen-go-db/models"
-	"github.com/Clever/wag/tracing"
+	"github.com/Clever/wag/samples/v8/gen-go-db/tracing"
+
+	// "github.com/Clever/wag/tracing"
+	discovery "github.com/Clever/discovery-go"
+
 	"github.com/afex/hystrix-go/hystrix"
+	"go.opentelemetry.io/otel/sdk/resource"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
 
 var _ = json.Marshal
@@ -32,12 +37,6 @@ const Version = "0.1.0"
 
 // VersionHeader is sent with every request.
 const VersionHeader = "X-Client-Version"
-
-var CRITICALD int = 0
-var ERRORD int = 1
-var WARND int = 2
-var INFOD int = 3
-var DEBUGD int = 4
 
 // WagClient is used to make requests to the swagger-test service.
 type WagClient struct {
@@ -56,13 +55,16 @@ var _ Client = (*WagClient)(nil)
 
 //This pattern is used instead of using closures for greater transparency and the ability to implement additional interfaces.
 type options struct {
-	tracing interface{}
-	logger  waglogger.WagClientLogger
+	transport    http.RoundTripper
+	logger       waglogger.WagClientLogger
+	instrumentor Instrumentor
 }
 
 type Option interface {
 	apply(*options)
 }
+
+//Logger
 
 //WithLogger sets client logger option.
 func WithLogger(log waglogger.WagClientLogger) Option {
@@ -77,29 +79,97 @@ func (l loggerOption) apply(opts *options) {
 	opts.logger = l.Log
 }
 
-// type tracingOption interface{}
+//RoundTripper
 
-// func (t tracingOption) apply(opts *options) {
-// 	opts.tracing = t //This is where I would normally have a : tracing.NewTransport(http.DefaultTransport, opNameCtx{})
-// }
+type roundTripperOption struct {
+	rt http.RoundTripper
+}
 
-// //WithTracingProvider defines the tracing provider for
-// func WithTracingProvider(t interface{}) Option {
-// 	return tracingOption(t)
-// }
+func (t roundTripperOption) apply(opts *options) {
+	opts.transport = t.rt
+}
+
+//WithRoundTripper allows you to pass in intrumented/custom roundtrippers which will then wrap the
+//transport roundtripper
+func WithRoundTripper(t http.RoundTripper) Option {
+	return roundTripperOption{rt: t}
+}
+
+//Instrumentor
+
+type Instrumentor func(baseTransport http.RoundTripper, spanNameCtxValue interface{}, tp sdktrace.TracerProvider) http.RoundTripper
+
+func WithInstrumentor(fn Instrumentor) {
+	return instrumentorOption{instrumentor: fn}
+}
+
+type instrumentorOption struct {
+	instrumentor Instrumentor
+}
+
+func (i Instrumentor) apply(opts *options) {
+	opts.instrumentor = i.instrumentor
+}
+
+func main() {
+	fmt.Println("Hello World")
+}
+
+//Exporter
+
+//----------------------BEGIN TRACING RELATED FUNCTIONS----------------------
+
+// newResource returns a resource describing this application.
+// Used for setting up tracer provider
+func newResource() *resource.Resource {
+	r, _ := resource.Merge(
+		resource.Default(),
+		resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceNameKey.String("swagger-test"),
+			semconv.ServiceVersionKey.String("0.1.0"),
+		),
+	)
+	return r
+}
+
+func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float64) *sdktrace.TracerProvider {
+	return sdktrace.NewTracerProvider(
+		// We use the default ID generator. In order for sampling to work (at least with this sampler)
+		// the ID generator must generate trace IDs uniformly at random from the entire space of uint64.
+		// For example, the default x-ray ID generator does not do this.
+		sdktrace.WithSampler(sdktrace.ParentBased(sdktrace.TraceIDRatioBased(samplingProbability))),
+		// These maximums are to guard against something going wrong and sending a ton of data unexpectedly
+		sdktrace.WithSpanLimits(sdktrace.SpanLimits{
+			AttributeCountLimit: 100,
+			EventCountLimit:     100,
+			LinkCountLimit:      100,
+		}),
+		//Batcher is more efficient, switch to it after testing
+		sdktrace.WithSyncer(exporter),
+		//sdktrace.WithBatcher(exporter),
+		//Have to figure out how I'm going to generate this resource first.
+		sdktrace.WithResource(newResource()),
+	)
+}
+
+//----------------------END TRACING RELATEDFUNCTIONS----------------------
 
 // New creates a new client. The base path and http transport are configurable.
 func New(basePath string, opts ...Option) *WagClient {
-	defaultTracing := tracing.NewTransport(http.DefaultTransport, opNameCtx{})
-	defaultLogger := printlogger.NewLogger("dapple-wagclient", "info")
+
+	//Still should change this as this isn't how we pass in our Clever defaults anymore.
+	defaultTransport := tracing.NewTransport(http.DefaultTransport, opNameCtx{})
+
+	defaultLogger := printlogger.NewLogger("swagger-test-wagclient", "info")
 	basePath = strings.TrimSuffix(basePath, "/")
 	base := baseDoer{}
 	// For the short-term don't use the default retry policy since its 5 retries can 5X
 	// the traffic. Once we've enabled circuit breakers by default we can turn it on.
 	retry := retryDoer{d: base, retryPolicy: SingleRetryPolicy{}}
 	options := options{
-		tracing: defaultTracing,
-		logger:  printlogger.NewLogger("swagger-test-wagclient", 3),
+		transport: defaultTransport,
+		logger:    defaultLogger,
 	}
 
 	for _, o := range opts {
@@ -119,7 +189,7 @@ func New(basePath string, opts ...Option) *WagClient {
 		basePath:    basePath,
 		requestDoer: circuit,
 		client: &http.Client{
-			Transport: defaultTracing, //tracing.NewTransport(http.DefaultTransport, opNameCtx{}),
+			Transport: defaultTransport,
 		},
 		retryDoer:      &retry,
 		circuitDoer:    circuit,
