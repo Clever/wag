@@ -17,10 +17,11 @@ import (
 	waglogger "github.com/Clever/wag/loggers/waglogger"
 
 	"github.com/Clever/wag/samples/v8/gen-go-client-only/models"
-	"github.com/Clever/wag/samples/v8/gen-go-client-only/tracing"
 
-	// "github.com/Clever/wag/tracing"
 	discovery "github.com/Clever/discovery-go"
+	"github.com/Clever/wag/tracing"
+
+	"github.com/afex/hystrix-go/hystrix"
 
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -163,15 +164,36 @@ func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float
 func doNothing(baseTransport http.RoundTripper, spanNameCtxValue interface{}, tp sdktrace.TracerProvider) http.RoundTripper {
 	return baseTransport
 }
+func determineSampling() (samplingProbability float64, err error) {
+
+	// 	// If we're running locally, then turn off sampling. Otherwise sample
+	// 	// 1%!o(MISSING)r whatever TRACING_SAMPLING_PROBABILITY specifies.
+	samplingProbability = 0.01
+	isLocal := os.Getenv("_IS_LOCAL") == "true"
+	if isLocal {
+		fmt.Println("Set to Local")
+		samplingProbability = 1.0
+	} else if v := os.Getenv("TRACING_SAMPLING_PROBABILITY"); v != "" {
+		samplingProbabilityFromEnv, err := strconv.ParseFloat(v, 64)
+		if err != nil {
+			return 0, fmt.Errorf("could not parse '%!s(MISSING)' to float", v)
+		}
+		samplingProbability = samplingProbabilityFromEnv
+	}
+	return
+}
 
 //----------------------END TRACING RELATEDFUNCTIONS----------------------
 
 // New creates a new client. The base path and http transport are configurable.
 func New(basePath string, opts ...Option) *WagClient {
 
-	defaultTransport := tracing.NewTransport(http.DefaultTransport, opNameCtx{})
+	defaultTransport := http.DefaultTransport
 	defaultLogger := printlogger.NewLogger("swagger-test-wagclient", "info")
-	defaultExporter := stdouttrace.New(stdouttrace.WithPrettyPrint())
+	defaultExporter, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
+	if err != nil {
+		fmt.Println(err)
+	}
 	defaultInstrumentor := doNothing
 
 	basePath = strings.TrimSuffix(basePath, "/")
@@ -191,6 +213,7 @@ func New(basePath string, opts ...Option) *WagClient {
 	}
 
 	samplingProbability := 1.0 // TODO: Put back logic to set this to 1 for local, 0.1 otherwise etc.
+	// samplingProbability := determineSampling()
 
 	tp := newTracerProvider(options.exporter, samplingProbability)
 	options.transport = options.instrumentor(options.transport, context.TODO(), *tp)

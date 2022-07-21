@@ -7,14 +7,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
-	"strconv"
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
-	"go.opentelemetry.io/otel"
 
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -32,7 +29,6 @@ const (
 
 //propagator to use
 var propagator propagation.TextMapPropagator = propagation.TraceContext{} // traceparent header
-type tracerProviderCreator func(*otlptrace.Exporter, float64) *sdktrace.TracerProvider
 
 //OtlpGrpcExporter uses the otlptracegrpc modules and the otlptrace module to produce a new exporter at our default addr
 func OtlpGrpcExporter(ctx context.Context) sdktrace.SpanExporter {
@@ -60,86 +56,10 @@ func OtlpGrpcExporter(ctx context.Context) sdktrace.SpanExporter {
 
 }
 
+//RoundTripperInstrumentor is probably a redundant wrap around a wrap.
 func RoundTripperInstrumentor(tp sdktrace.TracerProvider, baseRT http.RoundTripper, ctx context.Context) (http.RoundTripper, error) {
 	return InstrumentedTransport(baseRT, ctx, tp), nil
-	// DefaultCollectorHost := "localhost"
-
-	// var defaultCollectorPort uint16 = 4317
-	// addr := fmt.Sprintf("%s:%d", DefaultCollectorHost, defaultCollectorPort)
 }
-
-//OurDefaultRoundTripper will return an instrumented round tripper with default tracing and logging
-//These defaults are overridden with WithExporter() and WithLogger() at time of client creation (wagclient.New())
-func OurDefaultRoundTripper(ctx context.Context, resource *resource.Resource) (http.RoundTripper, error) {
-	DefaultCollectorHost := "localhost"
-	// defaultCollectorPort was changed from 55860 in November and the Go library
-	// hasn't been updated when it is updated we can use otlp.DefaultCollectorPort
-	var defaultCollectorPort uint16 = 4317
-	// I want to see if this is still true or if I can use otlp.DefaultCollectorPort now.
-	// fmt.Println("Are these the same now?: ", otel.defaultCollectorPort, defaultCollectorPort)
-
-	addr := fmt.Sprintf("%s:%d", DefaultCollectorHost, defaultCollectorPort)
-
-	samplingProbability, err := determineSampling()
-
-	samplingProbability = 1 //Temp so I can run without ark start -l and still get sampling
-
-	if err != nil {
-		return nil, fmt.Errorf("error determining sampling: %s", err)
-	}
-
-	otlpClient := otlptracegrpc.NewClient(
-		otlptracegrpc.WithEndpoint(addr), //Not strictly needed as we use the defaults
-		otlptracegrpc.WithReconnectionPeriod(15*time.Second),
-		otlptracegrpc.WithInsecure(),
-	)
-
-	spanExporter, err := otlptrace.New(ctx, otlpClient)
-
-	tracerProvider := newTracerProvider(spanExporter, samplingProbability, resource)
-
-	otel.SetTracerProvider(tracerProvider)
-
-	return http.DefaultTransport, nil
-	// return NewTransport(http.DefaultTransport, ctx), nil
-
-	//...
-}
-
-func determineSampling() (samplingProbability float64, err error) {
-
-	// If we're running locally, then turn off sampling. Otherwise sample
-	// 1% or whatever TRACING_SAMPLING_PROBABILITY specifies.
-	samplingProbability = 0.01
-	isLocal := os.Getenv("_IS_LOCAL") == "true"
-	if isLocal {
-		fmt.Println("Set to Local")
-		samplingProbability = 1.0
-	} else if v := os.Getenv("TRACING_SAMPLING_PROBABILITY"); v != "" {
-		samplingProbabilityFromEnv, err := strconv.ParseFloat(v, 64)
-		if err != nil {
-			return 0, fmt.Errorf("could not parse '%s' to float", v)
-		}
-		samplingProbability = samplingProbabilityFromEnv
-	}
-	return
-}
-
-// My thought is this should be created in either the client or the app using the client and then passed in. Haven't decided yet.
-//Perhaps since the client module relies on a "generated" gen-go/tracing.go this could live in there.
-
-// func newResource() *resource.Resource {
-// 	r, _ := resource.Merge(
-// 		resource.Default(),
-// 		resource.NewWithAttributes(
-// 			semconv.SchemaURL,
-// 			semconv.ServiceNameKey.String("service-name-goes-here"),
-// 			semconv.ServiceVersionKey.String("service-name-version-goes-here"),
-// 			attribute.String("environment", "demo"),
-// 		),
-// 	)
-// 	return r
-// }
 
 func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float64, resource *resource.Resource) *sdktrace.TracerProvider {
 	return sdktrace.NewTracerProvider(

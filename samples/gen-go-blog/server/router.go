@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/Clever/go-process-metrics/metrics"
-	"github.com/Clever/wag/samples/v8/gen-go-blog/tracing"
+	"github.com/Clever/wag/samples/v8/gen-go-blog/servertracing"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/kardianos/osext"

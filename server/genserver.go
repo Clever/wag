@@ -71,7 +71,7 @@ func generateRouter(packageName, basePath string, s spec.Swagger, paths *spec.Pa
 		"syscall",
 		"time",
 		"github.com/Clever/go-process-metrics/metrics",
-		packageName + "/tracing",
+		packageName + "/servertracing",
 		"github.com/gorilla/handlers",
 		"github.com/gorilla/mux",
 		"github.com/kardianos/osext",
