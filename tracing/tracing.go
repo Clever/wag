@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -33,8 +34,34 @@ const (
 var propagator propagation.TextMapPropagator = propagation.TraceContext{} // traceparent header
 type tracerProviderCreator func(*otlptrace.Exporter, float64) *sdktrace.TracerProvider
 
+//OtlpGrpcExporter uses the otlptracegrpc modules and the otlptrace module to produce a new exporter at our default addr
+func OtlpGrpcExporter(ctx context.Context) sdktrace.SpanExporter {
+	DefaultCollectorHost := "localhost"
+	var defaultCollectorPort uint16 = 4317
+
+	addr := fmt.Sprintf("%s:%d", DefaultCollectorHost, defaultCollectorPort)
+
+	otlpClient := otlptracegrpc.NewClient(
+		otlptracegrpc.WithEndpoint(addr), //Not strictly needed as we use the defaults
+		otlptracegrpc.WithReconnectionPeriod(15*time.Second),
+		otlptracegrpc.WithInsecure(),
+	)
+
+	spanExporter, err := otlptrace.New(ctx, otlpClient)
+	if err != nil {
+		log.Fatal(err)
+		//Is doing a fatal error here too risky? No easy way to bubble up errors from here to the app using this.
+		//without making each of the WithXOption() takes an error as an arg as well.
+
+		fmt.Println(err)
+		return nil
+	}
+	return spanExporter
+
+}
+
 func RoundTripperInstrumentor(tp sdktrace.TracerProvider, baseRT http.RoundTripper, ctx context.Context) (http.RoundTripper, error) {
-	return NewTransport(baseRT, ctx)
+	return InstrumentedTransport(baseRT, ctx, tp), nil
 	// DefaultCollectorHost := "localhost"
 
 	// var defaultCollectorPort uint16 = 4317
@@ -67,21 +94,14 @@ func OurDefaultRoundTripper(ctx context.Context, resource *resource.Resource) (h
 		otlptracegrpc.WithInsecure(),
 	)
 
-	// //Is this part necessary here?
-	// otlpTraceExporter, err := otlptracegrpc.New(
-	// 	ctx,
-	// 	otlptracegrpc.WithReconnectionPeriod(15*time.Second),
-	// 	otlptracegrpc.WithInsecure(),
-	// 	otlptracegrpc.WithEndpoint(addr),
-	// )
-
 	spanExporter, err := otlptrace.New(ctx, otlpClient)
 
 	tracerProvider := newTracerProvider(spanExporter, samplingProbability, resource)
 
 	otel.SetTracerProvider(tracerProvider)
 
-	return NewTransport(http.DefaultTransport, ctx), nil
+	return http.DefaultTransport, nil
+	// return NewTransport(http.DefaultTransport, ctx), nil
 
 	//...
 }
