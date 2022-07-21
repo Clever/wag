@@ -19,7 +19,6 @@ import (
 	"github.com/Clever/wag/samples/v8/gen-go-nils/models"
 
 	discovery "github.com/Clever/discovery-go"
-	"github.com/Clever/wag/tracing"
 
 	"github.com/afex/hystrix-go/hystrix"
 

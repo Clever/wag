@@ -52,7 +52,6 @@ import (
 
 		"{{.PackageName}}/models"
 
-		"github.com/Clever/wag/tracing"
 		discovery "github.com/Clever/discovery-go"
 
 		"github.com/afex/hystrix-go/hystrix"
@@ -252,7 +251,7 @@ func New(basePath string, opts ...Option) *WagClient {
 
 	samplingProbability := 1.0 // TODO: Put back logic to set this to 1 for local, 0.1 otherwise etc.
 	// samplingProbability := determineSampling()
-	
+
 	tp := newTracerProvider(options.exporter, samplingProbability)
 	options.transport = options.instrumentor(options.transport, context.TODO(), *tp)
 

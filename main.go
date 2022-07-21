@@ -159,7 +159,7 @@ func generateTracing(basePath string) error {
 
 	tracingGenerator := swagger.Generator{BasePath: basePath}
 	tracingGenerator.Write(hardcoded.MustAsset("../_hardcoded/tracing.go"))
-	if err := tracingGenerator.WriteFile("tracing/tracing.go"); err != nil {
+	if err := tracingGenerator.WriteFile("servertracing/tracing.go"); err != nil {
 		log.Fatalf("Failed to copy tracing.go: %s", err)
 	}
 
