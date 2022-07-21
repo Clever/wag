@@ -51,9 +51,8 @@ import (
 		"github.com/Clever/wag/loggers/printlogger"
 
 		"{{.PackageName}}/models"
-		"{{.PackageName}}/tracing"
 
-		// "github.com/Clever/wag/tracing"
+		"github.com/Clever/wag/tracing"
 		discovery "github.com/Clever/discovery-go"
 
 		"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
