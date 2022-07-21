@@ -190,6 +190,7 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 // InstrumentedTransport returns the transport to use in client requests.
 // It takes in a transport to wrap, e.g. http.DefaultTransport, and the request
 // context value to pull the span name out from.
+// 99% sure this is wrapping a wrapped thing and totally redundant. Fix later.
 func InstrumentedTransport(baseTransport http.RoundTripper, spanNameCtxValue interface{}, tp sdktrace.TracerProvider) http.RoundTripper {
 	return roundTripperWithTracing{baseTransport: baseTransport, spanNameCtxValue: spanNameCtxValue, tp: tp}
 }

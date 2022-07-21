@@ -56,9 +56,10 @@ import (
 		// "github.com/Clever/wag/tracing"
 		discovery "github.com/Clever/discovery-go"
 
-		"github.com/afex/hystrix-go/hystrix"
+		"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 		"go.opentelemetry.io/otel/sdk/resource"
 		sdktrace "go.opentelemetry.io/otel/sdk/trace"
+		semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 
 )
 
@@ -91,9 +92,10 @@ var _ Client = (*WagClient)(nil)
 
 //This pattern is used instead of using closures for greater transparency and the ability to implement additional interfaces.
 type options struct {
-	transport http.RoundTripper
-	logger  waglogger.WagClientLogger
+	transport    http.RoundTripper
+	logger       waglogger.WagClientLogger
 	instrumentor Instrumentor
+	exporter     sdktrace.SpanExporter
 }
 
 type Option interface {
@@ -115,7 +117,6 @@ func (l loggerOption) apply(opts *options) {
 	opts.logger = l.Log
 }
 
-
 //RoundTripper
 
 type roundTripperOption struct {
@@ -132,12 +133,11 @@ func WithRoundTripper(t http.RoundTripper) Option {
 	return roundTripperOption{rt: t}
 }
 
-
-//Instrumentor
-
+//Instrumentor is a function that creates an instrumented round tripper
 type Instrumentor func(baseTransport http.RoundTripper, spanNameCtxValue interface{}, tp sdktrace.TracerProvider) http.RoundTripper
 
-func WithInstrumentor(fn Instrumentor){
+//WithInstrumentor sets a instrumenting function that will be used to wrap the roundTripper for tracing.
+func WithInstrumentor(fn Instrumentor) Option {
 	return instrumentorOption{instrumentor: fn}
 }
 
@@ -145,33 +145,37 @@ type instrumentorOption struct {
 	instrumentor Instrumentor
 }
 
-func (i Instrumentor) apply(opts *options){
+func (i instrumentorOption) apply(opts *options) {
 	opts.instrumentor = i.instrumentor
 }
 
-func main() {
-	fmt.Println("Hello World")
+//WithExporter sets client span exporter option.
+func WithExporter(se sdktrace.SpanExporter) Option {
+	return exporterOption{exporter: se}
 }
 
+type exporterOption struct {
+	exporter sdktrace.SpanExporter
+}
 
-//Exporter
-
-
+func (se exporterOption) apply(opts *options) {
+	opts.exporter = se.exporter
+}
 
 //----------------------BEGIN TRACING RELATED FUNCTIONS----------------------
 
 // newResource returns a resource describing this application.
 // Used for setting up tracer provider
 func newResource() *resource.Resource {
-        r, _ := resource.Merge(
-                resource.Default(),
-                resource.NewWithAttributes(
-                        semconv.SchemaURL,
-                        semconv.ServiceNameKey.String("{{.ServiceName}}"),
-                        semconv.ServiceVersionKey.String("{{ .Version }}"),
-                ),
-        )
-        return r
+	r, _ := resource.Merge(
+		resource.Default(),
+		resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceNameKey.String("dapple"),
+			semconv.ServiceVersionKey.String("1.11.0"),
+		),
+	)
+	return r
 }
 
 func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float64) *sdktrace.TracerProvider {
@@ -189,32 +193,45 @@ func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float
 		//Batcher is more efficient, switch to it after testing
 		sdktrace.WithSyncer(exporter),
 		//sdktrace.WithBatcher(exporter),
-		//Have to figure out how I'm going to generate this resource first.
 		sdktrace.WithResource(newResource()),
 	)
 }
+func doNothing(baseTransport http.RoundTripper, spanNameCtxValue interface{}, tp sdktrace.TracerProvider) http.RoundTripper {
+	return baseTransport
+}
+
 //----------------------END TRACING RELATEDFUNCTIONS----------------------
 
 // New creates a new client. The base path and http transport are configurable.
 func New(basePath string, opts ...Option) *WagClient {
 
-	//Still should change this as this isn't how we pass in our Clever defaults anymore. 
 	defaultTransport := tracing.NewTransport(http.DefaultTransport, opNameCtx{})
-	
 	defaultLogger := printlogger.NewLogger("{{.ServiceName}}-wagclient", "info")
+	defaultExporter := stdouttrace.New(stdouttrace.WithPrettyPrint())
+	defaultInstrumentor := doNothing
+
+
 	basePath = strings.TrimSuffix(basePath, "/")
 	base := baseDoer{}
 	// For the short-term don't use the default retry policy since its 5 retries can 5X
 	// the traffic. Once we've enabled circuit breakers by default we can turn it on.
 	retry := retryDoer{d: base, retryPolicy: SingleRetryPolicy{}}
 	options := options{
-		transport: defaultTransport,
-		logger:  defaultLogger,
+		transport:    defaultTransport,
+		logger:       defaultLogger,
+		exporter:     defaultExporter,
+		instrumentor: defaultInstrumentor,
 	}
 
 	for _, o := range opts {
 		o.apply(&options)
 	}
+
+
+	samplingProbability := 1.0 // TODO: Put back logic to set this to 1 for local, 0.1 otherwise etc.
+
+	tp := newTracerProvider(options.exporter, samplingProbability)
+	options.transport = options.instrumentor(options.transport, context.TODO(), *tp)
 
 	circuit := &circuitBreakerDoer{
 		d:     &retry,
