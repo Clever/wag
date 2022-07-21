@@ -2,15 +2,12 @@ package tracing
 
 import (
 	"context"
-	"encoding/binary"
-	"encoding/hex"
 	"fmt"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
-	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
@@ -19,7 +16,6 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
-	"gopkg.in/Clever/kayvee-go.v6/logger"
 )
 
 const (
@@ -79,32 +75,6 @@ func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float
 		//Have to figure out how I'm going to generate this resource first.
 		sdktrace.WithResource(resource),
 	)
-}
-
-// MuxServerMiddleware returns middleware that should be attached to a gorilla/mux server.
-// It does two things: starts spans, and adds span/trace info to the request-specific logger.
-// Right now we only support logging IDs in the format that Datadog expects.
-func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
-	otlmux := otelmux.Middleware(serviceName, otelmux.WithPropagators(propagator))
-	return func(h http.Handler) http.Handler {
-		return otlmux(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-			// otelmux has extracted the span. now put it into the ctx-specific logger
-			s := trace.SpanFromContext(r.Context())
-			if sc := s.SpanContext(); sc.HasTraceID() {
-				spanID, traceID := sc.SpanID().String(), sc.TraceID().String()
-				// datadog converts hex strings to uint64 IDs, so log those so that correlating logs and traces works
-				if len(traceID) == 32 && len(spanID) == 16 { // opentelemetry format: 16 byte (32-char hex), 8 byte (16-char hex) trace and span ids
-					traceIDBs, _ := hex.DecodeString(traceID)
-					logger.FromContext(r.Context()).AddContext("trace_id",
-						fmt.Sprintf("%d", binary.BigEndian.Uint64(traceIDBs[8:])))
-					spanIDBs, _ := hex.DecodeString(spanID)
-					logger.FromContext(r.Context()).AddContext("span_id",
-						fmt.Sprintf("%d", binary.BigEndian.Uint64(spanIDBs)))
-				}
-			}
-			h.ServeHTTP(rw, r)
-		}))
-	}
 }
 
 // InstrumentedTransport returns the transport to use in client requests.
