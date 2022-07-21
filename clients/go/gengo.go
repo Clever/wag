@@ -45,6 +45,7 @@ import (
 		"strconv"
 		"time"
 		"fmt"
+		"os"
 		"crypto/md5"
 
 		waglogger "github.com/Clever/wag/loggers/waglogger"
