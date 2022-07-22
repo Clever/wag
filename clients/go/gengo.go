@@ -172,8 +172,8 @@ func newResource() *resource.Resource {
 		resource.Default(),
 		resource.NewWithAttributes(
 			semconv.SchemaURL,
-			semconv.ServiceNameKey.String("dapple"),
-			semconv.ServiceVersionKey.String("1.11.0"),
+			semconv.ServiceNameKey.String("{{.ServiceName}}"),
+			semconv.ServiceVersionKey.String("{{ .Version }}"),
 		),
 	)
 	return r
@@ -428,7 +428,7 @@ go 1.16
 require (
 	//removed this because it can never get the right version. Adding with: go get github.com/Clever/dapple/gen-go/models@INFRANG-4918-Testing-nested-modules
 	//	` + packageName + `/models v0.0.0
-	github.com/Clever/discovery-go v1.7.2
+	github.com/Clever/discovery-go v1.8.1
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b
 )

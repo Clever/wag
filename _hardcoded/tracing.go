@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Clever/kayvee-go/v7/logger"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
-	"gopkg.in/Clever/kayvee-go.v6/logger"
 )
 
 // propagator to use.
