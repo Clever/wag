@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"runtime/debug"
 
-	"gopkg.in/Clever/kayvee-go.v6/logger"
+	"github.com/Clever/kayvee-go/v7/logger"
 )
 
 // PanicMiddleware logs any panics. For now, we're continue throwing the panic up
