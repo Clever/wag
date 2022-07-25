@@ -128,7 +128,7 @@ func (t roundTripperOption) apply(opts *options) {
 	opts.transport = t.rt
 }
 
-//WithRoundTripper allows you to pass in intrumented/custom roundtrippers which will then wrap the
+// WithRoundTripper allows you to pass in intrumented/custom roundtrippers which will then wrap the
 //transport roundtripper
 func WithRoundTripper(t http.RoundTripper) Option {
 	return roundTripperOption{rt: t}
