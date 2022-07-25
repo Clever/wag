@@ -15,10 +15,7 @@ import (
 	"github.com/go-swagger/go-swagger/generator"
 )
 
-<<<<<<< HEAD
-//Originally: $PWD/server/gendb/ $PWD/server/gendb/ had to remove to build locally.
-=======
->>>>>>> a5992aa (changed newResource to use generated service names and versions like it was before... must have accidentally reverted it)
+
 //go:generate go-bindata -nometadata -ignore .*\.go$ -pkg gendb -prefix $PWD/server/gendb/ $PWD/server/gendb/
 //go:generate gofmt -w bindata.go
 
