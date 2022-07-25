@@ -136,8 +136,8 @@ func newResource() *resource.Resource {
 		resource.Default(),
 		resource.NewWithAttributes(
 			semconv.SchemaURL,
-			semconv.ServiceNameKey.String("dapple"),
-			semconv.ServiceVersionKey.String("1.11.0"),
+			semconv.ServiceNameKey.String("swagger-test"),
+			semconv.ServiceVersionKey.String("0.1.0"),
 		),
 	)
 	return r
