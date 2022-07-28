@@ -23,10 +23,9 @@ import (
 
 	"github.com/afex/hystrix-go/hystrix"
 
-	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
+	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 )
 
 var _ = json.Marshal
@@ -57,17 +56,16 @@ var _ Client = (*WagClient)(nil)
 
 //This pattern is used instead of using closures for greater transparency and the ability to implement additional interfaces.
 type options struct {
-	transport    http.RoundTripper
-	logger       waglogger.WagClientLogger
-	instrumentor Instrumentor
-	exporter     sdktrace.SpanExporter
+	transport     http.RoundTripper
+	logger        waglogger.WagClientLogger
+	instrumentor  Instrumentor
+	exporter      sdktrace.SpanExporter
+	resourceMaker ResourceMaker
 }
 
 type Option interface {
 	apply(*options)
 }
-
-//Logger
 
 //WithLogger sets client logger option.
 func WithLogger(log waglogger.WagClientLogger) Option {
@@ -81,8 +79,6 @@ type loggerOption struct {
 func (l loggerOption) apply(opts *options) {
 	opts.logger = l.Log
 }
-
-//RoundTripper
 
 type roundTripperOption struct {
 	rt http.RoundTripper
@@ -127,23 +123,89 @@ func (se exporterOption) apply(opts *options) {
 	opts.exporter = se.exporter
 }
 
-//----------------------BEGIN TRACING RELATED FUNCTIONS----------------------
-
-// newResource returns a resource describing this application.
-// Used for setting up tracer provider
-func newResource() *resource.Resource {
-	r, _ := resource.Merge(
-		resource.Default(),
-		resource.NewWithAttributes(
-			semconv.SchemaURL,
-			semconv.ServiceNameKey.String("blog"),
-			semconv.ServiceVersionKey.String("0.1.0"),
-		),
-	)
-	return r
+//WithResource sets the otel resource (includes service name and version for traces)
+func WithResourceMaker(r ResourceMaker) Option {
+	return resourceMakerOption{resourceMaker: r}
 }
 
-func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float64) *sdktrace.TracerProvider {
+type ResourceMaker func(service, version string) *resource.Resource
+
+type resourceMakerOption struct {
+	resourceMaker ResourceMaker
+}
+
+func (r resourceMakerOption) apply(opts *options) {
+	opts.resourceMaker = r.resourceMaker
+}
+
+//----------------------BEGIN TRACING RELATED FUNCTIONS----------------------
+
+//Start Basic SpanExporter to os.Stdout
+
+var zeroTime time.Time
+
+var _ sdktrace.SpanExporter = &stdoutExporter{}
+
+type stdoutExporter struct {
+	encoder   *json.Encoder
+	encoderMu sync.Mutex
+	stoppedMu sync.RWMutex
+	stopped   bool
+}
+
+// ExportSpans writes spans in json format to stdout.
+func (e *stdoutExporter) ExportSpans(ctx context.Context, spans []trace.ReadOnlySpan) error {
+	e.stoppedMu.RLock()
+	stopped := e.stopped
+	e.stoppedMu.RUnlock()
+	if stopped {
+		return nil
+	}
+
+	if len(spans) == 0 {
+		return nil
+	}
+
+	stubs := tracetest.SpanStubsFromReadOnlySpans(spans)
+
+	e.encoderMu.Lock()
+	defer e.encoderMu.Unlock()
+	for i := range stubs {
+		stub := &stubs[i]
+		// Encode span stubs, one by one
+		if err := e.encoder.Encode(stub); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Shutdown is called to stop the exporter, it preforms no action.
+func (e *stdoutExporter) Shutdown(ctx context.Context) error {
+	e.stoppedMu.Lock()
+	e.stopped = true
+	e.stoppedMu.Unlock()
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+	}
+	return nil
+}
+
+// MarshalLog is the marshaling function used by the logging system to represent this exporter.
+func (e *stdoutExporter) MarshalLog() interface{} {
+	return struct {
+		Type string
+	}{
+		Type: "stdout",
+	}
+}
+
+//End Basic SpanExporter to os.Stdout
+
+func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float64, res *resource.Resource) *sdktrace.TracerProvider {
 	return sdktrace.NewTracerProvider(
 		// We use the default ID generator. In order for sampling to work (at least with this sampler)
 		// the ID generator must generate trace IDs uniformly at random from the entire space of uint64.
@@ -158,12 +220,13 @@ func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float
 		//Batcher is more efficient, switch to it after testing
 		sdktrace.WithSyncer(exporter),
 		//sdktrace.WithBatcher(exporter),
-		sdktrace.WithResource(newResource()),
+		sdktrace.WithResource(res),
 	)
 }
 func doNothing(baseTransport http.RoundTripper, spanNameCtxValue interface{}, tp sdktrace.TracerProvider) http.RoundTripper {
 	return baseTransport
 }
+
 func determineSampling() (samplingProbability float64, err error) {
 
 	// 	// If we're running locally, then turn off sampling. Otherwise sample
@@ -190,9 +253,9 @@ func New(basePath string, opts ...Option) *WagClient {
 
 	defaultTransport := http.DefaultTransport
 	defaultLogger := printlogger.NewLogger("blog-wagclient", "info")
-	defaultExporter, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
-	if err != nil {
-		fmt.Println(err)
+	defaultExporter := &stdoutExporter{
+		encoder: json.NewEncoder(os.Stdout),
+		stopped: false,
 	}
 	defaultInstrumentor := doNothing
 
@@ -215,7 +278,13 @@ func New(basePath string, opts ...Option) *WagClient {
 	samplingProbability := 1.0 // TODO: Put back logic to set this to 1 for local, 0.1 otherwise etc.
 	// samplingProbability := determineSampling()
 
-	tp := newTracerProvider(options.exporter, samplingProbability)
+	var res *resource.Resource
+	if options.resourceMaker == nil {
+		res = resource.Default()
+	} else {
+		res = options.resourceMaker("blog", "0.1.0")
+	}
+	tp := newTracerProvider(options.exporter, samplingProbability, res)
 	options.transport = options.instrumentor(options.transport, context.TODO(), *tp)
 
 	circuit := &circuitBreakerDoer{
