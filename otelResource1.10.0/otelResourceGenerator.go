@@ -1,4 +1,4 @@
-package otelResource
+package otelresource
 
 import (
 	"go.opentelemetry.io/otel/sdk/resource"

@@ -97,13 +97,14 @@ type options struct {
 	logger       waglogger.WagClientLogger
 	instrumentor Instrumentor
 	exporter     sdktrace.SpanExporter
+	resourceMaker ResourceMaker
+
 }
 
 type Option interface {
 	apply(*options)
 }
 
-//Logger
 
 //WithLogger sets client logger option.
 func WithLogger(log waglogger.WagClientLogger) Option {
@@ -118,7 +119,6 @@ func (l loggerOption) apply(opts *options) {
 	opts.logger = l.Log
 }
 
-//RoundTripper
 
 type roundTripperOption struct {
 	rt http.RoundTripper
@@ -163,23 +163,25 @@ func (se exporterOption) apply(opts *options) {
 	opts.exporter = se.exporter
 }
 
-//----------------------BEGIN TRACING RELATED FUNCTIONS----------------------
-
-// newResource returns a resource describing this application.
-// Used for setting up tracer provider
-func newResource() *resource.Resource {
-	r, _ := resource.Merge(
-		resource.Default(),
-		resource.NewWithAttributes(
-			semconv.SchemaURL,
-			semconv.ServiceNameKey.String("{{.ServiceName}}"),
-			semconv.ServiceVersionKey.String("{{ .Version }}"),
-		),
-	)
-	return r
+//WithResource sets the otel resource (includes service name and version for traces)
+func WithResourceMaker(r ResourceMaker) Option {
+	return resourceMakerOption{resourceMaker: r}
 }
 
-func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float64) *sdktrace.TracerProvider {
+type ResourceMaker func(service, version string) *resource.Resource
+
+type resourceMakerOption struct {
+	resourceMaker ResourceMaker
+}
+
+func (r resourceMakerOption) apply(opts *options) {
+	opts.resourceMaker = r.resourceMaker
+}
+
+//----------------------BEGIN TRACING RELATED FUNCTIONS----------------------
+
+
+func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float64, res *resource.Resource) *sdktrace.TracerProvider {
 	return sdktrace.NewTracerProvider(
 		// We use the default ID generator. In order for sampling to work (at least with this sampler)
 		// the ID generator must generate trace IDs uniformly at random from the entire space of uint64.
@@ -194,12 +196,13 @@ func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float
 		//Batcher is more efficient, switch to it after testing
 		sdktrace.WithSyncer(exporter),
 		//sdktrace.WithBatcher(exporter),
-		sdktrace.WithResource(newResource()),
+		sdktrace.WithResource(res),
 	)
 }
 func doNothing(baseTransport http.RoundTripper, spanNameCtxValue interface{}, tp sdktrace.TracerProvider) http.RoundTripper {
 	return baseTransport
 }
+
 func determineSampling() (samplingProbability float64, err error) {
 
 	// 	// If we're running locally, then turn off sampling. Otherwise sample
@@ -254,6 +257,13 @@ func New(basePath string, opts ...Option) *WagClient {
 	// samplingProbability := determineSampling()
 
 	tp := newTracerProvider(options.exporter, samplingProbability)
+	var res *resource.Resource
+	if options.resourceMaker == nil {
+		res = resource.Default()
+	} else {
+		res = options.resourceMaker("{{.ServiceName}}", "{{.Version}}")
+	}
+	tp := newTracerProvider(options.exporter, samplingProbability, res)
 	options.transport = options.instrumentor(options.transport, context.TODO(), *tp)
 
 	circuit := &circuitBreakerDoer{

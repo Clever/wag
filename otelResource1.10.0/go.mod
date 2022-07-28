@@ -1,4 +1,4 @@
-module github.com/Clever/wag/otelResource1.10.0
+module github.com/Clever/wag/otelresource1.10.0
 
 go 1.16
 
