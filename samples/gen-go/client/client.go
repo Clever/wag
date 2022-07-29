@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -1081,12 +1080,8 @@ func (c *WagClient) doGetBookByIDRequest(ctx context.Context, req *http.Request,
 		return nil, &output
 
 	default:
-		var body interface{}
-		bs, err := ioutil.ReadAll(resp.Body)
-		if err == nil && json.Unmarshal(bs, &body) == nil {
-			return nil, errors.New(string(bs))
-		}
-		return nil, &models.InternalError{Message: fmt.Sprintf("Unknown status code %v", resp.StatusCode)}
+		bs, _ := ioutil.ReadAll(resp.Body)
+		return nil, models.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
 	}
 }
 

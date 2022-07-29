@@ -641,5 +641,6 @@ func TestUnknownResponseBody(t *testing.T) {
 	c := client.New(testServer.URL)
 	_, err := c.GetBookByID(context.Background(), &models.GetBookByIDInput{BookID: 420})
 	assert.Error(t, err)
-	assert.Equal(t, err.Error(), `{"enhance": "your calm"}`)
+	assert.IsType(t, models.UnknownResponse{}, err)
+	assert.Equal(t, err.Error(), `unknown response with status: 420 body: {"enhance": "your calm"}`)
 }

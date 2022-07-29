@@ -308,7 +308,7 @@ var queryParamStr = `
 func generateOutputs(packagePath string, s spec.Swagger) error {
 	g := swagger.Generator{PackagePath: packagePath}
 
-	g.Printf("package models\n\n")
+	g.Printf("package models\nimport \"fmt\"\n")
 
 	// It's a bit wonky that we're writing these into output.go instead of the file
 	// defining each of the types, but I think that's okay for now. We can clean this
@@ -358,6 +358,14 @@ func (o %s) Error() string {
 
 `, errorType))
 	}
+
+	// default unknown response type is also an error type
+	buf.WriteString(`
+	func (u UnknownResponse) Error() string {
+		return fmt.Sprintf("unknown response with status: %%d body: %%s", u.StatusCode, u.Body)
+	}
+	
+`)
 
 	return buf.String(), nil
 
