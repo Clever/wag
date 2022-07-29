@@ -19,7 +19,6 @@ require (
 	github.com/pelletier/go-toml v1.9.1 // indirect
 	github.com/stretchr/testify v1.8.0
 	golang.org/x/text v0.3.6 // indirect
-	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce
 )
 
 // For validate, something seems to have broken or changed between this pinned version and 0.16.0  (commit 7c1911976134d3a24d0c03127505163c9f16aa3b)
