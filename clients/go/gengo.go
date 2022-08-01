@@ -96,8 +96,6 @@ type options struct {
 	logger       waglogger.WagClientLogger
 	instrumentor Instrumentor
 	exporter     sdktrace.SpanExporter
-	resourceMaker ResourceMaker
-
 }
 
 type Option interface {
@@ -128,15 +126,17 @@ func (t roundTripperOption) apply(opts *options) {
 }
 
 // WithRoundTripper allows you to pass in intrumented/custom roundtrippers which will then wrap the
-//transport roundtripper
+// transport roundtripper
 func WithRoundTripper(t http.RoundTripper) Option {
 	return roundTripperOption{rt: t}
 }
 
-//Instrumentor is a function that creates an instrumented round tripper
+// Instrumentor is a function that creates an instrumented round tripper
 type Instrumentor func(baseTransport http.RoundTripper, spanNameCtxValue interface{}, tp sdktrace.TracerProvider) http.RoundTripper
 
-//WithInstrumentor sets a instrumenting function that will be used to wrap the roundTripper for tracing.
+// WithInstrumentor sets a instrumenting function that will be used to wrap the roundTripper for tracing.
+// For standard instrumentation with tracing use tracing.InstrumentedTransport, default is non-instrumented.
+
 func WithInstrumentor(fn Instrumentor) Option {
 	return instrumentorOption{instrumentor: fn}
 }
@@ -149,7 +149,7 @@ func (i instrumentorOption) apply(opts *options) {
 	opts.instrumentor = i.instrumentor
 }
 
-//WithExporter sets client span exporter option.
+// WithExporter sets client span exporter option.
 func WithExporter(se sdktrace.SpanExporter) Option {
 	return exporterOption{exporter: se}
 }
