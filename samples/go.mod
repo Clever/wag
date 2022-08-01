@@ -11,7 +11,6 @@ require (
 	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b
 	github.com/go-errors/errors v1.1.1
 	github.com/go-openapi/errors v0.19.9
-	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/strfmt v0.19.11
 	github.com/go-openapi/swag v0.21.1
 	github.com/go-openapi/validate v0.19.15
