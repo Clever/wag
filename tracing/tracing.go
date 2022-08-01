@@ -25,13 +25,40 @@ const (
 
 //propagator to use
 var propagator propagation.TextMapPropagator = propagation.TraceContext{} // traceparent header
+type Option interface {
+	apply(*options)
+}
+type options struct {
+	address string
+}
+
+//WithAddress takes an address in the form of Host:Port
+func WithAddress(addr string) Option {
+	return addrOption{address: addr}
+}
+
+type addrOption struct {
+	address string
+}
+
+func (o addrOption) apply(opts *options) {
+	opts.address = o.address
+}
 
 //OtlpGrpcExporter uses the otlptracegrpc modules and the otlptrace module to produce a new exporter at our default addr
-func OtlpGrpcExporter(ctx context.Context) sdktrace.SpanExporter {
+func OtlpGrpcExporter(ctx context.Context, opts ...Option) sdktrace.SpanExporter {
+
 	DefaultCollectorHost := "localhost"
 	var defaultCollectorPort uint16 = 4317
-
 	addr := fmt.Sprintf("%s:%d", DefaultCollectorHost, defaultCollectorPort)
+
+	options := options{
+		address: addr,
+	}
+
+	for _, o := range opts {
+		o.apply(&options)
+	}
 
 	otlpClient := otlptracegrpc.NewClient(
 		otlptracegrpc.WithEndpoint(addr), //Not strictly needed as we use the defaults
@@ -50,11 +77,6 @@ func OtlpGrpcExporter(ctx context.Context) sdktrace.SpanExporter {
 	}
 	return spanExporter
 
-}
-
-//RoundTripperInstrumentor is probably a redundant wrap around a wrap.
-func RoundTripperInstrumentor(tp sdktrace.TracerProvider, baseRT http.RoundTripper, ctx context.Context) (http.RoundTripper, error) {
-	return InstrumentedTransport(baseRT, ctx, tp), nil
 }
 
 func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float64, resource *resource.Resource) *sdktrace.TracerProvider {
