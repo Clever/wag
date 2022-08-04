@@ -58,9 +58,10 @@ import (
 		"github.com/afex/hystrix-go/hystrix"
 
 
+		"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 		"go.opentelemetry.io/otel/sdk/resource"
 		sdktrace "go.opentelemetry.io/otel/sdk/trace"
-		"go.opentelemetry.io/otel/sdk/trace/tracetest"
+		semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 )
 
 var _ = json.Marshal
@@ -162,6 +163,59 @@ func (se exporterOption) apply(opts *options) {
 	opts.exporter = se.exporter
 }
 
+//----------------------BEGIN LOGGING RELATED FUNCTIONS----------------------
+
+//WagClientLogger provides a minimal interface for a Wag Client Logger
+type WagClientLogger interface {
+	Log(level string, message string, pairs map[string]interface{})
+}
+
+//M is a convenience type to avoid having to type out map[string]interface{} everytime.
+type M map[string]interface{}
+
+//NewLogger creates a logger for id that produces logs at and below the indicated level.
+//Level indicated the level at and below which logs are created.
+func NewLogger(id string, level string) WagClientLogger {
+	return PrintlnLogger{id: id, level: level}
+}
+
+type PrintlnLogger struct {
+	level string
+	id    string
+}
+
+func (w PrintlnLogger) Log(level string, message string, m map[string]interface{}) {
+
+	if w.strLvlToInt(w.level) >= w.strLvlToInt(level) {
+		m["id"] = w.id
+		jsonLog, err := json.Marshal(m)
+		if err != nil {
+			jsonLog, err = json.Marshal(map[string]interface{}{"Error Marshalling Log": err})
+		}
+		fmt.Println(string(jsonLog))
+	}
+}
+
+func (w PrintlnLogger) strLvlToInt(s string) int {
+	switch s {
+	case "Critical":
+		return 0
+	case "Error":
+		return 1
+	case "Warning":
+		return 2
+	case "Info":
+		return 3
+	case "Debug":
+		return 4
+	case "Trace":
+		return 5
+	}
+	return -1
+}
+
+//----------------------END LOGGING RELATED FUNCTIONS------------------------
+
 //----------------------BEGIN TRACING RELATED FUNCTIONS----------------------
 
 
@@ -228,9 +282,9 @@ func New(basePath string, opts ...Option) *WagClient {
 
 	defaultTransport := http.DefaultTransport
 	defaultLogger := printlogger.NewLogger("{{.ServiceName}}-wagclient", "info")
-	defaultExporter := &stdoutExporter{
-		encoder: json.NewEncoder(os.Stdout),
-		stopped: false,
+	defaultExporter, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
+	if err != nil {
+		fmt.Println(err)
 	}
 	defaultInstrumentor := doNothing
 

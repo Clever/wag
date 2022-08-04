@@ -1,6 +1,6 @@
 package logger
 
-//WagClientLogger provides a minimal interface for a Wag Logger
+//WagClientLogger provides a minimal interface for a Wag Client Logger
 type WagClientLogger interface {
 	Log(level string, message string, pairs map[string]interface{})
 }

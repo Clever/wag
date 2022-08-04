@@ -1,8 +1,8 @@
 make --dry-run --always-make --keep-going --print-directory
 /bin/bash: node: command not found
 
-Makefile:5: *** "Node "v7" is required, use nvm to install / use it".  Stop.
-
 make: Entering directory `/Users/chris.martin/go/src/github.com/Clever/wag'
 make: Leaving directory `/Users/chris.martin/go/src/github.com/Clever/wag'
  
+Makefile:5: *** "Node "v7" is required, use nvm to install / use it".  Stop.
+
