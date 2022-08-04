@@ -14,9 +14,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Clever/wag/loggers/printlogger"
-	waglogger "github.com/Clever/wag/loggers/waglogger"
-
 	"github.com/Clever/wag/samples/v8/gen-go-blog/models"
 
 	discovery "github.com/Clever/discovery-go"
@@ -50,7 +47,7 @@ type WagClient struct {
 	// Keep the circuit doer around so that we can turn it on / off
 	circuitDoer    *circuitBreakerDoer
 	defaultTimeout time.Duration
-	logger         waglogger.WagClientLogger
+	logger         WagClientLogger
 }
 
 var _ Client = (*WagClient)(nil)
@@ -58,7 +55,7 @@ var _ Client = (*WagClient)(nil)
 //This pattern is used instead of using closures for greater transparency and the ability to implement additional interfaces.
 type options struct {
 	transport    http.RoundTripper
-	logger       waglogger.WagClientLogger
+	logger       WagClientLogger
 	instrumentor Instrumentor
 	exporter     sdktrace.SpanExporter
 }
@@ -68,12 +65,12 @@ type Option interface {
 }
 
 //WithLogger sets client logger option.
-func WithLogger(log waglogger.WagClientLogger) Option {
+func WithLogger(log WagClientLogger) Option {
 	return loggerOption{Log: log}
 }
 
 type loggerOption struct {
-	Log waglogger.WagClientLogger
+	Log WagClientLogger
 }
 
 func (l loggerOption) apply(opts *options) {
@@ -242,7 +239,7 @@ func determineSampling() (samplingProbability float64, err error) {
 func New(basePath string, opts ...Option) *WagClient {
 
 	defaultTransport := http.DefaultTransport
-	defaultLogger := printlogger.NewLogger("blog-wagclient", "info")
+	defaultLogger := NewLogger("blog-wagclient", "info")
 	defaultExporter, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
 	if err != nil {
 		fmt.Println(err)
@@ -319,7 +316,7 @@ func (c *WagClient) SetCircuitBreakerDebug(b bool) {
 }
 
 // SetLogger allows for setting a custom logger
-func (c *WagClient) SetLogger(l waglogger.WagClientLogger) {
+func (c *WagClient) SetLogger(l WagClientLogger) {
 	c.logger = l
 	c.circuitDoer.logger = l
 }

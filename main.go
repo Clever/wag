@@ -153,7 +153,7 @@ func generateServer(goPackageName, basePath string, swaggerSpec spec.Swagger) er
 }
 
 func generateTracing(basePath string) error {
-	if err := prepareDir(filepath.Join(basePath, "tracing")); err != nil {
+	if err := prepareDir(filepath.Join(basePath, "servertracing")); err != nil {
 		return err
 	}
 

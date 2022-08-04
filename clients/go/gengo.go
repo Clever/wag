@@ -48,9 +48,6 @@ import (
 		"os"
 		"crypto/md5"
 
-		waglogger "github.com/Clever/wag/loggers/waglogger"
-		"github.com/Clever/wag/loggers/printlogger"
-
 		"{{.PackageName}}/models"
 
 		discovery "github.com/Clever/discovery-go"

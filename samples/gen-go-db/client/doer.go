@@ -13,7 +13,6 @@ import (
 	"sync"
 	"time"
 
-	logger "github.com/Clever/wag/loggers/waglogger"
 	"github.com/afex/hystrix-go/hystrix"
 	"github.com/donovanhide/eventsource"
 )
@@ -160,7 +159,7 @@ type circuitBreakerDoer struct {
 	d           doer
 	debug       bool
 	circuitName string
-	logger      logger.WagClientLogger
+	logger      WagClientLogger
 }
 
 var circuitSSEOnce sync.Once
@@ -185,7 +184,7 @@ type HystrixSSEEvent struct {
 	LatencyTotalMean                int    `json:"latencyTotal_mean"`
 }
 
-func logEvent(l logger.WagClientLogger, e HystrixSSEEvent) {
+func logEvent(l WagClientLogger, e HystrixSSEEvent) {
 	l.Log("info", "", map[string]interface{}{
 		"requestCount":                    e.RequestCount,
 		"errorCount":                      e.ErrorCount,
