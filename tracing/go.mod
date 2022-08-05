@@ -4,7 +4,8 @@ go 1.16
 
 require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.0 // indirect
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.33.0
+	//otelhttp v0.31.0 is latest, but v0.28.0 is the latest one that uses the same otel/metric@v0.26.0 as kayvee
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.28.0
 	go.opentelemetry.io/otel v1.8.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.8.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.8.0
