@@ -164,26 +164,39 @@ func (se exporterOption) apply(opts *options) {
 
 //WagClientLogger provides a minimal interface for a Wag Client Logger
 type WagClientLogger interface {
-	Log(level string, message string, pairs map[string]interface{})
+	Log(level LogLevel, message string, pairs map[string]interface{})
 }
 
 //M is a convenience type to avoid having to type out map[string]interface{} everytime.
 type M map[string]interface{}
 
+type LogLevel int
+
+// Constants used to define different LogLevels supported
+const (
+	Trace LogLevel = iota
+	Debug
+	Info
+	Warning
+	Error
+	Critical
+	FromEnv
+)
+
 //NewLogger creates a logger for id that produces logs at and below the indicated level.
 //Level indicated the level at and below which logs are created.
-func NewLogger(id string, level string) WagClientLogger {
+func NewLogger(id string, level LogLevel) WagClientLogger {
 	return PrintlnLogger{id: id, level: level}
 }
 
 type PrintlnLogger struct {
-	level string
+	level LogLevel
 	id    string
 }
 
-func (w PrintlnLogger) Log(level string, message string, m map[string]interface{}) {
+func (w PrintlnLogger) Log(level LogLevel, message string, m map[string]interface{}) {
 
-	if w.strLvlToInt(w.level) >= w.strLvlToInt(level) {
+	if level >= level {
 		m["id"] = w.id
 		jsonLog, err := json.Marshal(m)
 		if err != nil {
@@ -191,24 +204,6 @@ func (w PrintlnLogger) Log(level string, message string, m map[string]interface{
 		}
 		fmt.Println(string(jsonLog))
 	}
-}
-
-func (w PrintlnLogger) strLvlToInt(s string) int {
-	switch s {
-	case "Critical":
-		return 0
-	case "Error":
-		return 1
-	case "Warning":
-		return 2
-	case "Info":
-		return 3
-	case "Debug":
-		return 4
-	case "Trace":
-		return 5
-	}
-	return -1
 }
 
 //----------------------END LOGGING RELATED FUNCTIONS------------------------

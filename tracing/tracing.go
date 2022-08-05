@@ -18,11 +18,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-const (
-	instrumentationName    = "github.com/Clever/wag/instrumentation"
-	instrumentationVersion = "v0.1.0"
-)
-
 //propagator to use
 var propagator propagation.TextMapPropagator = propagation.TraceContext{} // traceparent header
 type Option interface {
