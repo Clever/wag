@@ -29,7 +29,6 @@ type baseDoer struct{}
 
 func (d baseDoer) Do(c *http.Client, r *http.Request) (*http.Response, error) {
 	return c.Do(r)
-	// return ctxhttp.Do(r.Context(), c, r)
 }
 
 // retryHandler retries 50X http requests
