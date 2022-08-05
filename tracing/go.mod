@@ -3,7 +3,6 @@ module github.com/Clever/wag/tracing
 go 1.16
 
 require (
-	github.com/davecgh/go-spew v1.1.1
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.33.0
 	go.opentelemetry.io/otel v1.8.0
