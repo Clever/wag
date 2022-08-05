@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
@@ -66,8 +65,6 @@ func OtlpGrpcExporter(ctx context.Context, opts ...Option) sdktrace.SpanExporter
 		log.Fatal(err)
 		//Is doing a fatal error here too risky? No easy way to bubble up errors from here to the app using this.
 		//without making each of the WithXOption() takes an error as an arg as well.
-
-		fmt.Println(err)
 		return nil
 	}
 	return spanExporter
@@ -118,8 +115,6 @@ func (rt roundTripperWithTracing) RoundTrip(r *http.Request) (*http.Response, er
 		otelhttp.WithSpanNameFormatter(func(method string, r *http.Request) string {
 			v, ok := r.Context().Value(rt.spanNameCtxValue).(string)
 			if ok {
-				fmt.Println("---v---")
-				spew.Dump(v)
 				return v
 			}
 			return r.Method // same as otelhttp's default span naming
