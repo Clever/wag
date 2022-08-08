@@ -160,7 +160,7 @@ type circuitBreakerDoer struct {
 	d           doer
 	debug       bool
 	circuitName string
-	logger      WagClientLogger
+	logger      wcl.WagClientLogger
 }
 
 var circuitSSEOnce sync.Once
@@ -185,7 +185,7 @@ type HystrixSSEEvent struct {
 	LatencyTotalMean                int    `json:"latencyTotal_mean"`
 }
 
-func logEvent(l WagClientLogger, e HystrixSSEEvent) {
+func logEvent(l wcl.WagClientLogger, e HystrixSSEEvent) {
 	l.Log(wcl.Info, "", map[string]interface{}{
 		"requestCount":                    e.RequestCount,
 		"errorCount":                      e.ErrorCount,
