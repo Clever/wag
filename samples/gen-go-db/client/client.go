@@ -6,6 +6,7 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -242,7 +243,8 @@ func (c *WagClient) doHealthCheckRequest(ctx context.Context, req *http.Request,
 		return &output
 
 	default:
-		return &models.InternalError{Message: fmt.Sprintf("Unknown status code %v", resp.StatusCode)}
+		bs, _ := ioutil.ReadAll(resp.Body)
+		return models.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
 	}
 }
 

@@ -308,7 +308,7 @@ var queryParamStr = `
 func generateOutputs(packagePath string, s spec.Swagger) error {
 	g := swagger.Generator{PackagePath: packagePath}
 
-	g.Printf("package models\nimport \"fmt\"\n")
+	g.Printf("package models\n\nimport \"fmt\"\n")
 
 	// It's a bit wonky that we're writing these into output.go instead of the file
 	// defining each of the types, but I think that's okay for now. We can clean this
