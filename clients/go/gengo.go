@@ -51,6 +51,8 @@ import (
 		"{{.PackageName}}/models"
 
 		discovery "github.com/Clever/discovery-go"
+		wcl "github.com/Clever/wag/wagclientlogger"
+
 
 		"github.com/afex/hystrix-go/hystrix"
 
@@ -59,6 +61,7 @@ import (
 		"go.opentelemetry.io/otel/sdk/resource"
 		sdktrace "go.opentelemetry.io/otel/sdk/trace"
 		semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
+		
 )
 
 var _ = json.Marshal
@@ -82,7 +85,7 @@ type WagClient struct {
 	// Keep the circuit doer around so that we can turn it on / off
 	circuitDoer    *circuitBreakerDoer
 	defaultTimeout time.Duration
-	logger      WagClientLogger
+	logger      wcl.WagClientLogger
 }
 
 var _ Client = (*WagClient)(nil)
@@ -91,7 +94,7 @@ var _ Client = (*WagClient)(nil)
 //This pattern is used instead of using closures for greater transparency and the ability to implement additional interfaces.
 type options struct {
 	transport    http.RoundTripper
-	logger       WagClientLogger
+	logger       wcl.WagClientLogger
 	instrumentor Instrumentor
 	exporter     sdktrace.SpanExporter
 }
@@ -102,12 +105,12 @@ type Option interface {
 
 
 //WithLogger sets client logger option.
-func WithLogger(log WagClientLogger) Option {
+func WithLogger(log wcl.WagClientLogger) Option {
 	return loggerOption{Log: log}
 }
 
 type loggerOption struct {
-	Log WagClientLogger
+	Log wcl.WagClientLogger
 }
 
 func (l loggerOption) apply(opts *options) {
@@ -162,39 +165,19 @@ func (se exporterOption) apply(opts *options) {
 
 //----------------------BEGIN LOGGING RELATED FUNCTIONS----------------------
 
-//WagClientLogger provides a minimal interface for a Wag Client Logger
-type WagClientLogger interface {
-	Log(level LogLevel, message string, pairs map[string]interface{})
-}
-
-//M is a convenience type to avoid having to type out map[string]interface{} everytime.
-type M map[string]interface{}
-
-type LogLevel int
-
-// Constants used to define different LogLevels supported
-const (
-	Trace LogLevel = iota
-	Debug
-	Info
-	Warning
-	Error
-	Critical
-	FromEnv
-)
 
 //NewLogger creates a logger for id that produces logs at and below the indicated level.
 //Level indicated the level at and below which logs are created.
-func NewLogger(id string, level LogLevel) WagClientLogger {
+func NewLogger(id string, level wcl.LogLevel) PrintlnLogger {
 	return PrintlnLogger{id: id, level: level}
 }
 
 type PrintlnLogger struct {
-	level LogLevel
+	level wcl.LogLevel
 	id    string
 }
 
-func (w PrintlnLogger) Log(level LogLevel, message string, m map[string]interface{}) {
+func (w PrintlnLogger) Log(level wcl.LogLevel, message string, m map[string]interface{}) {
 
 	if level >= level {
 		m["id"] = w.id
@@ -273,7 +256,7 @@ func determineSampling() (samplingProbability float64, err error) {
 func New(basePath string, opts ...Option) *WagClient {
 
 	defaultTransport := http.DefaultTransport
-	defaultLogger := NewLogger("{{.ServiceName}}-wagclient", "info")
+	defaultLogger := NewLogger("{{.ServiceName}}-wagclient", wcl.Info)
 	defaultExporter, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
 	if err != nil {
 		fmt.Println(err)
@@ -352,7 +335,7 @@ func (c *WagClient) SetCircuitBreakerDebug(b bool) {
 }
 
 // SetLogger allows for setting a custom logger
-func (c *WagClient) SetLogger(l WagClientLogger) {
+func (c *WagClient) SetLogger(l wcl.WagClientLogger) {
 	c.logger = l
 	c.circuitDoer.logger = l
 }
@@ -722,12 +705,12 @@ func (c *WagClient) do%sRequest(ctx context.Context, req *http.Request, headers 
 		"status_code": retCode,
 	}
 	if err == nil && retCode > 399 {
-		logData["message"] = resp.Status
-		c.logger.Log("error", "client-request-finished", logData)
+		logData["message"] = resp.Status 
+		c.logger.Log(wcl.Error, "client-request-finished", logData)
 	}
 	if err != nil {
 		logData["message"] = err.Error()
-		c.logger.Log("error", "client-request-finished", logData)
+		c.logger.Log(wcl.Error, "client-request-finished", logData)
 		return %serr
 	}
 	defer resp.Body.Close()

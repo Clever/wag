@@ -13,6 +13,8 @@ import (
 	"sync"
 	"time"
 
+	wcl "github.com/Clever/wag/wagclientlogger"
+
 	"github.com/afex/hystrix-go/hystrix"
 	"github.com/donovanhide/eventsource"
 )
@@ -184,7 +186,7 @@ type HystrixSSEEvent struct {
 }
 
 func logEvent(l WagClientLogger, e HystrixSSEEvent) {
-	l.Log("info", "", map[string]interface{}{
+	l.Log(wcl.Info, "", map[string]interface{}{
 		"requestCount":                    e.RequestCount,
 		"errorCount":                      e.ErrorCount,
 		"errorPercentage":                 e.ErrorPercentage,
