@@ -96,6 +96,11 @@ declare namespace SwaggerTest {
 
   namespace Models {
     
+    type UnknownResponse = {
+  body?: string;
+  statusCode?: number;
+};
+    
   }
 }
 

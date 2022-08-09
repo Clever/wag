@@ -241,6 +241,11 @@ declare namespace SwaggerTest {
   id_app?: string;
 };
     
+    type UnknownResponse = {
+  body?: string;
+  statusCode?: number;
+};
+    
   }
 }
 

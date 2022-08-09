@@ -117,6 +117,11 @@ declare namespace Blog {
     
     type SectionType = ("math" | "science" | "reading");
     
+    type UnknownResponse = {
+  body?: string;
+  statusCode?: number;
+};
+    
   }
 }
 

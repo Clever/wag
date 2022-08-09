@@ -631,3 +631,16 @@ func TestVersionHeader(t *testing.T) {
 	c := client.New(testServer.URL)
 	c.HealthCheck(context.Background())
 }
+
+func TestUnknownResponseBody(t *testing.T) {
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(420)
+		w.Write([]byte(`{"enhance": "your calm"}`))
+	}))
+	defer testServer.Close()
+	c := client.New(testServer.URL)
+	_, err := c.GetBookByID(context.Background(), &models.GetBookByIDInput{BookID: 420})
+	assert.Error(t, err)
+	assert.IsType(t, models.UnknownResponse{}, err)
+	assert.Equal(t, err.Error(), `unknown response with status: 420 body: {"enhance": "your calm"}`)
+}
