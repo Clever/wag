@@ -3,15 +3,11 @@ module github.com/Clever/wag/tracing
 go 1.16
 
 require (
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.0 // indirect
-	//otelhttp v0.34.0 is latest, but v0.28.0 is the latest one that uses the same otel/metric@v0.26.0 as kayvee
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.33.0
-	go.opentelemetry.io/otel v1.8.0
+	github.com/Clever/kayvee-go/v7 v7.5.1-0.20220809022937-ea1e87b3d8d5
+	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.34.0
+	go.opentelemetry.io/otel v1.9.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.8.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.8.0
-	go.opentelemetry.io/otel/sdk v1.8.0
-	go.opentelemetry.io/otel/trace v1.8.0
-	golang.org/x/net v0.0.0-20220708220712-1185a9018129 // indirect
-	golang.org/x/sys v0.0.0-20220721230656-c6bc011c0c49 // indirect
-	google.golang.org/genproto v0.0.0-20220720214146-176da50484ac // indirect
+	go.opentelemetry.io/otel/sdk v1.9.0
+	go.opentelemetry.io/otel/trace v1.9.0
 )
