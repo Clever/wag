@@ -14,14 +14,15 @@ require (
 	github.com/go-openapi/validate v0.19.15
 	github.com/go-swagger/go-swagger v0.23.0
 	github.com/golang/mock v1.6.0
-	github.com/google/go-cmp v0.5.7 // indirect
+	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/kevinburke/go-bindata v3.23.0+incompatible
 	github.com/pelletier/go-toml v1.9.1 // indirect
 	github.com/stretchr/testify v1.7.2
-	golang.org/x/sys v0.0.0-20220704084225-05e143d24a9e // indirect
-	golang.org/x/text v0.3.6 // indirect
+	golang.org/x/sys v0.0.0-20220808155132-1c4a2a72c664 // indirect
+	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.5 // indirect
+	golang.org/x/xerrors v0.0.0-20220609144429-65e65417b02f // indirect
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
 )
 

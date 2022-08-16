@@ -1,77 +1,74 @@
-package servertracing
+package tracing
 
 import (
 	"context"
-	"encoding/binary"
-	"encoding/hex"
 	"fmt"
+	"log"
 	"net/http"
-	"os"
-	"strconv"
 	"time"
 
-	"github.com/Clever/kayvee-go/v7/logger"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
-	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
-	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	"go.opentelemetry.io/otel/sdk/trace/tracetest"
-	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 	"go.opentelemetry.io/otel/trace"
 )
 
-var defaultCollectorHost string = "localhost"
-var defaultCollectorPort uint16 = 4317
-
-// propagator to use.
+//propagator to use
 var propagator propagation.TextMapPropagator = propagation.TraceContext{} // traceparent header
-func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdktrace.SpanExporter, *sdktrace.TracerProvider, error) {
-	// 1. set up exporter
-	// 2. set up tracer provider
-	// 3. assign global tracer provider
+type Option interface {
+	apply(*options)
+}
+type options struct {
+	address string
+}
 
-	// If we're running locally, then turn off sampling. Otherwise sample
-	// 1% or whatever TRACING_SAMPLING_PROBABILITY specifies.
-	samplingProbability := 0.01
-	isLocal := os.Getenv("_IS_LOCAL") == "true"
-	if isLocal {
-		samplingProbability = 1.0
-	} else if v := os.Getenv("TRACING_SAMPLING_PROBABILITY"); v != "" {
-		samplingProbabilityFromEnv, err := strconv.ParseFloat(v, 64)
-		if err != nil {
-			return nil, nil, fmt.Errorf("could not parse '%s' to float", v)
-		}
-		samplingProbability = samplingProbabilityFromEnv
+//WithAddress takes an address in the form of Host:Port
+func WithAddress(addr string) Option {
+	return addrOption{address: addr}
+}
+
+type addrOption struct {
+	address string
+}
+
+func (o addrOption) apply(opts *options) {
+	opts.address = o.address
+}
+
+//OtlpGrpcExporter uses the otlptracegrpc modules and the otlptrace module to produce a new exporter at our default addr
+func OtlpGrpcExporter(ctx context.Context, opts ...Option) sdktrace.SpanExporter {
+
+	DefaultCollectorHost := "localhost"
+	var defaultCollectorPort uint16 = 4317
+	addr := fmt.Sprintf("%s:%d", DefaultCollectorHost, defaultCollectorPort)
+
+	options := options{
+		address: addr,
 	}
 
-	addr := fmt.Sprintf("%s:%d", defaultCollectorHost, defaultCollectorPort)
+	for _, o := range opts {
+		o.apply(&options)
+	}
 
-	// Every 15 seconds we'll try to connect to opentelemetry collector at
-	// the default location of localhost:4317
-	// When running in production this is a sidecar, and when running
-	// locally this is a locally running opetelemetry-collector.
 	otlpClient := otlptracegrpc.NewClient(
+		otlptracegrpc.WithEndpoint(addr), //Not strictly needed as we use the defaults
 		otlptracegrpc.WithReconnectionPeriod(15*time.Second),
-		otlptracegrpc.WithEndpoint(addr),
 		otlptracegrpc.WithInsecure(),
 	)
+
 	spanExporter, err := otlptrace.New(ctx, otlpClient)
-
 	if err != nil {
-		return nil, nil, fmt.Errorf("error creating exporter: %v", err)
+		log.Fatal(err)
+		//Is doing a fatal error here too risky? No easy way to bubble up errors from here to the app using this.
+		//without making each of the WithXOption() takes an error as an arg as well.
+		return nil
 	}
+	return spanExporter
 
-	tp := newTracerProvider(spanExporter, samplingProbability, newResource())
-	otel.SetTracerProvider(tp)
-	logger.FromContext(ctx).InfoD("starting-tracer", logger.M{
-		"address":       addr,
-		"sampling-rate": samplingProbability,
-	})
-	return spanExporter, tp, nil
 }
 
 func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float64, resource *resource.Resource) *sdktrace.TracerProvider {
@@ -94,58 +91,44 @@ func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float
 	)
 }
 
-// SetupGlobalTraceProviderAndExporterForTest is meant to be used in unit testing,
-// and mirrors the setup above for outside of unit testing. It returns an in-memory
-// exporter for examining generated spans.
-func SetupGlobalTraceProviderAndExporterForTest() (*tracetest.InMemoryExporter, *sdktrace.TracerProvider, error) {
-	exporter := tracetest.NewInMemoryExporter()
-	tp := newTracerProvider(exporter, 1.0, newResource())
-	otel.SetTracerProvider(tp)
-	return exporter, tp, nil
+// InstrumentedTransport returns the transport to use in client requests.
+// It takes in a transport to wrap, e.g. http.DefaultTransport, and the request
+// context value to pull the span name out from.
+// 99% sure this is wrapping a wrapped thing and totally redundant. Fix later.
+func InstrumentedTransport(baseTransport http.RoundTripper, spanNameCtxValue interface{}, tp sdktrace.TracerProvider) http.RoundTripper {
+	return roundTripperWithTracing{baseTransport: baseTransport, spanNameCtxValue: spanNameCtxValue, tp: tp}
 }
 
-// MuxServerMiddleware returns middleware that should be attached to a gorilla/mux server.
-// It does two things: starts spans, and adds span/trace info to the request-specific logger.
-// Right now we only support logging IDs in the format that Datadog expects.
-func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
-	otlmux := otelmux.Middleware(serviceName, otelmux.WithPropagators(propagator))
-	return func(h http.Handler) http.Handler {
-		return otlmux(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-			// otelmux has extracted the span. now put it into the ctx-specific logger
-			s := trace.SpanFromContext(r.Context())
-			if sc := s.SpanContext(); sc.HasTraceID() {
-				spanID, traceID := sc.SpanID().String(), sc.TraceID().String()
-				// datadog converts hex strings to uint64 IDs, so log those so that correlating logs and traces works
-				if len(traceID) == 32 && len(spanID) == 16 { // opentelemetry format: 16 byte (32-char hex), 8 byte (16-char hex) trace and span ids
-					traceIDBs, _ := hex.DecodeString(traceID)
-					logger.FromContext(r.Context()).AddContext("trace_id",
-						fmt.Sprintf("%d", binary.BigEndian.Uint64(traceIDBs[8:])))
-					spanIDBs, _ := hex.DecodeString(spanID)
-					logger.FromContext(r.Context()).AddContext("span_id",
-						fmt.Sprintf("%d", binary.BigEndian.Uint64(spanIDBs)))
-				}
+type roundTripperWithTracing struct {
+	baseTransport    http.RoundTripper
+	spanNameCtxValue interface{}
+	tp               sdktrace.TracerProvider
+}
+
+func (rt roundTripperWithTracing) RoundTrip(r *http.Request) (*http.Response, error) {
+
+	return otelhttp.NewTransport(
+		rt.baseTransport,
+		otelhttp.WithTracerProvider(&rt.tp),
+		// otelhttp.WithTracerProvider(tracer),
+		otelhttp.WithPropagators(propagator),
+		otelhttp.WithSpanNameFormatter(func(method string, r *http.Request) string {
+			v, ok := r.Context().Value(rt.spanNameCtxValue).(string)
+			if ok {
+				return v
 			}
-			h.ServeHTTP(rw, r)
-		}))
-	}
+			return r.Method // same as otelhttp's default span naming
+		}),
+	).RoundTrip(r)
 }
 
-// newResource returns a resource describing this application.
-// Used for setting up tracer provider
-func newResource() *resource.Resource {
-	var appName string
-
-	if os.Getenv("_POD_ID") != "" {
-		appName = os.Getenv("_APP_NAME")
-	} else if os.Getenv("POD_ID") != "" {
-		appName = os.Getenv("APP_NAME")
+// ExtractSpanAndTraceID extracts span and trace IDs from an http request header.
+func ExtractSpanAndTraceID(r *http.Request) (traceID, spanID string) {
+	fmt.Println("Extracting TraceID")
+	s := trace.SpanFromContext(r.Context())
+	if s.SpanContext().HasTraceID() {
+		return s.SpanContext().TraceID().String(), s.SpanContext().SpanID().String()
 	}
-	r, _ := resource.Merge(
-		resource.Default(),
-		resource.NewWithAttributes(
-			semconv.SchemaURL,
-			semconv.ServiceNameKey.String(appName),
-		),
-	)
-	return r
+	sc := trace.SpanContextFromContext(propagator.Extract(r.Context(), propagation.HeaderCarrier(r.Header)))
+	return sc.SpanID().String(), sc.TraceID().String()
 }
