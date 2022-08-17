@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Clever/kayvee-go/v7/logger"
+	"github.com/davecgh/go-spew/spew"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
@@ -19,7 +20,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
-	semconv "go.opentelemetry.io/otel/semconv/v1.9.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -81,7 +82,8 @@ func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float
 		// We use the default ID generator. In order for sampling to work (at least with this sampler)
 		// the ID generator must generate trace IDs uniformly at random from the entire space of uint64.
 		// For example, the default x-ray ID generator does not do this.
-		sdktrace.WithSampler(sdktrace.ParentBased(sdktrace.TraceIDRatioBased(samplingProbability))),
+		sdktrace.WithSampler(sdktrace.AlwaysSample()),
+		// sdktrace.WithSampler(sdktrace.ParentBased(sdktrace.TraceIDRatioBased(samplingProbability))),
 		// These maximums are to guard against something going wrong and sending a ton of data unexpectedly
 		sdktrace.WithSpanLimits(sdktrace.SpanLimits{
 			AttributeCountLimit: 100,
@@ -115,7 +117,10 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return otlmux(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			// otelmux has extracted the span. now put it into the ctx-specific logger
+
 			s := trace.SpanFromContext(r.Context())
+			fmt.Println("Got this span:")
+			spew.Dump(s)
 			if sc := s.SpanContext(); sc.HasTraceID() {
 				spanID, traceID := sc.SpanID().String(), sc.TraceID().String()
 				// datadog converts hex strings to uint64 IDs, so log those so that correlating logs and traces works
