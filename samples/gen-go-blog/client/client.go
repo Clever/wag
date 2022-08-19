@@ -1,7 +1,7 @@
 package client
 
 // Using Alpha version of WAG Yay!
-
+//BLOG , blog, 0.1.0, github.com/Clever/wag/samples/v8/gen-go-blog
 import (
 	"bytes"
 	"context"

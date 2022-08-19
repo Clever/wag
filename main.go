@@ -8,8 +8,10 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/spec"
@@ -72,6 +74,7 @@ func main() {
 	if err := conf.parse(); err != nil {
 		log.Fatalf(err.Error())
 	}
+	spew.Dump(conf)
 
 	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
 	doc, err := loads.Spec(*conf.swaggerFile)
@@ -280,6 +283,8 @@ func (c *config) setGoPaths(outputPath, goPackageName string) error {
 			return fmt.Errorf("converting output-path to absolute path: %v", err)
 		}
 		c.goAbsolutePackagePath = absolutePath
+		fmt.Println("Go Package Name is set to: ", goPackageName)
+		spew.Dump(c)
 		*c.goPackageName = getModulePackageName(modFile, path.Clean(outputPath))
 
 	}
@@ -336,6 +341,29 @@ func (c *config) setGeneratedFilePaths() {
 // the function will return github.com/Clever/wag/v8/v2/gen-go
 // Example: if packagePath = github.com/Clever/wag/v8/gen-go and the module name is github.com/Clever/wag/v8
 // the function will return  github.com/Clever/wag/v8/gen-go
+func getSubModulePackageName(modFile *os.File, outputPath string) string {
+	r := bufio.NewReader(modFile)
+	b, _, err := r.ReadLine()
+	if err != nil {
+		log.Fatalf("Error checking module name: %s", err.Error())
+	}
+
+	// parse module path
+	moduleName := strings.TrimPrefix(string(b), "module")
+	moduleName = strings.TrimSpace(moduleName)
+
+	//Remove /v<version> from end of path.
+	regex, err := regexp.Compile("/v[0-9]$|/v[0-9][0-9]")
+	if err != nil {
+		log.Fatalf("Error checking module name: %s", err.Error())
+	}
+
+	moduleName = regex.ReplaceAllString(moduleName, "")
+
+	return fmt.Sprintf("%v/%v", moduleName, outputPath)
+
+}
+
 func getModulePackageName(modFile *os.File, outputPath string) string {
 	// read first line of module file
 	r := bufio.NewReader(modFile)
@@ -347,5 +375,6 @@ func getModulePackageName(modFile *os.File, outputPath string) string {
 	// parse module path
 	moduleName := strings.TrimPrefix(string(b), "module")
 	moduleName = strings.TrimSpace(moduleName)
+
 	return fmt.Sprintf("%v/%v", moduleName, outputPath)
 }

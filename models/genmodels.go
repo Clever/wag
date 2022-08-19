@@ -3,7 +3,9 @@ package models
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"os"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -57,8 +59,19 @@ func Generate(packageName, basePath string, s spec.Swagger) error {
 	return nil
 }
 
+func extractModuleNameAndVersionSuffix(packageName string) (moduleName string, versionSuffix string) {
+	regex, err := regexp.Compile("/v[0-9]/gen-go$|/v[0-9][0-9]/gen-go")
+	if err != nil {
+		log.Fatalf("Error getting module name: %s", err.Error())
+	}
+	versionSuffix = strings.TrimSuffix(regex.FindString(packageName), "/gen-go")
+	moduleName = regex.ReplaceAllString(packageName, "")
+	return
+}
+
 //CreateModFile creates a go.mod file for the client module.
 func CreateModFile(path string, basePath string, packageName string) error {
+	moduleName, versionSuffix := extractModuleNameAndVersionSuffix(packageName)
 	absPath := basePath + "/" + path
 	f, err := os.Create(absPath)
 
@@ -68,7 +81,7 @@ func CreateModFile(path string, basePath string, packageName string) error {
 
 	defer f.Close()
 	modFileString := `
-module ` + packageName + `/models
+module ` + moduleName + `/gen-go/models` + versionSuffix + `
 
 
 go 1.16

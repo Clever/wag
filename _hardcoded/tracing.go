@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/Clever/kayvee-go/v7/logger"
-	"github.com/davecgh/go-spew/spew"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
@@ -117,10 +117,14 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return otlmux(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			// otelmux has extracted the span. now put it into the ctx-specific logger
-
 			s := trace.SpanFromContext(r.Context())
-			fmt.Println("Got this span:")
-			spew.Dump(s)
+			rid := r.Header.Get("X-Request-ID")
+			fmt.Println("rid: ", rid)
+			if rid != "" {
+				s.SetAttributes(attribute.String("X-Request-ID", rid))
+			} else {
+				s.SetAttributes(attribute.String("X-Request-ID", s.SpanContext().TraceID().String()))
+			}
 			if sc := s.SpanContext(); sc.HasTraceID() {
 				spanID, traceID := sc.SpanID().String(), sc.TraceID().String()
 				// datadog converts hex strings to uint64 IDs, so log those so that correlating logs and traces works

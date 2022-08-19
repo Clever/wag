@@ -1,7 +1,7 @@
 package client
 
 // Using Alpha version of WAG Yay!
-
+//SWAGGER_TEST , swagger-test, 0.1.0, github.com/Clever/wag/samples/v8/gen-go-errors
 import (
 	"bytes"
 	"context"
@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Clever/wag/samples/v8/gen-go-errors/models"
+	"github.com/Clever/swagger-test/models"
 
 	discovery "github.com/Clever/discovery-go"
 	wcl "github.com/Clever/wag/wagclientlogger"

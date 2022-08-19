@@ -3,8 +3,11 @@ package goclient
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"os"
 	"path"
+	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/go-openapi/spec"
@@ -28,13 +31,13 @@ type clientCodeTemplate struct {
 	FormattedServiceName string
 	Operations           []string
 	Version              string
+	VersionSuffix        string
 }
 
 var clientCodeTemplateStr = `
 package client
 
 // Using Alpha version of WAG Yay!
-
 import (
 		"context"
 		"strings"
@@ -48,7 +51,7 @@ import (
 		"os"
 		"crypto/md5"
 
-		"{{.PackageName}}/models"
+		"github.com/Clever/{{.ServiceName}}/gen-go/models{{.VersionSuffix}}"
 
 		discovery "github.com/Clever/discovery-go"
 		wcl "github.com/Clever/wag/wagclientlogger"
@@ -399,6 +402,19 @@ func shortHash(s string) string {
 }
 `
 
+func getVersionSuffix(version string) string {
+	num, err := strconv.Atoi(strings.TrimSuffix(string(version[0:2]), "."))
+	if err != nil {
+		return ""
+	}
+	if num <= 1 {
+		return ""
+	}
+
+	return "/v" + strconv.Itoa(num)
+
+}
+
 func generateClient(packageName, basePath string, s spec.Swagger) error {
 
 	codeTemplate := clientCodeTemplate{
@@ -406,6 +422,7 @@ func generateClient(packageName, basePath string, s spec.Swagger) error {
 		ServiceName:          s.Info.InfoProps.Title,
 		FormattedServiceName: strings.ToUpper(strings.Replace(s.Info.InfoProps.Title, "-", "_", -1)),
 		Version:              s.Info.InfoProps.Version,
+		VersionSuffix:        getVersionSuffix(s.Info.InfoProps.Version),
 	}
 
 	for _, path := range swagger.SortedPathItemKeys(s.Paths.Paths) {
@@ -436,12 +453,12 @@ func generateClient(packageName, basePath string, s spec.Swagger) error {
 		return err
 	}
 
-	return CreateModFile("client/go.mod", basePath, packageName)
+	return CreateModFile("client/go.mod", basePath, codeTemplate)
 
 }
 
 //CreateModFile creates a go.mod file for the client module.
-func CreateModFile(path string, basePath string, packageName string) error {
+func CreateModFile(path string, basePath string, codeTemplate clientCodeTemplate) error {
 
 	absPath := basePath + "/" + path
 	f, err := os.Create(absPath)
@@ -452,13 +469,13 @@ func CreateModFile(path string, basePath string, packageName string) error {
 
 	defer f.Close()
 	modFileString := `
-module ` + packageName + `/client
+module github.com/Clever/` + codeTemplate.ServiceName + `/gen-go/client` + codeTemplate.VersionSuffix + `
 
 go 1.16
 
 require (
-	//removed this because it can never get the right version. Adding with: go get github.com/Clever/dapple/gen-go/models@INFRANG-4918-Testing-nested-modules
-	//	` + packageName + `/models v0.0.0
+	//removed this because it can never get the right version unless I tag it first. Adding with: go get github.com/Clever/dapple/gen-go/models@INFRANG-5015
+	//github.com/Clever/` + codeTemplate.ServiceName + `/gen-go/models` + codeTemplate.VersionSuffix + ` v` + codeTemplate.Version + `
 	github.com/Clever/discovery-go v1.8.1
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b
@@ -494,7 +511,9 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 
 )
-`
+//Replace directives will work locally but mess up imports.
+//replace github.com/Clever/` + codeTemplate.ServiceName + `/gen-go/models` + codeTemplate.VersionSuffix + ` v` + codeTemplate.Version + ` => ../models `
+
 	_, err = f.WriteString(modFileString)
 
 	if err != nil {
@@ -519,10 +538,21 @@ func IsBinaryParam(param spec.Parameter, definitions map[string]spec.Schema) boo
 	definitionName := path.Base(param.Schema.Ref.Ref.GetURL().String())
 	return definitions[definitionName].Format == "binary"
 }
+func extractModuleNameAndVersionSuffix(packageName string) (moduleName string, versionSuffix string) {
+	regex, err := regexp.Compile("/v[0-9]/gen-go$|/v[0-9][0-9]/gen-go")
+	if err != nil {
+		log.Fatalf("Error getting module name from packageName: %s", err.Error())
+	}
+	versionSuffix = strings.TrimSuffix(regex.FindString(packageName), "/gen-go")
+	moduleName = regex.ReplaceAllString(packageName, "")
+	return
+
+}
 func generateInterface(packageName, basePath string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
 	g := swagger.Generator{BasePath: basePath}
 	g.Printf("package client\n\n")
-	g.Printf(swagger.ImportStatements([]string{"context", packageName + "/models"}))
+	moduleName, versionSuffix := extractModuleNameAndVersionSuffix(packageName)
+	g.Printf(swagger.ImportStatements([]string{"context", moduleName + "/gen-go/models" + versionSuffix}))
 	g.Printf("//go:generate mockgen -source=$GOFILE -destination=mock_client.go -package=client\n\n")
 
 	if err := generateClientInterface(s, &g, serviceName, paths); err != nil {
