@@ -119,7 +119,6 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 			// otelmux has extracted the span. now put it into the ctx-specific logger
 			s := trace.SpanFromContext(r.Context())
 			rid := r.Header.Get("X-Request-ID")
-			fmt.Println("rid: ", rid)
 			if rid != "" {
 				s.SetAttributes(attribute.String("X-Request-ID", rid))
 			} else {

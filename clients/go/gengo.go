@@ -216,7 +216,7 @@ func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float
 		// We use the default ID generator. In order for sampling to work (at least with this sampler)
 		// the ID generator must generate trace IDs uniformly at random from the entire space of uint64.
 		// For example, the default x-ray ID generator does not do this.
-		sdktrace.WithSampler(sdktrace.ParentBased(sdktrace.TraceIDRatioBased(samplingProbability))),
+		sdktrace.WithSampler(sdktrace.AlwaysSample()),
 		// These maximums are to guard against something going wrong and sending a ton of data unexpectedly
 		sdktrace.WithSpanLimits(sdktrace.SpanLimits{
 			AttributeCountLimit: 100,
@@ -288,7 +288,7 @@ func New(basePath string, opts ...Option) *WagClient {
 	// samplingProbability := determineSampling()
 
 	tp := newTracerProvider(options.exporter, samplingProbability)
-	options.transport = options.instrumentor(options.transport, context.TODO(), *tp)
+	options.transport = options.instrumentor(options.transport, opNameCtx{}, *tp)
 
 	circuit := &circuitBreakerDoer{
 		d:     &retry,
@@ -303,7 +303,7 @@ func New(basePath string, opts ...Option) *WagClient {
 		basePath: basePath,
 		requestDoer: circuit,
 		client: &http.Client{
-			Transport: defaultTransport,
+			Transport: options.transport,
 		},
 		retryDoer: &retry,
 		circuitDoer: circuit,
@@ -544,7 +544,11 @@ func extractModuleNameAndVersionSuffix(packageName string) (moduleName string, v
 		log.Fatalf("Error getting module name from packageName: %s", err.Error())
 	}
 	versionSuffix = strings.TrimSuffix(regex.FindString(packageName), "/gen-go")
-	moduleName = regex.ReplaceAllString(packageName, "")
+	if bool(regex.MatchString(packageName)) {
+		moduleName = regex.ReplaceAllString(packageName, "")
+	} else {
+		moduleName = strings.TrimSuffix(packageName, "/gen-go")
+	}
 	return
 
 }

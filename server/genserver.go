@@ -191,11 +191,16 @@ func jsonMarshalNoError(i interface{}) string {
 func extractModuleNameAndVersionSuffix(packageName string) (moduleName string, versionSuffix string) {
 	regex, err := regexp.Compile("/v[0-9]/gen-go$|/v[0-9][0-9]/gen-go")
 	if err != nil {
-		log.Fatalf("Error getting module name: %s", err.Error())
+		log.Fatalf("Error getting module name from packageName: %s", err.Error())
 	}
 	versionSuffix = strings.TrimSuffix(regex.FindString(packageName), "/gen-go")
-	moduleName = regex.ReplaceAllString(packageName, "")
+	if bool(regex.MatchString(packageName)) {
+		moduleName = regex.ReplaceAllString(packageName, "")
+	} else {
+		moduleName = strings.TrimSuffix(packageName, "/gen-go")
+	}
 	return
+
 }
 
 func generateHandlers(packageName, basePath string, s *spec.Swagger, paths *spec.Paths) error {
