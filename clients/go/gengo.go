@@ -256,7 +256,7 @@ func determineSampling() (samplingProbability float64, err error) {
 //----------------------END TRACING RELATEDFUNCTIONS----------------------
 
 // New creates a new client. The base path and http transport are configurable.
-func New(basePath string, opts ...Option) *WagClient {
+func New(ctx context.Context, basePath string, opts ...Option) *WagClient {
 
 	defaultTransport := http.DefaultTransport
 	defaultLogger := NewLogger("{{.ServiceName}}-wagclient", wcl.Info)
@@ -288,7 +288,7 @@ func New(basePath string, opts ...Option) *WagClient {
 	// samplingProbability := determineSampling()
 
 	tp := newTracerProvider(options.exporter, samplingProbability)
-	options.transport = options.instrumentor(options.transport, opNameCtx{}, *tp)
+	options.transport = options.instrumentor(options.transport, ctx, *tp)
 
 	circuit := &circuitBreakerDoer{
 		d:     &retry,
@@ -324,7 +324,7 @@ func NewFromDiscovery() (*WagClient, error) {
 			return nil, err
 		}
 	}
-	return New(url), nil
+	return New(context.Backgroung(), url), nil
 }
 
 // SetRetryPolicy sets a the given retry policy for all requests.
