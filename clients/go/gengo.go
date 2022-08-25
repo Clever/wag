@@ -54,7 +54,7 @@ import (
 		"github.com/Clever/{{.ServiceName}}/gen-go/models{{.VersionSuffix}}"
 
 		discovery "github.com/Clever/discovery-go"
-		wcl "github.com/Clever/wag/wagclientlogger"
+		wcl "github.com/Clever/wag/logging/wagclientlogger"
 
 
 		"github.com/afex/hystrix-go/hystrix"
