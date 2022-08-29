@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Clever/kayvee-go/v7/logger"
+	"github.com/davecgh/go-spew/spew"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -30,12 +31,12 @@ var defaultCollectorPort uint16 = 4317
 // propagator to use.
 var propagator propagation.TextMapPropagator = propagation.TraceContext{} // traceparent header
 func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdktrace.SpanExporter, *sdktrace.TracerProvider, error) {
-	// 1. set up exporter
-	// 2. set up tracer provider
-	// 3. assign global tracer provider
+	otel.SetTextMapPropagator(
+		propagation.NewCompositeTextMapPropagator(
+			propagation.TraceContext{},
+			propagation.Baggage{}),
+	)
 
-	// If we're running locally, then turn off sampling. Otherwise sample
-	// 1% or whatever TRACING_SAMPLING_PROBABILITY specifies.
 	samplingProbability := 0.01
 	isLocal := os.Getenv("_IS_LOCAL") == "true"
 	if isLocal {
@@ -78,7 +79,7 @@ func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdktrace.SpanExpo
 }
 
 func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float64, resource *resource.Resource) *sdktrace.TracerProvider {
-	return sdktrace.NewTracerProvider(
+	tp := sdktrace.NewTracerProvider(
 		// We use the default ID generator. In order for sampling to work (at least with this sampler)
 		// the ID generator must generate trace IDs uniformly at random from the entire space of uint64.
 		// For example, the default x-ray ID generator does not do this.
@@ -96,6 +97,10 @@ func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float
 		//Have to figure out how I'm going to generate this resource first.
 		sdktrace.WithResource(resource),
 	)
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+
+	return tp
 }
 
 // SetupGlobalTraceProviderAndExporterForTest is meant to be used in unit testing,
@@ -112,11 +117,19 @@ func SetupGlobalTraceProviderAndExporterForTest() (*tracetest.InMemoryExporter, 
 // It does two things: starts spans, and adds span/trace info to the request-specific logger.
 // Right now we only support logging IDs in the format that Datadog expects.
 func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
-	otlmux := otelmux.Middleware(serviceName, otelmux.WithPropagators(propagator))
+	otlmux := otelmux.Middleware(serviceName, otelmux.WithPropagators(otel.GetTextMapPropagator()))
 	fmt.Println("Adding mux server middleware")
 	return func(h http.Handler) http.Handler {
 		return otlmux(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			// otelmux has extracted the span. now put it into the ctx-specific logger
+			var carrier propagation.HeaderCarrier = propagation.HeaderCarrier{}
+
+			// otelmux has extracted the span. now put it into the ctx-specific logger
+			ctx := otel.GetTextMapPropagator().Extract(r.Context(), carrier)
+			spew.Dump(r.Header)
+			testsc := trace.SpanFromContext(ctx).SpanContext()
+			spew.Dump(testsc)
+
 			s := trace.SpanFromContext(r.Context())
 			rid := r.Header.Get("X-Request-ID")
 			if rid != "" {
@@ -124,8 +137,15 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 			} else {
 				s.SetAttributes(attribute.String("X-Request-ID", s.SpanContext().TraceID().String()))
 			}
+
+			testctx := trace.ContextWithSpanContext(ctx, s.SpanContext())
+			r2 := r.Clone(testctx)
+			spew.Dump(r2.Header)
+
 			if sc := s.SpanContext(); sc.HasTraceID() {
 				spanID, traceID := sc.SpanID().String(), sc.TraceID().String()
+				fmt.Println("span/trace: ", spanID, " ", traceID)
+				spew.Dump(sc)
 				// datadog converts hex strings to uint64 IDs, so log those so that correlating logs and traces works
 				if len(traceID) == 32 && len(spanID) == 16 { // opentelemetry format: 16 byte (32-char hex), 8 byte (16-char hex) trace and span ids
 					traceIDBs, _ := hex.DecodeString(traceID)

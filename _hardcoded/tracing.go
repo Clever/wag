@@ -7,16 +7,14 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
-	"time"
 
 	"github.com/Clever/kayvee-go/v7/logger"
+	"go.opentelemetry.io/otel/exporters/jaeger"
+
 	"github.com/davecgh/go-spew/spew"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
@@ -37,31 +35,33 @@ func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdktrace.SpanExpo
 			propagation.Baggage{}),
 	)
 
-	samplingProbability := 0.01
-	isLocal := os.Getenv("_IS_LOCAL") == "true"
-	if isLocal {
-		samplingProbability = 1.0
-	} else if v := os.Getenv("TRACING_SAMPLING_PROBABILITY"); v != "" {
-		samplingProbabilityFromEnv, err := strconv.ParseFloat(v, 64)
-		if err != nil {
-			return nil, nil, fmt.Errorf("could not parse '%s' to float", v)
-		}
-		samplingProbability = samplingProbabilityFromEnv
-	}
-	fmt.Println("isLocal:", isLocal)
+	// samplingProbability := 0.01
+	// isLocal := os.Getenv("_IS_LOCAL") == "true"
+	// if isLocal {
+	// 	samplingProbability = 1.0
+	// } else if v := os.Getenv("TRACING_SAMPLING_PROBABILITY"); v != "" {
+	// 	samplingProbabilityFromEnv, err := strconv.ParseFloat(v, 64)
+	// 	if err != nil {
+	// 		return nil, nil, fmt.Errorf("could not parse '%s' to float", v)
+	// 	}
+	// 	samplingProbability = samplingProbabilityFromEnv
+	// }
+	// fmt.Println("isLocal:", isLocal)
 
-	addr := fmt.Sprintf("%s:%d", defaultCollectorHost, defaultCollectorPort)
+	// addr := fmt.Sprintf("%s:%d", defaultCollectorHost, defaultCollectorPort)
 
-	// Every 15 seconds we'll try to connect to opentelemetry collector at
-	// the default location of localhost:4317
-	// When running in production this is a sidecar, and when running
-	// locally this is a locally running opetelemetry-collector.
-	otlpClient := otlptracegrpc.NewClient(
-		otlptracegrpc.WithReconnectionPeriod(15*time.Second),
-		otlptracegrpc.WithEndpoint(addr),
-		otlptracegrpc.WithInsecure(),
-	)
-	spanExporter, err := otlptrace.New(ctx, otlpClient)
+	// // Every 15 seconds we'll try to connect to opentelemetry collector at
+	// // the default location of localhost:4317
+	// // When running in production this is a sidecar, and when running
+	// // locally this is a locally running opetelemetry-collector.
+	// otlpClient := otlptracegrpc.NewClient(
+	// 	otlptracegrpc.WithReconnectionPeriod(15*time.Second),
+	// 	otlptracegrpc.WithEndpoint(addr),
+	// 	otlptracegrpc.WithInsecure(),
+	// )
+	// spanExporter, err := otlptrace.New(ctx, otlpClient)
+	spanExporter, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint("http://localhost:14268/api/traces")))
+
 	fmt.Println("Exporter Created")
 	if err != nil {
 		return nil, nil, fmt.Errorf("error creating exporter: %v", err)
@@ -79,7 +79,7 @@ func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdktrace.SpanExpo
 }
 
 func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float64, resource *resource.Resource) *sdktrace.TracerProvider {
-	return sdktrace.NewTracerProvider(
+	tp := sdktrace.NewTracerProvider(
 		// We use the default ID generator. In order for sampling to work (at least with this sampler)
 		// the ID generator must generate trace IDs uniformly at random from the entire space of uint64.
 		// For example, the default x-ray ID generator does not do this.
@@ -97,6 +97,10 @@ func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float
 		//Have to figure out how I'm going to generate this resource first.
 		sdktrace.WithResource(resource),
 	)
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+
+	return tp
 }
 
 // SetupGlobalTraceProviderAndExporterForTest is meant to be used in unit testing,
@@ -118,6 +122,14 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return otlmux(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			// otelmux has extracted the span. now put it into the ctx-specific logger
+			var carrier propagation.HeaderCarrier = propagation.HeaderCarrier{}
+
+			// otelmux has extracted the span. now put it into the ctx-specific logger
+			ctx := otel.GetTextMapPropagator().Extract(r.Context(), carrier)
+			spew.Dump(r.Header)
+			testsc := trace.SpanFromContext(ctx).SpanContext()
+			spew.Dump(testsc)
+
 			s := trace.SpanFromContext(r.Context())
 			rid := r.Header.Get("X-Request-ID")
 			if rid != "" {
@@ -125,6 +137,11 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 			} else {
 				s.SetAttributes(attribute.String("X-Request-ID", s.SpanContext().TraceID().String()))
 			}
+
+			testctx := trace.ContextWithSpanContext(ctx, s.SpanContext())
+			r2 := r.Clone(testctx)
+			spew.Dump(r2.Header)
+
 			if sc := s.SpanContext(); sc.HasTraceID() {
 				spanID, traceID := sc.SpanID().String(), sc.TraceID().String()
 				fmt.Println("span/trace: ", spanID, " ", traceID)

@@ -212,7 +212,8 @@ func newResource() *resource.Resource {
 }
 
 func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float64) *sdktrace.TracerProvider {
-	return sdktrace.NewTracerProvider(
+
+	tp:= sdktrace.NewTracerProvider(
 		// We use the default ID generator. In order for sampling to work (at least with this sampler)
 		// the ID generator must generate trace IDs uniformly at random from the entire space of uint64.
 		// For example, the default x-ray ID generator does not do this.
@@ -227,7 +228,11 @@ func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float
 		sdktrace.WithSyncer(exporter),
 		//sdktrace.WithBatcher(exporter),
 		sdktrace.WithResource(newResource()),
+		
 	)
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+	return tp
 }
 
 func doNothing(baseTransport http.RoundTripper, spanNameCtxValue interface{}, tp sdktrace.TracerProvider) http.RoundTripper {
@@ -324,7 +329,7 @@ func NewFromDiscovery() (*WagClient, error) {
 			return nil, err
 		}
 	}
-	return New(context.Backgroung(), url), nil
+	return New(context.Background(), url), nil
 }
 
 // SetRetryPolicy sets a the given retry policy for all requests.

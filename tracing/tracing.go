@@ -8,7 +8,8 @@ import (
 	"time"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
-
+	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
@@ -71,24 +72,13 @@ func OtlpGrpcExporter(ctx context.Context, opts ...Option) sdktrace.SpanExporter
 
 }
 
-func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float64, resource *resource.Resource) *sdktrace.TracerProvider {
-	return sdktrace.NewTracerProvider(
-		// We use the default ID generator. In order for sampling to work (at least with this sampler)
-		// the ID generator must generate trace IDs uniformly at random from the entire space of uint64.
-		// For example, the default x-ray ID generator does not do this.
-		sdktrace.WithSampler(sdktrace.ParentBased(sdktrace.TraceIDRatioBased(samplingProbability))),
-		// These maximums are to guard against something going wrong and sending a ton of data unexpectedly
-		sdktrace.WithSpanLimits(sdktrace.SpanLimits{
-			AttributeCountLimit: 100,
-			EventCountLimit:     100,
-			LinkCountLimit:      100,
-		}),
-		//Batcher is more efficient, switch to it after testing
-		sdktrace.WithSyncer(exporter),
-		//sdktrace.WithBatcher(exporter),
-		//Have to figure out how I'm going to generate this resource first.
-		sdktrace.WithResource(resource),
-	)
+func JaegerExporter() (spanExporter sdktrace.SpanExporter) {
+	fmt.Println("Creating Jaeger Exporter")
+	spanExporter, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint("http://localhost:14268/api/traces")))
+	if err != nil {
+		log.Fatal("Error creating Jaeger Exporter")
+	}
+	return
 }
 
 // InstrumentedTransport returns the transport to use in client requests.
@@ -109,7 +99,8 @@ func (rt roundTripperWithTracing) RoundTrip(r *http.Request) (*http.Response, er
 
 	return otelhttp.NewTransport(
 		rt.baseTransport,
-		otelhttp.WithTracerProvider(&rt.tp),
+		otelhttp.WithTracerProvider(otel.GetTracerProvider())
+		// otelhttp.WithTracerProvider(&rt.tp),
 		// otelhttp.WithTracerProvider(tracer),
 		otelhttp.WithPropagators(propagator),
 		otelhttp.WithSpanNameFormatter(func(method string, r *http.Request) string {

@@ -16,7 +16,7 @@ import (
 	"github.com/Clever/swagger-test/gen-go/models"
 
 	discovery "github.com/Clever/discovery-go"
-	wcl "github.com/Clever/wag/wagclientlogger"
+	wcl "github.com/Clever/wag/logging/wagclientlogger"
 
 	"github.com/afex/hystrix-go/hystrix"
 
@@ -166,11 +166,12 @@ func newResource() *resource.Resource {
 }
 
 func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float64) *sdktrace.TracerProvider {
-	return sdktrace.NewTracerProvider(
+
+	tp := sdktrace.NewTracerProvider(
 		// We use the default ID generator. In order for sampling to work (at least with this sampler)
 		// the ID generator must generate trace IDs uniformly at random from the entire space of uint64.
 		// For example, the default x-ray ID generator does not do this.
-		sdktrace.WithSampler(sdktrace.ParentBased(sdktrace.TraceIDRatioBased(samplingProbability))),
+		sdktrace.WithSampler(sdktrace.AlwaysSample()),
 		// These maximums are to guard against something going wrong and sending a ton of data unexpectedly
 		sdktrace.WithSpanLimits(sdktrace.SpanLimits{
 			AttributeCountLimit: 100,
@@ -182,6 +183,9 @@ func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float
 		//sdktrace.WithBatcher(exporter),
 		sdktrace.WithResource(newResource()),
 	)
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+	return tp
 }
 
 func doNothing(baseTransport http.RoundTripper, spanNameCtxValue interface{}, tp sdktrace.TracerProvider) http.RoundTripper {
@@ -210,7 +214,7 @@ func determineSampling() (samplingProbability float64, err error) {
 //----------------------END TRACING RELATEDFUNCTIONS----------------------
 
 // New creates a new client. The base path and http transport are configurable.
-func New(basePath string, opts ...Option) *WagClient {
+func New(ctx context.Context, basePath string, opts ...Option) *WagClient {
 
 	defaultTransport := http.DefaultTransport
 	defaultLogger := NewLogger("swagger-test-wagclient", wcl.Info)
@@ -240,7 +244,7 @@ func New(basePath string, opts ...Option) *WagClient {
 	// samplingProbability := determineSampling()
 
 	tp := newTracerProvider(options.exporter, samplingProbability)
-	options.transport = options.instrumentor(options.transport, context.TODO(), *tp)
+	options.transport = options.instrumentor(options.transport, ctx, *tp)
 
 	circuit := &circuitBreakerDoer{
 		d: &retry,
@@ -255,7 +259,7 @@ func New(basePath string, opts ...Option) *WagClient {
 		basePath:    basePath,
 		requestDoer: circuit,
 		client: &http.Client{
-			Transport: defaultTransport,
+			Transport: options.transport,
 		},
 		retryDoer:      &retry,
 		circuitDoer:    circuit,
@@ -276,7 +280,7 @@ func NewFromDiscovery() (*WagClient, error) {
 			return nil, err
 		}
 	}
-	return New(url), nil
+	return New(context.Background(), url), nil
 }
 
 // SetRetryPolicy sets a the given retry policy for all requests.
