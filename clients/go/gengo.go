@@ -731,6 +731,8 @@ func (c *WagClient) do%sRequest(ctx context.Context, req *http.Request, headers 
 		defer cancel()
 	    req = req.WithContext(ctx)
 	}
+	req.Done=true
+
 	resp, err := c.requestDoer.Do(c.client, req)
 	retCode := 0
 	if resp != nil {
