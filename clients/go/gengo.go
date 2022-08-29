@@ -59,11 +59,12 @@ import (
 
 		"github.com/afex/hystrix-go/hystrix"
 
-
+		"go.opentelemetry.io/otel"
+		"go.opentelemetry.io/otel/propagation"
 		"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 		"go.opentelemetry.io/otel/sdk/resource"
 		sdktrace "go.opentelemetry.io/otel/sdk/trace"
-		semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
+		semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 		
 )
 
