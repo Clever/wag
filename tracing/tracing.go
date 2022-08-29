@@ -8,12 +8,11 @@ import (
 	"time"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
-	"go.opentelemetry.io/otel/exporters/jaeger"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/jaeger"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -99,7 +98,7 @@ func (rt roundTripperWithTracing) RoundTrip(r *http.Request) (*http.Response, er
 
 	return otelhttp.NewTransport(
 		rt.baseTransport,
-		otelhttp.WithTracerProvider(otel.GetTracerProvider())
+		otelhttp.WithTracerProvider(otel.GetTracerProvider()),
 		// otelhttp.WithTracerProvider(&rt.tp),
 		// otelhttp.WithTracerProvider(tracer),
 		otelhttp.WithPropagators(propagator),
