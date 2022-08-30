@@ -58,19 +58,16 @@ func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdktrace.SpanExpo
 	spanExporter, err := otlptrace.New(ctx, otlpClient)
 	// spanExporter, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint("http://localhost:14268/api/traces")))
 
-	fmt.Println("Exporter Created")
 	if err != nil {
 		return nil, nil, fmt.Errorf("error creating exporter: %v", err)
 	}
 
 	tp := newTracerProvider(spanExporter, newResource())
 	otel.SetTracerProvider(tp)
-	fmt.Println("Tracer Provider Created")
 
-	// logger.FromContext(ctx).InfoD("starting-tracer", logger.M{
-	// 	"address":       addr,
-	// 	"sampling-rate": samplingProbability,
-	// })
+	logger.FromContext(ctx).InfoD("starting-tracer", logger.M{
+		"address":       addr,
+	})
 	return spanExporter, tp, nil
 }
 
@@ -125,14 +122,14 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 			// spew.Dump(r.Header)
 			// testsc := trace.SpanFromContext(ctx).SpanContext()
 			// spew.Dump(testsc)
-
 			s := trace.SpanFromContext(r.Context())
 			rid := r.Header.Get("X-Request-ID")
 			if rid != "" {
-				s.SetAttributes(attribute.String("X-Request-ID", rid))
-			} else {
-				s.SetAttributes(attribute.String("X-Request-ID", s.SpanContext().TraceID().String()))
+				rid = s.SpanContext().TraceID().String())
 			}
+			
+			s.SetAttributes(attribute.String("X-Request-ID", rid))
+			rw.Header().Add("X-Request-ID", rid)
 
 			// testctx := trace.ContextWithSpanContext(ctx, s.SpanContext())
 			// r2 := r.Clone(testctx)
@@ -140,10 +137,12 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 
 			if sc := s.SpanContext(); sc.HasTraceID() {
 				spanID, traceID := sc.SpanID().String(), sc.TraceID().String()
+				logger.FromContext(r.Context()).AddContext("X-Request-ID", rid)
 				// fmt.Println("span/trace: ", spanID, " ", traceID)
 				// spew.Dump(sc)
 				// datadog converts hex strings to uint64 IDs, so log those so that correlating logs and traces works
 				if len(traceID) == 32 && len(spanID) == 16 { // opentelemetry format: 16 byte (32-char hex), 8 byte (16-char hex) trace and span ids
+					
 					traceIDBs, _ := hex.DecodeString(traceID)
 					logger.FromContext(r.Context()).AddContext("trace_id",
 						fmt.Sprintf("%d", binary.BigEndian.Uint64(traceIDBs[8:])))
@@ -161,7 +160,6 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 // Used for setting up tracer provider
 func newResource() *resource.Resource {
 	var appName string
-	fmt.Println("Creating Resource")
 	if os.Getenv("_POD_ID") != "" {
 		appName = os.Getenv("_APP_NAME")
 	} else if os.Getenv("POD_ID") != "" {

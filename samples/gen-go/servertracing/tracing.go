@@ -48,7 +48,6 @@ func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdktrace.SpanExpo
 		}
 		samplingProbability = samplingProbabilityFromEnv
 	}
-	fmt.Println("isLocal:", isLocal)
 
 	addr := fmt.Sprintf("%s:%d", defaultCollectorHost, defaultCollectorPort)
 
@@ -62,14 +61,12 @@ func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdktrace.SpanExpo
 		otlptracegrpc.WithInsecure(),
 	)
 	spanExporter, err := otlptrace.New(ctx, otlpClient)
-	fmt.Println("Exporter Created")
 	if err != nil {
 		return nil, nil, fmt.Errorf("error creating exporter: %v", err)
 	}
 
 	tp := newTracerProvider(spanExporter, samplingProbability, newResource())
 	otel.SetTracerProvider(tp)
-	fmt.Println("Tracer Provider Created")
 
 	logger.FromContext(ctx).InfoD("starting-tracer", logger.M{
 		"address":       addr,
@@ -118,7 +115,6 @@ func SetupGlobalTraceProviderAndExporterForTest() (*tracetest.InMemoryExporter, 
 // Right now we only support logging IDs in the format that Datadog expects.
 func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 	otlmux := otelmux.Middleware(serviceName, otelmux.WithPropagators(otel.GetTextMapPropagator()))
-	fmt.Println("Adding mux server middleware")
 	return func(h http.Handler) http.Handler {
 		return otlmux(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			// otelmux has extracted the span. now put it into the ctx-specific logger
@@ -144,7 +140,6 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 
 			if sc := s.SpanContext(); sc.HasTraceID() {
 				spanID, traceID := sc.SpanID().String(), sc.TraceID().String()
-				fmt.Println("span/trace: ", spanID, " ", traceID)
 				spew.Dump(sc)
 				// datadog converts hex strings to uint64 IDs, so log those so that correlating logs and traces works
 				if len(traceID) == 32 && len(spanID) == 16 { // opentelemetry format: 16 byte (32-char hex), 8 byte (16-char hex) trace and span ids
@@ -165,7 +160,6 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 // Used for setting up tracer provider
 func newResource() *resource.Resource {
 	var appName string
-	fmt.Println("Creating Resource")
 	if os.Getenv("_POD_ID") != "" {
 		appName = os.Getenv("_APP_NAME")
 	} else if os.Getenv("POD_ID") != "" {

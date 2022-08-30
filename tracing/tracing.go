@@ -114,7 +114,6 @@ func (rt roundTripperWithTracing) RoundTrip(r *http.Request) (*http.Response, er
 
 // ExtractSpanAndTraceID extracts span and trace IDs from an http request header.
 func ExtractSpanAndTraceID(r *http.Request) (traceID, spanID string) {
-	fmt.Println("Extracting TraceID")
 	s := trace.SpanFromContext(r.Context())
 	if s.SpanContext().HasTraceID() {
 		return s.SpanContext().TraceID().String(), s.SpanContext().SpanID().String()
