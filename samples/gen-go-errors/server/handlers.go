@@ -9,13 +9,13 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/Clever/kayvee-go/v7/logger"
 	"github.com/Clever/wag/samples/v8/gen-go-errors/models"
 	"github.com/go-errors/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/gorilla/mux"
 	"golang.org/x/xerrors"
-	"gopkg.in/Clever/kayvee-go.v6/logger"
 )
 
 var _ = strconv.ParseInt

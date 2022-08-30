@@ -3,7 +3,9 @@ package models
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"os"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -18,7 +20,7 @@ import (
 )
 
 // Generate writes the files to the client directories
-func Generate(basePath string, s spec.Swagger) error {
+func Generate(packageName, basePath string, s spec.Swagger) error {
 
 	tmpFile, err := swagger.WriteToFile(&s)
 	if err != nil {
@@ -51,9 +53,63 @@ func Generate(basePath string, s spec.Swagger) error {
 	if err := generateInputs(basePath, s); err != nil {
 		return fmt.Errorf("error generating inputs: %s", err)
 	}
+	if err := CreateModFile("models/go.mod", basePath, packageName); err != nil {
+		return fmt.Errorf("error creating go.mod file: %s", err)
+	}
 	return nil
 }
 
+func extractModuleNameAndVersionSuffix(packageName string) (moduleName string, versionSuffix string) {
+	regex, err := regexp.Compile("/v[0-9]/gen-go$|/v[0-9][0-9]/gen-go")
+	if err != nil {
+		log.Fatalf("Error getting module name from packageName: %s", err.Error())
+	}
+	versionSuffix = strings.TrimSuffix(regex.FindString(packageName), "/gen-go")
+	if bool(regex.MatchString(packageName)) {
+		moduleName = regex.ReplaceAllString(packageName, "")
+	} else {
+		moduleName = strings.TrimSuffix(packageName, "/gen-go")
+	}
+	return
+
+}
+
+//CreateModFile creates a go.mod file for the client module.
+func CreateModFile(path string, basePath string, packageName string) error {
+	moduleName, versionSuffix := extractModuleNameAndVersionSuffix(packageName)
+	absPath := basePath + "/" + path
+	f, err := os.Create(absPath)
+
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+	modFileString := `
+module ` + moduleName + `/gen-go/models` + versionSuffix + `
+
+
+go 1.16
+
+require (
+	github.com/go-openapi/errors v0.20.2
+	github.com/go-openapi/strfmt v0.21.2
+	github.com/go-openapi/swag v0.21.1
+	github.com/go-openapi/validate v0.22.0
+	github.com/google/go-cmp v0.5.5 // indirect
+	github.com/google/uuid v1.1.2 // indirect
+	golang.org/x/net v0.0.0-20210614182718-04defd469f4e // indirect
+)
+
+	`
+	_, err = f.WriteString(modFileString)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 func generateInputs(basePath string, s spec.Swagger) error {
 
 	g := swagger.Generator{BasePath: basePath}

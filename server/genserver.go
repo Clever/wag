@@ -3,6 +3,8 @@ package server
 import (
 	"bytes"
 	"fmt"
+	"log"
+	"regexp"
 	"strings"
 
 	"github.com/go-openapi/spec"
@@ -71,12 +73,12 @@ func generateRouter(packageName, basePath string, s spec.Swagger, paths *spec.Pa
 		"syscall",
 		"time",
 		"github.com/Clever/go-process-metrics/metrics",
-		packageName + "/tracing",
+		packageName + "/servertracing",
 		"github.com/gorilla/handlers",
 		"github.com/gorilla/mux",
 		"github.com/kardianos/osext",
-		"gopkg.in/Clever/kayvee-go.v6/logger",
-		`kvMiddleware "gopkg.in/Clever/kayvee-go.v6/middleware"`,
+		"github.com/Clever/kayvee-go/v7/logger",
+		`kvMiddleware "github.com/Clever/kayvee-go/v7/middleware"`,
 	})
 	routerCode, err := templates.WriteTemplate(routerTemplateStr, template)
 	if err != nil {
@@ -116,9 +118,9 @@ type Controller interface {
 `
 
 func generateInterface(packageName, basePath string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
-
+	moduleName, versionSuffix := extractModuleNameAndVersionSuffix(packageName)
 	tmpl := interfaceFileTemplate{
-		ImportStatements: swagger.ImportStatements([]string{"context", packageName + "/models"}),
+		ImportStatements: swagger.ImportStatements([]string{"context", moduleName + "/gen-go/models" + versionSuffix}),
 		ServiceName:      serviceName,
 	}
 
@@ -186,11 +188,27 @@ func jsonMarshalNoError(i interface{}) string {
 {{end}}
 `
 
+func extractModuleNameAndVersionSuffix(packageName string) (moduleName string, versionSuffix string) {
+	regex, err := regexp.Compile("/v[0-9]/gen-go$|/v[0-9][0-9]/gen-go")
+	if err != nil {
+		log.Fatalf("Error getting module name from packageName: %s", err.Error())
+	}
+	versionSuffix = strings.TrimSuffix(regex.FindString(packageName), "/gen-go")
+	if bool(regex.MatchString(packageName)) {
+		moduleName = regex.ReplaceAllString(packageName, "")
+	} else {
+		moduleName = strings.TrimSuffix(packageName, "/gen-go")
+	}
+	return
+
+}
+
 func generateHandlers(packageName, basePath string, s *spec.Swagger, paths *spec.Paths) error {
+	moduleName, versionSuffix := extractModuleNameAndVersionSuffix(packageName)
 	tmpl := handlerFileTemplate{
 		ImportStatements: swagger.ImportStatements([]string{"context", "github.com/gorilla/mux",
-			"gopkg.in/Clever/kayvee-go.v6/logger",
-			"net/http", "strconv", "encoding/json", "strconv", "fmt", packageName + "/models",
+			"github.com/Clever/kayvee-go/v7/logger",
+			"net/http", "strconv", "encoding/json", "strconv", "fmt", moduleName + "/gen-go/models" + versionSuffix,
 			"github.com/go-openapi/strfmt", "github.com/go-openapi/swag", "io/ioutil", "bytes",
 			"github.com/go-errors/errors", "golang.org/x/xerrors",
 		}),

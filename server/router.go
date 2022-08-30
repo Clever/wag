@@ -121,7 +121,7 @@ func NewRouter(c Controller) *mux.Router {
 
 func newRouter(c Controller) *mux.Router {
 	router := mux.NewRouter()
-	router.Use(tracing.MuxServerMiddleware("{{.Title}}"))
+	router.Use(servertracing.MuxServerMiddleware("{{.Title}}"))
 	h := handler{Controller: c}
 
 	{{range $index, $val := .Functions}}
