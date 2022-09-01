@@ -134,6 +134,7 @@ func generateGoModels(packageName, basePath string, swaggerSpec spec.Swagger) er
 		return err
 	}
 	if err := models.Generate(packageName, basePath, swaggerSpec); err != nil {
+
 		return fmt.Errorf("Error generating models: %s", err)
 	}
 	return nil
@@ -157,6 +158,7 @@ func generateServer(goPackageName, basePath string, swaggerSpec spec.Swagger) er
 
 func generateTracing(basePath string) error {
 	if err := prepareDir(filepath.Join(basePath, "servertracing")); err != nil {
+
 		return err
 	}
 
@@ -283,8 +285,7 @@ func (c *config) setGoPaths(outputPath, goPackageName string) error {
 			return fmt.Errorf("converting output-path to absolute path: %v", err)
 		}
 		c.goAbsolutePackagePath = absolutePath
-		fmt.Println("Go Package Name is set to: ", goPackageName)
-		spew.Dump(c)
+
 		*c.goPackageName = getModulePackageName(modFile, path.Clean(outputPath))
 
 	}
