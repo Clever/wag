@@ -46,10 +46,10 @@ func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdktrace.SpanExpo
 
 	addr := fmt.Sprintf("%s:%d", defaultCollectorHost, defaultCollectorPort)
 
-	// // Every 15 seconds we'll try to connect to opentelemetry collector at
-	// // the default location of localhost:4317
-	// // When running in production this is a sidecar, and when running
-	// // locally this is a locally running opetelemetry-collector.
+	// Every 15 seconds we'll try to connect to opentelemetry collector at
+	// the default location of localhost:4317
+	// When running in production this is a sidecar, and when running
+	// locally this is a locally running opetelemetry-collector.
 	otlpClient := otlptracegrpc.NewClient(
 		otlptracegrpc.WithReconnectionPeriod(15*time.Second),
 		otlptracegrpc.WithEndpoint(addr),
@@ -84,10 +84,10 @@ func newTracerProvider(exporter sdktrace.SpanExporter, resource *resource.Resour
 			EventCountLimit:     100,
 			LinkCountLimit:      100,
 		}),
-		//Batcher is more efficient, switch to it after testing
+
+		// Batcher is more efficient, switch to it after testing
 		sdktrace.WithSyncer(exporter),
-		//sdktrace.WithBatcher(exporter),
-		//Have to figure out how I'm going to generate this resource first.
+		// sdktrace.WithBatcher(exporter),
 		sdktrace.WithResource(resource),
 	)
 	otel.SetTracerProvider(tp)
@@ -160,9 +160,9 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 // Used for setting up tracer provider
 func newResource() *resource.Resource {
 	var appName string
-	if os.Getenv("_POD_ID") != "" {
+	if os.Getenv("_APP_NAME") != "" {
 		appName = os.Getenv("_APP_NAME")
-	} else if os.Getenv("POD_ID") != "" {
+	} else if os.Getenv("APP_NAME") != "" {
 		appName = os.Getenv("APP_NAME")
 	}
 	r, _ := resource.Merge(

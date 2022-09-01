@@ -243,7 +243,7 @@ func doNothing(baseTransport http.RoundTripper, spanNameCtxValue interface{}, tp
 func determineSampling() (samplingProbability float64, err error) {
 
 		// If we're running locally, then turn off sampling. Otherwise sample
-		// 1% or whatever TRACING_SAMPLING_PROBABILITY specifies.
+		// 1%% or whatever TRACING_SAMPLING_PROBABILITY specifies.
 		samplingProbability = 0.01
 		isLocal := os.Getenv("_IS_LOCAL") == "true"
 		if isLocal {
@@ -252,7 +252,7 @@ func determineSampling() (samplingProbability float64, err error) {
 		} else if v := os.Getenv("TRACING_SAMPLING_PROBABILITY"); v != "" {
 			samplingProbabilityFromEnv, err := strconv.ParseFloat(v, 64)
 			if err != nil {
-				return 0, fmt.Errorf("could not parse '%s' to float", v)
+				return 0, fmt.Errorf("could not parse '%%s' to float", v)
 			}
 			samplingProbability = samplingProbabilityFromEnv
 		}
