@@ -10,11 +10,13 @@ import (
 	"time"
 
 	"github.com/Clever/kayvee-go/v7/logger"
+	"github.com/davecgh/go-spew/spew"
 
 	// "github.com/davecgh/go-spew/spew"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/baggage"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
@@ -66,7 +68,7 @@ func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdktrace.SpanExpo
 	otel.SetTracerProvider(tp)
 
 	logger.FromContext(ctx).InfoD("starting-tracer", logger.M{
-		"address":       addr,
+		"address": addr,
 	})
 	return spanExporter, tp, nil
 }
@@ -114,22 +116,44 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 	fmt.Println("Adding mux server middleware")
 	return func(h http.Handler) http.Handler {
 		return otlmux(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+			var rid string
 			// otelmux has extracted the span. now put it into the ctx-specific logger
 			// var carrier propagation.HeaderCarrier = propagation.HeaderCarrier{}
 
 			// otelmux has extracted the span. now put it into the ctx-specific logger
 			// ctx := otel.GetTextMapPropagator().Extract(r.Context(), carrier)
-			// spew.Dump(r.Header)
+			spew.Dump(r.Header)
+			spew.Dump(r.Context())
 			// testsc := trace.SpanFromContext(ctx).SpanContext()
 			// spew.Dump(testsc)
 			s := trace.SpanFromContext(r.Context())
-			rid := r.Header.Get("X-Request-ID")
-			if rid != "" {
-				rid = s.SpanContext().TraceID().String())
+			bag := baggage.FromContext(r.Context())
+			rid = bag.Member("X-Request-ID").Value()
+			spew.Dump(bag.Members())
+
+			fmt.Println("rid:", rid)
+
+			if rid == "" {
+				rid = r.Header.Get("X-Request-ID")
+				if rid == "" {
+					rid = s.SpanContext().TraceID().String()
+				}
 			}
-			
-			s.SetAttributes(attribute.String("X-Request-ID", rid))
-			rw.Header().Add("X-Request-ID", rid)
+
+			if rid != "" {
+				s.SetAttributes(attribute.String("X-Request-ID", rid))
+				member, err := baggage.NewMember("X-Request-ID", rid)
+				if err != nil {
+					s.RecordError(err)
+				}
+				bag, err = bag.SetMember(member)
+				spew.Dump(bag.Members())
+				ctx := baggage.ContextWithBaggage(r.Context(), bag)
+				r = r.Clone(ctx)
+
+				rw.Header().Add("X-Request-ID", rid)
+				logger.FromContext(r.Context()).AddContext("X-Request-ID", rid)
+			}
 
 			// testctx := trace.ContextWithSpanContext(ctx, s.SpanContext())
 			// r2 := r.Clone(testctx)
@@ -137,12 +161,11 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 
 			if sc := s.SpanContext(); sc.HasTraceID() {
 				spanID, traceID := sc.SpanID().String(), sc.TraceID().String()
-				logger.FromContext(r.Context()).AddContext("X-Request-ID", rid)
 				// fmt.Println("span/trace: ", spanID, " ", traceID)
-				// spew.Dump(sc)
+				spew.Dump(sc)
 				// datadog converts hex strings to uint64 IDs, so log those so that correlating logs and traces works
 				if len(traceID) == 32 && len(spanID) == 16 { // opentelemetry format: 16 byte (32-char hex), 8 byte (16-char hex) trace and span ids
-					
+
 					traceIDBs, _ := hex.DecodeString(traceID)
 					logger.FromContext(r.Context()).AddContext("trace_id",
 						fmt.Sprintf("%d", binary.BigEndian.Uint64(traceIDBs[8:])))
