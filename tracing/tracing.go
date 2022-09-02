@@ -18,7 +18,7 @@ import (
 )
 
 //propagator to use
-var propagator propagation.TextMapPropagator = propagation.TraceContext{} // traceparent header
+var propagator propagation.TextMapPropagator = propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}) // traceparent header
 type Option interface {
 	apply(*options)
 }
