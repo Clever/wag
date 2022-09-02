@@ -11,7 +11,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/spec"
@@ -74,7 +73,6 @@ func main() {
 	if err := conf.parse(); err != nil {
 		log.Fatalf(err.Error())
 	}
-	spew.Dump(conf)
 
 	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
 	doc, err := loads.Spec(*conf.swaggerFile)

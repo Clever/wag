@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/Clever/kayvee-go/v7/logger"
-	"github.com/davecgh/go-spew/spew"
 
 	// "github.com/davecgh/go-spew/spew"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
@@ -122,15 +121,11 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 
 			// otelmux has extracted the span. now put it into the ctx-specific logger
 			// ctx := otel.GetTextMapPropagator().Extract(r.Context(), carrier)
-			spew.Dump(r.Header)
-			spew.Dump(r.Context())
 			// testsc := trace.SpanFromContext(ctx).SpanContext()
 			// spew.Dump(testsc)
 			s := trace.SpanFromContext(r.Context())
 			bag := baggage.FromContext(r.Context())
 			rid = bag.Member("X-Request-ID").Value()
-
-			fmt.Println("rid:", rid)
 
 			if rid == "" {
 				rid = r.Header.Get("X-Request-ID")
@@ -146,7 +141,6 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 					s.RecordError(err)
 				}
 				bag, err = bag.SetMember(member)
-				spew.Dump(bag.Members())
 				ctx := baggage.ContextWithBaggage(r.Context(), bag)
 				r = r.Clone(ctx)
 
@@ -161,7 +155,6 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 			if sc := s.SpanContext(); sc.HasTraceID() {
 				spanID, traceID := sc.SpanID().String(), sc.TraceID().String()
 				// fmt.Println("span/trace: ", spanID, " ", traceID)
-				spew.Dump(sc)
 				// datadog converts hex strings to uint64 IDs, so log those so that correlating logs and traces works
 				if len(traceID) == 32 && len(spanID) == 16 { // opentelemetry format: 16 byte (32-char hex), 8 byte (16-char hex) trace and span ids
 
