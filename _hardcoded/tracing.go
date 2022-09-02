@@ -122,16 +122,11 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 
 			// otelmux has extracted the span. now put it into the ctx-specific logger
 			// ctx := otel.GetTextMapPropagator().Extract(r.Context(), carrier)
-			spew.Dump(r.Header)
-			spew.Dump(r.Context())
 			// testsc := trace.SpanFromContext(ctx).SpanContext()
 			// spew.Dump(testsc)
 			s := trace.SpanFromContext(r.Context())
 			bag := baggage.FromContext(r.Context())
 			rid = bag.Member("X-Request-ID").Value()
-			spew.Dump(bag.Members())
-
-			fmt.Println("rid:", rid)
 
 			if rid == "" {
 				rid = r.Header.Get("X-Request-ID")
@@ -147,7 +142,6 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 					s.RecordError(err)
 				}
 				bag, err = bag.SetMember(member)
-				spew.Dump(bag.Members())
 				ctx := baggage.ContextWithBaggage(r.Context(), bag)
 				r = r.Clone(ctx)
 
