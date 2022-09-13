@@ -7,7 +7,7 @@ import (
 	"text/template"
 
 	"github.com/Clever/go-utils/stringset"
-	"github.com/Clever/wag/v8/utils"
+	"github.com/Clever/wag/v9/utils"
 	"github.com/awslabs/goformation/v2/cloudformation/resources"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"

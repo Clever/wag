@@ -16,14 +16,14 @@ import (
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
 
-	goclient "github.com/Clever/wag/v8/clients/go"
-	jsclient "github.com/Clever/wag/v8/clients/js"
-	"github.com/Clever/wag/v8/hardcoded"
-	"github.com/Clever/wag/v8/models"
-	"github.com/Clever/wag/v8/server"
-	"github.com/Clever/wag/v8/server/gendb"
-	"github.com/Clever/wag/v8/swagger"
-	"github.com/Clever/wag/v8/validation"
+	goclient "github.com/Clever/wag/v9/clients/go"
+	jsclient "github.com/Clever/wag/v9/clients/js"
+	"github.com/Clever/wag/v9/hardcoded"
+	"github.com/Clever/wag/v9/models"
+	"github.com/Clever/wag/v9/server"
+	"github.com/Clever/wag/v9/server/gendb"
+	"github.com/Clever/wag/v9/swagger"
+	"github.com/Clever/wag/v9/validation"
 )
 
 // config contains the configuration of command line flags and configuration derived from command line flags

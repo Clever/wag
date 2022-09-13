@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/Clever/kayvee-go/v7/logger"
@@ -29,21 +30,7 @@ import (
 var defaultCollectorHost string = "localhost"
 var defaultCollectorPort uint16 = 4317
 
-// propagator to use.
-var propagator propagation.TextMapPropagator = propagation.TraceContext{} // traceparent header
 func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdktrace.SpanExporter, *sdktrace.TracerProvider, error) {
-	// samplingProbability := 0.01
-	// isLocal := os.Getenv("_IS_LOCAL") == "true"
-	// if isLocal {
-	// samplingProbability = 1.0
-	// } else if v := os.Getenv("TRACING_SAMPLING_PROBABILITY"); v != "" {
-	// 	samplingProbabilityFromEnv, err := strconv.ParseFloat(v, 64)
-	// 	if err != nil {
-	// 		return nil, nil, fmt.Errorf("could not parse '%s' to float", v)
-	// 	}
-	// 	samplingProbability = samplingProbabilityFromEnv
-	// }
-	// fmt.Println("isLocal:", isLocal)
 
 	addr := fmt.Sprintf("%s:%d", defaultCollectorHost, defaultCollectorPort)
 
@@ -73,12 +60,25 @@ func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdktrace.SpanExpo
 }
 
 func newTracerProvider(exporter sdktrace.SpanExporter, resource *resource.Resource) *sdktrace.TracerProvider {
+	samplingProbability := 0.05
+	isLocal := os.Getenv("_IS_LOCAL") == "true"
+	if isLocal {
+		samplingProbability = 1.0
+	} else if v := os.Getenv("TRACING_SAMPLING_PROBABILITY"); v != "" {
+		samplingProbabilityFromEnv, err := strconv.ParseFloat(v, 64)
+		if err != nil {
+			samplingProbabilityFromEnv = 1
+		}
+		samplingProbability = samplingProbabilityFromEnv
+	}
+	fmt.Println("samplingProbability:", samplingProbability)
+
 	tp := sdktrace.NewTracerProvider(
 		// We use the default ID generator. In order for sampling to work (at least with this sampler)
 		// the ID generator must generate trace IDs uniformly at random from the entire space of uint64.
 		// For example, the default x-ray ID generator does not do this.
-		sdktrace.WithSampler(sdktrace.AlwaysSample()),
-		// sdktrace.WithSampler(sdktrace.ParentBased(sdktrace.TraceIDRatioBased(samplingProbability))),
+		// sdktrace.WithSampler(sdktrace.TraceIDRatioBased()),
+		sdktrace.WithSampler(sdktrace.ParentBased(sdktrace.TraceIDRatioBased(samplingProbability))),
 		// These maximums are to guard against something going wrong and sending a ton of data unexpectedly
 		sdktrace.WithSpanLimits(sdktrace.SpanLimits{
 			AttributeCountLimit: 100,
@@ -87,8 +87,8 @@ func newTracerProvider(exporter sdktrace.SpanExporter, resource *resource.Resour
 		}),
 
 		// Batcher is more efficient, switch to it after testing
-		sdktrace.WithSyncer(exporter),
-		// sdktrace.WithBatcher(exporter),
+		// sdktrace.WithSyncer(exporter),
+		sdktrace.WithBatcher(exporter),
 		sdktrace.WithResource(resource),
 	)
 	otel.SetTracerProvider(tp)
@@ -120,9 +120,7 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 			// var carrier propagation.HeaderCarrier = propagation.HeaderCarrier{}
 
 			// otelmux has extracted the span. now put it into the ctx-specific logger
-			// ctx := otel.GetTextMapPropagator().Extract(r.Context(), carrier)
-			// testsc := trace.SpanFromContext(ctx).SpanContext()
-			// spew.Dump(testsc)
+
 			s := trace.SpanFromContext(r.Context())
 			bag := baggage.FromContext(r.Context())
 			rid = bag.Member("X-Request-ID").Value()
@@ -142,27 +140,22 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 				}
 				bag, err = bag.SetMember(member)
 				ctx := baggage.ContextWithBaggage(r.Context(), bag)
-				r = r.Clone(ctx)
+				r = r.WithContext(ctx)
 
 				rw.Header().Add("X-Request-ID", rid)
 				logger.FromContext(r.Context()).AddContext("X-Request-ID", rid)
 			}
 
-			// testctx := trace.ContextWithSpanContext(ctx, s.SpanContext())
-			// r2 := r.Clone(testctx)
-			// spew.Dump(r2.Header)
-
 			if sc := s.SpanContext(); sc.HasTraceID() {
 				spanID, traceID := sc.SpanID().String(), sc.TraceID().String()
-				// fmt.Println("span/trace: ", spanID, " ", traceID)
 				// datadog converts hex strings to uint64 IDs, so log those so that correlating logs and traces works
 				if len(traceID) == 32 && len(spanID) == 16 { // opentelemetry format: 16 byte (32-char hex), 8 byte (16-char hex) trace and span ids
 
 					traceIDBs, _ := hex.DecodeString(traceID)
-					logger.FromContext(r.Context()).AddContext("trace_id",
+					logger.FromContext(r.Context()).AddContext("dd.trace_id",
 						fmt.Sprintf("%d", binary.BigEndian.Uint64(traceIDBs[8:])))
 					spanIDBs, _ := hex.DecodeString(spanID)
-					logger.FromContext(r.Context()).AddContext("span_id",
+					logger.FromContext(r.Context()).AddContext("dd.span_id",
 						fmt.Sprintf("%d", binary.BigEndian.Uint64(spanIDBs)))
 				}
 			}

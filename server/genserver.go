@@ -9,10 +9,10 @@ import (
 
 	"github.com/go-openapi/spec"
 
-	clients "github.com/Clever/wag/v8/clients/go"
-	"github.com/Clever/wag/v8/swagger"
-	"github.com/Clever/wag/v8/templates"
-	"github.com/Clever/wag/v8/utils"
+	clients "github.com/Clever/wag/v9/clients/go"
+	"github.com/Clever/wag/v9/swagger"
+	"github.com/Clever/wag/v9/templates"
+	"github.com/Clever/wag/v9/utils"
 )
 
 // Generate server package for a swagger spec.

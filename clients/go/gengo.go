@@ -226,8 +226,8 @@ func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float
 			LinkCountLimit:      100,
 		}),
 		//Batcher is more efficient, switch to it after testing
-		sdktrace.WithSyncer(exporter),
-		//sdktrace.WithBatcher(exporter),
+		// sdktrace.WithSyncer(exporter),
+		sdktrace.WithBatcher(exporter),
 		sdktrace.WithResource(newResource()),
 		
 	)
