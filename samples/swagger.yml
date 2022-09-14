@@ -1,8 +1,8 @@
 swagger: "2.0"
 info:
-  title: swagger-test
+  title: wag/samples
   description: Testing Swagger Codegen
-  version: 0.1.0
+  version: 9.0.0
   x-npm-package: swagger-test
 basePath: /v1
 schemes:

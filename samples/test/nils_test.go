@@ -5,9 +5,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Clever/wag/samples/v8/gen-go-nils/client"
-	"github.com/Clever/wag/samples/v8/gen-go-nils/models"
-	"github.com/Clever/wag/samples/v8/gen-go-nils/server"
+	"github.com/Clever/wag/samples/gen-go-nils/client/v9"
+	"github.com/Clever/wag/samples/gen-go-nils/models/v9"
+	"github.com/Clever/wag/samples/v9/gen-go-nils/server"
 	"github.com/go-openapi/swag"
 
 	"github.com/stretchr/testify/assert"

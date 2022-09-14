@@ -1,6 +1,6 @@
 {
   "name": "blog-example",
-  "version": "0.1.0",
+  "version": "9.0.0",
   "description": "Example for Blog",
   "main": "index.js",
   "dependencies": {

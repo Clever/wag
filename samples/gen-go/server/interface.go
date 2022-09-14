@@ -3,12 +3,12 @@ package server
 import (
 	"context"
 
-	"github.com/Clever/wag/samples/gen-go/models/v8"
+	"github.com/Clever/wag/samples/gen-go/models/v9"
 )
 
 //go:generate mockgen -source=$GOFILE -destination=mock_controller.go -package=server
 
-// Controller defines the interface for the swagger-test service.
+// Controller defines the interface for the wag/samples service.
 type Controller interface {
 
 	// GetAuthors handles GET requests to /authors

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Clever/wag/samples/v8/gen-go-db/models"
-	"github.com/Clever/wag/samples/v8/gen-go-db/server/db"
+	"github.com/Clever/wag/samples/v9/gen-go-db/models"
+	"github.com/Clever/wag/samples/v9/gen-go-db/server/db"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/dynamodb"

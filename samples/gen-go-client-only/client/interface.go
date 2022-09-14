@@ -3,12 +3,12 @@ package client
 import (
 	"context"
 
-	"github.com/Clever/wag/samples/v8/gen-go-client-only/models"
+	"github.com/Clever/wag/samples/v9/gen-go-client-only/gen-go/models"
 )
 
 //go:generate mockgen -source=$GOFILE -destination=mock_client.go -package=client
 
-// Client defines the methods available to clients of the swagger-test service.
+// Client defines the methods available to clients of the wag/samples service.
 type Client interface {
 
 	// GetAuthors makes a GET request to /authors

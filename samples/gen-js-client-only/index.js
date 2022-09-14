@@ -9,7 +9,7 @@ const { Errors } = require("./types");
 
 /**
  * The exponential retry policy will retry five times with an exponential backoff.
- * @alias module:swagger-test.RetryPolicies.Exponential
+ * @alias module:wag/samples.RetryPolicies.Exponential
  */
 const exponentialRetryPolicy = {
   backoffs() {
@@ -35,7 +35,7 @@ const exponentialRetryPolicy = {
 
 /**
  * Use this retry policy to retry a request once.
- * @alias module:swagger-test.RetryPolicies.Single
+ * @alias module:wag/samples.RetryPolicies.Single
  */
 const singleRetryPolicy = {
   backoffs() {
@@ -53,7 +53,7 @@ const singleRetryPolicy = {
 
 /**
  * Use this retry policy to turn off retries.
- * @alias module:swagger-test.RetryPolicies.None
+ * @alias module:wag/samples.RetryPolicies.None
  */
 const noRetryPolicy = {
   backoffs() {
@@ -74,7 +74,7 @@ function responseLog(logger, req, res, err) {
   var res = res || { };
   var req = req || { };
   var logData = {
-	"backend": "swagger-test",
+	"backend": "wag/samples",
 	"method": req.method || "",
 	"uri": req.uri || "",
     "message": err || (res.statusMessage || ""),
@@ -106,7 +106,7 @@ function applyCallback(promise, cb) {
 
 /**
  * Default circuit breaker options.
- * @alias module:swagger-test.DefaultCircuitOptions
+ * @alias module:wag/samples.DefaultCircuitOptions
  */
 const defaultCircuitOptions = {
   forceClosed:            true,
@@ -119,16 +119,16 @@ const defaultCircuitOptions = {
 };
 
 /**
- * swagger-test client library.
- * @module swagger-test
- * @typicalname SwaggerTest
+ * wag/samples client library.
+ * @module wag/samples
+ * @typicalname WagSamples
  */
 
 /**
- * swagger-test client
- * @alias module:swagger-test
+ * wag/samples client
+ * @alias module:wag/samples
  */
-class SwaggerTest {
+class WagSamples {
 
   /**
    * Create a new client object.
@@ -141,9 +141,9 @@ class SwaggerTest {
    * in milliseconds. This can be overridden on a per-request basis. Default is 5000ms.
    * @param {bool} [options.keepalive] - Set keepalive to true for client requests. This sets the
    * forever: true attribute in request. Defaults to true.
-   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy=RetryPolicies.Single] - The logic to
+   * @param {module:wag/samples.RetryPolicies} [options.retryPolicy=RetryPolicies.Single] - The logic to
    * determine which requests to retry, as well as how many times to retry.
-   * @param {module:kayvee.Logger} [options.logger=logger.New("swagger-test-wagclient")] - The Kayvee
+   * @param {module:kayvee.Logger} [options.logger=logger.New("wag/samples-wagclient")] - The Kayvee
    * logger to use in the client.
    * @param {Object} [options.circuit] - Options for constructing the client's circuit breaker.
    * @param {bool} [options.circuit.forceClosed] - When set to true the circuit will always be closed. Default: true.
@@ -162,14 +162,14 @@ class SwaggerTest {
 
     if (options.discovery) {
       try {
-        this.address = discovery(options.serviceName || "swagger-test", "http").url();
+        this.address = discovery(options.serviceName || "wag/samples", "http").url();
       } catch (e) {
-        this.address = discovery(options.serviceName || "swagger-test", "default").url();
+        this.address = discovery(options.serviceName || "wag/samples", "default").url();
       }
     } else if (options.address) {
       this.address = options.address;
     } else {
-      throw new Error("Cannot initialize swagger-test without discovery or address");
+      throw new Error("Cannot initialize wag/samples without discovery or address");
     }
     if (options.keepalive !== undefined) {
       this.keepalive = options.keepalive;
@@ -187,11 +187,11 @@ class SwaggerTest {
     if (options.logger) {
       this.logger = options.logger;
     } else {
-      this.logger = new kayvee.logger((options.serviceName || "swagger-test") + "-wagclient");
+      this.logger = new kayvee.logger((options.serviceName || "wag/samples") + "-wagclient");
     }
 
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
-    this._hystrixCommand = commandFactory.getOrCreate(options.serviceName || "swagger-test").
+    this._hystrixCommand = commandFactory.getOrCreate(options.serviceName || "wag/samples").
       errorHandler(this._hystrixCommandErrorHandler).
       circuitBreakerForceClosed(circuitOptions.forceClosed).
       requestVolumeRejectionThreshold(circuitOptions.maxConcurrentRequests).
@@ -232,7 +232,7 @@ class SwaggerTest {
     const metrics = this._hystrixCommand.metrics;
     const healthCounts = metrics.getHealthCounts()
     const circuitBreaker = this._hystrixCommand.circuitBreaker;
-    this.logger.infoD("swagger-test", {
+    this.logger.infoD("wag/samples", {
       "requestCount":                    healthCounts.totalCount,
       "errorCount":                      healthCounts.errorCount,
       "errorPercentage":                 healthCounts.errorPercentage,
@@ -253,12 +253,12 @@ class SwaggerTest {
    * @param {string} [params.startingAfter]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {module:wag/samples.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
    * @fulfill {Object}
-   * @reject {module:swagger-test.Errors.BadRequest}
-   * @reject {module:swagger-test.Errors.InternalError}
+   * @reject {module:wag/samples.Errors.BadRequest}
+   * @reject {module:wag/samples.Errors.InternalError}
    * @reject {Error}
    */
   getAuthors(params, options, cb) {
@@ -366,7 +366,7 @@ class SwaggerTest {
    * @param {string} [params.startingAfter]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {module:wag/samples.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @returns {Object} iter
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
    * @returns {function} iter.toArray - returns a promise to the resources as an array
@@ -513,12 +513,12 @@ class SwaggerTest {
    * @param [params.favoriteBooks]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {module:wag/samples.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
    * @fulfill {Object}
-   * @reject {module:swagger-test.Errors.BadRequest}
-   * @reject {module:swagger-test.Errors.InternalError}
+   * @reject {module:wag/samples.Errors.BadRequest}
+   * @reject {module:wag/samples.Errors.InternalError}
    * @reject {Error}
    */
   getAuthorsWithPut(params, options, cb) {
@@ -629,7 +629,7 @@ class SwaggerTest {
    * @param [params.favoriteBooks]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {module:wag/samples.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @returns {Object} iter
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
    * @returns {function} iter.toArray - returns a promise to the resources as an array
@@ -786,12 +786,12 @@ class SwaggerTest {
    * @param {number} [params.startingAfter]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {module:wag/samples.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
    * @fulfill {Object[]}
-   * @reject {module:swagger-test.Errors.BadRequest}
-   * @reject {module:swagger-test.Errors.InternalError}
+   * @reject {module:wag/samples.Errors.BadRequest}
+   * @reject {module:wag/samples.Errors.InternalError}
    * @reject {Error}
    */
   getBooks(params, options, cb) {
@@ -941,7 +941,7 @@ class SwaggerTest {
    * @param {number} [params.startingAfter]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {module:wag/samples.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @returns {Object} iter
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
    * @returns {function} iter.toArray - returns a promise to the resources as an array
@@ -1118,12 +1118,12 @@ class SwaggerTest {
    * @param newBook
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {module:wag/samples.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
    * @fulfill {Object}
-   * @reject {module:swagger-test.Errors.BadRequest}
-   * @reject {module:swagger-test.Errors.InternalError}
+   * @reject {module:wag/samples.Errors.BadRequest}
+   * @reject {module:wag/samples.Errors.InternalError}
    * @reject {Error}
    */
   createBook(newBook, options, cb) {
@@ -1225,12 +1225,12 @@ class SwaggerTest {
    * @param newBook
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {module:wag/samples.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
    * @fulfill {Object}
-   * @reject {module:swagger-test.Errors.BadRequest}
-   * @reject {module:swagger-test.Errors.InternalError}
+   * @reject {module:wag/samples.Errors.BadRequest}
+   * @reject {module:wag/samples.Errors.InternalError}
    * @reject {Error}
    */
   putBook(newBook, options, cb) {
@@ -1337,14 +1337,14 @@ class SwaggerTest {
    * @param {string} [params.randomBytes]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {module:wag/samples.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
    * @fulfill {Object}
-   * @reject {module:swagger-test.Errors.BadRequest}
-   * @reject {module:swagger-test.Errors.Unathorized}
-   * @reject {module:swagger-test.Errors.Error}
-   * @reject {module:swagger-test.Errors.InternalError}
+   * @reject {module:wag/samples.Errors.BadRequest}
+   * @reject {module:wag/samples.Errors.Unathorized}
+   * @reject {module:wag/samples.Errors.Error}
+   * @reject {module:wag/samples.Errors.InternalError}
    * @reject {Error}
    */
   getBookByID(params, options, cb) {
@@ -1467,13 +1467,13 @@ class SwaggerTest {
    * @param {string} id
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {module:wag/samples.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
    * @fulfill {Object}
-   * @reject {module:swagger-test.Errors.BadRequest}
-   * @reject {module:swagger-test.Errors.Error}
-   * @reject {module:swagger-test.Errors.InternalError}
+   * @reject {module:wag/samples.Errors.BadRequest}
+   * @reject {module:wag/samples.Errors.Error}
+   * @reject {module:wag/samples.Errors.InternalError}
    * @reject {Error}
    */
   getBookByID2(id, options, cb) {
@@ -1581,12 +1581,12 @@ class SwaggerTest {
   /**
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {module:wag/samples.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
    * @fulfill {undefined}
-   * @reject {module:swagger-test.Errors.BadRequest}
-   * @reject {module:swagger-test.Errors.InternalError}
+   * @reject {module:wag/samples.Errors.BadRequest}
+   * @reject {module:wag/samples.Errors.InternalError}
    * @reject {Error}
    */
   healthCheck(options, cb) {
@@ -1681,11 +1681,11 @@ class SwaggerTest {
   }
 };
 
-module.exports = SwaggerTest;
+module.exports = WagSamples;
 
 /**
  * Retry policies available to use.
- * @alias module:swagger-test.RetryPolicies
+ * @alias module:wag/samples.RetryPolicies
  */
 module.exports.RetryPolicies = {
   Single: singleRetryPolicy,
@@ -1695,13 +1695,13 @@ module.exports.RetryPolicies = {
 
 /**
  * Errors returned by methods.
- * @alias module:swagger-test.Errors
+ * @alias module:wag/samples.Errors
  */
 module.exports.Errors = Errors;
 
 module.exports.DefaultCircuitOptions = defaultCircuitOptions;
 
-const version = "0.1.0";
+const version = "9.0.0";
 const versionHeader = "X-Client-Version";
 module.exports.Version = version;
 module.exports.VersionHeader = versionHeader;

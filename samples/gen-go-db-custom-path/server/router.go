@@ -17,7 +17,7 @@ import (
 	"github.com/Clever/go-process-metrics/metrics"
 	"github.com/Clever/kayvee-go/v7/logger"
 	kvMiddleware "github.com/Clever/kayvee-go/v7/middleware"
-	"github.com/Clever/wag/samples/v8/gen-go-db-custom-path/servertracing"
+	"github.com/Clever/wag/samples/v9/gen-go-db-custom-path/servertracing"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/kardianos/osext"

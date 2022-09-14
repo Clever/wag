@@ -1,7 +1,6 @@
 package client
 
 // Using Alpha version of WAG Yay!
-//SWAGGER_TEST , swagger-test, 0.1.0, github.com/Clever/wag/samples/v8/gen-go-deprecated
 import (
 	"bytes"
 	"context"
@@ -14,17 +13,19 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Clever/swagger-test/models"
+	"github.com/Clever/swagger-test/gen-go/models/v9"
 
 	discovery "github.com/Clever/discovery-go"
-	wcl "github.com/Clever/wag/wagclientlogger"
+	wcl "github.com/Clever/wag/logging/wagclientlogger"
 
 	"github.com/afex/hystrix-go/hystrix"
 
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 )
 
 var _ = json.Marshal
@@ -33,7 +34,7 @@ var _ = strconv.FormatInt
 var _ = bytes.Compare
 
 // Version of the client.
-const Version = "0.1.0"
+const Version = "9.0.0"
 
 // VersionHeader is sent with every request.
 const VersionHeader = "X-Client-Version"
@@ -160,18 +161,19 @@ func newResource() *resource.Resource {
 		resource.NewWithAttributes(
 			semconv.SchemaURL,
 			semconv.ServiceNameKey.String("swagger-test"),
-			semconv.ServiceVersionKey.String("0.1.0"),
+			semconv.ServiceVersionKey.String("9.0.0"),
 		),
 	)
 	return r
 }
 
 func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float64) *sdktrace.TracerProvider {
-	return sdktrace.NewTracerProvider(
+
+	tp := sdktrace.NewTracerProvider(
 		// We use the default ID generator. In order for sampling to work (at least with this sampler)
 		// the ID generator must generate trace IDs uniformly at random from the entire space of uint64.
 		// For example, the default x-ray ID generator does not do this.
-		sdktrace.WithSampler(sdktrace.ParentBased(sdktrace.TraceIDRatioBased(samplingProbability))),
+		sdktrace.WithSampler(sdktrace.AlwaysSample()),
 		// These maximums are to guard against something going wrong and sending a ton of data unexpectedly
 		sdktrace.WithSpanLimits(sdktrace.SpanLimits{
 			AttributeCountLimit: 100,
@@ -179,10 +181,13 @@ func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float
 			LinkCountLimit:      100,
 		}),
 		//Batcher is more efficient, switch to it after testing
-		sdktrace.WithSyncer(exporter),
-		//sdktrace.WithBatcher(exporter),
+		// sdktrace.WithSyncer(exporter),
+		sdktrace.WithBatcher(exporter),
 		sdktrace.WithResource(newResource()),
 	)
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+	return tp
 }
 
 func doNothing(baseTransport http.RoundTripper, spanNameCtxValue interface{}, tp sdktrace.TracerProvider) http.RoundTripper {
@@ -192,7 +197,7 @@ func doNothing(baseTransport http.RoundTripper, spanNameCtxValue interface{}, tp
 func determineSampling() (samplingProbability float64, err error) {
 
 	// If we're running locally, then turn off sampling. Otherwise sample
-	// 1%!o(MISSING)r whatever TRACING_SAMPLING_PROBABILITY specifies.
+	// 1% or whatever TRACING_SAMPLING_PROBABILITY specifies.
 	samplingProbability = 0.01
 	isLocal := os.Getenv("_IS_LOCAL") == "true"
 	if isLocal {
@@ -201,7 +206,7 @@ func determineSampling() (samplingProbability float64, err error) {
 	} else if v := os.Getenv("TRACING_SAMPLING_PROBABILITY"); v != "" {
 		samplingProbabilityFromEnv, err := strconv.ParseFloat(v, 64)
 		if err != nil {
-			return 0, fmt.Errorf("could not parse '%!s(MISSING)' to float", v)
+			return 0, fmt.Errorf("could not parse '%s' to float", v)
 		}
 		samplingProbability = samplingProbabilityFromEnv
 	}
@@ -211,7 +216,7 @@ func determineSampling() (samplingProbability float64, err error) {
 //----------------------END TRACING RELATEDFUNCTIONS----------------------
 
 // New creates a new client. The base path and http transport are configurable.
-func New(basePath string, opts ...Option) *WagClient {
+func New(ctx context.Context, basePath string, opts ...Option) *WagClient {
 
 	defaultTransport := http.DefaultTransport
 	defaultLogger := NewLogger("swagger-test-wagclient", wcl.Info)
@@ -241,7 +246,7 @@ func New(basePath string, opts ...Option) *WagClient {
 	// samplingProbability := determineSampling()
 
 	tp := newTracerProvider(options.exporter, samplingProbability)
-	options.transport = options.instrumentor(options.transport, context.TODO(), *tp)
+	options.transport = options.instrumentor(options.transport, ctx, *tp)
 
 	circuit := &circuitBreakerDoer{
 		d: &retry,
@@ -256,7 +261,7 @@ func New(basePath string, opts ...Option) *WagClient {
 		basePath:    basePath,
 		requestDoer: circuit,
 		client: &http.Client{
-			Transport: defaultTransport,
+			Transport: options.transport,
 		},
 		retryDoer:      &retry,
 		circuitDoer:    circuit,
@@ -277,7 +282,7 @@ func NewFromDiscovery() (*WagClient, error) {
 			return nil, err
 		}
 	}
-	return New(url), nil
+	return New(context.Background(), url), nil
 }
 
 // SetRetryPolicy sets a the given retry policy for all requests.

@@ -5,8 +5,8 @@ import (
 	"net/http/httptest"
 	"strconv"
 
-	"github.com/Clever/wag/samples/v8/gen-go/models"
-	"github.com/Clever/wag/samples/v8/gen-go/server"
+	"github.com/Clever/wag/samples/gen-go/models/v9"
+	"github.com/Clever/wag/samples/v9/gen-go/server"
 )
 
 // ControllerImpl implements the test server controller interface.

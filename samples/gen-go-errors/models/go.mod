@@ -1,7 +1,6 @@
 
-module github.com/Clever/wag/samples/v8/gen-go-errors/models 
-// vs:
-// mn:github.com/Clever/wag/samples/v8/gen-go-errors
+module github.com/Clever/wag/samples/v9/gen-go-errors/gen-go/models
+
 
 go 1.16
 

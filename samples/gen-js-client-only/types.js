@@ -3,8 +3,8 @@ module.exports.Errors = {};
 /**
  * BadRequest
  * @extends Error
- * @memberof module:swagger-test
- * @alias module:swagger-test.Errors.BadRequest
+ * @memberof module:wag/samples
+ * @alias module:wag/samples.Errors.BadRequest
  * @property {string} message
  */
 module.exports.Errors.BadRequest = class extends Error {
@@ -19,8 +19,8 @@ module.exports.Errors.BadRequest = class extends Error {
 /**
  * InternalError
  * @extends Error
- * @memberof module:swagger-test
- * @alias module:swagger-test.Errors.InternalError
+ * @memberof module:wag/samples
+ * @alias module:wag/samples.Errors.InternalError
  * @property {string} message
  */
 module.exports.Errors.InternalError = class extends Error {
@@ -35,8 +35,8 @@ module.exports.Errors.InternalError = class extends Error {
 /**
  * Unathorized
  * @extends Error
- * @memberof module:swagger-test
- * @alias module:swagger-test.Errors.Unathorized
+ * @memberof module:wag/samples
+ * @alias module:wag/samples.Errors.Unathorized
  * @property {string} message
  */
 module.exports.Errors.Unathorized = class extends Error {
@@ -51,8 +51,8 @@ module.exports.Errors.Unathorized = class extends Error {
 /**
  * Error
  * @extends Error
- * @memberof module:swagger-test
- * @alias module:swagger-test.Errors.Error
+ * @memberof module:wag/samples
+ * @alias module:wag/samples.Errors.Error
  * @property {number} code
  * @property {string} message
  */

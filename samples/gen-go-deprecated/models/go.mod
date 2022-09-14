@@ -1,7 +1,6 @@
 
-module github.com/Clever/wag/samples/v8/gen-go-deprecated/models 
-// vs:
-// mn:github.com/Clever/wag/samples/v8/gen-go-deprecated
+module github.com/Clever/wag/samples/v9/gen-go-deprecated/gen-go/models
+
 
 go 1.16
 

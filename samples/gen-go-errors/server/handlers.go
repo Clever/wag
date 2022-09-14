@@ -10,7 +10,7 @@ import (
 	"strconv"
 
 	"github.com/Clever/kayvee-go/v7/logger"
-	"github.com/Clever/wag/samples/v8/gen-go-errors/models"
+	"github.com/Clever/wag/samples/v9/gen-go-errors/gen-go/models"
 	"github.com/go-errors/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"

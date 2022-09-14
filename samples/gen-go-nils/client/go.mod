@@ -1,17 +1,14 @@
 
-module github.com/Clever/wag/samples/gen-go-nils/client
+module github.com/Clever/nil-test/gen-go/client/v9
 
 go 1.16
 
 require (
-	//removed this because it can never get the right version. Adding with: go get github.com/Clever/dapple/gen-go/models@INFRANG-4918-Testing-nested-modules
-	github.com/Clever/wag/samples/gen-go-nils/models v0.1.0
+	//removed this because it can never get the right version unless I tag it first. Adding with: go get github.com/Clever/dapple/gen-go/models@INFRANG-5015
+	//github.com/Clever/nil-test/gen-go/models/v9 v9.0.0
 	github.com/Clever/discovery-go v1.8.1
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b
-)
-
-require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef // indirect
@@ -41,5 +38,5 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 
 )
-
-replace github.com/Clever/wag/samples/gen-go-nils/models v0.1.0 => /gen-go/models  v0.1.0
+//Replace directives will work locally but mess up imports.
+replace github.com/Clever/nil-test/gen-go/models/v9 v9.0.0 => ../models 
