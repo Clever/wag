@@ -12,9 +12,9 @@ import (
 
 	"github.com/go-openapi/spec"
 
-	"github.com/Clever/wag/v8/swagger"
-	"github.com/Clever/wag/v8/templates"
-	"github.com/Clever/wag/v8/utils"
+	"github.com/Clever/wag/v9/swagger"
+	"github.com/Clever/wag/v9/templates"
+	"github.com/Clever/wag/v9/utils"
 )
 
 // Generate generates a client
@@ -463,7 +463,7 @@ func generateClient(packageName, basePath string, s spec.Swagger) error {
 
 }
 
-//CreateModFile creates a go.mod file for the client module.
+// CreateModFile creates a go.mod file for the client module.
 func CreateModFile(path string, basePath string, codeTemplate clientCodeTemplate) error {
 
 	absPath := basePath + "/" + path
@@ -485,9 +485,6 @@ require (
 	github.com/Clever/discovery-go v1.8.1
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b
-)
-
-require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef // indirect
@@ -518,7 +515,7 @@ require (
 
 )
 //Replace directives will work locally but mess up imports.
-//replace github.com/Clever/` + codeTemplate.ServiceName + `/gen-go/models` + codeTemplate.VersionSuffix + ` v` + codeTemplate.Version + ` => ../models `
+replace github.com/Clever/` + codeTemplate.ServiceName + `/gen-go/models` + codeTemplate.VersionSuffix + ` v` + codeTemplate.Version + ` => ../models `
 
 	_, err = f.WriteString(modFileString)
 
@@ -549,6 +546,7 @@ func extractModuleNameAndVersionSuffix(packageName string) (moduleName string, v
 	if err != nil {
 		log.Fatalf("Error getting module name from packageName: %s", err.Error())
 	}
+	fmt.Println(packageName)
 	versionSuffix = strings.TrimSuffix(regex.FindString(packageName), "/gen-go")
 	if bool(regex.MatchString(packageName)) {
 		moduleName = regex.ReplaceAllString(packageName, "")

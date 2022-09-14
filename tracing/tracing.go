@@ -17,7 +17,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-//propagator to use
+// propagator to use
 var propagator propagation.TextMapPropagator = propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}) // traceparent header
 type Option interface {
 	apply(*options)
@@ -26,7 +26,7 @@ type options struct {
 	address string
 }
 
-//WithAddress takes an address in the form of Host:Port
+// WithAddress takes an address in the form of Host:Port
 func WithAddress(addr string) Option {
 	return addrOption{address: addr}
 }
@@ -39,7 +39,7 @@ func (o addrOption) apply(opts *options) {
 	opts.address = o.address
 }
 
-//OtlpGrpcExporter uses the otlptracegrpc modules and the otlptrace module to produce a new exporter at our default addr
+// OtlpGrpcExporter uses the otlptracegrpc modules and the otlptrace module to produce a new exporter at our default addr
 func OtlpGrpcExporter(ctx context.Context, opts ...Option) sdktrace.SpanExporter {
 
 	DefaultCollectorHost := "localhost"
@@ -99,8 +99,6 @@ func (rt roundTripperWithTracing) RoundTrip(r *http.Request) (*http.Response, er
 	return otelhttp.NewTransport(
 		rt.baseTransport,
 		otelhttp.WithTracerProvider(otel.GetTracerProvider()),
-		// otelhttp.WithTracerProvider(&rt.tp),
-		// otelhttp.WithTracerProvider(tracer),
 		otelhttp.WithPropagators(propagator),
 		otelhttp.WithSpanNameFormatter(func(method string, r *http.Request) string {
 			v, ok := r.Context().Value(rt.spanNameCtxValue).(string)

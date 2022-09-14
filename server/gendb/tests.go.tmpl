@@ -9,7 +9,7 @@ import (
   {{- end }}
   "github.com/aws/aws-sdk-go/aws"
 
-  "{{ .PackageName }}/models"
+  "{{ .ModuleName }}/models{{.VersionSuffix}}"
   "{{ .PackageName }}/{{ .OutputPath }}"
   "github.com/stretchr/testify/require"
   {{- if anyTableUsesDateTime .XDBConfigs }}

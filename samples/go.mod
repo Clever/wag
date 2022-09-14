@@ -6,12 +6,6 @@ require (
 	github.com/Clever/discovery-go v1.8.1
 	github.com/Clever/go-process-metrics v0.2.0
 	github.com/Clever/kayvee-go/v7 v7.4.0
-	github.com/Clever/wag/samples/gen-go-blog/models/v9 v9.0.0-00010101000000-000000000000
-	github.com/Clever/wag/samples/gen-go-db-only/models/v9 v9.0.0-00010101000000-000000000000
-	github.com/Clever/wag/samples/gen-go-db/models/v9 v9.0.0-00010101000000-000000000000
-	github.com/Clever/wag/samples/gen-go-deprecated/models/v9 v9.0.0-00010101000000-000000000000
-	github.com/Clever/wag/samples/gen-go-errors/models/v9 v9.0.0-00010101000000-000000000000
-	github.com/Clever/wag/samples/gen-go/models/v9 v9.0.0-00010101000000-000000000000
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/aws/aws-sdk-go v1.38.25
 	github.com/davecgh/go-spew v1.1.1
@@ -45,7 +39,7 @@ require (
 	gopkg.in/Clever/kayvee-go.v6 v6.27.0
 )
 
-replace github.com/Clever/wag/samples/gen-go/models/v9 => ./gen-go/models
+replace github.com/Clever/wag/samples/gen-go-basic/models/v9 => ./gen-go-basic/models
 
 replace github.com/Clever/wag/samples/gen-go-blog/models/v9 => ./gen-go-blog/models
 
@@ -63,7 +57,7 @@ replace github.com/Clever/wag/samples/gen-go-errors/models/v9 => ./gen-go-errors
 
 replace github.com/Clever/wag/samples/gen-go-nils/models/v9 => ./gen-go-nils/models
 
-replace github.com/Clever/wag/samples/gen-go/client/v9 => ./gen-go/client
+replace github.com/Clever/wag/samples/gen-go-basic/client/v9 => ./gen-go-basic/client
 
 replace github.com/Clever/wag/samples/gen-go-blog/client/v9 => ./gen-go-blog/client
 

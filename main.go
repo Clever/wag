@@ -274,7 +274,7 @@ func (c *config) setGoPaths(outputPath, goPackageName string) error {
 		c.goAbsolutePackagePath = filepath.Join(os.Getenv("GOPATH"), "src", goPackageName)
 	} else {
 		defer modFile.Close()
-		if outputPath == "" {
+		if "outputPath" == "" {
 			return fmt.Errorf("output-path is required")
 		}
 

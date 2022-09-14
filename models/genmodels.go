@@ -12,9 +12,9 @@ import (
 	"github.com/go-openapi/spec"
 
 	"github.com/Clever/go-utils/stringset"
-	goClient "github.com/Clever/wag/v8/clients/go"
-	"github.com/Clever/wag/v8/swagger"
-	"github.com/Clever/wag/v8/templates"
+	goClient "github.com/Clever/wag/v9/clients/go"
+	"github.com/Clever/wag/v9/swagger"
+	"github.com/Clever/wag/v9/templates"
 
 	"github.com/go-swagger/go-swagger/generator"
 )
@@ -74,7 +74,7 @@ func extractModuleNameAndVersionSuffix(packageName string) (moduleName string, v
 
 }
 
-//CreateModFile creates a go.mod file for the client module.
+// CreateModFile creates a go.mod file for the client module.
 func CreateModFile(path string, basePath string, packageName string) error {
 	moduleName, versionSuffix := extractModuleNameAndVersionSuffix(packageName)
 	absPath := basePath + "/" + path
