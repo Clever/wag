@@ -2,6 +2,8 @@ package server
 
 import (
 	"context"
+
+	"github.com/Clever/wag/samples/gen-go-db/models/v9"
 )
 
 // Controller defines the interface for the swagger-test service.

@@ -6,8 +6,6 @@ import (
 	"github.com/Clever/wag/samples/gen-go-basic/models/v9"
 )
 
-//go:generate mockgen -source=$GOFILE -destination=mock_controller.go -package=server
-
 // Controller defines the interface for the wag/samples service.
 type Controller interface {
 

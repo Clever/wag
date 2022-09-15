@@ -105,7 +105,6 @@ package server
 
 {{.ImportStatements}}
 
-//go:generate mockgen -source=$GOFILE -destination=mock_controller.go -package=server
 
 // Controller defines the interface for the {{.ServiceName}} service.
 type Controller interface {
