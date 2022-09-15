@@ -1,5 +1,5 @@
 
-module github.com/Clever/wag/samples/v9/gen-go-basic/gen-go/models
+module github.com/Clever/wag/samples/gen-go-basic/models/v9
 
 
 go 1.16

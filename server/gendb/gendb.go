@@ -139,26 +139,21 @@ func findCompositeAttribute(config XDBConfig, attributeName string) *CompositeAt
 
 }
 
-func extractModuleNameAndVersionSuffix(packageName string) (moduleName string, versionSuffix string) {
-	regex, err := regexp.Compile("/v[0-9]/gen-go$|/v[0-9][0-9]/gen-go")
+func extractModuleNameAndVersionSuffix(packageName, outputPath string) (moduleName, versionSuffix string) {
+	vregex, err := regexp.Compile("/v[0-9]$|/v[0-9][0-9]")
 	if err != nil {
-		log.Fatalf("Error getting module name from packageName: %s", err.Error())
+		log.Fatalf("Error checking module name: %s", err.Error())
 	}
-	versionSuffix = strings.TrimSuffix(regex.FindString(packageName), "/gen-go")
-	if bool(regex.MatchString(packageName)) {
-		moduleName = regex.ReplaceAllString(packageName, "")
-	} else {
-		moduleName = strings.TrimSuffix(packageName, "/gen-go")
-	}
+	moduleName = strings.TrimSuffix(packageName, outputPath)
+	versionSuffix = vregex.FindString(moduleName)
+	moduleName = strings.TrimSuffix(moduleName, versionSuffix)
 	return
-
 }
 
 // GenerateDB generates DB code for schemas annotated with the x-db extension.
-func GenerateDB(packageName, basePath string, s *spec.Swagger, outputPath string) error {
-
-	moduleName, versionSuffix := extractModuleNameAndVersionSuffix(packageName)
-	fmt.Println("Generating db with ", moduleName, versionSuffix, " from ", packageName)
+func GenerateDB(packageName, basePath, goOutputPath string, s *spec.Swagger, outputPath string) error {
+	goOutputPath = strings.TrimPrefix(goOutputPath, ".")
+	moduleName, versionSuffix := extractModuleNameAndVersionSuffix(packageName, goOutputPath)
 	var schemaNames []string
 	for schemaName := range s.Definitions {
 		schemaNames = append(schemaNames, schemaName)
@@ -220,6 +215,7 @@ func GenerateDB(packageName, basePath string, s *spec.Swagger, outputPath string
 				"OutputPath":    outputPath,
 				"ModuleName":    moduleName,
 				"VersionSuffix": versionSuffix,
+				"GoOutputPath":  goOutputPath,
 			},
 		},
 		{
@@ -230,6 +226,7 @@ func GenerateDB(packageName, basePath string, s *spec.Swagger, outputPath string
 				"OutputPath":    outputPath,
 				"ModuleName":    moduleName,
 				"VersionSuffix": versionSuffix,
+				"GoOutputPath":  goOutputPath,
 			},
 		},
 		{
@@ -241,6 +238,7 @@ func GenerateDB(packageName, basePath string, s *spec.Swagger, outputPath string
 				"XDBConfigs":    xdbConfigs,
 				"ModuleName":    moduleName,
 				"VersionSuffix": versionSuffix,
+				"GoOutputPath":  goOutputPath,
 			},
 		},
 		{
@@ -252,6 +250,7 @@ func GenerateDB(packageName, basePath string, s *spec.Swagger, outputPath string
 				"OutputPath":    outputPath,
 				"ModuleName":    moduleName,
 				"VersionSuffix": versionSuffix,
+				"GoOutputPath":  goOutputPath,
 			},
 		},
 	}
@@ -265,6 +264,7 @@ func GenerateDB(packageName, basePath string, s *spec.Swagger, outputPath string
 				"OutputPath":    outputPath,
 				"ModuleName":    moduleName,
 				"VersionSuffix": versionSuffix,
+				"GoOutputPath":  goOutputPath,
 			},
 		})
 	}

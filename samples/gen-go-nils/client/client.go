@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Clever/nil-test/gen-go/models/v9"
+	"github.com/Clever/wag/samples/gen-go-nils/models/v9"
 
 	discovery "github.com/Clever/discovery-go"
 	wcl "github.com/Clever/wag/logging/wagclientlogger"

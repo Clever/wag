@@ -4,8 +4,7 @@ import (
   "context"
   "errors"
   "time"
-//IS THIS DOING ANYTHING?!?
-  "{{ .ModuleName }}/models{{.VersionSuffix}}"
+  "{{ .ModuleName }}{{.GoOutputPath}}/models{{.VersionSuffix}}"
   "{{ .PackageName }}/{{ .OutputPath}}"
   "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	{{- if anyTableHasTransactionsEnabled .XDBConfigs }}

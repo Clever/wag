@@ -3,12 +3,11 @@ package dynamodb
 import (
 	"context"
 	"errors"
-	"time"
-	//IS THIS DOING ANYTHING?!?
+	"github.com/Clever/wag/samples/gen-go-db-custom-path/models/v9"
 	"github.com/Clever/wag/samples/v9/gen-go-db-custom-path/db"
-	"github.com/Clever/wag/samples/v9/gen-go-db-custom-path/models"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/go-openapi/strfmt"
+	"time"
 )
 
 // Config is used to create a new DB struct.

@@ -3,12 +3,10 @@ package db
 import (
 	"context"
 
-	"github.com/Clever/wag/samples/v9/gen-go-db-custom-path/models"
+	"github.com/Clever/wag/samples/gen-go-db-custom-path/models/v9"
 	"github.com/go-openapi/strfmt"
 	"golang.org/x/time/rate"
 )
-
-//go:generate mockgen -source=$GOFILE -destination=mock_db.go -package=db
 
 // Interface for interacting with the swagger-test database.
 type Interface interface {

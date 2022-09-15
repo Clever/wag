@@ -3,10 +3,8 @@ package client
 import (
 	"context"
 
-	"github.com/Clever/wag/samples/v9/gen-go-db-custom-path/gen-go/models"
+	"github.com/Clever/wag/samples/gen-go-db-custom-path/models/v9"
 )
-
-//go:generate mockgen -source=$GOFILE -destination=mock_client.go -package=client
 
 // Client defines the methods available to clients of the swagger-test service.
 type Client interface {

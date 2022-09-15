@@ -7,7 +7,6 @@ import (
 	"os"
 	"path"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/go-openapi/spec"
@@ -18,15 +17,17 @@ import (
 )
 
 // Generate generates a client
-func Generate(packageName, basePath string, s spec.Swagger) error {
-	if err := generateClient(packageName, basePath, s); err != nil {
+func Generate(packageName, basePath, outputPath string, s spec.Swagger) error {
+	if err := generateClient(packageName, basePath, outputPath, s); err != nil {
 		return err
 	}
-	return generateInterface(packageName, basePath, &s, s.Info.InfoProps.Title, s.Paths)
+	return generateInterface(packageName, basePath, outputPath, &s, s.Info.InfoProps.Title, s.Paths)
 }
 
 type clientCodeTemplate struct {
+	OutputPath           string
 	PackageName          string
+	ModuleName           string
 	ServiceName          string
 	FormattedServiceName string
 	Operations           []string
@@ -51,7 +52,7 @@ import (
 		"os"
 		"crypto/md5"
 
-		"github.com/Clever/{{.ServiceName}}/gen-go/models{{.VersionSuffix}}"
+		"{{.ModuleName}}{{.OutputPath}}/models{{.VersionSuffix}}"
 
 		discovery "github.com/Clever/discovery-go"
 		wcl "github.com/Clever/wag/logging/wagclientlogger"
@@ -408,27 +409,18 @@ func shortHash(s string) string {
 }
 `
 
-func getVersionSuffix(version string) string {
-	num, err := strconv.Atoi(strings.TrimSuffix(string(version[0:2]), "."))
-	if err != nil {
-		return ""
-	}
-	if num <= 1 {
-		return ""
-	}
+func generateClient(packageName, basePath, outputPath string, s spec.Swagger) error {
 
-	return "/v" + strconv.Itoa(num)
-
-}
-
-func generateClient(packageName, basePath string, s spec.Swagger) error {
-
+	outputPath = strings.TrimPrefix(outputPath, ".")
+	moduleName, versionSuffix := extractModuleNameAndVersionSuffix(packageName, outputPath)
 	codeTemplate := clientCodeTemplate{
 		PackageName:          packageName,
+		OutputPath:           outputPath,
+		ModuleName:           moduleName,
 		ServiceName:          s.Info.InfoProps.Title,
 		FormattedServiceName: strings.ToUpper(strings.Replace(s.Info.InfoProps.Title, "-", "_", -1)),
 		Version:              s.Info.InfoProps.Version,
-		VersionSuffix:        getVersionSuffix(s.Info.InfoProps.Version),
+		VersionSuffix:        versionSuffix,
 	}
 
 	for _, path := range swagger.SortedPathItemKeys(s.Paths.Paths) {
@@ -475,13 +467,13 @@ func CreateModFile(path string, basePath string, codeTemplate clientCodeTemplate
 
 	defer f.Close()
 	modFileString := `
-module github.com/Clever/` + codeTemplate.ServiceName + `/gen-go/client` + codeTemplate.VersionSuffix + `
+module ` + codeTemplate.ModuleName + codeTemplate.OutputPath + `/client` + codeTemplate.VersionSuffix + `
 
 go 1.16
 
 require (
-	//removed this because it can never get the right version unless I tag it first. Adding with: go get github.com/Clever/dapple/gen-go/models@INFRANG-5015
-	//github.com/Clever/` + codeTemplate.ServiceName + `/gen-go/models` + codeTemplate.VersionSuffix + ` v` + codeTemplate.Version + `
+	//removed this because it can never get the right version unless I tag it first. Adding with: go get ` + codeTemplate.ModuleName + codeTemplate.OutputPath + `/models@` + codeTemplate.Version + `
+	//` + codeTemplate.ModuleName + codeTemplate.OutputPath + `/models` + codeTemplate.VersionSuffix + `
 	github.com/Clever/discovery-go v1.8.1
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b
@@ -515,7 +507,7 @@ require (
 
 )
 //Replace directives will work locally but mess up imports.
-replace github.com/Clever/` + codeTemplate.ServiceName + `/gen-go/models` + codeTemplate.VersionSuffix + ` v` + codeTemplate.Version + ` => ../models `
+replace ` + codeTemplate.ModuleName + codeTemplate.OutputPath + `/models` + codeTemplate.VersionSuffix + ` => ../models `
 
 	_, err = f.WriteString(modFileString)
 
@@ -541,27 +533,25 @@ func IsBinaryParam(param spec.Parameter, definitions map[string]spec.Schema) boo
 	definitionName := path.Base(param.Schema.Ref.Ref.GetURL().String())
 	return definitions[definitionName].Format == "binary"
 }
-func extractModuleNameAndVersionSuffix(packageName string) (moduleName string, versionSuffix string) {
-	regex, err := regexp.Compile("/v[0-9]/gen-go$|/v[0-9][0-9]/gen-go")
-	if err != nil {
-		log.Fatalf("Error getting module name from packageName: %s", err.Error())
-	}
-	fmt.Println(packageName)
-	versionSuffix = strings.TrimSuffix(regex.FindString(packageName), "/gen-go")
-	if bool(regex.MatchString(packageName)) {
-		moduleName = regex.ReplaceAllString(packageName, "")
-	} else {
-		moduleName = strings.TrimSuffix(packageName, "/gen-go")
-	}
-	return
 
+func extractModuleNameAndVersionSuffix(packageName, outputPath string) (moduleName, versionSuffix string) {
+	vregex, err := regexp.Compile("/v[0-9]$|/v[0-9][0-9]")
+	if err != nil {
+		log.Fatalf("Error checking module name: %s", err.Error())
+	}
+	moduleName = strings.TrimSuffix(packageName, outputPath)
+	versionSuffix = vregex.FindString(moduleName)
+	moduleName = strings.TrimSuffix(moduleName, versionSuffix)
+	return
 }
-func generateInterface(packageName, basePath string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
+
+func generateInterface(packageName, basePath, outputPath string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
+	outputPath = strings.TrimPrefix(outputPath, ".")
 	g := swagger.Generator{BasePath: basePath}
 	g.Printf("package client\n\n")
-	moduleName, versionSuffix := extractModuleNameAndVersionSuffix(packageName)
-	g.Printf(swagger.ImportStatements([]string{"context", moduleName + "/gen-go/models" + versionSuffix}))
-	g.Printf("//go:generate mockgen -source=$GOFILE -destination=mock_client.go -package=client\n\n")
+	moduleName, versionSuffix := extractModuleNameAndVersionSuffix(packageName, outputPath)
+	g.Printf(swagger.ImportStatements([]string{"context", moduleName + outputPath + "/models" + versionSuffix}))
+	// g.Printf("//go:generate mockgen -source=$GOFILE -destination=mock_client.go -package=client\n\n")
 
 	if err := generateClientInterface(s, &g, serviceName, paths); err != nil {
 		return err
