@@ -20,9 +20,10 @@ require (
 	github.com/kevinburke/go-bindata v3.23.0+incompatible
 	github.com/pelletier/go-toml v1.9.1 // indirect
 	github.com/stretchr/testify v1.7.2
+	go.opentelemetry.io/otel v1.10.0 // indirect
 	golang.org/x/sys v0.0.0-20220808155132-1c4a2a72c664 // indirect
 	golang.org/x/text v0.3.7 // indirect
-	golang.org/x/tools v0.1.5 // indirect
+	golang.org/x/tools/gopls v0.9.5 // indirect
 	golang.org/x/xerrors v0.0.0-20220609144429-65e65417b02f // indirect
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
 )

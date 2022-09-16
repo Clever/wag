@@ -1,4 +1,4 @@
-v9.0.2-alpha client/models as separate modules, otel updates, other breaking changes.
+v9.0.2-alpha
 
 v8.2.1 Sort attributes list used in v8.2.0 to reduce diffs
 

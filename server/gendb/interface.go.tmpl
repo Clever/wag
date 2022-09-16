@@ -15,7 +15,7 @@ import (
         {{- end -}}
 )
 
-//go:generate mockgen -source=$GOFILE -destination=mock_db.go -package=db
+//go:generate mockgen -source=$GOFILE -destination=mock_db.go 
 
 // Interface for interacting with the {{.ServiceName}} database.
 type Interface interface {

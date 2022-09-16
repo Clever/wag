@@ -6,6 +6,8 @@ import (
 	"github.com/Clever/wag/samples/gen-go-basic/models/v9"
 )
 
+//go:generate mockgen -source=$GOFILE -destination=mock_client.go
+
 // Client defines the methods available to clients of the wag/samples service.
 type Client interface {
 

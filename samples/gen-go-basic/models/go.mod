@@ -13,5 +13,6 @@ require (
 	github.com/google/uuid v1.1.2 // indirect
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e // indirect
 )
+replace github.com/go-openapi/swag => github.com/go-openapi/swag v0.0.0-20180102232305-84f4bee7c0a6
 
-	
+replace github.com/go-openapi/validate => github.com/go-openapi/validate v0.0.0-20180703152151-9a6e517cddf1 // pre-modules tag 0.15.0x
