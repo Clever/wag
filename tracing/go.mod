@@ -6,7 +6,6 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.2 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.35.0
 	go.opentelemetry.io/otel v1.10.0
-	go.opentelemetry.io/otel/exporters/jaeger v1.10.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.10.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.10.0
 	go.opentelemetry.io/otel/sdk v1.10.0
