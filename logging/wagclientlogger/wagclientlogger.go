@@ -19,5 +19,4 @@ const (
 	Warning
 	Error
 	Critical
-	FromEnv
 )
