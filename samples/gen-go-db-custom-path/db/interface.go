@@ -8,6 +8,8 @@ import (
 	"golang.org/x/time/rate"
 )
 
+//go:generate mockgen -source=$GOFILE -destination=mock_db.go -package db --build_flags=--mod=mod -imports=models=github.com/Clever/wag/samples/gen-go-db-custom-path/models/v9
+
 // Interface for interacting with the swagger-test database.
 type Interface interface {
 	// SaveDeployment saves a Deployment to the database.

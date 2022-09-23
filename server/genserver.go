@@ -98,6 +98,9 @@ type interfaceFileTemplate struct {
 	ImportStatements string
 	ServiceName      string
 	Interfaces       []interfaceTemplate
+	ModuleName       string
+	OutputPath       string
+	VersionSuffix    string
 }
 
 var interfaceTemplateStr = `
@@ -105,7 +108,8 @@ package server
 
 {{.ImportStatements}}
 
-//go:generate mockgen -source=$GOFILE -destination=mock_controller.go 
+//go:generate mockgen -source=$GOFILE -destination=mock_controller.go -package server --build_flags=--mod=mod -imports=models={{.ModuleName}}{{.OutputPath}}/models{{.VersionSuffix}}
+
 
 // Controller defines the interface for the {{.ServiceName}} service.
 type Controller interface {
@@ -124,6 +128,9 @@ func generateInterface(packageName, basePath, outputPath string, s *spec.Swagger
 	tmpl := interfaceFileTemplate{
 		ImportStatements: swagger.ImportStatements([]string{"context", moduleName + outputPath + "/models" + versionSuffix}),
 		ServiceName:      serviceName,
+		ModuleName:       moduleName,
+		OutputPath:       outputPath,
+		VersionSuffix:    versionSuffix,
 	}
 
 	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {

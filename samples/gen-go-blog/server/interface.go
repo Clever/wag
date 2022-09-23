@@ -6,6 +6,8 @@ import (
 	"github.com/Clever/wag/samples/gen-go-blog/models/v9"
 )
 
+//go:generate mockgen -source=$GOFILE -destination=mock_controller.go -package server --build_flags=--mod=mod -imports=models=github.com/Clever/wag/samples/gen-go-blog/models/v9
+
 // Controller defines the interface for the blog service.
 type Controller interface {
 

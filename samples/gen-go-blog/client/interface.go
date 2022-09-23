@@ -6,6 +6,8 @@ import (
 	"github.com/Clever/wag/samples/gen-go-blog/models/v9"
 )
 
+//go:generate mockgen -source=$GOFILE -destination=mock_client.go -package client --build_flags=--mod=mod
+
 // Client defines the methods available to clients of the blog service.
 type Client interface {
 

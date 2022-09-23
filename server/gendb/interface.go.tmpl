@@ -15,7 +15,7 @@ import (
         {{- end -}}
 )
 
-//go:generate mockgen -source=$GOFILE -destination=mock_db.go 
+//go:generate mockgen -source=$GOFILE -destination=mock_db.go -package db --build_flags=--mod=mod -imports=models={{.ModuleName}}{{.GoOutputPath}}/models{{.VersionSuffix}}
 
 // Interface for interacting with the {{.ServiceName}} database.
 type Interface interface {

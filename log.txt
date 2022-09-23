@@ -1,0 +1,151 @@
+go generate ./hardcoded/
+go generate ./server/gendb/
+go build -o bin/wag
+hash npm 2>/dev/null || (echo "Could not run npm, please install node" && false)
+hash jsdoc2md 2>/dev/null || npm install -g jsdoc-to-markdown@^4.0.0
+/Library/Developer/CommandLineTools/usr/bin/make -C samples generate
+github.com/Clever/wag/samples/v9/test ./gen-go-db/server/db/dynamodb
+../bin/wag -file ./swagger.yml -output-path ./gen-go-basic -js-path ./gen-js
+From main:  ./gen-go-basic
+(main.config) {
+ clientLanguage: (*string)(0x1400033e2b0)(""),
+ clientOnly: (*bool)(0x1400034c351)(false),
+ dynamoOnly: (*bool)(0x1400034c352)(false),
+ outputPath: (*string)(0x1400033e290)((len=14) "./gen-go-basic"),
+ versionFlag: (*bool)(0x1400034c350)(false),
+ swaggerFile: (*string)(0x1400033e270)((len=13) "./swagger.yml"),
+ relativeDynamoPath: (*string)(0x14000302080)((len=9) "server/db"),
+ jsModulePath: (*string)(0x1400033e2a0)((len=8) "./gen-js"),
+ goPackageName: (*string)(0x1400033e280)((len=45) "github.com/Clever/wag/samples/v9/gen-go-basic"),
+ dynamoPath: (string) (len=93) "/Users/chris.martin/go/src/github.com/Clever/functionalWag/wag/samples/gen-go-basic/server/db",
+ goAbsolutePackagePath: (string) (len=83) "/Users/chris.martin/go/src/github.com/Clever/functionalWag/wag/samples/gen-go-basic",
+ jsClientPath: (string) "",
+ generateDynamo: (bool) true,
+ generateGoClient: (bool) true,
+ generateGoModels: (bool) true,
+ generateJSClient: (bool) true,
+ generateServer: (bool) true,
+ generateTracing: (bool) true
+}
+cd ./gen-js && jsdoc2md index.js types.js > ./README.md
+go generate -mod=mod ./gen-go-basic...
+../bin/wag -file ./deprecated.yml -output-path ./gen-go-deprecated -js-path ./gen-js-deprecated
+From main:  ./gen-go-deprecated
+(main.config) {
+ clientLanguage: (*string)(0x14000415050)(""),
+ clientOnly: (*bool)(0x140004533e1)(false),
+ dynamoOnly: (*bool)(0x140004533e2)(false),
+ outputPath: (*string)(0x14000415030)((len=19) "./gen-go-deprecated"),
+ versionFlag: (*bool)(0x140004533e0)(false),
+ swaggerFile: (*string)(0x14000415010)((len=16) "./deprecated.yml"),
+ relativeDynamoPath: (*string)(0x14000414260)((len=9) "server/db"),
+ jsModulePath: (*string)(0x14000415040)((len=19) "./gen-js-deprecated"),
+ goPackageName: (*string)(0x14000415020)((len=50) "github.com/Clever/wag/samples/v9/gen-go-deprecated"),
+ dynamoPath: (string) (len=98) "/Users/chris.martin/go/src/github.com/Clever/functionalWag/wag/samples/gen-go-deprecated/server/db",
+ goAbsolutePackagePath: (string) (len=88) "/Users/chris.martin/go/src/github.com/Clever/functionalWag/wag/samples/gen-go-deprecated",
+ jsClientPath: (string) "",
+ generateDynamo: (bool) true,
+ generateGoClient: (bool) true,
+ generateGoModels: (bool) true,
+ generateJSClient: (bool) true,
+ generateServer: (bool) true,
+ generateTracing: (bool) true
+}
+cd ./gen-js-deprecated && jsdoc2md index.js types.js > ./README.md
+go generate -mod=mod ./gen-go-deprecated...
+../bin/wag -file ./errors.yml -output-path ./gen-go-errors -js-path ./gen-js-errors
+From main:  ./gen-go-errors
+(main.config) {
+ clientLanguage: (*string)(0x14000414c90)(""),
+ clientOnly: (*bool)(0x140000a8d31)(false),
+ dynamoOnly: (*bool)(0x140000a8d32)(false),
+ outputPath: (*string)(0x14000414c70)((len=15) "./gen-go-errors"),
+ versionFlag: (*bool)(0x140000a8d30)(false),
+ swaggerFile: (*string)(0x14000414c50)((len=12) "./errors.yml"),
+ relativeDynamoPath: (*string)(0x14000382020)((len=9) "server/db"),
+ jsModulePath: (*string)(0x14000414c80)((len=15) "./gen-js-errors"),
+ goPackageName: (*string)(0x14000414c60)((len=46) "github.com/Clever/wag/samples/v9/gen-go-errors"),
+ dynamoPath: (string) (len=94) "/Users/chris.martin/go/src/github.com/Clever/functionalWag/wag/samples/gen-go-errors/server/db",
+ goAbsolutePackagePath: (string) (len=84) "/Users/chris.martin/go/src/github.com/Clever/functionalWag/wag/samples/gen-go-errors",
+ jsClientPath: (string) "",
+ generateDynamo: (bool) true,
+ generateGoClient: (bool) true,
+ generateGoModels: (bool) true,
+ generateJSClient: (bool) true,
+ generateServer: (bool) true,
+ generateTracing: (bool) true
+}
+cd ./gen-js-errors && jsdoc2md index.js types.js > ./README.md
+go generate -mod=mod ./gen-go-errors...
+../bin/wag -file ./nils.yml -output-path ./gen-go-nils -js-path ./gen-js-nils
+From main:  ./gen-go-nils
+(main.config) {
+ clientLanguage: (*string)(0x1400039cdb0)(""),
+ clientOnly: (*bool)(0x140005905e1)(false),
+ dynamoOnly: (*bool)(0x140005905e2)(false),
+ outputPath: (*string)(0x1400039cd90)((len=13) "./gen-go-nils"),
+ versionFlag: (*bool)(0x140005905e0)(false),
+ swaggerFile: (*string)(0x1400039cd70)((len=10) "./nils.yml"),
+ relativeDynamoPath: (*string)(0x1400039cdf0)((len=9) "server/db"),
+ jsModulePath: (*string)(0x1400039cda0)((len=13) "./gen-js-nils"),
+ goPackageName: (*string)(0x1400039cd80)((len=44) "github.com/Clever/wag/samples/v9/gen-go-nils"),
+ dynamoPath: (string) (len=92) "/Users/chris.martin/go/src/github.com/Clever/functionalWag/wag/samples/gen-go-nils/server/db",
+ goAbsolutePackagePath: (string) (len=82) "/Users/chris.martin/go/src/github.com/Clever/functionalWag/wag/samples/gen-go-nils",
+ jsClientPath: (string) "",
+ generateDynamo: (bool) true,
+ generateGoClient: (bool) true,
+ generateGoModels: (bool) true,
+ generateJSClient: (bool) true,
+ generateServer: (bool) true,
+ generateTracing: (bool) true
+}
+cd ./gen-js-nils && jsdoc2md index.js types.js > ./README.md
+go generate -mod=mod ./gen-go-nils...
+../bin/wag -file ./blog.yml -output-path ./gen-go-blog -js-path ./gen-js-blog
+From main:  ./gen-go-blog
+(main.config) {
+ clientLanguage: (*string)(0x14000454190)(""),
+ clientOnly: (*bool)(0x1400060e281)(false),
+ dynamoOnly: (*bool)(0x1400060e282)(false),
+ outputPath: (*string)(0x14000454170)((len=13) "./gen-go-blog"),
+ versionFlag: (*bool)(0x1400060e280)(false),
+ swaggerFile: (*string)(0x14000454150)((len=10) "./blog.yml"),
+ relativeDynamoPath: (*string)(0x140003e00c0)((len=9) "server/db"),
+ jsModulePath: (*string)(0x14000454180)((len=13) "./gen-js-blog"),
+ goPackageName: (*string)(0x14000454160)((len=44) "github.com/Clever/wag/samples/v9/gen-go-blog"),
+ dynamoPath: (string) (len=92) "/Users/chris.martin/go/src/github.com/Clever/functionalWag/wag/samples/gen-go-blog/server/db",
+ goAbsolutePackagePath: (string) (len=82) "/Users/chris.martin/go/src/github.com/Clever/functionalWag/wag/samples/gen-go-blog",
+ jsClientPath: (string) "",
+ generateDynamo: (bool) true,
+ generateGoClient: (bool) true,
+ generateGoModels: (bool) true,
+ generateJSClient: (bool) true,
+ generateServer: (bool) true,
+ generateTracing: (bool) true
+}
+cd ./gen-js-blog && jsdoc2md index.js types.js > ./README.md
+go generate -mod=mod ./gen-go-nils...
+../bin/wag -file ./db.yml -output-path ./gen-go-db -js-path ./gen-js-db
+From main:  ./gen-go-db
+(main.config) {
+ clientLanguage: (*string)(0x140002deff0)(""),
+ clientOnly: (*bool)(0x140000eb261)(false),
+ dynamoOnly: (*bool)(0x140000eb262)(false),
+ outputPath: (*string)(0x140002defd0)((len=11) "./gen-go-db"),
+ versionFlag: (*bool)(0x140000eb260)(false),
+ swaggerFile: (*string)(0x140002defb0)((len=8) "./db.yml"),
+ relativeDynamoPath: (*string)(0x140002df030)((len=9) "server/db"),
+ jsModulePath: (*string)(0x140002defe0)((len=11) "./gen-js-db"),
+ goPackageName: (*string)(0x140002defc0)((len=42) "github.com/Clever/wag/samples/v9/gen-go-db"),
+ dynamoPath: (string) (len=90) "/Users/chris.martin/go/src/github.com/Clever/functionalWag/wag/samples/gen-go-db/server/db",
+ goAbsolutePackagePath: (string) (len=80) "/Users/chris.martin/go/src/github.com/Clever/functionalWag/wag/samples/gen-go-db",
+ jsClientPath: (string) "",
+ generateDynamo: (bool) true,
+ generateGoClient: (bool) true,
+ generateGoModels: (bool) true,
+ generateJSClient: (bool) true,
+ generateServer: (bool) true,
+ generateTracing: (bool) true
+}
+cd ./gen-js-db && jsdoc2md index.js types.js > ./README.md
+go generate -mod=mod ./gen-go-db...
