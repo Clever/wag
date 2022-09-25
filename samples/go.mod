@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/Clever/go-process-metrics v0.4.0
-	github.com/Clever/kayvee-go/v7 v7.5.1-0.20220923154249-767615167149
+	github.com/Clever/kayvee-go/v7 v7.6.0
 	github.com/Clever/wag/samples/gen-go-basic/client/v9 v9.0.0-00010101000000-000000000000
 	github.com/Clever/wag/samples/gen-go-basic/models/v9 v9.0.0-00010101000000-000000000000
 	github.com/Clever/wag/samples/gen-go-blog/models/v9 v9.0.0-00010101000000-000000000000

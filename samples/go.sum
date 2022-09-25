@@ -66,6 +66,8 @@ github.com/Clever/go-utils v0.0.0-20180917210021-2dac0ec6f2ac/go.mod h1:XXTA9F/9
 github.com/Clever/kayvee-go/v7 v7.4.0/go.mod h1:LvO0+U9vKd45yv2j9MtTA1r5LTTf+epSXsxMfw1WNd8=
 github.com/Clever/kayvee-go/v7 v7.5.1-0.20220923154249-767615167149 h1:mEJ+GsNDGq7fXnSSGdm331EN+I6Q7h212aFTkJTc2U0=
 github.com/Clever/kayvee-go/v7 v7.5.1-0.20220923154249-767615167149/go.mod h1:B2IcQE7OK8rpYvDotSAvCtfZqZ1UqTs1YacM+YFtxR8=
+github.com/Clever/kayvee-go/v7 v7.6.0 h1:0oKF/yLSZZG0cJoYyuXj49zVU41I1eySvfHunlJkw7A=
+github.com/Clever/kayvee-go/v7 v7.6.0/go.mod h1:B2IcQE7OK8rpYvDotSAvCtfZqZ1UqTs1YacM+YFtxR8=
 github.com/Clever/wag/logging/wagclientlogger v0.0.0-20220916194010-36f974d66e08 h1:hr8vR3NyIrxMKFOUzqMY5y1VboQaT2Lia4RXVvogLfM=
 github.com/Clever/wag/logging/wagclientlogger v0.0.0-20220916194010-36f974d66e08/go.mod h1:NPerIFemV/7da/vNGALWkky+mit4ulSa24NSalIXgpo=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
