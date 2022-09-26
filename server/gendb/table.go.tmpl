@@ -17,7 +17,7 @@ import (
         "strings"
         {{- end }}
 
-  "{{ .PackageName }}/models"
+  "{{ .ModuleName }}{{.GoOutputPath}}/models{{.VersionSuffix}}"
   "{{ .PackageName }}/{{ .OutputPath }}"
   "github.com/aws/aws-sdk-go/aws"
         {{- if not $xdbConfig.AllowOverwrites }}

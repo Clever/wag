@@ -17,7 +17,7 @@ import (
 	"github.com/Clever/go-process-metrics/metrics"
 	"github.com/Clever/kayvee-go/v7/logger"
 	kvMiddleware "github.com/Clever/kayvee-go/v7/middleware"
-	"github.com/Clever/wag/samples/v8/gen-go/servertracing"
+	"github.com/Clever/wag/samples/v9/gen-go-basic/servertracing"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/kardianos/osext"
@@ -101,7 +101,7 @@ type handler struct {
 }
 
 func startLoggingProcessMetrics() {
-	metrics.Log("swagger-test", 1*time.Minute)
+	metrics.Log("wag/samples", 1*time.Minute)
 }
 
 func withMiddleware(serviceName string, router http.Handler, m []func(http.Handler) http.Handler, config serverConfig) http.Handler {
@@ -136,7 +136,7 @@ func NewRouter(c Controller) *mux.Router {
 
 func newRouter(c Controller) *mux.Router {
 	router := mux.NewRouter()
-	router.Use(servertracing.MuxServerMiddleware("swagger-test"))
+	router.Use(servertracing.MuxServerMiddleware("wag/samples"))
 	h := handler{Controller: c}
 
 	router.Methods("GET").Path("/v1/authors").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -206,8 +206,8 @@ func AttachMiddleware(router *mux.Router, addr string, m []func(http.Handler) ht
 		option(&config)
 	}
 
-	l := logger.New("swagger-test")
+	l := logger.New("wag/samples")
 
-	handler := withMiddleware("swagger-test", router, m, config)
+	handler := withMiddleware("wag/samples", router, m, config)
 	return &Server{Handler: handler, addr: addr, l: l, config: config}
 }

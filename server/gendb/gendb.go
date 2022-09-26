@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"path"
+	"regexp"
 	"sort"
 	"strings"
 	"text/template"
 
-	"github.com/Clever/wag/v8/swagger"
+	"github.com/Clever/wag/v9/swagger"
 	"github.com/awslabs/goformation/v2/cloudformation/resources"
 	"github.com/go-openapi/spec"
 	"github.com/go-swagger/go-swagger/generator"
@@ -137,8 +139,21 @@ func findCompositeAttribute(config XDBConfig, attributeName string) *CompositeAt
 
 }
 
+func extractModuleNameAndVersionSuffix(packageName, outputPath string) (moduleName, versionSuffix string) {
+	vregex, err := regexp.Compile("/v[0-9]$|/v[0-9][0-9]")
+	if err != nil {
+		log.Fatalf("Error checking module name: %s", err.Error())
+	}
+	moduleName = strings.TrimSuffix(packageName, outputPath)
+	versionSuffix = vregex.FindString(moduleName)
+	moduleName = strings.TrimSuffix(moduleName, versionSuffix)
+	return
+}
+
 // GenerateDB generates DB code for schemas annotated with the x-db extension.
-func GenerateDB(packageName, basePath string, s *spec.Swagger, outputPath string) error {
+func GenerateDB(packageName, basePath, goOutputPath string, s *spec.Swagger, outputPath string) error {
+	goOutputPath = strings.TrimPrefix(goOutputPath, ".")
+	moduleName, versionSuffix := extractModuleNameAndVersionSuffix(packageName, goOutputPath)
 	var schemaNames []string
 	for schemaName := range s.Definitions {
 		schemaNames = append(schemaNames, schemaName)
@@ -195,35 +210,47 @@ func GenerateDB(packageName, basePath string, s *spec.Swagger, outputPath string
 			tmplFilename:   "dynamodb.go.tmpl",
 			outputFilename: path.Join(outputPath, "dynamodb/dynamodb.go"),
 			data: map[string]interface{}{
-				"PackageName": packageName,
-				"XDBConfigs":  xdbConfigs,
-				"OutputPath":  outputPath,
+				"PackageName":   packageName,
+				"XDBConfigs":    xdbConfigs,
+				"OutputPath":    outputPath,
+				"ModuleName":    moduleName,
+				"VersionSuffix": versionSuffix,
+				"GoOutputPath":  goOutputPath,
 			},
 		},
 		{
 			tmplFilename:   "dynamodb_test.go.tmpl",
 			outputFilename: path.Join(outputPath, "dynamodb/dynamodb_test.go"),
 			data: map[string]interface{}{
-				"PackageName": packageName,
-				"OutputPath":  outputPath,
+				"PackageName":   packageName,
+				"OutputPath":    outputPath,
+				"ModuleName":    moduleName,
+				"VersionSuffix": versionSuffix,
+				"GoOutputPath":  goOutputPath,
 			},
 		},
 		{
 			tmplFilename:   "interface.go.tmpl",
 			outputFilename: path.Join(outputPath, "interface.go"),
 			data: map[string]interface{}{
-				"PackageName": packageName,
-				"ServiceName": s.Info.InfoProps.Title,
-				"XDBConfigs":  xdbConfigs,
+				"PackageName":   packageName,
+				"ServiceName":   s.Info.InfoProps.Title,
+				"XDBConfigs":    xdbConfigs,
+				"ModuleName":    moduleName,
+				"VersionSuffix": versionSuffix,
+				"GoOutputPath":  goOutputPath,
 			},
 		},
 		{
 			tmplFilename:   "tests.go.tmpl",
 			outputFilename: path.Join(outputPath, "tests/tests.go"),
 			data: map[string]interface{}{
-				"PackageName": packageName,
-				"XDBConfigs":  xdbConfigs,
-				"OutputPath":  outputPath,
+				"PackageName":   packageName,
+				"XDBConfigs":    xdbConfigs,
+				"OutputPath":    outputPath,
+				"ModuleName":    moduleName,
+				"VersionSuffix": versionSuffix,
+				"GoOutputPath":  goOutputPath,
 			},
 		},
 	}
@@ -232,9 +259,12 @@ func GenerateDB(packageName, basePath string, s *spec.Swagger, outputPath string
 			tmplFilename:   "table.go.tmpl",
 			outputFilename: path.Join(outputPath, "dynamodb", fmt.Sprintf("%v.go", strings.ToLower(xdbConfig.SchemaName))),
 			data: map[string]interface{}{
-				"PackageName": packageName,
-				"XDBConfig":   xdbConfig,
-				"OutputPath":  outputPath,
+				"PackageName":   packageName,
+				"XDBConfig":     xdbConfig,
+				"OutputPath":    outputPath,
+				"ModuleName":    moduleName,
+				"VersionSuffix": versionSuffix,
+				"GoOutputPath":  goOutputPath,
 			},
 		})
 	}

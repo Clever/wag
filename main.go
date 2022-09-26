@@ -8,22 +8,22 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"regexp"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
 
-	goclient "github.com/Clever/wag/v8/clients/go"
-	jsclient "github.com/Clever/wag/v8/clients/js"
-	"github.com/Clever/wag/v8/hardcoded"
-	"github.com/Clever/wag/v8/models"
-	"github.com/Clever/wag/v8/server"
-	"github.com/Clever/wag/v8/server/gendb"
-	"github.com/Clever/wag/v8/swagger"
-	"github.com/Clever/wag/v8/validation"
+	goclient "github.com/Clever/wag/v9/clients/go"
+	jsclient "github.com/Clever/wag/v9/clients/js"
+	"github.com/Clever/wag/v9/hardcoded"
+	"github.com/Clever/wag/v9/models"
+	"github.com/Clever/wag/v9/server"
+	"github.com/Clever/wag/v9/server/gendb"
+	"github.com/Clever/wag/v9/swagger"
+	"github.com/Clever/wag/v9/validation"
 )
 
 // config contains the configuration of command line flags and configuration derived from command line flags
@@ -89,33 +89,34 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed processing the swagger spec: %s", err)
 	}
-
+	fmt.Println("From main: ", swag.StringValue(conf.outputPath))
+	spew.Dump(conf)
 	if conf.generateGoModels {
-		if err := generateGoModels(*conf.goPackageName, conf.goAbsolutePackagePath, swaggerSpec); err != nil {
+		if err := generateGoModels(*conf.goPackageName, conf.goAbsolutePackagePath, *conf.outputPath, swaggerSpec); err != nil {
 			log.Fatal(err.Error())
 		}
 	}
 
 	if conf.generateServer {
-		if err := generateServer(*conf.goPackageName, conf.goAbsolutePackagePath, swaggerSpec); err != nil {
+		if err := generateServer(*conf.goPackageName, conf.goAbsolutePackagePath, *conf.outputPath, swaggerSpec); err != nil {
 			log.Fatal(err.Error())
 		}
 	}
 
 	if conf.generateTracing {
-		if err := generateTracing(conf.goAbsolutePackagePath); err != nil {
+		if err := generateTracing(conf.goAbsolutePackagePath, *conf.outputPath); err != nil {
 			log.Fatal(err.Error())
 		}
 	}
 
 	if conf.generateDynamo {
-		if err := generateDynamo(conf.dynamoPath, *conf.goPackageName, conf.goAbsolutePackagePath, *conf.relativeDynamoPath, swaggerSpec); err != nil {
+		if err := generateDynamo(conf.dynamoPath, *conf.goPackageName, conf.goAbsolutePackagePath, *conf.relativeDynamoPath, *conf.outputPath, swaggerSpec); err != nil {
 			log.Fatal(err.Error())
 		}
 	}
 
 	if conf.generateGoClient {
-		if err := generateGoClient(*conf.goPackageName, conf.goAbsolutePackagePath, swaggerSpec); err != nil {
+		if err := generateGoClient(*conf.goPackageName, conf.goAbsolutePackagePath, *conf.outputPath, swaggerSpec); err != nil {
 			log.Fatal(err.Error())
 		}
 	}
@@ -127,22 +128,22 @@ func main() {
 	}
 }
 
-func generateGoModels(packageName, basePath string, swaggerSpec spec.Swagger) error {
+func generateGoModels(packageName, basePath, outputPath string, swaggerSpec spec.Swagger) error {
 	if err := prepareDir(filepath.Join(basePath, "models")); err != nil {
 		return err
 	}
-	if err := models.Generate(packageName, basePath, swaggerSpec); err != nil {
+	if err := models.Generate(packageName, basePath, outputPath, swaggerSpec); err != nil {
 
 		return fmt.Errorf("Error generating models: %s", err)
 	}
 	return nil
 }
 
-func generateServer(goPackageName, basePath string, swaggerSpec spec.Swagger) error {
+func generateServer(goPackageName, basePath, outputPath string, swaggerSpec spec.Swagger) error {
 	if err := prepareDir(filepath.Join(basePath, "server")); err != nil {
 		return err
 	}
-	if err := server.Generate(goPackageName, basePath, swaggerSpec); err != nil {
+	if err := server.Generate(goPackageName, basePath, outputPath, swaggerSpec); err != nil {
 		return fmt.Errorf("Failed to generate server: %s", err)
 	}
 	middlewareGenerator := swagger.Generator{BasePath: basePath}
@@ -154,7 +155,7 @@ func generateServer(goPackageName, basePath string, swaggerSpec spec.Swagger) er
 	return nil
 }
 
-func generateTracing(basePath string) error {
+func generateTracing(basePath, outputPath string) error {
 	if err := prepareDir(filepath.Join(basePath, "servertracing")); err != nil {
 
 		return err
@@ -169,21 +170,21 @@ func generateTracing(basePath string) error {
 	return nil
 }
 
-func generateDynamo(dynamoPath, goPackageName, basePath, outputPath string, swaggerSpec spec.Swagger) error {
+func generateDynamo(dynamoPath, goPackageName, basePath, relativeDynamoPath, OutputPath string, swaggerSpec spec.Swagger) error {
 	if err := prepareDir(dynamoPath); err != nil {
 		return err
 	}
-	if err := gendb.GenerateDB(goPackageName, basePath, &swaggerSpec, outputPath); err != nil {
+	if err := gendb.GenerateDB(goPackageName, basePath, OutputPath, &swaggerSpec, relativeDynamoPath); err != nil {
 		return fmt.Errorf("Failed to generate database: %s", err)
 	}
 	return nil
 }
 
-func generateGoClient(goPackageName, basePath string, swaggerSpec spec.Swagger) error {
+func generateGoClient(goPackageName, basePath, outputPath string, swaggerSpec spec.Swagger) error {
 	if err := prepareDir(filepath.Join(basePath, "client")); err != nil {
 		return err
 	}
-	if err := goclient.Generate(goPackageName, basePath, swaggerSpec); err != nil {
+	if err := goclient.Generate(goPackageName, basePath, outputPath, swaggerSpec); err != nil {
 		return fmt.Errorf("Failed generating go client %s", err)
 	}
 	doerGenerator := swagger.Generator{BasePath: basePath}
@@ -274,7 +275,7 @@ func (c *config) setGoPaths(outputPath, goPackageName string) error {
 		c.goAbsolutePackagePath = filepath.Join(os.Getenv("GOPATH"), "src", goPackageName)
 	} else {
 		defer modFile.Close()
-		if outputPath == "" {
+		if "outputPath" == "" {
 			return fmt.Errorf("output-path is required")
 		}
 
@@ -340,29 +341,6 @@ func (c *config) setGeneratedFilePaths() {
 // the function will return github.com/Clever/wag/v8/v2/gen-go
 // Example: if packagePath = github.com/Clever/wag/v8/gen-go and the module name is github.com/Clever/wag/v8
 // the function will return  github.com/Clever/wag/v8/gen-go
-func getSubModulePackageName(modFile *os.File, outputPath string) string {
-	r := bufio.NewReader(modFile)
-	b, _, err := r.ReadLine()
-	if err != nil {
-		log.Fatalf("Error checking module name: %s", err.Error())
-	}
-
-	// parse module path
-	moduleName := strings.TrimPrefix(string(b), "module")
-	moduleName = strings.TrimSpace(moduleName)
-
-	//Remove /v<version> from end of path.
-	regex, err := regexp.Compile("/v[0-9]$|/v[0-9][0-9]")
-	if err != nil {
-		log.Fatalf("Error checking module name: %s", err.Error())
-	}
-
-	moduleName = regex.ReplaceAllString(moduleName, "")
-
-	return fmt.Sprintf("%v/%v", moduleName, outputPath)
-
-}
-
 func getModulePackageName(modFile *os.File, outputPath string) string {
 	// read first line of module file
 	r := bufio.NewReader(modFile)

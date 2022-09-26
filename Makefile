@@ -33,7 +33,7 @@ go-generate:
 	go generate ./server/gendb/
 
 generate: build jsdoc2md
-	# $(MAKE) -C samples generate
+	 $(MAKE) -C samples generate
 
 $(PKGS): golang-test-all-strict-deps
 	$(call golang-test-all-strict,$@)

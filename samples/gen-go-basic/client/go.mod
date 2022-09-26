@@ -1,17 +1,14 @@
 
-module github.com/Clever/swagger-test/gen-go/client
+module github.com/Clever/wag/samples/gen-go-basic/client/v9
 
 go 1.16
 
 require (
-	//removed this because it can never get the right version unless I tag it first. Adding with: go get github.com/Clever/dapple/gen-go/models@INFRANG-5015
-	//github.com/Clever/swagger-test/gen-go/models v0.1.0
+	//removed this because it can never get the right version unless I tag it first. Adding with: go get github.com/Clever/wag/samples/gen-go-basic/models@9.0.0
+	//github.com/Clever/wag/samples/gen-go-basic/models/v9
 	github.com/Clever/discovery-go v1.8.1
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b
-)
-
-require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef // indirect
@@ -42,4 +39,4 @@ require (
 
 )
 //Replace directives will work locally but mess up imports.
-//replace github.com/Clever/swagger-test/gen-go/models v0.1.0 => ../models 
+replace github.com/Clever/wag/samples/gen-go-basic/models/v9 => ../models 

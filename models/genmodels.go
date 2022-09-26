@@ -12,15 +12,15 @@ import (
 	"github.com/go-openapi/spec"
 
 	"github.com/Clever/go-utils/stringset"
-	goClient "github.com/Clever/wag/v8/clients/go"
-	"github.com/Clever/wag/v8/swagger"
-	"github.com/Clever/wag/v8/templates"
+	goClient "github.com/Clever/wag/v9/clients/go"
+	"github.com/Clever/wag/v9/swagger"
+	"github.com/Clever/wag/v9/templates"
 
 	"github.com/go-swagger/go-swagger/generator"
 )
 
 // Generate writes the files to the client directories
-func Generate(packageName, basePath string, s spec.Swagger) error {
+func Generate(packageName, basePath, outputPath string, s spec.Swagger) error {
 
 	tmpFile, err := swagger.WriteToFile(&s)
 	if err != nil {
@@ -53,30 +53,28 @@ func Generate(packageName, basePath string, s spec.Swagger) error {
 	if err := generateInputs(basePath, s); err != nil {
 		return fmt.Errorf("error generating inputs: %s", err)
 	}
-	if err := CreateModFile("models/go.mod", basePath, packageName); err != nil {
+	if err := CreateModFile("models/go.mod", basePath, packageName, outputPath); err != nil {
 		return fmt.Errorf("error creating go.mod file: %s", err)
 	}
 	return nil
 }
 
-func extractModuleNameAndVersionSuffix(packageName string) (moduleName string, versionSuffix string) {
-	regex, err := regexp.Compile("/v[0-9]/gen-go$|/v[0-9][0-9]/gen-go")
+func extractModuleNameAndVersionSuffix(packageName, outputPath string) (moduleName, versionSuffix string) {
+	vregex, err := regexp.Compile("/v[0-9]$|/v[0-9][0-9]")
 	if err != nil {
-		log.Fatalf("Error getting module name from packageName: %s", err.Error())
+		log.Fatalf("Error checking module name: %s", err.Error())
 	}
-	versionSuffix = strings.TrimSuffix(regex.FindString(packageName), "/gen-go")
-	if bool(regex.MatchString(packageName)) {
-		moduleName = regex.ReplaceAllString(packageName, "")
-	} else {
-		moduleName = strings.TrimSuffix(packageName, "/gen-go")
-	}
+	moduleName = strings.TrimSuffix(packageName, outputPath)
+	versionSuffix = vregex.FindString(moduleName)
+	moduleName = strings.TrimSuffix(moduleName, versionSuffix)
 	return
-
 }
 
-//CreateModFile creates a go.mod file for the client module.
-func CreateModFile(path string, basePath string, packageName string) error {
-	moduleName, versionSuffix := extractModuleNameAndVersionSuffix(packageName)
+// CreateModFile creates a go.mod file for the client module.
+func CreateModFile(path string, basePath, packageName, outputPath string) error {
+	outputPath = strings.TrimPrefix(outputPath, ".")
+	moduleName, versionSuffix := extractModuleNameAndVersionSuffix(packageName, outputPath)
+
 	absPath := basePath + "/" + path
 	f, err := os.Create(absPath)
 
@@ -86,7 +84,7 @@ func CreateModFile(path string, basePath string, packageName string) error {
 
 	defer f.Close()
 	modFileString := `
-module ` + moduleName + `/gen-go/models` + versionSuffix + `
+module ` + moduleName + outputPath + `/models` + versionSuffix + `
 
 
 go 1.16

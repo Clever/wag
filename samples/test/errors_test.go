@@ -5,9 +5,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Clever/wag/samples/v8/gen-go-errors/client"
-	"github.com/Clever/wag/samples/v8/gen-go-errors/models"
-	"github.com/Clever/wag/samples/v8/gen-go-errors/server"
+	"github.com/Clever/wag/samples/gen-go-errors/client/v9"
+	"github.com/Clever/wag/samples/gen-go-errors/models/v9"
+	"github.com/Clever/wag/samples/v9/gen-go-errors/server"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

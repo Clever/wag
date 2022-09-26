@@ -13,17 +13,19 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Clever/swagger-test/gen-go/models"
+	"github.com/Clever/wag/samples/gen-go-basic/models/v9"
 
 	discovery "github.com/Clever/discovery-go"
 	wcl "github.com/Clever/wag/logging/wagclientlogger"
 
 	"github.com/afex/hystrix-go/hystrix"
 
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 )
 
 var _ = json.Marshal
@@ -32,12 +34,12 @@ var _ = strconv.FormatInt
 var _ = bytes.Compare
 
 // Version of the client.
-const Version = "0.1.0"
+const Version = "9.0.0"
 
 // VersionHeader is sent with every request.
 const VersionHeader = "X-Client-Version"
 
-// WagClient is used to make requests to the swagger-test service.
+// WagClient is used to make requests to the wag/samples service.
 type WagClient struct {
 	basePath    string
 	requestDoer doer
@@ -158,8 +160,8 @@ func newResource() *resource.Resource {
 		resource.Default(),
 		resource.NewWithAttributes(
 			semconv.SchemaURL,
-			semconv.ServiceNameKey.String("swagger-test"),
-			semconv.ServiceVersionKey.String("0.1.0"),
+			semconv.ServiceNameKey.String("wag/samples"),
+			semconv.ServiceVersionKey.String("9.0.0"),
 		),
 	)
 	return r
@@ -179,8 +181,8 @@ func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float
 			LinkCountLimit:      100,
 		}),
 		//Batcher is more efficient, switch to it after testing
-		sdktrace.WithSyncer(exporter),
-		//sdktrace.WithBatcher(exporter),
+		// sdktrace.WithSyncer(exporter),
+		sdktrace.WithBatcher(exporter),
 		sdktrace.WithResource(newResource()),
 	)
 	otel.SetTracerProvider(tp)
@@ -195,7 +197,7 @@ func doNothing(baseTransport http.RoundTripper, spanNameCtxValue interface{}, tp
 func determineSampling() (samplingProbability float64, err error) {
 
 	// If we're running locally, then turn off sampling. Otherwise sample
-	// 1%!o(MISSING)r whatever TRACING_SAMPLING_PROBABILITY specifies.
+	// 1% or whatever TRACING_SAMPLING_PROBABILITY specifies.
 	samplingProbability = 0.01
 	isLocal := os.Getenv("_IS_LOCAL") == "true"
 	if isLocal {
@@ -204,7 +206,7 @@ func determineSampling() (samplingProbability float64, err error) {
 	} else if v := os.Getenv("TRACING_SAMPLING_PROBABILITY"); v != "" {
 		samplingProbabilityFromEnv, err := strconv.ParseFloat(v, 64)
 		if err != nil {
-			return 0, fmt.Errorf("could not parse '%!s(MISSING)' to float", v)
+			return 0, fmt.Errorf("could not parse '%s' to float", v)
 		}
 		samplingProbability = samplingProbabilityFromEnv
 	}
@@ -217,7 +219,7 @@ func determineSampling() (samplingProbability float64, err error) {
 func New(ctx context.Context, basePath string, opts ...Option) *WagClient {
 
 	defaultTransport := http.DefaultTransport
-	defaultLogger := NewLogger("swagger-test-wagclient", wcl.Info)
+	defaultLogger := NewLogger("wag/samples-wagclient", wcl.Info)
 	defaultExporter, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
 	if err != nil {
 		fmt.Println(err)
@@ -251,7 +253,7 @@ func New(ctx context.Context, basePath string, opts ...Option) *WagClient {
 		// TODO: INFRANG-4404 allow passing circuitBreakerOptions
 		debug: true,
 		// one circuit for each service + url pair
-		circuitName: fmt.Sprintf("swagger-test-%s", shortHash(basePath)),
+		circuitName: fmt.Sprintf("wag/samples-%s", shortHash(basePath)),
 		logger:      options.logger,
 	}
 	circuit.init()
@@ -271,11 +273,11 @@ func New(ctx context.Context, basePath string, opts ...Option) *WagClient {
 }
 
 // NewFromDiscovery creates a client from the discovery environment variables. This method requires
-// the three env vars: SERVICE_SWAGGER_TEST_HTTP_(HOST/PORT/PROTO) to be set. Otherwise it returns an error.
+// the three env vars: SERVICE_WAG/SAMPLES_HTTP_(HOST/PORT/PROTO) to be set. Otherwise it returns an error.
 func NewFromDiscovery() (*WagClient, error) {
-	url, err := discovery.URL("swagger-test", "default")
+	url, err := discovery.URL("wag/samples", "default")
 	if err != nil {
-		url, err = discovery.URL("swagger-test", "http") // Added fallback to maintain reverse compatibility
+		url, err = discovery.URL("wag/samples", "http") // Added fallback to maintain reverse compatibility
 		if err != nil {
 			return nil, err
 		}
@@ -482,6 +484,7 @@ func (c *WagClient) doGetAuthorsRequest(ctx context.Context, req *http.Request, 
 		defer cancel()
 		req = req.WithContext(ctx)
 	}
+
 	resp, err := c.requestDoer.Do(c.client, req)
 	retCode := 0
 	if resp != nil {
@@ -490,7 +493,7 @@ func (c *WagClient) doGetAuthorsRequest(ctx context.Context, req *http.Request, 
 
 	// log all client failures and non-successful HT
 	logData := map[string]interface{}{
-		"backend":     "swagger-test",
+		"backend":     "wag/samples",
 		"method":      req.Method,
 		"uri":         req.URL,
 		"status_code": retCode,
@@ -692,6 +695,7 @@ func (c *WagClient) doGetAuthorsWithPutRequest(ctx context.Context, req *http.Re
 		defer cancel()
 		req = req.WithContext(ctx)
 	}
+
 	resp, err := c.requestDoer.Do(c.client, req)
 	retCode := 0
 	if resp != nil {
@@ -700,7 +704,7 @@ func (c *WagClient) doGetAuthorsWithPutRequest(ctx context.Context, req *http.Re
 
 	// log all client failures and non-successful HT
 	logData := map[string]interface{}{
-		"backend":     "swagger-test",
+		"backend":     "wag/samples",
 		"method":      req.Method,
 		"uri":         req.URL,
 		"status_code": retCode,
@@ -884,6 +888,7 @@ func (c *WagClient) doGetBooksRequest(ctx context.Context, req *http.Request, he
 		defer cancel()
 		req = req.WithContext(ctx)
 	}
+
 	resp, err := c.requestDoer.Do(c.client, req)
 	retCode := 0
 	if resp != nil {
@@ -892,7 +897,7 @@ func (c *WagClient) doGetBooksRequest(ctx context.Context, req *http.Request, he
 
 	// log all client failures and non-successful HT
 	logData := map[string]interface{}{
-		"backend":     "swagger-test",
+		"backend":     "wag/samples",
 		"method":      req.Method,
 		"uri":         req.URL,
 		"status_code": retCode,
@@ -991,6 +996,7 @@ func (c *WagClient) doCreateBookRequest(ctx context.Context, req *http.Request, 
 		defer cancel()
 		req = req.WithContext(ctx)
 	}
+
 	resp, err := c.requestDoer.Do(c.client, req)
 	retCode := 0
 	if resp != nil {
@@ -999,7 +1005,7 @@ func (c *WagClient) doCreateBookRequest(ctx context.Context, req *http.Request, 
 
 	// log all client failures and non-successful HT
 	logData := map[string]interface{}{
-		"backend":     "swagger-test",
+		"backend":     "wag/samples",
 		"method":      req.Method,
 		"uri":         req.URL,
 		"status_code": retCode,
@@ -1098,6 +1104,7 @@ func (c *WagClient) doPutBookRequest(ctx context.Context, req *http.Request, hea
 		defer cancel()
 		req = req.WithContext(ctx)
 	}
+
 	resp, err := c.requestDoer.Do(c.client, req)
 	retCode := 0
 	if resp != nil {
@@ -1106,7 +1113,7 @@ func (c *WagClient) doPutBookRequest(ctx context.Context, req *http.Request, hea
 
 	// log all client failures and non-successful HT
 	logData := map[string]interface{}{
-		"backend":     "swagger-test",
+		"backend":     "wag/samples",
 		"method":      req.Method,
 		"uri":         req.URL,
 		"status_code": retCode,
@@ -1206,6 +1213,7 @@ func (c *WagClient) doGetBookByIDRequest(ctx context.Context, req *http.Request,
 		defer cancel()
 		req = req.WithContext(ctx)
 	}
+
 	resp, err := c.requestDoer.Do(c.client, req)
 	retCode := 0
 	if resp != nil {
@@ -1214,7 +1222,7 @@ func (c *WagClient) doGetBookByIDRequest(ctx context.Context, req *http.Request,
 
 	// log all client failures and non-successful HT
 	logData := map[string]interface{}{
-		"backend":     "swagger-test",
+		"backend":     "wag/samples",
 		"method":      req.Method,
 		"uri":         req.URL,
 		"status_code": retCode,
@@ -1325,6 +1333,7 @@ func (c *WagClient) doGetBookByID2Request(ctx context.Context, req *http.Request
 		defer cancel()
 		req = req.WithContext(ctx)
 	}
+
 	resp, err := c.requestDoer.Do(c.client, req)
 	retCode := 0
 	if resp != nil {
@@ -1333,7 +1342,7 @@ func (c *WagClient) doGetBookByID2Request(ctx context.Context, req *http.Request
 
 	// log all client failures and non-successful HT
 	logData := map[string]interface{}{
-		"backend":     "swagger-test",
+		"backend":     "wag/samples",
 		"method":      req.Method,
 		"uri":         req.URL,
 		"status_code": retCode,
@@ -1429,6 +1438,7 @@ func (c *WagClient) doHealthCheckRequest(ctx context.Context, req *http.Request,
 		defer cancel()
 		req = req.WithContext(ctx)
 	}
+
 	resp, err := c.requestDoer.Do(c.client, req)
 	retCode := 0
 	if resp != nil {
@@ -1437,7 +1447,7 @@ func (c *WagClient) doHealthCheckRequest(ctx context.Context, req *http.Request,
 
 	// log all client failures and non-successful HT
 	logData := map[string]interface{}{
-		"backend":     "swagger-test",
+		"backend":     "wag/samples",
 		"method":      req.Method,
 		"uri":         req.URL,
 		"status_code": retCode,

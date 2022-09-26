@@ -9,22 +9,22 @@ import (
 
 	"github.com/go-openapi/spec"
 
-	clients "github.com/Clever/wag/v8/clients/go"
-	"github.com/Clever/wag/v8/swagger"
-	"github.com/Clever/wag/v8/templates"
-	"github.com/Clever/wag/v8/utils"
+	clients "github.com/Clever/wag/v9/clients/go"
+	"github.com/Clever/wag/v9/swagger"
+	"github.com/Clever/wag/v9/templates"
+	"github.com/Clever/wag/v9/utils"
 )
 
 // Generate server package for a swagger spec.
-func Generate(packageName, basePath string, s spec.Swagger) error {
+func Generate(packageName, basePath, outputPath string, s spec.Swagger) error {
 
-	if err := generateRouter(packageName, basePath, s, s.Paths); err != nil {
+	if err := generateRouter(packageName, basePath, outputPath, s, s.Paths); err != nil {
 		return err
 	}
-	if err := generateInterface(packageName, basePath, &s, s.Info.InfoProps.Title, s.Paths); err != nil {
+	if err := generateInterface(packageName, basePath, outputPath, &s, s.Info.InfoProps.Title, s.Paths); err != nil {
 		return err
 	}
-	if err := generateHandlers(packageName, basePath, &s, s.Paths); err != nil {
+	if err := generateHandlers(packageName, basePath, outputPath, &s, s.Paths); err != nil {
 		return err
 	}
 	return nil
@@ -43,7 +43,7 @@ type routerTemplate struct {
 	Functions        []routerFunction
 }
 
-func generateRouter(packageName, basePath string, s spec.Swagger, paths *spec.Paths) error {
+func generateRouter(packageName, basePath, outputPath string, s spec.Swagger, paths *spec.Paths) error {
 
 	var template routerTemplate
 	template.Title = s.Info.Title
@@ -98,6 +98,9 @@ type interfaceFileTemplate struct {
 	ImportStatements string
 	ServiceName      string
 	Interfaces       []interfaceTemplate
+	ModuleName       string
+	OutputPath       string
+	VersionSuffix    string
 }
 
 var interfaceTemplateStr = `
@@ -105,7 +108,8 @@ package server
 
 {{.ImportStatements}}
 
-//go:generate mockgen -source=$GOFILE -destination=mock_controller.go -package=server
+//go:generate mockgen -source=$GOFILE -destination=mock_controller.go -package server --build_flags=--mod=mod -imports=models={{.ModuleName}}{{.OutputPath}}/models{{.VersionSuffix}}
+
 
 // Controller defines the interface for the {{.ServiceName}} service.
 type Controller interface {
@@ -117,11 +121,16 @@ type Controller interface {
 }
 `
 
-func generateInterface(packageName, basePath string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
-	moduleName, versionSuffix := extractModuleNameAndVersionSuffix(packageName)
+func generateInterface(packageName, basePath, outputPath string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
+	outputPath = strings.TrimPrefix(outputPath, ".")
+
+	moduleName, versionSuffix := extractModuleNameAndVersionSuffix(packageName, outputPath)
 	tmpl := interfaceFileTemplate{
-		ImportStatements: swagger.ImportStatements([]string{"context", moduleName + "/gen-go/models" + versionSuffix}),
+		ImportStatements: swagger.ImportStatements([]string{"context", moduleName + outputPath + "/models" + versionSuffix}),
 		ServiceName:      serviceName,
+		ModuleName:       moduleName,
+		OutputPath:       outputPath,
+		VersionSuffix:    versionSuffix,
 	}
 
 	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
@@ -188,27 +197,24 @@ func jsonMarshalNoError(i interface{}) string {
 {{end}}
 `
 
-func extractModuleNameAndVersionSuffix(packageName string) (moduleName string, versionSuffix string) {
-	regex, err := regexp.Compile("/v[0-9]/gen-go$|/v[0-9][0-9]/gen-go")
+func extractModuleNameAndVersionSuffix(packageName, outputPath string) (moduleName, versionSuffix string) {
+	vregex, err := regexp.Compile("/v[0-9]$|/v[0-9][0-9]")
 	if err != nil {
-		log.Fatalf("Error getting module name from packageName: %s", err.Error())
+		log.Fatalf("Error checking module name: %s", err.Error())
 	}
-	versionSuffix = strings.TrimSuffix(regex.FindString(packageName), "/gen-go")
-	if bool(regex.MatchString(packageName)) {
-		moduleName = regex.ReplaceAllString(packageName, "")
-	} else {
-		moduleName = strings.TrimSuffix(packageName, "/gen-go")
-	}
+	moduleName = strings.TrimSuffix(packageName, outputPath)
+	versionSuffix = vregex.FindString(moduleName)
+	moduleName = strings.TrimSuffix(moduleName, versionSuffix)
 	return
-
 }
 
-func generateHandlers(packageName, basePath string, s *spec.Swagger, paths *spec.Paths) error {
-	moduleName, versionSuffix := extractModuleNameAndVersionSuffix(packageName)
+func generateHandlers(packageName, basePath, outputPath string, s *spec.Swagger, paths *spec.Paths) error {
+	outputPath = strings.TrimPrefix(outputPath, ".")
+	moduleName, versionSuffix := extractModuleNameAndVersionSuffix(packageName, outputPath)
 	tmpl := handlerFileTemplate{
 		ImportStatements: swagger.ImportStatements([]string{"context", "github.com/gorilla/mux",
 			"github.com/Clever/kayvee-go/v7/logger",
-			"net/http", "strconv", "encoding/json", "strconv", "fmt", moduleName + "/gen-go/models" + versionSuffix,
+			"net/http", "strconv", "encoding/json", "strconv", "fmt", moduleName + outputPath + "/models" + versionSuffix,
 			"github.com/go-openapi/strfmt", "github.com/go-openapi/swag", "io/ioutil", "bytes",
 			"github.com/go-errors/errors", "golang.org/x/xerrors",
 		}),

@@ -13,9 +13,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Clever/wag/samples/v8/gen-go/client"
-	"github.com/Clever/wag/samples/v8/gen-go/models"
-	"github.com/Clever/wag/samples/v8/gen-go/server"
+	"github.com/Clever/wag/samples/gen-go-basic/client/v9"
+	"github.com/Clever/wag/samples/gen-go-basic/models/v9"
+	"github.com/Clever/wag/samples/v9/gen-go-basic/server"
 	kayvee "gopkg.in/Clever/kayvee-go.v6/logger"
 
 	"github.com/afex/hystrix-go/hystrix"

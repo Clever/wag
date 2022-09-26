@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	wcl "github.com/Clever/wag/wagclientlogger"
+	wcl "github.com/Clever/wag/logging/wagclientlogger"
 
 	"github.com/afex/hystrix-go/hystrix"
 	"github.com/donovanhide/eventsource"
