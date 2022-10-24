@@ -17,7 +17,7 @@ require (
 	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/kevinburke/go-bindata v3.24.0+incompatible
 	github.com/pelletier/go-toml v1.9.1 // indirect
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.1
 	golang.org/x/text v0.3.6 // indirect
 )
 
