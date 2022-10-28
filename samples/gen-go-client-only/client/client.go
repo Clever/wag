@@ -274,7 +274,7 @@ func New(ctx context.Context, basePath string, opts ...Option) *WagClient {
 
 // NewFromDiscovery creates a client from the discovery environment variables. This method requires
 // the three env vars: SERVICE_WAG/SAMPLES_HTTP_(HOST/PORT/PROTO) to be set. Otherwise it returns an error.
-func NewFromDiscovery() (*WagClient, error) {
+func NewFromDiscovery(opts ...Option) (*WagClient, error) {
 	url, err := discovery.URL("wag/samples", "default")
 	if err != nil {
 		url, err = discovery.URL("wag/samples", "http") // Added fallback to maintain reverse compatibility
@@ -282,7 +282,7 @@ func NewFromDiscovery() (*WagClient, error) {
 			return nil, err
 		}
 	}
-	return New(context.Background(), url), nil
+	return New(context.Background(), url, opts), nil
 }
 
 // SetRetryPolicy sets a the given retry policy for all requests.
