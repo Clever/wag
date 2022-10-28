@@ -67,8 +67,7 @@ func main() {
 	}
 	flag.Parse()
 	if *conf.versionFlag {
-		// fmt.Println(version)
-		fmt.Println("9.0.2-alpha")
+		fmt.Println(version)
 		os.Exit(0)
 	}
 
