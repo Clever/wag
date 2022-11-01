@@ -21,11 +21,11 @@ import (
 	"github.com/afex/hystrix-go/hystrix"
 
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	"go.opentelemetry.io/otel/sdk/trace/tracetest"
+	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 )
 
 var _ = json.Marshal
@@ -220,10 +220,7 @@ func New(ctx context.Context, basePath string, opts ...Option) *WagClient {
 
 	defaultTransport := http.DefaultTransport
 	defaultLogger := NewLogger("swagger-test-wagclient", wcl.Info)
-	defaultExporter, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
-	if err != nil {
-		fmt.Println(err)
-	}
+	defaultExporter := tracetest.NewNoopExporter()
 	defaultInstrumentor := doNothing
 
 	basePath = strings.TrimSuffix(basePath, "/")
@@ -274,7 +271,7 @@ func New(ctx context.Context, basePath string, opts ...Option) *WagClient {
 
 // NewFromDiscovery creates a client from the discovery environment variables. This method requires
 // the three env vars: SERVICE_SWAGGER_TEST_HTTP_(HOST/PORT/PROTO) to be set. Otherwise it returns an error.
-func NewFromDiscovery() (*WagClient, error) {
+func NewFromDiscovery(opts ...Option) (*WagClient, error) {
 	url, err := discovery.URL("swagger-test", "default")
 	if err != nil {
 		url, err = discovery.URL("swagger-test", "http") // Added fallback to maintain reverse compatibility
@@ -282,7 +279,7 @@ func NewFromDiscovery() (*WagClient, error) {
 			return nil, err
 		}
 	}
-	return New(context.Background(), url), nil
+	return New(context.Background(), url, opts...), nil
 }
 
 // SetRetryPolicy sets a the given retry policy for all requests.

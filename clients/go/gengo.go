@@ -62,10 +62,10 @@ import (
 
 		"go.opentelemetry.io/otel"
 		"go.opentelemetry.io/otel/propagation"
-		"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
+		"go.opentelemetry.io/otel/sdk/trace/tracetest"
 		"go.opentelemetry.io/otel/sdk/resource"
 		sdktrace "go.opentelemetry.io/otel/sdk/trace"
-		semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+		semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 		
 )
 
@@ -267,10 +267,7 @@ func New(ctx context.Context, basePath string, opts ...Option) *WagClient {
 
 	defaultTransport := http.DefaultTransport
 	defaultLogger := NewLogger("{{.ServiceName}}-wagclient", wcl.Info)
-	defaultExporter, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
-	if err != nil {
-		fmt.Println(err)
-	}
+	defaultExporter := tracetest.NewNoopExporter()
 	defaultInstrumentor := doNothing
 
 
@@ -323,7 +320,7 @@ func New(ctx context.Context, basePath string, opts ...Option) *WagClient {
 
 // NewFromDiscovery creates a client from the discovery environment variables. This method requires
 // the three env vars: SERVICE_{{.FormattedServiceName}}_HTTP_(HOST/PORT/PROTO) to be set. Otherwise it returns an error.
-func NewFromDiscovery() (*WagClient, error) {
+func NewFromDiscovery(opts ...Option) (*WagClient, error) {
 	url, err := discovery.URL("{{.ServiceName}}", "default")
 	if err != nil {
 		url, err = discovery.URL("{{.ServiceName}}", "http") // Added fallback to maintain reverse compatibility
@@ -331,7 +328,7 @@ func NewFromDiscovery() (*WagClient, error) {
 			return nil, err
 		}
 	}
-	return New(context.Background(), url), nil
+	return New(context.Background(), url, opts...), nil
 }
 
 // SetRetryPolicy sets a the given retry policy for all requests.
@@ -472,8 +469,6 @@ module ` + codeTemplate.ModuleName + codeTemplate.OutputPath + `/client` + codeT
 go 1.16
 
 require (
-	//removed this because it can never get the right version unless I tag it first. Adding with: go get ` + codeTemplate.ModuleName + codeTemplate.OutputPath + `/models@` + codeTemplate.Version + `
-	//` + codeTemplate.ModuleName + codeTemplate.OutputPath + `/models` + codeTemplate.VersionSuffix + `
 	github.com/Clever/discovery-go v1.8.1
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b

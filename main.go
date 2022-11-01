@@ -53,6 +53,7 @@ type config struct {
 var version string
 
 func main() {
+
 	conf := config{
 		swaggerFile:        flag.String("file", "swagger.yml", "the spec file to use"),
 		goPackageName:      flag.String("go-package", "", "package of the generated go code"),
