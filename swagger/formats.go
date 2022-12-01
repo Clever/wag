@@ -3,7 +3,7 @@ package swagger
 import (
 	"github.com/go-openapi/strfmt"
 
-	"gopkg.in/mgo.v2/bson"
+	"encoding/hex"
 )
 
 // InitCustomFormats adds wag's custom formats to the global go-openapi/strfmt Default registry.
@@ -12,8 +12,12 @@ func InitCustomFormats() {
 	strfmt.Default.Add("mongo-id", &m, isMongoID)
 }
 
-func isMongoID(str string) bool {
-	return bson.IsObjectIdHex(str)
+func isMongoID(s string) bool {
+	if len(s) != 24 {
+		return false
+	}
+	_, err := hex.DecodeString(s)
+	return err == nil
 }
 
 type mongoID string
