@@ -467,6 +467,8 @@ func (t EventTable) scanEventsBySkAndData(ctx context.Context, input db.ScanEven
 	return err
 }
 
+// WTH
+
 // encodeEvent encodes a Event as a DynamoDB map of attribute values.
 func encodeEvent(m models.Event) (map[string]*dynamodb.AttributeValue, error) {
 	return dynamodbattribute.MarshalMap(ddbEvent{

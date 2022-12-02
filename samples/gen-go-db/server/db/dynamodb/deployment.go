@@ -530,6 +530,8 @@ func (t DeploymentTable) scanDeploymentsByEnvAppAndDate(ctx context.Context, inp
 	return err
 }
 
+// WTH
+
 func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context, input db.GetDeploymentsByEnvironmentAndDateInput, fn func(m *models.Deployment, lastDeployment bool) bool) error {
 	if input.DateStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.DateStartingAt or input.StartingAfter")
@@ -623,6 +625,8 @@ func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context,
 	return nil
 }
 
+// WTH
+
 func (t DeploymentTable) getDeploymentByVersion(ctx context.Context, version string) (*models.Deployment, error) {
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.name()),
@@ -705,6 +709,8 @@ func (t DeploymentTable) scanDeploymentsByVersion(ctx context.Context, input db.
 	}
 	return err
 }
+
+// WTH
 
 // encodeDeployment encodes a Deployment as a DynamoDB map of attribute values.
 func encodeDeployment(m models.Deployment) (map[string]*dynamodb.AttributeValue, error) {

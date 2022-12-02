@@ -483,6 +483,8 @@ func (t TeacherSharingRuleTable) scanTeacherSharingRulesByDistrictAndSchoolTeach
 	return err
 }
 
+// WTH
+
 // encodeTeacherSharingRule encodes a TeacherSharingRule as a DynamoDB map of attribute values.
 func encodeTeacherSharingRule(m models.TeacherSharingRule) (map[string]*dynamodb.AttributeValue, error) {
 	val, err := dynamodbattribute.MarshalMap(ddbTeacherSharingRule{

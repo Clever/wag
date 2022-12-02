@@ -511,6 +511,8 @@ func (t ThingWithEnumHashKeyTable) scanThingWithEnumHashKeysByBranchAndDate2(ctx
 	return err
 }
 
+// WTH
+
 // encodeThingWithEnumHashKey encodes a ThingWithEnumHashKey as a DynamoDB map of attribute values.
 func encodeThingWithEnumHashKey(m models.ThingWithEnumHashKey) (map[string]*dynamodb.AttributeValue, error) {
 	return dynamodbattribute.MarshalMap(ddbThingWithEnumHashKey{

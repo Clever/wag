@@ -557,6 +557,8 @@ func (t ThingTable) scanThingsByID(ctx context.Context, input db.ScanThingsByIDI
 	return err
 }
 
+// WTH
+
 func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.GetThingsByNameAndCreatedAtInput, fn func(m *models.Thing, lastThing bool) bool) error {
 	if input.CreatedAtStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.CreatedAtStartingAt or input.StartingAfter")
@@ -704,6 +706,8 @@ func (t ThingTable) scanThingsByNameAndCreatedAt(ctx context.Context, input db.S
 	}
 	return err
 }
+
+// WTH
 
 func (t ThingTable) getThingsByNameAndRangeNullable(ctx context.Context, input db.GetThingsByNameAndRangeNullableInput, fn func(m *models.Thing, lastThing bool) bool) error {
 	if input.RangeNullableStartingAt != nil && input.StartingAfter != nil {
@@ -853,6 +857,8 @@ func (t ThingTable) scanThingsByNameAndRangeNullable(ctx context.Context, input 
 	return err
 }
 
+// WTH
+
 func (t ThingTable) getThingsByHashNullableAndName(ctx context.Context, input db.GetThingsByHashNullableAndNameInput, fn func(m *models.Thing, lastThing bool) bool) error {
 	if input.NameStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.NameStartingAt or input.StartingAfter")
@@ -948,6 +954,8 @@ func (t ThingTable) getThingsByHashNullableAndName(ctx context.Context, input db
 
 	return nil
 }
+
+// WTH
 
 // encodeThing encodes a Thing as a DynamoDB map of attribute values.
 func encodeThing(m models.Thing) (map[string]*dynamodb.AttributeValue, error) {

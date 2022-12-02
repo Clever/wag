@@ -386,6 +386,8 @@ func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseComposite
 	return err
 }
 
+// WTH
+
 func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx context.Context, input db.GetThingWithMultiUseCompositeAttributesByFourAndOneTwoInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error {
 	if input.StartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.StartingAt or input.StartingAfter")
@@ -529,6 +531,8 @@ func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseComposite
 	}
 	return err
 }
+
+// WTH
 
 // encodeThingWithMultiUseCompositeAttribute encodes a ThingWithMultiUseCompositeAttribute as a DynamoDB map of attribute values.
 func encodeThingWithMultiUseCompositeAttribute(m models.ThingWithMultiUseCompositeAttribute) (map[string]*dynamodb.AttributeValue, error) {

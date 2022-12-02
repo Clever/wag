@@ -1023,6 +1023,7 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}sBy{{ $computedIndexName }}(c
   return err
 }
 {{- end }}
+{{- end }}
 
 {{- if transactionsEnabled $xdbConfig }}
 {{- range $transactWithSchemaName := $xdbConfig.EnableTransactions }}
@@ -1091,8 +1092,6 @@ func buildCondExpr(conditions *expression.ConditionBuilder) (*string, map[string
 	}
   return condExpr, exprVals, exprNames, nil
 }
-
-{{- end }}
 
 {{ end }}
 

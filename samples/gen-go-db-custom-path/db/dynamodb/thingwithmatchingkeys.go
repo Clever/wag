@@ -478,6 +478,8 @@ func (t ThingWithMatchingKeysTable) scanThingWithMatchingKeyssByAssocTypeIDAndCr
 	return err
 }
 
+// WTH
+
 // encodeThingWithMatchingKeys encodes a ThingWithMatchingKeys as a DynamoDB map of attribute values.
 func encodeThingWithMatchingKeys(m models.ThingWithMatchingKeys) (map[string]*dynamodb.AttributeValue, error) {
 	val, err := dynamodbattribute.MarshalMap(ddbThingWithMatchingKeys{
