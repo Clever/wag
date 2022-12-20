@@ -171,8 +171,8 @@ func (se exporterOption) apply(opts *options) {
 //----------------------BEGIN LOGGING RELATED FUNCTIONS----------------------
 
 
-//NewLogger creates a logger for id that produces logs at and below the indicated level.
-//Level indicated the level at and below which logs are created.
+// NewLogger creates a logger for id that produces logs at and below the indicated level.
+// level here indicates the level at and below which logs are created.
 func NewLogger(id string, level wcl.LogLevel) PrintlnLogger {
 	return PrintlnLogger{id: id, level: level}
 }
