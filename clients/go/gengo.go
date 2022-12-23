@@ -288,7 +288,8 @@ func New(ctx context.Context, basePath string, opts ...Option) *WagClient {
 	}
 
 
-	samplingProbability := 1.0 // TODO: Put back logic to set this to 1 for local, 0.1 otherwise etc.
+	samplingProbability := 1.0 // TODO: Hard setting this to one for now, because right now 
+	// it is essentially ignored as the sidecar is determining the sample rate it forwards on to DD.
 	// samplingProbability := determineSampling()
 
 	tp := newTracerProvider(options.exporter, samplingProbability)
