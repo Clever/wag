@@ -7,7 +7,6 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -127,8 +126,8 @@ func (se exporterOption) apply(opts *options) {
 
 //----------------------BEGIN LOGGING RELATED FUNCTIONS----------------------
 
-//NewLogger creates a logger for id that produces logs at and below the indicated level.
-//Level indicated the level at and below which logs are created.
+// NewLogger creates a logger for id that produces logs at and below the indicated level.
+// level here indicates the level at and below which logs are created.
 func NewLogger(id string, level wcl.LogLevel) PrintlnLogger {
 	return PrintlnLogger{id: id, level: level}
 }
@@ -240,7 +239,8 @@ func New(ctx context.Context, basePath string, opts ...Option) *WagClient {
 		o.apply(&options)
 	}
 
-	samplingProbability := 1.0 // TODO: Put back logic to set this to 1 for local, 0.1 otherwise etc.
+	samplingProbability := 1.0 // TODO: Hard setting this to one for now, because right now
+	// it is essentially ignored as the sidecar is determining the sample rate it forwards on to DD.
 	// samplingProbability := determineSampling()
 
 	tp := newTracerProvider(options.exporter, samplingProbability)

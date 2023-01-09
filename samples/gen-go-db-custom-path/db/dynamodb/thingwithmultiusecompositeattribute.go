@@ -529,8 +529,6 @@ func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseComposite
 	return err
 }
 
-// WTH
-
 // encodeThingWithMultiUseCompositeAttribute encodes a ThingWithMultiUseCompositeAttribute as a DynamoDB map of attribute values.
 func encodeThingWithMultiUseCompositeAttribute(m models.ThingWithMultiUseCompositeAttribute) (map[string]*dynamodb.AttributeValue, error) {
 	val, err := dynamodbattribute.MarshalMap(ddbThingWithMultiUseCompositeAttribute{

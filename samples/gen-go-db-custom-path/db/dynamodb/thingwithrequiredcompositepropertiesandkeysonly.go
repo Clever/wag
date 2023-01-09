@@ -351,8 +351,6 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) scanThingWithRequi
 	return err
 }
 
-// WTH
-
 // encodeThingWithRequiredCompositePropertiesAndKeysOnly encodes a ThingWithRequiredCompositePropertiesAndKeysOnly as a DynamoDB map of attribute values.
 func encodeThingWithRequiredCompositePropertiesAndKeysOnly(m models.ThingWithRequiredCompositePropertiesAndKeysOnly) (map[string]*dynamodb.AttributeValue, error) {
 	val, err := dynamodbattribute.MarshalMap(ddbThingWithRequiredCompositePropertiesAndKeysOnly{

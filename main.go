@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/spec"
@@ -92,8 +91,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed processing the swagger spec: %s", err)
 	}
-	fmt.Println("From main: ", swag.StringValue(conf.outputPath))
-	spew.Dump(conf)
 	if conf.generateGoModels {
 		if err := generateGoModels(*conf.goPackageName, conf.goAbsolutePackagePath, *conf.outputPath, swaggerSpec); err != nil {
 			log.Fatal(err.Error())

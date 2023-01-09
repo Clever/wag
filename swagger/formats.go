@@ -3,7 +3,7 @@ package swagger
 import (
 	"encoding/hex"
 
-	"encoding/hex"
+	"github.com/go-openapi/strfmt"
 )
 
 // InitCustomFormats adds wag's custom formats to the global go-openapi/strfmt Default registry.

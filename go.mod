@@ -5,7 +5,6 @@ go 1.16
 require (
 	github.com/Clever/go-utils v0.0.0-20180917210021-2dac0ec6f2ac
 	github.com/awslabs/goformation/v2 v2.3.1
-	github.com/davecgh/go-spew v1.1.1
 	github.com/go-openapi/errors v0.19.4
 	github.com/go-openapi/jsonreference v0.20.0
 	github.com/go-openapi/loads v0.19.7

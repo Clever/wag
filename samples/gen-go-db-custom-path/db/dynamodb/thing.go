@@ -946,8 +946,6 @@ func (t ThingTable) getThingsByHashNullableAndName(ctx context.Context, input db
 	return nil
 }
 
-// WTH
-
 // encodeThing encodes a Thing as a DynamoDB map of attribute values.
 func encodeThing(m models.Thing) (map[string]*dynamodb.AttributeValue, error) {
 	return dynamodbattribute.MarshalMap(ddbThing{

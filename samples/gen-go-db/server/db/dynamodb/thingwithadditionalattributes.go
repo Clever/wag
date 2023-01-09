@@ -967,8 +967,6 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByH
 	return nil
 }
 
-// WTH
-
 // encodeThingWithAdditionalAttributes encodes a ThingWithAdditionalAttributes as a DynamoDB map of attribute values.
 func encodeThingWithAdditionalAttributes(m models.ThingWithAdditionalAttributes) (map[string]*dynamodb.AttributeValue, error) {
 	return dynamodbattribute.MarshalMap(ddbThingWithAdditionalAttributes{

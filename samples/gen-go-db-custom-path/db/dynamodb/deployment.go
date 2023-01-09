@@ -704,8 +704,6 @@ func (t DeploymentTable) scanDeploymentsByVersion(ctx context.Context, input db.
 	return err
 }
 
-// WTH
-
 // encodeDeployment encodes a Deployment as a DynamoDB map of attribute values.
 func encodeDeployment(m models.Deployment) (map[string]*dynamodb.AttributeValue, error) {
 	val, err := dynamodbattribute.MarshalMap(ddbDeployment{

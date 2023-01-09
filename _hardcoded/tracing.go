@@ -12,7 +12,6 @@ import (
 
 	"github.com/Clever/kayvee-go/v7/logger"
 
-	// "github.com/davecgh/go-spew/spew"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -71,7 +70,6 @@ func newTracerProvider(exporter sdktrace.SpanExporter, resource *resource.Resour
 		}
 		samplingProbability = samplingProbabilityFromEnv
 	}
-	fmt.Println("samplingProbability:", samplingProbability)
 
 	tp := sdktrace.NewTracerProvider(
 		// We use the default ID generator. In order for sampling to work (at least with this sampler)
@@ -112,7 +110,6 @@ func SetupGlobalTraceProviderAndExporterForTest() (*tracetest.InMemoryExporter, 
 // Right now we only support logging IDs in the format that Datadog expects.
 func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 	otlmux := otelmux.Middleware(serviceName, otelmux.WithPropagators(otel.GetTextMapPropagator()))
-	fmt.Println("Adding mux server middleware")
 	return func(h http.Handler) http.Handler {
 		return otlmux(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			var rid string
