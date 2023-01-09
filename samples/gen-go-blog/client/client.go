@@ -7,6 +7,7 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -441,7 +442,8 @@ func (c *WagClient) doPostGradeFileForStudentRequest(ctx context.Context, req *h
 		return &output
 
 	default:
-		return &models.InternalError{Message: fmt.Sprintf("Unknown status code %v", resp.StatusCode)}
+		bs, _ := ioutil.ReadAll(resp.Body)
+		return models.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
 	}
 }
 
@@ -544,7 +546,8 @@ func (c *WagClient) doGetSectionsForStudentRequest(ctx context.Context, req *htt
 		return nil, &output
 
 	default:
-		return nil, &models.InternalError{Message: fmt.Sprintf("Unknown status code %v", resp.StatusCode)}
+		bs, _ := ioutil.ReadAll(resp.Body)
+		return nil, models.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
 	}
 }
 
@@ -647,7 +650,8 @@ func (c *WagClient) doPostSectionsForStudentRequest(ctx context.Context, req *ht
 		return nil, &output
 
 	default:
-		return nil, &models.InternalError{Message: fmt.Sprintf("Unknown status code %v", resp.StatusCode)}
+		bs, _ := ioutil.ReadAll(resp.Body)
+		return nil, models.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
 	}
 }
 

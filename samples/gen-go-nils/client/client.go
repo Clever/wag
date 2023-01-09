@@ -7,6 +7,7 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -455,7 +456,8 @@ func (c *WagClient) doNilCheckRequest(ctx context.Context, req *http.Request, he
 		return &output
 
 	default:
-		return &models.InternalError{Message: fmt.Sprintf("Unknown status code %v", resp.StatusCode)}
+		bs, _ := ioutil.ReadAll(resp.Body)
+		return models.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
 	}
 }
 

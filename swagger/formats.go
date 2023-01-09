@@ -1,7 +1,7 @@
 package swagger
 
 import (
-	"github.com/go-openapi/strfmt"
+	"encoding/hex"
 
 	"encoding/hex"
 )

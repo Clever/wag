@@ -105,6 +105,11 @@ declare namespace SwaggerTest {
   message?: string;
 };
     
+    type UnknownResponse = {
+  body?: string;
+  statusCode?: number;
+};
+    
   }
 }
 

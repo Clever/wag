@@ -911,15 +911,14 @@ func parseResponseCode(s *spec.Swagger, op *spec.Operation, capOpID string) stri
 
 	successReturn := buildSuccessReturn(s, op)
 
-	// TODO: at some point should encapsulate this behind an interface on the operation
-	errorType, _ := swagger.OutputType(s, op, 500)
 	buf.WriteString(fmt.Sprintf(`
 	default:
-		return %s&%s{Message: fmt.Sprintf("Unknown status code %%%%%%%%v", resp.StatusCode)}
+		bs, _ := ioutil.ReadAll(resp.Body)
+ 		return %smodels.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
 	}
 }
 
-`, successReturn, errorType))
+`, successReturn))
 
 	return buf.String()
 }

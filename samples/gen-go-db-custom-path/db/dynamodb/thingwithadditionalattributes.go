@@ -577,9 +577,6 @@ func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributessBy
 	}
 	return err
 }
-
-// WTH
-
 func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByNameAndCreatedAt(ctx context.Context, input db.GetThingWithAdditionalAttributessByNameAndCreatedAtInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
 	if input.CreatedAtStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.CreatedAtStartingAt or input.StartingAfter")
@@ -727,9 +724,6 @@ func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributessBy
 	}
 	return err
 }
-
-// WTH
-
 func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByNameAndRangeNullable(ctx context.Context, input db.GetThingWithAdditionalAttributessByNameAndRangeNullableInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
 	if input.RangeNullableStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.RangeNullableStartingAt or input.StartingAfter")
@@ -877,9 +871,6 @@ func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributessBy
 	}
 	return err
 }
-
-// WTH
-
 func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByHashNullableAndName(ctx context.Context, input db.GetThingWithAdditionalAttributessByHashNullableAndNameInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
 	if input.NameStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.NameStartingAt or input.StartingAfter")

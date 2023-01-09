@@ -82,6 +82,8 @@ func main() {
 	}
 	swaggerSpec := *doc.Spec()
 
+	injectDefaultDefinitions(&swaggerSpec)
+
 	if err := validation.Validate(*doc, conf.generateJSClient); err != nil {
 		log.Fatalf("Swagger file not valid: %s", err)
 	}
@@ -355,4 +357,25 @@ func getModulePackageName(modFile *os.File, outputPath string) string {
 	moduleName = strings.TrimSpace(moduleName)
 
 	return fmt.Sprintf("%v/%v", moduleName, outputPath)
+}
+
+// injectDefaultDefinitions injects default definitions
+func injectDefaultDefinitions(swaggerSpec *spec.Swagger) {
+	swaggerSpec.Definitions["UnknownResponse"] = spec.Schema{
+		SchemaProps: spec.SchemaProps{
+			Type: spec.StringOrArray{"object"},
+			Properties: map[string]spec.Schema{
+				"statusCode": {
+					SchemaProps: spec.SchemaProps{
+						Type: spec.StringOrArray{"integer"},
+					},
+				},
+				"body": {
+					SchemaProps: spec.SchemaProps{
+						Type: spec.StringOrArray{"string"},
+					},
+				},
+			},
+		},
+	}
 }

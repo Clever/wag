@@ -105,6 +105,11 @@ declare namespace NilTest {
   optional?: string;
 };
     
+    type UnknownResponse = {
+  body?: string;
+  statusCode?: number;
+};
+    
   }
 }
 

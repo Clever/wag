@@ -216,6 +216,11 @@ declare namespace WagSamples {
   message?: string;
 };
     
+    type UnknownResponse = {
+  body?: string;
+  statusCode?: number;
+};
+    
   }
 }
 

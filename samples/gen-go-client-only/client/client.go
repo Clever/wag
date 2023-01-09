@@ -7,6 +7,7 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -533,7 +534,8 @@ func (c *WagClient) doGetAuthorsRequest(ctx context.Context, req *http.Request, 
 		return nil, "", &output
 
 	default:
-		return nil, "", &models.InternalError{Message: fmt.Sprintf("Unknown status code %v", resp.StatusCode)}
+		bs, _ := ioutil.ReadAll(resp.Body)
+		return nil, "", models.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
 	}
 }
 
@@ -744,7 +746,8 @@ func (c *WagClient) doGetAuthorsWithPutRequest(ctx context.Context, req *http.Re
 		return nil, "", &output
 
 	default:
-		return nil, "", &models.InternalError{Message: fmt.Sprintf("Unknown status code %v", resp.StatusCode)}
+		bs, _ := ioutil.ReadAll(resp.Body)
+		return nil, "", models.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
 	}
 }
 
@@ -937,7 +940,8 @@ func (c *WagClient) doGetBooksRequest(ctx context.Context, req *http.Request, he
 		return nil, "", &output
 
 	default:
-		return nil, "", &models.InternalError{Message: fmt.Sprintf("Unknown status code %v", resp.StatusCode)}
+		bs, _ := ioutil.ReadAll(resp.Body)
+		return nil, "", models.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
 	}
 }
 
@@ -1045,7 +1049,8 @@ func (c *WagClient) doCreateBookRequest(ctx context.Context, req *http.Request, 
 		return nil, &output
 
 	default:
-		return nil, &models.InternalError{Message: fmt.Sprintf("Unknown status code %v", resp.StatusCode)}
+		bs, _ := ioutil.ReadAll(resp.Body)
+		return nil, models.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
 	}
 }
 
@@ -1153,7 +1158,8 @@ func (c *WagClient) doPutBookRequest(ctx context.Context, req *http.Request, hea
 		return nil, &output
 
 	default:
-		return nil, &models.InternalError{Message: fmt.Sprintf("Unknown status code %v", resp.StatusCode)}
+		bs, _ := ioutil.ReadAll(resp.Body)
+		return nil, models.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
 	}
 }
 
@@ -1278,7 +1284,8 @@ func (c *WagClient) doGetBookByIDRequest(ctx context.Context, req *http.Request,
 		return nil, &output
 
 	default:
-		return nil, &models.InternalError{Message: fmt.Sprintf("Unknown status code %v", resp.StatusCode)}
+		bs, _ := ioutil.ReadAll(resp.Body)
+		return nil, models.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
 	}
 }
 
@@ -1390,7 +1397,8 @@ func (c *WagClient) doGetBookByID2Request(ctx context.Context, req *http.Request
 		return nil, &output
 
 	default:
-		return nil, &models.InternalError{Message: fmt.Sprintf("Unknown status code %v", resp.StatusCode)}
+		bs, _ := ioutil.ReadAll(resp.Body)
+		return nil, models.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
 	}
 }
 
@@ -1482,7 +1490,8 @@ func (c *WagClient) doHealthCheckRequest(ctx context.Context, req *http.Request,
 		return &output
 
 	default:
-		return &models.InternalError{Message: fmt.Sprintf("Unknown status code %v", resp.StatusCode)}
+		bs, _ := ioutil.ReadAll(resp.Body)
+		return models.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
 	}
 }
 
