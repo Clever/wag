@@ -47,12 +47,12 @@ interface AddressOptions {
   address: string;
 }
 
-type WagSamplesOptions = (DiscoveryOptions | AddressOptions) & GenericOptions;
+type SwaggerTestOptions = (DiscoveryOptions | AddressOptions) & GenericOptions;
 
-import models = WagSamples.Models
+import models = SwaggerTest.Models
 
-declare class WagSamples {
-  constructor(options: WagSamplesOptions);
+declare class SwaggerTest {
+  constructor(options: SwaggerTestOptions);
 
   close(): void;
   
@@ -77,7 +77,7 @@ declare class WagSamples {
   
 }
 
-declare namespace WagSamples {
+declare namespace SwaggerTest {
   const RetryPolicies: {
     Single: RetryPolicy;
     Exponential: RetryPolicy;
@@ -224,4 +224,4 @@ declare namespace WagSamples {
   }
 }
 
-export = WagSamples;
+export = SwaggerTest;

@@ -1,46 +1,46 @@
-<a name="module_wag/samples"></a>
+<a name="module_swagger-test"></a>
 
-## wag/samples
-wag/samples client library.
+## swagger-test
+swagger-test client library.
 
 
-* [wag/samples](#module_wag/samples)
-    * [WagSamples](#exp_module_wag/samples--WagSamples) ⏏
-        * [new WagSamples(options)](#new_module_wag/samples--WagSamples_new)
+* [swagger-test](#module_swagger-test)
+    * [SwaggerTest](#exp_module_swagger-test--SwaggerTest) ⏏
+        * [new SwaggerTest(options)](#new_module_swagger-test--SwaggerTest_new)
         * _instance_
-            * [.close()](#module_wag/samples--WagSamples+close)
-            * [.getAuthors(params, [options], [cb])](#module_wag/samples--WagSamples+getAuthors) ⇒ <code>Promise</code>
-            * [.getAuthorsIter(params, [options])](#module_wag/samples--WagSamples+getAuthorsIter) ⇒ <code>Object</code> \| <code>function</code> \| <code>function</code> \| <code>function</code> \| <code>function</code>
-            * [.getAuthorsWithPut(params, [options], [cb])](#module_wag/samples--WagSamples+getAuthorsWithPut) ⇒ <code>Promise</code>
-            * [.getAuthorsWithPutIter(params, [options])](#module_wag/samples--WagSamples+getAuthorsWithPutIter) ⇒ <code>Object</code> \| <code>function</code> \| <code>function</code> \| <code>function</code> \| <code>function</code>
-            * [.getBooks(params, [options], [cb])](#module_wag/samples--WagSamples+getBooks) ⇒ <code>Promise</code>
-            * [.getBooksIter(params, [options])](#module_wag/samples--WagSamples+getBooksIter) ⇒ <code>Object</code> \| <code>function</code> \| <code>function</code> \| <code>function</code> \| <code>function</code>
-            * [.createBook(newBook, [options], [cb])](#module_wag/samples--WagSamples+createBook) ⇒ <code>Promise</code>
-            * [.putBook(newBook, [options], [cb])](#module_wag/samples--WagSamples+putBook) ⇒ <code>Promise</code>
-            * [.getBookByID(params, [options], [cb])](#module_wag/samples--WagSamples+getBookByID) ⇒ <code>Promise</code>
-            * [.getBookByID2(id, [options], [cb])](#module_wag/samples--WagSamples+getBookByID2) ⇒ <code>Promise</code>
-            * [.healthCheck([options], [cb])](#module_wag/samples--WagSamples+healthCheck) ⇒ <code>Promise</code>
+            * [.close()](#module_swagger-test--SwaggerTest+close)
+            * [.getAuthors(params, [options], [cb])](#module_swagger-test--SwaggerTest+getAuthors) ⇒ <code>Promise</code>
+            * [.getAuthorsIter(params, [options])](#module_swagger-test--SwaggerTest+getAuthorsIter) ⇒ <code>Object</code> \| <code>function</code> \| <code>function</code> \| <code>function</code> \| <code>function</code>
+            * [.getAuthorsWithPut(params, [options], [cb])](#module_swagger-test--SwaggerTest+getAuthorsWithPut) ⇒ <code>Promise</code>
+            * [.getAuthorsWithPutIter(params, [options])](#module_swagger-test--SwaggerTest+getAuthorsWithPutIter) ⇒ <code>Object</code> \| <code>function</code> \| <code>function</code> \| <code>function</code> \| <code>function</code>
+            * [.getBooks(params, [options], [cb])](#module_swagger-test--SwaggerTest+getBooks) ⇒ <code>Promise</code>
+            * [.getBooksIter(params, [options])](#module_swagger-test--SwaggerTest+getBooksIter) ⇒ <code>Object</code> \| <code>function</code> \| <code>function</code> \| <code>function</code> \| <code>function</code>
+            * [.createBook(newBook, [options], [cb])](#module_swagger-test--SwaggerTest+createBook) ⇒ <code>Promise</code>
+            * [.putBook(newBook, [options], [cb])](#module_swagger-test--SwaggerTest+putBook) ⇒ <code>Promise</code>
+            * [.getBookByID(params, [options], [cb])](#module_swagger-test--SwaggerTest+getBookByID) ⇒ <code>Promise</code>
+            * [.getBookByID2(id, [options], [cb])](#module_swagger-test--SwaggerTest+getBookByID2) ⇒ <code>Promise</code>
+            * [.healthCheck([options], [cb])](#module_swagger-test--SwaggerTest+healthCheck) ⇒ <code>Promise</code>
         * _static_
-            * [.RetryPolicies](#module_wag/samples--WagSamples.RetryPolicies)
-                * [.Exponential](#module_wag/samples--WagSamples.RetryPolicies.Exponential)
-                * [.Single](#module_wag/samples--WagSamples.RetryPolicies.Single)
-                * [.None](#module_wag/samples--WagSamples.RetryPolicies.None)
-            * [.Errors](#module_wag/samples--WagSamples.Errors)
-                * [.BadRequest](#module_wag/samples--WagSamples.Errors.BadRequest) ⇐ <code>Error</code>
-                * [.InternalError](#module_wag/samples--WagSamples.Errors.InternalError) ⇐ <code>Error</code>
-                * [.Unathorized](#module_wag/samples--WagSamples.Errors.Unathorized) ⇐ <code>Error</code>
-                * [.Error](#module_wag/samples--WagSamples.Errors.Error) ⇐ <code>Error</code>
-            * [.DefaultCircuitOptions](#module_wag/samples--WagSamples.DefaultCircuitOptions)
+            * [.RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)
+                * [.Exponential](#module_swagger-test--SwaggerTest.RetryPolicies.Exponential)
+                * [.Single](#module_swagger-test--SwaggerTest.RetryPolicies.Single)
+                * [.None](#module_swagger-test--SwaggerTest.RetryPolicies.None)
+            * [.Errors](#module_swagger-test--SwaggerTest.Errors)
+                * [.BadRequest](#module_swagger-test--SwaggerTest.Errors.BadRequest) ⇐ <code>Error</code>
+                * [.InternalError](#module_swagger-test--SwaggerTest.Errors.InternalError) ⇐ <code>Error</code>
+                * [.Unathorized](#module_swagger-test--SwaggerTest.Errors.Unathorized) ⇐ <code>Error</code>
+                * [.Error](#module_swagger-test--SwaggerTest.Errors.Error) ⇐ <code>Error</code>
+            * [.DefaultCircuitOptions](#module_swagger-test--SwaggerTest.DefaultCircuitOptions)
 
-<a name="exp_module_wag/samples--WagSamples"></a>
+<a name="exp_module_swagger-test--SwaggerTest"></a>
 
-### WagSamples ⏏
-wag/samples client
+### SwaggerTest ⏏
+swagger-test client
 
 **Kind**: Exported class  
-<a name="new_module_wag/samples--WagSamples_new"></a>
+<a name="new_module_swagger-test--SwaggerTest_new"></a>
 
-#### new WagSamples(options)
+#### new SwaggerTest(options)
 Create a new client object.
 
 
@@ -51,8 +51,8 @@ Create a new client object.
 | [options.discovery] | <code>bool</code> |  | Use clever-discovery to locate the server. Must provide this or the address argument |
 | [options.timeout] | <code>number</code> |  | The timeout to use for all client requests, in milliseconds. This can be overridden on a per-request basis. Default is 5000ms. |
 | [options.keepalive] | <code>bool</code> |  | Set keepalive to true for client requests. This sets the forever: true attribute in request. Defaults to true. |
-| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_wag/samples--WagSamples.RetryPolicies) | <code>RetryPolicies.Single</code> | The logic to determine which requests to retry, as well as how many times to retry. |
-| [options.logger] | <code>module:kayvee.Logger</code> | <code>logger.New(&quot;wag/samples-wagclient&quot;)</code> | The Kayvee logger to use in the client. |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | <code>RetryPolicies.Single</code> | The logic to determine which requests to retry, as well as how many times to retry. |
+| [options.logger] | <code>module:kayvee.Logger</code> | <code>logger.New(&quot;swagger-test-wagclient&quot;)</code> | The Kayvee logger to use in the client. |
 | [options.circuit] | <code>Object</code> |  | Options for constructing the client's circuit breaker. |
 | [options.circuit.forceClosed] | <code>bool</code> |  | When set to true the circuit will always be closed. Default: true. |
 | [options.circuit.maxConcurrentRequests] | <code>number</code> |  | the maximum number of concurrent requests the client can make at the same time. Default: 100. |
@@ -60,21 +60,21 @@ Create a new client object.
 | [options.circuit.sleepWindow] | <code>number</code> |  | how long, in milliseconds, to wait after a circuit opens before testing for recovery. Default: 5000. |
 | [options.circuit.errorPercentThreshold] | <code>number</code> |  | the threshold to place on the rolling error rate. Once the error rate exceeds this percentage, the circuit opens. Default: 90. |
 
-<a name="module_wag/samples--WagSamples+close"></a>
+<a name="module_swagger-test--SwaggerTest+close"></a>
 
-#### wagSamples.close()
+#### swaggerTest.close()
 Releases handles used in client
 
-**Kind**: instance method of [<code>WagSamples</code>](#exp_module_wag/samples--WagSamples)  
-<a name="module_wag/samples--WagSamples+getAuthors"></a>
+**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
+<a name="module_swagger-test--SwaggerTest+getAuthors"></a>
 
-#### wagSamples.getAuthors(params, [options], [cb]) ⇒ <code>Promise</code>
+#### swaggerTest.getAuthors(params, [options], [cb]) ⇒ <code>Promise</code>
 Gets authors
 
-**Kind**: instance method of [<code>WagSamples</code>](#exp_module_wag/samples--WagSamples)  
+**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 **Fulfill**: <code>Object</code>  
-**Reject**: [<code>BadRequest</code>](#module_wag/samples--WagSamples.Errors.BadRequest)  
-**Reject**: [<code>InternalError</code>](#module_wag/samples--WagSamples.Errors.InternalError)  
+**Reject**: [<code>BadRequest</code>](#module_swagger-test--SwaggerTest.Errors.BadRequest)  
+**Reject**: [<code>InternalError</code>](#module_swagger-test--SwaggerTest.Errors.InternalError)  
 **Reject**: <code>Error</code>  
 
 | Param | Type | Description |
@@ -84,15 +84,15 @@ Gets authors
 | [params.startingAfter] | <code>string</code> |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_wag/samples--WagSamples.RetryPolicies) | A request specific retryPolicy |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
-<a name="module_wag/samples--WagSamples+getAuthorsIter"></a>
+<a name="module_swagger-test--SwaggerTest+getAuthorsIter"></a>
 
-#### wagSamples.getAuthorsIter(params, [options]) ⇒ <code>Object</code> \| <code>function</code> \| <code>function</code> \| <code>function</code> \| <code>function</code>
+#### swaggerTest.getAuthorsIter(params, [options]) ⇒ <code>Object</code> \| <code>function</code> \| <code>function</code> \| <code>function</code> \| <code>function</code>
 Gets authors
 
-**Kind**: instance method of [<code>WagSamples</code>](#exp_module_wag/samples--WagSamples)  
+**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 **Returns**: <code>Object</code> - iter<code>function</code> - iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array<code>function</code> - iter.toArray - returns a promise to the resources as an array<code>function</code> - iter.forEach - takes in a function, applies it to each resource<code>function</code> - iter.forEachAsync - takes in an async function, applies it to each resource  
 
 | Param | Type | Description |
@@ -102,17 +102,17 @@ Gets authors
 | [params.startingAfter] | <code>string</code> |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_wag/samples--WagSamples.RetryPolicies) | A request specific retryPolicy |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 
-<a name="module_wag/samples--WagSamples+getAuthorsWithPut"></a>
+<a name="module_swagger-test--SwaggerTest+getAuthorsWithPut"></a>
 
-#### wagSamples.getAuthorsWithPut(params, [options], [cb]) ⇒ <code>Promise</code>
+#### swaggerTest.getAuthorsWithPut(params, [options], [cb]) ⇒ <code>Promise</code>
 Gets authors, but needs to use the body so it's a PUT
 
-**Kind**: instance method of [<code>WagSamples</code>](#exp_module_wag/samples--WagSamples)  
+**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 **Fulfill**: <code>Object</code>  
-**Reject**: [<code>BadRequest</code>](#module_wag/samples--WagSamples.Errors.BadRequest)  
-**Reject**: [<code>InternalError</code>](#module_wag/samples--WagSamples.Errors.InternalError)  
+**Reject**: [<code>BadRequest</code>](#module_swagger-test--SwaggerTest.Errors.BadRequest)  
+**Reject**: [<code>InternalError</code>](#module_swagger-test--SwaggerTest.Errors.InternalError)  
 **Reject**: <code>Error</code>  
 
 | Param | Type | Description |
@@ -123,15 +123,15 @@ Gets authors, but needs to use the body so it's a PUT
 | [params.favoriteBooks] |  |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_wag/samples--WagSamples.RetryPolicies) | A request specific retryPolicy |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
-<a name="module_wag/samples--WagSamples+getAuthorsWithPutIter"></a>
+<a name="module_swagger-test--SwaggerTest+getAuthorsWithPutIter"></a>
 
-#### wagSamples.getAuthorsWithPutIter(params, [options]) ⇒ <code>Object</code> \| <code>function</code> \| <code>function</code> \| <code>function</code> \| <code>function</code>
+#### swaggerTest.getAuthorsWithPutIter(params, [options]) ⇒ <code>Object</code> \| <code>function</code> \| <code>function</code> \| <code>function</code> \| <code>function</code>
 Gets authors, but needs to use the body so it's a PUT
 
-**Kind**: instance method of [<code>WagSamples</code>](#exp_module_wag/samples--WagSamples)  
+**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 **Returns**: <code>Object</code> - iter<code>function</code> - iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array<code>function</code> - iter.toArray - returns a promise to the resources as an array<code>function</code> - iter.forEach - takes in a function, applies it to each resource<code>function</code> - iter.forEachAsync - takes in an async function, applies it to each resource  
 
 | Param | Type | Description |
@@ -142,17 +142,17 @@ Gets authors, but needs to use the body so it's a PUT
 | [params.favoriteBooks] |  |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_wag/samples--WagSamples.RetryPolicies) | A request specific retryPolicy |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 
-<a name="module_wag/samples--WagSamples+getBooks"></a>
+<a name="module_swagger-test--SwaggerTest+getBooks"></a>
 
-#### wagSamples.getBooks(params, [options], [cb]) ⇒ <code>Promise</code>
+#### swaggerTest.getBooks(params, [options], [cb]) ⇒ <code>Promise</code>
 Returns a list of books
 
-**Kind**: instance method of [<code>WagSamples</code>](#exp_module_wag/samples--WagSamples)  
+**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 **Fulfill**: <code>Object[]</code>  
-**Reject**: [<code>BadRequest</code>](#module_wag/samples--WagSamples.Errors.BadRequest)  
-**Reject**: [<code>InternalError</code>](#module_wag/samples--WagSamples.Errors.InternalError)  
+**Reject**: [<code>BadRequest</code>](#module_swagger-test--SwaggerTest.Errors.BadRequest)  
+**Reject**: [<code>InternalError</code>](#module_swagger-test--SwaggerTest.Errors.InternalError)  
 **Reject**: <code>Error</code>  
 
 | Param | Type | Default | Description |
@@ -171,15 +171,15 @@ Returns a list of books
 | [params.startingAfter] | <code>number</code> |  |  |
 | [options] | <code>object</code> |  |  |
 | [options.timeout] | <code>number</code> |  | A request specific timeout |
-| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_wag/samples--WagSamples.RetryPolicies) |  | A request specific retryPolicy |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) |  | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |  |
 
-<a name="module_wag/samples--WagSamples+getBooksIter"></a>
+<a name="module_swagger-test--SwaggerTest+getBooksIter"></a>
 
-#### wagSamples.getBooksIter(params, [options]) ⇒ <code>Object</code> \| <code>function</code> \| <code>function</code> \| <code>function</code> \| <code>function</code>
+#### swaggerTest.getBooksIter(params, [options]) ⇒ <code>Object</code> \| <code>function</code> \| <code>function</code> \| <code>function</code> \| <code>function</code>
 Returns a list of books
 
-**Kind**: instance method of [<code>WagSamples</code>](#exp_module_wag/samples--WagSamples)  
+**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 **Returns**: <code>Object</code> - iter<code>function</code> - iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array<code>function</code> - iter.toArray - returns a promise to the resources as an array<code>function</code> - iter.forEach - takes in a function, applies it to each resource<code>function</code> - iter.forEachAsync - takes in an async function, applies it to each resource  
 
 | Param | Type | Default | Description |
@@ -198,17 +198,17 @@ Returns a list of books
 | [params.startingAfter] | <code>number</code> |  |  |
 | [options] | <code>object</code> |  |  |
 | [options.timeout] | <code>number</code> |  | A request specific timeout |
-| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_wag/samples--WagSamples.RetryPolicies) |  | A request specific retryPolicy |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) |  | A request specific retryPolicy |
 
-<a name="module_wag/samples--WagSamples+createBook"></a>
+<a name="module_swagger-test--SwaggerTest+createBook"></a>
 
-#### wagSamples.createBook(newBook, [options], [cb]) ⇒ <code>Promise</code>
+#### swaggerTest.createBook(newBook, [options], [cb]) ⇒ <code>Promise</code>
 Creates a book
 
-**Kind**: instance method of [<code>WagSamples</code>](#exp_module_wag/samples--WagSamples)  
+**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 **Fulfill**: <code>Object</code>  
-**Reject**: [<code>BadRequest</code>](#module_wag/samples--WagSamples.Errors.BadRequest)  
-**Reject**: [<code>InternalError</code>](#module_wag/samples--WagSamples.Errors.InternalError)  
+**Reject**: [<code>BadRequest</code>](#module_swagger-test--SwaggerTest.Errors.BadRequest)  
+**Reject**: [<code>InternalError</code>](#module_swagger-test--SwaggerTest.Errors.InternalError)  
 **Reject**: <code>Error</code>  
 
 | Param | Type | Description |
@@ -216,18 +216,18 @@ Creates a book
 | newBook |  |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_wag/samples--WagSamples.RetryPolicies) | A request specific retryPolicy |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
-<a name="module_wag/samples--WagSamples+putBook"></a>
+<a name="module_swagger-test--SwaggerTest+putBook"></a>
 
-#### wagSamples.putBook(newBook, [options], [cb]) ⇒ <code>Promise</code>
+#### swaggerTest.putBook(newBook, [options], [cb]) ⇒ <code>Promise</code>
 Puts a book
 
-**Kind**: instance method of [<code>WagSamples</code>](#exp_module_wag/samples--WagSamples)  
+**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 **Fulfill**: <code>Object</code>  
-**Reject**: [<code>BadRequest</code>](#module_wag/samples--WagSamples.Errors.BadRequest)  
-**Reject**: [<code>InternalError</code>](#module_wag/samples--WagSamples.Errors.InternalError)  
+**Reject**: [<code>BadRequest</code>](#module_swagger-test--SwaggerTest.Errors.BadRequest)  
+**Reject**: [<code>InternalError</code>](#module_swagger-test--SwaggerTest.Errors.InternalError)  
 **Reject**: <code>Error</code>  
 
 | Param | Type | Description |
@@ -235,20 +235,20 @@ Puts a book
 | newBook |  |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_wag/samples--WagSamples.RetryPolicies) | A request specific retryPolicy |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
-<a name="module_wag/samples--WagSamples+getBookByID"></a>
+<a name="module_swagger-test--SwaggerTest+getBookByID"></a>
 
-#### wagSamples.getBookByID(params, [options], [cb]) ⇒ <code>Promise</code>
+#### swaggerTest.getBookByID(params, [options], [cb]) ⇒ <code>Promise</code>
 Returns a book
 
-**Kind**: instance method of [<code>WagSamples</code>](#exp_module_wag/samples--WagSamples)  
+**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 **Fulfill**: <code>Object</code>  
-**Reject**: [<code>BadRequest</code>](#module_wag/samples--WagSamples.Errors.BadRequest)  
-**Reject**: [<code>Unathorized</code>](#module_wag/samples--WagSamples.Errors.Unathorized)  
-**Reject**: [<code>Error</code>](#module_wag/samples--WagSamples.Errors.Error)  
-**Reject**: [<code>InternalError</code>](#module_wag/samples--WagSamples.Errors.InternalError)  
+**Reject**: [<code>BadRequest</code>](#module_swagger-test--SwaggerTest.Errors.BadRequest)  
+**Reject**: [<code>Unathorized</code>](#module_swagger-test--SwaggerTest.Errors.Unathorized)  
+**Reject**: [<code>Error</code>](#module_swagger-test--SwaggerTest.Errors.Error)  
+**Reject**: [<code>InternalError</code>](#module_swagger-test--SwaggerTest.Errors.InternalError)  
 **Reject**: <code>Error</code>  
 
 | Param | Type | Description |
@@ -261,19 +261,19 @@ Returns a book
 | [params.randomBytes] | <code>string</code> |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_wag/samples--WagSamples.RetryPolicies) | A request specific retryPolicy |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
-<a name="module_wag/samples--WagSamples+getBookByID2"></a>
+<a name="module_swagger-test--SwaggerTest+getBookByID2"></a>
 
-#### wagSamples.getBookByID2(id, [options], [cb]) ⇒ <code>Promise</code>
+#### swaggerTest.getBookByID2(id, [options], [cb]) ⇒ <code>Promise</code>
 Retrieve a book
 
-**Kind**: instance method of [<code>WagSamples</code>](#exp_module_wag/samples--WagSamples)  
+**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 **Fulfill**: <code>Object</code>  
-**Reject**: [<code>BadRequest</code>](#module_wag/samples--WagSamples.Errors.BadRequest)  
-**Reject**: [<code>Error</code>](#module_wag/samples--WagSamples.Errors.Error)  
-**Reject**: [<code>InternalError</code>](#module_wag/samples--WagSamples.Errors.InternalError)  
+**Reject**: [<code>BadRequest</code>](#module_swagger-test--SwaggerTest.Errors.BadRequest)  
+**Reject**: [<code>Error</code>](#module_swagger-test--SwaggerTest.Errors.Error)  
+**Reject**: [<code>InternalError</code>](#module_swagger-test--SwaggerTest.Errors.InternalError)  
 **Reject**: <code>Error</code>  
 
 | Param | Type | Description |
@@ -281,74 +281,74 @@ Retrieve a book
 | id | <code>string</code> |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_wag/samples--WagSamples.RetryPolicies) | A request specific retryPolicy |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
-<a name="module_wag/samples--WagSamples+healthCheck"></a>
+<a name="module_swagger-test--SwaggerTest+healthCheck"></a>
 
-#### wagSamples.healthCheck([options], [cb]) ⇒ <code>Promise</code>
-**Kind**: instance method of [<code>WagSamples</code>](#exp_module_wag/samples--WagSamples)  
+#### swaggerTest.healthCheck([options], [cb]) ⇒ <code>Promise</code>
+**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 **Fulfill**: <code>undefined</code>  
-**Reject**: [<code>BadRequest</code>](#module_wag/samples--WagSamples.Errors.BadRequest)  
-**Reject**: [<code>InternalError</code>](#module_wag/samples--WagSamples.Errors.InternalError)  
+**Reject**: [<code>BadRequest</code>](#module_swagger-test--SwaggerTest.Errors.BadRequest)  
+**Reject**: [<code>InternalError</code>](#module_swagger-test--SwaggerTest.Errors.InternalError)  
 **Reject**: <code>Error</code>  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_wag/samples--WagSamples.RetryPolicies) | A request specific retryPolicy |
+| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
-<a name="module_wag/samples--WagSamples.RetryPolicies"></a>
+<a name="module_swagger-test--SwaggerTest.RetryPolicies"></a>
 
-#### WagSamples.RetryPolicies
+#### SwaggerTest.RetryPolicies
 Retry policies available to use.
 
-**Kind**: static property of [<code>WagSamples</code>](#exp_module_wag/samples--WagSamples)  
+**Kind**: static property of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 
-* [.RetryPolicies](#module_wag/samples--WagSamples.RetryPolicies)
-    * [.Exponential](#module_wag/samples--WagSamples.RetryPolicies.Exponential)
-    * [.Single](#module_wag/samples--WagSamples.RetryPolicies.Single)
-    * [.None](#module_wag/samples--WagSamples.RetryPolicies.None)
+* [.RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)
+    * [.Exponential](#module_swagger-test--SwaggerTest.RetryPolicies.Exponential)
+    * [.Single](#module_swagger-test--SwaggerTest.RetryPolicies.Single)
+    * [.None](#module_swagger-test--SwaggerTest.RetryPolicies.None)
 
-<a name="module_wag/samples--WagSamples.RetryPolicies.Exponential"></a>
+<a name="module_swagger-test--SwaggerTest.RetryPolicies.Exponential"></a>
 
 ##### RetryPolicies.Exponential
 The exponential retry policy will retry five times with an exponential backoff.
 
-**Kind**: static constant of [<code>RetryPolicies</code>](#module_wag/samples--WagSamples.RetryPolicies)  
-<a name="module_wag/samples--WagSamples.RetryPolicies.Single"></a>
+**Kind**: static constant of [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies)  
+<a name="module_swagger-test--SwaggerTest.RetryPolicies.Single"></a>
 
 ##### RetryPolicies.Single
 Use this retry policy to retry a request once.
 
-**Kind**: static constant of [<code>RetryPolicies</code>](#module_wag/samples--WagSamples.RetryPolicies)  
-<a name="module_wag/samples--WagSamples.RetryPolicies.None"></a>
+**Kind**: static constant of [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies)  
+<a name="module_swagger-test--SwaggerTest.RetryPolicies.None"></a>
 
 ##### RetryPolicies.None
 Use this retry policy to turn off retries.
 
-**Kind**: static constant of [<code>RetryPolicies</code>](#module_wag/samples--WagSamples.RetryPolicies)  
-<a name="module_wag/samples--WagSamples.Errors"></a>
+**Kind**: static constant of [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies)  
+<a name="module_swagger-test--SwaggerTest.Errors"></a>
 
-#### WagSamples.Errors
+#### SwaggerTest.Errors
 Errors returned by methods.
 
-**Kind**: static property of [<code>WagSamples</code>](#exp_module_wag/samples--WagSamples)  
+**Kind**: static property of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
 
-* [.Errors](#module_wag/samples--WagSamples.Errors)
-    * [.BadRequest](#module_wag/samples--WagSamples.Errors.BadRequest) ⇐ <code>Error</code>
-    * [.InternalError](#module_wag/samples--WagSamples.Errors.InternalError) ⇐ <code>Error</code>
-    * [.Unathorized](#module_wag/samples--WagSamples.Errors.Unathorized) ⇐ <code>Error</code>
-    * [.Error](#module_wag/samples--WagSamples.Errors.Error) ⇐ <code>Error</code>
+* [.Errors](#module_swagger-test--SwaggerTest.Errors)
+    * [.BadRequest](#module_swagger-test--SwaggerTest.Errors.BadRequest) ⇐ <code>Error</code>
+    * [.InternalError](#module_swagger-test--SwaggerTest.Errors.InternalError) ⇐ <code>Error</code>
+    * [.Unathorized](#module_swagger-test--SwaggerTest.Errors.Unathorized) ⇐ <code>Error</code>
+    * [.Error](#module_swagger-test--SwaggerTest.Errors.Error) ⇐ <code>Error</code>
 
-<a name="module_wag/samples--WagSamples.Errors.BadRequest"></a>
+<a name="module_swagger-test--SwaggerTest.Errors.BadRequest"></a>
 
 ##### Errors.BadRequest ⇐ <code>Error</code>
 BadRequest
 
-**Kind**: static class of [<code>Errors</code>](#module_wag/samples--WagSamples.Errors)  
+**Kind**: static class of [<code>Errors</code>](#module_swagger-test--SwaggerTest.Errors)  
 **Extends**: <code>Error</code>  
 **Properties**
 
@@ -356,12 +356,12 @@ BadRequest
 | --- | --- |
 | message | <code>string</code> | 
 
-<a name="module_wag/samples--WagSamples.Errors.InternalError"></a>
+<a name="module_swagger-test--SwaggerTest.Errors.InternalError"></a>
 
 ##### Errors.InternalError ⇐ <code>Error</code>
 InternalError
 
-**Kind**: static class of [<code>Errors</code>](#module_wag/samples--WagSamples.Errors)  
+**Kind**: static class of [<code>Errors</code>](#module_swagger-test--SwaggerTest.Errors)  
 **Extends**: <code>Error</code>  
 **Properties**
 
@@ -369,12 +369,12 @@ InternalError
 | --- | --- |
 | message | <code>string</code> | 
 
-<a name="module_wag/samples--WagSamples.Errors.Unathorized"></a>
+<a name="module_swagger-test--SwaggerTest.Errors.Unathorized"></a>
 
 ##### Errors.Unathorized ⇐ <code>Error</code>
 Unathorized
 
-**Kind**: static class of [<code>Errors</code>](#module_wag/samples--WagSamples.Errors)  
+**Kind**: static class of [<code>Errors</code>](#module_swagger-test--SwaggerTest.Errors)  
 **Extends**: <code>Error</code>  
 **Properties**
 
@@ -382,12 +382,12 @@ Unathorized
 | --- | --- |
 | message | <code>string</code> | 
 
-<a name="module_wag/samples--WagSamples.Errors.Error"></a>
+<a name="module_swagger-test--SwaggerTest.Errors.Error"></a>
 
 ##### Errors.Error ⇐ <code>Error</code>
 Error
 
-**Kind**: static class of [<code>Errors</code>](#module_wag/samples--WagSamples.Errors)  
+**Kind**: static class of [<code>Errors</code>](#module_swagger-test--SwaggerTest.Errors)  
 **Extends**: <code>Error</code>  
 **Properties**
 
@@ -396,9 +396,9 @@ Error
 | code | <code>number</code> | 
 | message | <code>string</code> | 
 
-<a name="module_wag/samples--WagSamples.DefaultCircuitOptions"></a>
+<a name="module_swagger-test--SwaggerTest.DefaultCircuitOptions"></a>
 
-#### WagSamples.DefaultCircuitOptions
+#### SwaggerTest.DefaultCircuitOptions
 Default circuit breaker options.
 
-**Kind**: static constant of [<code>WagSamples</code>](#exp_module_wag/samples--WagSamples)  
+**Kind**: static constant of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  

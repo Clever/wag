@@ -101,7 +101,7 @@ type handler struct {
 }
 
 func startLoggingProcessMetrics() {
-	metrics.Log("wag/samples", 1*time.Minute)
+	metrics.Log("swagger-test", 1*time.Minute)
 }
 
 func withMiddleware(serviceName string, router http.Handler, m []func(http.Handler) http.Handler, config serverConfig) http.Handler {
@@ -136,7 +136,7 @@ func NewRouter(c Controller) *mux.Router {
 
 func newRouter(c Controller) *mux.Router {
 	router := mux.NewRouter()
-	router.Use(servertracing.MuxServerMiddleware("wag/samples"))
+	router.Use(servertracing.MuxServerMiddleware("swagger-test"))
 	h := handler{Controller: c}
 
 	router.Methods("GET").Path("/v1/authors").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -206,8 +206,8 @@ func AttachMiddleware(router *mux.Router, addr string, m []func(http.Handler) ht
 		option(&config)
 	}
 
-	l := logger.New("wag/samples")
+	l := logger.New("swagger-test")
 
-	handler := withMiddleware("wag/samples", router, m, config)
+	handler := withMiddleware("swagger-test", router, m, config)
 	return &Server{Handler: handler, addr: addr, l: l, config: config}
 }
