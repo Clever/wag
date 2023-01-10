@@ -3,9 +3,7 @@ package models
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"os"
-	"regexp"
 	"sort"
 	"strings"
 
@@ -15,6 +13,7 @@ import (
 	goClient "github.com/Clever/wag/v9/clients/go"
 	"github.com/Clever/wag/v9/swagger"
 	"github.com/Clever/wag/v9/templates"
+	"github.com/Clever/wag/v9/utils"
 
 	"github.com/go-swagger/go-swagger/generator"
 )
@@ -59,21 +58,10 @@ func Generate(packageName, basePath, outputPath string, s spec.Swagger) error {
 	return nil
 }
 
-func extractModuleNameAndVersionSuffix(packageName, outputPath string) (moduleName, versionSuffix string) {
-	vregex, err := regexp.Compile("/v[0-9]$|/v[0-9][0-9]")
-	if err != nil {
-		log.Fatalf("Error checking module name: %s", err.Error())
-	}
-	moduleName = strings.TrimSuffix(packageName, outputPath)
-	versionSuffix = vregex.FindString(moduleName)
-	moduleName = strings.TrimSuffix(moduleName, versionSuffix)
-	return
-}
-
 // CreateModFile creates a go.mod file for the client module.
 func CreateModFile(path string, basePath, packageName, outputPath string) error {
 	outputPath = strings.TrimPrefix(outputPath, ".")
-	moduleName, versionSuffix := extractModuleNameAndVersionSuffix(packageName, outputPath)
+	moduleName, versionSuffix := utils.ExtractModuleNameAndVersionSuffix(packageName, outputPath)
 
 	absPath := basePath + "/" + path
 	f, err := os.Create(absPath)

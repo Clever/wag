@@ -3,10 +3,8 @@ package goclient
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"os"
 	"path"
-	"regexp"
 	"strings"
 
 	"github.com/go-openapi/spec"
@@ -288,9 +286,9 @@ func New(ctx context.Context, basePath string, opts ...Option) *WagClient {
 	}
 
 
-	samplingProbability := 1.0 // TODO: Hard setting this to one for now, because right now 
+	samplingProbability := 1.0 // Hard setting this to one for now, because right now 
 	// it is essentially ignored as the sidecar is determining the sample rate it forwards on to DD.
-	// samplingProbability := determineSampling()
+	// Thus the prefered approach is to sample locally with the sidecar.
 
 	tp := newTracerProvider(options.exporter, samplingProbability)
 	options.transport = options.instrumentor(options.transport, ctx, *tp)
@@ -393,11 +391,6 @@ func (c *WagClient) SetTimeout(timeout time.Duration){
 	c.defaultTimeout = timeout
 }
 
-// SetTransport sets the http transport used by the client.
-func (c *WagClient) SetTransport(t http.RoundTripper){
-	// c.client.Transport = tracing.NewTransport(t, opNameCtx{})
-}
-
 {{range $operationCode := .Operations}}
 	{{$operationCode}}
 {{end}}
@@ -410,7 +403,7 @@ func shortHash(s string) string {
 func generateClient(packageName, basePath, outputPath string, s spec.Swagger) error {
 
 	outputPath = strings.TrimPrefix(outputPath, ".")
-	moduleName, versionSuffix := extractModuleNameAndVersionSuffix(packageName, outputPath)
+	moduleName, versionSuffix := utils.ExtractModuleNameAndVersionSuffix(packageName, outputPath)
 	codeTemplate := clientCodeTemplate{
 		PackageName:          packageName,
 		OutputPath:           outputPath,
@@ -507,22 +500,11 @@ func IsBinaryParam(param spec.Parameter, definitions map[string]spec.Schema) boo
 	return definitions[definitionName].Format == "binary"
 }
 
-func extractModuleNameAndVersionSuffix(packageName, outputPath string) (moduleName, versionSuffix string) {
-	vregex, err := regexp.Compile("/v[0-9]$|/v[0-9][0-9]")
-	if err != nil {
-		log.Fatalf("Error checking module name: %s", err.Error())
-	}
-	moduleName = strings.TrimSuffix(packageName, outputPath)
-	versionSuffix = vregex.FindString(moduleName)
-	moduleName = strings.TrimSuffix(moduleName, versionSuffix)
-	return
-}
-
 func generateInterface(packageName, basePath, outputPath string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
 	outputPath = strings.TrimPrefix(outputPath, ".")
 	g := swagger.Generator{BasePath: basePath}
 	g.Printf("package client\n\n")
-	moduleName, versionSuffix := extractModuleNameAndVersionSuffix(packageName, outputPath)
+	moduleName, versionSuffix := utils.ExtractModuleNameAndVersionSuffix(packageName, outputPath)
 	g.Printf(swagger.ImportStatements([]string{"context", moduleName + outputPath + "/models" + versionSuffix}))
 	g.Printf("//go:generate mockgen -source=$GOFILE -destination=mock_client.go -package client --build_flags=--mod=mod -imports=models=" + moduleName + outputPath + "/models" + versionSuffix + "\n\n")
 

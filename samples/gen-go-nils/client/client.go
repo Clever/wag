@@ -239,9 +239,9 @@ func New(ctx context.Context, basePath string, opts ...Option) *WagClient {
 		o.apply(&options)
 	}
 
-	samplingProbability := 1.0 // TODO: Hard setting this to one for now, because right now
+	samplingProbability := 1.0 // Hard setting this to one for now, because right now
 	// it is essentially ignored as the sidecar is determining the sample rate it forwards on to DD.
-	// samplingProbability := determineSampling()
+	// Thus the prefered approach is to sample locally with the sidecar.
 
 	tp := newTracerProvider(options.exporter, samplingProbability)
 	options.transport = options.instrumentor(options.transport, ctx, *tp)
@@ -342,11 +342,6 @@ func (c *WagClient) SetCircuitBreakerSettings(settings CircuitBreakerSettings) {
 // than the default on the client, use context.WithTimeout as described here: https://godoc.org/golang.org/x/net/context#WithTimeout.
 func (c *WagClient) SetTimeout(timeout time.Duration) {
 	c.defaultTimeout = timeout
-}
-
-// SetTransport sets the http transport used by the client.
-func (c *WagClient) SetTransport(t http.RoundTripper) {
-	// c.client.Transport = tracing.NewTransport(t, opNameCtx{})
 }
 
 // NilCheck makes a POST request to /check/{id}

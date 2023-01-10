@@ -4,14 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"path"
-	"regexp"
 	"sort"
 	"strings"
 	"text/template"
 
 	"github.com/Clever/wag/v9/swagger"
+	"github.com/Clever/wag/v9/utils"
 	"github.com/awslabs/goformation/v2/cloudformation/resources"
 	"github.com/go-openapi/spec"
 	"github.com/go-swagger/go-swagger/generator"
@@ -139,21 +138,10 @@ func findCompositeAttribute(config XDBConfig, attributeName string) *CompositeAt
 
 }
 
-func extractModuleNameAndVersionSuffix(packageName, outputPath string) (moduleName, versionSuffix string) {
-	vregex, err := regexp.Compile("/v[0-9]$|/v[0-9][0-9]")
-	if err != nil {
-		log.Fatalf("Error checking module name: %s", err.Error())
-	}
-	moduleName = strings.TrimSuffix(packageName, outputPath)
-	versionSuffix = vregex.FindString(moduleName)
-	moduleName = strings.TrimSuffix(moduleName, versionSuffix)
-	return
-}
-
 // GenerateDB generates DB code for schemas annotated with the x-db extension.
 func GenerateDB(packageName, basePath, goOutputPath string, s *spec.Swagger, outputPath string) error {
 	goOutputPath = strings.TrimPrefix(goOutputPath, ".")
-	moduleName, versionSuffix := extractModuleNameAndVersionSuffix(packageName, goOutputPath)
+	moduleName, versionSuffix := utils.ExtractModuleNameAndVersionSuffix(packageName, goOutputPath)
 	var schemaNames []string
 	for schemaName := range s.Definitions {
 		schemaNames = append(schemaNames, schemaName)
