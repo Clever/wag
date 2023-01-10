@@ -16,7 +16,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/uuid v1.1.2 // indirect
-	github.com/kevinburke/go-bindata v3.23.0+incompatible
+	github.com/kevinburke/go-bindata v3.24.0+incompatible
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/pelletier/go-toml v1.9.1 // indirect
 	github.com/rogpeppe/go-internal v1.8.1 // indirect
