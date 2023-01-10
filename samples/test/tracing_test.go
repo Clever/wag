@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Clever/wag/samples/v8/gen-go/client"
-	"github.com/Clever/wag/samples/v8/gen-go/models"
-	"github.com/Clever/wag/samples/v8/gen-go/tracing"
+	"github.com/Clever/wag/samples/gen-go-basic/client/v9"
+	"github.com/Clever/wag/samples/gen-go-basic/models/v9"
+	"github.com/Clever/wag/samples/v9/gen-go-basic/servertracing"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/otel/sdk/resource"

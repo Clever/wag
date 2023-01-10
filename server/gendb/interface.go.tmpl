@@ -3,7 +3,7 @@ package db
 import (
 	"context"
 
-	"{{ .PackageName }}/models"
+  "{{ .ModuleName }}{{.GoOutputPath}}/models{{.VersionSuffix}}"
 	{{- if anyTableHasTransactionsEnabled .XDBConfigs }}
   "github.com/aws/aws-sdk-go/service/dynamodb/expression"
   {{- end }}
@@ -15,7 +15,7 @@ import (
         {{- end -}}
 )
 
-//go:generate mockgen -source=$GOFILE -destination=mock_db.go -package=db
+//go:generate mockgen -source=$GOFILE -destination=mock_db.go -package db --build_flags=--mod=mod -imports=models={{.ModuleName}}{{.GoOutputPath}}/models{{.VersionSuffix}}
 
 // Interface for interacting with the {{.ServiceName}} database.
 type Interface interface {

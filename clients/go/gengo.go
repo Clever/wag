@@ -3,35 +3,40 @@ package goclient
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"path"
 	"strings"
 
 	"github.com/go-openapi/spec"
 
-	"github.com/Clever/wag/v8/swagger"
-	"github.com/Clever/wag/v8/templates"
-	"github.com/Clever/wag/v8/utils"
+	"github.com/Clever/wag/v9/swagger"
+	"github.com/Clever/wag/v9/templates"
+	"github.com/Clever/wag/v9/utils"
 )
 
 // Generate generates a client
-func Generate(packageName, packagePath string, s spec.Swagger) error {
-	if err := generateClient(packageName, packagePath, s); err != nil {
+func Generate(packageName, basePath, outputPath string, s spec.Swagger) error {
+	if err := generateClient(packageName, basePath, outputPath, s); err != nil {
 		return err
 	}
-	return generateInterface(packageName, packagePath, &s, s.Info.InfoProps.Title, s.Paths)
+	return generateInterface(packageName, basePath, outputPath, &s, s.Info.InfoProps.Title, s.Paths)
 }
 
 type clientCodeTemplate struct {
+	OutputPath           string
 	PackageName          string
+	ModuleName           string
 	ServiceName          string
 	FormattedServiceName string
 	Operations           []string
 	Version              string
+	VersionSuffix        string
 }
 
 var clientCodeTemplateStr = `
 package client
 
+// Using Alpha version of WAG Yay!
 import (
 		"context"
 		"strings"
@@ -42,14 +47,24 @@ import (
 		"strconv"
 		"time"
 		"fmt"
-		"io/ioutil"
+		"os"
 		"crypto/md5"
 
-		"{{.PackageName}}/models"
-		"{{.PackageName}}/tracing"
+		"{{.ModuleName}}{{.OutputPath}}/models{{.VersionSuffix}}"
+
 		discovery "github.com/Clever/discovery-go"
+		wcl "github.com/Clever/wag/logging/wagclientlogger"
+
+
 		"github.com/afex/hystrix-go/hystrix"
-		logger "gopkg.in/Clever/kayvee-go.v6/logger"
+
+		"go.opentelemetry.io/otel"
+		"go.opentelemetry.io/otel/propagation"
+		"go.opentelemetry.io/otel/sdk/trace/tracetest"
+		"go.opentelemetry.io/otel/sdk/resource"
+		sdktrace "go.opentelemetry.io/otel/sdk/trace"
+		semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
+		
 )
 
 var _ = json.Marshal
@@ -73,38 +88,230 @@ type WagClient struct {
 	// Keep the circuit doer around so that we can turn it on / off
 	circuitDoer    *circuitBreakerDoer
 	defaultTimeout time.Duration
-	logger       logger.KayveeLogger
+	logger      wcl.WagClientLogger
 }
 
 var _ Client = (*WagClient)(nil)
 
+
+//This pattern is used instead of using closures for greater transparency and the ability to implement additional interfaces.
+type options struct {
+	transport    http.RoundTripper
+	logger       wcl.WagClientLogger
+	instrumentor Instrumentor
+	exporter     sdktrace.SpanExporter
+}
+
+type Option interface {
+	apply(*options)
+}
+
+
+//WithLogger sets client logger option.
+func WithLogger(log wcl.WagClientLogger) Option {
+	return loggerOption{Log: log}
+}
+
+type loggerOption struct {
+	Log wcl.WagClientLogger
+}
+
+func (l loggerOption) apply(opts *options) {
+	opts.logger = l.Log
+}
+
+
+type roundTripperOption struct {
+	rt http.RoundTripper
+}
+
+func (t roundTripperOption) apply(opts *options) {
+	opts.transport = t.rt
+}
+
+// WithRoundTripper allows you to pass in intrumented/custom roundtrippers which will then wrap the
+// transport roundtripper
+func WithRoundTripper(t http.RoundTripper) Option {
+	return roundTripperOption{rt: t}
+}
+
+// Instrumentor is a function that creates an instrumented round tripper
+type Instrumentor func(baseTransport http.RoundTripper, spanNameCtxValue interface{}, tp sdktrace.TracerProvider) http.RoundTripper
+
+// WithInstrumentor sets a instrumenting function that will be used to wrap the roundTripper for tracing.
+// For standard instrumentation with tracing use tracing.InstrumentedTransport, default is non-instrumented.
+
+func WithInstrumentor(fn Instrumentor) Option {
+	return instrumentorOption{instrumentor: fn}
+}
+
+type instrumentorOption struct {
+	instrumentor Instrumentor
+}
+
+func (i instrumentorOption) apply(opts *options) {
+	opts.instrumentor = i.instrumentor
+}
+
+// WithExporter sets client span exporter option.
+func WithExporter(se sdktrace.SpanExporter) Option {
+	return exporterOption{exporter: se}
+}
+
+type exporterOption struct {
+	exporter sdktrace.SpanExporter
+}
+
+func (se exporterOption) apply(opts *options) {
+	opts.exporter = se.exporter
+}
+
+//----------------------BEGIN LOGGING RELATED FUNCTIONS----------------------
+
+
+// NewLogger creates a logger for id that produces logs at and below the indicated level.
+// level here indicates the level at and below which logs are created.
+func NewLogger(id string, level wcl.LogLevel) PrintlnLogger {
+	return PrintlnLogger{id: id, level: level}
+}
+
+type PrintlnLogger struct {
+	level wcl.LogLevel
+	id    string
+}
+
+func (w PrintlnLogger) Log(level wcl.LogLevel, message string, m map[string]interface{}) {
+
+	if level >= level {
+		m["id"] = w.id
+		jsonLog, err := json.Marshal(m)
+		if err != nil {
+			jsonLog, err = json.Marshal(map[string]interface{}{"Error Marshalling Log": err})
+		}
+		fmt.Println(string(jsonLog))
+	}
+}
+
+//----------------------END LOGGING RELATED FUNCTIONS------------------------
+
+//----------------------BEGIN TRACING RELATED FUNCTIONS----------------------
+
+
+// newResource returns a resource describing this application.
+// Used for setting up tracer provider
+func newResource() *resource.Resource {
+	r, _ := resource.Merge(
+		resource.Default(),
+		resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceNameKey.String("{{.ServiceName}}"),
+			semconv.ServiceVersionKey.String("{{ .Version }}"),
+		),
+	)
+	return r
+}
+
+func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float64) *sdktrace.TracerProvider {
+
+	tp:= sdktrace.NewTracerProvider(
+		// We use the default ID generator. In order for sampling to work (at least with this sampler)
+		// the ID generator must generate trace IDs uniformly at random from the entire space of uint64.
+		// For example, the default x-ray ID generator does not do this.
+		sdktrace.WithSampler(sdktrace.AlwaysSample()),
+		// These maximums are to guard against something going wrong and sending a ton of data unexpectedly
+		sdktrace.WithSpanLimits(sdktrace.SpanLimits{
+			AttributeCountLimit: 100,
+			EventCountLimit:     100,
+			LinkCountLimit:      100,
+		}),
+		//Batcher is more efficient, switch to it after testing
+		// sdktrace.WithSyncer(exporter),
+		sdktrace.WithBatcher(exporter),
+		sdktrace.WithResource(newResource()),
+		
+	)
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+	return tp
+}
+
+func doNothing(baseTransport http.RoundTripper, spanNameCtxValue interface{}, tp sdktrace.TracerProvider) http.RoundTripper {
+	return baseTransport
+}
+
+func determineSampling() (samplingProbability float64, err error) {
+
+		// If we're running locally, then turn off sampling. Otherwise sample
+		// 1%% or whatever TRACING_SAMPLING_PROBABILITY specifies.
+		samplingProbability = 0.01
+		isLocal := os.Getenv("_IS_LOCAL") == "true"
+		if isLocal {
+			fmt.Println("Set to Local")
+			samplingProbability = 1.0
+		} else if v := os.Getenv("TRACING_SAMPLING_PROBABILITY"); v != "" {
+			samplingProbabilityFromEnv, err := strconv.ParseFloat(v, 64)
+			if err != nil {
+				return 0, fmt.Errorf("could not parse '%%s' to float", v)
+			}
+			samplingProbability = samplingProbabilityFromEnv
+		}
+		return
+	}
+
+//----------------------END TRACING RELATEDFUNCTIONS----------------------
+
 // New creates a new client. The base path and http transport are configurable.
-func New(basePath string) *WagClient {
+func New(ctx context.Context, basePath string, opts ...Option) *WagClient {
+
+	defaultTransport := http.DefaultTransport
+	defaultLogger := NewLogger("{{.ServiceName}}-wagclient", wcl.Info)
+	defaultExporter := tracetest.NewNoopExporter()
+	defaultInstrumentor := doNothing
+
+
 	basePath = strings.TrimSuffix(basePath, "/")
 	base := baseDoer{}
 	// For the short-term don't use the default retry policy since its 5 retries can 5X
 	// the traffic. Once we've enabled circuit breakers by default we can turn it on.
 	retry := retryDoer{d: base, retryPolicy: SingleRetryPolicy{}}
-	logger := logger.New("{{.ServiceName}}-wagclient")
+	options := options{
+		transport:    defaultTransport,
+		logger:       defaultLogger,
+		exporter:     defaultExporter,
+		instrumentor: defaultInstrumentor,
+	}
+
+	for _, o := range opts {
+		o.apply(&options)
+	}
+
+
+	samplingProbability := 1.0 // Hard setting this to one for now, because right now 
+	// it is essentially ignored as the sidecar is determining the sample rate it forwards on to DD.
+	// Thus the prefered approach is to sample locally with the sidecar.
+
+	tp := newTracerProvider(options.exporter, samplingProbability)
+	options.transport = options.instrumentor(options.transport, ctx, *tp)
+
 	circuit := &circuitBreakerDoer{
 		d:     &retry,
 		// TODO: INFRANG-4404 allow passing circuitBreakerOptions
 		debug: true,
 		// one circuit for each service + url pair
 		circuitName: fmt.Sprintf("{{.ServiceName}}-%%s", shortHash(basePath)),
-		logger: logger,
+		logger: options.logger,
 	}
 	circuit.init()
 	client := &WagClient{
 		basePath: basePath,
 		requestDoer: circuit,
 		client: &http.Client{
-			Transport: tracing.NewTransport(http.DefaultTransport, opNameCtx{}),
+			Transport: options.transport,
 		},
 		retryDoer: &retry,
 		circuitDoer: circuit,
 		defaultTimeout: 5 * time.Second,
-		logger: logger,
+		 logger: options.logger,
 	}
 	client.SetCircuitBreakerSettings(DefaultCircuitBreakerSettings)
 	return client
@@ -112,7 +319,7 @@ func New(basePath string) *WagClient {
 
 // NewFromDiscovery creates a client from the discovery environment variables. This method requires
 // the three env vars: SERVICE_{{.FormattedServiceName}}_HTTP_(HOST/PORT/PROTO) to be set. Otherwise it returns an error.
-func NewFromDiscovery() (*WagClient, error) {
+func NewFromDiscovery(opts ...Option) (*WagClient, error) {
 	url, err := discovery.URL("{{.ServiceName}}", "default")
 	if err != nil {
 		url, err = discovery.URL("{{.ServiceName}}", "http") // Added fallback to maintain reverse compatibility
@@ -120,7 +327,7 @@ func NewFromDiscovery() (*WagClient, error) {
 			return nil, err
 		}
 	}
-	return New(url), nil
+	return New(context.Background(), url, opts...), nil
 }
 
 // SetRetryPolicy sets a the given retry policy for all requests.
@@ -134,9 +341,9 @@ func (c *WagClient) SetCircuitBreakerDebug(b bool) {
 }
 
 // SetLogger allows for setting a custom logger
-func (c *WagClient) SetLogger(logger logger.KayveeLogger) {
-	c.logger = logger
-	c.circuitDoer.logger = logger
+func (c *WagClient) SetLogger(l wcl.WagClientLogger) {
+	c.logger = l
+	c.circuitDoer.logger = l
 }
 
 // CircuitBreakerSettings are the parameters that govern the client's circuit breaker.
@@ -184,11 +391,6 @@ func (c *WagClient) SetTimeout(timeout time.Duration){
 	c.defaultTimeout = timeout
 }
 
-// SetTransport sets the http transport used by the client.
-func (c *WagClient) SetTransport(t http.RoundTripper){
-	c.client.Transport = tracing.NewTransport(t, opNameCtx{})
-}
-
 {{range $operationCode := .Operations}}
 	{{$operationCode}}
 {{end}}
@@ -198,13 +400,18 @@ func shortHash(s string) string {
 }
 `
 
-func generateClient(packageName, packagePath string, s spec.Swagger) error {
+func generateClient(packageName, basePath, outputPath string, s spec.Swagger) error {
 
+	outputPath = strings.TrimPrefix(outputPath, ".")
+	moduleName, versionSuffix := utils.ExtractModuleNameAndVersionSuffix(packageName, outputPath)
 	codeTemplate := clientCodeTemplate{
 		PackageName:          packageName,
+		OutputPath:           outputPath,
+		ModuleName:           moduleName,
 		ServiceName:          s.Info.InfoProps.Title,
 		FormattedServiceName: strings.ToUpper(strings.Replace(s.Info.InfoProps.Title, "-", "_", -1)),
 		Version:              s.Info.InfoProps.Version,
+		VersionSuffix:        versionSuffix,
 	}
 
 	for _, path := range swagger.SortedPathItemKeys(s.Paths.Paths) {
@@ -228,9 +435,53 @@ func generateClient(packageName, packagePath string, s spec.Swagger) error {
 		return err
 	}
 
-	g := swagger.Generator{PackagePath: packagePath}
+	g := swagger.Generator{BasePath: basePath}
 	g.Printf(clientCode)
-	return g.WriteFile("client/client.go")
+	err = g.WriteFile("client/client.go")
+	if err != nil {
+		return err
+	}
+
+	return CreateModFile("client/go.mod", basePath, codeTemplate)
+
+}
+
+// CreateModFile creates a go.mod file for the client module.
+func CreateModFile(path string, basePath string, codeTemplate clientCodeTemplate) error {
+
+	absPath := basePath + "/" + path
+	f, err := os.Create(absPath)
+
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+	modFileString := `
+module ` + codeTemplate.ModuleName + codeTemplate.OutputPath + `/client` + codeTemplate.VersionSuffix + `
+
+go 1.16
+
+require (
+	github.com/Clever/discovery-go v1.8.1
+	github.com/Clever/wag/logging/wagclientlogger v0.0.0-20221024182247-2bf828ef51be
+	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
+	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b
+	github.com/smartystreets/goconvey v1.7.2 // indirect
+	go.opentelemetry.io/otel v1.9.0
+	go.opentelemetry.io/otel/sdk v1.9.0
+
+)
+//Replace directives will work locally but mess up imports.
+replace ` + codeTemplate.ModuleName + codeTemplate.OutputPath + `/models` + codeTemplate.VersionSuffix + ` => ../models `
+
+	_, err = f.WriteString(modFileString)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // IsBinaryBody returns true if the format of the body of the operation is binary
@@ -249,11 +500,13 @@ func IsBinaryParam(param spec.Parameter, definitions map[string]spec.Schema) boo
 	return definitions[definitionName].Format == "binary"
 }
 
-func generateInterface(packageName, packagePath string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
-	g := swagger.Generator{PackagePath: packagePath}
+func generateInterface(packageName, basePath, outputPath string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
+	outputPath = strings.TrimPrefix(outputPath, ".")
+	g := swagger.Generator{BasePath: basePath}
 	g.Printf("package client\n\n")
-	g.Printf(swagger.ImportStatements([]string{"context", packageName + "/models"}))
-	g.Printf("//go:generate mockgen -source=$GOFILE -destination=mock_client.go -package=client\n\n")
+	moduleName, versionSuffix := utils.ExtractModuleNameAndVersionSuffix(packageName, outputPath)
+	g.Printf(swagger.ImportStatements([]string{"context", moduleName + outputPath + "/models" + versionSuffix}))
+	g.Printf("//go:generate mockgen -source=$GOFILE -destination=mock_client.go -package client --build_flags=--mod=mod -imports=models=" + moduleName + outputPath + "/models" + versionSuffix + "\n\n")
 
 	if err := generateClientInterface(s, &g, serviceName, paths); err != nil {
 		return err
@@ -421,6 +674,7 @@ func (c *WagClient) do%sRequest(ctx context.Context, req *http.Request, headers 
 		defer cancel()
 	    req = req.WithContext(ctx)
 	}
+
 	resp, err := c.requestDoer.Do(c.client, req)
 	retCode := 0
 	if resp != nil {
@@ -428,19 +682,19 @@ func (c *WagClient) do%sRequest(ctx context.Context, req *http.Request, headers 
 	}
 
 	// log all client failures and non-successful HT
-	logData := logger.M{
+	logData := map[string]interface{}{
 		"backend": "%s",
 		"method": req.Method,
 		"uri": req.URL,
 		"status_code": retCode,
 	}
 	if err == nil && retCode > 399 {
-		logData["message"] = resp.Status
-		c.logger.ErrorD("client-request-finished", logData)
+		logData["message"] = resp.Status 
+		c.logger.Log(wcl.Error, "client-request-finished", logData)
 	}
 	if err != nil {
 		logData["message"] = err.Error()
-		c.logger.ErrorD("client-request-finished", logData)
+		c.logger.Log(wcl.Error, "client-request-finished", logData)
 		return %serr
 	}
 	defer resp.Body.Close()

@@ -8,7 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	models "github.com/Clever/wag/samples/v8/gen-go-db-custom-path/models"
+	v9 "github.com/Clever/wag/samples/gen-go-db-custom-path/models/v9"
 	strfmt "github.com/go-openapi/strfmt"
 	gomock "github.com/golang/mock/gomock"
 )
@@ -37,7 +37,7 @@ func (m *MockInterface) EXPECT() *MockInterfaceMockRecorder {
 }
 
 // DeleteArrayOfThingAllowingBatchWrites mocks base method.
-func (m *MockInterface) DeleteArrayOfThingAllowingBatchWrites(ctx context.Context, ms []models.ThingAllowingBatchWrites) error {
+func (m *MockInterface) DeleteArrayOfThingAllowingBatchWrites(ctx context.Context, ms []v9.ThingAllowingBatchWrites) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteArrayOfThingAllowingBatchWrites", ctx, ms)
 	ret0, _ := ret[0].(error)
@@ -51,7 +51,7 @@ func (mr *MockInterfaceMockRecorder) DeleteArrayOfThingAllowingBatchWrites(ctx, 
 }
 
 // DeleteArrayOfThingAllowingBatchWritesWithCompositeAttributes mocks base method.
-func (m *MockInterface) DeleteArrayOfThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, ms []models.ThingAllowingBatchWritesWithCompositeAttributes) error {
+func (m *MockInterface) DeleteArrayOfThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, ms []v9.ThingAllowingBatchWritesWithCompositeAttributes) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteArrayOfThingAllowingBatchWritesWithCompositeAttributes", ctx, ms)
 	ret0, _ := ret[0].(error)
@@ -205,7 +205,7 @@ func (mr *MockInterfaceMockRecorder) DeleteThingWithCompositeAttributes(ctx, nam
 }
 
 // DeleteThingWithCompositeEnumAttributes mocks base method.
-func (m *MockInterface) DeleteThingWithCompositeEnumAttributes(ctx context.Context, name string, branchID models.Branch, date strfmt.DateTime) error {
+func (m *MockInterface) DeleteThingWithCompositeEnumAttributes(ctx context.Context, name string, branchID v9.Branch, date strfmt.DateTime) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteThingWithCompositeEnumAttributes", ctx, name, branchID, date)
 	ret0, _ := ret[0].(error)
@@ -247,7 +247,7 @@ func (mr *MockInterfaceMockRecorder) DeleteThingWithDateTimeComposite(ctx, typeV
 }
 
 // DeleteThingWithEnumHashKey mocks base method.
-func (m *MockInterface) DeleteThingWithEnumHashKey(ctx context.Context, branch models.Branch, date strfmt.DateTime) error {
+func (m *MockInterface) DeleteThingWithEnumHashKey(ctx context.Context, branch v9.Branch, date strfmt.DateTime) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteThingWithEnumHashKey", ctx, branch, date)
 	ret0, _ := ret[0].(error)
@@ -345,10 +345,10 @@ func (mr *MockInterfaceMockRecorder) DeleteThingWithUnderscores(ctx, iDApp inter
 }
 
 // GetDeployment mocks base method.
-func (m *MockInterface) GetDeployment(ctx context.Context, environment, application, version string) (*models.Deployment, error) {
+func (m *MockInterface) GetDeployment(ctx context.Context, environment, application, version string) (*v9.Deployment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDeployment", ctx, environment, application, version)
-	ret0, _ := ret[0].(*models.Deployment)
+	ret0, _ := ret[0].(*v9.Deployment)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -360,10 +360,10 @@ func (mr *MockInterfaceMockRecorder) GetDeployment(ctx, environment, application
 }
 
 // GetDeploymentByVersion mocks base method.
-func (m *MockInterface) GetDeploymentByVersion(ctx context.Context, version string) (*models.Deployment, error) {
+func (m *MockInterface) GetDeploymentByVersion(ctx context.Context, version string) (*v9.Deployment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDeploymentByVersion", ctx, version)
-	ret0, _ := ret[0].(*models.Deployment)
+	ret0, _ := ret[0].(*v9.Deployment)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -375,7 +375,7 @@ func (mr *MockInterfaceMockRecorder) GetDeploymentByVersion(ctx, version interfa
 }
 
 // GetDeploymentsByEnvAppAndDate mocks base method.
-func (m *MockInterface) GetDeploymentsByEnvAppAndDate(ctx context.Context, input GetDeploymentsByEnvAppAndDateInput, fn func(*models.Deployment, bool) bool) error {
+func (m *MockInterface) GetDeploymentsByEnvAppAndDate(ctx context.Context, input GetDeploymentsByEnvAppAndDateInput, fn func(*v9.Deployment, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDeploymentsByEnvAppAndDate", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -389,7 +389,7 @@ func (mr *MockInterfaceMockRecorder) GetDeploymentsByEnvAppAndDate(ctx, input, f
 }
 
 // GetDeploymentsByEnvAppAndVersion mocks base method.
-func (m *MockInterface) GetDeploymentsByEnvAppAndVersion(ctx context.Context, input GetDeploymentsByEnvAppAndVersionInput, fn func(*models.Deployment, bool) bool) error {
+func (m *MockInterface) GetDeploymentsByEnvAppAndVersion(ctx context.Context, input GetDeploymentsByEnvAppAndVersionInput, fn func(*v9.Deployment, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDeploymentsByEnvAppAndVersion", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -403,7 +403,7 @@ func (mr *MockInterfaceMockRecorder) GetDeploymentsByEnvAppAndVersion(ctx, input
 }
 
 // GetDeploymentsByEnvironmentAndDate mocks base method.
-func (m *MockInterface) GetDeploymentsByEnvironmentAndDate(ctx context.Context, input GetDeploymentsByEnvironmentAndDateInput, fn func(*models.Deployment, bool) bool) error {
+func (m *MockInterface) GetDeploymentsByEnvironmentAndDate(ctx context.Context, input GetDeploymentsByEnvironmentAndDateInput, fn func(*v9.Deployment, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDeploymentsByEnvironmentAndDate", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -417,10 +417,10 @@ func (mr *MockInterfaceMockRecorder) GetDeploymentsByEnvironmentAndDate(ctx, inp
 }
 
 // GetEvent mocks base method.
-func (m *MockInterface) GetEvent(ctx context.Context, pk, sk string) (*models.Event, error) {
+func (m *MockInterface) GetEvent(ctx context.Context, pk, sk string) (*v9.Event, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetEvent", ctx, pk, sk)
-	ret0, _ := ret[0].(*models.Event)
+	ret0, _ := ret[0].(*v9.Event)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -432,7 +432,7 @@ func (mr *MockInterfaceMockRecorder) GetEvent(ctx, pk, sk interface{}) *gomock.C
 }
 
 // GetEventsByPkAndSk mocks base method.
-func (m *MockInterface) GetEventsByPkAndSk(ctx context.Context, input GetEventsByPkAndSkInput, fn func(*models.Event, bool) bool) error {
+func (m *MockInterface) GetEventsByPkAndSk(ctx context.Context, input GetEventsByPkAndSkInput, fn func(*v9.Event, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetEventsByPkAndSk", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -446,7 +446,7 @@ func (mr *MockInterfaceMockRecorder) GetEventsByPkAndSk(ctx, input, fn interface
 }
 
 // GetEventsBySkAndData mocks base method.
-func (m *MockInterface) GetEventsBySkAndData(ctx context.Context, input GetEventsBySkAndDataInput, fn func(*models.Event, bool) bool) error {
+func (m *MockInterface) GetEventsBySkAndData(ctx context.Context, input GetEventsBySkAndDataInput, fn func(*v9.Event, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetEventsBySkAndData", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -460,10 +460,10 @@ func (mr *MockInterfaceMockRecorder) GetEventsBySkAndData(ctx, input, fn interfa
 }
 
 // GetNoRangeThingWithCompositeAttributes mocks base method.
-func (m *MockInterface) GetNoRangeThingWithCompositeAttributes(ctx context.Context, name, branch string) (*models.NoRangeThingWithCompositeAttributes, error) {
+func (m *MockInterface) GetNoRangeThingWithCompositeAttributes(ctx context.Context, name, branch string) (*v9.NoRangeThingWithCompositeAttributes, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNoRangeThingWithCompositeAttributes", ctx, name, branch)
-	ret0, _ := ret[0].(*models.NoRangeThingWithCompositeAttributes)
+	ret0, _ := ret[0].(*v9.NoRangeThingWithCompositeAttributes)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -475,7 +475,7 @@ func (mr *MockInterfaceMockRecorder) GetNoRangeThingWithCompositeAttributes(ctx,
 }
 
 // GetNoRangeThingWithCompositeAttributessByNameVersionAndDate mocks base method.
-func (m *MockInterface) GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input GetNoRangeThingWithCompositeAttributessByNameVersionAndDateInput, fn func(*models.NoRangeThingWithCompositeAttributes, bool) bool) error {
+func (m *MockInterface) GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input GetNoRangeThingWithCompositeAttributessByNameVersionAndDateInput, fn func(*v9.NoRangeThingWithCompositeAttributes, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNoRangeThingWithCompositeAttributessByNameVersionAndDate", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -489,10 +489,10 @@ func (mr *MockInterfaceMockRecorder) GetNoRangeThingWithCompositeAttributessByNa
 }
 
 // GetSimpleThing mocks base method.
-func (m *MockInterface) GetSimpleThing(ctx context.Context, name string) (*models.SimpleThing, error) {
+func (m *MockInterface) GetSimpleThing(ctx context.Context, name string) (*v9.SimpleThing, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSimpleThing", ctx, name)
-	ret0, _ := ret[0].(*models.SimpleThing)
+	ret0, _ := ret[0].(*v9.SimpleThing)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -504,10 +504,10 @@ func (mr *MockInterfaceMockRecorder) GetSimpleThing(ctx, name interface{}) *gomo
 }
 
 // GetTeacherSharingRule mocks base method.
-func (m *MockInterface) GetTeacherSharingRule(ctx context.Context, teacher, school, app string) (*models.TeacherSharingRule, error) {
+func (m *MockInterface) GetTeacherSharingRule(ctx context.Context, teacher, school, app string) (*v9.TeacherSharingRule, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetTeacherSharingRule", ctx, teacher, school, app)
-	ret0, _ := ret[0].(*models.TeacherSharingRule)
+	ret0, _ := ret[0].(*v9.TeacherSharingRule)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -519,7 +519,7 @@ func (mr *MockInterfaceMockRecorder) GetTeacherSharingRule(ctx, teacher, school,
 }
 
 // GetTeacherSharingRulesByDistrictAndSchoolTeacherApp mocks base method.
-func (m *MockInterface) GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx context.Context, input GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput, fn func(*models.TeacherSharingRule, bool) bool) error {
+func (m *MockInterface) GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx context.Context, input GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput, fn func(*v9.TeacherSharingRule, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetTeacherSharingRulesByDistrictAndSchoolTeacherApp", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -533,7 +533,7 @@ func (mr *MockInterfaceMockRecorder) GetTeacherSharingRulesByDistrictAndSchoolTe
 }
 
 // GetTeacherSharingRulesByTeacherAndSchoolApp mocks base method.
-func (m *MockInterface) GetTeacherSharingRulesByTeacherAndSchoolApp(ctx context.Context, input GetTeacherSharingRulesByTeacherAndSchoolAppInput, fn func(*models.TeacherSharingRule, bool) bool) error {
+func (m *MockInterface) GetTeacherSharingRulesByTeacherAndSchoolApp(ctx context.Context, input GetTeacherSharingRulesByTeacherAndSchoolAppInput, fn func(*v9.TeacherSharingRule, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetTeacherSharingRulesByTeacherAndSchoolApp", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -547,10 +547,10 @@ func (mr *MockInterfaceMockRecorder) GetTeacherSharingRulesByTeacherAndSchoolApp
 }
 
 // GetThing mocks base method.
-func (m *MockInterface) GetThing(ctx context.Context, name string, version int64) (*models.Thing, error) {
+func (m *MockInterface) GetThing(ctx context.Context, name string, version int64) (*v9.Thing, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThing", ctx, name, version)
-	ret0, _ := ret[0].(*models.Thing)
+	ret0, _ := ret[0].(*v9.Thing)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -562,10 +562,10 @@ func (mr *MockInterfaceMockRecorder) GetThing(ctx, name, version interface{}) *g
 }
 
 // GetThingAllowingBatchWrites mocks base method.
-func (m *MockInterface) GetThingAllowingBatchWrites(ctx context.Context, name string, version int64) (*models.ThingAllowingBatchWrites, error) {
+func (m *MockInterface) GetThingAllowingBatchWrites(ctx context.Context, name string, version int64) (*v9.ThingAllowingBatchWrites, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingAllowingBatchWrites", ctx, name, version)
-	ret0, _ := ret[0].(*models.ThingAllowingBatchWrites)
+	ret0, _ := ret[0].(*v9.ThingAllowingBatchWrites)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -577,10 +577,10 @@ func (mr *MockInterfaceMockRecorder) GetThingAllowingBatchWrites(ctx, name, vers
 }
 
 // GetThingAllowingBatchWritesWithCompositeAttributes mocks base method.
-func (m *MockInterface) GetThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name, id string, date strfmt.DateTime) (*models.ThingAllowingBatchWritesWithCompositeAttributes, error) {
+func (m *MockInterface) GetThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name, id string, date strfmt.DateTime) (*v9.ThingAllowingBatchWritesWithCompositeAttributes, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingAllowingBatchWritesWithCompositeAttributes", ctx, name, id, date)
-	ret0, _ := ret[0].(*models.ThingAllowingBatchWritesWithCompositeAttributes)
+	ret0, _ := ret[0].(*v9.ThingAllowingBatchWritesWithCompositeAttributes)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -592,7 +592,7 @@ func (mr *MockInterfaceMockRecorder) GetThingAllowingBatchWritesWithCompositeAtt
 }
 
 // GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate mocks base method.
-func (m *MockInterface) GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate(ctx context.Context, input GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateInput, fn func(*models.ThingAllowingBatchWritesWithCompositeAttributes, bool) bool) error {
+func (m *MockInterface) GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate(ctx context.Context, input GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateInput, fn func(*v9.ThingAllowingBatchWritesWithCompositeAttributes, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -606,7 +606,7 @@ func (mr *MockInterfaceMockRecorder) GetThingAllowingBatchWritesWithCompositeAtt
 }
 
 // GetThingAllowingBatchWritessByNameAndVersion mocks base method.
-func (m *MockInterface) GetThingAllowingBatchWritessByNameAndVersion(ctx context.Context, input GetThingAllowingBatchWritessByNameAndVersionInput, fn func(*models.ThingAllowingBatchWrites, bool) bool) error {
+func (m *MockInterface) GetThingAllowingBatchWritessByNameAndVersion(ctx context.Context, input GetThingAllowingBatchWritessByNameAndVersionInput, fn func(*v9.ThingAllowingBatchWrites, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingAllowingBatchWritessByNameAndVersion", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -620,10 +620,10 @@ func (mr *MockInterfaceMockRecorder) GetThingAllowingBatchWritessByNameAndVersio
 }
 
 // GetThingByID mocks base method.
-func (m *MockInterface) GetThingByID(ctx context.Context, id string) (*models.Thing, error) {
+func (m *MockInterface) GetThingByID(ctx context.Context, id string) (*v9.Thing, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingByID", ctx, id)
-	ret0, _ := ret[0].(*models.Thing)
+	ret0, _ := ret[0].(*v9.Thing)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -635,10 +635,10 @@ func (mr *MockInterfaceMockRecorder) GetThingByID(ctx, id interface{}) *gomock.C
 }
 
 // GetThingWithAdditionalAttributes mocks base method.
-func (m *MockInterface) GetThingWithAdditionalAttributes(ctx context.Context, name string, version int64) (*models.ThingWithAdditionalAttributes, error) {
+func (m *MockInterface) GetThingWithAdditionalAttributes(ctx context.Context, name string, version int64) (*v9.ThingWithAdditionalAttributes, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithAdditionalAttributes", ctx, name, version)
-	ret0, _ := ret[0].(*models.ThingWithAdditionalAttributes)
+	ret0, _ := ret[0].(*v9.ThingWithAdditionalAttributes)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -650,10 +650,10 @@ func (mr *MockInterfaceMockRecorder) GetThingWithAdditionalAttributes(ctx, name,
 }
 
 // GetThingWithAdditionalAttributesByID mocks base method.
-func (m *MockInterface) GetThingWithAdditionalAttributesByID(ctx context.Context, id string) (*models.ThingWithAdditionalAttributes, error) {
+func (m *MockInterface) GetThingWithAdditionalAttributesByID(ctx context.Context, id string) (*v9.ThingWithAdditionalAttributes, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithAdditionalAttributesByID", ctx, id)
-	ret0, _ := ret[0].(*models.ThingWithAdditionalAttributes)
+	ret0, _ := ret[0].(*v9.ThingWithAdditionalAttributes)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -665,7 +665,7 @@ func (mr *MockInterfaceMockRecorder) GetThingWithAdditionalAttributesByID(ctx, i
 }
 
 // GetThingWithAdditionalAttributessByHashNullableAndName mocks base method.
-func (m *MockInterface) GetThingWithAdditionalAttributessByHashNullableAndName(ctx context.Context, input GetThingWithAdditionalAttributessByHashNullableAndNameInput, fn func(*models.ThingWithAdditionalAttributes, bool) bool) error {
+func (m *MockInterface) GetThingWithAdditionalAttributessByHashNullableAndName(ctx context.Context, input GetThingWithAdditionalAttributessByHashNullableAndNameInput, fn func(*v9.ThingWithAdditionalAttributes, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithAdditionalAttributessByHashNullableAndName", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -679,7 +679,7 @@ func (mr *MockInterfaceMockRecorder) GetThingWithAdditionalAttributessByHashNull
 }
 
 // GetThingWithAdditionalAttributessByNameAndCreatedAt mocks base method.
-func (m *MockInterface) GetThingWithAdditionalAttributessByNameAndCreatedAt(ctx context.Context, input GetThingWithAdditionalAttributessByNameAndCreatedAtInput, fn func(*models.ThingWithAdditionalAttributes, bool) bool) error {
+func (m *MockInterface) GetThingWithAdditionalAttributessByNameAndCreatedAt(ctx context.Context, input GetThingWithAdditionalAttributessByNameAndCreatedAtInput, fn func(*v9.ThingWithAdditionalAttributes, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithAdditionalAttributessByNameAndCreatedAt", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -693,7 +693,7 @@ func (mr *MockInterfaceMockRecorder) GetThingWithAdditionalAttributessByNameAndC
 }
 
 // GetThingWithAdditionalAttributessByNameAndRangeNullable mocks base method.
-func (m *MockInterface) GetThingWithAdditionalAttributessByNameAndRangeNullable(ctx context.Context, input GetThingWithAdditionalAttributessByNameAndRangeNullableInput, fn func(*models.ThingWithAdditionalAttributes, bool) bool) error {
+func (m *MockInterface) GetThingWithAdditionalAttributessByNameAndRangeNullable(ctx context.Context, input GetThingWithAdditionalAttributessByNameAndRangeNullableInput, fn func(*v9.ThingWithAdditionalAttributes, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithAdditionalAttributessByNameAndRangeNullable", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -707,7 +707,7 @@ func (mr *MockInterfaceMockRecorder) GetThingWithAdditionalAttributessByNameAndR
 }
 
 // GetThingWithAdditionalAttributessByNameAndVersion mocks base method.
-func (m *MockInterface) GetThingWithAdditionalAttributessByNameAndVersion(ctx context.Context, input GetThingWithAdditionalAttributessByNameAndVersionInput, fn func(*models.ThingWithAdditionalAttributes, bool) bool) error {
+func (m *MockInterface) GetThingWithAdditionalAttributessByNameAndVersion(ctx context.Context, input GetThingWithAdditionalAttributessByNameAndVersionInput, fn func(*v9.ThingWithAdditionalAttributes, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithAdditionalAttributessByNameAndVersion", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -721,10 +721,10 @@ func (mr *MockInterfaceMockRecorder) GetThingWithAdditionalAttributessByNameAndV
 }
 
 // GetThingWithCompositeAttributes mocks base method.
-func (m *MockInterface) GetThingWithCompositeAttributes(ctx context.Context, name, branch string, date strfmt.DateTime) (*models.ThingWithCompositeAttributes, error) {
+func (m *MockInterface) GetThingWithCompositeAttributes(ctx context.Context, name, branch string, date strfmt.DateTime) (*v9.ThingWithCompositeAttributes, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithCompositeAttributes", ctx, name, branch, date)
-	ret0, _ := ret[0].(*models.ThingWithCompositeAttributes)
+	ret0, _ := ret[0].(*v9.ThingWithCompositeAttributes)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -736,7 +736,7 @@ func (mr *MockInterfaceMockRecorder) GetThingWithCompositeAttributes(ctx, name, 
 }
 
 // GetThingWithCompositeAttributessByNameBranchAndDate mocks base method.
-func (m *MockInterface) GetThingWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input GetThingWithCompositeAttributessByNameBranchAndDateInput, fn func(*models.ThingWithCompositeAttributes, bool) bool) error {
+func (m *MockInterface) GetThingWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input GetThingWithCompositeAttributessByNameBranchAndDateInput, fn func(*v9.ThingWithCompositeAttributes, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithCompositeAttributessByNameBranchAndDate", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -750,7 +750,7 @@ func (mr *MockInterfaceMockRecorder) GetThingWithCompositeAttributessByNameBranc
 }
 
 // GetThingWithCompositeAttributessByNameVersionAndDate mocks base method.
-func (m *MockInterface) GetThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input GetThingWithCompositeAttributessByNameVersionAndDateInput, fn func(*models.ThingWithCompositeAttributes, bool) bool) error {
+func (m *MockInterface) GetThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input GetThingWithCompositeAttributessByNameVersionAndDateInput, fn func(*v9.ThingWithCompositeAttributes, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithCompositeAttributessByNameVersionAndDate", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -764,10 +764,10 @@ func (mr *MockInterfaceMockRecorder) GetThingWithCompositeAttributessByNameVersi
 }
 
 // GetThingWithCompositeEnumAttributes mocks base method.
-func (m *MockInterface) GetThingWithCompositeEnumAttributes(ctx context.Context, name string, branchID models.Branch, date strfmt.DateTime) (*models.ThingWithCompositeEnumAttributes, error) {
+func (m *MockInterface) GetThingWithCompositeEnumAttributes(ctx context.Context, name string, branchID v9.Branch, date strfmt.DateTime) (*v9.ThingWithCompositeEnumAttributes, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithCompositeEnumAttributes", ctx, name, branchID, date)
-	ret0, _ := ret[0].(*models.ThingWithCompositeEnumAttributes)
+	ret0, _ := ret[0].(*v9.ThingWithCompositeEnumAttributes)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -779,7 +779,7 @@ func (mr *MockInterfaceMockRecorder) GetThingWithCompositeEnumAttributes(ctx, na
 }
 
 // GetThingWithCompositeEnumAttributessByNameBranchAndDate mocks base method.
-func (m *MockInterface) GetThingWithCompositeEnumAttributessByNameBranchAndDate(ctx context.Context, input GetThingWithCompositeEnumAttributessByNameBranchAndDateInput, fn func(*models.ThingWithCompositeEnumAttributes, bool) bool) error {
+func (m *MockInterface) GetThingWithCompositeEnumAttributessByNameBranchAndDate(ctx context.Context, input GetThingWithCompositeEnumAttributessByNameBranchAndDateInput, fn func(*v9.ThingWithCompositeEnumAttributes, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithCompositeEnumAttributessByNameBranchAndDate", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -793,10 +793,10 @@ func (mr *MockInterfaceMockRecorder) GetThingWithCompositeEnumAttributessByNameB
 }
 
 // GetThingWithDateRange mocks base method.
-func (m *MockInterface) GetThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) (*models.ThingWithDateRange, error) {
+func (m *MockInterface) GetThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) (*v9.ThingWithDateRange, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithDateRange", ctx, name, date)
-	ret0, _ := ret[0].(*models.ThingWithDateRange)
+	ret0, _ := ret[0].(*v9.ThingWithDateRange)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -808,7 +808,7 @@ func (mr *MockInterfaceMockRecorder) GetThingWithDateRange(ctx, name, date inter
 }
 
 // GetThingWithDateRangesByNameAndDate mocks base method.
-func (m *MockInterface) GetThingWithDateRangesByNameAndDate(ctx context.Context, input GetThingWithDateRangesByNameAndDateInput, fn func(*models.ThingWithDateRange, bool) bool) error {
+func (m *MockInterface) GetThingWithDateRangesByNameAndDate(ctx context.Context, input GetThingWithDateRangesByNameAndDateInput, fn func(*v9.ThingWithDateRange, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithDateRangesByNameAndDate", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -822,10 +822,10 @@ func (mr *MockInterfaceMockRecorder) GetThingWithDateRangesByNameAndDate(ctx, in
 }
 
 // GetThingWithDateTimeComposite mocks base method.
-func (m *MockInterface) GetThingWithDateTimeComposite(ctx context.Context, typeVar, id string, created strfmt.DateTime, resource string) (*models.ThingWithDateTimeComposite, error) {
+func (m *MockInterface) GetThingWithDateTimeComposite(ctx context.Context, typeVar, id string, created strfmt.DateTime, resource string) (*v9.ThingWithDateTimeComposite, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithDateTimeComposite", ctx, typeVar, id, created, resource)
-	ret0, _ := ret[0].(*models.ThingWithDateTimeComposite)
+	ret0, _ := ret[0].(*v9.ThingWithDateTimeComposite)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -837,7 +837,7 @@ func (mr *MockInterfaceMockRecorder) GetThingWithDateTimeComposite(ctx, typeVar,
 }
 
 // GetThingWithDateTimeCompositesByTypeIDAndCreatedResource mocks base method.
-func (m *MockInterface) GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx context.Context, input GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput, fn func(*models.ThingWithDateTimeComposite, bool) bool) error {
+func (m *MockInterface) GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx context.Context, input GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput, fn func(*v9.ThingWithDateTimeComposite, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithDateTimeCompositesByTypeIDAndCreatedResource", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -851,10 +851,10 @@ func (mr *MockInterfaceMockRecorder) GetThingWithDateTimeCompositesByTypeIDAndCr
 }
 
 // GetThingWithEnumHashKey mocks base method.
-func (m *MockInterface) GetThingWithEnumHashKey(ctx context.Context, branch models.Branch, date strfmt.DateTime) (*models.ThingWithEnumHashKey, error) {
+func (m *MockInterface) GetThingWithEnumHashKey(ctx context.Context, branch v9.Branch, date strfmt.DateTime) (*v9.ThingWithEnumHashKey, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithEnumHashKey", ctx, branch, date)
-	ret0, _ := ret[0].(*models.ThingWithEnumHashKey)
+	ret0, _ := ret[0].(*v9.ThingWithEnumHashKey)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -866,7 +866,7 @@ func (mr *MockInterfaceMockRecorder) GetThingWithEnumHashKey(ctx, branch, date i
 }
 
 // GetThingWithEnumHashKeysByBranchAndDate mocks base method.
-func (m *MockInterface) GetThingWithEnumHashKeysByBranchAndDate(ctx context.Context, input GetThingWithEnumHashKeysByBranchAndDateInput, fn func(*models.ThingWithEnumHashKey, bool) bool) error {
+func (m *MockInterface) GetThingWithEnumHashKeysByBranchAndDate(ctx context.Context, input GetThingWithEnumHashKeysByBranchAndDateInput, fn func(*v9.ThingWithEnumHashKey, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithEnumHashKeysByBranchAndDate", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -880,7 +880,7 @@ func (mr *MockInterfaceMockRecorder) GetThingWithEnumHashKeysByBranchAndDate(ctx
 }
 
 // GetThingWithEnumHashKeysByBranchAndDate2 mocks base method.
-func (m *MockInterface) GetThingWithEnumHashKeysByBranchAndDate2(ctx context.Context, input GetThingWithEnumHashKeysByBranchAndDate2Input, fn func(*models.ThingWithEnumHashKey, bool) bool) error {
+func (m *MockInterface) GetThingWithEnumHashKeysByBranchAndDate2(ctx context.Context, input GetThingWithEnumHashKeysByBranchAndDate2Input, fn func(*v9.ThingWithEnumHashKey, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithEnumHashKeysByBranchAndDate2", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -894,10 +894,10 @@ func (mr *MockInterfaceMockRecorder) GetThingWithEnumHashKeysByBranchAndDate2(ct
 }
 
 // GetThingWithMatchingKeys mocks base method.
-func (m *MockInterface) GetThingWithMatchingKeys(ctx context.Context, bear, assocType, assocID string) (*models.ThingWithMatchingKeys, error) {
+func (m *MockInterface) GetThingWithMatchingKeys(ctx context.Context, bear, assocType, assocID string) (*v9.ThingWithMatchingKeys, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithMatchingKeys", ctx, bear, assocType, assocID)
-	ret0, _ := ret[0].(*models.ThingWithMatchingKeys)
+	ret0, _ := ret[0].(*v9.ThingWithMatchingKeys)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -909,7 +909,7 @@ func (mr *MockInterfaceMockRecorder) GetThingWithMatchingKeys(ctx, bear, assocTy
 }
 
 // GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear mocks base method.
-func (m *MockInterface) GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Context, input GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput, fn func(*models.ThingWithMatchingKeys, bool) bool) error {
+func (m *MockInterface) GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Context, input GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput, fn func(*v9.ThingWithMatchingKeys, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -923,7 +923,7 @@ func (mr *MockInterfaceMockRecorder) GetThingWithMatchingKeyssByAssocTypeIDAndCr
 }
 
 // GetThingWithMatchingKeyssByBearAndAssocTypeID mocks base method.
-func (m *MockInterface) GetThingWithMatchingKeyssByBearAndAssocTypeID(ctx context.Context, input GetThingWithMatchingKeyssByBearAndAssocTypeIDInput, fn func(*models.ThingWithMatchingKeys, bool) bool) error {
+func (m *MockInterface) GetThingWithMatchingKeyssByBearAndAssocTypeID(ctx context.Context, input GetThingWithMatchingKeyssByBearAndAssocTypeIDInput, fn func(*v9.ThingWithMatchingKeys, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithMatchingKeyssByBearAndAssocTypeID", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -937,10 +937,10 @@ func (mr *MockInterfaceMockRecorder) GetThingWithMatchingKeyssByBearAndAssocType
 }
 
 // GetThingWithMultiUseCompositeAttribute mocks base method.
-func (m *MockInterface) GetThingWithMultiUseCompositeAttribute(ctx context.Context, one string) (*models.ThingWithMultiUseCompositeAttribute, error) {
+func (m *MockInterface) GetThingWithMultiUseCompositeAttribute(ctx context.Context, one string) (*v9.ThingWithMultiUseCompositeAttribute, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithMultiUseCompositeAttribute", ctx, one)
-	ret0, _ := ret[0].(*models.ThingWithMultiUseCompositeAttribute)
+	ret0, _ := ret[0].(*v9.ThingWithMultiUseCompositeAttribute)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -952,7 +952,7 @@ func (mr *MockInterfaceMockRecorder) GetThingWithMultiUseCompositeAttribute(ctx,
 }
 
 // GetThingWithMultiUseCompositeAttributesByFourAndOneTwo mocks base method.
-func (m *MockInterface) GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx context.Context, input GetThingWithMultiUseCompositeAttributesByFourAndOneTwoInput, fn func(*models.ThingWithMultiUseCompositeAttribute, bool) bool) error {
+func (m *MockInterface) GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx context.Context, input GetThingWithMultiUseCompositeAttributesByFourAndOneTwoInput, fn func(*v9.ThingWithMultiUseCompositeAttribute, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithMultiUseCompositeAttributesByFourAndOneTwo", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -966,7 +966,7 @@ func (mr *MockInterfaceMockRecorder) GetThingWithMultiUseCompositeAttributesByFo
 }
 
 // GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo mocks base method.
-func (m *MockInterface) GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx context.Context, input GetThingWithMultiUseCompositeAttributesByThreeAndOneTwoInput, fn func(*models.ThingWithMultiUseCompositeAttribute, bool) bool) error {
+func (m *MockInterface) GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx context.Context, input GetThingWithMultiUseCompositeAttributesByThreeAndOneTwoInput, fn func(*v9.ThingWithMultiUseCompositeAttribute, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -980,10 +980,10 @@ func (mr *MockInterfaceMockRecorder) GetThingWithMultiUseCompositeAttributesByTh
 }
 
 // GetThingWithRequiredCompositePropertiesAndKeysOnly mocks base method.
-func (m *MockInterface) GetThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, propertyThree string) (*models.ThingWithRequiredCompositePropertiesAndKeysOnly, error) {
+func (m *MockInterface) GetThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, propertyThree string) (*v9.ThingWithRequiredCompositePropertiesAndKeysOnly, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithRequiredCompositePropertiesAndKeysOnly", ctx, propertyThree)
-	ret0, _ := ret[0].(*models.ThingWithRequiredCompositePropertiesAndKeysOnly)
+	ret0, _ := ret[0].(*v9.ThingWithRequiredCompositePropertiesAndKeysOnly)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -995,7 +995,7 @@ func (mr *MockInterfaceMockRecorder) GetThingWithRequiredCompositePropertiesAndK
 }
 
 // GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree mocks base method.
-func (m *MockInterface) GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(ctx context.Context, input GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput, fn func(*models.ThingWithRequiredCompositePropertiesAndKeysOnly, bool) bool) error {
+func (m *MockInterface) GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(ctx context.Context, input GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput, fn func(*v9.ThingWithRequiredCompositePropertiesAndKeysOnly, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1009,10 +1009,10 @@ func (mr *MockInterfaceMockRecorder) GetThingWithRequiredCompositePropertiesAndK
 }
 
 // GetThingWithRequiredFields mocks base method.
-func (m *MockInterface) GetThingWithRequiredFields(ctx context.Context, name string) (*models.ThingWithRequiredFields, error) {
+func (m *MockInterface) GetThingWithRequiredFields(ctx context.Context, name string) (*v9.ThingWithRequiredFields, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithRequiredFields", ctx, name)
-	ret0, _ := ret[0].(*models.ThingWithRequiredFields)
+	ret0, _ := ret[0].(*v9.ThingWithRequiredFields)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1024,10 +1024,10 @@ func (mr *MockInterfaceMockRecorder) GetThingWithRequiredFields(ctx, name interf
 }
 
 // GetThingWithRequiredFields2 mocks base method.
-func (m *MockInterface) GetThingWithRequiredFields2(ctx context.Context, name, id string) (*models.ThingWithRequiredFields2, error) {
+func (m *MockInterface) GetThingWithRequiredFields2(ctx context.Context, name, id string) (*v9.ThingWithRequiredFields2, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithRequiredFields2", ctx, name, id)
-	ret0, _ := ret[0].(*models.ThingWithRequiredFields2)
+	ret0, _ := ret[0].(*v9.ThingWithRequiredFields2)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1039,7 +1039,7 @@ func (mr *MockInterfaceMockRecorder) GetThingWithRequiredFields2(ctx, name, id i
 }
 
 // GetThingWithRequiredFields2sByNameAndID mocks base method.
-func (m *MockInterface) GetThingWithRequiredFields2sByNameAndID(ctx context.Context, input GetThingWithRequiredFields2sByNameAndIDInput, fn func(*models.ThingWithRequiredFields2, bool) bool) error {
+func (m *MockInterface) GetThingWithRequiredFields2sByNameAndID(ctx context.Context, input GetThingWithRequiredFields2sByNameAndIDInput, fn func(*v9.ThingWithRequiredFields2, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithRequiredFields2sByNameAndID", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1053,10 +1053,10 @@ func (mr *MockInterfaceMockRecorder) GetThingWithRequiredFields2sByNameAndID(ctx
 }
 
 // GetThingWithUnderscores mocks base method.
-func (m *MockInterface) GetThingWithUnderscores(ctx context.Context, iDApp string) (*models.ThingWithUnderscores, error) {
+func (m *MockInterface) GetThingWithUnderscores(ctx context.Context, iDApp string) (*v9.ThingWithUnderscores, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingWithUnderscores", ctx, iDApp)
-	ret0, _ := ret[0].(*models.ThingWithUnderscores)
+	ret0, _ := ret[0].(*v9.ThingWithUnderscores)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1068,7 +1068,7 @@ func (mr *MockInterfaceMockRecorder) GetThingWithUnderscores(ctx, iDApp interfac
 }
 
 // GetThingsByHashNullableAndName mocks base method.
-func (m *MockInterface) GetThingsByHashNullableAndName(ctx context.Context, input GetThingsByHashNullableAndNameInput, fn func(*models.Thing, bool) bool) error {
+func (m *MockInterface) GetThingsByHashNullableAndName(ctx context.Context, input GetThingsByHashNullableAndNameInput, fn func(*v9.Thing, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingsByHashNullableAndName", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1082,7 +1082,7 @@ func (mr *MockInterfaceMockRecorder) GetThingsByHashNullableAndName(ctx, input, 
 }
 
 // GetThingsByNameAndCreatedAt mocks base method.
-func (m *MockInterface) GetThingsByNameAndCreatedAt(ctx context.Context, input GetThingsByNameAndCreatedAtInput, fn func(*models.Thing, bool) bool) error {
+func (m *MockInterface) GetThingsByNameAndCreatedAt(ctx context.Context, input GetThingsByNameAndCreatedAtInput, fn func(*v9.Thing, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingsByNameAndCreatedAt", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1096,7 +1096,7 @@ func (mr *MockInterfaceMockRecorder) GetThingsByNameAndCreatedAt(ctx, input, fn 
 }
 
 // GetThingsByNameAndRangeNullable mocks base method.
-func (m *MockInterface) GetThingsByNameAndRangeNullable(ctx context.Context, input GetThingsByNameAndRangeNullableInput, fn func(*models.Thing, bool) bool) error {
+func (m *MockInterface) GetThingsByNameAndRangeNullable(ctx context.Context, input GetThingsByNameAndRangeNullableInput, fn func(*v9.Thing, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingsByNameAndRangeNullable", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1110,7 +1110,7 @@ func (mr *MockInterfaceMockRecorder) GetThingsByNameAndRangeNullable(ctx, input,
 }
 
 // GetThingsByNameAndVersion mocks base method.
-func (m *MockInterface) GetThingsByNameAndVersion(ctx context.Context, input GetThingsByNameAndVersionInput, fn func(*models.Thing, bool) bool) error {
+func (m *MockInterface) GetThingsByNameAndVersion(ctx context.Context, input GetThingsByNameAndVersionInput, fn func(*v9.Thing, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetThingsByNameAndVersion", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1124,7 +1124,7 @@ func (mr *MockInterfaceMockRecorder) GetThingsByNameAndVersion(ctx, input, fn in
 }
 
 // SaveArrayOfThingAllowingBatchWrites mocks base method.
-func (m *MockInterface) SaveArrayOfThingAllowingBatchWrites(ctx context.Context, ms []models.ThingAllowingBatchWrites) error {
+func (m *MockInterface) SaveArrayOfThingAllowingBatchWrites(ctx context.Context, ms []v9.ThingAllowingBatchWrites) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveArrayOfThingAllowingBatchWrites", ctx, ms)
 	ret0, _ := ret[0].(error)
@@ -1138,7 +1138,7 @@ func (mr *MockInterfaceMockRecorder) SaveArrayOfThingAllowingBatchWrites(ctx, ms
 }
 
 // SaveArrayOfThingAllowingBatchWritesWithCompositeAttributes mocks base method.
-func (m *MockInterface) SaveArrayOfThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, ms []models.ThingAllowingBatchWritesWithCompositeAttributes) error {
+func (m *MockInterface) SaveArrayOfThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, ms []v9.ThingAllowingBatchWritesWithCompositeAttributes) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveArrayOfThingAllowingBatchWritesWithCompositeAttributes", ctx, ms)
 	ret0, _ := ret[0].(error)
@@ -1152,7 +1152,7 @@ func (mr *MockInterfaceMockRecorder) SaveArrayOfThingAllowingBatchWritesWithComp
 }
 
 // SaveDeployment mocks base method.
-func (m_2 *MockInterface) SaveDeployment(ctx context.Context, m models.Deployment) error {
+func (m_2 *MockInterface) SaveDeployment(ctx context.Context, m v9.Deployment) error {
 	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveDeployment", ctx, m)
 	ret0, _ := ret[0].(error)
@@ -1166,7 +1166,7 @@ func (mr *MockInterfaceMockRecorder) SaveDeployment(ctx, m interface{}) *gomock.
 }
 
 // SaveEvent mocks base method.
-func (m_2 *MockInterface) SaveEvent(ctx context.Context, m models.Event) error {
+func (m_2 *MockInterface) SaveEvent(ctx context.Context, m v9.Event) error {
 	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveEvent", ctx, m)
 	ret0, _ := ret[0].(error)
@@ -1180,7 +1180,7 @@ func (mr *MockInterfaceMockRecorder) SaveEvent(ctx, m interface{}) *gomock.Call 
 }
 
 // SaveNoRangeThingWithCompositeAttributes mocks base method.
-func (m_2 *MockInterface) SaveNoRangeThingWithCompositeAttributes(ctx context.Context, m models.NoRangeThingWithCompositeAttributes) error {
+func (m_2 *MockInterface) SaveNoRangeThingWithCompositeAttributes(ctx context.Context, m v9.NoRangeThingWithCompositeAttributes) error {
 	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveNoRangeThingWithCompositeAttributes", ctx, m)
 	ret0, _ := ret[0].(error)
@@ -1194,7 +1194,7 @@ func (mr *MockInterfaceMockRecorder) SaveNoRangeThingWithCompositeAttributes(ctx
 }
 
 // SaveSimpleThing mocks base method.
-func (m_2 *MockInterface) SaveSimpleThing(ctx context.Context, m models.SimpleThing) error {
+func (m_2 *MockInterface) SaveSimpleThing(ctx context.Context, m v9.SimpleThing) error {
 	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveSimpleThing", ctx, m)
 	ret0, _ := ret[0].(error)
@@ -1208,7 +1208,7 @@ func (mr *MockInterfaceMockRecorder) SaveSimpleThing(ctx, m interface{}) *gomock
 }
 
 // SaveTeacherSharingRule mocks base method.
-func (m_2 *MockInterface) SaveTeacherSharingRule(ctx context.Context, m models.TeacherSharingRule) error {
+func (m_2 *MockInterface) SaveTeacherSharingRule(ctx context.Context, m v9.TeacherSharingRule) error {
 	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveTeacherSharingRule", ctx, m)
 	ret0, _ := ret[0].(error)
@@ -1222,7 +1222,7 @@ func (mr *MockInterfaceMockRecorder) SaveTeacherSharingRule(ctx, m interface{}) 
 }
 
 // SaveThing mocks base method.
-func (m_2 *MockInterface) SaveThing(ctx context.Context, m models.Thing) error {
+func (m_2 *MockInterface) SaveThing(ctx context.Context, m v9.Thing) error {
 	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThing", ctx, m)
 	ret0, _ := ret[0].(error)
@@ -1236,7 +1236,7 @@ func (mr *MockInterfaceMockRecorder) SaveThing(ctx, m interface{}) *gomock.Call 
 }
 
 // SaveThingAllowingBatchWrites mocks base method.
-func (m_2 *MockInterface) SaveThingAllowingBatchWrites(ctx context.Context, m models.ThingAllowingBatchWrites) error {
+func (m_2 *MockInterface) SaveThingAllowingBatchWrites(ctx context.Context, m v9.ThingAllowingBatchWrites) error {
 	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThingAllowingBatchWrites", ctx, m)
 	ret0, _ := ret[0].(error)
@@ -1250,7 +1250,7 @@ func (mr *MockInterfaceMockRecorder) SaveThingAllowingBatchWrites(ctx, m interfa
 }
 
 // SaveThingAllowingBatchWritesWithCompositeAttributes mocks base method.
-func (m_2 *MockInterface) SaveThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, m models.ThingAllowingBatchWritesWithCompositeAttributes) error {
+func (m_2 *MockInterface) SaveThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, m v9.ThingAllowingBatchWritesWithCompositeAttributes) error {
 	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThingAllowingBatchWritesWithCompositeAttributes", ctx, m)
 	ret0, _ := ret[0].(error)
@@ -1264,7 +1264,7 @@ func (mr *MockInterfaceMockRecorder) SaveThingAllowingBatchWritesWithCompositeAt
 }
 
 // SaveThingWithAdditionalAttributes mocks base method.
-func (m_2 *MockInterface) SaveThingWithAdditionalAttributes(ctx context.Context, m models.ThingWithAdditionalAttributes) error {
+func (m_2 *MockInterface) SaveThingWithAdditionalAttributes(ctx context.Context, m v9.ThingWithAdditionalAttributes) error {
 	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithAdditionalAttributes", ctx, m)
 	ret0, _ := ret[0].(error)
@@ -1278,7 +1278,7 @@ func (mr *MockInterfaceMockRecorder) SaveThingWithAdditionalAttributes(ctx, m in
 }
 
 // SaveThingWithCompositeAttributes mocks base method.
-func (m_2 *MockInterface) SaveThingWithCompositeAttributes(ctx context.Context, m models.ThingWithCompositeAttributes) error {
+func (m_2 *MockInterface) SaveThingWithCompositeAttributes(ctx context.Context, m v9.ThingWithCompositeAttributes) error {
 	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithCompositeAttributes", ctx, m)
 	ret0, _ := ret[0].(error)
@@ -1292,7 +1292,7 @@ func (mr *MockInterfaceMockRecorder) SaveThingWithCompositeAttributes(ctx, m int
 }
 
 // SaveThingWithCompositeEnumAttributes mocks base method.
-func (m_2 *MockInterface) SaveThingWithCompositeEnumAttributes(ctx context.Context, m models.ThingWithCompositeEnumAttributes) error {
+func (m_2 *MockInterface) SaveThingWithCompositeEnumAttributes(ctx context.Context, m v9.ThingWithCompositeEnumAttributes) error {
 	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithCompositeEnumAttributes", ctx, m)
 	ret0, _ := ret[0].(error)
@@ -1306,7 +1306,7 @@ func (mr *MockInterfaceMockRecorder) SaveThingWithCompositeEnumAttributes(ctx, m
 }
 
 // SaveThingWithDateRange mocks base method.
-func (m_2 *MockInterface) SaveThingWithDateRange(ctx context.Context, m models.ThingWithDateRange) error {
+func (m_2 *MockInterface) SaveThingWithDateRange(ctx context.Context, m v9.ThingWithDateRange) error {
 	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithDateRange", ctx, m)
 	ret0, _ := ret[0].(error)
@@ -1320,7 +1320,7 @@ func (mr *MockInterfaceMockRecorder) SaveThingWithDateRange(ctx, m interface{}) 
 }
 
 // SaveThingWithDateTimeComposite mocks base method.
-func (m_2 *MockInterface) SaveThingWithDateTimeComposite(ctx context.Context, m models.ThingWithDateTimeComposite) error {
+func (m_2 *MockInterface) SaveThingWithDateTimeComposite(ctx context.Context, m v9.ThingWithDateTimeComposite) error {
 	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithDateTimeComposite", ctx, m)
 	ret0, _ := ret[0].(error)
@@ -1334,7 +1334,7 @@ func (mr *MockInterfaceMockRecorder) SaveThingWithDateTimeComposite(ctx, m inter
 }
 
 // SaveThingWithEnumHashKey mocks base method.
-func (m_2 *MockInterface) SaveThingWithEnumHashKey(ctx context.Context, m models.ThingWithEnumHashKey) error {
+func (m_2 *MockInterface) SaveThingWithEnumHashKey(ctx context.Context, m v9.ThingWithEnumHashKey) error {
 	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithEnumHashKey", ctx, m)
 	ret0, _ := ret[0].(error)
@@ -1348,7 +1348,7 @@ func (mr *MockInterfaceMockRecorder) SaveThingWithEnumHashKey(ctx, m interface{}
 }
 
 // SaveThingWithMatchingKeys mocks base method.
-func (m_2 *MockInterface) SaveThingWithMatchingKeys(ctx context.Context, m models.ThingWithMatchingKeys) error {
+func (m_2 *MockInterface) SaveThingWithMatchingKeys(ctx context.Context, m v9.ThingWithMatchingKeys) error {
 	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithMatchingKeys", ctx, m)
 	ret0, _ := ret[0].(error)
@@ -1362,7 +1362,7 @@ func (mr *MockInterfaceMockRecorder) SaveThingWithMatchingKeys(ctx, m interface{
 }
 
 // SaveThingWithMultiUseCompositeAttribute mocks base method.
-func (m_2 *MockInterface) SaveThingWithMultiUseCompositeAttribute(ctx context.Context, m models.ThingWithMultiUseCompositeAttribute) error {
+func (m_2 *MockInterface) SaveThingWithMultiUseCompositeAttribute(ctx context.Context, m v9.ThingWithMultiUseCompositeAttribute) error {
 	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithMultiUseCompositeAttribute", ctx, m)
 	ret0, _ := ret[0].(error)
@@ -1376,7 +1376,7 @@ func (mr *MockInterfaceMockRecorder) SaveThingWithMultiUseCompositeAttribute(ctx
 }
 
 // SaveThingWithRequiredCompositePropertiesAndKeysOnly mocks base method.
-func (m_2 *MockInterface) SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, m models.ThingWithRequiredCompositePropertiesAndKeysOnly) error {
+func (m_2 *MockInterface) SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, m v9.ThingWithRequiredCompositePropertiesAndKeysOnly) error {
 	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithRequiredCompositePropertiesAndKeysOnly", ctx, m)
 	ret0, _ := ret[0].(error)
@@ -1390,7 +1390,7 @@ func (mr *MockInterfaceMockRecorder) SaveThingWithRequiredCompositePropertiesAnd
 }
 
 // SaveThingWithRequiredFields mocks base method.
-func (m_2 *MockInterface) SaveThingWithRequiredFields(ctx context.Context, m models.ThingWithRequiredFields) error {
+func (m_2 *MockInterface) SaveThingWithRequiredFields(ctx context.Context, m v9.ThingWithRequiredFields) error {
 	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithRequiredFields", ctx, m)
 	ret0, _ := ret[0].(error)
@@ -1404,7 +1404,7 @@ func (mr *MockInterfaceMockRecorder) SaveThingWithRequiredFields(ctx, m interfac
 }
 
 // SaveThingWithRequiredFields2 mocks base method.
-func (m_2 *MockInterface) SaveThingWithRequiredFields2(ctx context.Context, m models.ThingWithRequiredFields2) error {
+func (m_2 *MockInterface) SaveThingWithRequiredFields2(ctx context.Context, m v9.ThingWithRequiredFields2) error {
 	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithRequiredFields2", ctx, m)
 	ret0, _ := ret[0].(error)
@@ -1418,7 +1418,7 @@ func (mr *MockInterfaceMockRecorder) SaveThingWithRequiredFields2(ctx, m interfa
 }
 
 // SaveThingWithUnderscores mocks base method.
-func (m_2 *MockInterface) SaveThingWithUnderscores(ctx context.Context, m models.ThingWithUnderscores) error {
+func (m_2 *MockInterface) SaveThingWithUnderscores(ctx context.Context, m v9.ThingWithUnderscores) error {
 	m_2.ctrl.T.Helper()
 	ret := m_2.ctrl.Call(m_2, "SaveThingWithUnderscores", ctx, m)
 	ret0, _ := ret[0].(error)
@@ -1432,7 +1432,7 @@ func (mr *MockInterfaceMockRecorder) SaveThingWithUnderscores(ctx, m interface{}
 }
 
 // ScanDeployments mocks base method.
-func (m *MockInterface) ScanDeployments(ctx context.Context, input ScanDeploymentsInput, fn func(*models.Deployment, bool) bool) error {
+func (m *MockInterface) ScanDeployments(ctx context.Context, input ScanDeploymentsInput, fn func(*v9.Deployment, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanDeployments", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1446,7 +1446,7 @@ func (mr *MockInterfaceMockRecorder) ScanDeployments(ctx, input, fn interface{})
 }
 
 // ScanDeploymentsByEnvAppAndDate mocks base method.
-func (m *MockInterface) ScanDeploymentsByEnvAppAndDate(ctx context.Context, input ScanDeploymentsByEnvAppAndDateInput, fn func(*models.Deployment, bool) bool) error {
+func (m *MockInterface) ScanDeploymentsByEnvAppAndDate(ctx context.Context, input ScanDeploymentsByEnvAppAndDateInput, fn func(*v9.Deployment, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanDeploymentsByEnvAppAndDate", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1460,7 +1460,7 @@ func (mr *MockInterfaceMockRecorder) ScanDeploymentsByEnvAppAndDate(ctx, input, 
 }
 
 // ScanDeploymentsByVersion mocks base method.
-func (m *MockInterface) ScanDeploymentsByVersion(ctx context.Context, input ScanDeploymentsByVersionInput, fn func(*models.Deployment, bool) bool) error {
+func (m *MockInterface) ScanDeploymentsByVersion(ctx context.Context, input ScanDeploymentsByVersionInput, fn func(*v9.Deployment, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanDeploymentsByVersion", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1474,7 +1474,7 @@ func (mr *MockInterfaceMockRecorder) ScanDeploymentsByVersion(ctx, input, fn int
 }
 
 // ScanEvents mocks base method.
-func (m *MockInterface) ScanEvents(ctx context.Context, input ScanEventsInput, fn func(*models.Event, bool) bool) error {
+func (m *MockInterface) ScanEvents(ctx context.Context, input ScanEventsInput, fn func(*v9.Event, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanEvents", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1488,7 +1488,7 @@ func (mr *MockInterfaceMockRecorder) ScanEvents(ctx, input, fn interface{}) *gom
 }
 
 // ScanEventsBySkAndData mocks base method.
-func (m *MockInterface) ScanEventsBySkAndData(ctx context.Context, input ScanEventsBySkAndDataInput, fn func(*models.Event, bool) bool) error {
+func (m *MockInterface) ScanEventsBySkAndData(ctx context.Context, input ScanEventsBySkAndDataInput, fn func(*v9.Event, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanEventsBySkAndData", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1502,7 +1502,7 @@ func (mr *MockInterfaceMockRecorder) ScanEventsBySkAndData(ctx, input, fn interf
 }
 
 // ScanNoRangeThingWithCompositeAttributess mocks base method.
-func (m *MockInterface) ScanNoRangeThingWithCompositeAttributess(ctx context.Context, input ScanNoRangeThingWithCompositeAttributessInput, fn func(*models.NoRangeThingWithCompositeAttributes, bool) bool) error {
+func (m *MockInterface) ScanNoRangeThingWithCompositeAttributess(ctx context.Context, input ScanNoRangeThingWithCompositeAttributessInput, fn func(*v9.NoRangeThingWithCompositeAttributes, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanNoRangeThingWithCompositeAttributess", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1516,7 +1516,7 @@ func (mr *MockInterfaceMockRecorder) ScanNoRangeThingWithCompositeAttributess(ct
 }
 
 // ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate mocks base method.
-func (m *MockInterface) ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input ScanNoRangeThingWithCompositeAttributessByNameVersionAndDateInput, fn func(*models.NoRangeThingWithCompositeAttributes, bool) bool) error {
+func (m *MockInterface) ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input ScanNoRangeThingWithCompositeAttributessByNameVersionAndDateInput, fn func(*v9.NoRangeThingWithCompositeAttributes, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1530,7 +1530,7 @@ func (mr *MockInterfaceMockRecorder) ScanNoRangeThingWithCompositeAttributessByN
 }
 
 // ScanSimpleThings mocks base method.
-func (m *MockInterface) ScanSimpleThings(ctx context.Context, input ScanSimpleThingsInput, fn func(*models.SimpleThing, bool) bool) error {
+func (m *MockInterface) ScanSimpleThings(ctx context.Context, input ScanSimpleThingsInput, fn func(*v9.SimpleThing, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanSimpleThings", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1544,7 +1544,7 @@ func (mr *MockInterfaceMockRecorder) ScanSimpleThings(ctx, input, fn interface{}
 }
 
 // ScanTeacherSharingRules mocks base method.
-func (m *MockInterface) ScanTeacherSharingRules(ctx context.Context, input ScanTeacherSharingRulesInput, fn func(*models.TeacherSharingRule, bool) bool) error {
+func (m *MockInterface) ScanTeacherSharingRules(ctx context.Context, input ScanTeacherSharingRulesInput, fn func(*v9.TeacherSharingRule, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanTeacherSharingRules", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1558,7 +1558,7 @@ func (mr *MockInterfaceMockRecorder) ScanTeacherSharingRules(ctx, input, fn inte
 }
 
 // ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp mocks base method.
-func (m *MockInterface) ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx context.Context, input ScanTeacherSharingRulesByDistrictAndSchoolTeacherAppInput, fn func(*models.TeacherSharingRule, bool) bool) error {
+func (m *MockInterface) ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx context.Context, input ScanTeacherSharingRulesByDistrictAndSchoolTeacherAppInput, fn func(*v9.TeacherSharingRule, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1572,7 +1572,7 @@ func (mr *MockInterfaceMockRecorder) ScanTeacherSharingRulesByDistrictAndSchoolT
 }
 
 // ScanThingAllowingBatchWritesWithCompositeAttributess mocks base method.
-func (m *MockInterface) ScanThingAllowingBatchWritesWithCompositeAttributess(ctx context.Context, input ScanThingAllowingBatchWritesWithCompositeAttributessInput, fn func(*models.ThingAllowingBatchWritesWithCompositeAttributes, bool) bool) error {
+func (m *MockInterface) ScanThingAllowingBatchWritesWithCompositeAttributess(ctx context.Context, input ScanThingAllowingBatchWritesWithCompositeAttributessInput, fn func(*v9.ThingAllowingBatchWritesWithCompositeAttributes, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingAllowingBatchWritesWithCompositeAttributess", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1586,7 +1586,7 @@ func (mr *MockInterfaceMockRecorder) ScanThingAllowingBatchWritesWithCompositeAt
 }
 
 // ScanThingAllowingBatchWritess mocks base method.
-func (m *MockInterface) ScanThingAllowingBatchWritess(ctx context.Context, input ScanThingAllowingBatchWritessInput, fn func(*models.ThingAllowingBatchWrites, bool) bool) error {
+func (m *MockInterface) ScanThingAllowingBatchWritess(ctx context.Context, input ScanThingAllowingBatchWritessInput, fn func(*v9.ThingAllowingBatchWrites, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingAllowingBatchWritess", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1600,7 +1600,7 @@ func (mr *MockInterfaceMockRecorder) ScanThingAllowingBatchWritess(ctx, input, f
 }
 
 // ScanThingWithAdditionalAttributess mocks base method.
-func (m *MockInterface) ScanThingWithAdditionalAttributess(ctx context.Context, input ScanThingWithAdditionalAttributessInput, fn func(*models.ThingWithAdditionalAttributes, bool) bool) error {
+func (m *MockInterface) ScanThingWithAdditionalAttributess(ctx context.Context, input ScanThingWithAdditionalAttributessInput, fn func(*v9.ThingWithAdditionalAttributes, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithAdditionalAttributess", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1614,7 +1614,7 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithAdditionalAttributess(ctx, inp
 }
 
 // ScanThingWithAdditionalAttributessByID mocks base method.
-func (m *MockInterface) ScanThingWithAdditionalAttributessByID(ctx context.Context, input ScanThingWithAdditionalAttributessByIDInput, fn func(*models.ThingWithAdditionalAttributes, bool) bool) error {
+func (m *MockInterface) ScanThingWithAdditionalAttributessByID(ctx context.Context, input ScanThingWithAdditionalAttributessByIDInput, fn func(*v9.ThingWithAdditionalAttributes, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithAdditionalAttributessByID", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1628,7 +1628,7 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithAdditionalAttributessByID(ctx,
 }
 
 // ScanThingWithAdditionalAttributessByNameAndCreatedAt mocks base method.
-func (m *MockInterface) ScanThingWithAdditionalAttributessByNameAndCreatedAt(ctx context.Context, input ScanThingWithAdditionalAttributessByNameAndCreatedAtInput, fn func(*models.ThingWithAdditionalAttributes, bool) bool) error {
+func (m *MockInterface) ScanThingWithAdditionalAttributessByNameAndCreatedAt(ctx context.Context, input ScanThingWithAdditionalAttributessByNameAndCreatedAtInput, fn func(*v9.ThingWithAdditionalAttributes, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithAdditionalAttributessByNameAndCreatedAt", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1642,7 +1642,7 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithAdditionalAttributessByNameAnd
 }
 
 // ScanThingWithAdditionalAttributessByNameAndRangeNullable mocks base method.
-func (m *MockInterface) ScanThingWithAdditionalAttributessByNameAndRangeNullable(ctx context.Context, input ScanThingWithAdditionalAttributessByNameAndRangeNullableInput, fn func(*models.ThingWithAdditionalAttributes, bool) bool) error {
+func (m *MockInterface) ScanThingWithAdditionalAttributessByNameAndRangeNullable(ctx context.Context, input ScanThingWithAdditionalAttributessByNameAndRangeNullableInput, fn func(*v9.ThingWithAdditionalAttributes, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithAdditionalAttributessByNameAndRangeNullable", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1656,7 +1656,7 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithAdditionalAttributessByNameAnd
 }
 
 // ScanThingWithCompositeAttributess mocks base method.
-func (m *MockInterface) ScanThingWithCompositeAttributess(ctx context.Context, input ScanThingWithCompositeAttributessInput, fn func(*models.ThingWithCompositeAttributes, bool) bool) error {
+func (m *MockInterface) ScanThingWithCompositeAttributess(ctx context.Context, input ScanThingWithCompositeAttributessInput, fn func(*v9.ThingWithCompositeAttributes, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithCompositeAttributess", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1670,7 +1670,7 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithCompositeAttributess(ctx, inpu
 }
 
 // ScanThingWithCompositeAttributessByNameVersionAndDate mocks base method.
-func (m *MockInterface) ScanThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input ScanThingWithCompositeAttributessByNameVersionAndDateInput, fn func(*models.ThingWithCompositeAttributes, bool) bool) error {
+func (m *MockInterface) ScanThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input ScanThingWithCompositeAttributessByNameVersionAndDateInput, fn func(*v9.ThingWithCompositeAttributes, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithCompositeAttributessByNameVersionAndDate", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1684,7 +1684,7 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithCompositeAttributessByNameVers
 }
 
 // ScanThingWithCompositeEnumAttributess mocks base method.
-func (m *MockInterface) ScanThingWithCompositeEnumAttributess(ctx context.Context, input ScanThingWithCompositeEnumAttributessInput, fn func(*models.ThingWithCompositeEnumAttributes, bool) bool) error {
+func (m *MockInterface) ScanThingWithCompositeEnumAttributess(ctx context.Context, input ScanThingWithCompositeEnumAttributessInput, fn func(*v9.ThingWithCompositeEnumAttributes, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithCompositeEnumAttributess", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1698,7 +1698,7 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithCompositeEnumAttributess(ctx, 
 }
 
 // ScanThingWithDateRanges mocks base method.
-func (m *MockInterface) ScanThingWithDateRanges(ctx context.Context, input ScanThingWithDateRangesInput, fn func(*models.ThingWithDateRange, bool) bool) error {
+func (m *MockInterface) ScanThingWithDateRanges(ctx context.Context, input ScanThingWithDateRangesInput, fn func(*v9.ThingWithDateRange, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithDateRanges", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1712,7 +1712,7 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithDateRanges(ctx, input, fn inte
 }
 
 // ScanThingWithDateTimeComposites mocks base method.
-func (m *MockInterface) ScanThingWithDateTimeComposites(ctx context.Context, input ScanThingWithDateTimeCompositesInput, fn func(*models.ThingWithDateTimeComposite, bool) bool) error {
+func (m *MockInterface) ScanThingWithDateTimeComposites(ctx context.Context, input ScanThingWithDateTimeCompositesInput, fn func(*v9.ThingWithDateTimeComposite, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithDateTimeComposites", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1726,7 +1726,7 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithDateTimeComposites(ctx, input,
 }
 
 // ScanThingWithEnumHashKeys mocks base method.
-func (m *MockInterface) ScanThingWithEnumHashKeys(ctx context.Context, input ScanThingWithEnumHashKeysInput, fn func(*models.ThingWithEnumHashKey, bool) bool) error {
+func (m *MockInterface) ScanThingWithEnumHashKeys(ctx context.Context, input ScanThingWithEnumHashKeysInput, fn func(*v9.ThingWithEnumHashKey, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithEnumHashKeys", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1740,7 +1740,7 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithEnumHashKeys(ctx, input, fn in
 }
 
 // ScanThingWithEnumHashKeysByBranchAndDate2 mocks base method.
-func (m *MockInterface) ScanThingWithEnumHashKeysByBranchAndDate2(ctx context.Context, input ScanThingWithEnumHashKeysByBranchAndDate2Input, fn func(*models.ThingWithEnumHashKey, bool) bool) error {
+func (m *MockInterface) ScanThingWithEnumHashKeysByBranchAndDate2(ctx context.Context, input ScanThingWithEnumHashKeysByBranchAndDate2Input, fn func(*v9.ThingWithEnumHashKey, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithEnumHashKeysByBranchAndDate2", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1754,7 +1754,7 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithEnumHashKeysByBranchAndDate2(c
 }
 
 // ScanThingWithMatchingKeyss mocks base method.
-func (m *MockInterface) ScanThingWithMatchingKeyss(ctx context.Context, input ScanThingWithMatchingKeyssInput, fn func(*models.ThingWithMatchingKeys, bool) bool) error {
+func (m *MockInterface) ScanThingWithMatchingKeyss(ctx context.Context, input ScanThingWithMatchingKeyssInput, fn func(*v9.ThingWithMatchingKeys, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithMatchingKeyss", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1768,7 +1768,7 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithMatchingKeyss(ctx, input, fn i
 }
 
 // ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear mocks base method.
-func (m *MockInterface) ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Context, input ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput, fn func(*models.ThingWithMatchingKeys, bool) bool) error {
+func (m *MockInterface) ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Context, input ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput, fn func(*v9.ThingWithMatchingKeys, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1782,7 +1782,7 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithMatchingKeyssByAssocTypeIDAndC
 }
 
 // ScanThingWithMultiUseCompositeAttributes mocks base method.
-func (m *MockInterface) ScanThingWithMultiUseCompositeAttributes(ctx context.Context, input ScanThingWithMultiUseCompositeAttributesInput, fn func(*models.ThingWithMultiUseCompositeAttribute, bool) bool) error {
+func (m *MockInterface) ScanThingWithMultiUseCompositeAttributes(ctx context.Context, input ScanThingWithMultiUseCompositeAttributesInput, fn func(*v9.ThingWithMultiUseCompositeAttribute, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithMultiUseCompositeAttributes", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1796,7 +1796,7 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithMultiUseCompositeAttributes(ct
 }
 
 // ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo mocks base method.
-func (m *MockInterface) ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx context.Context, input ScanThingWithMultiUseCompositeAttributesByFourAndOneTwoInput, fn func(*models.ThingWithMultiUseCompositeAttribute, bool) bool) error {
+func (m *MockInterface) ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx context.Context, input ScanThingWithMultiUseCompositeAttributesByFourAndOneTwoInput, fn func(*v9.ThingWithMultiUseCompositeAttribute, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1810,7 +1810,7 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithMultiUseCompositeAttributesByF
 }
 
 // ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo mocks base method.
-func (m *MockInterface) ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx context.Context, input ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwoInput, fn func(*models.ThingWithMultiUseCompositeAttribute, bool) bool) error {
+func (m *MockInterface) ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx context.Context, input ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwoInput, fn func(*v9.ThingWithMultiUseCompositeAttribute, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1824,7 +1824,7 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithMultiUseCompositeAttributesByT
 }
 
 // ScanThingWithRequiredCompositePropertiesAndKeysOnlys mocks base method.
-func (m *MockInterface) ScanThingWithRequiredCompositePropertiesAndKeysOnlys(ctx context.Context, input ScanThingWithRequiredCompositePropertiesAndKeysOnlysInput, fn func(*models.ThingWithRequiredCompositePropertiesAndKeysOnly, bool) bool) error {
+func (m *MockInterface) ScanThingWithRequiredCompositePropertiesAndKeysOnlys(ctx context.Context, input ScanThingWithRequiredCompositePropertiesAndKeysOnlysInput, fn func(*v9.ThingWithRequiredCompositePropertiesAndKeysOnly, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithRequiredCompositePropertiesAndKeysOnlys", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1838,7 +1838,7 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithRequiredCompositePropertiesAnd
 }
 
 // ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree mocks base method.
-func (m *MockInterface) ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(ctx context.Context, input ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput, fn func(*models.ThingWithRequiredCompositePropertiesAndKeysOnly, bool) bool) error {
+func (m *MockInterface) ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(ctx context.Context, input ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput, fn func(*v9.ThingWithRequiredCompositePropertiesAndKeysOnly, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1852,7 +1852,7 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithRequiredCompositePropertiesAnd
 }
 
 // ScanThingWithRequiredFields2s mocks base method.
-func (m *MockInterface) ScanThingWithRequiredFields2s(ctx context.Context, input ScanThingWithRequiredFields2sInput, fn func(*models.ThingWithRequiredFields2, bool) bool) error {
+func (m *MockInterface) ScanThingWithRequiredFields2s(ctx context.Context, input ScanThingWithRequiredFields2sInput, fn func(*v9.ThingWithRequiredFields2, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithRequiredFields2s", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1866,7 +1866,7 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithRequiredFields2s(ctx, input, f
 }
 
 // ScanThingWithRequiredFieldss mocks base method.
-func (m *MockInterface) ScanThingWithRequiredFieldss(ctx context.Context, input ScanThingWithRequiredFieldssInput, fn func(*models.ThingWithRequiredFields, bool) bool) error {
+func (m *MockInterface) ScanThingWithRequiredFieldss(ctx context.Context, input ScanThingWithRequiredFieldssInput, fn func(*v9.ThingWithRequiredFields, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingWithRequiredFieldss", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1880,7 +1880,7 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithRequiredFieldss(ctx, input, fn
 }
 
 // ScanThings mocks base method.
-func (m *MockInterface) ScanThings(ctx context.Context, input ScanThingsInput, fn func(*models.Thing, bool) bool) error {
+func (m *MockInterface) ScanThings(ctx context.Context, input ScanThingsInput, fn func(*v9.Thing, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThings", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1894,7 +1894,7 @@ func (mr *MockInterfaceMockRecorder) ScanThings(ctx, input, fn interface{}) *gom
 }
 
 // ScanThingsByID mocks base method.
-func (m *MockInterface) ScanThingsByID(ctx context.Context, input ScanThingsByIDInput, fn func(*models.Thing, bool) bool) error {
+func (m *MockInterface) ScanThingsByID(ctx context.Context, input ScanThingsByIDInput, fn func(*v9.Thing, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingsByID", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1908,7 +1908,7 @@ func (mr *MockInterfaceMockRecorder) ScanThingsByID(ctx, input, fn interface{}) 
 }
 
 // ScanThingsByNameAndCreatedAt mocks base method.
-func (m *MockInterface) ScanThingsByNameAndCreatedAt(ctx context.Context, input ScanThingsByNameAndCreatedAtInput, fn func(*models.Thing, bool) bool) error {
+func (m *MockInterface) ScanThingsByNameAndCreatedAt(ctx context.Context, input ScanThingsByNameAndCreatedAtInput, fn func(*v9.Thing, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingsByNameAndCreatedAt", ctx, input, fn)
 	ret0, _ := ret[0].(error)
@@ -1922,7 +1922,7 @@ func (mr *MockInterfaceMockRecorder) ScanThingsByNameAndCreatedAt(ctx, input, fn
 }
 
 // ScanThingsByNameAndRangeNullable mocks base method.
-func (m *MockInterface) ScanThingsByNameAndRangeNullable(ctx context.Context, input ScanThingsByNameAndRangeNullableInput, fn func(*models.Thing, bool) bool) error {
+func (m *MockInterface) ScanThingsByNameAndRangeNullable(ctx context.Context, input ScanThingsByNameAndRangeNullableInput, fn func(*v9.Thing, bool) bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanThingsByNameAndRangeNullable", ctx, input, fn)
 	ret0, _ := ret[0].(error)

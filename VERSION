@@ -1,6 +1,4 @@
-v8.2.2
-
-v8.2.2 Fix bug preventing transaction code from being generated when there are no GSIs
+v9.0.2 Separated client and models modules, reduced kv and otel deps.
 
 v8.2.1 Sort attributes list used in v8.2.0 to reduce diffs
 

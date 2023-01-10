@@ -15,12 +15,12 @@ import (
 	"time"
 
 	"github.com/Clever/go-process-metrics/metrics"
-	"github.com/Clever/wag/samples/v8/gen-go-nils/tracing"
+	"github.com/Clever/kayvee-go/v7/logger"
+	kvMiddleware "github.com/Clever/kayvee-go/v7/middleware"
+	"github.com/Clever/wag/samples/v9/gen-go-nils/servertracing"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/kardianos/osext"
-	"gopkg.in/Clever/kayvee-go.v6/logger"
-	kvMiddleware "gopkg.in/Clever/kayvee-go.v6/middleware"
 )
 
 // Server defines a HTTP server that implements the Controller interface.
@@ -136,7 +136,7 @@ func NewRouter(c Controller) *mux.Router {
 
 func newRouter(c Controller) *mux.Router {
 	router := mux.NewRouter()
-	router.Use(tracing.MuxServerMiddleware("nil-test"))
+	router.Use(servertracing.MuxServerMiddleware("nil-test"))
 	h := handler{Controller: c}
 
 	router.Methods("POST").Path("/v1/check/{id}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

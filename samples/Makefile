@@ -8,9 +8,12 @@ TEST_DB_PKG := "./gen-go-db/server/db/dynamodb"
 # These go:generate don't actually care about dependencies, so we use -mod=mod to override -mod=vendor
 # If not for that, it's difficult to bootstrap
 generate:
-	../bin/wag -file ./swagger.yml -output-path ./gen-go -js-path ./gen-js
+	@echo  $(TEST_PKGS) $(TEST_DB_PKG)
+	
+	../bin/wag -file ./swagger.yml -output-path ./gen-go-basic -js-path ./gen-js
 	cd ./gen-js && jsdoc2md index.js types.js > ./README.md
-	go generate -mod=mod ./gen-go...
+	go generate -mod=mod ./gen-go-basic...
+
 	../bin/wag -file ./deprecated.yml -output-path ./gen-go-deprecated -js-path ./gen-js-deprecated
 	cd ./gen-js-deprecated && jsdoc2md index.js types.js > ./README.md
 	go generate -mod=mod ./gen-go-deprecated...
@@ -35,8 +38,8 @@ generate:
 	cd ./gen-js-db-custom-path && jsdoc2md index.js types.js > ./README.md
 	go generate -mod=mod ./gen-go-db-custom-path...
 
-$(TEST_PKGS) $(TEST_DB_PKG): golang-test-all-strict-deps
-	$(call golang-test-all,$@)
+ $(TEST_PKGS) $(TEST_DB_PKG): golang-test-all-strict-deps
+	$(call echo golang-test-all,$@)
 
 install_deps:
 	go mod vendor

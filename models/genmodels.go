@@ -10,15 +10,16 @@ import (
 	"github.com/go-openapi/spec"
 
 	"github.com/Clever/go-utils/stringset"
-	goClient "github.com/Clever/wag/v8/clients/go"
-	"github.com/Clever/wag/v8/swagger"
-	"github.com/Clever/wag/v8/templates"
+	goClient "github.com/Clever/wag/v9/clients/go"
+	"github.com/Clever/wag/v9/swagger"
+	"github.com/Clever/wag/v9/templates"
+	"github.com/Clever/wag/v9/utils"
 
 	"github.com/go-swagger/go-swagger/generator"
 )
 
 // Generate writes the files to the client directories
-func Generate(packagePath string, s spec.Swagger) error {
+func Generate(packageName, basePath, outputPath string, s spec.Swagger) error {
 
 	tmpFile, err := swagger.WriteToFile(&s)
 	if err != nil {
@@ -29,7 +30,7 @@ func Generate(packagePath string, s spec.Swagger) error {
 	genopts := generator.GenOpts{
 		Spec:           tmpFile,
 		ModelPackage:   "models",
-		Target:         fmt.Sprintf("%s/src/%s/", os.Getenv("GOPATH"), packagePath),
+		Target:         basePath,
 		IncludeModel:   true,
 		IncludeHandler: false,
 		IncludeSupport: false,
@@ -45,18 +46,59 @@ func Generate(packagePath string, s spec.Swagger) error {
 		return fmt.Errorf("error generating go-swagger models: %s", err)
 	}
 
-	if err := generateOutputs(packagePath, s); err != nil {
+	if err := generateOutputs(basePath, s); err != nil {
 		return fmt.Errorf("error generating outputs: %s", err)
 	}
-	if err := generateInputs(packagePath, s); err != nil {
+	if err := generateInputs(basePath, s); err != nil {
 		return fmt.Errorf("error generating inputs: %s", err)
+	}
+	if err := CreateModFile("models/go.mod", basePath, packageName, outputPath); err != nil {
+		return fmt.Errorf("error creating go.mod file: %s", err)
 	}
 	return nil
 }
 
-func generateInputs(packagePath string, s spec.Swagger) error {
+// CreateModFile creates a go.mod file for the client module.
+func CreateModFile(path string, basePath, packageName, outputPath string) error {
+	outputPath = strings.TrimPrefix(outputPath, ".")
+	moduleName, versionSuffix := utils.ExtractModuleNameAndVersionSuffix(packageName, outputPath)
 
-	g := swagger.Generator{PackagePath: packagePath}
+	absPath := basePath + "/" + path
+	f, err := os.Create(absPath)
+
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+	modFileString := `
+module ` + moduleName + outputPath + `/models` + versionSuffix + `
+
+
+go 1.16
+
+require (
+	github.com/go-openapi/errors v0.20.2
+	github.com/go-openapi/strfmt v0.21.2
+	github.com/go-openapi/swag v0.21.1
+	github.com/go-openapi/validate v0.22.0
+	github.com/google/go-cmp v0.5.5 // indirect
+	github.com/google/uuid v1.1.2 // indirect
+	golang.org/x/net v0.0.0-20210614182718-04defd469f4e // indirect
+)
+
+	`
+	_, err = f.WriteString(modFileString)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+func generateInputs(basePath string, s spec.Swagger) error {
+
+	g := swagger.Generator{BasePath: basePath}
 
 	g.Printf(`
 package models
@@ -305,8 +347,8 @@ var queryParamStr = `
 	{{end}}
 `
 
-func generateOutputs(packagePath string, s spec.Swagger) error {
-	g := swagger.Generator{PackagePath: packagePath}
+func generateOutputs(basePath string, s spec.Swagger) error {
+	g := swagger.Generator{BasePath: basePath}
 
 	g.Printf("package models\n\nimport \"fmt\"\n")
 

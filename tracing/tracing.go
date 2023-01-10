@@ -15,10 +15,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-//These are the grpc defaults, but can be overwritten by passing in a WithAddress()
-const defaultCollectorHost = "localhost"
-const defaultCollectorPort uint16 = 4317
-
 // propagator to use
 var propagator propagation.TextMapPropagator = propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}) // traceparent header
 type Option interface {
@@ -44,7 +40,9 @@ func (o addrOption) apply(opts *options) {
 // OtlpGrpcExporter uses the otlptracegrpc modules and the otlptrace module to produce a new exporter at our default addr
 func OtlpGrpcExporter(ctx context.Context, opts ...Option) (sdktrace.SpanExporter, error) {
 
-	addr := fmt.Sprintf("%s:%d", defaultCollectorHost, defaultCollectorPort)
+	const DefaultCollectorHost = "localhost"
+	const defaultCollectorPort uint16 = 4317
+	addr := fmt.Sprintf("%s:%d", DefaultCollectorHost, defaultCollectorPort)
 
 	options := options{
 		address: addr,

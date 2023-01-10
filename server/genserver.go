@@ -7,22 +7,22 @@ import (
 
 	"github.com/go-openapi/spec"
 
-	clients "github.com/Clever/wag/v8/clients/go"
-	"github.com/Clever/wag/v8/swagger"
-	"github.com/Clever/wag/v8/templates"
-	"github.com/Clever/wag/v8/utils"
+	clients "github.com/Clever/wag/v9/clients/go"
+	"github.com/Clever/wag/v9/swagger"
+	"github.com/Clever/wag/v9/templates"
+	"github.com/Clever/wag/v9/utils"
 )
 
 // Generate server package for a swagger spec.
-func Generate(packageName, packagePath string, s spec.Swagger) error {
+func Generate(packageName, basePath, outputPath string, s spec.Swagger) error {
 
-	if err := generateRouter(packageName, packagePath, s, s.Paths); err != nil {
+	if err := generateRouter(packageName, basePath, outputPath, s, s.Paths); err != nil {
 		return err
 	}
-	if err := generateInterface(packageName, packagePath, &s, s.Info.InfoProps.Title, s.Paths); err != nil {
+	if err := generateInterface(packageName, basePath, outputPath, &s, s.Info.InfoProps.Title, s.Paths); err != nil {
 		return err
 	}
-	if err := generateHandlers(packageName, packagePath, &s, s.Paths); err != nil {
+	if err := generateHandlers(packageName, basePath, outputPath, &s, s.Paths); err != nil {
 		return err
 	}
 	return nil
@@ -41,7 +41,7 @@ type routerTemplate struct {
 	Functions        []routerFunction
 }
 
-func generateRouter(packageName, packagePath string, s spec.Swagger, paths *spec.Paths) error {
+func generateRouter(packageName, basePath, outputPath string, s spec.Swagger, paths *spec.Paths) error {
 
 	var template routerTemplate
 	template.Title = s.Info.Title
@@ -71,18 +71,18 @@ func generateRouter(packageName, packagePath string, s spec.Swagger, paths *spec
 		"syscall",
 		"time",
 		"github.com/Clever/go-process-metrics/metrics",
-		packageName + "/tracing",
+		packageName + "/servertracing",
 		"github.com/gorilla/handlers",
 		"github.com/gorilla/mux",
 		"github.com/kardianos/osext",
-		"gopkg.in/Clever/kayvee-go.v6/logger",
-		`kvMiddleware "gopkg.in/Clever/kayvee-go.v6/middleware"`,
+		"github.com/Clever/kayvee-go/v7/logger",
+		`kvMiddleware "github.com/Clever/kayvee-go/v7/middleware"`,
 	})
 	routerCode, err := templates.WriteTemplate(routerTemplateStr, template)
 	if err != nil {
 		return err
 	}
-	g := swagger.Generator{PackagePath: packagePath}
+	g := swagger.Generator{BasePath: basePath}
 	g.Printf(routerCode)
 	return g.WriteFile("server/router.go")
 }
@@ -96,6 +96,9 @@ type interfaceFileTemplate struct {
 	ImportStatements string
 	ServiceName      string
 	Interfaces       []interfaceTemplate
+	ModuleName       string
+	OutputPath       string
+	VersionSuffix    string
 }
 
 var interfaceTemplateStr = `
@@ -103,7 +106,8 @@ package server
 
 {{.ImportStatements}}
 
-//go:generate mockgen -source=$GOFILE -destination=mock_controller.go -package=server
+//go:generate mockgen -source=$GOFILE -destination=mock_controller.go -package server --build_flags=--mod=mod -imports=models={{.ModuleName}}{{.OutputPath}}/models{{.VersionSuffix}}
+
 
 // Controller defines the interface for the {{.ServiceName}} service.
 type Controller interface {
@@ -115,11 +119,16 @@ type Controller interface {
 }
 `
 
-func generateInterface(packageName, packagePath string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
+func generateInterface(packageName, basePath, outputPath string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
+	outputPath = strings.TrimPrefix(outputPath, ".")
 
+	moduleName, versionSuffix := utils.ExtractModuleNameAndVersionSuffix(packageName, outputPath)
 	tmpl := interfaceFileTemplate{
-		ImportStatements: swagger.ImportStatements([]string{"context", packageName + "/models"}),
+		ImportStatements: swagger.ImportStatements([]string{"context", moduleName + outputPath + "/models" + versionSuffix}),
 		ServiceName:      serviceName,
+		ModuleName:       moduleName,
+		OutputPath:       outputPath,
+		VersionSuffix:    versionSuffix,
 	}
 
 	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
@@ -141,7 +150,7 @@ func generateInterface(packageName, packagePath string, s *spec.Swagger, service
 	if err != nil {
 		return err
 	}
-	g := swagger.Generator{PackagePath: packagePath}
+	g := swagger.Generator{BasePath: basePath}
 	g.Printf(interfaceCode)
 	return g.WriteFile("server/interface.go")
 }
@@ -186,11 +195,13 @@ func jsonMarshalNoError(i interface{}) string {
 {{end}}
 `
 
-func generateHandlers(packageName, packagePath string, s *spec.Swagger, paths *spec.Paths) error {
+func generateHandlers(packageName, basePath, outputPath string, s *spec.Swagger, paths *spec.Paths) error {
+	outputPath = strings.TrimPrefix(outputPath, ".")
+	moduleName, versionSuffix := utils.ExtractModuleNameAndVersionSuffix(packageName, outputPath)
 	tmpl := handlerFileTemplate{
 		ImportStatements: swagger.ImportStatements([]string{"context", "github.com/gorilla/mux",
-			"gopkg.in/Clever/kayvee-go.v6/logger",
-			"net/http", "strconv", "encoding/json", "strconv", "fmt", packageName + "/models",
+			"github.com/Clever/kayvee-go/v7/logger",
+			"net/http", "strconv", "encoding/json", "strconv", "fmt", moduleName + outputPath + "/models" + versionSuffix,
 			"github.com/go-openapi/strfmt", "github.com/go-openapi/swag", "io/ioutil", "bytes",
 			"github.com/go-errors/errors", "golang.org/x/xerrors",
 		}),
@@ -215,7 +226,7 @@ func generateHandlers(packageName, packagePath string, s *spec.Swagger, paths *s
 	if err != nil {
 		return err
 	}
-	g := swagger.Generator{PackagePath: packagePath}
+	g := swagger.Generator{BasePath: basePath}
 	g.Printf(handlerCode)
 	return g.WriteFile("server/handlers.go")
 }

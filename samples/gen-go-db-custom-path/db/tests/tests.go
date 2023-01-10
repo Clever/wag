@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Clever/wag/samples/v8/gen-go-db-custom-path/db"
-	"github.com/Clever/wag/samples/v8/gen-go-db-custom-path/models"
+	"github.com/Clever/wag/samples/gen-go-db-custom-path/models/v9"
+	"github.com/Clever/wag/samples/v9/gen-go-db-custom-path/db"
 	"github.com/go-openapi/strfmt"
 	"github.com/stretchr/testify/require"
 )

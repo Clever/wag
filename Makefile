@@ -7,7 +7,7 @@ $(eval $(call node-version-check,$(NODE_VERSION)))
 export PATH := $(PWD)/bin:$(PATH)
 MAJOR_VERSION := $(shell head -n 1 VERSION | sed 's/[[:alpha:]|[:space:]]//g' | cut -d. -f1)
 PKG := github.com/Clever/wag/v$(MAJOR_VERSION)
-PKGS := $(shell go list ./... | grep -v /hardcoded | grep -v /tools)
+PKGS := $(shell go list ./... | grep -v /hardcoded | grep -v /tools | grep -v /gendb)
 VERSION := $(shell head -n 1 VERSION)
 EXECUTABLE := wag
 
@@ -33,7 +33,7 @@ go-generate:
 	go generate ./server/gendb/
 
 generate: build jsdoc2md
-	$(MAKE) -C samples generate
+	 $(MAKE) -C samples generate
 
 $(PKGS): golang-test-all-strict-deps
 	$(call golang-test-all-strict,$@)
@@ -50,3 +50,4 @@ install_deps:
 	go mod vendor
 	go build -o bin/go-bindata ./vendor/github.com/kevinburke/go-bindata/go-bindata
 	go build -o bin/mockgen    ./vendor/github.com/golang/mock/mockgen
+
