@@ -1,9 +1,11 @@
-package tracing
+package clientconfig
 
 import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"strconv"
 	"time"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -11,9 +13,13 @@ import (
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 	"go.opentelemetry.io/otel/trace"
 )
+
+var defaultSamplingProbability = 0.1
 
 // propagator to use
 var propagator propagation.TextMapPropagator = propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}) // traceparent header
@@ -66,11 +72,11 @@ func OtlpGrpcExporter(ctx context.Context, opts ...Option) (sdktrace.SpanExporte
 
 }
 
-// InstrumentedTransport returns the transport to use in client requests.
+// DefaultInstrumentor returns the transport to use in client requests.
 // It takes in a transport to wrap, e.g. http.DefaultTransport, and the request
 // context value to pull the span name out from.
 // 99% sure this is wrapping a wrapped thing and totally redundant. Fix later.
-func InstrumentedTransport(baseTransport http.RoundTripper, spanNameCtxValue interface{}, tp sdktrace.TracerProvider) http.RoundTripper {
+func DefaultInstrumentor(spanNameCtxValue interface{}, baseTransport http.RoundTripper, tp sdktrace.TracerProvider) http.RoundTripper {
 	return roundTripperWithTracing{baseTransport: baseTransport, spanNameCtxValue: spanNameCtxValue, tp: tp}
 }
 
@@ -81,7 +87,6 @@ type roundTripperWithTracing struct {
 }
 
 func (rt roundTripperWithTracing) RoundTrip(r *http.Request) (*http.Response, error) {
-
 	return otelhttp.NewTransport(
 		rt.baseTransport,
 		otelhttp.WithTracerProvider(otel.GetTracerProvider()),
@@ -104,4 +109,55 @@ func ExtractSpanAndTraceID(r *http.Request) (traceID, spanID string) {
 	}
 	sc := trace.SpanContextFromContext(propagator.Extract(r.Context(), propagation.HeaderCarrier(r.Header)))
 	return sc.SpanID().String(), sc.TraceID().String()
+}
+
+// newResource returns a resource describing this application.
+// Used for setting up tracer provider
+func newResource(appName string) *resource.Resource {
+	r, _ := resource.Merge(
+		resource.Default(),
+		resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceNameKey.String(appName),
+		),
+	)
+	return r
+}
+
+func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float64, appName string) *sdktrace.TracerProvider {
+	tp := sdktrace.NewTracerProvider(
+		// We use the default ID generator. In order for sampling to work (at least with this sampler)
+		// the ID generator must generate trace IDs uniformly at random from the entire space of uint64.
+		// For example, the default x-ray ID generator does not do this.
+		sdktrace.WithSampler(sdktrace.AlwaysSample()),
+		// These maximums are to guard against something going wrong and sending a ton of data unexpectedly
+		sdktrace.WithRawSpanLimits(sdktrace.SpanLimits{
+			AttributeCountLimit: 100,
+			EventCountLimit:     100,
+			LinkCountLimit:      100,
+		}),
+		//Batcher is more efficient, switch to it after testing
+		// sdktrace.WithSyncer(exporter),
+		sdktrace.WithBatcher(exporter),
+		sdktrace.WithResource(newResource(appName)),
+	)
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+	return tp
+}
+
+// determineSampling checks if we're running locally and then turns off sampling. Otherwise sample
+// whatever TRACING_SAMPLING_PROBABILITY specifies and fallback to the default
+func determineSampling() (samplingProbability float64) {
+	samplingProbability = defaultSamplingProbability
+	isLocal := os.Getenv("_IS_LOCAL") == "true"
+	if isLocal {
+		samplingProbability = 1.0
+	} else if v := os.Getenv("TRACING_SAMPLING_PROBABILITY"); v != "" {
+		samplingProbabilityFromEnv, err := strconv.ParseFloat(v, 64)
+		if err == nil {
+			samplingProbability = samplingProbabilityFromEnv
+		}
+	}
+	return samplingProbability
 }
