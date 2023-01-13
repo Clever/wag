@@ -110,37 +110,52 @@ func SetupGlobalTraceProviderAndExporterForTest() (*tracetest.InMemoryExporter, 
 // Right now we only support logging IDs in the format that Datadog expects.
 func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 	otlmux := otelmux.Middleware(serviceName, otelmux.WithPropagators(otel.GetTextMapPropagator()))
+	fmt.Println("Adding mux server middleware")
 	return func(h http.Handler) http.Handler {
 		return otlmux(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			var rid string
-			// otelmux has extracted the span. now put it into the ctx-specific logger
-			// var carrier propagation.HeaderCarrier = propagation.HeaderCarrier{}
-
-			// otelmux has extracted the span. now put it into the ctx-specific logger
+			var crid string
 
 			s := trace.SpanFromContext(r.Context())
 			bag := baggage.FromContext(r.Context())
+
+			// Prefer to grab values from baggage
+			crid = bag.Member("clever-request-id").Value()
 			rid = bag.Member("X-Request-ID").Value()
+
+			// If the values aren't set in baggage grab the traceid from otel, and the x-request-id
+			// from the headers (set by envoy)
+			if crid == "" {
+				crid = s.SpanContext().TraceID().String()
+			}
 
 			if rid == "" {
 				rid = r.Header.Get("X-Request-ID")
-				if rid == "" {
-					rid = s.SpanContext().TraceID().String()
-				}
 			}
+
+			s.SetAttributes(attribute.String("clever-request-id", crid))
+
+			cridMember, err := baggage.NewMember("clever-request-id", crid)
+			if err != nil {
+				s.RecordError(err)
+			}
+
+			bag, err = bag.SetMember(cridMember)
+			logger.FromContext(r.Context()).AddContext("clever-request-id", crid)
+			rw.Header().Add("clever-request-id", crid)
 
 			if rid != "" {
 				s.SetAttributes(attribute.String("X-Request-ID", rid))
-				member, err := baggage.NewMember("X-Request-ID", rid)
+				ridMember, err := baggage.NewMember("X-Request-ID", rid)
 				if err != nil {
 					s.RecordError(err)
 				}
-				bag, err = bag.SetMember(member)
-				ctx := baggage.ContextWithBaggage(r.Context(), bag)
-				r = r.WithContext(ctx)
+				bag, err = bag.SetMember(ridMember)
+
+				// Envoy logs store this as request_id so lets match it for easier filtering.
+				logger.FromContext(r.Context()).AddContext("request_id", rid)
 
 				rw.Header().Add("X-Request-ID", rid)
-				logger.FromContext(r.Context()).AddContext("X-Request-ID", rid)
 			}
 
 			if sc := s.SpanContext(); sc.HasTraceID() {
@@ -156,6 +171,10 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 						fmt.Sprintf("%d", binary.BigEndian.Uint64(spanIDBs)))
 				}
 			}
+
+			ctx := baggage.ContextWithBaggage(r.Context(), bag)
+			r = r.WithContext(ctx)
+
 			h.ServeHTTP(rw, r)
 		}))
 	}
