@@ -1,4 +1,5 @@
-v9.0.2 Separated client and models modules, reduced kv and otel deps.
+v9.0.2
+Separated client and models modules, reduced kv and otel deps.
 
 v8.2.1 Sort attributes list used in v8.2.0 to reduce diffs
 
