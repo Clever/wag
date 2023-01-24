@@ -110,7 +110,7 @@ func SetupGlobalTraceProviderAndExporterForTest() (*tracetest.InMemoryExporter, 
 // Right now we only support logging IDs in the format that Datadog expects.
 func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 	otlmux := otelmux.Middleware(serviceName, otelmux.WithPropagators(otel.GetTextMapPropagator()))
-	fmt.Println("Adding mux server middleware")
+	// fmt.Println("Adding mux server middleware")
 	return func(h http.Handler) http.Handler {
 		return otlmux(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			var rid string
