@@ -141,6 +141,10 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 			}
 
 			bag, err = bag.SetMember(cridMember)
+			if err != nil {
+				s.RecordError(err)
+			}
+
 			logger.FromContext(r.Context()).AddContext("clever-request-id", crid)
 			rw.Header().Add("clever-request-id", crid)
 
@@ -151,6 +155,9 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 					s.RecordError(err)
 				}
 				bag, err = bag.SetMember(ridMember)
+				if err != nil {
+					s.RecordError(err)
+				}
 
 				// Envoy logs store this as request_id so lets match it for easier filtering.
 				logger.FromContext(r.Context()).AddContext("request_id", rid)
