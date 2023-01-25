@@ -48,6 +48,7 @@ import (
 		"time"
 		"fmt"
 		"os"
+		"io/ioutil"
 		"crypto/md5"
 
 		"{{.ModuleName}}{{.OutputPath}}/models{{.VersionSuffix}}"
