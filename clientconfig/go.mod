@@ -1,4 +1,4 @@
-module github.com/Clever/wag/clientconfig
+module github.com/Clever/wag/clientconfig/v9
 
 go 1.16
 
