@@ -32,4 +32,6 @@ replace github.com/go-openapi/validate => github.com/go-openapi/validate v0.0.0-
 
 replace gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.0.0
 
+// Newer versions of swag use a newer version of yaml which fix a "bug" where the yaml spec was not fully
+// addhered  to. Unfortunately this was a breaking change in yaml parsing, so pinning swag for now.
 replace github.com/go-openapi/swag => github.com/go-openapi/swag v0.21.1
