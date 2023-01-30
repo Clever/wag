@@ -24,7 +24,7 @@ require (
 	github.com/go-openapi/runtime v0.24.1 // indirect
 	github.com/go-openapi/spec v0.20.7 // indirect
 	github.com/go-openapi/strfmt v0.21.3
-	github.com/go-openapi/swag v0.21.1
+	github.com/go-openapi/swag v0.22.3
 	github.com/golang/mock v1.6.0
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
@@ -83,6 +83,6 @@ replace github.com/Clever/wag/samples/gen-go-errors/client/v9 => ./gen-go-errors
 
 replace github.com/Clever/wag/samples/gen-go-nils/client/v9 => ./gen-go-nils/client
 
-replace github.com/go-openapi/swag => github.com/go-openapi/swag v0.0.0-20180102232305-84f4bee7c0a6
+replace github.com/go-openapi/swag => github.com/go-openapi/swag v0.21.1
 
 replace github.com/Clever/wag/v9 => ../
