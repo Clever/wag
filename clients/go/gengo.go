@@ -36,7 +36,6 @@ type clientCodeTemplate struct {
 var clientCodeTemplateStr = `
 package client
 
-// Using Alpha version of WAG Yay!
 import (
 		"context"
 		"strings"
