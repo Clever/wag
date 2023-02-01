@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
-	"strconv"
 	"time"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -18,8 +16,6 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 	"go.opentelemetry.io/otel/trace"
 )
-
-var defaultSamplingProbability = 0.1
 
 // propagator to use
 var propagator propagation.TextMapPropagator = propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}) // traceparent header
@@ -76,14 +72,13 @@ func OtlpGrpcExporter(ctx context.Context, opts ...Option) (sdktrace.SpanExporte
 // It takes in a transport to wrap, e.g. http.DefaultTransport, and the request
 // context value to pull the span name out from.
 // 99% sure this is wrapping a wrapped thing and totally redundant. Fix later.
-func DefaultInstrumentor(spanNameCtxValue interface{}, baseTransport http.RoundTripper, tp sdktrace.TracerProvider) http.RoundTripper {
-	return roundTripperWithTracing{baseTransport: baseTransport, spanNameCtxValue: spanNameCtxValue, tp: tp}
+func DefaultInstrumentor(baseTransport http.RoundTripper, tp sdktrace.TracerProvider) http.RoundTripper {
+	return roundTripperWithTracing{baseTransport: baseTransport, tp: tp}
 }
 
 type roundTripperWithTracing struct {
-	baseTransport    http.RoundTripper
-	spanNameCtxValue interface{}
-	tp               sdktrace.TracerProvider
+	baseTransport http.RoundTripper
+	tp            sdktrace.TracerProvider
 }
 
 func (rt roundTripperWithTracing) RoundTrip(r *http.Request) (*http.Response, error) {
@@ -92,7 +87,7 @@ func (rt roundTripperWithTracing) RoundTrip(r *http.Request) (*http.Response, er
 		otelhttp.WithTracerProvider(otel.GetTracerProvider()),
 		otelhttp.WithPropagators(propagator),
 		otelhttp.WithSpanNameFormatter(func(method string, r *http.Request) string {
-			v, ok := r.Context().Value(rt.spanNameCtxValue).(string)
+			v, ok := r.Context().Value("otelSpanName").(string)
 			if ok {
 				return v
 			}
@@ -124,7 +119,7 @@ func newResource(appName string) *resource.Resource {
 	return r
 }
 
-func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float64, appName string) *sdktrace.TracerProvider {
+func newTracerProvider(exporter sdktrace.SpanExporter, appName string) *sdktrace.TracerProvider {
 	tp := sdktrace.NewTracerProvider(
 		// We use the default ID generator. In order for sampling to work (at least with this sampler)
 		// the ID generator must generate trace IDs uniformly at random from the entire space of uint64.
@@ -144,20 +139,4 @@ func newTracerProvider(exporter sdktrace.SpanExporter, samplingProbability float
 	otel.SetTracerProvider(tp)
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 	return tp
-}
-
-// determineSampling checks if we're running locally and then turns off sampling. Otherwise sample
-// whatever TRACING_SAMPLING_PROBABILITY specifies and fallback to the default
-func determineSampling() (samplingProbability float64) {
-	samplingProbability = defaultSamplingProbability
-	isLocal := os.Getenv("_IS_LOCAL") == "true"
-	if isLocal {
-		samplingProbability = 1.0
-	} else if v := os.Getenv("TRACING_SAMPLING_PROBABILITY"); v != "" {
-		samplingProbabilityFromEnv, err := strconv.ParseFloat(v, 64)
-		if err == nil {
-			samplingProbability = samplingProbabilityFromEnv
-		}
-	}
-	return samplingProbability
 }

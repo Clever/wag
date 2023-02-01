@@ -1,7 +1,6 @@
 package clientconfig
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -17,12 +16,11 @@ func WithoutTracing(wagAppName string) (*logger.Logger, *http.RoundTripper) {
 	return ClientLogger(wagAppName), &http.DefaultTransport
 }
 
-func WithTracing(ctx context.Context, wagAppName string, exporter sdktrace.SpanExporter) (*logger.Logger, *http.RoundTripper) {
-	samplingProbability := determineSampling()
+func WithTracing(wagAppName string, exporter sdktrace.SpanExporter) (*logger.Logger, *http.RoundTripper) {
 	baseTransport := http.DefaultTransport
-	tp := newTracerProvider(exporter, samplingProbability, wagAppName)
+	tp := newTracerProvider(exporter, wagAppName)
 
-	instrumentedTransport := DefaultInstrumentor(ctx, baseTransport, *tp)
+	instrumentedTransport := DefaultInstrumentor(baseTransport, *tp)
 
 	return ClientLogger(wagAppName), &instrumentedTransport
 }
