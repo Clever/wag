@@ -20,7 +20,7 @@ require (
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/pelletier/go-toml v1.9.1 // indirect
 	github.com/rogpeppe/go-internal v1.8.1 // indirect
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.2
 	golang.org/x/sys v0.0.0-20220829200755-d48e67d00261 // indirect
 	golang.org/x/tools v0.1.13-0.20220908144252-ce397412b6a4 // indirect
 )
