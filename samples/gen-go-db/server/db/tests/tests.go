@@ -3,7 +3,6 @@ package tests
 import (
 	"context"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
 	"testing"
 	"time"
 
@@ -19,6 +18,10 @@ func mustTime(s string) strfmt.DateTime {
 		panic(err)
 	}
 	return strfmt.DateTime(t)
+}
+
+func pointerToString(str string) *string {
+	return &str
 }
 
 func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
@@ -5521,17 +5524,17 @@ func GetThingWithAdditionalAttributessByNameAndVersion(d db.Interface, t *testin
 		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
 			Name:                 "string1",
 			Version:              1,
-			AdditionalSAttribute: aws.String("additionalSAttribute0"),
+			AdditionalSAttribute: pointerToString("additionalSAttribute0"),
 		}))
 		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
 			Name:                 "string1",
 			Version:              2,
-			AdditionalSAttribute: aws.String("additionalSAttribute1"),
+			AdditionalSAttribute: pointerToString("additionalSAttribute1"),
 		}))
 		require.Nil(t, d.SaveThingWithAdditionalAttributes(ctx, models.ThingWithAdditionalAttributes{
 			Name:                 "string1",
 			Version:              3,
-			AdditionalSAttribute: aws.String("additionalSAttribute2"),
+			AdditionalSAttribute: pointerToString("additionalSAttribute2"),
 		}))
 		limit := int64(3)
 		tests := []getThingWithAdditionalAttributessByNameAndVersionTest{
@@ -5550,17 +5553,17 @@ func GetThingWithAdditionalAttributessByNameAndVersion(d db.Interface, t *testin
 						models.ThingWithAdditionalAttributes{
 							Name:                 "string1",
 							Version:              1,
-							AdditionalSAttribute: aws.String("additionalSAttribute0"),
+							AdditionalSAttribute: pointerToString("additionalSAttribute0"),
 						},
 						models.ThingWithAdditionalAttributes{
 							Name:                 "string1",
 							Version:              2,
-							AdditionalSAttribute: aws.String("additionalSAttribute1"),
+							AdditionalSAttribute: pointerToString("additionalSAttribute1"),
 						},
 						models.ThingWithAdditionalAttributes{
 							Name:                 "string1",
 							Version:              3,
-							AdditionalSAttribute: aws.String("additionalSAttribute2"),
+							AdditionalSAttribute: pointerToString("additionalSAttribute2"),
 						},
 					},
 					err: nil,
@@ -5581,17 +5584,17 @@ func GetThingWithAdditionalAttributessByNameAndVersion(d db.Interface, t *testin
 						models.ThingWithAdditionalAttributes{
 							Name:                 "string1",
 							Version:              3,
-							AdditionalSAttribute: aws.String("additionalSAttribute2"),
+							AdditionalSAttribute: pointerToString("additionalSAttribute2"),
 						},
 						models.ThingWithAdditionalAttributes{
 							Name:                 "string1",
 							Version:              2,
-							AdditionalSAttribute: aws.String("additionalSAttribute1"),
+							AdditionalSAttribute: pointerToString("additionalSAttribute1"),
 						},
 						models.ThingWithAdditionalAttributes{
 							Name:                 "string1",
 							Version:              1,
-							AdditionalSAttribute: aws.String("additionalSAttribute0"),
+							AdditionalSAttribute: pointerToString("additionalSAttribute0"),
 						},
 					},
 					err: nil,
@@ -5607,7 +5610,7 @@ func GetThingWithAdditionalAttributessByNameAndVersion(d db.Interface, t *testin
 						StartingAfter: &models.ThingWithAdditionalAttributes{
 							Name:                 "string1",
 							Version:              1,
-							AdditionalSAttribute: aws.String("additionalSAttribute0"),
+							AdditionalSAttribute: pointerToString("additionalSAttribute0"),
 						},
 					},
 				},
@@ -5616,12 +5619,12 @@ func GetThingWithAdditionalAttributessByNameAndVersion(d db.Interface, t *testin
 						models.ThingWithAdditionalAttributes{
 							Name:                 "string1",
 							Version:              2,
-							AdditionalSAttribute: aws.String("additionalSAttribute1"),
+							AdditionalSAttribute: pointerToString("additionalSAttribute1"),
 						},
 						models.ThingWithAdditionalAttributes{
 							Name:                 "string1",
 							Version:              3,
-							AdditionalSAttribute: aws.String("additionalSAttribute2"),
+							AdditionalSAttribute: pointerToString("additionalSAttribute2"),
 						},
 					},
 					err: nil,
@@ -5637,7 +5640,7 @@ func GetThingWithAdditionalAttributessByNameAndVersion(d db.Interface, t *testin
 						StartingAfter: &models.ThingWithAdditionalAttributes{
 							Name:                 "string1",
 							Version:              3,
-							AdditionalSAttribute: aws.String("additionalSAttribute2"),
+							AdditionalSAttribute: pointerToString("additionalSAttribute2"),
 						},
 						Descending: true,
 					},
@@ -5647,12 +5650,12 @@ func GetThingWithAdditionalAttributessByNameAndVersion(d db.Interface, t *testin
 						models.ThingWithAdditionalAttributes{
 							Name:                 "string1",
 							Version:              2,
-							AdditionalSAttribute: aws.String("additionalSAttribute1"),
+							AdditionalSAttribute: pointerToString("additionalSAttribute1"),
 						},
 						models.ThingWithAdditionalAttributes{
 							Name:                 "string1",
 							Version:              1,
-							AdditionalSAttribute: aws.String("additionalSAttribute0"),
+							AdditionalSAttribute: pointerToString("additionalSAttribute0"),
 						},
 					},
 					err: nil,
@@ -5673,12 +5676,12 @@ func GetThingWithAdditionalAttributessByNameAndVersion(d db.Interface, t *testin
 						models.ThingWithAdditionalAttributes{
 							Name:                 "string1",
 							Version:              2,
-							AdditionalSAttribute: aws.String("additionalSAttribute1"),
+							AdditionalSAttribute: pointerToString("additionalSAttribute1"),
 						},
 						models.ThingWithAdditionalAttributes{
 							Name:                 "string1",
 							Version:              3,
-							AdditionalSAttribute: aws.String("additionalSAttribute2"),
+							AdditionalSAttribute: pointerToString("additionalSAttribute2"),
 						},
 					},
 					err: nil,
@@ -5706,7 +5709,7 @@ func GetThingWithAdditionalAttributessByNameAndVersion(d db.Interface, t *testin
 						models.ThingWithAdditionalAttributes{
 							Name:                 "string1",
 							Version:              1,
-							AdditionalSAttribute: aws.String("additionalSAttribute0"),
+							AdditionalSAttribute: pointerToString("additionalSAttribute0"),
 						},
 					},
 					err: nil,
@@ -5831,7 +5834,7 @@ func ScanThingWithAdditionalAttributess(d db.Interface, t *testing.T) func(t *te
 					// must specify non-empty string values for attributes
 					// in secondary indexes, since dynamodb doesn't support
 					// empty strings:
-					AdditionalSAttribute: aws.String("additionalSAttribute"),
+					AdditionalSAttribute: pointerToString("additionalSAttribute"),
 				},
 			}
 			actual := []models.ThingWithAdditionalAttributes{}
@@ -11130,8 +11133,8 @@ func ScanThingWithRequiredCompositePropertiesAndKeysOnlys(d db.Interface, t *tes
 					// must specify non-empty string values for attributes
 					// in secondary indexes, since dynamodb doesn't support
 					// empty strings:
-					PropertyOne: aws.String("propertyOne"),
-					PropertyTwo: aws.String("propertyTwo"),
+					PropertyOne: pointerToString("propertyOne"),
+					PropertyTwo: pointerToString("propertyTwo"),
 				},
 			}
 			actual := []models.ThingWithRequiredCompositePropertiesAndKeysOnly{}
