@@ -1,4 +1,6 @@
-v9.1.0
+v9.1.1
+
+v9.1.1 Fixes for unused aws import in DynamoDB tests
 
 v9.1.0 Introduce new API for generated go client creation
 

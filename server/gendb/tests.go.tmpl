@@ -7,7 +7,6 @@ import (
   {{- if anyTableUsesDateTime .XDBConfigs }}
     "time"
   {{- end }}
-  "github.com/aws/aws-sdk-go/aws"
 
   "{{ .ModuleName }}{{.GoOutputPath}}/models{{.VersionSuffix}}"
   "{{ .PackageName }}/{{ .OutputPath }}"
@@ -26,6 +25,10 @@ func mustTime(s string) strfmt.DateTime {
   return strfmt.DateTime(t)
 }
 {{- end }}
+
+func pointerToString(str string) *string{
+  return &str
+}
 
 func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
   {{- $xdbConfigs := .XDBConfigs }}
@@ -143,7 +146,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
                         {{- if len $nonPKSecondaryStringProperties }}
                         {{- range $attr := $nonPKSecondaryStringProperties }}
                           {{- if attributeIsPointer $xdbConfig $attr }}
-                            {{ pascalize $attr }}: aws.String("{{ $attr }}0"),
+                            {{ pascalize $attr }}: pointerToString("{{ $attr }}0"),
                           {{- else }}
                             {{ pascalize $attr }}: "{{ $attr }}0",
                           {{- end }}
@@ -160,7 +163,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
                         {{- if len $nonPKSecondaryStringProperties }}
                         {{- range $attr := $nonPKSecondaryStringProperties }}
                           {{- if attributeIsPointer $xdbConfig $attr }}
-                            {{ pascalize $attr }}: aws.String("{{ $attr }}1"),
+                            {{ pascalize $attr }}: pointerToString("{{ $attr }}1"),
                           {{- else }}
                             {{ pascalize $attr }}: "{{ $attr }}1",
                           {{- end }}
@@ -177,7 +180,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
                         {{- if len $nonPKSecondaryStringProperties }}
                         {{- range $attr := $nonPKSecondaryStringProperties }}
                           {{- if attributeIsPointer $xdbConfig $attr }}
-                            {{ pascalize $attr }}: aws.String("{{ $attr }}2"),
+                            {{ pascalize $attr }}: pointerToString("{{ $attr }}2"),
                           {{- else }}
                             {{ pascalize $attr }}: "{{ $attr }}2",
                           {{- end }}
@@ -207,7 +210,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
                                 {{- if len $nonPKSecondaryStringProperties }}
                                                         {{- range $attr := $nonPKSecondaryStringProperties }}
                                                           {{- if attributeIsPointer $xdbConfig $attr }}
-                                                            {{ pascalize $attr }}: aws.String("{{ $attr }}0"),
+                                                            {{ pascalize $attr }}: pointerToString("{{ $attr }}0"),
                                                           {{- else }}
                                                             {{ pascalize $attr }}: "{{ $attr }}0",
                                                           {{- end }}
@@ -224,7 +227,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
                                 {{- if len $nonPKSecondaryStringProperties }}
                                                         {{- range $attr := $nonPKSecondaryStringProperties }}
                                                           {{- if attributeIsPointer $xdbConfig $attr }}
-                                                            {{ pascalize $attr }}: aws.String("{{ $attr }}1"),
+                                                            {{ pascalize $attr }}: pointerToString("{{ $attr }}1"),
                                                           {{- else }}
                                                             {{ pascalize $attr }}: "{{ $attr }}1",
                                                           {{- end }}
@@ -241,7 +244,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
                                 {{- if len $nonPKSecondaryStringProperties }}
                                                         {{- range $attr := $nonPKSecondaryStringProperties }}
                                                           {{- if attributeIsPointer $xdbConfig $attr }}
-                                                            {{ pascalize $attr }}: aws.String("{{ $attr }}2"),
+                                                            {{ pascalize $attr }}: pointerToString("{{ $attr }}2"),
                                                           {{- else }}
                                                             {{ pascalize $attr }}: "{{ $attr }}2",
                                                           {{- end }}
@@ -276,7 +279,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
                                 {{- if len $nonPKSecondaryStringProperties }}
                                                         {{- range $attr := $nonPKSecondaryStringProperties }}
                                                           {{- if attributeIsPointer $xdbConfig $attr }}
-                                                            {{ pascalize $attr }}: aws.String("{{ $attr }}2"),
+                                                            {{ pascalize $attr }}: pointerToString("{{ $attr }}2"),
                                                           {{- else }}
                                                             {{ pascalize $attr }}: "{{ $attr }}2",
                                                           {{- end }}
@@ -293,7 +296,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
                                 {{- if len $nonPKSecondaryStringProperties }}
                                                         {{- range $attr := $nonPKSecondaryStringProperties }}
                                                           {{- if attributeIsPointer $xdbConfig $attr }}
-                                                            {{ pascalize $attr }}: aws.String("{{ $attr }}1"),
+                                                            {{ pascalize $attr }}: pointerToString("{{ $attr }}1"),
                                                           {{- else }}
                                                             {{ pascalize $attr }}: "{{ $attr }}1",
                                                           {{- end }}
@@ -310,7 +313,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
                                 {{- if len $nonPKSecondaryStringProperties }}
                                                         {{- range $attr := $nonPKSecondaryStringProperties }}
                                                           {{- if attributeIsPointer $xdbConfig $attr }}
-                                                            {{ pascalize $attr }}: aws.String("{{ $attr }}0"),
+                                                            {{ pascalize $attr }}: pointerToString("{{ $attr }}0"),
                                                           {{- else }}
                                                             {{ pascalize $attr }}: "{{ $attr }}0",
                                                           {{- end }}
@@ -340,7 +343,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
               {{- if len $nonPKSecondaryStringProperties }}
                 {{- range $attr := $nonPKSecondaryStringProperties }}
                   {{- if attributeIsPointer $xdbConfig $attr }}
-                    {{ pascalize $attr }}: aws.String("{{ $attr }}0"),
+                    {{ pascalize $attr }}: pointerToString("{{ $attr }}0"),
                   {{- else }}
                     {{ pascalize $attr }}: "{{ $attr }}0",
                   {{- end }}
@@ -361,7 +364,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
               {{- if len $nonPKSecondaryStringProperties }}
                 {{- range $attr := $nonPKSecondaryStringProperties }}
                   {{- if attributeIsPointer $xdbConfig $attr }}
-                    {{ pascalize $attr }}: aws.String("{{ $attr }}1"),
+                    {{ pascalize $attr }}:pointerToString("{{ $attr }}1"),
                   {{- else }}
                     {{ pascalize $attr }}: "{{ $attr }}1",
                   {{- end }}
@@ -378,7 +381,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
               {{- if len $nonPKSecondaryStringProperties }}
                 {{- range $attr := $nonPKSecondaryStringProperties }}
                   {{- if attributeIsPointer $xdbConfig $attr }}
-                    {{ pascalize $attr }}: aws.String("{{ $attr }}2"),
+                    {{ pascalize $attr }}: pointerToString("{{ $attr }}2"),
                   {{- else }}
                     {{ pascalize $attr }}: "{{ $attr }}2",
                   {{- end }}
@@ -408,7 +411,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
               {{- if len $nonPKSecondaryStringProperties }}
                 {{- range $attr := $nonPKSecondaryStringProperties }}
                   {{- if attributeIsPointer $xdbConfig $attr }}
-                    {{ pascalize $attr }}: aws.String("{{ $attr }}2"),
+                    {{ pascalize $attr }}: pointerToString("{{ $attr }}2"),
                   {{- else }}
                     {{ pascalize $attr }}: "{{ $attr }}2",
                   {{- end }}
@@ -430,7 +433,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
               {{- if len $nonPKSecondaryStringProperties }}
                 {{- range $attr := $nonPKSecondaryStringProperties }}
                   {{- if attributeIsPointer $xdbConfig $attr }}
-                    {{ pascalize $attr }}: aws.String("{{ $attr }}1"),
+                    {{ pascalize $attr }}: pointerToString("{{ $attr }}1"),
                   {{- else }}
                     {{ pascalize $attr }}: "{{ $attr }}1",
                   {{- end }}
@@ -447,7 +450,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
               {{- if len $nonPKSecondaryStringProperties }}
                 {{- range $attr := $nonPKSecondaryStringProperties }}
                   {{- if attributeIsPointer $xdbConfig $attr }}
-                    {{ pascalize $attr }}: aws.String("{{ $attr }}0"),
+                    {{ pascalize $attr }}: pointerToString("{{ $attr }}0"),
                   {{- else }}
                     {{ pascalize $attr }}: "{{ $attr }}0",
                   {{- end }}
@@ -491,7 +494,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
                                 {{- if len $nonPKSecondaryStringProperties }}
                                                         {{- range $attr := $nonPKSecondaryStringProperties }}
                                                           {{- if attributeIsPointer $xdbConfig $attr }}
-                                                            {{ pascalize $attr }}: aws.String("{{ $attr }}1"),
+                                                            {{ pascalize $attr }}: pointerToString("{{ $attr }}1"),
                                                           {{- else }}
                                                             {{ pascalize $attr }}: "{{ $attr }}1",
                                                           {{- end }}
@@ -508,7 +511,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
                                 {{- if len $nonPKSecondaryStringProperties }}
                                                         {{- range $attr := $nonPKSecondaryStringProperties }}
                                                           {{- if attributeIsPointer $xdbConfig $attr }}
-                                                            {{ pascalize $attr }}: aws.String("{{ $attr }}2"),
+                                                            {{ pascalize $attr }}: pointerToString("{{ $attr }}2"),
                                                           {{- else }}
                                                             {{ pascalize $attr }}: "{{ $attr }}2",
                                                           {{- end }}
@@ -549,7 +552,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
                                 {{- if len $nonPKSecondaryStringProperties }}
                                                         {{- range $attr := $nonPKSecondaryStringProperties }}
                                                           {{- if attributeIsPointer $xdbConfig $attr }}
-                                                            {{ pascalize $attr }}: aws.String("{{ $attr }}0"),
+                                                            {{ pascalize $attr }}: pointerToString("{{ $attr }}0"),
                                                           {{- else }}
                                                             {{ pascalize $attr }}: "{{ $attr }}0",
                                                           {{- end }}
@@ -650,7 +653,7 @@ func Scan{{ $modelName }}s(d db.Interface, t *testing.T) func(t *testing.T) {
             // empty strings:
             {{- range $attr := $nonPKSecondaryStringProperties }}
               {{- if attributeIsPointer $xdbConfig $attr }}
-                {{ pascalize $attr }}: aws.String("{{ $attr }}"),
+                {{ pascalize $attr }}: pointerToString("{{ $attr }}"),
               {{- else }}
                 {{ pascalize $attr }}: "{{ $attr }}",
               {{- end }}
