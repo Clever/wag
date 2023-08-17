@@ -612,7 +612,7 @@ func exampleValueNotPtrForAttribute(config XDBConfig, attributeName string, i in
 			}
 			enumVals := schema.SchemaProps.Enum
 			if enumLength := len(enumVals); enumLength > 0 {
-				return fmt.Sprintf(`models.Branch%s`, swag.ToGoName(enumVals[(i-1)%enumLength].(string)))
+				return fmt.Sprintf(`models.SWADBranch%s`, swag.ToGoName(enumVals[(i-1)%enumLength].(string))) //swad
 			}
 		}
 	} else if ca := findCompositeAttribute(config, attributeName); ca != nil {
