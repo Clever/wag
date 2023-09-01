@@ -108,5 +108,3 @@ example go.mod file under samples/.
 - v3.15.0: JS client enable compression
 - v3.14.3: Remove unused code.
 - v3.14.2: Stricter span checks to prevent tracing errors.
-- v3.14.1: Send client version as a header bugfix.
-- v3.14.0: Send client version as a header.
