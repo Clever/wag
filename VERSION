@@ -1,4 +1,6 @@
-v9.1.2
+v9.1.3
+
+v9.1.3 Fix for generated code supporting filtering on an enum
 
 v9.1.2 Fixes for models attributes for DynamoDB generated tests
 
@@ -106,5 +108,3 @@ example go.mod file under samples/.
 - v3.15.0: JS client enable compression
 - v3.14.3: Remove unused code.
 - v3.14.2: Stricter span checks to prevent tracing errors.
-- v3.14.1: Send client version as a header bugfix.
-- v3.14.0: Send client version as a header.

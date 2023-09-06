@@ -405,7 +405,7 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
               }
             {{- else }}
               queryInput.ExpressionAttributeValues[fmt.Sprintf(":%%s_value%%d", string(db.{{ $modelName }}{{ pascalize $attributeName }}), i)] = &dynamodb.AttributeValue{
-                S: aws.String(attributeValue.({{$attrGoType}})),
+                S: aws.String(attributeValue.(string)),
               }
             {{- end }}
           {{- else if eq $attrDynamoDBType "N" }}
