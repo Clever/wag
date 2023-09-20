@@ -239,7 +239,7 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) scanThingAllowingB
 		}
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"name_id": &dynamodb.AttributeValue{
+			"name_id": {
 				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.ID)),
 			},
 			"date": exclusiveStartKey["date"],
@@ -294,7 +294,7 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) getThingAllowingBa
 			"#NAME_ID": aws.String("name_id"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":nameId": &dynamodb.AttributeValue{
+			":nameId": {
 				S: aws.String(fmt.Sprintf("%s@%s", input.Name, input.ID)),
 			},
 		},
@@ -319,10 +319,10 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) getThingAllowingBa
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"date": &dynamodb.AttributeValue{
+			"date": {
 				S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.Date)),
 			},
-			"name_id": &dynamodb.AttributeValue{
+			"name_id": {
 				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.ID)),
 			},
 		}

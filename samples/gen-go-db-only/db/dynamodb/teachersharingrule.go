@@ -171,7 +171,7 @@ func (t TeacherSharingRuleTable) scanTeacherSharingRules(ctx context.Context, in
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"teacher": exclusiveStartKey["teacher"],
-			"school_app": &dynamodb.AttributeValue{
+			"school_app": {
 				S: aws.String(fmt.Sprintf("%s_%s", input.StartingAfter.School, input.StartingAfter.App)),
 			},
 		}
@@ -236,7 +236,7 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByTeacherAndSchoolApp(ctx
 			"#TEACHER": aws.String("teacher"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":teacher": &dynamodb.AttributeValue{
+			":teacher": {
 				S: aws.String(input.Teacher),
 			},
 		},
@@ -261,10 +261,10 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByTeacherAndSchoolApp(ctx
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"school_app": &dynamodb.AttributeValue{
+			"school_app": {
 				S: aws.String(fmt.Sprintf("%s_%s", input.StartingAfter.School, input.StartingAfter.App)),
 			},
-			"teacher": &dynamodb.AttributeValue{
+			"teacher": {
 				S: aws.String(input.StartingAfter.Teacher),
 			},
 		}
@@ -347,7 +347,7 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeache
 			"#DISTRICT": aws.String("district"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":district": &dynamodb.AttributeValue{
+			":district": {
 				S: aws.String(input.District),
 			},
 		},
@@ -372,16 +372,16 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeache
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"school_teacher_app": &dynamodb.AttributeValue{
+			"school_teacher_app": {
 				S: aws.String(fmt.Sprintf("%s_%s_%s", input.StartingAfter.School, input.StartingAfter.Teacher, input.StartingAfter.App)),
 			},
-			"district": &dynamodb.AttributeValue{
+			"district": {
 				S: aws.String(input.StartingAfter.District),
 			},
-			"school_app": &dynamodb.AttributeValue{
+			"school_app": {
 				S: aws.String(fmt.Sprintf("%s_%s", input.StartingAfter.School, input.StartingAfter.App)),
 			},
-			"teacher": &dynamodb.AttributeValue{
+			"teacher": {
 				S: aws.String(input.StartingAfter.Teacher),
 			},
 		}
@@ -441,11 +441,11 @@ func (t TeacherSharingRuleTable) scanTeacherSharingRulesByDistrictAndSchoolTeach
 		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"teacher": exclusiveStartKey["teacher"],
-			"school_app": &dynamodb.AttributeValue{
+			"school_app": {
 				S: aws.String(fmt.Sprintf("%s_%s", input.StartingAfter.School, input.StartingAfter.App)),
 			},
 			"district": exclusiveStartKey["district"],
-			"school_teacher_app": &dynamodb.AttributeValue{
+			"school_teacher_app": {
 				S: aws.String(fmt.Sprintf("%s_%s_%s", input.StartingAfter.School, input.StartingAfter.Teacher, input.StartingAfter.App)),
 			},
 		}

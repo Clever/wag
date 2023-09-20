@@ -167,7 +167,7 @@ func (t ThingWithMatchingKeysTable) scanThingWithMatchingKeyss(ctx context.Conte
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"bear": exclusiveStartKey["bear"],
-			"assocTypeID": &dynamodb.AttributeValue{
+			"assocTypeID": {
 				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAfter.AssocType, input.StartingAfter.AssocID)),
 			},
 		}
@@ -232,7 +232,7 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByBearAndAssocTypeI
 			"#BEAR": aws.String("bear"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":bear": &dynamodb.AttributeValue{
+			":bear": {
 				S: aws.String(input.Bear),
 			},
 		},
@@ -257,10 +257,10 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByBearAndAssocTypeI
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"assocTypeID": &dynamodb.AttributeValue{
+			"assocTypeID": {
 				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAfter.AssocType, input.StartingAfter.AssocID)),
 			},
-			"bear": &dynamodb.AttributeValue{
+			"bear": {
 				S: aws.String(input.StartingAfter.Bear),
 			},
 		}
@@ -346,7 +346,7 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByAssocTypeIDAndCre
 			"#ASSOCTYPEID": aws.String("assocTypeID"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":assocTypeId": &dynamodb.AttributeValue{
+			":assocTypeId": {
 				S: aws.String(fmt.Sprintf("%s^%s", input.AssocType, input.AssocID)),
 			},
 		},
@@ -371,13 +371,13 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByAssocTypeIDAndCre
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"createdBear": &dynamodb.AttributeValue{
+			"createdBear": {
 				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAfter.Created, input.StartingAfter.Bear)),
 			},
-			"assocTypeID": &dynamodb.AttributeValue{
+			"assocTypeID": {
 				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAfter.AssocType, input.StartingAfter.AssocID)),
 			},
-			"bear": &dynamodb.AttributeValue{
+			"bear": {
 				S: aws.String(input.StartingAfter.Bear),
 			},
 		}
@@ -437,10 +437,10 @@ func (t ThingWithMatchingKeysTable) scanThingWithMatchingKeyssByAssocTypeIDAndCr
 		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"bear": exclusiveStartKey["bear"],
-			"assocTypeID": &dynamodb.AttributeValue{
+			"assocTypeID": {
 				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAfter.AssocType, input.StartingAfter.AssocID)),
 			},
-			"createdBear": &dynamodb.AttributeValue{
+			"createdBear": {
 				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAfter.Created, input.StartingAfter.Bear)),
 			},
 		}

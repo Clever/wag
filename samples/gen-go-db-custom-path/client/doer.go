@@ -229,7 +229,7 @@ func (d *circuitBreakerDoer) init() {
 			lastEventSeen := map[string]HystrixSSEEvent{}
 			lastEventLogTime := map[string]time.Time{}
 
-			for _ = range time.Tick(1 * time.Second) { // retry indefinitely
+			for range time.Tick(1 * time.Second) { // retry indefinitely
 				url := "http://" + listener.Addr().String()
 				req, err := http.NewRequest("GET", url, nil)
 				if err != nil {

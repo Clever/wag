@@ -225,7 +225,7 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) getThingWithRequir
 			"#PROPERTYONEANDTWO": aws.String("propertyOneAndTwo"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":propertyOneAndTwo": &dynamodb.AttributeValue{
+			":propertyOneAndTwo": {
 				S: aws.String(fmt.Sprintf("%s_%s", input.PropertyOne, input.PropertyTwo)),
 			},
 		},
@@ -250,10 +250,10 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) getThingWithRequir
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"propertyThree": &dynamodb.AttributeValue{
+			"propertyThree": {
 				S: aws.String(*input.StartingAfter.PropertyThree),
 			},
-			"propertyOneAndTwo": &dynamodb.AttributeValue{
+			"propertyOneAndTwo": {
 				S: aws.String(fmt.Sprintf("%s_%s", *input.StartingAfter.PropertyOne, *input.StartingAfter.PropertyTwo)),
 			},
 		}
@@ -313,7 +313,7 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) scanThingWithRequi
 		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"propertyThree": exclusiveStartKey["propertyThree"],
-			"propertyOneAndTwo": &dynamodb.AttributeValue{
+			"propertyOneAndTwo": {
 				S: aws.String(fmt.Sprintf("%s_%s", *input.StartingAfter.PropertyOne, *input.StartingAfter.PropertyTwo)),
 			},
 		}

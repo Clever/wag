@@ -160,7 +160,7 @@ func (t ThingWithCompositeEnumAttributesTable) scanThingWithCompositeEnumAttribu
 		}
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"name_branch": &dynamodb.AttributeValue{
+			"name_branch": {
 				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, input.StartingAfter.BranchID)),
 			},
 			"date": exclusiveStartKey["date"],
@@ -215,7 +215,7 @@ func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttribut
 			"#NAME_BRANCH": aws.String("name_branch"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":nameBranch": &dynamodb.AttributeValue{
+			":nameBranch": {
 				S: aws.String(fmt.Sprintf("%s@%s", input.Name, input.BranchID)),
 			},
 		},
@@ -240,10 +240,10 @@ func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttribut
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"date": &dynamodb.AttributeValue{
+			"date": {
 				S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.Date)),
 			},
-			"name_branch": &dynamodb.AttributeValue{
+			"name_branch": {
 				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, input.StartingAfter.BranchID)),
 			},
 		}

@@ -244,17 +244,17 @@ func GetDeploymentsByEnvAppAndVersion(d db.Interface, t *testing.T) func(t *test
 				},
 				output: getDeploymentsByEnvAppAndVersionOutput{
 					deployments: []models.Deployment{
-						models.Deployment{
+						{
 							Environment: "string1",
 							Application: "string1",
 							Version:     "string1",
 						},
-						models.Deployment{
+						{
 							Environment: "string1",
 							Application: "string1",
 							Version:     "string2",
 						},
-						models.Deployment{
+						{
 							Environment: "string1",
 							Application: "string1",
 							Version:     "string3",
@@ -276,17 +276,17 @@ func GetDeploymentsByEnvAppAndVersion(d db.Interface, t *testing.T) func(t *test
 				},
 				output: getDeploymentsByEnvAppAndVersionOutput{
 					deployments: []models.Deployment{
-						models.Deployment{
+						{
 							Environment: "string1",
 							Application: "string1",
 							Version:     "string3",
 						},
-						models.Deployment{
+						{
 							Environment: "string1",
 							Application: "string1",
 							Version:     "string2",
 						},
-						models.Deployment{
+						{
 							Environment: "string1",
 							Application: "string1",
 							Version:     "string1",
@@ -312,12 +312,12 @@ func GetDeploymentsByEnvAppAndVersion(d db.Interface, t *testing.T) func(t *test
 				},
 				output: getDeploymentsByEnvAppAndVersionOutput{
 					deployments: []models.Deployment{
-						models.Deployment{
+						{
 							Environment: "string1",
 							Application: "string1",
 							Version:     "string2",
 						},
-						models.Deployment{
+						{
 							Environment: "string1",
 							Application: "string1",
 							Version:     "string3",
@@ -344,12 +344,12 @@ func GetDeploymentsByEnvAppAndVersion(d db.Interface, t *testing.T) func(t *test
 				},
 				output: getDeploymentsByEnvAppAndVersionOutput{
 					deployments: []models.Deployment{
-						models.Deployment{
+						{
 							Environment: "string1",
 							Application: "string1",
 							Version:     "string2",
 						},
-						models.Deployment{
+						{
 							Environment: "string1",
 							Application: "string1",
 							Version:     "string1",
@@ -371,12 +371,12 @@ func GetDeploymentsByEnvAppAndVersion(d db.Interface, t *testing.T) func(t *test
 				},
 				output: getDeploymentsByEnvAppAndVersionOutput{
 					deployments: []models.Deployment{
-						models.Deployment{
+						{
 							Environment: "string1",
 							Application: "string1",
 							Version:     "string2",
 						},
-						models.Deployment{
+						{
 							Environment: "string1",
 							Application: "string1",
 							Version:     "string3",
@@ -418,19 +418,19 @@ func ScanDeployments(d db.Interface, t *testing.T) func(t *testing.T) {
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.Deployment{
-				models.Deployment{
+				{
 					Application: "string1",
 					Date:        mustTime("2018-03-11T15:04:01+07:00"),
 					Environment: "string1",
 					Version:     "string1",
 				},
-				models.Deployment{
+				{
 					Application: "string2",
 					Date:        mustTime("2018-03-11T15:04:02+07:00"),
 					Environment: "string2",
 					Version:     "string2",
 				},
-				models.Deployment{
+				{
 					Application: "string3",
 					Date:        mustTime("2018-03-11T15:04:03+07:00"),
 					Environment: "string3",
@@ -605,19 +605,19 @@ func GetDeploymentsByEnvAppAndDate(d db.Interface, t *testing.T) func(t *testing
 				},
 				output: getDeploymentsByEnvAppAndDateOutput{
 					deployments: []models.Deployment{
-						models.Deployment{
+						{
 							Environment: "string1",
 							Application: "string1",
 							Date:        mustTime("2018-03-11T15:04:01+07:00"),
 							Version:     "string1",
 						},
-						models.Deployment{
+						{
 							Environment: "string1",
 							Application: "string1",
 							Date:        mustTime("2018-03-11T15:04:02+07:00"),
 							Version:     "string3",
 						},
-						models.Deployment{
+						{
 							Environment: "string1",
 							Application: "string1",
 							Date:        mustTime("2018-03-11T15:04:03+07:00"),
@@ -640,19 +640,19 @@ func GetDeploymentsByEnvAppAndDate(d db.Interface, t *testing.T) func(t *testing
 				},
 				output: getDeploymentsByEnvAppAndDateOutput{
 					deployments: []models.Deployment{
-						models.Deployment{
+						{
 							Environment: "string1",
 							Application: "string1",
 							Date:        mustTime("2018-03-11T15:04:03+07:00"),
 							Version:     "string2",
 						},
-						models.Deployment{
+						{
 							Environment: "string1",
 							Application: "string1",
 							Date:        mustTime("2018-03-11T15:04:02+07:00"),
 							Version:     "string3",
 						},
-						models.Deployment{
+						{
 							Environment: "string1",
 							Application: "string1",
 							Date:        mustTime("2018-03-11T15:04:01+07:00"),
@@ -680,13 +680,13 @@ func GetDeploymentsByEnvAppAndDate(d db.Interface, t *testing.T) func(t *testing
 				},
 				output: getDeploymentsByEnvAppAndDateOutput{
 					deployments: []models.Deployment{
-						models.Deployment{
+						{
 							Environment: "string1",
 							Application: "string1",
 							Date:        mustTime("2018-03-11T15:04:02+07:00"),
 							Version:     "string3",
 						},
-						models.Deployment{
+						{
 							Environment: "string1",
 							Application: "string1",
 							Date:        mustTime("2018-03-11T15:04:03+07:00"),
@@ -715,13 +715,13 @@ func GetDeploymentsByEnvAppAndDate(d db.Interface, t *testing.T) func(t *testing
 				},
 				output: getDeploymentsByEnvAppAndDateOutput{
 					deployments: []models.Deployment{
-						models.Deployment{
+						{
 							Environment: "string1",
 							Application: "string1",
 							Date:        mustTime("2018-03-11T15:04:02+07:00"),
 							Version:     "string3",
 						},
-						models.Deployment{
+						{
 							Environment: "string1",
 							Application: "string1",
 							Date:        mustTime("2018-03-11T15:04:01+07:00"),
@@ -744,13 +744,13 @@ func GetDeploymentsByEnvAppAndDate(d db.Interface, t *testing.T) func(t *testing
 				},
 				output: getDeploymentsByEnvAppAndDateOutput{
 					deployments: []models.Deployment{
-						models.Deployment{
+						{
 							Environment: "string1",
 							Application: "string1",
 							Date:        mustTime("2018-03-11T15:04:02+07:00"),
 							Version:     "string3",
 						},
-						models.Deployment{
+						{
 							Environment: "string1",
 							Application: "string1",
 							Date:        mustTime("2018-03-11T15:04:03+07:00"),
@@ -793,19 +793,19 @@ func ScanDeploymentsByEnvAppAndDate(d db.Interface, t *testing.T) func(t *testin
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.Deployment{
-				models.Deployment{
+				{
 					Environment: "string1",
 					Application: "string1",
 					Date:        mustTime("2018-03-11T15:04:01+07:00"),
 					Version:     "string1",
 				},
-				models.Deployment{
+				{
 					Environment: "string2",
 					Application: "string2",
 					Date:        mustTime("2018-03-11T15:04:02+07:00"),
 					Version:     "string2",
 				},
-				models.Deployment{
+				{
 					Environment: "string3",
 					Application: "string3",
 					Date:        mustTime("2018-03-11T15:04:03+07:00"),
@@ -958,19 +958,19 @@ func GetDeploymentsByEnvironmentAndDate(d db.Interface, t *testing.T) func(t *te
 				},
 				output: getDeploymentsByEnvironmentAndDateOutput{
 					deployments: []models.Deployment{
-						models.Deployment{
+						{
 							Environment: "string1",
 							Date:        mustTime("2018-03-11T15:04:01+07:00"),
 							Application: "string1",
 							Version:     "string1",
 						},
-						models.Deployment{
+						{
 							Environment: "string1",
 							Date:        mustTime("2018-03-11T15:04:02+07:00"),
 							Application: "string3",
 							Version:     "string3",
 						},
-						models.Deployment{
+						{
 							Environment: "string1",
 							Date:        mustTime("2018-03-11T15:04:03+07:00"),
 							Application: "string2",
@@ -992,19 +992,19 @@ func GetDeploymentsByEnvironmentAndDate(d db.Interface, t *testing.T) func(t *te
 				},
 				output: getDeploymentsByEnvironmentAndDateOutput{
 					deployments: []models.Deployment{
-						models.Deployment{
+						{
 							Environment: "string1",
 							Date:        mustTime("2018-03-11T15:04:03+07:00"),
 							Application: "string2",
 							Version:     "string2",
 						},
-						models.Deployment{
+						{
 							Environment: "string1",
 							Date:        mustTime("2018-03-11T15:04:02+07:00"),
 							Application: "string3",
 							Version:     "string3",
 						},
-						models.Deployment{
+						{
 							Environment: "string1",
 							Date:        mustTime("2018-03-11T15:04:01+07:00"),
 							Application: "string1",
@@ -1031,13 +1031,13 @@ func GetDeploymentsByEnvironmentAndDate(d db.Interface, t *testing.T) func(t *te
 				},
 				output: getDeploymentsByEnvironmentAndDateOutput{
 					deployments: []models.Deployment{
-						models.Deployment{
+						{
 							Environment: "string1",
 							Date:        mustTime("2018-03-11T15:04:02+07:00"),
 							Application: "string3",
 							Version:     "string3",
 						},
-						models.Deployment{
+						{
 							Environment: "string1",
 							Date:        mustTime("2018-03-11T15:04:03+07:00"),
 							Application: "string2",
@@ -1065,13 +1065,13 @@ func GetDeploymentsByEnvironmentAndDate(d db.Interface, t *testing.T) func(t *te
 				},
 				output: getDeploymentsByEnvironmentAndDateOutput{
 					deployments: []models.Deployment{
-						models.Deployment{
+						{
 							Environment: "string1",
 							Date:        mustTime("2018-03-11T15:04:02+07:00"),
 							Application: "string3",
 							Version:     "string3",
 						},
-						models.Deployment{
+						{
 							Environment: "string1",
 							Date:        mustTime("2018-03-11T15:04:01+07:00"),
 							Application: "string1",
@@ -1093,13 +1093,13 @@ func GetDeploymentsByEnvironmentAndDate(d db.Interface, t *testing.T) func(t *te
 				},
 				output: getDeploymentsByEnvironmentAndDateOutput{
 					deployments: []models.Deployment{
-						models.Deployment{
+						{
 							Environment: "string1",
 							Date:        mustTime("2018-03-11T15:04:02+07:00"),
 							Application: "string3",
 							Version:     "string3",
 						},
-						models.Deployment{
+						{
 							Environment: "string1",
 							Date:        mustTime("2018-03-11T15:04:03+07:00"),
 							Application: "string2",
@@ -1165,19 +1165,19 @@ func ScanDeploymentsByVersion(d db.Interface, t *testing.T) func(t *testing.T) {
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.Deployment{
-				models.Deployment{
+				{
 					Version:     "string1",
 					Application: "string1",
 					Date:        mustTime("2018-03-11T15:04:01+07:00"),
 					Environment: "string1",
 				},
-				models.Deployment{
+				{
 					Version:     "string2",
 					Application: "string2",
 					Date:        mustTime("2018-03-11T15:04:02+07:00"),
 					Environment: "string2",
 				},
-				models.Deployment{
+				{
 					Version:     "string3",
 					Application: "string3",
 					Date:        mustTime("2018-03-11T15:04:03+07:00"),
@@ -1343,15 +1343,15 @@ func GetEventsByPkAndSk(d db.Interface, t *testing.T) func(t *testing.T) {
 				},
 				output: getEventsByPkAndSkOutput{
 					events: []models.Event{
-						models.Event{
+						{
 							Pk: "string1",
 							Sk: "string1",
 						},
-						models.Event{
+						{
 							Pk: "string1",
 							Sk: "string2",
 						},
-						models.Event{
+						{
 							Pk: "string1",
 							Sk: "string3",
 						},
@@ -1371,15 +1371,15 @@ func GetEventsByPkAndSk(d db.Interface, t *testing.T) func(t *testing.T) {
 				},
 				output: getEventsByPkAndSkOutput{
 					events: []models.Event{
-						models.Event{
+						{
 							Pk: "string1",
 							Sk: "string3",
 						},
-						models.Event{
+						{
 							Pk: "string1",
 							Sk: "string2",
 						},
-						models.Event{
+						{
 							Pk: "string1",
 							Sk: "string1",
 						},
@@ -1402,11 +1402,11 @@ func GetEventsByPkAndSk(d db.Interface, t *testing.T) func(t *testing.T) {
 				},
 				output: getEventsByPkAndSkOutput{
 					events: []models.Event{
-						models.Event{
+						{
 							Pk: "string1",
 							Sk: "string2",
 						},
-						models.Event{
+						{
 							Pk: "string1",
 							Sk: "string3",
 						},
@@ -1430,11 +1430,11 @@ func GetEventsByPkAndSk(d db.Interface, t *testing.T) func(t *testing.T) {
 				},
 				output: getEventsByPkAndSkOutput{
 					events: []models.Event{
-						models.Event{
+						{
 							Pk: "string1",
 							Sk: "string2",
 						},
-						models.Event{
+						{
 							Pk: "string1",
 							Sk: "string1",
 						},
@@ -1454,11 +1454,11 @@ func GetEventsByPkAndSk(d db.Interface, t *testing.T) func(t *testing.T) {
 				},
 				output: getEventsByPkAndSkOutput{
 					events: []models.Event{
-						models.Event{
+						{
 							Pk: "string1",
 							Sk: "string2",
 						},
-						models.Event{
+						{
 							Pk: "string1",
 							Sk: "string3",
 						},
@@ -1496,17 +1496,17 @@ func ScanEvents(d db.Interface, t *testing.T) func(t *testing.T) {
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.Event{
-				models.Event{
+				{
 					Data: []byte("string1"),
 					Pk:   "string1",
 					Sk:   "string1",
 				},
-				models.Event{
+				{
 					Data: []byte("string2"),
 					Pk:   "string2",
 					Sk:   "string2",
 				},
-				models.Event{
+				{
 					Data: []byte("string3"),
 					Pk:   "string3",
 					Sk:   "string3",
@@ -1673,17 +1673,17 @@ func GetEventsBySkAndData(d db.Interface, t *testing.T) func(t *testing.T) {
 				},
 				output: getEventsBySkAndDataOutput{
 					events: []models.Event{
-						models.Event{
+						{
 							Sk:   "string1",
 							Data: []byte("string1"),
 							Pk:   "string1",
 						},
-						models.Event{
+						{
 							Sk:   "string1",
 							Data: []byte("string2"),
 							Pk:   "string3",
 						},
-						models.Event{
+						{
 							Sk:   "string1",
 							Data: []byte("string3"),
 							Pk:   "string2",
@@ -1704,17 +1704,17 @@ func GetEventsBySkAndData(d db.Interface, t *testing.T) func(t *testing.T) {
 				},
 				output: getEventsBySkAndDataOutput{
 					events: []models.Event{
-						models.Event{
+						{
 							Sk:   "string1",
 							Data: []byte("string3"),
 							Pk:   "string2",
 						},
-						models.Event{
+						{
 							Sk:   "string1",
 							Data: []byte("string2"),
 							Pk:   "string3",
 						},
-						models.Event{
+						{
 							Sk:   "string1",
 							Data: []byte("string1"),
 							Pk:   "string1",
@@ -1739,12 +1739,12 @@ func GetEventsBySkAndData(d db.Interface, t *testing.T) func(t *testing.T) {
 				},
 				output: getEventsBySkAndDataOutput{
 					events: []models.Event{
-						models.Event{
+						{
 							Sk:   "string1",
 							Data: []byte("string2"),
 							Pk:   "string3",
 						},
-						models.Event{
+						{
 							Sk:   "string1",
 							Data: []byte("string3"),
 							Pk:   "string2",
@@ -1770,12 +1770,12 @@ func GetEventsBySkAndData(d db.Interface, t *testing.T) func(t *testing.T) {
 				},
 				output: getEventsBySkAndDataOutput{
 					events: []models.Event{
-						models.Event{
+						{
 							Sk:   "string1",
 							Data: []byte("string2"),
 							Pk:   "string3",
 						},
-						models.Event{
+						{
 							Sk:   "string1",
 							Data: []byte("string1"),
 							Pk:   "string1",
@@ -1796,12 +1796,12 @@ func GetEventsBySkAndData(d db.Interface, t *testing.T) func(t *testing.T) {
 				},
 				output: getEventsBySkAndDataOutput{
 					events: []models.Event{
-						models.Event{
+						{
 							Sk:   "string1",
 							Data: []byte("string2"),
 							Pk:   "string3",
 						},
-						models.Event{
+						{
 							Sk:   "string1",
 							Data: []byte("string3"),
 							Pk:   "string2",
@@ -1840,17 +1840,17 @@ func ScanEventsBySkAndData(d db.Interface, t *testing.T) func(t *testing.T) {
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.Event{
-				models.Event{
+				{
 					Sk:   "string1",
 					Data: []byte("string1"),
 					Pk:   "string1",
 				},
-				models.Event{
+				{
 					Sk:   "string2",
 					Data: []byte("string2"),
 					Pk:   "string2",
 				},
-				models.Event{
+				{
 					Sk:   "string3",
 					Data: []byte("string3"),
 					Pk:   "string3",
@@ -1981,19 +1981,19 @@ func ScanNoRangeThingWithCompositeAttributess(d db.Interface, t *testing.T) func
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.NoRangeThingWithCompositeAttributes{
-				models.NoRangeThingWithCompositeAttributes{
+				{
 					Branch:  db.String("string1"),
 					Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 					Name:    db.String("string1"),
 					Version: 1,
 				},
-				models.NoRangeThingWithCompositeAttributes{
+				{
 					Branch:  db.String("string2"),
 					Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 					Name:    db.String("string2"),
 					Version: 2,
 				},
-				models.NoRangeThingWithCompositeAttributes{
+				{
 					Branch:  db.String("string3"),
 					Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 					Name:    db.String("string3"),
@@ -2168,19 +2168,19 @@ func GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface,
 				},
 				output: getNoRangeThingWithCompositeAttributessByNameVersionAndDateOutput{
 					noRangeThingWithCompositeAttributess: []models.NoRangeThingWithCompositeAttributes{
-						models.NoRangeThingWithCompositeAttributes{
+						{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 							Branch:  db.String("string1"),
 						},
-						models.NoRangeThingWithCompositeAttributes{
+						{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 							Branch:  db.String("string3"),
 						},
-						models.NoRangeThingWithCompositeAttributes{
+						{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
@@ -2203,19 +2203,19 @@ func GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface,
 				},
 				output: getNoRangeThingWithCompositeAttributessByNameVersionAndDateOutput{
 					noRangeThingWithCompositeAttributess: []models.NoRangeThingWithCompositeAttributes{
-						models.NoRangeThingWithCompositeAttributes{
+						{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 							Branch:  db.String("string2"),
 						},
-						models.NoRangeThingWithCompositeAttributes{
+						{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 							Branch:  db.String("string3"),
 						},
-						models.NoRangeThingWithCompositeAttributes{
+						{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
@@ -2243,13 +2243,13 @@ func GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface,
 				},
 				output: getNoRangeThingWithCompositeAttributessByNameVersionAndDateOutput{
 					noRangeThingWithCompositeAttributess: []models.NoRangeThingWithCompositeAttributes{
-						models.NoRangeThingWithCompositeAttributes{
+						{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 							Branch:  db.String("string3"),
 						},
-						models.NoRangeThingWithCompositeAttributes{
+						{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
@@ -2278,13 +2278,13 @@ func GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface,
 				},
 				output: getNoRangeThingWithCompositeAttributessByNameVersionAndDateOutput{
 					noRangeThingWithCompositeAttributess: []models.NoRangeThingWithCompositeAttributes{
-						models.NoRangeThingWithCompositeAttributes{
+						{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 							Branch:  db.String("string3"),
 						},
-						models.NoRangeThingWithCompositeAttributes{
+						{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
@@ -2307,13 +2307,13 @@ func GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface,
 				},
 				output: getNoRangeThingWithCompositeAttributessByNameVersionAndDateOutput{
 					noRangeThingWithCompositeAttributess: []models.NoRangeThingWithCompositeAttributes{
-						models.NoRangeThingWithCompositeAttributes{
+						{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 							Branch:  db.String("string3"),
 						},
-						models.NoRangeThingWithCompositeAttributes{
+						{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
@@ -2356,19 +2356,19 @@ func ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.NoRangeThingWithCompositeAttributes{
-				models.NoRangeThingWithCompositeAttributes{
+				{
 					Name:    db.String("string1"),
 					Version: 1,
 					Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 					Branch:  db.String("string1"),
 				},
-				models.NoRangeThingWithCompositeAttributes{
+				{
 					Name:    db.String("string2"),
 					Version: 2,
 					Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 					Branch:  db.String("string2"),
 				},
-				models.NoRangeThingWithCompositeAttributes{
+				{
 					Name:    db.String("string3"),
 					Version: 3,
 					Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
@@ -2488,13 +2488,13 @@ func ScanSimpleThings(d db.Interface, t *testing.T) func(t *testing.T) {
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.SimpleThing{
-				models.SimpleThing{
+				{
 					Name: "string1",
 				},
-				models.SimpleThing{
+				{
 					Name: "string2",
 				},
-				models.SimpleThing{
+				{
 					Name: "string3",
 				},
 			}
@@ -2680,19 +2680,19 @@ func GetTeacherSharingRulesByTeacherAndSchoolApp(d db.Interface, t *testing.T) f
 				},
 				output: getTeacherSharingRulesByTeacherAndSchoolAppOutput{
 					teacherSharingRules: []models.TeacherSharingRule{
-						models.TeacherSharingRule{
+						{
 							Teacher:  "string1",
 							School:   "string1",
 							App:      "string1",
 							District: "district0",
 						},
-						models.TeacherSharingRule{
+						{
 							Teacher:  "string1",
 							School:   "string2",
 							App:      "string2",
 							District: "district1",
 						},
-						models.TeacherSharingRule{
+						{
 							Teacher:  "string1",
 							School:   "string3",
 							App:      "string3",
@@ -2714,19 +2714,19 @@ func GetTeacherSharingRulesByTeacherAndSchoolApp(d db.Interface, t *testing.T) f
 				},
 				output: getTeacherSharingRulesByTeacherAndSchoolAppOutput{
 					teacherSharingRules: []models.TeacherSharingRule{
-						models.TeacherSharingRule{
+						{
 							Teacher:  "string1",
 							School:   "string3",
 							App:      "string3",
 							District: "district2",
 						},
-						models.TeacherSharingRule{
+						{
 							Teacher:  "string1",
 							School:   "string2",
 							App:      "string2",
 							District: "district1",
 						},
-						models.TeacherSharingRule{
+						{
 							Teacher:  "string1",
 							School:   "string1",
 							App:      "string1",
@@ -2753,13 +2753,13 @@ func GetTeacherSharingRulesByTeacherAndSchoolApp(d db.Interface, t *testing.T) f
 				},
 				output: getTeacherSharingRulesByTeacherAndSchoolAppOutput{
 					teacherSharingRules: []models.TeacherSharingRule{
-						models.TeacherSharingRule{
+						{
 							Teacher:  "string1",
 							School:   "string2",
 							App:      "string2",
 							District: "district1",
 						},
-						models.TeacherSharingRule{
+						{
 							Teacher:  "string1",
 							School:   "string3",
 							App:      "string3",
@@ -2787,13 +2787,13 @@ func GetTeacherSharingRulesByTeacherAndSchoolApp(d db.Interface, t *testing.T) f
 				},
 				output: getTeacherSharingRulesByTeacherAndSchoolAppOutput{
 					teacherSharingRules: []models.TeacherSharingRule{
-						models.TeacherSharingRule{
+						{
 							Teacher:  "string1",
 							School:   "string2",
 							App:      "string2",
 							District: "district1",
 						},
-						models.TeacherSharingRule{
+						{
 							Teacher:  "string1",
 							School:   "string1",
 							App:      "string1",
@@ -2818,13 +2818,13 @@ func GetTeacherSharingRulesByTeacherAndSchoolApp(d db.Interface, t *testing.T) f
 				},
 				output: getTeacherSharingRulesByTeacherAndSchoolAppOutput{
 					teacherSharingRules: []models.TeacherSharingRule{
-						models.TeacherSharingRule{
+						{
 							Teacher:  "string1",
 							School:   "string2",
 							App:      "string2",
 							District: "district1",
 						},
-						models.TeacherSharingRule{
+						{
 							Teacher:  "string1",
 							School:   "string3",
 							App:      "string3",
@@ -2842,7 +2842,7 @@ func GetTeacherSharingRulesByTeacherAndSchoolApp(d db.Interface, t *testing.T) f
 					input: db.GetTeacherSharingRulesByTeacherAndSchoolAppInput{
 						Teacher: "string1",
 						FilterValues: []db.TeacherSharingRuleByTeacherAndSchoolAppFilterValues{
-							db.TeacherSharingRuleByTeacherAndSchoolAppFilterValues{
+							{
 								AttributeName:   db.TeacherSharingRuleDistrict,
 								AttributeValues: []interface{}{"district0"},
 							},
@@ -2853,7 +2853,7 @@ func GetTeacherSharingRulesByTeacherAndSchoolApp(d db.Interface, t *testing.T) f
 				},
 				output: getTeacherSharingRulesByTeacherAndSchoolAppOutput{
 					teacherSharingRules: []models.TeacherSharingRule{
-						models.TeacherSharingRule{
+						{
 							Teacher:  "string1",
 							School:   "string1",
 							App:      "string1",
@@ -2896,19 +2896,19 @@ func ScanTeacherSharingRules(d db.Interface, t *testing.T) func(t *testing.T) {
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.TeacherSharingRule{
-				models.TeacherSharingRule{
+				{
 					App:      "string1",
 					District: "string1",
 					School:   "string1",
 					Teacher:  "string1",
 				},
-				models.TeacherSharingRule{
+				{
 					App:      "string2",
 					District: "string2",
 					School:   "string2",
 					Teacher:  "string2",
 				},
-				models.TeacherSharingRule{
+				{
 					App:      "string3",
 					District: "string3",
 					School:   "string3",
@@ -3086,19 +3086,19 @@ func GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(d db.Interface, t *test
 				},
 				output: getTeacherSharingRulesByDistrictAndSchoolTeacherAppOutput{
 					teacherSharingRules: []models.TeacherSharingRule{
-						models.TeacherSharingRule{
+						{
 							District: "string1",
 							School:   "string1",
 							Teacher:  "string1",
 							App:      "string1",
 						},
-						models.TeacherSharingRule{
+						{
 							District: "string1",
 							School:   "string2",
 							Teacher:  "string2",
 							App:      "string2",
 						},
-						models.TeacherSharingRule{
+						{
 							District: "string1",
 							School:   "string3",
 							Teacher:  "string3",
@@ -3120,19 +3120,19 @@ func GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(d db.Interface, t *test
 				},
 				output: getTeacherSharingRulesByDistrictAndSchoolTeacherAppOutput{
 					teacherSharingRules: []models.TeacherSharingRule{
-						models.TeacherSharingRule{
+						{
 							District: "string1",
 							School:   "string3",
 							Teacher:  "string3",
 							App:      "string3",
 						},
-						models.TeacherSharingRule{
+						{
 							District: "string1",
 							School:   "string2",
 							Teacher:  "string2",
 							App:      "string2",
 						},
-						models.TeacherSharingRule{
+						{
 							District: "string1",
 							School:   "string1",
 							Teacher:  "string1",
@@ -3159,13 +3159,13 @@ func GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(d db.Interface, t *test
 				},
 				output: getTeacherSharingRulesByDistrictAndSchoolTeacherAppOutput{
 					teacherSharingRules: []models.TeacherSharingRule{
-						models.TeacherSharingRule{
+						{
 							District: "string1",
 							School:   "string2",
 							Teacher:  "string2",
 							App:      "string2",
 						},
-						models.TeacherSharingRule{
+						{
 							District: "string1",
 							School:   "string3",
 							Teacher:  "string3",
@@ -3193,13 +3193,13 @@ func GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(d db.Interface, t *test
 				},
 				output: getTeacherSharingRulesByDistrictAndSchoolTeacherAppOutput{
 					teacherSharingRules: []models.TeacherSharingRule{
-						models.TeacherSharingRule{
+						{
 							District: "string1",
 							School:   "string2",
 							Teacher:  "string2",
 							App:      "string2",
 						},
-						models.TeacherSharingRule{
+						{
 							District: "string1",
 							School:   "string1",
 							Teacher:  "string1",
@@ -3225,13 +3225,13 @@ func GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(d db.Interface, t *test
 				},
 				output: getTeacherSharingRulesByDistrictAndSchoolTeacherAppOutput{
 					teacherSharingRules: []models.TeacherSharingRule{
-						models.TeacherSharingRule{
+						{
 							District: "string1",
 							School:   "string2",
 							Teacher:  "string2",
 							App:      "string2",
 						},
-						models.TeacherSharingRule{
+						{
 							District: "string1",
 							School:   "string3",
 							Teacher:  "string3",
@@ -3274,19 +3274,19 @@ func ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp(d db.Interface, t *tes
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.TeacherSharingRule{
-				models.TeacherSharingRule{
+				{
 					District: "string1",
 					School:   "string1",
 					Teacher:  "string1",
 					App:      "string1",
 				},
-				models.TeacherSharingRule{
+				{
 					District: "string2",
 					School:   "string2",
 					Teacher:  "string2",
 					App:      "string2",
 				},
-				models.TeacherSharingRule{
+				{
 					District: "string3",
 					School:   "string3",
 					Teacher:  "string3",
@@ -3456,15 +3456,15 @@ func GetThingsByNameAndVersion(d db.Interface, t *testing.T) func(t *testing.T) 
 				},
 				output: getThingsByNameAndVersionOutput{
 					things: []models.Thing{
-						models.Thing{
+						{
 							Name:    "string1",
 							Version: 1,
 						},
-						models.Thing{
+						{
 							Name:    "string1",
 							Version: 2,
 						},
-						models.Thing{
+						{
 							Name:    "string1",
 							Version: 3,
 						},
@@ -3484,15 +3484,15 @@ func GetThingsByNameAndVersion(d db.Interface, t *testing.T) func(t *testing.T) 
 				},
 				output: getThingsByNameAndVersionOutput{
 					things: []models.Thing{
-						models.Thing{
+						{
 							Name:    "string1",
 							Version: 3,
 						},
-						models.Thing{
+						{
 							Name:    "string1",
 							Version: 2,
 						},
-						models.Thing{
+						{
 							Name:    "string1",
 							Version: 1,
 						},
@@ -3515,11 +3515,11 @@ func GetThingsByNameAndVersion(d db.Interface, t *testing.T) func(t *testing.T) 
 				},
 				output: getThingsByNameAndVersionOutput{
 					things: []models.Thing{
-						models.Thing{
+						{
 							Name:    "string1",
 							Version: 2,
 						},
-						models.Thing{
+						{
 							Name:    "string1",
 							Version: 3,
 						},
@@ -3543,11 +3543,11 @@ func GetThingsByNameAndVersion(d db.Interface, t *testing.T) func(t *testing.T) 
 				},
 				output: getThingsByNameAndVersionOutput{
 					things: []models.Thing{
-						models.Thing{
+						{
 							Name:    "string1",
 							Version: 2,
 						},
-						models.Thing{
+						{
 							Name:    "string1",
 							Version: 1,
 						},
@@ -3567,11 +3567,11 @@ func GetThingsByNameAndVersion(d db.Interface, t *testing.T) func(t *testing.T) 
 				},
 				output: getThingsByNameAndVersionOutput{
 					things: []models.Thing{
-						models.Thing{
+						{
 							Name:    "string1",
 							Version: 2,
 						},
-						models.Thing{
+						{
 							Name:    "string1",
 							Version: 3,
 						},
@@ -3618,7 +3618,7 @@ func ScanThings(d db.Interface, t *testing.T) func(t *testing.T) {
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.Thing{
-				models.Thing{
+				{
 					CreatedAt:     mustTime("2018-03-11T15:04:01+07:00"),
 					HashNullable:  db.String("string1"),
 					ID:            "string1",
@@ -3626,7 +3626,7 @@ func ScanThings(d db.Interface, t *testing.T) func(t *testing.T) {
 					RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 					Version:       1,
 				},
-				models.Thing{
+				{
 					CreatedAt:     mustTime("2018-03-11T15:04:02+07:00"),
 					HashNullable:  db.String("string2"),
 					ID:            "string2",
@@ -3634,7 +3634,7 @@ func ScanThings(d db.Interface, t *testing.T) func(t *testing.T) {
 					RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 					Version:       2,
 				},
-				models.Thing{
+				{
 					CreatedAt:     mustTime("2018-03-11T15:04:03+07:00"),
 					HashNullable:  db.String("string3"),
 					ID:            "string3",
@@ -3797,17 +3797,17 @@ func ScanThingsByID(d db.Interface, t *testing.T) func(t *testing.T) {
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.Thing{
-				models.Thing{
+				{
 					ID:      "string1",
 					Name:    "string1",
 					Version: 1,
 				},
-				models.Thing{
+				{
 					ID:      "string2",
 					Name:    "string2",
 					Version: 2,
 				},
-				models.Thing{
+				{
 					ID:      "string3",
 					Name:    "string3",
 					Version: 3,
@@ -3955,17 +3955,17 @@ func GetThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.T
 				},
 				output: getThingsByNameAndCreatedAtOutput{
 					things: []models.Thing{
-						models.Thing{
+						{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
 							Version:   1,
 						},
-						models.Thing{
+						{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
 							Version:   3,
 						},
-						models.Thing{
+						{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
 							Version:   2,
@@ -3986,17 +3986,17 @@ func GetThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.T
 				},
 				output: getThingsByNameAndCreatedAtOutput{
 					things: []models.Thing{
-						models.Thing{
+						{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
 							Version:   2,
 						},
-						models.Thing{
+						{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
 							Version:   3,
 						},
-						models.Thing{
+						{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
 							Version:   1,
@@ -4021,12 +4021,12 @@ func GetThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.T
 				},
 				output: getThingsByNameAndCreatedAtOutput{
 					things: []models.Thing{
-						models.Thing{
+						{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
 							Version:   3,
 						},
-						models.Thing{
+						{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
 							Version:   2,
@@ -4052,12 +4052,12 @@ func GetThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.T
 				},
 				output: getThingsByNameAndCreatedAtOutput{
 					things: []models.Thing{
-						models.Thing{
+						{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
 							Version:   3,
 						},
-						models.Thing{
+						{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
 							Version:   1,
@@ -4078,12 +4078,12 @@ func GetThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.T
 				},
 				output: getThingsByNameAndCreatedAtOutput{
 					things: []models.Thing{
-						models.Thing{
+						{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
 							Version:   3,
 						},
-						models.Thing{
+						{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
 							Version:   2,
@@ -4122,17 +4122,17 @@ func ScanThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.Thing{
-				models.Thing{
+				{
 					Name:      "string1",
 					CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
 					Version:   1,
 				},
-				models.Thing{
+				{
 					Name:      "string2",
 					CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
 					Version:   2,
 				},
-				models.Thing{
+				{
 					Name:      "string3",
 					CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
 					Version:   3,
@@ -4280,17 +4280,17 @@ func GetThingsByNameAndRangeNullable(d db.Interface, t *testing.T) func(t *testi
 				},
 				output: getThingsByNameAndRangeNullableOutput{
 					things: []models.Thing{
-						models.Thing{
+						{
 							Name:          "string1",
 							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 							Version:       1,
 						},
-						models.Thing{
+						{
 							Name:          "string1",
 							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 							Version:       3,
 						},
-						models.Thing{
+						{
 							Name:          "string1",
 							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 							Version:       2,
@@ -4311,17 +4311,17 @@ func GetThingsByNameAndRangeNullable(d db.Interface, t *testing.T) func(t *testi
 				},
 				output: getThingsByNameAndRangeNullableOutput{
 					things: []models.Thing{
-						models.Thing{
+						{
 							Name:          "string1",
 							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 							Version:       2,
 						},
-						models.Thing{
+						{
 							Name:          "string1",
 							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 							Version:       3,
 						},
-						models.Thing{
+						{
 							Name:          "string1",
 							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 							Version:       1,
@@ -4346,12 +4346,12 @@ func GetThingsByNameAndRangeNullable(d db.Interface, t *testing.T) func(t *testi
 				},
 				output: getThingsByNameAndRangeNullableOutput{
 					things: []models.Thing{
-						models.Thing{
+						{
 							Name:          "string1",
 							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 							Version:       3,
 						},
-						models.Thing{
+						{
 							Name:          "string1",
 							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 							Version:       2,
@@ -4377,12 +4377,12 @@ func GetThingsByNameAndRangeNullable(d db.Interface, t *testing.T) func(t *testi
 				},
 				output: getThingsByNameAndRangeNullableOutput{
 					things: []models.Thing{
-						models.Thing{
+						{
 							Name:          "string1",
 							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 							Version:       3,
 						},
-						models.Thing{
+						{
 							Name:          "string1",
 							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 							Version:       1,
@@ -4403,12 +4403,12 @@ func GetThingsByNameAndRangeNullable(d db.Interface, t *testing.T) func(t *testi
 				},
 				output: getThingsByNameAndRangeNullableOutput{
 					things: []models.Thing{
-						models.Thing{
+						{
 							Name:          "string1",
 							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 							Version:       3,
 						},
-						models.Thing{
+						{
 							Name:          "string1",
 							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 							Version:       2,
@@ -4447,17 +4447,17 @@ func ScanThingsByNameAndRangeNullable(d db.Interface, t *testing.T) func(t *test
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.Thing{
-				models.Thing{
+				{
 					Name:          "string1",
 					RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 					Version:       1,
 				},
-				models.Thing{
+				{
 					Name:          "string2",
 					RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 					Version:       2,
 				},
-				models.Thing{
+				{
 					Name:          "string3",
 					RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 					Version:       3,
@@ -4605,17 +4605,17 @@ func GetThingsByHashNullableAndName(d db.Interface, t *testing.T) func(t *testin
 				},
 				output: getThingsByHashNullableAndNameOutput{
 					things: []models.Thing{
-						models.Thing{
+						{
 							HashNullable: db.String("string1"),
 							Name:         "string1",
 							Version:      1,
 						},
-						models.Thing{
+						{
 							HashNullable: db.String("string1"),
 							Name:         "string2",
 							Version:      3,
 						},
-						models.Thing{
+						{
 							HashNullable: db.String("string1"),
 							Name:         "string3",
 							Version:      2,
@@ -4636,17 +4636,17 @@ func GetThingsByHashNullableAndName(d db.Interface, t *testing.T) func(t *testin
 				},
 				output: getThingsByHashNullableAndNameOutput{
 					things: []models.Thing{
-						models.Thing{
+						{
 							HashNullable: db.String("string1"),
 							Name:         "string3",
 							Version:      2,
 						},
-						models.Thing{
+						{
 							HashNullable: db.String("string1"),
 							Name:         "string2",
 							Version:      3,
 						},
-						models.Thing{
+						{
 							HashNullable: db.String("string1"),
 							Name:         "string1",
 							Version:      1,
@@ -4671,12 +4671,12 @@ func GetThingsByHashNullableAndName(d db.Interface, t *testing.T) func(t *testin
 				},
 				output: getThingsByHashNullableAndNameOutput{
 					things: []models.Thing{
-						models.Thing{
+						{
 							HashNullable: db.String("string1"),
 							Name:         "string2",
 							Version:      3,
 						},
-						models.Thing{
+						{
 							HashNullable: db.String("string1"),
 							Name:         "string3",
 							Version:      2,
@@ -4702,12 +4702,12 @@ func GetThingsByHashNullableAndName(d db.Interface, t *testing.T) func(t *testin
 				},
 				output: getThingsByHashNullableAndNameOutput{
 					things: []models.Thing{
-						models.Thing{
+						{
 							HashNullable: db.String("string1"),
 							Name:         "string2",
 							Version:      3,
 						},
-						models.Thing{
+						{
 							HashNullable: db.String("string1"),
 							Name:         "string1",
 							Version:      1,
@@ -4728,12 +4728,12 @@ func GetThingsByHashNullableAndName(d db.Interface, t *testing.T) func(t *testin
 				},
 				output: getThingsByHashNullableAndNameOutput{
 					things: []models.Thing{
-						models.Thing{
+						{
 							HashNullable: db.String("string1"),
 							Name:         "string2",
 							Version:      3,
 						},
-						models.Thing{
+						{
 							HashNullable: db.String("string1"),
 							Name:         "string3",
 							Version:      2,
@@ -4829,15 +4829,15 @@ func GetThingAllowingBatchWritessByNameAndVersion(d db.Interface, t *testing.T) 
 				},
 				output: getThingAllowingBatchWritessByNameAndVersionOutput{
 					thingAllowingBatchWritess: []models.ThingAllowingBatchWrites{
-						models.ThingAllowingBatchWrites{
+						{
 							Name:    "string1",
 							Version: 1,
 						},
-						models.ThingAllowingBatchWrites{
+						{
 							Name:    "string1",
 							Version: 2,
 						},
-						models.ThingAllowingBatchWrites{
+						{
 							Name:    "string1",
 							Version: 3,
 						},
@@ -4857,15 +4857,15 @@ func GetThingAllowingBatchWritessByNameAndVersion(d db.Interface, t *testing.T) 
 				},
 				output: getThingAllowingBatchWritessByNameAndVersionOutput{
 					thingAllowingBatchWritess: []models.ThingAllowingBatchWrites{
-						models.ThingAllowingBatchWrites{
+						{
 							Name:    "string1",
 							Version: 3,
 						},
-						models.ThingAllowingBatchWrites{
+						{
 							Name:    "string1",
 							Version: 2,
 						},
-						models.ThingAllowingBatchWrites{
+						{
 							Name:    "string1",
 							Version: 1,
 						},
@@ -4888,11 +4888,11 @@ func GetThingAllowingBatchWritessByNameAndVersion(d db.Interface, t *testing.T) 
 				},
 				output: getThingAllowingBatchWritessByNameAndVersionOutput{
 					thingAllowingBatchWritess: []models.ThingAllowingBatchWrites{
-						models.ThingAllowingBatchWrites{
+						{
 							Name:    "string1",
 							Version: 2,
 						},
-						models.ThingAllowingBatchWrites{
+						{
 							Name:    "string1",
 							Version: 3,
 						},
@@ -4916,11 +4916,11 @@ func GetThingAllowingBatchWritessByNameAndVersion(d db.Interface, t *testing.T) 
 				},
 				output: getThingAllowingBatchWritessByNameAndVersionOutput{
 					thingAllowingBatchWritess: []models.ThingAllowingBatchWrites{
-						models.ThingAllowingBatchWrites{
+						{
 							Name:    "string1",
 							Version: 2,
 						},
-						models.ThingAllowingBatchWrites{
+						{
 							Name:    "string1",
 							Version: 1,
 						},
@@ -4940,11 +4940,11 @@ func GetThingAllowingBatchWritessByNameAndVersion(d db.Interface, t *testing.T) 
 				},
 				output: getThingAllowingBatchWritessByNameAndVersionOutput{
 					thingAllowingBatchWritess: []models.ThingAllowingBatchWrites{
-						models.ThingAllowingBatchWrites{
+						{
 							Name:    "string1",
 							Version: 2,
 						},
-						models.ThingAllowingBatchWrites{
+						{
 							Name:    "string1",
 							Version: 3,
 						},
@@ -4979,15 +4979,15 @@ func ScanThingAllowingBatchWritess(d db.Interface, t *testing.T) func(t *testing
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingAllowingBatchWrites{
-				models.ThingAllowingBatchWrites{
+				{
 					Name:    "string1",
 					Version: 1,
 				},
-				models.ThingAllowingBatchWrites{
+				{
 					Name:    "string2",
 					Version: 2,
 				},
-				models.ThingAllowingBatchWrites{
+				{
 					Name:    "string3",
 					Version: 3,
 				},
@@ -5174,17 +5174,17 @@ func GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate(d db.Int
 				},
 				output: getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateOutput{
 					thingAllowingBatchWritesWithCompositeAttributess: []models.ThingAllowingBatchWritesWithCompositeAttributes{
-						models.ThingAllowingBatchWritesWithCompositeAttributes{
+						{
 							Name: db.String("string1"),
 							ID:   db.String("string1"),
 							Date: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 						},
-						models.ThingAllowingBatchWritesWithCompositeAttributes{
+						{
 							Name: db.String("string1"),
 							ID:   db.String("string1"),
 							Date: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 						},
-						models.ThingAllowingBatchWritesWithCompositeAttributes{
+						{
 							Name: db.String("string1"),
 							ID:   db.String("string1"),
 							Date: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
@@ -5206,17 +5206,17 @@ func GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate(d db.Int
 				},
 				output: getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateOutput{
 					thingAllowingBatchWritesWithCompositeAttributess: []models.ThingAllowingBatchWritesWithCompositeAttributes{
-						models.ThingAllowingBatchWritesWithCompositeAttributes{
+						{
 							Name: db.String("string1"),
 							ID:   db.String("string1"),
 							Date: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 						},
-						models.ThingAllowingBatchWritesWithCompositeAttributes{
+						{
 							Name: db.String("string1"),
 							ID:   db.String("string1"),
 							Date: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 						},
-						models.ThingAllowingBatchWritesWithCompositeAttributes{
+						{
 							Name: db.String("string1"),
 							ID:   db.String("string1"),
 							Date: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
@@ -5242,12 +5242,12 @@ func GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate(d db.Int
 				},
 				output: getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateOutput{
 					thingAllowingBatchWritesWithCompositeAttributess: []models.ThingAllowingBatchWritesWithCompositeAttributes{
-						models.ThingAllowingBatchWritesWithCompositeAttributes{
+						{
 							Name: db.String("string1"),
 							ID:   db.String("string1"),
 							Date: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 						},
-						models.ThingAllowingBatchWritesWithCompositeAttributes{
+						{
 							Name: db.String("string1"),
 							ID:   db.String("string1"),
 							Date: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
@@ -5274,12 +5274,12 @@ func GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate(d db.Int
 				},
 				output: getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateOutput{
 					thingAllowingBatchWritesWithCompositeAttributess: []models.ThingAllowingBatchWritesWithCompositeAttributes{
-						models.ThingAllowingBatchWritesWithCompositeAttributes{
+						{
 							Name: db.String("string1"),
 							ID:   db.String("string1"),
 							Date: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 						},
-						models.ThingAllowingBatchWritesWithCompositeAttributes{
+						{
 							Name: db.String("string1"),
 							ID:   db.String("string1"),
 							Date: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
@@ -5301,12 +5301,12 @@ func GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate(d db.Int
 				},
 				output: getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateOutput{
 					thingAllowingBatchWritesWithCompositeAttributess: []models.ThingAllowingBatchWritesWithCompositeAttributes{
-						models.ThingAllowingBatchWritesWithCompositeAttributes{
+						{
 							Name: db.String("string1"),
 							ID:   db.String("string1"),
 							Date: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 						},
-						models.ThingAllowingBatchWritesWithCompositeAttributes{
+						{
 							Name: db.String("string1"),
 							ID:   db.String("string1"),
 							Date: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
@@ -5345,17 +5345,17 @@ func ScanThingAllowingBatchWritesWithCompositeAttributess(d db.Interface, t *tes
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingAllowingBatchWritesWithCompositeAttributes{
-				models.ThingAllowingBatchWritesWithCompositeAttributes{
+				{
 					Date: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 					ID:   db.String("string1"),
 					Name: db.String("string1"),
 				},
-				models.ThingAllowingBatchWritesWithCompositeAttributes{
+				{
 					Date: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 					ID:   db.String("string2"),
 					Name: db.String("string2"),
 				},
-				models.ThingAllowingBatchWritesWithCompositeAttributes{
+				{
 					Date: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 					ID:   db.String("string3"),
 					Name: db.String("string3"),
@@ -5550,17 +5550,17 @@ func GetThingWithAdditionalAttributessByNameAndVersion(d db.Interface, t *testin
 				},
 				output: getThingWithAdditionalAttributessByNameAndVersionOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:                 "string1",
 							Version:              1,
 							AdditionalSAttribute: pointerToString("additionalSAttribute0"),
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:                 "string1",
 							Version:              2,
 							AdditionalSAttribute: pointerToString("additionalSAttribute1"),
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:                 "string1",
 							Version:              3,
 							AdditionalSAttribute: pointerToString("additionalSAttribute2"),
@@ -5581,17 +5581,17 @@ func GetThingWithAdditionalAttributessByNameAndVersion(d db.Interface, t *testin
 				},
 				output: getThingWithAdditionalAttributessByNameAndVersionOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:                 "string1",
 							Version:              3,
 							AdditionalSAttribute: pointerToString("additionalSAttribute2"),
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:                 "string1",
 							Version:              2,
 							AdditionalSAttribute: pointerToString("additionalSAttribute1"),
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:                 "string1",
 							Version:              1,
 							AdditionalSAttribute: pointerToString("additionalSAttribute0"),
@@ -5616,12 +5616,12 @@ func GetThingWithAdditionalAttributessByNameAndVersion(d db.Interface, t *testin
 				},
 				output: getThingWithAdditionalAttributessByNameAndVersionOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:                 "string1",
 							Version:              2,
 							AdditionalSAttribute: pointerToString("additionalSAttribute1"),
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:                 "string1",
 							Version:              3,
 							AdditionalSAttribute: pointerToString("additionalSAttribute2"),
@@ -5647,12 +5647,12 @@ func GetThingWithAdditionalAttributessByNameAndVersion(d db.Interface, t *testin
 				},
 				output: getThingWithAdditionalAttributessByNameAndVersionOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:                 "string1",
 							Version:              2,
 							AdditionalSAttribute: pointerToString("additionalSAttribute1"),
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:                 "string1",
 							Version:              1,
 							AdditionalSAttribute: pointerToString("additionalSAttribute0"),
@@ -5673,12 +5673,12 @@ func GetThingWithAdditionalAttributessByNameAndVersion(d db.Interface, t *testin
 				},
 				output: getThingWithAdditionalAttributessByNameAndVersionOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:                 "string1",
 							Version:              2,
 							AdditionalSAttribute: pointerToString("additionalSAttribute1"),
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:                 "string1",
 							Version:              3,
 							AdditionalSAttribute: pointerToString("additionalSAttribute2"),
@@ -5695,7 +5695,7 @@ func GetThingWithAdditionalAttributessByNameAndVersion(d db.Interface, t *testin
 					input: db.GetThingWithAdditionalAttributessByNameAndVersionInput{
 						Name: "string1",
 						FilterValues: []db.ThingWithAdditionalAttributesByNameAndVersionFilterValues{
-							db.ThingWithAdditionalAttributesByNameAndVersionFilterValues{
+							{
 								AttributeName:   db.ThingWithAdditionalAttributesAdditionalSAttribute,
 								AttributeValues: []interface{}{"additionalSAttribute0"},
 							},
@@ -5706,7 +5706,7 @@ func GetThingWithAdditionalAttributessByNameAndVersion(d db.Interface, t *testin
 				},
 				output: getThingWithAdditionalAttributessByNameAndVersionOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:                 "string1",
 							Version:              1,
 							AdditionalSAttribute: pointerToString("additionalSAttribute0"),
@@ -5763,7 +5763,7 @@ func ScanThingWithAdditionalAttributess(d db.Interface, t *testing.T) func(t *te
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithAdditionalAttributes{
-				models.ThingWithAdditionalAttributes{
+				{
 					AdditionalBAttribute: []byte("string1"),
 					AdditionalNAttribute: db.Int64(1),
 					AdditionalSAttribute: db.String("string1"),
@@ -5774,7 +5774,7 @@ func ScanThingWithAdditionalAttributess(d db.Interface, t *testing.T) func(t *te
 					RangeNullable:        db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 					Version:              1,
 				},
-				models.ThingWithAdditionalAttributes{
+				{
 					AdditionalBAttribute: []byte("string2"),
 					AdditionalNAttribute: db.Int64(2),
 					AdditionalSAttribute: db.String("string2"),
@@ -5785,7 +5785,7 @@ func ScanThingWithAdditionalAttributess(d db.Interface, t *testing.T) func(t *te
 					RangeNullable:        db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 					Version:              2,
 				},
-				models.ThingWithAdditionalAttributes{
+				{
 					AdditionalBAttribute: []byte("string3"),
 					AdditionalNAttribute: db.Int64(3),
 					AdditionalSAttribute: db.String("string3"),
@@ -5967,17 +5967,17 @@ func ScanThingWithAdditionalAttributessByID(d db.Interface, t *testing.T) func(t
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithAdditionalAttributes{
-				models.ThingWithAdditionalAttributes{
+				{
 					ID:      "string1",
 					Name:    "string1",
 					Version: 1,
 				},
-				models.ThingWithAdditionalAttributes{
+				{
 					ID:      "string2",
 					Name:    "string2",
 					Version: 2,
 				},
-				models.ThingWithAdditionalAttributes{
+				{
 					ID:      "string3",
 					Name:    "string3",
 					Version: 3,
@@ -6125,17 +6125,17 @@ func GetThingWithAdditionalAttributessByNameAndCreatedAt(d db.Interface, t *test
 				},
 				output: getThingWithAdditionalAttributessByNameAndCreatedAtOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
 							Version:   1,
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
 							Version:   3,
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
 							Version:   2,
@@ -6156,17 +6156,17 @@ func GetThingWithAdditionalAttributessByNameAndCreatedAt(d db.Interface, t *test
 				},
 				output: getThingWithAdditionalAttributessByNameAndCreatedAtOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
 							Version:   2,
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
 							Version:   3,
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
 							Version:   1,
@@ -6191,12 +6191,12 @@ func GetThingWithAdditionalAttributessByNameAndCreatedAt(d db.Interface, t *test
 				},
 				output: getThingWithAdditionalAttributessByNameAndCreatedAtOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
 							Version:   3,
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
 							Version:   2,
@@ -6222,12 +6222,12 @@ func GetThingWithAdditionalAttributessByNameAndCreatedAt(d db.Interface, t *test
 				},
 				output: getThingWithAdditionalAttributessByNameAndCreatedAtOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
 							Version:   3,
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
 							Version:   1,
@@ -6248,12 +6248,12 @@ func GetThingWithAdditionalAttributessByNameAndCreatedAt(d db.Interface, t *test
 				},
 				output: getThingWithAdditionalAttributessByNameAndCreatedAtOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
 							Version:   3,
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:      "string1",
 							CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
 							Version:   2,
@@ -6292,17 +6292,17 @@ func ScanThingWithAdditionalAttributessByNameAndCreatedAt(d db.Interface, t *tes
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithAdditionalAttributes{
-				models.ThingWithAdditionalAttributes{
+				{
 					Name:      "string1",
 					CreatedAt: mustTime("2018-03-11T15:04:01+07:00"),
 					Version:   1,
 				},
-				models.ThingWithAdditionalAttributes{
+				{
 					Name:      "string2",
 					CreatedAt: mustTime("2018-03-11T15:04:02+07:00"),
 					Version:   2,
 				},
-				models.ThingWithAdditionalAttributes{
+				{
 					Name:      "string3",
 					CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
 					Version:   3,
@@ -6450,17 +6450,17 @@ func GetThingWithAdditionalAttributessByNameAndRangeNullable(d db.Interface, t *
 				},
 				output: getThingWithAdditionalAttributessByNameAndRangeNullableOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:          "string1",
 							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 							Version:       1,
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:          "string1",
 							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 							Version:       3,
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:          "string1",
 							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 							Version:       2,
@@ -6481,17 +6481,17 @@ func GetThingWithAdditionalAttributessByNameAndRangeNullable(d db.Interface, t *
 				},
 				output: getThingWithAdditionalAttributessByNameAndRangeNullableOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:          "string1",
 							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 							Version:       2,
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:          "string1",
 							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 							Version:       3,
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:          "string1",
 							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 							Version:       1,
@@ -6516,12 +6516,12 @@ func GetThingWithAdditionalAttributessByNameAndRangeNullable(d db.Interface, t *
 				},
 				output: getThingWithAdditionalAttributessByNameAndRangeNullableOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:          "string1",
 							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 							Version:       3,
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:          "string1",
 							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 							Version:       2,
@@ -6547,12 +6547,12 @@ func GetThingWithAdditionalAttributessByNameAndRangeNullable(d db.Interface, t *
 				},
 				output: getThingWithAdditionalAttributessByNameAndRangeNullableOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:          "string1",
 							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 							Version:       3,
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:          "string1",
 							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 							Version:       1,
@@ -6573,12 +6573,12 @@ func GetThingWithAdditionalAttributessByNameAndRangeNullable(d db.Interface, t *
 				},
 				output: getThingWithAdditionalAttributessByNameAndRangeNullableOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:          "string1",
 							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 							Version:       3,
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							Name:          "string1",
 							RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 							Version:       2,
@@ -6617,17 +6617,17 @@ func ScanThingWithAdditionalAttributessByNameAndRangeNullable(d db.Interface, t 
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithAdditionalAttributes{
-				models.ThingWithAdditionalAttributes{
+				{
 					Name:          "string1",
 					RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 					Version:       1,
 				},
-				models.ThingWithAdditionalAttributes{
+				{
 					Name:          "string2",
 					RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 					Version:       2,
 				},
-				models.ThingWithAdditionalAttributes{
+				{
 					Name:          "string3",
 					RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 					Version:       3,
@@ -6775,17 +6775,17 @@ func GetThingWithAdditionalAttributessByHashNullableAndName(d db.Interface, t *t
 				},
 				output: getThingWithAdditionalAttributessByHashNullableAndNameOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
-						models.ThingWithAdditionalAttributes{
+						{
 							HashNullable: db.String("string1"),
 							Name:         "string1",
 							Version:      1,
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							HashNullable: db.String("string1"),
 							Name:         "string2",
 							Version:      3,
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							HashNullable: db.String("string1"),
 							Name:         "string3",
 							Version:      2,
@@ -6806,17 +6806,17 @@ func GetThingWithAdditionalAttributessByHashNullableAndName(d db.Interface, t *t
 				},
 				output: getThingWithAdditionalAttributessByHashNullableAndNameOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
-						models.ThingWithAdditionalAttributes{
+						{
 							HashNullable: db.String("string1"),
 							Name:         "string3",
 							Version:      2,
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							HashNullable: db.String("string1"),
 							Name:         "string2",
 							Version:      3,
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							HashNullable: db.String("string1"),
 							Name:         "string1",
 							Version:      1,
@@ -6841,12 +6841,12 @@ func GetThingWithAdditionalAttributessByHashNullableAndName(d db.Interface, t *t
 				},
 				output: getThingWithAdditionalAttributessByHashNullableAndNameOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
-						models.ThingWithAdditionalAttributes{
+						{
 							HashNullable: db.String("string1"),
 							Name:         "string2",
 							Version:      3,
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							HashNullable: db.String("string1"),
 							Name:         "string3",
 							Version:      2,
@@ -6872,12 +6872,12 @@ func GetThingWithAdditionalAttributessByHashNullableAndName(d db.Interface, t *t
 				},
 				output: getThingWithAdditionalAttributessByHashNullableAndNameOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
-						models.ThingWithAdditionalAttributes{
+						{
 							HashNullable: db.String("string1"),
 							Name:         "string2",
 							Version:      3,
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							HashNullable: db.String("string1"),
 							Name:         "string1",
 							Version:      1,
@@ -6898,12 +6898,12 @@ func GetThingWithAdditionalAttributessByHashNullableAndName(d db.Interface, t *t
 				},
 				output: getThingWithAdditionalAttributessByHashNullableAndNameOutput{
 					thingWithAdditionalAttributess: []models.ThingWithAdditionalAttributes{
-						models.ThingWithAdditionalAttributes{
+						{
 							HashNullable: db.String("string1"),
 							Name:         "string2",
 							Version:      3,
 						},
-						models.ThingWithAdditionalAttributes{
+						{
 							HashNullable: db.String("string1"),
 							Name:         "string3",
 							Version:      2,
@@ -7006,17 +7006,17 @@ func GetThingWithCompositeAttributessByNameBranchAndDate(d db.Interface, t *test
 				},
 				output: getThingWithCompositeAttributessByNameBranchAndDateOutput{
 					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
-						models.ThingWithCompositeAttributes{
+						{
 							Name:   db.String("string1"),
 							Branch: db.String("string1"),
 							Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 						},
-						models.ThingWithCompositeAttributes{
+						{
 							Name:   db.String("string1"),
 							Branch: db.String("string1"),
 							Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 						},
-						models.ThingWithCompositeAttributes{
+						{
 							Name:   db.String("string1"),
 							Branch: db.String("string1"),
 							Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
@@ -7038,17 +7038,17 @@ func GetThingWithCompositeAttributessByNameBranchAndDate(d db.Interface, t *test
 				},
 				output: getThingWithCompositeAttributessByNameBranchAndDateOutput{
 					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
-						models.ThingWithCompositeAttributes{
+						{
 							Name:   db.String("string1"),
 							Branch: db.String("string1"),
 							Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 						},
-						models.ThingWithCompositeAttributes{
+						{
 							Name:   db.String("string1"),
 							Branch: db.String("string1"),
 							Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 						},
-						models.ThingWithCompositeAttributes{
+						{
 							Name:   db.String("string1"),
 							Branch: db.String("string1"),
 							Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
@@ -7074,12 +7074,12 @@ func GetThingWithCompositeAttributessByNameBranchAndDate(d db.Interface, t *test
 				},
 				output: getThingWithCompositeAttributessByNameBranchAndDateOutput{
 					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
-						models.ThingWithCompositeAttributes{
+						{
 							Name:   db.String("string1"),
 							Branch: db.String("string1"),
 							Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 						},
-						models.ThingWithCompositeAttributes{
+						{
 							Name:   db.String("string1"),
 							Branch: db.String("string1"),
 							Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
@@ -7106,12 +7106,12 @@ func GetThingWithCompositeAttributessByNameBranchAndDate(d db.Interface, t *test
 				},
 				output: getThingWithCompositeAttributessByNameBranchAndDateOutput{
 					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
-						models.ThingWithCompositeAttributes{
+						{
 							Name:   db.String("string1"),
 							Branch: db.String("string1"),
 							Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 						},
-						models.ThingWithCompositeAttributes{
+						{
 							Name:   db.String("string1"),
 							Branch: db.String("string1"),
 							Date:   db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
@@ -7133,12 +7133,12 @@ func GetThingWithCompositeAttributessByNameBranchAndDate(d db.Interface, t *test
 				},
 				output: getThingWithCompositeAttributessByNameBranchAndDateOutput{
 					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
-						models.ThingWithCompositeAttributes{
+						{
 							Name:   db.String("string1"),
 							Branch: db.String("string1"),
 							Date:   db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 						},
-						models.ThingWithCompositeAttributes{
+						{
 							Name:   db.String("string1"),
 							Branch: db.String("string1"),
 							Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
@@ -7180,19 +7180,19 @@ func ScanThingWithCompositeAttributess(d db.Interface, t *testing.T) func(t *tes
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithCompositeAttributes{
-				models.ThingWithCompositeAttributes{
+				{
 					Branch:  db.String("string1"),
 					Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 					Name:    db.String("string1"),
 					Version: 1,
 				},
-				models.ThingWithCompositeAttributes{
+				{
 					Branch:  db.String("string2"),
 					Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 					Name:    db.String("string2"),
 					Version: 2,
 				},
-				models.ThingWithCompositeAttributes{
+				{
 					Branch:  db.String("string3"),
 					Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 					Name:    db.String("string3"),
@@ -7368,19 +7368,19 @@ func GetThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *tes
 				},
 				output: getThingWithCompositeAttributessByNameVersionAndDateOutput{
 					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
-						models.ThingWithCompositeAttributes{
+						{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 							Branch:  db.String("string1"),
 						},
-						models.ThingWithCompositeAttributes{
+						{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 							Branch:  db.String("string3"),
 						},
-						models.ThingWithCompositeAttributes{
+						{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
@@ -7403,19 +7403,19 @@ func GetThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *tes
 				},
 				output: getThingWithCompositeAttributessByNameVersionAndDateOutput{
 					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
-						models.ThingWithCompositeAttributes{
+						{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 							Branch:  db.String("string2"),
 						},
-						models.ThingWithCompositeAttributes{
+						{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 							Branch:  db.String("string3"),
 						},
-						models.ThingWithCompositeAttributes{
+						{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
@@ -7443,13 +7443,13 @@ func GetThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *tes
 				},
 				output: getThingWithCompositeAttributessByNameVersionAndDateOutput{
 					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
-						models.ThingWithCompositeAttributes{
+						{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 							Branch:  db.String("string3"),
 						},
-						models.ThingWithCompositeAttributes{
+						{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
@@ -7478,13 +7478,13 @@ func GetThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *tes
 				},
 				output: getThingWithCompositeAttributessByNameVersionAndDateOutput{
 					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
-						models.ThingWithCompositeAttributes{
+						{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 							Branch:  db.String("string3"),
 						},
-						models.ThingWithCompositeAttributes{
+						{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
@@ -7507,13 +7507,13 @@ func GetThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *tes
 				},
 				output: getThingWithCompositeAttributessByNameVersionAndDateOutput{
 					thingWithCompositeAttributess: []models.ThingWithCompositeAttributes{
-						models.ThingWithCompositeAttributes{
+						{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 							Branch:  db.String("string3"),
 						},
-						models.ThingWithCompositeAttributes{
+						{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
@@ -7556,19 +7556,19 @@ func ScanThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *te
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithCompositeAttributes{
-				models.ThingWithCompositeAttributes{
+				{
 					Name:    db.String("string1"),
 					Version: 1,
 					Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 					Branch:  db.String("string1"),
 				},
-				models.ThingWithCompositeAttributes{
+				{
 					Name:    db.String("string2"),
 					Version: 2,
 					Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 					Branch:  db.String("string2"),
 				},
-				models.ThingWithCompositeAttributes{
+				{
 					Name:    db.String("string3"),
 					Version: 3,
 					Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
@@ -7740,17 +7740,17 @@ func GetThingWithCompositeEnumAttributessByNameBranchAndDate(d db.Interface, t *
 				},
 				output: getThingWithCompositeEnumAttributessByNameBranchAndDateOutput{
 					thingWithCompositeEnumAttributess: []models.ThingWithCompositeEnumAttributes{
-						models.ThingWithCompositeEnumAttributes{
+						{
 							Name:     db.String("string1"),
 							BranchID: models.BranchMaster,
 							Date:     db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 						},
-						models.ThingWithCompositeEnumAttributes{
+						{
 							Name:     db.String("string1"),
 							BranchID: models.BranchMaster,
 							Date:     db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 						},
-						models.ThingWithCompositeEnumAttributes{
+						{
 							Name:     db.String("string1"),
 							BranchID: models.BranchMaster,
 							Date:     db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
@@ -7772,17 +7772,17 @@ func GetThingWithCompositeEnumAttributessByNameBranchAndDate(d db.Interface, t *
 				},
 				output: getThingWithCompositeEnumAttributessByNameBranchAndDateOutput{
 					thingWithCompositeEnumAttributess: []models.ThingWithCompositeEnumAttributes{
-						models.ThingWithCompositeEnumAttributes{
+						{
 							Name:     db.String("string1"),
 							BranchID: models.BranchMaster,
 							Date:     db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 						},
-						models.ThingWithCompositeEnumAttributes{
+						{
 							Name:     db.String("string1"),
 							BranchID: models.BranchMaster,
 							Date:     db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 						},
-						models.ThingWithCompositeEnumAttributes{
+						{
 							Name:     db.String("string1"),
 							BranchID: models.BranchMaster,
 							Date:     db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
@@ -7808,12 +7808,12 @@ func GetThingWithCompositeEnumAttributessByNameBranchAndDate(d db.Interface, t *
 				},
 				output: getThingWithCompositeEnumAttributessByNameBranchAndDateOutput{
 					thingWithCompositeEnumAttributess: []models.ThingWithCompositeEnumAttributes{
-						models.ThingWithCompositeEnumAttributes{
+						{
 							Name:     db.String("string1"),
 							BranchID: models.BranchMaster,
 							Date:     db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 						},
-						models.ThingWithCompositeEnumAttributes{
+						{
 							Name:     db.String("string1"),
 							BranchID: models.BranchMaster,
 							Date:     db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
@@ -7840,12 +7840,12 @@ func GetThingWithCompositeEnumAttributessByNameBranchAndDate(d db.Interface, t *
 				},
 				output: getThingWithCompositeEnumAttributessByNameBranchAndDateOutput{
 					thingWithCompositeEnumAttributess: []models.ThingWithCompositeEnumAttributes{
-						models.ThingWithCompositeEnumAttributes{
+						{
 							Name:     db.String("string1"),
 							BranchID: models.BranchMaster,
 							Date:     db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 						},
-						models.ThingWithCompositeEnumAttributes{
+						{
 							Name:     db.String("string1"),
 							BranchID: models.BranchMaster,
 							Date:     db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
@@ -7867,12 +7867,12 @@ func GetThingWithCompositeEnumAttributessByNameBranchAndDate(d db.Interface, t *
 				},
 				output: getThingWithCompositeEnumAttributessByNameBranchAndDateOutput{
 					thingWithCompositeEnumAttributess: []models.ThingWithCompositeEnumAttributes{
-						models.ThingWithCompositeEnumAttributes{
+						{
 							Name:     db.String("string1"),
 							BranchID: models.BranchMaster,
 							Date:     db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 						},
-						models.ThingWithCompositeEnumAttributes{
+						{
 							Name:     db.String("string1"),
 							BranchID: models.BranchMaster,
 							Date:     db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
@@ -7911,17 +7911,17 @@ func ScanThingWithCompositeEnumAttributess(d db.Interface, t *testing.T) func(t 
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithCompositeEnumAttributes{
-				models.ThingWithCompositeEnumAttributes{
+				{
 					BranchID: models.BranchMaster,
 					Date:     db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 					Name:     db.String("string1"),
 				},
-				models.ThingWithCompositeEnumAttributes{
+				{
 					BranchID: models.BranchDEVBRANCH,
 					Date:     db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 					Name:     db.String("string2"),
 				},
-				models.ThingWithCompositeEnumAttributes{
+				{
 					BranchID: models.BranchTest,
 					Date:     db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 					Name:     db.String("string3"),
@@ -8106,15 +8106,15 @@ func GetThingWithDateRangesByNameAndDate(d db.Interface, t *testing.T) func(t *t
 				},
 				output: getThingWithDateRangesByNameAndDateOutput{
 					thingWithDateRanges: []models.ThingWithDateRange{
-						models.ThingWithDateRange{
+						{
 							Name: "string1",
 							Date: mustTime("2018-03-11T15:04:01+07:00"),
 						},
-						models.ThingWithDateRange{
+						{
 							Name: "string1",
 							Date: mustTime("2018-03-11T15:04:02+07:00"),
 						},
-						models.ThingWithDateRange{
+						{
 							Name: "string1",
 							Date: mustTime("2018-03-11T15:04:03+07:00"),
 						},
@@ -8134,15 +8134,15 @@ func GetThingWithDateRangesByNameAndDate(d db.Interface, t *testing.T) func(t *t
 				},
 				output: getThingWithDateRangesByNameAndDateOutput{
 					thingWithDateRanges: []models.ThingWithDateRange{
-						models.ThingWithDateRange{
+						{
 							Name: "string1",
 							Date: mustTime("2018-03-11T15:04:03+07:00"),
 						},
-						models.ThingWithDateRange{
+						{
 							Name: "string1",
 							Date: mustTime("2018-03-11T15:04:02+07:00"),
 						},
-						models.ThingWithDateRange{
+						{
 							Name: "string1",
 							Date: mustTime("2018-03-11T15:04:01+07:00"),
 						},
@@ -8165,11 +8165,11 @@ func GetThingWithDateRangesByNameAndDate(d db.Interface, t *testing.T) func(t *t
 				},
 				output: getThingWithDateRangesByNameAndDateOutput{
 					thingWithDateRanges: []models.ThingWithDateRange{
-						models.ThingWithDateRange{
+						{
 							Name: "string1",
 							Date: mustTime("2018-03-11T15:04:02+07:00"),
 						},
-						models.ThingWithDateRange{
+						{
 							Name: "string1",
 							Date: mustTime("2018-03-11T15:04:03+07:00"),
 						},
@@ -8193,11 +8193,11 @@ func GetThingWithDateRangesByNameAndDate(d db.Interface, t *testing.T) func(t *t
 				},
 				output: getThingWithDateRangesByNameAndDateOutput{
 					thingWithDateRanges: []models.ThingWithDateRange{
-						models.ThingWithDateRange{
+						{
 							Name: "string1",
 							Date: mustTime("2018-03-11T15:04:02+07:00"),
 						},
-						models.ThingWithDateRange{
+						{
 							Name: "string1",
 							Date: mustTime("2018-03-11T15:04:01+07:00"),
 						},
@@ -8217,11 +8217,11 @@ func GetThingWithDateRangesByNameAndDate(d db.Interface, t *testing.T) func(t *t
 				},
 				output: getThingWithDateRangesByNameAndDateOutput{
 					thingWithDateRanges: []models.ThingWithDateRange{
-						models.ThingWithDateRange{
+						{
 							Name: "string1",
 							Date: mustTime("2018-03-11T15:04:02+07:00"),
 						},
-						models.ThingWithDateRange{
+						{
 							Name: "string1",
 							Date: mustTime("2018-03-11T15:04:03+07:00"),
 						},
@@ -8256,15 +8256,15 @@ func ScanThingWithDateRanges(d db.Interface, t *testing.T) func(t *testing.T) {
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithDateRange{
-				models.ThingWithDateRange{
+				{
 					Date: mustTime("2018-03-11T15:04:01+07:00"),
 					Name: "string1",
 				},
-				models.ThingWithDateRange{
+				{
 					Date: mustTime("2018-03-11T15:04:02+07:00"),
 					Name: "string2",
 				},
-				models.ThingWithDateRange{
+				{
 					Date: mustTime("2018-03-11T15:04:03+07:00"),
 					Name: "string3",
 				},
@@ -8455,19 +8455,19 @@ func GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(d db.Interface, t 
 				},
 				output: getThingWithDateTimeCompositesByTypeIDAndCreatedResourceOutput{
 					thingWithDateTimeComposites: []models.ThingWithDateTimeComposite{
-						models.ThingWithDateTimeComposite{
+						{
 							Type:     "string1",
 							ID:       "string1",
 							Created:  mustTime("2018-03-11T15:04:01+07:00"),
 							Resource: "string1",
 						},
-						models.ThingWithDateTimeComposite{
+						{
 							Type:     "string1",
 							ID:       "string1",
 							Created:  mustTime("2018-03-11T15:04:02+07:00"),
 							Resource: "string2",
 						},
-						models.ThingWithDateTimeComposite{
+						{
 							Type:     "string1",
 							ID:       "string1",
 							Created:  mustTime("2018-03-11T15:04:03+07:00"),
@@ -8490,19 +8490,19 @@ func GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(d db.Interface, t 
 				},
 				output: getThingWithDateTimeCompositesByTypeIDAndCreatedResourceOutput{
 					thingWithDateTimeComposites: []models.ThingWithDateTimeComposite{
-						models.ThingWithDateTimeComposite{
+						{
 							Type:     "string1",
 							ID:       "string1",
 							Created:  mustTime("2018-03-11T15:04:03+07:00"),
 							Resource: "string3",
 						},
-						models.ThingWithDateTimeComposite{
+						{
 							Type:     "string1",
 							ID:       "string1",
 							Created:  mustTime("2018-03-11T15:04:02+07:00"),
 							Resource: "string2",
 						},
-						models.ThingWithDateTimeComposite{
+						{
 							Type:     "string1",
 							ID:       "string1",
 							Created:  mustTime("2018-03-11T15:04:01+07:00"),
@@ -8530,13 +8530,13 @@ func GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(d db.Interface, t 
 				},
 				output: getThingWithDateTimeCompositesByTypeIDAndCreatedResourceOutput{
 					thingWithDateTimeComposites: []models.ThingWithDateTimeComposite{
-						models.ThingWithDateTimeComposite{
+						{
 							Type:     "string1",
 							ID:       "string1",
 							Created:  mustTime("2018-03-11T15:04:02+07:00"),
 							Resource: "string2",
 						},
-						models.ThingWithDateTimeComposite{
+						{
 							Type:     "string1",
 							ID:       "string1",
 							Created:  mustTime("2018-03-11T15:04:03+07:00"),
@@ -8565,13 +8565,13 @@ func GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(d db.Interface, t 
 				},
 				output: getThingWithDateTimeCompositesByTypeIDAndCreatedResourceOutput{
 					thingWithDateTimeComposites: []models.ThingWithDateTimeComposite{
-						models.ThingWithDateTimeComposite{
+						{
 							Type:     "string1",
 							ID:       "string1",
 							Created:  mustTime("2018-03-11T15:04:02+07:00"),
 							Resource: "string2",
 						},
-						models.ThingWithDateTimeComposite{
+						{
 							Type:     "string1",
 							ID:       "string1",
 							Created:  mustTime("2018-03-11T15:04:01+07:00"),
@@ -8597,13 +8597,13 @@ func GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(d db.Interface, t 
 				},
 				output: getThingWithDateTimeCompositesByTypeIDAndCreatedResourceOutput{
 					thingWithDateTimeComposites: []models.ThingWithDateTimeComposite{
-						models.ThingWithDateTimeComposite{
+						{
 							Type:     "string1",
 							ID:       "string1",
 							Created:  mustTime("2018-03-11T15:04:02+07:00"),
 							Resource: "string2",
 						},
-						models.ThingWithDateTimeComposite{
+						{
 							Type:     "string1",
 							ID:       "string1",
 							Created:  mustTime("2018-03-11T15:04:03+07:00"),
@@ -8646,19 +8646,19 @@ func ScanThingWithDateTimeComposites(d db.Interface, t *testing.T) func(t *testi
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithDateTimeComposite{
-				models.ThingWithDateTimeComposite{
+				{
 					Created:  mustTime("2018-03-11T15:04:01+07:00"),
 					ID:       "string1",
 					Resource: "string1",
 					Type:     "string1",
 				},
-				models.ThingWithDateTimeComposite{
+				{
 					Created:  mustTime("2018-03-11T15:04:02+07:00"),
 					ID:       "string2",
 					Resource: "string2",
 					Type:     "string2",
 				},
-				models.ThingWithDateTimeComposite{
+				{
 					Created:  mustTime("2018-03-11T15:04:03+07:00"),
 					ID:       "string3",
 					Resource: "string3",
@@ -8847,15 +8847,15 @@ func GetThingWithEnumHashKeysByBranchAndDate(d db.Interface, t *testing.T) func(
 				},
 				output: getThingWithEnumHashKeysByBranchAndDateOutput{
 					thingWithEnumHashKeys: []models.ThingWithEnumHashKey{
-						models.ThingWithEnumHashKey{
+						{
 							Branch: models.BranchMaster,
 							Date:   mustTime("2018-03-11T15:04:01+07:00"),
 						},
-						models.ThingWithEnumHashKey{
+						{
 							Branch: models.BranchMaster,
 							Date:   mustTime("2018-03-11T15:04:02+07:00"),
 						},
-						models.ThingWithEnumHashKey{
+						{
 							Branch: models.BranchMaster,
 							Date:   mustTime("2018-03-11T15:04:03+07:00"),
 						},
@@ -8875,15 +8875,15 @@ func GetThingWithEnumHashKeysByBranchAndDate(d db.Interface, t *testing.T) func(
 				},
 				output: getThingWithEnumHashKeysByBranchAndDateOutput{
 					thingWithEnumHashKeys: []models.ThingWithEnumHashKey{
-						models.ThingWithEnumHashKey{
+						{
 							Branch: models.BranchMaster,
 							Date:   mustTime("2018-03-11T15:04:03+07:00"),
 						},
-						models.ThingWithEnumHashKey{
+						{
 							Branch: models.BranchMaster,
 							Date:   mustTime("2018-03-11T15:04:02+07:00"),
 						},
-						models.ThingWithEnumHashKey{
+						{
 							Branch: models.BranchMaster,
 							Date:   mustTime("2018-03-11T15:04:01+07:00"),
 						},
@@ -8906,11 +8906,11 @@ func GetThingWithEnumHashKeysByBranchAndDate(d db.Interface, t *testing.T) func(
 				},
 				output: getThingWithEnumHashKeysByBranchAndDateOutput{
 					thingWithEnumHashKeys: []models.ThingWithEnumHashKey{
-						models.ThingWithEnumHashKey{
+						{
 							Branch: models.BranchMaster,
 							Date:   mustTime("2018-03-11T15:04:02+07:00"),
 						},
-						models.ThingWithEnumHashKey{
+						{
 							Branch: models.BranchMaster,
 							Date:   mustTime("2018-03-11T15:04:03+07:00"),
 						},
@@ -8934,11 +8934,11 @@ func GetThingWithEnumHashKeysByBranchAndDate(d db.Interface, t *testing.T) func(
 				},
 				output: getThingWithEnumHashKeysByBranchAndDateOutput{
 					thingWithEnumHashKeys: []models.ThingWithEnumHashKey{
-						models.ThingWithEnumHashKey{
+						{
 							Branch: models.BranchMaster,
 							Date:   mustTime("2018-03-11T15:04:02+07:00"),
 						},
-						models.ThingWithEnumHashKey{
+						{
 							Branch: models.BranchMaster,
 							Date:   mustTime("2018-03-11T15:04:01+07:00"),
 						},
@@ -8958,11 +8958,11 @@ func GetThingWithEnumHashKeysByBranchAndDate(d db.Interface, t *testing.T) func(
 				},
 				output: getThingWithEnumHashKeysByBranchAndDateOutput{
 					thingWithEnumHashKeys: []models.ThingWithEnumHashKey{
-						models.ThingWithEnumHashKey{
+						{
 							Branch: models.BranchMaster,
 							Date:   mustTime("2018-03-11T15:04:02+07:00"),
 						},
-						models.ThingWithEnumHashKey{
+						{
 							Branch: models.BranchMaster,
 							Date:   mustTime("2018-03-11T15:04:03+07:00"),
 						},
@@ -9000,17 +9000,17 @@ func ScanThingWithEnumHashKeys(d db.Interface, t *testing.T) func(t *testing.T) 
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithEnumHashKey{
-				models.ThingWithEnumHashKey{
+				{
 					Branch: models.BranchMaster,
 					Date:   mustTime("2018-03-11T15:04:01+07:00"),
 					Date2:  mustTime("2018-03-11T15:04:01+07:00"),
 				},
-				models.ThingWithEnumHashKey{
+				{
 					Branch: models.BranchDEVBRANCH,
 					Date:   mustTime("2018-03-11T15:04:02+07:00"),
 					Date2:  mustTime("2018-03-11T15:04:02+07:00"),
 				},
-				models.ThingWithEnumHashKey{
+				{
 					Branch: models.BranchTest,
 					Date:   mustTime("2018-03-11T15:04:03+07:00"),
 					Date2:  mustTime("2018-03-11T15:04:03+07:00"),
@@ -9178,17 +9178,17 @@ func GetThingWithEnumHashKeysByBranchAndDate2(d db.Interface, t *testing.T) func
 				},
 				output: getThingWithEnumHashKeysByBranchAndDate2Output{
 					thingWithEnumHashKeys: []models.ThingWithEnumHashKey{
-						models.ThingWithEnumHashKey{
+						{
 							Branch: models.BranchMaster,
 							Date2:  mustTime("2018-03-11T15:04:01+07:00"),
 							Date:   mustTime("2018-03-11T15:04:01+07:00"),
 						},
-						models.ThingWithEnumHashKey{
+						{
 							Branch: models.BranchMaster,
 							Date2:  mustTime("2018-03-11T15:04:02+07:00"),
 							Date:   mustTime("2018-03-11T15:04:03+07:00"),
 						},
-						models.ThingWithEnumHashKey{
+						{
 							Branch: models.BranchMaster,
 							Date2:  mustTime("2018-03-11T15:04:03+07:00"),
 							Date:   mustTime("2018-03-11T15:04:02+07:00"),
@@ -9209,17 +9209,17 @@ func GetThingWithEnumHashKeysByBranchAndDate2(d db.Interface, t *testing.T) func
 				},
 				output: getThingWithEnumHashKeysByBranchAndDate2Output{
 					thingWithEnumHashKeys: []models.ThingWithEnumHashKey{
-						models.ThingWithEnumHashKey{
+						{
 							Branch: models.BranchMaster,
 							Date2:  mustTime("2018-03-11T15:04:03+07:00"),
 							Date:   mustTime("2018-03-11T15:04:02+07:00"),
 						},
-						models.ThingWithEnumHashKey{
+						{
 							Branch: models.BranchMaster,
 							Date2:  mustTime("2018-03-11T15:04:02+07:00"),
 							Date:   mustTime("2018-03-11T15:04:03+07:00"),
 						},
-						models.ThingWithEnumHashKey{
+						{
 							Branch: models.BranchMaster,
 							Date2:  mustTime("2018-03-11T15:04:01+07:00"),
 							Date:   mustTime("2018-03-11T15:04:01+07:00"),
@@ -9244,12 +9244,12 @@ func GetThingWithEnumHashKeysByBranchAndDate2(d db.Interface, t *testing.T) func
 				},
 				output: getThingWithEnumHashKeysByBranchAndDate2Output{
 					thingWithEnumHashKeys: []models.ThingWithEnumHashKey{
-						models.ThingWithEnumHashKey{
+						{
 							Branch: models.BranchMaster,
 							Date2:  mustTime("2018-03-11T15:04:02+07:00"),
 							Date:   mustTime("2018-03-11T15:04:03+07:00"),
 						},
-						models.ThingWithEnumHashKey{
+						{
 							Branch: models.BranchMaster,
 							Date2:  mustTime("2018-03-11T15:04:03+07:00"),
 							Date:   mustTime("2018-03-11T15:04:02+07:00"),
@@ -9275,12 +9275,12 @@ func GetThingWithEnumHashKeysByBranchAndDate2(d db.Interface, t *testing.T) func
 				},
 				output: getThingWithEnumHashKeysByBranchAndDate2Output{
 					thingWithEnumHashKeys: []models.ThingWithEnumHashKey{
-						models.ThingWithEnumHashKey{
+						{
 							Branch: models.BranchMaster,
 							Date2:  mustTime("2018-03-11T15:04:02+07:00"),
 							Date:   mustTime("2018-03-11T15:04:03+07:00"),
 						},
-						models.ThingWithEnumHashKey{
+						{
 							Branch: models.BranchMaster,
 							Date2:  mustTime("2018-03-11T15:04:01+07:00"),
 							Date:   mustTime("2018-03-11T15:04:01+07:00"),
@@ -9301,12 +9301,12 @@ func GetThingWithEnumHashKeysByBranchAndDate2(d db.Interface, t *testing.T) func
 				},
 				output: getThingWithEnumHashKeysByBranchAndDate2Output{
 					thingWithEnumHashKeys: []models.ThingWithEnumHashKey{
-						models.ThingWithEnumHashKey{
+						{
 							Branch: models.BranchMaster,
 							Date2:  mustTime("2018-03-11T15:04:02+07:00"),
 							Date:   mustTime("2018-03-11T15:04:03+07:00"),
 						},
-						models.ThingWithEnumHashKey{
+						{
 							Branch: models.BranchMaster,
 							Date2:  mustTime("2018-03-11T15:04:03+07:00"),
 							Date:   mustTime("2018-03-11T15:04:02+07:00"),
@@ -9345,17 +9345,17 @@ func ScanThingWithEnumHashKeysByBranchAndDate2(d db.Interface, t *testing.T) fun
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithEnumHashKey{
-				models.ThingWithEnumHashKey{
+				{
 					Branch: models.BranchMaster,
 					Date2:  mustTime("2018-03-11T15:04:01+07:00"),
 					Date:   mustTime("2018-03-11T15:04:01+07:00"),
 				},
-				models.ThingWithEnumHashKey{
+				{
 					Branch: models.BranchDEVBRANCH,
 					Date2:  mustTime("2018-03-11T15:04:02+07:00"),
 					Date:   mustTime("2018-03-11T15:04:02+07:00"),
 				},
-				models.ThingWithEnumHashKey{
+				{
 					Branch: models.BranchTest,
 					Date2:  mustTime("2018-03-11T15:04:03+07:00"),
 					Date:   mustTime("2018-03-11T15:04:03+07:00"),
@@ -9525,17 +9525,17 @@ func GetThingWithMatchingKeyssByBearAndAssocTypeID(d db.Interface, t *testing.T)
 				},
 				output: getThingWithMatchingKeyssByBearAndAssocTypeIDOutput{
 					thingWithMatchingKeyss: []models.ThingWithMatchingKeys{
-						models.ThingWithMatchingKeys{
+						{
 							Bear:      "string1",
 							AssocType: "string1",
 							AssocID:   "string1",
 						},
-						models.ThingWithMatchingKeys{
+						{
 							Bear:      "string1",
 							AssocType: "string2",
 							AssocID:   "string2",
 						},
-						models.ThingWithMatchingKeys{
+						{
 							Bear:      "string1",
 							AssocType: "string3",
 							AssocID:   "string3",
@@ -9556,17 +9556,17 @@ func GetThingWithMatchingKeyssByBearAndAssocTypeID(d db.Interface, t *testing.T)
 				},
 				output: getThingWithMatchingKeyssByBearAndAssocTypeIDOutput{
 					thingWithMatchingKeyss: []models.ThingWithMatchingKeys{
-						models.ThingWithMatchingKeys{
+						{
 							Bear:      "string1",
 							AssocType: "string3",
 							AssocID:   "string3",
 						},
-						models.ThingWithMatchingKeys{
+						{
 							Bear:      "string1",
 							AssocType: "string2",
 							AssocID:   "string2",
 						},
-						models.ThingWithMatchingKeys{
+						{
 							Bear:      "string1",
 							AssocType: "string1",
 							AssocID:   "string1",
@@ -9591,12 +9591,12 @@ func GetThingWithMatchingKeyssByBearAndAssocTypeID(d db.Interface, t *testing.T)
 				},
 				output: getThingWithMatchingKeyssByBearAndAssocTypeIDOutput{
 					thingWithMatchingKeyss: []models.ThingWithMatchingKeys{
-						models.ThingWithMatchingKeys{
+						{
 							Bear:      "string1",
 							AssocType: "string2",
 							AssocID:   "string2",
 						},
-						models.ThingWithMatchingKeys{
+						{
 							Bear:      "string1",
 							AssocType: "string3",
 							AssocID:   "string3",
@@ -9622,12 +9622,12 @@ func GetThingWithMatchingKeyssByBearAndAssocTypeID(d db.Interface, t *testing.T)
 				},
 				output: getThingWithMatchingKeyssByBearAndAssocTypeIDOutput{
 					thingWithMatchingKeyss: []models.ThingWithMatchingKeys{
-						models.ThingWithMatchingKeys{
+						{
 							Bear:      "string1",
 							AssocType: "string2",
 							AssocID:   "string2",
 						},
-						models.ThingWithMatchingKeys{
+						{
 							Bear:      "string1",
 							AssocType: "string1",
 							AssocID:   "string1",
@@ -9651,12 +9651,12 @@ func GetThingWithMatchingKeyssByBearAndAssocTypeID(d db.Interface, t *testing.T)
 				},
 				output: getThingWithMatchingKeyssByBearAndAssocTypeIDOutput{
 					thingWithMatchingKeyss: []models.ThingWithMatchingKeys{
-						models.ThingWithMatchingKeys{
+						{
 							Bear:      "string1",
 							AssocType: "string2",
 							AssocID:   "string2",
 						},
-						models.ThingWithMatchingKeys{
+						{
 							Bear:      "string1",
 							AssocType: "string3",
 							AssocID:   "string3",
@@ -9698,19 +9698,19 @@ func ScanThingWithMatchingKeyss(d db.Interface, t *testing.T) func(t *testing.T)
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithMatchingKeys{
-				models.ThingWithMatchingKeys{
+				{
 					AssocID:   "string1",
 					AssocType: "string1",
 					Bear:      "string1",
 					Created:   mustTime("2018-03-11T15:04:01+07:00"),
 				},
-				models.ThingWithMatchingKeys{
+				{
 					AssocID:   "string2",
 					AssocType: "string2",
 					Bear:      "string2",
 					Created:   mustTime("2018-03-11T15:04:02+07:00"),
 				},
-				models.ThingWithMatchingKeys{
+				{
 					AssocID:   "string3",
 					AssocType: "string3",
 					Bear:      "string3",
@@ -9885,19 +9885,19 @@ func GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(d db.Interface, t *tes
 				},
 				output: getThingWithMatchingKeyssByAssocTypeIDAndCreatedBearOutput{
 					thingWithMatchingKeyss: []models.ThingWithMatchingKeys{
-						models.ThingWithMatchingKeys{
+						{
 							AssocType: "string1",
 							AssocID:   "string1",
 							Created:   mustTime("2018-03-11T15:04:01+07:00"),
 							Bear:      "string1",
 						},
-						models.ThingWithMatchingKeys{
+						{
 							AssocType: "string1",
 							AssocID:   "string1",
 							Created:   mustTime("2018-03-11T15:04:02+07:00"),
 							Bear:      "string2",
 						},
-						models.ThingWithMatchingKeys{
+						{
 							AssocType: "string1",
 							AssocID:   "string1",
 							Created:   mustTime("2018-03-11T15:04:03+07:00"),
@@ -9920,19 +9920,19 @@ func GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(d db.Interface, t *tes
 				},
 				output: getThingWithMatchingKeyssByAssocTypeIDAndCreatedBearOutput{
 					thingWithMatchingKeyss: []models.ThingWithMatchingKeys{
-						models.ThingWithMatchingKeys{
+						{
 							AssocType: "string1",
 							AssocID:   "string1",
 							Created:   mustTime("2018-03-11T15:04:03+07:00"),
 							Bear:      "string3",
 						},
-						models.ThingWithMatchingKeys{
+						{
 							AssocType: "string1",
 							AssocID:   "string1",
 							Created:   mustTime("2018-03-11T15:04:02+07:00"),
 							Bear:      "string2",
 						},
-						models.ThingWithMatchingKeys{
+						{
 							AssocType: "string1",
 							AssocID:   "string1",
 							Created:   mustTime("2018-03-11T15:04:01+07:00"),
@@ -9960,13 +9960,13 @@ func GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(d db.Interface, t *tes
 				},
 				output: getThingWithMatchingKeyssByAssocTypeIDAndCreatedBearOutput{
 					thingWithMatchingKeyss: []models.ThingWithMatchingKeys{
-						models.ThingWithMatchingKeys{
+						{
 							AssocType: "string1",
 							AssocID:   "string1",
 							Created:   mustTime("2018-03-11T15:04:02+07:00"),
 							Bear:      "string2",
 						},
-						models.ThingWithMatchingKeys{
+						{
 							AssocType: "string1",
 							AssocID:   "string1",
 							Created:   mustTime("2018-03-11T15:04:03+07:00"),
@@ -9995,13 +9995,13 @@ func GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(d db.Interface, t *tes
 				},
 				output: getThingWithMatchingKeyssByAssocTypeIDAndCreatedBearOutput{
 					thingWithMatchingKeyss: []models.ThingWithMatchingKeys{
-						models.ThingWithMatchingKeys{
+						{
 							AssocType: "string1",
 							AssocID:   "string1",
 							Created:   mustTime("2018-03-11T15:04:02+07:00"),
 							Bear:      "string2",
 						},
-						models.ThingWithMatchingKeys{
+						{
 							AssocType: "string1",
 							AssocID:   "string1",
 							Created:   mustTime("2018-03-11T15:04:01+07:00"),
@@ -10027,13 +10027,13 @@ func GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(d db.Interface, t *tes
 				},
 				output: getThingWithMatchingKeyssByAssocTypeIDAndCreatedBearOutput{
 					thingWithMatchingKeyss: []models.ThingWithMatchingKeys{
-						models.ThingWithMatchingKeys{
+						{
 							AssocType: "string1",
 							AssocID:   "string1",
 							Created:   mustTime("2018-03-11T15:04:02+07:00"),
 							Bear:      "string2",
 						},
-						models.ThingWithMatchingKeys{
+						{
 							AssocType: "string1",
 							AssocID:   "string1",
 							Created:   mustTime("2018-03-11T15:04:03+07:00"),
@@ -10076,19 +10076,19 @@ func ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(d db.Interface, t *te
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithMatchingKeys{
-				models.ThingWithMatchingKeys{
+				{
 					AssocType: "string1",
 					AssocID:   "string1",
 					Created:   mustTime("2018-03-11T15:04:01+07:00"),
 					Bear:      "string1",
 				},
-				models.ThingWithMatchingKeys{
+				{
 					AssocType: "string2",
 					AssocID:   "string2",
 					Created:   mustTime("2018-03-11T15:04:02+07:00"),
 					Bear:      "string2",
 				},
-				models.ThingWithMatchingKeys{
+				{
 					AssocType: "string3",
 					AssocID:   "string3",
 					Created:   mustTime("2018-03-11T15:04:03+07:00"),
@@ -10220,19 +10220,19 @@ func ScanThingWithMultiUseCompositeAttributes(d db.Interface, t *testing.T) func
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithMultiUseCompositeAttribute{
-				models.ThingWithMultiUseCompositeAttribute{
+				{
 					Four:  db.String("string1"),
 					One:   db.String("string1"),
 					Three: db.String("string1"),
 					Two:   db.String("string1"),
 				},
-				models.ThingWithMultiUseCompositeAttribute{
+				{
 					Four:  db.String("string2"),
 					One:   db.String("string2"),
 					Three: db.String("string2"),
 					Two:   db.String("string2"),
 				},
-				models.ThingWithMultiUseCompositeAttribute{
+				{
 					Four:  db.String("string3"),
 					One:   db.String("string3"),
 					Three: db.String("string3"),
@@ -10404,19 +10404,19 @@ func GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(d db.Interface, t *
 				},
 				output: getThingWithMultiUseCompositeAttributesByThreeAndOneTwoOutput{
 					thingWithMultiUseCompositeAttributes: []models.ThingWithMultiUseCompositeAttribute{
-						models.ThingWithMultiUseCompositeAttribute{
+						{
 							Three: db.String("string1"),
 							One:   db.String("string1"),
 							Two:   db.String("string1"),
 							Four:  db.String("string1"),
 						},
-						models.ThingWithMultiUseCompositeAttribute{
+						{
 							Three: db.String("string1"),
 							One:   db.String("string2"),
 							Two:   db.String("string2"),
 							Four:  db.String("string3"),
 						},
-						models.ThingWithMultiUseCompositeAttribute{
+						{
 							Three: db.String("string1"),
 							One:   db.String("string3"),
 							Two:   db.String("string3"),
@@ -10438,19 +10438,19 @@ func GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(d db.Interface, t *
 				},
 				output: getThingWithMultiUseCompositeAttributesByThreeAndOneTwoOutput{
 					thingWithMultiUseCompositeAttributes: []models.ThingWithMultiUseCompositeAttribute{
-						models.ThingWithMultiUseCompositeAttribute{
+						{
 							Three: db.String("string1"),
 							One:   db.String("string3"),
 							Two:   db.String("string3"),
 							Four:  db.String("string2"),
 						},
-						models.ThingWithMultiUseCompositeAttribute{
+						{
 							Three: db.String("string1"),
 							One:   db.String("string2"),
 							Two:   db.String("string2"),
 							Four:  db.String("string3"),
 						},
-						models.ThingWithMultiUseCompositeAttribute{
+						{
 							Three: db.String("string1"),
 							One:   db.String("string1"),
 							Two:   db.String("string1"),
@@ -10477,13 +10477,13 @@ func GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(d db.Interface, t *
 				},
 				output: getThingWithMultiUseCompositeAttributesByThreeAndOneTwoOutput{
 					thingWithMultiUseCompositeAttributes: []models.ThingWithMultiUseCompositeAttribute{
-						models.ThingWithMultiUseCompositeAttribute{
+						{
 							Three: db.String("string1"),
 							One:   db.String("string2"),
 							Two:   db.String("string2"),
 							Four:  db.String("string3"),
 						},
-						models.ThingWithMultiUseCompositeAttribute{
+						{
 							Three: db.String("string1"),
 							One:   db.String("string3"),
 							Two:   db.String("string3"),
@@ -10511,13 +10511,13 @@ func GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(d db.Interface, t *
 				},
 				output: getThingWithMultiUseCompositeAttributesByThreeAndOneTwoOutput{
 					thingWithMultiUseCompositeAttributes: []models.ThingWithMultiUseCompositeAttribute{
-						models.ThingWithMultiUseCompositeAttribute{
+						{
 							Three: db.String("string1"),
 							One:   db.String("string2"),
 							Two:   db.String("string2"),
 							Four:  db.String("string3"),
 						},
-						models.ThingWithMultiUseCompositeAttribute{
+						{
 							Three: db.String("string1"),
 							One:   db.String("string1"),
 							Two:   db.String("string1"),
@@ -10542,13 +10542,13 @@ func GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(d db.Interface, t *
 				},
 				output: getThingWithMultiUseCompositeAttributesByThreeAndOneTwoOutput{
 					thingWithMultiUseCompositeAttributes: []models.ThingWithMultiUseCompositeAttribute{
-						models.ThingWithMultiUseCompositeAttribute{
+						{
 							Three: db.String("string1"),
 							One:   db.String("string2"),
 							Two:   db.String("string2"),
 							Four:  db.String("string3"),
 						},
-						models.ThingWithMultiUseCompositeAttribute{
+						{
 							Three: db.String("string1"),
 							One:   db.String("string3"),
 							Two:   db.String("string3"),
@@ -10591,19 +10591,19 @@ func ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo(d db.Interface, t 
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithMultiUseCompositeAttribute{
-				models.ThingWithMultiUseCompositeAttribute{
+				{
 					Three: db.String("string1"),
 					One:   db.String("string1"),
 					Two:   db.String("string1"),
 					Four:  db.String("string1"),
 				},
-				models.ThingWithMultiUseCompositeAttribute{
+				{
 					Three: db.String("string2"),
 					One:   db.String("string2"),
 					Two:   db.String("string2"),
 					Four:  db.String("string2"),
 				},
-				models.ThingWithMultiUseCompositeAttribute{
+				{
 					Three: db.String("string3"),
 					One:   db.String("string3"),
 					Two:   db.String("string3"),
@@ -10755,19 +10755,19 @@ func GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(d db.Interface, t *t
 				},
 				output: getThingWithMultiUseCompositeAttributesByFourAndOneTwoOutput{
 					thingWithMultiUseCompositeAttributes: []models.ThingWithMultiUseCompositeAttribute{
-						models.ThingWithMultiUseCompositeAttribute{
+						{
 							Four:  db.String("string1"),
 							One:   db.String("string1"),
 							Two:   db.String("string1"),
 							Three: db.String("string1"),
 						},
-						models.ThingWithMultiUseCompositeAttribute{
+						{
 							Four:  db.String("string1"),
 							One:   db.String("string2"),
 							Two:   db.String("string2"),
 							Three: db.String("string3"),
 						},
-						models.ThingWithMultiUseCompositeAttribute{
+						{
 							Four:  db.String("string1"),
 							One:   db.String("string3"),
 							Two:   db.String("string3"),
@@ -10789,19 +10789,19 @@ func GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(d db.Interface, t *t
 				},
 				output: getThingWithMultiUseCompositeAttributesByFourAndOneTwoOutput{
 					thingWithMultiUseCompositeAttributes: []models.ThingWithMultiUseCompositeAttribute{
-						models.ThingWithMultiUseCompositeAttribute{
+						{
 							Four:  db.String("string1"),
 							One:   db.String("string3"),
 							Two:   db.String("string3"),
 							Three: db.String("string2"),
 						},
-						models.ThingWithMultiUseCompositeAttribute{
+						{
 							Four:  db.String("string1"),
 							One:   db.String("string2"),
 							Two:   db.String("string2"),
 							Three: db.String("string3"),
 						},
-						models.ThingWithMultiUseCompositeAttribute{
+						{
 							Four:  db.String("string1"),
 							One:   db.String("string1"),
 							Two:   db.String("string1"),
@@ -10828,13 +10828,13 @@ func GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(d db.Interface, t *t
 				},
 				output: getThingWithMultiUseCompositeAttributesByFourAndOneTwoOutput{
 					thingWithMultiUseCompositeAttributes: []models.ThingWithMultiUseCompositeAttribute{
-						models.ThingWithMultiUseCompositeAttribute{
+						{
 							Four:  db.String("string1"),
 							One:   db.String("string2"),
 							Two:   db.String("string2"),
 							Three: db.String("string3"),
 						},
-						models.ThingWithMultiUseCompositeAttribute{
+						{
 							Four:  db.String("string1"),
 							One:   db.String("string3"),
 							Two:   db.String("string3"),
@@ -10862,13 +10862,13 @@ func GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(d db.Interface, t *t
 				},
 				output: getThingWithMultiUseCompositeAttributesByFourAndOneTwoOutput{
 					thingWithMultiUseCompositeAttributes: []models.ThingWithMultiUseCompositeAttribute{
-						models.ThingWithMultiUseCompositeAttribute{
+						{
 							Four:  db.String("string1"),
 							One:   db.String("string2"),
 							Two:   db.String("string2"),
 							Three: db.String("string3"),
 						},
-						models.ThingWithMultiUseCompositeAttribute{
+						{
 							Four:  db.String("string1"),
 							One:   db.String("string1"),
 							Two:   db.String("string1"),
@@ -10893,13 +10893,13 @@ func GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(d db.Interface, t *t
 				},
 				output: getThingWithMultiUseCompositeAttributesByFourAndOneTwoOutput{
 					thingWithMultiUseCompositeAttributes: []models.ThingWithMultiUseCompositeAttribute{
-						models.ThingWithMultiUseCompositeAttribute{
+						{
 							Four:  db.String("string1"),
 							One:   db.String("string2"),
 							Two:   db.String("string2"),
 							Three: db.String("string3"),
 						},
-						models.ThingWithMultiUseCompositeAttribute{
+						{
 							Four:  db.String("string1"),
 							One:   db.String("string3"),
 							Two:   db.String("string3"),
@@ -10942,19 +10942,19 @@ func ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo(d db.Interface, t *
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithMultiUseCompositeAttribute{
-				models.ThingWithMultiUseCompositeAttribute{
+				{
 					Four:  db.String("string1"),
 					One:   db.String("string1"),
 					Two:   db.String("string1"),
 					Three: db.String("string1"),
 				},
-				models.ThingWithMultiUseCompositeAttribute{
+				{
 					Four:  db.String("string2"),
 					One:   db.String("string2"),
 					Two:   db.String("string2"),
 					Three: db.String("string2"),
 				},
-				models.ThingWithMultiUseCompositeAttribute{
+				{
 					Four:  db.String("string3"),
 					One:   db.String("string3"),
 					Two:   db.String("string3"),
@@ -11081,17 +11081,17 @@ func ScanThingWithRequiredCompositePropertiesAndKeysOnlys(d db.Interface, t *tes
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithRequiredCompositePropertiesAndKeysOnly{
-				models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+				{
 					PropertyOne:   db.String("string1"),
 					PropertyThree: db.String("string1"),
 					PropertyTwo:   db.String("string1"),
 				},
-				models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+				{
 					PropertyOne:   db.String("string2"),
 					PropertyThree: db.String("string2"),
 					PropertyTwo:   db.String("string2"),
 				},
-				models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+				{
 					PropertyOne:   db.String("string3"),
 					PropertyThree: db.String("string3"),
 					PropertyTwo:   db.String("string3"),
@@ -11263,17 +11263,17 @@ func GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPr
 				},
 				output: getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeOutput{
 					thingWithRequiredCompositePropertiesAndKeysOnlys: []models.ThingWithRequiredCompositePropertiesAndKeysOnly{
-						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+						{
 							PropertyOne:   db.String("string1"),
 							PropertyTwo:   db.String("string1"),
 							PropertyThree: db.String("string1"),
 						},
-						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+						{
 							PropertyOne:   db.String("string1"),
 							PropertyTwo:   db.String("string1"),
 							PropertyThree: db.String("string2"),
 						},
-						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+						{
 							PropertyOne:   db.String("string1"),
 							PropertyTwo:   db.String("string1"),
 							PropertyThree: db.String("string3"),
@@ -11295,17 +11295,17 @@ func GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPr
 				},
 				output: getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeOutput{
 					thingWithRequiredCompositePropertiesAndKeysOnlys: []models.ThingWithRequiredCompositePropertiesAndKeysOnly{
-						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+						{
 							PropertyOne:   db.String("string1"),
 							PropertyTwo:   db.String("string1"),
 							PropertyThree: db.String("string3"),
 						},
-						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+						{
 							PropertyOne:   db.String("string1"),
 							PropertyTwo:   db.String("string1"),
 							PropertyThree: db.String("string2"),
 						},
-						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+						{
 							PropertyOne:   db.String("string1"),
 							PropertyTwo:   db.String("string1"),
 							PropertyThree: db.String("string1"),
@@ -11331,12 +11331,12 @@ func GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPr
 				},
 				output: getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeOutput{
 					thingWithRequiredCompositePropertiesAndKeysOnlys: []models.ThingWithRequiredCompositePropertiesAndKeysOnly{
-						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+						{
 							PropertyOne:   db.String("string1"),
 							PropertyTwo:   db.String("string1"),
 							PropertyThree: db.String("string2"),
 						},
-						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+						{
 							PropertyOne:   db.String("string1"),
 							PropertyTwo:   db.String("string1"),
 							PropertyThree: db.String("string3"),
@@ -11363,12 +11363,12 @@ func GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPr
 				},
 				output: getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeOutput{
 					thingWithRequiredCompositePropertiesAndKeysOnlys: []models.ThingWithRequiredCompositePropertiesAndKeysOnly{
-						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+						{
 							PropertyOne:   db.String("string1"),
 							PropertyTwo:   db.String("string1"),
 							PropertyThree: db.String("string2"),
 						},
-						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+						{
 							PropertyOne:   db.String("string1"),
 							PropertyTwo:   db.String("string1"),
 							PropertyThree: db.String("string1"),
@@ -11390,12 +11390,12 @@ func GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPr
 				},
 				output: getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeOutput{
 					thingWithRequiredCompositePropertiesAndKeysOnlys: []models.ThingWithRequiredCompositePropertiesAndKeysOnly{
-						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+						{
 							PropertyOne:   db.String("string1"),
 							PropertyTwo:   db.String("string1"),
 							PropertyThree: db.String("string2"),
 						},
-						models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+						{
 							PropertyOne:   db.String("string1"),
 							PropertyTwo:   db.String("string1"),
 							PropertyThree: db.String("string3"),
@@ -11434,17 +11434,17 @@ func ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndP
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithRequiredCompositePropertiesAndKeysOnly{
-				models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+				{
 					PropertyOne:   db.String("string1"),
 					PropertyTwo:   db.String("string1"),
 					PropertyThree: db.String("string1"),
 				},
-				models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+				{
 					PropertyOne:   db.String("string2"),
 					PropertyTwo:   db.String("string2"),
 					PropertyThree: db.String("string2"),
 				},
-				models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+				{
 					PropertyOne:   db.String("string3"),
 					PropertyTwo:   db.String("string3"),
 					PropertyThree: db.String("string3"),
@@ -11562,13 +11562,13 @@ func ScanThingWithRequiredFieldss(d db.Interface, t *testing.T) func(t *testing.
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithRequiredFields{
-				models.ThingWithRequiredFields{
+				{
 					Name: db.String("string1"),
 				},
-				models.ThingWithRequiredFields{
+				{
 					Name: db.String("string2"),
 				},
-				models.ThingWithRequiredFields{
+				{
 					Name: db.String("string3"),
 				},
 			}
@@ -11745,15 +11745,15 @@ func GetThingWithRequiredFields2sByNameAndID(d db.Interface, t *testing.T) func(
 				},
 				output: getThingWithRequiredFields2sByNameAndIDOutput{
 					thingWithRequiredFields2s: []models.ThingWithRequiredFields2{
-						models.ThingWithRequiredFields2{
+						{
 							Name: db.String("string1"),
 							ID:   db.String("string1"),
 						},
-						models.ThingWithRequiredFields2{
+						{
 							Name: db.String("string1"),
 							ID:   db.String("string2"),
 						},
-						models.ThingWithRequiredFields2{
+						{
 							Name: db.String("string1"),
 							ID:   db.String("string3"),
 						},
@@ -11773,15 +11773,15 @@ func GetThingWithRequiredFields2sByNameAndID(d db.Interface, t *testing.T) func(
 				},
 				output: getThingWithRequiredFields2sByNameAndIDOutput{
 					thingWithRequiredFields2s: []models.ThingWithRequiredFields2{
-						models.ThingWithRequiredFields2{
+						{
 							Name: db.String("string1"),
 							ID:   db.String("string3"),
 						},
-						models.ThingWithRequiredFields2{
+						{
 							Name: db.String("string1"),
 							ID:   db.String("string2"),
 						},
-						models.ThingWithRequiredFields2{
+						{
 							Name: db.String("string1"),
 							ID:   db.String("string1"),
 						},
@@ -11804,11 +11804,11 @@ func GetThingWithRequiredFields2sByNameAndID(d db.Interface, t *testing.T) func(
 				},
 				output: getThingWithRequiredFields2sByNameAndIDOutput{
 					thingWithRequiredFields2s: []models.ThingWithRequiredFields2{
-						models.ThingWithRequiredFields2{
+						{
 							Name: db.String("string1"),
 							ID:   db.String("string2"),
 						},
-						models.ThingWithRequiredFields2{
+						{
 							Name: db.String("string1"),
 							ID:   db.String("string3"),
 						},
@@ -11832,11 +11832,11 @@ func GetThingWithRequiredFields2sByNameAndID(d db.Interface, t *testing.T) func(
 				},
 				output: getThingWithRequiredFields2sByNameAndIDOutput{
 					thingWithRequiredFields2s: []models.ThingWithRequiredFields2{
-						models.ThingWithRequiredFields2{
+						{
 							Name: db.String("string1"),
 							ID:   db.String("string2"),
 						},
-						models.ThingWithRequiredFields2{
+						{
 							Name: db.String("string1"),
 							ID:   db.String("string1"),
 						},
@@ -11856,11 +11856,11 @@ func GetThingWithRequiredFields2sByNameAndID(d db.Interface, t *testing.T) func(
 				},
 				output: getThingWithRequiredFields2sByNameAndIDOutput{
 					thingWithRequiredFields2s: []models.ThingWithRequiredFields2{
-						models.ThingWithRequiredFields2{
+						{
 							Name: db.String("string1"),
 							ID:   db.String("string2"),
 						},
-						models.ThingWithRequiredFields2{
+						{
 							Name: db.String("string1"),
 							ID:   db.String("string3"),
 						},
@@ -11895,15 +11895,15 @@ func ScanThingWithRequiredFields2s(d db.Interface, t *testing.T) func(t *testing
 
 		t.Run("basic", func(t *testing.T) {
 			expected := []models.ThingWithRequiredFields2{
-				models.ThingWithRequiredFields2{
+				{
 					ID:   db.String("string1"),
 					Name: db.String("string1"),
 				},
-				models.ThingWithRequiredFields2{
+				{
 					ID:   db.String("string2"),
 					Name: db.String("string2"),
 				},
-				models.ThingWithRequiredFields2{
+				{
 					ID:   db.String("string3"),
 					Name: db.String("string3"),
 				},

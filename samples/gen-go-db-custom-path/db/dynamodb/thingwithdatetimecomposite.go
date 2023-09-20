@@ -131,10 +131,10 @@ func (t ThingWithDateTimeCompositeTable) scanThingWithDateTimeComposites(ctx con
 	if input.StartingAfter != nil {
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"typeID": &dynamodb.AttributeValue{
+			"typeID": {
 				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAfter.Type, input.StartingAfter.ID)),
 			},
-			"createdResource": &dynamodb.AttributeValue{
+			"createdResource": {
 				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAfter.Created, input.StartingAfter.Resource)),
 			},
 		}
@@ -188,7 +188,7 @@ func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDA
 			"#TYPEID": aws.String("typeID"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":typeId": &dynamodb.AttributeValue{
+			":typeId": {
 				S: aws.String(fmt.Sprintf("%s|%s", input.Type, input.ID)),
 			},
 		},
@@ -213,10 +213,10 @@ func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDA
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"createdResource": &dynamodb.AttributeValue{
+			"createdResource": {
 				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAfter.Created, input.StartingAfter.Resource)),
 			},
-			"typeID": &dynamodb.AttributeValue{
+			"typeID": {
 				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAfter.Type, input.StartingAfter.ID)),
 			},
 		}

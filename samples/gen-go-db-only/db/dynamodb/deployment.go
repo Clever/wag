@@ -217,7 +217,7 @@ func (t DeploymentTable) scanDeployments(ctx context.Context, input db.ScanDeplo
 		}
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"envApp": &dynamodb.AttributeValue{
+			"envApp": {
 				S: aws.String(fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application)),
 			},
 			"version": exclusiveStartKey["version"],
@@ -286,7 +286,7 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, i
 			"#ENVAPP": aws.String("envApp"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":envApp": &dynamodb.AttributeValue{
+			":envApp": {
 				S: aws.String(fmt.Sprintf("%s--%s", input.Environment, input.Application)),
 			},
 		},
@@ -311,10 +311,10 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, i
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"version": &dynamodb.AttributeValue{
+			"version": {
 				S: aws.String(input.StartingAfter.Version),
 			},
-			"envApp": &dynamodb.AttributeValue{
+			"envApp": {
 				S: aws.String(fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application)),
 			},
 		}
@@ -400,7 +400,7 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndDate(ctx context.Context, inpu
 			"#ENVAPP": aws.String("envApp"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":envApp": &dynamodb.AttributeValue{
+			":envApp": {
 				S: aws.String(fmt.Sprintf("%s--%s", input.Environment, input.Application)),
 			},
 		},
@@ -425,13 +425,13 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndDate(ctx context.Context, inpu
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"date": &dynamodb.AttributeValue{
+			"date": {
 				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
 			},
-			"envApp": &dynamodb.AttributeValue{
+			"envApp": {
 				S: aws.String(fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application)),
 			},
-			"version": &dynamodb.AttributeValue{
+			"version": {
 				S: aws.String(input.StartingAfter.Version),
 			},
 		}
@@ -490,7 +490,7 @@ func (t DeploymentTable) scanDeploymentsByEnvAppAndDate(ctx context.Context, inp
 		// must provide the fields constituting the index and the primary key
 		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"envApp": &dynamodb.AttributeValue{
+			"envApp": {
 				S: aws.String(fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application)),
 			},
 			"version": exclusiveStartKey["version"],
@@ -543,7 +543,7 @@ func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context,
 			"#ENVIRONMENT": aws.String("environment"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":environment": &dynamodb.AttributeValue{
+			":environment": {
 				S: aws.String(input.Environment),
 			},
 		},
@@ -568,16 +568,16 @@ func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context,
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"date": &dynamodb.AttributeValue{
+			"date": {
 				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
 			},
-			"environment": &dynamodb.AttributeValue{
+			"environment": {
 				S: aws.String(input.StartingAfter.Environment),
 			},
-			"version": &dynamodb.AttributeValue{
+			"version": {
 				S: aws.String(input.StartingAfter.Version),
 			},
-			"envApp": &dynamodb.AttributeValue{
+			"envApp": {
 				S: aws.String(fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application)),
 			},
 		}
@@ -629,7 +629,7 @@ func (t DeploymentTable) getDeploymentByVersion(ctx context.Context, version str
 			"#VERSION": aws.String("version"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":version": &dynamodb.AttributeValue{
+			":version": {
 				S: aws.String(version),
 			},
 		},
@@ -665,7 +665,7 @@ func (t DeploymentTable) scanDeploymentsByVersion(ctx context.Context, input db.
 		// must provide the fields constituting the index and the primary key
 		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"envApp": &dynamodb.AttributeValue{
+			"envApp": {
 				S: aws.String(fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application)),
 			},
 			"version": exclusiveStartKey["version"],

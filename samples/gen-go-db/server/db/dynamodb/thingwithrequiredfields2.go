@@ -208,7 +208,7 @@ func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2sByNameAndID(c
 			"#NAME": aws.String("name"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":name": &dynamodb.AttributeValue{
+			":name": {
 				S: aws.String(input.Name),
 			},
 		},
@@ -233,10 +233,10 @@ func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2sByNameAndID(c
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"id": &dynamodb.AttributeValue{
+			"id": {
 				S: aws.String(*input.StartingAfter.ID),
 			},
-			"name": &dynamodb.AttributeValue{
+			"name": {
 				S: aws.String(*input.StartingAfter.Name),
 			},
 		}

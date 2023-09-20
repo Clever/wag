@@ -182,7 +182,7 @@ func (t ThingWithDateRangeTable) getThingWithDateRangesByNameAndDate(ctx context
 			"#NAME": aws.String("name"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":name": &dynamodb.AttributeValue{
+			":name": {
 				S: aws.String(input.Name),
 			},
 		},
@@ -207,10 +207,10 @@ func (t ThingWithDateRangeTable) getThingWithDateRangesByNameAndDate(ctx context
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"date": &dynamodb.AttributeValue{
+			"date": {
 				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
 			},
-			"name": &dynamodb.AttributeValue{
+			"name": {
 				S: aws.String(input.StartingAfter.Name),
 			},
 		}

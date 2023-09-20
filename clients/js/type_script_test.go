@@ -25,8 +25,8 @@ func TestGenerateErrorDeclaration(t *testing.T) {
 
 	t.Run("Given some additional properties", func(t *testing.T) {
 		properties := map[string]spec.Schema{
-			"bar": spec.Schema{},
-			"baz": spec.Schema{},
+			"bar": {},
+			"baz": {},
 		}
 		schema = schema.WithProperties(properties)
 		actual, err := generateErrorDeclaration(schema, "Foo", prefix)

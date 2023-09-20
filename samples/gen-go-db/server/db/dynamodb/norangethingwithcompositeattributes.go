@@ -179,7 +179,7 @@ func (t NoRangeThingWithCompositeAttributesTable) scanNoRangeThingWithCompositeA
 	if input.StartingAfter != nil {
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"name_branch": &dynamodb.AttributeValue{
+			"name_branch": {
 				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
 			},
 		}
@@ -255,7 +255,7 @@ func (t NoRangeThingWithCompositeAttributesTable) getNoRangeThingWithCompositeAt
 			"#NAME_VERSION": aws.String("name_version"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":nameVersion": &dynamodb.AttributeValue{
+			":nameVersion": {
 				S: aws.String(fmt.Sprintf("%s:%d", input.Name, input.Version)),
 			},
 		},
@@ -280,13 +280,13 @@ func (t NoRangeThingWithCompositeAttributesTable) getNoRangeThingWithCompositeAt
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"date": &dynamodb.AttributeValue{
+			"date": {
 				S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.Date)),
 			},
-			"name_version": &dynamodb.AttributeValue{
+			"name_version": {
 				S: aws.String(fmt.Sprintf("%s:%d", *input.StartingAfter.Name, input.StartingAfter.Version)),
 			},
-			"name_branch": &dynamodb.AttributeValue{
+			"name_branch": {
 				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
 			},
 		}
@@ -351,10 +351,10 @@ func (t NoRangeThingWithCompositeAttributesTable) scanNoRangeThingWithCompositeA
 		// must provide the fields constituting the index and the primary key
 		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"name_branch": &dynamodb.AttributeValue{
+			"name_branch": {
 				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
 			},
-			"name_version": &dynamodb.AttributeValue{
+			"name_version": {
 				S: aws.String(fmt.Sprintf("%s:%d", *input.StartingAfter.Name, input.StartingAfter.Version)),
 			},
 			"date": exclusiveStartKey["date"],

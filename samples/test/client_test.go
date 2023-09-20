@@ -439,11 +439,11 @@ func TestIterator(t *testing.T) {
 func TestIteratorWithResourcePath(t *testing.T) {
 	s, controller := setupServer()
 	controller.authors = []*models.Author{
-		&models.Author{
+		{
 			ID:   "abc",
 			Name: "Joe",
 		},
-		&models.Author{
+		{
 			ID:   "def",
 			Name: "Jenny",
 		},

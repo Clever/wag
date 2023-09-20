@@ -360,7 +360,7 @@ func (t ThingTable) getThingsByNameAndVersion(ctx context.Context, input db.GetT
 			"#NAME": aws.String("name"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":name": &dynamodb.AttributeValue{
+			":name": {
 				S: aws.String(input.Name),
 			},
 		},
@@ -385,10 +385,10 @@ func (t ThingTable) getThingsByNameAndVersion(ctx context.Context, input db.GetT
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"version": &dynamodb.AttributeValue{
+			"version": {
 				N: aws.String(fmt.Sprintf("%d", input.StartingAfter.Version)),
 			},
-			"name": &dynamodb.AttributeValue{
+			"name": {
 				S: aws.String(input.StartingAfter.Name),
 			},
 		}
@@ -477,7 +477,7 @@ func (t ThingTable) getThingByID(ctx context.Context, id string) (*models.Thing,
 			"#ID": aws.String("id"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":id": &dynamodb.AttributeValue{
+			":id": {
 				S: aws.String(id),
 			},
 		},
@@ -570,7 +570,7 @@ func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.Ge
 			"#NAME": aws.String("name"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":name": &dynamodb.AttributeValue{
+			":name": {
 				S: aws.String(input.Name),
 			},
 		},
@@ -595,13 +595,13 @@ func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.Ge
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"createdAt": &dynamodb.AttributeValue{
+			"createdAt": {
 				S: aws.String(toDynamoTimeString(input.StartingAfter.CreatedAt)),
 			},
-			"name": &dynamodb.AttributeValue{
+			"name": {
 				S: aws.String(input.StartingAfter.Name),
 			},
-			"version": &dynamodb.AttributeValue{
+			"version": {
 				N: aws.String(fmt.Sprintf("%d", input.StartingAfter.Version)),
 			},
 		}
@@ -717,7 +717,7 @@ func (t ThingTable) getThingsByNameAndRangeNullable(ctx context.Context, input d
 			"#NAME": aws.String("name"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":name": &dynamodb.AttributeValue{
+			":name": {
 				S: aws.String(input.Name),
 			},
 		},
@@ -742,13 +742,13 @@ func (t ThingTable) getThingsByNameAndRangeNullable(ctx context.Context, input d
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"rangeNullable": &dynamodb.AttributeValue{
+			"rangeNullable": {
 				S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.RangeNullable)),
 			},
-			"name": &dynamodb.AttributeValue{
+			"name": {
 				S: aws.String(input.StartingAfter.Name),
 			},
-			"version": &dynamodb.AttributeValue{
+			"version": {
 				N: aws.String(fmt.Sprintf("%d", input.StartingAfter.Version)),
 			},
 		}
@@ -864,7 +864,7 @@ func (t ThingTable) getThingsByHashNullableAndName(ctx context.Context, input db
 			"#HASHNULLABLE": aws.String("hashNullable"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":hashNullable": &dynamodb.AttributeValue{
+			":hashNullable": {
 				S: aws.String(input.HashNullable),
 			},
 		},
@@ -889,13 +889,13 @@ func (t ThingTable) getThingsByHashNullableAndName(ctx context.Context, input db
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"name": &dynamodb.AttributeValue{
+			"name": {
 				S: aws.String(input.StartingAfter.Name),
 			},
-			"hashNullable": &dynamodb.AttributeValue{
+			"hashNullable": {
 				S: aws.String(*input.StartingAfter.HashNullable),
 			},
-			"version": &dynamodb.AttributeValue{
+			"version": {
 				N: aws.String(fmt.Sprintf("%d", input.StartingAfter.Version)),
 			},
 		}

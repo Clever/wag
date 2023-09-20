@@ -256,7 +256,7 @@ func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeA
 			"#THREE": aws.String("three"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":three": &dynamodb.AttributeValue{
+			":three": {
 				S: aws.String(input.Three),
 			},
 		},
@@ -281,13 +281,13 @@ func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeA
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"one_two": &dynamodb.AttributeValue{
+			"one_two": {
 				S: aws.String(fmt.Sprintf("%s_%s", *input.StartingAfter.One, *input.StartingAfter.Two)),
 			},
-			"three": &dynamodb.AttributeValue{
+			"three": {
 				S: aws.String(*input.StartingAfter.Three),
 			},
-			"one": &dynamodb.AttributeValue{
+			"one": {
 				S: aws.String(*input.StartingAfter.One),
 			},
 		}
@@ -348,7 +348,7 @@ func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseComposite
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"one":   exclusiveStartKey["one"],
 			"three": exclusiveStartKey["three"],
-			"one_two": &dynamodb.AttributeValue{
+			"one_two": {
 				S: aws.String(fmt.Sprintf("%s_%s", *input.StartingAfter.One, *input.StartingAfter.Two)),
 			},
 		}
@@ -399,7 +399,7 @@ func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeA
 			"#FOUR": aws.String("four"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":four": &dynamodb.AttributeValue{
+			":four": {
 				S: aws.String(input.Four),
 			},
 		},
@@ -424,13 +424,13 @@ func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeA
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"one_two": &dynamodb.AttributeValue{
+			"one_two": {
 				S: aws.String(fmt.Sprintf("%s_%s", *input.StartingAfter.One, *input.StartingAfter.Two)),
 			},
-			"four": &dynamodb.AttributeValue{
+			"four": {
 				S: aws.String(*input.StartingAfter.Four),
 			},
-			"one": &dynamodb.AttributeValue{
+			"one": {
 				S: aws.String(*input.StartingAfter.One),
 			},
 		}
@@ -491,7 +491,7 @@ func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseComposite
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"one":  exclusiveStartKey["one"],
 			"four": exclusiveStartKey["four"],
-			"one_two": &dynamodb.AttributeValue{
+			"one_two": {
 				S: aws.String(fmt.Sprintf("%s_%s", *input.StartingAfter.One, *input.StartingAfter.Two)),
 			},
 		}

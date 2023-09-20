@@ -192,7 +192,7 @@ func (t ThingWithCompositeAttributesTable) scanThingWithCompositeAttributess(ctx
 		}
 		// must provide only the fields constituting the index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"name_branch": &dynamodb.AttributeValue{
+			"name_branch": {
 				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
 			},
 			"date": exclusiveStartKey["date"],
@@ -261,7 +261,7 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 			"#NAME_BRANCH": aws.String("name_branch"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":nameBranch": &dynamodb.AttributeValue{
+			":nameBranch": {
 				S: aws.String(fmt.Sprintf("%s@%s", input.Name, input.Branch)),
 			},
 		},
@@ -286,10 +286,10 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"date": &dynamodb.AttributeValue{
+			"date": {
 				S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.Date)),
 			},
-			"name_branch": &dynamodb.AttributeValue{
+			"name_branch": {
 				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
 			},
 		}
@@ -384,7 +384,7 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 			"#NAME_VERSION": aws.String("name_version"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":nameVersion": &dynamodb.AttributeValue{
+			":nameVersion": {
 				S: aws.String(fmt.Sprintf("%s:%d", input.Name, input.Version)),
 			},
 		},
@@ -409,13 +409,13 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"date": &dynamodb.AttributeValue{
+			"date": {
 				S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.Date)),
 			},
-			"name_version": &dynamodb.AttributeValue{
+			"name_version": {
 				S: aws.String(fmt.Sprintf("%s:%d", *input.StartingAfter.Name, input.StartingAfter.Version)),
 			},
-			"name_branch": &dynamodb.AttributeValue{
+			"name_branch": {
 				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
 			},
 		}
@@ -480,11 +480,11 @@ func (t ThingWithCompositeAttributesTable) scanThingWithCompositeAttributessByNa
 		// must provide the fields constituting the index and the primary key
 		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
 		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"name_branch": &dynamodb.AttributeValue{
+			"name_branch": {
 				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
 			},
 			"date": exclusiveStartKey["date"],
-			"name_version": &dynamodb.AttributeValue{
+			"name_version": {
 				S: aws.String(fmt.Sprintf("%s:%d", *input.StartingAfter.Name, input.StartingAfter.Version)),
 			},
 		}

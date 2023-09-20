@@ -228,7 +228,7 @@ func (t EventTable) getEventsByPkAndSk(ctx context.Context, input db.GetEventsBy
 			"#PK": aws.String("pk"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":pk": &dynamodb.AttributeValue{
+			":pk": {
 				S: aws.String(input.Pk),
 			},
 		},
@@ -253,10 +253,10 @@ func (t EventTable) getEventsByPkAndSk(ctx context.Context, input db.GetEventsBy
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"sk": &dynamodb.AttributeValue{
+			"sk": {
 				S: aws.String(input.StartingAfter.Sk),
 			},
-			"pk": &dynamodb.AttributeValue{
+			"pk": {
 				S: aws.String(input.StartingAfter.Pk),
 			},
 		}
@@ -339,7 +339,7 @@ func (t EventTable) getEventsBySkAndData(ctx context.Context, input db.GetEvents
 			"#SK": aws.String("sk"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":sk": &dynamodb.AttributeValue{
+			":sk": {
 				S: aws.String(input.Sk),
 			},
 		},
@@ -364,13 +364,13 @@ func (t EventTable) getEventsBySkAndData(ctx context.Context, input db.GetEvents
 	}
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"data": &dynamodb.AttributeValue{
+			"data": {
 				B: input.StartingAfter.Data,
 			},
-			"sk": &dynamodb.AttributeValue{
+			"sk": {
 				S: aws.String(input.StartingAfter.Sk),
 			},
-			"pk": &dynamodb.AttributeValue{
+			"pk": {
 				S: aws.String(input.StartingAfter.Pk),
 			},
 		}
