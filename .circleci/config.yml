@@ -13,8 +13,8 @@ jobs:
             export NODE_VERSION=v7.10.1  
             export NODE_DISTRO=linux-x64  
             wget https://nodejs.org/download/release/$NODE_VERSION/node-$NODE_VERSION-$NODE_DISTRO.tar.gz 
-            sudo mkdir -p /usr/local/lib/nodejs 
-            sudo tar -xf node-$NODE_VERSION-$NODE_DISTRO.tar.gz -C /usr/local/lib/nodejs   
+            mkdir -p /usr/local/lib/nodejs 
+            tar -xf node-$NODE_VERSION-$NODE_DISTRO.tar.gz -C /usr/local/lib/nodejs   
             rm node-$NODE_VERSION-$NODE_DISTRO.tar.gz
             sudo ln -s /usr/local/lib/nodejs/node-$NODE_VERSION-$NODE_DISTRO/bin/node /usr/bin/node 
             sudo ln -s /usr/local/lib/nodejs/node-$NODE_VERSION-$NODE_DISTRO/bin/npm /usr/bin/npm 
