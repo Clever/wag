@@ -83,7 +83,7 @@ func (rt roundTripperWithTracing) RoundTrip(r *http.Request) (*http.Response, er
 	return otelhttp.NewTransport(
 		rt.baseTransport,
 		otelhttp.WithTracerProvider(otel.GetTracerProvider()),
-		otelhttp.WithServiceName(tp.appName),
+		otelhttp.WithServiceName(rt.appName),
 		otelhttp.WithPropagators(propagator),
 		otelhttp.WithSpanNameFormatter(func(method string, r *http.Request) string {
 			v, ok := r.Context().Value("otelSpanName").(string)
