@@ -7,19 +7,19 @@ jobs:
     environment:
       CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
       CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
+      NODE_VERSION: v7.10.1
+      NODE_DISTRO: linux-x64
     steps:
       - run:
           command: |-
-            export NODE_VERSION=v7.10.1  
-            export NODE_DISTRO=linux-x64  
             wget https://nodejs.org/download/release/$NODE_VERSION/node-$NODE_VERSION-$NODE_DISTRO.tar.gz 
             sudo mkdir -p /usr/local/lib/nodejs 
             sudo chmod -R 777 /usr/local/lib/nodejs
             tar -xf node-$NODE_VERSION-$NODE_DISTRO.tar.gz -C /usr/local/lib/nodejs   
             rm node-$NODE_VERSION-$NODE_DISTRO.tar.gz
-            sudo ln -s /usr/local/lib/nodejs/node-$NODE_VERSION-$NODE_DISTRO/bin/node /usr/bin/node 
-            sudo ln -s /usr/local/lib/nodejs/node-$NODE_VERSION-$NODE_DISTRO/bin/npm /usr/bin/npm 
-            sudo ln -s /usr/local/lib/nodejs/node-$NODE_VERSION-$NODE_DISTRO/bin/npx /usr/bin/npx
+            echo 'export PATH=/usr/local/lib/nodejs/node-$NODE_VERSION-$NODE_DISTRO/bin:$PATH' >> $BASH_ENV
+            source $HOME/.bashrc
+
       - run:
           command: cd $HOME && git clone --depth 1 -v https://github.com/Clever/ci-scripts.git && cd ci-scripts && git show --oneline -s
           name: Clone ci-scripts
