@@ -10,9 +10,14 @@ jobs:
     steps:
       - run:
           command: |-
-            sudo apt-get install -y curl
-            curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
-            sudo apt-get install -y nodejs=7.*
+            export NODE_VERSION=v7.10.1  
+            export NODE_DISTRO=linux-x64  
+            sudo wget https://nodejs.org/download/release/$NODE_VERSION/node-$NODE_VERSION-$NODE_DISTRO.tar.gz 
+            sudo mkdir -p /usr/local/lib/nodejs 
+            sudo tar -xf node-$NODE_VERSION-$NODE_DISTRO.tar.gz -C /usr/local/lib/nodejs   
+            sudo ln -s /usr/local/lib/nodejs/node-$NODE_VERSION-$NODE_DISTRO/bin/node /usr/bin/node 
+            sudo ln -s /usr/local/lib/nodejs/node-$NODE_VERSION-$NODE_DISTRO/bin/npm /usr/bin/npm 
+            sudo ln -s /usr/local/lib/nodejs/node-$NODE_VERSION-$NODE_DISTRO/bin/npx /usr/bin/npx
       - run:
           command: cd $HOME && git clone --depth 1 -v https://github.com/Clever/ci-scripts.git && cd ci-scripts && git show --oneline -s
           name: Clone ci-scripts
