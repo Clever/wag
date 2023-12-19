@@ -1,6 +1,6 @@
 module github.com/Clever/wag/clientconfig/v9
 
-go 1.16
+go 1.21
 
 require (
 	github.com/Clever/kayvee-go/v7 v7.7.0
