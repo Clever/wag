@@ -12,7 +12,7 @@ jobs:
           command: |-
             export NODE_VERSION=v7.10.1  
             export NODE_DISTRO=linux-x64  
-            sudo wget https://nodejs.org/download/release/$NODE_VERSION/node-$NODE_VERSION-$NODE_DISTRO.tar.gz 
+            sudo cd $HOME && wget https://nodejs.org/download/release/$NODE_VERSION/node-$NODE_VERSION-$NODE_DISTRO.tar.gz 
             sudo mkdir -p /usr/local/lib/nodejs 
             sudo tar -xf node-$NODE_VERSION-$NODE_DISTRO.tar.gz -C /usr/local/lib/nodejs   
             sudo ln -s /usr/local/lib/nodejs/node-$NODE_VERSION-$NODE_DISTRO/bin/node /usr/bin/node 
