@@ -17,6 +17,9 @@ jobs:
             sudo chmod -R 777 /usr/local/lib/nodejs
             tar -xf node-$NODE_VERSION-$NODE_DISTRO.tar.gz -C /usr/local/lib/nodejs   
             rm node-$NODE_VERSION-$NODE_DISTRO.tar.gz
+            sudo ln -s /usr/local/lib/nodejs/node-$NODE_VERSION-$NODE_DISTRO/bin/node /usr/bin/node 
+            sudo ln -s /usr/local/lib/nodejs/node-$NODE_VERSION-$NODE_DISTRO/bin/npm /usr/bin/npm 
+            sudo ln -s /usr/local/lib/nodejs/node-$NODE_VERSION-$NODE_DISTRO/bin/npx /usr/bin/npx
             echo "export PATH=$PATH:$(npm get prefix)/bin" >> ~/.bashrc
             source $HOME/.bashrc
 
