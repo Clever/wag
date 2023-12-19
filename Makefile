@@ -1,7 +1,7 @@
 include golang.mk
 include node.mk
 .DEFAULT_GOAL := test # override default goal set in library makefile
-NODE_VERSION := "v20"
+NODE_VERSION := "v7"
 $(eval $(call node-version-check,$(NODE_VERSION)))
 
 export PATH := $(PWD)/bin:$(PATH)
