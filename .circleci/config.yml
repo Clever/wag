@@ -32,9 +32,10 @@ jobs:
       - run:
           command: mkdir -p $CIRCLE_ARTIFACTS $CIRCLE_TEST_REPORTS
           name: Set up CircleCI artifacts directories
-      - run: make install_deps
-      - run: make build
+      # Currently have to run this in shell so that it can discover the new PATH changes. 
       - run:
           command: |-
+            make install_deps
+            make build
             make test
       - run: if [ "${CIRCLE_BRANCH}" == "master" ]; then make release && $HOME/ci-scripts/circleci/github-release $GH_RELEASE_TOKEN release; fi;
