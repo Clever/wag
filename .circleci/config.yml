@@ -10,6 +10,7 @@ jobs:
       NODE_VERSION: v7.10.1
       NODE_DISTRO: linux-x64
     steps:
+    # This is horrible, but node v7 is so outdated that there aren't better alternatives.
       - run:
           command: |-
             wget https://nodejs.org/download/release/$NODE_VERSION/node-$NODE_VERSION-$NODE_DISTRO.tar.gz 
@@ -33,6 +34,6 @@ jobs:
           name: Set up CircleCI artifacts directories
       - run: make install_deps
       - run: make build
-      - run: sudo npm install -g jsdoc-to-markdown@^4.0.0
+      - run: npm install -g jsdoc-to-markdown@^4.0.0
       - run: make test
       - run: if [ "${CIRCLE_BRANCH}" == "master" ]; then make release && $HOME/ci-scripts/circleci/github-release $GH_RELEASE_TOKEN release; fi;
