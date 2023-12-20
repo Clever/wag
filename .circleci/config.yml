@@ -21,6 +21,7 @@ jobs:
             sudo ln -s /usr/local/lib/nodejs/node-$NODE_VERSION-$NODE_DISTRO/bin/node /usr/bin/node 
             sudo ln -s /usr/local/lib/nodejs/node-$NODE_VERSION-$NODE_DISTRO/bin/npm /usr/bin/npm 
             sudo ln -s /usr/local/lib/nodejs/node-$NODE_VERSION-$NODE_DISTRO/bin/npx /usr/bin/npx
+            npm install -g jsdoc-to-markdown@^4.0.0
             echo "export PATH=$PATH:$(npm get prefix)/bin" >> ~/.bashrc
             npm install -g jsdoc-to-markdown@^4.0.0
             source $HOME/.bashrc
