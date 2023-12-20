@@ -21,6 +21,7 @@ jobs:
             echo export PATH=/usr/local/lib/nodejs/node-$NODE_VERSION-linux-x64/bin:"$PATH" >> "$BASH_ENV"
             source "$BASH_ENV"
             npm install -g jsdoc-to-markdown@^4.0.0
+            echo export PATH=`pwd`/bin:"$PATH" >> "$BASH_ENV"
             source "$BASH_ENV"
 
 
