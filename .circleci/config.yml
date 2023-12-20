@@ -33,11 +33,9 @@ jobs:
       - run:
           command: mkdir -p $CIRCLE_ARTIFACTS $CIRCLE_TEST_REPORTS
           name: Set up CircleCI artifacts directories
-      - run: echo $PATH
       # Currently have to run this in shell so that it can discover the new PATH changes. 
       - run:
           command: |-
-            echo $PATH
             make install_deps
             make build
             make test
