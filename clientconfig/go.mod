@@ -3,7 +3,7 @@ module github.com/Clever/wag/clientconfig/v9
 go 1.21
 
 require (
-	github.com/Clever/kayvee-go/v7 v7.7.0
+	github.com/Clever/kayvee-go/v7 v7.8.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.35.0
 	go.opentelemetry.io/otel v1.10.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.10.0
