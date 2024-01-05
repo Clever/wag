@@ -1,22 +1,13 @@
 package clientconfig
 
 import (
-	"context"
 	"fmt"
 	"net/http"
-	"time"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
-	"go.opentelemetry.io/otel/propagation"
-	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	"go.opentelemetry.io/otel/trace"
 )
 
-// propagator to use
-var propagator propagation.TextMapPropagator = propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}) // traceparent header
 type Option interface {
 	apply(*options)
 }
@@ -25,46 +16,20 @@ type options struct {
 }
 
 // WithAddress takes an address in the form of Host:Port
-func WithAddress(addr string) Option {
-	return addrOption{address: addr}
-}
+// Leaving this here as an example of how to add a new option.
+// This was removed because we shouldn't be adjusting the exporter for a client connection.
 
-type addrOption struct {
-	address string
-}
+// func WithAddress(addr string) Option {
+// 	return addrOption{address: addr}
+// }
 
-func (o addrOption) apply(opts *options) {
-	opts.address = o.address
-}
+// type addrOption struct {
+// 	address string
+// }
 
-// OtlpGrpcExporter uses the otlptracegrpc modules and the otlptrace module to produce a new exporter at our default addr
-func OtlpGrpcExporter(ctx context.Context, opts ...Option) (sdktrace.SpanExporter, error) {
-
-	const DefaultCollectorHost = "localhost"
-	const defaultCollectorPort uint16 = 4317
-	addr := fmt.Sprintf("%s:%d", DefaultCollectorHost, defaultCollectorPort)
-
-	options := options{
-		address: addr,
-	}
-
-	for _, o := range opts {
-		o.apply(&options)
-	}
-
-	otlpClient := otlptracegrpc.NewClient(
-		otlptracegrpc.WithEndpoint(addr), //Not strictly needed as we use the defaults
-		otlptracegrpc.WithReconnectionPeriod(15*time.Second),
-		otlptracegrpc.WithInsecure(),
-	)
-
-	spanExporter, err := otlptrace.New(ctx, otlpClient)
-	if err != nil {
-		return nil, err
-	}
-	return spanExporter, nil
-
-}
+// func (o addrOption) apply(opts *options) {
+// 	opts.address = o.address
+// }
 
 // DefaultInstrumentor returns the transport to use in client requests.
 // It takes in a transport to wrap, e.g. http.DefaultTransport, and the request
@@ -80,28 +45,17 @@ type roundTripperWithTracing struct {
 }
 
 func (rt roundTripperWithTracing) RoundTrip(r *http.Request) (*http.Response, error) {
-
 	return otelhttp.NewTransport(
 		rt.baseTransport,
 		otelhttp.WithTracerProvider(otel.GetTracerProvider()),
-		otelhttp.WithPropagators(propagator),
+		otelhttp.WithPropagators(otel.GetTextMapPropagator()),
 		otelhttp.WithSpanNameFormatter(func(method string, r *http.Request) string {
 
 			v, ok := r.Context().Value("otelSpanName").(string)
 			if ok {
 				return v
 			}
-			return fmt.Sprintf("%s-wagclient %s %s", rt.appName, r.Method, r.URL.Path)
+			return fmt.Sprintf("%s %s %s", rt.appName, r.Method, r.URL.Path)
 		}),
 	).RoundTrip(r)
-}
-
-// ExtractSpanAndTraceID extracts span and trace IDs from an http request header.
-func ExtractSpanAndTraceID(r *http.Request) (traceID, spanID string) {
-	s := trace.SpanFromContext(r.Context())
-	if s.SpanContext().HasTraceID() {
-		return s.SpanContext().TraceID().String(), s.SpanContext().SpanID().String()
-	}
-	sc := trace.SpanContextFromContext(propagator.Extract(r.Context(), propagation.HeaderCarrier(r.Header)))
-	return sc.SpanID().String(), sc.TraceID().String()
 }
