@@ -80,6 +80,7 @@ type roundTripperWithTracing struct {
 }
 
 func (rt roundTripperWithTracing) RoundTrip(r *http.Request) (*http.Response, error) {
+
 	return otelhttp.NewTransport(
 		rt.baseTransport,
 		otelhttp.WithTracerProvider(otel.GetTracerProvider()),
@@ -90,7 +91,7 @@ func (rt roundTripperWithTracing) RoundTrip(r *http.Request) (*http.Response, er
 			if ok {
 				return v
 			}
-			return r.Method // same as otelhttp's default span naming
+			return fmt.Sprintf("%s-wagclient %s %s", rt.appName, r.Method, r.URL.Path)
 		}),
 	).RoundTrip(r)
 }
