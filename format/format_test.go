@@ -15,7 +15,7 @@ type formater struct {
 
 var formatters = map[string]formater{
 	"JSON":    {Marshal: json.Marshal, Unmarshal: json.Unmarshal},
-	"MsgPack": {Marshal: msgpack.Marshal, Unmarshal: json.Unmarshal},
+	"MsgPack": {Marshal: msgpack.Marshal, Unmarshal: msgpack.Unmarshal},
 }
 
 type testPage struct {
@@ -60,10 +60,16 @@ func BenchmarkFormatters(b *testing.B) {
 				var bs []byte
 				bsTotal := 0
 				for n := 0; n < b.N; n++ {
-					bs, _ = fns.Marshal(input)
+					bs, err := fns.Marshal(input)
+					if err != nil {
+						b.Errorf("%s marshal: %s", name, err.Error())
+					}
 					bsTotal += len(bs)
 					ti := testPage{}
-					fns.Unmarshal(bs, &ti)
+					if err = fns.Unmarshal(bs, &ti); err != nil {
+						b.Errorf("%s unmarshal: %s", name, err.Error())
+					}
+
 				}
 				result = bs
 				b.ReportMetric(float64(bsTotal)/float64(b.N)/(1<<10), "KB")
