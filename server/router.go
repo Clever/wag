@@ -48,10 +48,10 @@ func (s *Server) Serve() error {
 
 	s.l.Counter("server-started")
 
-	// Give the sever 30 seconds to shut down
+	h2server := &http2.Server{}
 	server := &http.Server{
 		Addr:        s.addr,
-		Handler:     s.Handler,
+		Handler:     h2c.NewHandler(s.Handler, h2server),
 		IdleTimeout: 3 * time.Minute,
 	}
 	server.SetKeepAlivesEnabled(true)
