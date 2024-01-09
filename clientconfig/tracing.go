@@ -5,7 +5,10 @@ import (
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 )
+
+var propagator propagation.TextMapPropagator = propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}) // traceparent header
 
 type Option interface {
 	apply(*options)
@@ -47,7 +50,7 @@ func (rt roundTripperWithTracing) RoundTrip(r *http.Request) (*http.Response, er
 	return otelhttp.NewTransport(
 		rt.baseTransport,
 		otelhttp.WithTracerProvider(otel.GetTracerProvider()),
-		otelhttp.WithPropagators(otel.GetTextMapPropagator()),
+		otelhttp.WithPropagators(propagator),
 		otelhttp.WithSpanNameFormatter(func(method string, r *http.Request) string {
 
 			v, ok := r.Context().Value("otelSpanName").(string)
