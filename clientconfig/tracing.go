@@ -124,7 +124,6 @@ func newTracerProvider(exporter sdktrace.SpanExporter, appName string) *sdktrace
 		// We use the default ID generator. In order for sampling to work (at least with this sampler)
 		// the ID generator must generate trace IDs uniformly at random from the entire space of uint64.
 		// For example, the default x-ray ID generator does not do this.
-		sdktrace.WithSampler(sdktrace.AlwaysSample()),
 		// These maximums are to guard against something going wrong and sending a ton of data unexpectedly
 		sdktrace.WithRawSpanLimits(sdktrace.SpanLimits{
 			AttributeCountLimit: 100,
