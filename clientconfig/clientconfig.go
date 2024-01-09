@@ -18,8 +18,9 @@ func WithoutTracing(wagAppName string) (*logger.Logger, *http.RoundTripper) {
 
 func WithTracing(wagAppName string, exporter sdktrace.SpanExporter) (*logger.Logger, *http.RoundTripper) {
 	baseTransport := http.DefaultTransport
+	tp := newTracerProvider(exporter, wagAppName)
 
-	instrumentedTransport := DefaultInstrumentor(baseTransport, wagAppName)
+	instrumentedTransport := DefaultInstrumentor(baseTransport, *tp)
 
 	return ClientLogger(wagAppName), &instrumentedTransport
 }
