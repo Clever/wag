@@ -83,14 +83,14 @@ func (rt roundTripperWithTracing) RoundTrip(r *http.Request) (*http.Response, er
 	return otelhttp.NewTransport(
 		rt.baseTransport,
 		otelhttp.WithTracerProvider(otel.GetTracerProvider()),
-		otelhttp.WithPropagators(propagator),
+		otelhttp.WithPropagators(otel.GetTextMapPropagator()),
 		otelhttp.WithSpanNameFormatter(func(method string, r *http.Request) string {
 
 			v, ok := r.Context().Value("otelSpanName").(string)
 			if ok {
 				return v
 			}
-			return r.Method // same as otelhttp's default span naming
+			return fmt.Sprintf("%s-wagclient %s %s", rt.appName, r.Method, r.URL.Path)
 		}),
 	).RoundTrip(r)
 }
