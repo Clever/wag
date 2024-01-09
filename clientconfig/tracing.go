@@ -84,8 +84,8 @@ type roundTripperWithTracing struct {
 func (rt roundTripperWithTracing) RoundTrip(r *http.Request) (*http.Response, error) {
 	return otelhttp.NewTransport(
 		rt.baseTransport,
-		otelhttp.WithTracerProvider(otel.GetTracerProvider()),
-		otelhttp.WithPropagators(propagator),
+		otelhttp.WithTracerProvider(&rt.tp),
+		otelhttp.WithPropagators(otel.GetTextMapPropagator()),
 		otelhttp.WithSpanNameFormatter(func(method string, r *http.Request) string {
 			v, ok := r.Context().Value("otelSpanName").(string)
 			if ok {
