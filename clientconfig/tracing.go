@@ -1,7 +1,6 @@
 package clientconfig
 
 import (
-	"fmt"
 	"net/http"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -55,7 +54,7 @@ func (rt roundTripperWithTracing) RoundTrip(r *http.Request) (*http.Response, er
 			if ok {
 				return v
 			}
-			return fmt.Sprintf("%s %s %s", rt.appName, r.Method, r.URL.Path)
+			return r.Method
 		}),
 	).RoundTrip(r)
 }
