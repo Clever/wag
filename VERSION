@@ -1,4 +1,6 @@
-v9.1.3
+v9.2.0
+
+v9.2.0 Update to go 1.21 and fixed a client tracing bug. 
 
 v9.1.3 Fix for generated code supporting filtering on an enum
 
