@@ -21,6 +21,8 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/kardianos/osext"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 )
 
 // Server defines a HTTP server that implements the Controller interface.
@@ -64,10 +66,10 @@ func (s *Server) Serve() error {
 
 	s.l.Counter("server-started")
 
-	// Give the sever 30 seconds to shut down
+	h2server := &http2.Server{}
 	server := &http.Server{
 		Addr:        s.addr,
-		Handler:     s.Handler,
+		Handler:     h2c.NewHandler(s.Handler, h2server),
 		IdleTimeout: 3 * time.Minute,
 	}
 	server.SetKeepAlivesEnabled(true)

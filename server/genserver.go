@@ -77,6 +77,8 @@ func generateRouter(packageName, basePath, outputPath string, s spec.Swagger, pa
 		"github.com/kardianos/osext",
 		"github.com/Clever/kayvee-go/v7/logger",
 		`kvMiddleware "github.com/Clever/kayvee-go/v7/middleware"`,
+		"golang.org/x/net/http2",
+		"golang.org/x/net/http2/h2c",
 	})
 	routerCode, err := templates.WriteTemplate(routerTemplateStr, template)
 	if err != nil {
