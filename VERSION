@@ -1,4 +1,6 @@
-v9.1.3
+v9.2.0
+
+v9.2.0 Support h2c
 
 v9.1.3 Fix for generated code supporting filtering on an enum
 
