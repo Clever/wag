@@ -1,6 +1,7 @@
 package clientconfig
 
 import (
+	"fmt"
 	"net/http"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -26,15 +27,11 @@ func (rt roundTripperWithTracing) RoundTrip(r *http.Request) (*http.Response, er
 		otelhttp.WithTracerProvider(otel.GetTracerProvider()),
 		otelhttp.WithPropagators(otel.GetTextMapPropagator()),
 		otelhttp.WithSpanNameFormatter(func(method string, r *http.Request) string {
-			// I passed in appName because ideally I'd also include it here in the span name.
-			// Currently left out to avoid other possible issues.
 			v, ok := r.Context().Value("otelSpanName").(string)
 			if ok {
 				return v
 			}
-			// return fmt.Sprintf("%s-wagclient %s %s", rt.appName, r.Method, r.URL.Path)
-
-			return r.Method
+			return fmt.Sprintf("%s-wagclient %s %s", rt.appName, r.Method, r.URL.Path)
 		}),
 	).RoundTrip(r)
 }
