@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Clever/wag/samples/gen-go-db-custom-path/models/v9"
+	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 	"github.com/go-openapi/strfmt"
 	"golang.org/x/time/rate"
 )
@@ -292,6 +293,30 @@ type Interface interface {
 	GetThingWithRequiredFields2sByNameAndID(ctx context.Context, input GetThingWithRequiredFields2sByNameAndIDInput, fn func(m *models.ThingWithRequiredFields2, lastThingWithRequiredFields2 bool) bool) error
 	// DeleteThingWithRequiredFields2 deletes a ThingWithRequiredFields2 from the database.
 	DeleteThingWithRequiredFields2(ctx context.Context, name string, id string) error
+
+	// SaveThingWithTransaction saves a ThingWithTransaction to the database.
+	SaveThingWithTransaction(ctx context.Context, m models.ThingWithTransaction) error
+	// GetThingWithTransaction retrieves a ThingWithTransaction from the database.
+	GetThingWithTransaction(ctx context.Context, name string) (*models.ThingWithTransaction, error)
+	// ScanThingWithTransactions runs a scan on the ThingWithTransactions table.
+	ScanThingWithTransactions(ctx context.Context, input ScanThingWithTransactionsInput, fn func(m *models.ThingWithTransaction, lastThingWithTransaction bool) bool) error
+	// DeleteThingWithTransaction deletes a ThingWithTransaction from the database.
+	DeleteThingWithTransaction(ctx context.Context, name string) error
+	// TransactSaveThingWithTransactionAndThing saves ThingWithTransaction and Thing as an atomic transaction.
+	// Use the optional condition parameters to require pre-transaction conditions for each put
+	TransactSaveThingWithTransactionAndThing(ctx context.Context, m1 models.ThingWithTransaction, m1Conditions *expression.ConditionBuilder, m2 models.Thing, m2Conditions *expression.ConditionBuilder) error
+
+	// SaveThingWithTransactionWithSimpleThing saves a ThingWithTransactionWithSimpleThing to the database.
+	SaveThingWithTransactionWithSimpleThing(ctx context.Context, m models.ThingWithTransactionWithSimpleThing) error
+	// GetThingWithTransactionWithSimpleThing retrieves a ThingWithTransactionWithSimpleThing from the database.
+	GetThingWithTransactionWithSimpleThing(ctx context.Context, name string) (*models.ThingWithTransactionWithSimpleThing, error)
+	// ScanThingWithTransactionWithSimpleThings runs a scan on the ThingWithTransactionWithSimpleThings table.
+	ScanThingWithTransactionWithSimpleThings(ctx context.Context, input ScanThingWithTransactionWithSimpleThingsInput, fn func(m *models.ThingWithTransactionWithSimpleThing, lastThingWithTransactionWithSimpleThing bool) bool) error
+	// DeleteThingWithTransactionWithSimpleThing deletes a ThingWithTransactionWithSimpleThing from the database.
+	DeleteThingWithTransactionWithSimpleThing(ctx context.Context, name string) error
+	// TransactSaveThingWithTransactionWithSimpleThingAndSimpleThing saves ThingWithTransactionWithSimpleThing and SimpleThing as an atomic transaction.
+	// Use the optional condition parameters to require pre-transaction conditions for each put
+	TransactSaveThingWithTransactionWithSimpleThingAndSimpleThing(ctx context.Context, m1 models.ThingWithTransactionWithSimpleThing, m1Conditions *expression.ConditionBuilder, m2 models.SimpleThing, m2Conditions *expression.ConditionBuilder) error
 
 	// SaveThingWithUnderscores saves a ThingWithUnderscores to the database.
 	SaveThingWithUnderscores(ctx context.Context, m models.ThingWithUnderscores) error
@@ -2031,6 +2056,78 @@ var _ error = ErrThingWithRequiredFields2AlreadyExists{}
 // Error returns a description of the error.
 func (e ErrThingWithRequiredFields2AlreadyExists) Error() string {
 	return "ThingWithRequiredFields2 already exists"
+}
+
+// ScanThingWithTransactionsInput is the input to the ScanThingWithTransactions method.
+type ScanThingWithTransactionsInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithTransaction
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// ErrThingWithTransactionNotFound is returned when the database fails to find a ThingWithTransaction.
+type ErrThingWithTransactionNotFound struct {
+	Name string
+}
+
+var _ error = ErrThingWithTransactionNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithTransactionNotFound) Error() string {
+	return "could not find ThingWithTransaction"
+}
+
+// ErrThingWithTransactionAlreadyExists is returned when trying to overwrite a ThingWithTransaction.
+type ErrThingWithTransactionAlreadyExists struct {
+	Name string
+}
+
+var _ error = ErrThingWithTransactionAlreadyExists{}
+
+// Error returns a description of the error.
+func (e ErrThingWithTransactionAlreadyExists) Error() string {
+	return "ThingWithTransaction already exists"
+}
+
+// ScanThingWithTransactionWithSimpleThingsInput is the input to the ScanThingWithTransactionWithSimpleThings method.
+type ScanThingWithTransactionWithSimpleThingsInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithTransactionWithSimpleThing
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// ErrThingWithTransactionWithSimpleThingNotFound is returned when the database fails to find a ThingWithTransactionWithSimpleThing.
+type ErrThingWithTransactionWithSimpleThingNotFound struct {
+	Name string
+}
+
+var _ error = ErrThingWithTransactionWithSimpleThingNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithTransactionWithSimpleThingNotFound) Error() string {
+	return "could not find ThingWithTransactionWithSimpleThing"
+}
+
+// ErrThingWithTransactionWithSimpleThingAlreadyExists is returned when trying to overwrite a ThingWithTransactionWithSimpleThing.
+type ErrThingWithTransactionWithSimpleThingAlreadyExists struct {
+	Name string
+}
+
+var _ error = ErrThingWithTransactionWithSimpleThingAlreadyExists{}
+
+// Error returns a description of the error.
+func (e ErrThingWithTransactionWithSimpleThingAlreadyExists) Error() string {
+	return "ThingWithTransactionWithSimpleThing already exists"
 }
 
 // ErrThingWithUnderscoresNotFound is returned when the database fails to find a ThingWithUnderscores.

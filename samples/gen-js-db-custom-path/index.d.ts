@@ -237,6 +237,14 @@ declare namespace SwaggerTest {
   name: string;
 };
     
+    type ThingWithTransaction = {
+  name?: string;
+};
+    
+    type ThingWithTransactionWithSimpleThing = {
+  name?: string;
+};
+    
     type ThingWithUnderscores = {
   id_app?: string;
 };

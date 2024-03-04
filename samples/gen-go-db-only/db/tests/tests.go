@@ -152,6 +152,14 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingWithRequiredFields2sByNameAndID", GetThingWithRequiredFields2sByNameAndID(dbFactory(), t))
 	t.Run("SaveThingWithRequiredFields2", SaveThingWithRequiredFields2(dbFactory(), t))
 	t.Run("DeleteThingWithRequiredFields2", DeleteThingWithRequiredFields2(dbFactory(), t))
+	t.Run("GetThingWithTransaction", GetThingWithTransaction(dbFactory(), t))
+	t.Run("ScanThingWithTransactions", ScanThingWithTransactions(dbFactory(), t))
+	t.Run("SaveThingWithTransaction", SaveThingWithTransaction(dbFactory(), t))
+	t.Run("DeleteThingWithTransaction", DeleteThingWithTransaction(dbFactory(), t))
+	t.Run("GetThingWithTransactionWithSimpleThing", GetThingWithTransactionWithSimpleThing(dbFactory(), t))
+	t.Run("ScanThingWithTransactionWithSimpleThings", ScanThingWithTransactionWithSimpleThings(dbFactory(), t))
+	t.Run("SaveThingWithTransactionWithSimpleThing", SaveThingWithTransactionWithSimpleThing(dbFactory(), t))
+	t.Run("DeleteThingWithTransactionWithSimpleThing", DeleteThingWithTransactionWithSimpleThing(dbFactory(), t))
 	t.Run("GetThingWithUnderscores", GetThingWithUnderscores(dbFactory(), t))
 	t.Run("SaveThingWithUnderscores", SaveThingWithUnderscores(dbFactory(), t))
 	t.Run("DeleteThingWithUnderscores", DeleteThingWithUnderscores(dbFactory(), t))
@@ -12001,6 +12009,280 @@ func DeleteThingWithRequiredFields2(s db.Interface, t *testing.T) func(t *testin
 		}
 		require.Nil(t, s.SaveThingWithRequiredFields2(ctx, m))
 		require.Nil(t, s.DeleteThingWithRequiredFields2(ctx, *m.Name, *m.ID))
+	}
+}
+
+func GetThingWithTransaction(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithTransaction{
+			Name: "string1",
+		}
+		require.Nil(t, s.SaveThingWithTransaction(ctx, m))
+		m2, err := s.GetThingWithTransaction(ctx, m.Name)
+		require.Nil(t, err)
+		require.Equal(t, m.Name, m2.Name)
+
+		_, err = s.GetThingWithTransaction(ctx, "string2")
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrThingWithTransactionNotFound{})
+	}
+}
+
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
+func ScanThingWithTransactions(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithTransaction(ctx, models.ThingWithTransaction{
+			Name: "string1",
+		}))
+		require.Nil(t, d.SaveThingWithTransaction(ctx, models.ThingWithTransaction{
+			Name: "string2",
+		}))
+		require.Nil(t, d.SaveThingWithTransaction(ctx, models.ThingWithTransaction{
+			Name: "string3",
+		}))
+
+		t.Run("basic", func(t *testing.T) {
+			expected := []models.ThingWithTransaction{
+				models.ThingWithTransaction{
+					Name: "string1",
+				},
+				models.ThingWithTransaction{
+					Name: "string2",
+				},
+				models.ThingWithTransaction{
+					Name: "string3",
+				},
+			}
+			actual := []models.ThingWithTransaction{}
+			err := d.ScanThingWithTransactions(ctx, db.ScanThingWithTransactionsInput{}, func(m *models.ThingWithTransaction, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+			// We can't use Equal here because Scan doesn't return items in any specific order.
+			require.ElementsMatch(t, expected, actual)
+		})
+
+		t.Run("starting after", func(t *testing.T) {
+			// Scan for everything.
+			allItems := []models.ThingWithTransaction{}
+			err := d.ScanThingWithTransactions(ctx, db.ScanThingWithTransactionsInput{}, func(m *models.ThingWithTransaction, last bool) bool {
+				allItems = append(allItems, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			firstItem := allItems[0]
+
+			// Scan for everything after the first item.
+			scanInput := db.ScanThingWithTransactionsInput{
+				StartingAfter: &models.ThingWithTransaction{
+					Name: firstItem.Name,
+				},
+			}
+			actual := []models.ThingWithTransaction{}
+			err = d.ScanThingWithTransactions(ctx, scanInput, func(m *models.ThingWithTransaction, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			expected := allItems[1:]
+			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithTransactionsInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithTransaction{}
+			err := d.ScanThingWithTransactions(ctx, scanInput, func(m *models.ThingWithTransaction, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
+		})
+	}
+}
+
+func SaveThingWithTransaction(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithTransaction{
+			Name: "string1",
+		}
+		require.Nil(t, s.SaveThingWithTransaction(ctx, m))
+		require.IsType(t, db.ErrThingWithTransactionAlreadyExists{}, s.SaveThingWithTransaction(ctx, m))
+	}
+}
+
+func DeleteThingWithTransaction(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithTransaction{
+			Name: "string1",
+		}
+		require.Nil(t, s.SaveThingWithTransaction(ctx, m))
+		require.Nil(t, s.DeleteThingWithTransaction(ctx, m.Name))
+	}
+}
+
+func GetThingWithTransactionWithSimpleThing(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithTransactionWithSimpleThing{
+			Name: "string1",
+		}
+		require.Nil(t, s.SaveThingWithTransactionWithSimpleThing(ctx, m))
+		m2, err := s.GetThingWithTransactionWithSimpleThing(ctx, m.Name)
+		require.Nil(t, err)
+		require.Equal(t, m.Name, m2.Name)
+
+		_, err = s.GetThingWithTransactionWithSimpleThing(ctx, "string2")
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrThingWithTransactionWithSimpleThingNotFound{})
+	}
+}
+
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
+func ScanThingWithTransactionWithSimpleThings(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithTransactionWithSimpleThing(ctx, models.ThingWithTransactionWithSimpleThing{
+			Name: "string1",
+		}))
+		require.Nil(t, d.SaveThingWithTransactionWithSimpleThing(ctx, models.ThingWithTransactionWithSimpleThing{
+			Name: "string2",
+		}))
+		require.Nil(t, d.SaveThingWithTransactionWithSimpleThing(ctx, models.ThingWithTransactionWithSimpleThing{
+			Name: "string3",
+		}))
+
+		t.Run("basic", func(t *testing.T) {
+			expected := []models.ThingWithTransactionWithSimpleThing{
+				models.ThingWithTransactionWithSimpleThing{
+					Name: "string1",
+				},
+				models.ThingWithTransactionWithSimpleThing{
+					Name: "string2",
+				},
+				models.ThingWithTransactionWithSimpleThing{
+					Name: "string3",
+				},
+			}
+			actual := []models.ThingWithTransactionWithSimpleThing{}
+			err := d.ScanThingWithTransactionWithSimpleThings(ctx, db.ScanThingWithTransactionWithSimpleThingsInput{}, func(m *models.ThingWithTransactionWithSimpleThing, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+			// We can't use Equal here because Scan doesn't return items in any specific order.
+			require.ElementsMatch(t, expected, actual)
+		})
+
+		t.Run("starting after", func(t *testing.T) {
+			// Scan for everything.
+			allItems := []models.ThingWithTransactionWithSimpleThing{}
+			err := d.ScanThingWithTransactionWithSimpleThings(ctx, db.ScanThingWithTransactionWithSimpleThingsInput{}, func(m *models.ThingWithTransactionWithSimpleThing, last bool) bool {
+				allItems = append(allItems, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			firstItem := allItems[0]
+
+			// Scan for everything after the first item.
+			scanInput := db.ScanThingWithTransactionWithSimpleThingsInput{
+				StartingAfter: &models.ThingWithTransactionWithSimpleThing{
+					Name: firstItem.Name,
+				},
+			}
+			actual := []models.ThingWithTransactionWithSimpleThing{}
+			err = d.ScanThingWithTransactionWithSimpleThings(ctx, scanInput, func(m *models.ThingWithTransactionWithSimpleThing, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			expected := allItems[1:]
+			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithTransactionWithSimpleThingsInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithTransactionWithSimpleThing{}
+			err := d.ScanThingWithTransactionWithSimpleThings(ctx, scanInput, func(m *models.ThingWithTransactionWithSimpleThing, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
+		})
+	}
+}
+
+func SaveThingWithTransactionWithSimpleThing(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithTransactionWithSimpleThing{
+			Name: "string1",
+		}
+		require.Nil(t, s.SaveThingWithTransactionWithSimpleThing(ctx, m))
+		require.IsType(t, db.ErrThingWithTransactionWithSimpleThingAlreadyExists{}, s.SaveThingWithTransactionWithSimpleThing(ctx, m))
+	}
+}
+
+func DeleteThingWithTransactionWithSimpleThing(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithTransactionWithSimpleThing{
+			Name: "string1",
+		}
+		require.Nil(t, s.SaveThingWithTransactionWithSimpleThing(ctx, m))
+		require.Nil(t, s.DeleteThingWithTransactionWithSimpleThing(ctx, m.Name))
 	}
 }
 
