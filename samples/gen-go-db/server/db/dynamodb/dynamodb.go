@@ -56,6 +56,8 @@ type Config struct {
 	ThingWithDateRangeTable ThingWithDateRangeTable
 	// ThingWithDateTimeCompositeTable configuration.
 	ThingWithDateTimeCompositeTable ThingWithDateTimeCompositeTable
+	// ThingWithDatetimeGSITable configuration.
+	ThingWithDatetimeGSITable ThingWithDatetimeGSITable
 	// ThingWithEnumHashKeyTable configuration.
 	ThingWithEnumHashKeyTable ThingWithEnumHashKeyTable
 	// ThingWithMatchingKeysTable configuration.
@@ -277,6 +279,20 @@ func New(config Config) (*DB, error) {
 	if thingWithDateTimeCompositeTable.WriteCapacityUnits == 0 {
 		thingWithDateTimeCompositeTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	// configure ThingWithDatetimeGSI table
+	thingWithDatetimeGSITable := config.ThingWithDatetimeGSITable
+	if thingWithDatetimeGSITable.DynamoDBAPI == nil {
+		thingWithDatetimeGSITable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if thingWithDatetimeGSITable.Prefix == "" {
+		thingWithDatetimeGSITable.Prefix = config.DefaultPrefix
+	}
+	if thingWithDatetimeGSITable.ReadCapacityUnits == 0 {
+		thingWithDatetimeGSITable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if thingWithDatetimeGSITable.WriteCapacityUnits == 0 {
+		thingWithDatetimeGSITable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
 	// configure ThingWithEnumHashKey table
 	thingWithEnumHashKeyTable := config.ThingWithEnumHashKeyTable
 	if thingWithEnumHashKeyTable.DynamoDBAPI == nil {
@@ -418,6 +434,7 @@ func New(config Config) (*DB, error) {
 		thingWithCompositeEnumAttributesTable:                thingWithCompositeEnumAttributesTable,
 		thingWithDateRangeTable:                              thingWithDateRangeTable,
 		thingWithDateTimeCompositeTable:                      thingWithDateTimeCompositeTable,
+		thingWithDatetimeGSITable:                            thingWithDatetimeGSITable,
 		thingWithEnumHashKeyTable:                            thingWithEnumHashKeyTable,
 		thingWithMatchingKeysTable:                           thingWithMatchingKeysTable,
 		thingWithMultiUseCompositeAttributeTable:             thingWithMultiUseCompositeAttributeTable,
@@ -445,6 +462,7 @@ type DB struct {
 	thingWithCompositeEnumAttributesTable                ThingWithCompositeEnumAttributesTable
 	thingWithDateRangeTable                              ThingWithDateRangeTable
 	thingWithDateTimeCompositeTable                      ThingWithDateTimeCompositeTable
+	thingWithDatetimeGSITable                            ThingWithDatetimeGSITable
 	thingWithEnumHashKeyTable                            ThingWithEnumHashKeyTable
 	thingWithMatchingKeysTable                           ThingWithMatchingKeysTable
 	thingWithMultiUseCompositeAttributeTable             ThingWithMultiUseCompositeAttributeTable
@@ -497,6 +515,9 @@ func (d DB) CreateTables(ctx context.Context) error {
 		return err
 	}
 	if err := d.thingWithDateTimeCompositeTable.create(ctx); err != nil {
+		return err
+	}
+	if err := d.thingWithDatetimeGSITable.create(ctx); err != nil {
 		return err
 	}
 	if err := d.thingWithEnumHashKeyTable.create(ctx); err != nil {
@@ -997,6 +1018,36 @@ func (d DB) GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx context
 // DeleteThingWithDateTimeComposite deletes a ThingWithDateTimeComposite from the database.
 func (d DB) DeleteThingWithDateTimeComposite(ctx context.Context, typeVar string, id string, created strfmt.DateTime, resource string) error {
 	return d.thingWithDateTimeCompositeTable.deleteThingWithDateTimeComposite(ctx, typeVar, id, created, resource)
+}
+
+// SaveThingWithDatetimeGSI saves a ThingWithDatetimeGSI to the database.
+func (d DB) SaveThingWithDatetimeGSI(ctx context.Context, m models.ThingWithDatetimeGSI) error {
+	return d.thingWithDatetimeGSITable.saveThingWithDatetimeGSI(ctx, m)
+}
+
+// GetThingWithDatetimeGSI retrieves a ThingWithDatetimeGSI from the database.
+func (d DB) GetThingWithDatetimeGSI(ctx context.Context, id string) (*models.ThingWithDatetimeGSI, error) {
+	return d.thingWithDatetimeGSITable.getThingWithDatetimeGSI(ctx, id)
+}
+
+// ScanThingWithDatetimeGSIs runs a scan on the ThingWithDatetimeGSIs table.
+func (d DB) ScanThingWithDatetimeGSIs(ctx context.Context, input db.ScanThingWithDatetimeGSIsInput, fn func(m *models.ThingWithDatetimeGSI, lastThingWithDatetimeGSI bool) bool) error {
+	return d.thingWithDatetimeGSITable.scanThingWithDatetimeGSIs(ctx, input, fn)
+}
+
+// DeleteThingWithDatetimeGSI deletes a ThingWithDatetimeGSI from the database.
+func (d DB) DeleteThingWithDatetimeGSI(ctx context.Context, id string) error {
+	return d.thingWithDatetimeGSITable.deleteThingWithDatetimeGSI(ctx, id)
+}
+
+// GetThingWithDatetimeGSIsByDatetimeAndID retrieves a page of ThingWithDatetimeGSIs from the database.
+func (d DB) GetThingWithDatetimeGSIsByDatetimeAndID(ctx context.Context, input db.GetThingWithDatetimeGSIsByDatetimeAndIDInput, fn func(m *models.ThingWithDatetimeGSI, lastThingWithDatetimeGSI bool) bool) error {
+	return d.thingWithDatetimeGSITable.getThingWithDatetimeGSIsByDatetimeAndID(ctx, input, fn)
+}
+
+// ScanThingWithDatetimeGSIsByDatetimeAndID runs a scan on the DatetimeAndID index.
+func (d DB) ScanThingWithDatetimeGSIsByDatetimeAndID(ctx context.Context, input db.ScanThingWithDatetimeGSIsByDatetimeAndIDInput, fn func(m *models.ThingWithDatetimeGSI, lastThingWithDatetimeGSI bool) bool) error {
+	return d.thingWithDatetimeGSITable.scanThingWithDatetimeGSIsByDatetimeAndID(ctx, input, fn)
 }
 
 // SaveThingWithEnumHashKey saves a ThingWithEnumHashKey to the database.

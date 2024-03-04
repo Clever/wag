@@ -214,6 +214,19 @@ type Interface interface {
 	// DeleteThingWithDateTimeComposite deletes a ThingWithDateTimeComposite from the database.
 	DeleteThingWithDateTimeComposite(ctx context.Context, typeVar string, id string, created strfmt.DateTime, resource string) error
 
+	// SaveThingWithDatetimeGSI saves a ThingWithDatetimeGSI to the database.
+	SaveThingWithDatetimeGSI(ctx context.Context, m models.ThingWithDatetimeGSI) error
+	// GetThingWithDatetimeGSI retrieves a ThingWithDatetimeGSI from the database.
+	GetThingWithDatetimeGSI(ctx context.Context, id string) (*models.ThingWithDatetimeGSI, error)
+	// ScanThingWithDatetimeGSIs runs a scan on the ThingWithDatetimeGSIs table.
+	ScanThingWithDatetimeGSIs(ctx context.Context, input ScanThingWithDatetimeGSIsInput, fn func(m *models.ThingWithDatetimeGSI, lastThingWithDatetimeGSI bool) bool) error
+	// DeleteThingWithDatetimeGSI deletes a ThingWithDatetimeGSI from the database.
+	DeleteThingWithDatetimeGSI(ctx context.Context, id string) error
+	// GetThingWithDatetimeGSIsByDatetimeAndID retrieves a page of ThingWithDatetimeGSIs from the database.
+	GetThingWithDatetimeGSIsByDatetimeAndID(ctx context.Context, input GetThingWithDatetimeGSIsByDatetimeAndIDInput, fn func(m *models.ThingWithDatetimeGSI, lastThingWithDatetimeGSI bool) bool) error
+	// ScanThingWithDatetimeGSIsByDatetimeAndID runs a scan on the DatetimeAndID index.
+	ScanThingWithDatetimeGSIsByDatetimeAndID(ctx context.Context, input ScanThingWithDatetimeGSIsByDatetimeAndIDInput, fn func(m *models.ThingWithDatetimeGSI, lastThingWithDatetimeGSI bool) bool) error
+
 	// SaveThingWithEnumHashKey saves a ThingWithEnumHashKey to the database.
 	SaveThingWithEnumHashKey(ctx context.Context, m models.ThingWithEnumHashKey) error
 	// GetThingWithEnumHashKey retrieves a ThingWithEnumHashKey from the database.
@@ -1575,6 +1588,78 @@ func (e ErrThingWithDateTimeCompositeNotFound) Error() string {
 type CreatedResource struct {
 	Created  strfmt.DateTime
 	Resource string
+}
+
+// ScanThingWithDatetimeGSIsInput is the input to the ScanThingWithDatetimeGSIs method.
+type ScanThingWithDatetimeGSIsInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithDatetimeGSI
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// ErrThingWithDatetimeGSINotFound is returned when the database fails to find a ThingWithDatetimeGSI.
+type ErrThingWithDatetimeGSINotFound struct {
+	ID string
+}
+
+var _ error = ErrThingWithDatetimeGSINotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithDatetimeGSINotFound) Error() string {
+	return "could not find ThingWithDatetimeGSI"
+}
+
+// GetThingWithDatetimeGSIsByDatetimeAndIDInput is the query input to GetThingWithDatetimeGSIsByDatetimeAndID.
+type GetThingWithDatetimeGSIsByDatetimeAndIDInput struct {
+	// Datetime is required
+	Datetime      strfmt.DateTime
+	IDStartingAt  *string
+	StartingAfter *models.ThingWithDatetimeGSI
+	Descending    bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+}
+
+// ErrThingWithDatetimeGSIByDatetimeAndIDNotFound is returned when the database fails to find a ThingWithDatetimeGSI.
+type ErrThingWithDatetimeGSIByDatetimeAndIDNotFound struct {
+	Datetime strfmt.DateTime
+	ID       string
+}
+
+var _ error = ErrThingWithDatetimeGSIByDatetimeAndIDNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithDatetimeGSIByDatetimeAndIDNotFound) Error() string {
+	return "could not find ThingWithDatetimeGSI"
+}
+
+// ScanThingWithDatetimeGSIsByDatetimeAndIDInput is the input to the ScanThingWithDatetimeGSIsByDatetimeAndID method.
+type ScanThingWithDatetimeGSIsByDatetimeAndIDInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithDatetimeGSI
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// ErrThingWithDatetimeGSIAlreadyExists is returned when trying to overwrite a ThingWithDatetimeGSI.
+type ErrThingWithDatetimeGSIAlreadyExists struct {
+	ID string
+}
+
+var _ error = ErrThingWithDatetimeGSIAlreadyExists{}
+
+// Error returns a description of the error.
+func (e ErrThingWithDatetimeGSIAlreadyExists) Error() string {
+	return "ThingWithDatetimeGSI already exists"
 }
 
 // ScanThingWithEnumHashKeysInput is the input to the ScanThingWithEnumHashKeys method.

@@ -680,8 +680,13 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
   {{- end }}
   {{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema  "HASH" }}
     {{- $dynamoDBType := dynamoDBTypeForAttribute $xdbConfig $attributeName }}
+    {{- $attrGoType := goTypeForAttribute $xdbConfig $attributeName }}
     {{- if eq $dynamoDBType "S" }}
+    {{- if eq $attrGoType "strfmt.DateTime" }}
+      if toDynamoTimeString(input.{{ pascalize $attributeName }}) == "" {
+    {{- else }}
       if input.{{ pascalize $attributeName }} == "" {
+    {{- end }}
         return fmt.Errorf("Hash key input.{{ pascalize $attributeName }} cannot be empty")
       }
     {{- end }}
@@ -695,9 +700,12 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
     ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
       ":{{ camelize $hashKey.AttributeName }}": &dynamodb.AttributeValue{
                           {{- $dynamoDBType := dynamoDBTypeForAttribute $xdbConfig $hashKey.AttributeName }}
+                          {{- $attrGoType := goTypeForAttribute $xdbConfig $hashKey.AttributeName }}
                           {{- if eq $dynamoDBType "S" }}
                             {{- if isComposite $xdbConfig $hashKey.AttributeName }}
                               S: aws.String({{ compositeValue $xdbConfig $hashKey.AttributeName "input" }}),
+                            {{- else if eq $attrGoType "strfmt.DateTime" }}
+                              S: aws.String(toDynamoTimeString(input.{{ pascalize $hashKey.AttributeName }})),
                             {{- else if attributeIsEnum $xdbConfig $hashKey.AttributeName }}
                               S: aws.String(string(input.{{ pascalize $hashKey.AttributeName }})),
                             {{- else }}
