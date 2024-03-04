@@ -828,3 +828,30 @@ definitions:
     properties:
       name:
         type: string
+
+  ThingWithDatetimeGSI:
+    x-db:
+      AllowOverwrites: false
+      AllowPrimaryIndexScan: true
+      AllowSecondaryIndexScan:
+        - byDate
+      DynamoDB:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: byDate
+            Projection:
+              ProjectionType: ALL
+            KeySchema:
+              - AttributeName: datetime
+                KeyType: HASH
+              - AttributeName: id
+                KeyType: RANGE
+    type: object
+    properties:
+      id:
+        type: string
+      datetime:
+        type: string
+        format: date-time

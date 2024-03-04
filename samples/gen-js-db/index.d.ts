@@ -201,6 +201,11 @@ declare namespace SwaggerTest {
   type?: string;
 };
     
+    type ThingWithDatetimeGSI = {
+  datetime?: string;
+  id?: string;
+};
+    
     type ThingWithEnumHashKey = {
   branch?: Branch;
   date?: string;
