@@ -1,6 +1,12 @@
-v9.1.4
+v9.1.7
 
-v9.1.4 Fix for clientconfig overwriting global tracing providers/exporters, cleaner tracing setup
+v9.1.7 Fix for clientconfig overwriting global tracing providers/exporters, cleaner tracing setup
+
+v9.1.6 Fix dynamodb codegen for datetime HASH keys in GSIs
+
+v9.1.5 Fix import for transaction codegen
+
+v9.1.4 Fix dynamodb codegen for transactions on multiple tables
 
 v9.1.3 Fix for generated code supporting filtering on an enum
 
