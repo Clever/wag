@@ -115,6 +115,12 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingWithDateTimeCompositesByTypeIDAndCreatedResource", GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(dbFactory(), t))
 	t.Run("SaveThingWithDateTimeComposite", SaveThingWithDateTimeComposite(dbFactory(), t))
 	t.Run("DeleteThingWithDateTimeComposite", DeleteThingWithDateTimeComposite(dbFactory(), t))
+	t.Run("GetThingWithDatetimeGSI", GetThingWithDatetimeGSI(dbFactory(), t))
+	t.Run("ScanThingWithDatetimeGSIs", ScanThingWithDatetimeGSIs(dbFactory(), t))
+	t.Run("SaveThingWithDatetimeGSI", SaveThingWithDatetimeGSI(dbFactory(), t))
+	t.Run("DeleteThingWithDatetimeGSI", DeleteThingWithDatetimeGSI(dbFactory(), t))
+	t.Run("GetThingWithDatetimeGSIsByDatetimeAndID", GetThingWithDatetimeGSIsByDatetimeAndID(dbFactory(), t))
+	t.Run("ScanThingWithDatetimeGSIsByDatetimeAndID", ScanThingWithDatetimeGSIsByDatetimeAndID(dbFactory(), t))
 	t.Run("GetThingWithEnumHashKey", GetThingWithEnumHashKey(dbFactory(), t))
 	t.Run("ScanThingWithEnumHashKeys", ScanThingWithEnumHashKeys(dbFactory(), t))
 	t.Run("GetThingWithEnumHashKeysByBranchAndDate", GetThingWithEnumHashKeysByBranchAndDate(dbFactory(), t))
@@ -152,6 +158,14 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingWithRequiredFields2sByNameAndID", GetThingWithRequiredFields2sByNameAndID(dbFactory(), t))
 	t.Run("SaveThingWithRequiredFields2", SaveThingWithRequiredFields2(dbFactory(), t))
 	t.Run("DeleteThingWithRequiredFields2", DeleteThingWithRequiredFields2(dbFactory(), t))
+	t.Run("GetThingWithTransaction", GetThingWithTransaction(dbFactory(), t))
+	t.Run("ScanThingWithTransactions", ScanThingWithTransactions(dbFactory(), t))
+	t.Run("SaveThingWithTransaction", SaveThingWithTransaction(dbFactory(), t))
+	t.Run("DeleteThingWithTransaction", DeleteThingWithTransaction(dbFactory(), t))
+	t.Run("GetThingWithTransactionWithSimpleThing", GetThingWithTransactionWithSimpleThing(dbFactory(), t))
+	t.Run("ScanThingWithTransactionWithSimpleThings", ScanThingWithTransactionWithSimpleThings(dbFactory(), t))
+	t.Run("SaveThingWithTransactionWithSimpleThing", SaveThingWithTransactionWithSimpleThing(dbFactory(), t))
+	t.Run("DeleteThingWithTransactionWithSimpleThing", DeleteThingWithTransactionWithSimpleThing(dbFactory(), t))
 	t.Run("GetThingWithUnderscores", GetThingWithUnderscores(dbFactory(), t))
 	t.Run("SaveThingWithUnderscores", SaveThingWithUnderscores(dbFactory(), t))
 	t.Run("DeleteThingWithUnderscores", DeleteThingWithUnderscores(dbFactory(), t))
@@ -8766,6 +8780,453 @@ func DeleteThingWithDateTimeComposite(s db.Interface, t *testing.T) func(t *test
 	}
 }
 
+func GetThingWithDatetimeGSI(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithDatetimeGSI{
+			Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+			ID:       "string1",
+		}
+		require.Nil(t, s.SaveThingWithDatetimeGSI(ctx, m))
+		m2, err := s.GetThingWithDatetimeGSI(ctx, m.ID)
+		require.Nil(t, err)
+		require.Equal(t, m.ID, m2.ID)
+
+		_, err = s.GetThingWithDatetimeGSI(ctx, "string2")
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrThingWithDatetimeGSINotFound{})
+	}
+}
+
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
+func ScanThingWithDatetimeGSIs(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithDatetimeGSI(ctx, models.ThingWithDatetimeGSI{
+			Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+			ID:       "string1",
+		}))
+		require.Nil(t, d.SaveThingWithDatetimeGSI(ctx, models.ThingWithDatetimeGSI{
+			Datetime: mustTime("2018-03-11T15:04:02+07:00"),
+			ID:       "string2",
+		}))
+		require.Nil(t, d.SaveThingWithDatetimeGSI(ctx, models.ThingWithDatetimeGSI{
+			Datetime: mustTime("2018-03-11T15:04:03+07:00"),
+			ID:       "string3",
+		}))
+
+		t.Run("basic", func(t *testing.T) {
+			expected := []models.ThingWithDatetimeGSI{
+				models.ThingWithDatetimeGSI{
+					Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+					ID:       "string1",
+				},
+				models.ThingWithDatetimeGSI{
+					Datetime: mustTime("2018-03-11T15:04:02+07:00"),
+					ID:       "string2",
+				},
+				models.ThingWithDatetimeGSI{
+					Datetime: mustTime("2018-03-11T15:04:03+07:00"),
+					ID:       "string3",
+				},
+			}
+			actual := []models.ThingWithDatetimeGSI{}
+			err := d.ScanThingWithDatetimeGSIs(ctx, db.ScanThingWithDatetimeGSIsInput{}, func(m *models.ThingWithDatetimeGSI, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+			// We can't use Equal here because Scan doesn't return items in any specific order.
+			require.ElementsMatch(t, expected, actual)
+		})
+
+		t.Run("starting after", func(t *testing.T) {
+			// Scan for everything.
+			allItems := []models.ThingWithDatetimeGSI{}
+			err := d.ScanThingWithDatetimeGSIs(ctx, db.ScanThingWithDatetimeGSIsInput{}, func(m *models.ThingWithDatetimeGSI, last bool) bool {
+				allItems = append(allItems, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			firstItem := allItems[0]
+
+			// Scan for everything after the first item.
+			scanInput := db.ScanThingWithDatetimeGSIsInput{
+				StartingAfter: &models.ThingWithDatetimeGSI{
+					ID: firstItem.ID,
+				},
+			}
+			actual := []models.ThingWithDatetimeGSI{}
+			err = d.ScanThingWithDatetimeGSIs(ctx, scanInput, func(m *models.ThingWithDatetimeGSI, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			expected := allItems[1:]
+			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithDatetimeGSIsInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithDatetimeGSI{}
+			err := d.ScanThingWithDatetimeGSIs(ctx, scanInput, func(m *models.ThingWithDatetimeGSI, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
+		})
+	}
+}
+
+func SaveThingWithDatetimeGSI(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithDatetimeGSI{
+			Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+			ID:       "string1",
+		}
+		require.Nil(t, s.SaveThingWithDatetimeGSI(ctx, m))
+		require.IsType(t, db.ErrThingWithDatetimeGSIAlreadyExists{}, s.SaveThingWithDatetimeGSI(ctx, m))
+	}
+}
+
+func DeleteThingWithDatetimeGSI(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithDatetimeGSI{
+			Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+			ID:       "string1",
+		}
+		require.Nil(t, s.SaveThingWithDatetimeGSI(ctx, m))
+		require.Nil(t, s.DeleteThingWithDatetimeGSI(ctx, m.ID))
+	}
+}
+
+type getThingWithDatetimeGSIsByDatetimeAndIDInput struct {
+	ctx   context.Context
+	input db.GetThingWithDatetimeGSIsByDatetimeAndIDInput
+}
+type getThingWithDatetimeGSIsByDatetimeAndIDOutput struct {
+	thingWithDatetimeGSIs []models.ThingWithDatetimeGSI
+	err                   error
+}
+type getThingWithDatetimeGSIsByDatetimeAndIDTest struct {
+	testName string
+	d        db.Interface
+	input    getThingWithDatetimeGSIsByDatetimeAndIDInput
+	output   getThingWithDatetimeGSIsByDatetimeAndIDOutput
+}
+
+func (g getThingWithDatetimeGSIsByDatetimeAndIDTest) run(t *testing.T) {
+	thingWithDatetimeGSIs := []models.ThingWithDatetimeGSI{}
+	fn := func(m *models.ThingWithDatetimeGSI, lastThingWithDatetimeGSI bool) bool {
+		thingWithDatetimeGSIs = append(thingWithDatetimeGSIs, *m)
+		if lastThingWithDatetimeGSI {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingWithDatetimeGSIsByDatetimeAndID(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.thingWithDatetimeGSIs, thingWithDatetimeGSIs)
+}
+
+func GetThingWithDatetimeGSIsByDatetimeAndID(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithDatetimeGSI(ctx, models.ThingWithDatetimeGSI{
+			Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+			ID:       "string1",
+		}))
+		require.Nil(t, d.SaveThingWithDatetimeGSI(ctx, models.ThingWithDatetimeGSI{
+			Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+			ID:       "string2",
+		}))
+		require.Nil(t, d.SaveThingWithDatetimeGSI(ctx, models.ThingWithDatetimeGSI{
+			Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+			ID:       "string3",
+		}))
+		limit := int64(3)
+		tests := []getThingWithDatetimeGSIsByDatetimeAndIDTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getThingWithDatetimeGSIsByDatetimeAndIDInput{
+					ctx: context.Background(),
+					input: db.GetThingWithDatetimeGSIsByDatetimeAndIDInput{
+						Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+						Limit:    &limit,
+					},
+				},
+				output: getThingWithDatetimeGSIsByDatetimeAndIDOutput{
+					thingWithDatetimeGSIs: []models.ThingWithDatetimeGSI{
+						models.ThingWithDatetimeGSI{
+							Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+							ID:       "string1",
+						},
+						models.ThingWithDatetimeGSI{
+							Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+							ID:       "string2",
+						},
+						models.ThingWithDatetimeGSI{
+							Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+							ID:       "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getThingWithDatetimeGSIsByDatetimeAndIDInput{
+					ctx: context.Background(),
+					input: db.GetThingWithDatetimeGSIsByDatetimeAndIDInput{
+						Datetime:   mustTime("2018-03-11T15:04:01+07:00"),
+						Descending: true,
+					},
+				},
+				output: getThingWithDatetimeGSIsByDatetimeAndIDOutput{
+					thingWithDatetimeGSIs: []models.ThingWithDatetimeGSI{
+						models.ThingWithDatetimeGSI{
+							Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+							ID:       "string3",
+						},
+						models.ThingWithDatetimeGSI{
+							Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+							ID:       "string2",
+						},
+						models.ThingWithDatetimeGSI{
+							Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+							ID:       "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getThingWithDatetimeGSIsByDatetimeAndIDInput{
+					ctx: context.Background(),
+					input: db.GetThingWithDatetimeGSIsByDatetimeAndIDInput{
+						Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+						StartingAfter: &models.ThingWithDatetimeGSI{
+							Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+							ID:       "string1",
+						},
+					},
+				},
+				output: getThingWithDatetimeGSIsByDatetimeAndIDOutput{
+					thingWithDatetimeGSIs: []models.ThingWithDatetimeGSI{
+						models.ThingWithDatetimeGSI{
+							Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+							ID:       "string2",
+						},
+						models.ThingWithDatetimeGSI{
+							Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+							ID:       "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after descending",
+				d:        d,
+				input: getThingWithDatetimeGSIsByDatetimeAndIDInput{
+					ctx: context.Background(),
+					input: db.GetThingWithDatetimeGSIsByDatetimeAndIDInput{
+						Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+						StartingAfter: &models.ThingWithDatetimeGSI{
+							Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+							ID:       "string3",
+						},
+						Descending: true,
+					},
+				},
+				output: getThingWithDatetimeGSIsByDatetimeAndIDOutput{
+					thingWithDatetimeGSIs: []models.ThingWithDatetimeGSI{
+						models.ThingWithDatetimeGSI{
+							Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+							ID:       "string2",
+						},
+						models.ThingWithDatetimeGSI{
+							Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+							ID:       "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingWithDatetimeGSIsByDatetimeAndIDInput{
+					ctx: context.Background(),
+					input: db.GetThingWithDatetimeGSIsByDatetimeAndIDInput{
+						Datetime:     mustTime("2018-03-11T15:04:01+07:00"),
+						IDStartingAt: db.String("string2"),
+					},
+				},
+				output: getThingWithDatetimeGSIsByDatetimeAndIDOutput{
+					thingWithDatetimeGSIs: []models.ThingWithDatetimeGSI{
+						models.ThingWithDatetimeGSI{
+							Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+							ID:       "string2",
+						},
+						models.ThingWithDatetimeGSI{
+							Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+							ID:       "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
+func ScanThingWithDatetimeGSIsByDatetimeAndID(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithDatetimeGSI(ctx, models.ThingWithDatetimeGSI{
+			Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+			ID:       "string1",
+		}))
+		require.Nil(t, d.SaveThingWithDatetimeGSI(ctx, models.ThingWithDatetimeGSI{
+			Datetime: mustTime("2018-03-11T15:04:02+07:00"),
+			ID:       "string2",
+		}))
+		require.Nil(t, d.SaveThingWithDatetimeGSI(ctx, models.ThingWithDatetimeGSI{
+			Datetime: mustTime("2018-03-11T15:04:03+07:00"),
+			ID:       "string3",
+		}))
+
+		t.Run("basic", func(t *testing.T) {
+			expected := []models.ThingWithDatetimeGSI{
+				models.ThingWithDatetimeGSI{
+					Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+					ID:       "string1",
+				},
+				models.ThingWithDatetimeGSI{
+					Datetime: mustTime("2018-03-11T15:04:02+07:00"),
+					ID:       "string2",
+				},
+				models.ThingWithDatetimeGSI{
+					Datetime: mustTime("2018-03-11T15:04:03+07:00"),
+					ID:       "string3",
+				},
+			}
+			// Consistent read must be disabled when scaning a GSI.
+			scanInput := db.ScanThingWithDatetimeGSIsByDatetimeAndIDInput{DisableConsistentRead: true}
+			actual := []models.ThingWithDatetimeGSI{}
+			err := d.ScanThingWithDatetimeGSIsByDatetimeAndID(ctx, scanInput, func(m *models.ThingWithDatetimeGSI, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+			// We can't use Equal here because Scan doesn't return items in any specific order.
+			require.ElementsMatch(t, expected, actual)
+		})
+
+		t.Run("starting after", func(t *testing.T) {
+			// Scan for everything.
+			allItems := []models.ThingWithDatetimeGSI{}
+			// Consistent read must be disabled when scaning a GSI.
+			scanInput := db.ScanThingWithDatetimeGSIsByDatetimeAndIDInput{DisableConsistentRead: true}
+			err := d.ScanThingWithDatetimeGSIsByDatetimeAndID(ctx, scanInput, func(m *models.ThingWithDatetimeGSI, last bool) bool {
+				allItems = append(allItems, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			firstItem := allItems[0]
+
+			// Scan for everything after the first item.
+			scanInput = db.ScanThingWithDatetimeGSIsByDatetimeAndIDInput{
+				DisableConsistentRead: true,
+				StartingAfter: &models.ThingWithDatetimeGSI{
+					Datetime: firstItem.Datetime,
+					ID:       firstItem.ID,
+				},
+			}
+			actual := []models.ThingWithDatetimeGSI{}
+			err = d.ScanThingWithDatetimeGSIsByDatetimeAndID(ctx, scanInput, func(m *models.ThingWithDatetimeGSI, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			expected := allItems[1:]
+			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithDatetimeGSIsInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithDatetimeGSI{}
+			err := d.ScanThingWithDatetimeGSIs(ctx, scanInput, func(m *models.ThingWithDatetimeGSI, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
+		})
+	}
+}
+
 func GetThingWithEnumHashKey(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -12001,6 +12462,280 @@ func DeleteThingWithRequiredFields2(s db.Interface, t *testing.T) func(t *testin
 		}
 		require.Nil(t, s.SaveThingWithRequiredFields2(ctx, m))
 		require.Nil(t, s.DeleteThingWithRequiredFields2(ctx, *m.Name, *m.ID))
+	}
+}
+
+func GetThingWithTransaction(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithTransaction{
+			Name: "string1",
+		}
+		require.Nil(t, s.SaveThingWithTransaction(ctx, m))
+		m2, err := s.GetThingWithTransaction(ctx, m.Name)
+		require.Nil(t, err)
+		require.Equal(t, m.Name, m2.Name)
+
+		_, err = s.GetThingWithTransaction(ctx, "string2")
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrThingWithTransactionNotFound{})
+	}
+}
+
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
+func ScanThingWithTransactions(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithTransaction(ctx, models.ThingWithTransaction{
+			Name: "string1",
+		}))
+		require.Nil(t, d.SaveThingWithTransaction(ctx, models.ThingWithTransaction{
+			Name: "string2",
+		}))
+		require.Nil(t, d.SaveThingWithTransaction(ctx, models.ThingWithTransaction{
+			Name: "string3",
+		}))
+
+		t.Run("basic", func(t *testing.T) {
+			expected := []models.ThingWithTransaction{
+				models.ThingWithTransaction{
+					Name: "string1",
+				},
+				models.ThingWithTransaction{
+					Name: "string2",
+				},
+				models.ThingWithTransaction{
+					Name: "string3",
+				},
+			}
+			actual := []models.ThingWithTransaction{}
+			err := d.ScanThingWithTransactions(ctx, db.ScanThingWithTransactionsInput{}, func(m *models.ThingWithTransaction, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+			// We can't use Equal here because Scan doesn't return items in any specific order.
+			require.ElementsMatch(t, expected, actual)
+		})
+
+		t.Run("starting after", func(t *testing.T) {
+			// Scan for everything.
+			allItems := []models.ThingWithTransaction{}
+			err := d.ScanThingWithTransactions(ctx, db.ScanThingWithTransactionsInput{}, func(m *models.ThingWithTransaction, last bool) bool {
+				allItems = append(allItems, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			firstItem := allItems[0]
+
+			// Scan for everything after the first item.
+			scanInput := db.ScanThingWithTransactionsInput{
+				StartingAfter: &models.ThingWithTransaction{
+					Name: firstItem.Name,
+				},
+			}
+			actual := []models.ThingWithTransaction{}
+			err = d.ScanThingWithTransactions(ctx, scanInput, func(m *models.ThingWithTransaction, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			expected := allItems[1:]
+			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithTransactionsInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithTransaction{}
+			err := d.ScanThingWithTransactions(ctx, scanInput, func(m *models.ThingWithTransaction, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
+		})
+	}
+}
+
+func SaveThingWithTransaction(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithTransaction{
+			Name: "string1",
+		}
+		require.Nil(t, s.SaveThingWithTransaction(ctx, m))
+		require.IsType(t, db.ErrThingWithTransactionAlreadyExists{}, s.SaveThingWithTransaction(ctx, m))
+	}
+}
+
+func DeleteThingWithTransaction(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithTransaction{
+			Name: "string1",
+		}
+		require.Nil(t, s.SaveThingWithTransaction(ctx, m))
+		require.Nil(t, s.DeleteThingWithTransaction(ctx, m.Name))
+	}
+}
+
+func GetThingWithTransactionWithSimpleThing(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithTransactionWithSimpleThing{
+			Name: "string1",
+		}
+		require.Nil(t, s.SaveThingWithTransactionWithSimpleThing(ctx, m))
+		m2, err := s.GetThingWithTransactionWithSimpleThing(ctx, m.Name)
+		require.Nil(t, err)
+		require.Equal(t, m.Name, m2.Name)
+
+		_, err = s.GetThingWithTransactionWithSimpleThing(ctx, "string2")
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrThingWithTransactionWithSimpleThingNotFound{})
+	}
+}
+
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
+func ScanThingWithTransactionWithSimpleThings(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithTransactionWithSimpleThing(ctx, models.ThingWithTransactionWithSimpleThing{
+			Name: "string1",
+		}))
+		require.Nil(t, d.SaveThingWithTransactionWithSimpleThing(ctx, models.ThingWithTransactionWithSimpleThing{
+			Name: "string2",
+		}))
+		require.Nil(t, d.SaveThingWithTransactionWithSimpleThing(ctx, models.ThingWithTransactionWithSimpleThing{
+			Name: "string3",
+		}))
+
+		t.Run("basic", func(t *testing.T) {
+			expected := []models.ThingWithTransactionWithSimpleThing{
+				models.ThingWithTransactionWithSimpleThing{
+					Name: "string1",
+				},
+				models.ThingWithTransactionWithSimpleThing{
+					Name: "string2",
+				},
+				models.ThingWithTransactionWithSimpleThing{
+					Name: "string3",
+				},
+			}
+			actual := []models.ThingWithTransactionWithSimpleThing{}
+			err := d.ScanThingWithTransactionWithSimpleThings(ctx, db.ScanThingWithTransactionWithSimpleThingsInput{}, func(m *models.ThingWithTransactionWithSimpleThing, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+			// We can't use Equal here because Scan doesn't return items in any specific order.
+			require.ElementsMatch(t, expected, actual)
+		})
+
+		t.Run("starting after", func(t *testing.T) {
+			// Scan for everything.
+			allItems := []models.ThingWithTransactionWithSimpleThing{}
+			err := d.ScanThingWithTransactionWithSimpleThings(ctx, db.ScanThingWithTransactionWithSimpleThingsInput{}, func(m *models.ThingWithTransactionWithSimpleThing, last bool) bool {
+				allItems = append(allItems, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			firstItem := allItems[0]
+
+			// Scan for everything after the first item.
+			scanInput := db.ScanThingWithTransactionWithSimpleThingsInput{
+				StartingAfter: &models.ThingWithTransactionWithSimpleThing{
+					Name: firstItem.Name,
+				},
+			}
+			actual := []models.ThingWithTransactionWithSimpleThing{}
+			err = d.ScanThingWithTransactionWithSimpleThings(ctx, scanInput, func(m *models.ThingWithTransactionWithSimpleThing, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			expected := allItems[1:]
+			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithTransactionWithSimpleThingsInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithTransactionWithSimpleThing{}
+			err := d.ScanThingWithTransactionWithSimpleThings(ctx, scanInput, func(m *models.ThingWithTransactionWithSimpleThing, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
+		})
+	}
+}
+
+func SaveThingWithTransactionWithSimpleThing(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithTransactionWithSimpleThing{
+			Name: "string1",
+		}
+		require.Nil(t, s.SaveThingWithTransactionWithSimpleThing(ctx, m))
+		require.IsType(t, db.ErrThingWithTransactionWithSimpleThingAlreadyExists{}, s.SaveThingWithTransactionWithSimpleThing(ctx, m))
+	}
+}
+
+func DeleteThingWithTransactionWithSimpleThing(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithTransactionWithSimpleThing{
+			Name: "string1",
+		}
+		require.Nil(t, s.SaveThingWithTransactionWithSimpleThing(ctx, m))
+		require.Nil(t, s.DeleteThingWithTransactionWithSimpleThing(ctx, m.Name))
 	}
 }
 

@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	v9 "github.com/Clever/wag/samples/gen-go-db/models/v9"
+	expression "github.com/aws/aws-sdk-go/service/dynamodb/expression"
 	strfmt "github.com/go-openapi/strfmt"
 	gomock "github.com/golang/mock/gomock"
 )
@@ -246,6 +247,20 @@ func (mr *MockInterfaceMockRecorder) DeleteThingWithDateTimeComposite(ctx, typeV
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithDateTimeComposite", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithDateTimeComposite), ctx, typeVar, id, created, resource)
 }
 
+// DeleteThingWithDatetimeGSI mocks base method.
+func (m *MockInterface) DeleteThingWithDatetimeGSI(ctx context.Context, id string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteThingWithDatetimeGSI", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteThingWithDatetimeGSI indicates an expected call of DeleteThingWithDatetimeGSI.
+func (mr *MockInterfaceMockRecorder) DeleteThingWithDatetimeGSI(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithDatetimeGSI", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithDatetimeGSI), ctx, id)
+}
+
 // DeleteThingWithEnumHashKey mocks base method.
 func (m *MockInterface) DeleteThingWithEnumHashKey(ctx context.Context, branch v9.Branch, date strfmt.DateTime) error {
 	m.ctrl.T.Helper()
@@ -328,6 +343,34 @@ func (m *MockInterface) DeleteThingWithRequiredFields2(ctx context.Context, name
 func (mr *MockInterfaceMockRecorder) DeleteThingWithRequiredFields2(ctx, name, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithRequiredFields2", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithRequiredFields2), ctx, name, id)
+}
+
+// DeleteThingWithTransaction mocks base method.
+func (m *MockInterface) DeleteThingWithTransaction(ctx context.Context, name string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteThingWithTransaction", ctx, name)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteThingWithTransaction indicates an expected call of DeleteThingWithTransaction.
+func (mr *MockInterfaceMockRecorder) DeleteThingWithTransaction(ctx, name interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithTransaction", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithTransaction), ctx, name)
+}
+
+// DeleteThingWithTransactionWithSimpleThing mocks base method.
+func (m *MockInterface) DeleteThingWithTransactionWithSimpleThing(ctx context.Context, name string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteThingWithTransactionWithSimpleThing", ctx, name)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteThingWithTransactionWithSimpleThing indicates an expected call of DeleteThingWithTransactionWithSimpleThing.
+func (mr *MockInterfaceMockRecorder) DeleteThingWithTransactionWithSimpleThing(ctx, name interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithTransactionWithSimpleThing", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithTransactionWithSimpleThing), ctx, name)
 }
 
 // DeleteThingWithUnderscores mocks base method.
@@ -850,6 +893,35 @@ func (mr *MockInterfaceMockRecorder) GetThingWithDateTimeCompositesByTypeIDAndCr
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithDateTimeCompositesByTypeIDAndCreatedResource", reflect.TypeOf((*MockInterface)(nil).GetThingWithDateTimeCompositesByTypeIDAndCreatedResource), ctx, input, fn)
 }
 
+// GetThingWithDatetimeGSI mocks base method.
+func (m *MockInterface) GetThingWithDatetimeGSI(ctx context.Context, id string) (*v9.ThingWithDatetimeGSI, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetThingWithDatetimeGSI", ctx, id)
+	ret0, _ := ret[0].(*v9.ThingWithDatetimeGSI)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingWithDatetimeGSI indicates an expected call of GetThingWithDatetimeGSI.
+func (mr *MockInterfaceMockRecorder) GetThingWithDatetimeGSI(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithDatetimeGSI", reflect.TypeOf((*MockInterface)(nil).GetThingWithDatetimeGSI), ctx, id)
+}
+
+// GetThingWithDatetimeGSIsByDatetimeAndID mocks base method.
+func (m *MockInterface) GetThingWithDatetimeGSIsByDatetimeAndID(ctx context.Context, input GetThingWithDatetimeGSIsByDatetimeAndIDInput, fn func(*v9.ThingWithDatetimeGSI, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetThingWithDatetimeGSIsByDatetimeAndID", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingWithDatetimeGSIsByDatetimeAndID indicates an expected call of GetThingWithDatetimeGSIsByDatetimeAndID.
+func (mr *MockInterfaceMockRecorder) GetThingWithDatetimeGSIsByDatetimeAndID(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithDatetimeGSIsByDatetimeAndID", reflect.TypeOf((*MockInterface)(nil).GetThingWithDatetimeGSIsByDatetimeAndID), ctx, input, fn)
+}
+
 // GetThingWithEnumHashKey mocks base method.
 func (m *MockInterface) GetThingWithEnumHashKey(ctx context.Context, branch v9.Branch, date strfmt.DateTime) (*v9.ThingWithEnumHashKey, error) {
 	m.ctrl.T.Helper()
@@ -1050,6 +1122,36 @@ func (m *MockInterface) GetThingWithRequiredFields2sByNameAndID(ctx context.Cont
 func (mr *MockInterfaceMockRecorder) GetThingWithRequiredFields2sByNameAndID(ctx, input, fn interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithRequiredFields2sByNameAndID", reflect.TypeOf((*MockInterface)(nil).GetThingWithRequiredFields2sByNameAndID), ctx, input, fn)
+}
+
+// GetThingWithTransaction mocks base method.
+func (m *MockInterface) GetThingWithTransaction(ctx context.Context, name string) (*v9.ThingWithTransaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetThingWithTransaction", ctx, name)
+	ret0, _ := ret[0].(*v9.ThingWithTransaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingWithTransaction indicates an expected call of GetThingWithTransaction.
+func (mr *MockInterfaceMockRecorder) GetThingWithTransaction(ctx, name interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithTransaction", reflect.TypeOf((*MockInterface)(nil).GetThingWithTransaction), ctx, name)
+}
+
+// GetThingWithTransactionWithSimpleThing mocks base method.
+func (m *MockInterface) GetThingWithTransactionWithSimpleThing(ctx context.Context, name string) (*v9.ThingWithTransactionWithSimpleThing, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetThingWithTransactionWithSimpleThing", ctx, name)
+	ret0, _ := ret[0].(*v9.ThingWithTransactionWithSimpleThing)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingWithTransactionWithSimpleThing indicates an expected call of GetThingWithTransactionWithSimpleThing.
+func (mr *MockInterfaceMockRecorder) GetThingWithTransactionWithSimpleThing(ctx, name interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithTransactionWithSimpleThing", reflect.TypeOf((*MockInterface)(nil).GetThingWithTransactionWithSimpleThing), ctx, name)
 }
 
 // GetThingWithUnderscores mocks base method.
@@ -1333,6 +1435,20 @@ func (mr *MockInterfaceMockRecorder) SaveThingWithDateTimeComposite(ctx, m inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithDateTimeComposite", reflect.TypeOf((*MockInterface)(nil).SaveThingWithDateTimeComposite), ctx, m)
 }
 
+// SaveThingWithDatetimeGSI mocks base method.
+func (m_2 *MockInterface) SaveThingWithDatetimeGSI(ctx context.Context, m v9.ThingWithDatetimeGSI) error {
+	m_2.ctrl.T.Helper()
+	ret := m_2.ctrl.Call(m_2, "SaveThingWithDatetimeGSI", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveThingWithDatetimeGSI indicates an expected call of SaveThingWithDatetimeGSI.
+func (mr *MockInterfaceMockRecorder) SaveThingWithDatetimeGSI(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithDatetimeGSI", reflect.TypeOf((*MockInterface)(nil).SaveThingWithDatetimeGSI), ctx, m)
+}
+
 // SaveThingWithEnumHashKey mocks base method.
 func (m_2 *MockInterface) SaveThingWithEnumHashKey(ctx context.Context, m v9.ThingWithEnumHashKey) error {
 	m_2.ctrl.T.Helper()
@@ -1415,6 +1531,34 @@ func (m_2 *MockInterface) SaveThingWithRequiredFields2(ctx context.Context, m v9
 func (mr *MockInterfaceMockRecorder) SaveThingWithRequiredFields2(ctx, m interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithRequiredFields2", reflect.TypeOf((*MockInterface)(nil).SaveThingWithRequiredFields2), ctx, m)
+}
+
+// SaveThingWithTransaction mocks base method.
+func (m_2 *MockInterface) SaveThingWithTransaction(ctx context.Context, m v9.ThingWithTransaction) error {
+	m_2.ctrl.T.Helper()
+	ret := m_2.ctrl.Call(m_2, "SaveThingWithTransaction", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveThingWithTransaction indicates an expected call of SaveThingWithTransaction.
+func (mr *MockInterfaceMockRecorder) SaveThingWithTransaction(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithTransaction", reflect.TypeOf((*MockInterface)(nil).SaveThingWithTransaction), ctx, m)
+}
+
+// SaveThingWithTransactionWithSimpleThing mocks base method.
+func (m_2 *MockInterface) SaveThingWithTransactionWithSimpleThing(ctx context.Context, m v9.ThingWithTransactionWithSimpleThing) error {
+	m_2.ctrl.T.Helper()
+	ret := m_2.ctrl.Call(m_2, "SaveThingWithTransactionWithSimpleThing", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveThingWithTransactionWithSimpleThing indicates an expected call of SaveThingWithTransactionWithSimpleThing.
+func (mr *MockInterfaceMockRecorder) SaveThingWithTransactionWithSimpleThing(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithTransactionWithSimpleThing", reflect.TypeOf((*MockInterface)(nil).SaveThingWithTransactionWithSimpleThing), ctx, m)
 }
 
 // SaveThingWithUnderscores mocks base method.
@@ -1725,6 +1869,34 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithDateTimeComposites(ctx, input,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithDateTimeComposites", reflect.TypeOf((*MockInterface)(nil).ScanThingWithDateTimeComposites), ctx, input, fn)
 }
 
+// ScanThingWithDatetimeGSIs mocks base method.
+func (m *MockInterface) ScanThingWithDatetimeGSIs(ctx context.Context, input ScanThingWithDatetimeGSIsInput, fn func(*v9.ThingWithDatetimeGSI, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ScanThingWithDatetimeGSIs", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ScanThingWithDatetimeGSIs indicates an expected call of ScanThingWithDatetimeGSIs.
+func (mr *MockInterfaceMockRecorder) ScanThingWithDatetimeGSIs(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithDatetimeGSIs", reflect.TypeOf((*MockInterface)(nil).ScanThingWithDatetimeGSIs), ctx, input, fn)
+}
+
+// ScanThingWithDatetimeGSIsByDatetimeAndID mocks base method.
+func (m *MockInterface) ScanThingWithDatetimeGSIsByDatetimeAndID(ctx context.Context, input ScanThingWithDatetimeGSIsByDatetimeAndIDInput, fn func(*v9.ThingWithDatetimeGSI, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ScanThingWithDatetimeGSIsByDatetimeAndID", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ScanThingWithDatetimeGSIsByDatetimeAndID indicates an expected call of ScanThingWithDatetimeGSIsByDatetimeAndID.
+func (mr *MockInterfaceMockRecorder) ScanThingWithDatetimeGSIsByDatetimeAndID(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithDatetimeGSIsByDatetimeAndID", reflect.TypeOf((*MockInterface)(nil).ScanThingWithDatetimeGSIsByDatetimeAndID), ctx, input, fn)
+}
+
 // ScanThingWithEnumHashKeys mocks base method.
 func (m *MockInterface) ScanThingWithEnumHashKeys(ctx context.Context, input ScanThingWithEnumHashKeysInput, fn func(*v9.ThingWithEnumHashKey, bool) bool) error {
 	m.ctrl.T.Helper()
@@ -1879,6 +2051,34 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithRequiredFieldss(ctx, input, fn
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithRequiredFieldss", reflect.TypeOf((*MockInterface)(nil).ScanThingWithRequiredFieldss), ctx, input, fn)
 }
 
+// ScanThingWithTransactionWithSimpleThings mocks base method.
+func (m *MockInterface) ScanThingWithTransactionWithSimpleThings(ctx context.Context, input ScanThingWithTransactionWithSimpleThingsInput, fn func(*v9.ThingWithTransactionWithSimpleThing, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ScanThingWithTransactionWithSimpleThings", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ScanThingWithTransactionWithSimpleThings indicates an expected call of ScanThingWithTransactionWithSimpleThings.
+func (mr *MockInterfaceMockRecorder) ScanThingWithTransactionWithSimpleThings(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithTransactionWithSimpleThings", reflect.TypeOf((*MockInterface)(nil).ScanThingWithTransactionWithSimpleThings), ctx, input, fn)
+}
+
+// ScanThingWithTransactions mocks base method.
+func (m *MockInterface) ScanThingWithTransactions(ctx context.Context, input ScanThingWithTransactionsInput, fn func(*v9.ThingWithTransaction, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ScanThingWithTransactions", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ScanThingWithTransactions indicates an expected call of ScanThingWithTransactions.
+func (mr *MockInterfaceMockRecorder) ScanThingWithTransactions(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithTransactions", reflect.TypeOf((*MockInterface)(nil).ScanThingWithTransactions), ctx, input, fn)
+}
+
 // ScanThings mocks base method.
 func (m *MockInterface) ScanThings(ctx context.Context, input ScanThingsInput, fn func(*v9.Thing, bool) bool) error {
 	m.ctrl.T.Helper()
@@ -1933,4 +2133,32 @@ func (m *MockInterface) ScanThingsByNameAndRangeNullable(ctx context.Context, in
 func (mr *MockInterfaceMockRecorder) ScanThingsByNameAndRangeNullable(ctx, input, fn interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingsByNameAndRangeNullable", reflect.TypeOf((*MockInterface)(nil).ScanThingsByNameAndRangeNullable), ctx, input, fn)
+}
+
+// TransactSaveThingWithTransactionAndThing mocks base method.
+func (m *MockInterface) TransactSaveThingWithTransactionAndThing(ctx context.Context, m1 v9.ThingWithTransaction, m1Conditions *expression.ConditionBuilder, m2 v9.Thing, m2Conditions *expression.ConditionBuilder) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TransactSaveThingWithTransactionAndThing", ctx, m1, m1Conditions, m2, m2Conditions)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TransactSaveThingWithTransactionAndThing indicates an expected call of TransactSaveThingWithTransactionAndThing.
+func (mr *MockInterfaceMockRecorder) TransactSaveThingWithTransactionAndThing(ctx, m1, m1Conditions, m2, m2Conditions interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransactSaveThingWithTransactionAndThing", reflect.TypeOf((*MockInterface)(nil).TransactSaveThingWithTransactionAndThing), ctx, m1, m1Conditions, m2, m2Conditions)
+}
+
+// TransactSaveThingWithTransactionWithSimpleThingAndSimpleThing mocks base method.
+func (m *MockInterface) TransactSaveThingWithTransactionWithSimpleThingAndSimpleThing(ctx context.Context, m1 v9.ThingWithTransactionWithSimpleThing, m1Conditions *expression.ConditionBuilder, m2 v9.SimpleThing, m2Conditions *expression.ConditionBuilder) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TransactSaveThingWithTransactionWithSimpleThingAndSimpleThing", ctx, m1, m1Conditions, m2, m2Conditions)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TransactSaveThingWithTransactionWithSimpleThingAndSimpleThing indicates an expected call of TransactSaveThingWithTransactionWithSimpleThingAndSimpleThing.
+func (mr *MockInterfaceMockRecorder) TransactSaveThingWithTransactionWithSimpleThingAndSimpleThing(ctx, m1, m1Conditions, m2, m2Conditions interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransactSaveThingWithTransactionWithSimpleThingAndSimpleThing", reflect.TypeOf((*MockInterface)(nil).TransactSaveThingWithTransactionWithSimpleThingAndSimpleThing), ctx, m1, m1Conditions, m2, m2Conditions)
 }

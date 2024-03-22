@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Clever/wag/samples/gen-go-db/models/v9"
+	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 	"github.com/go-openapi/strfmt"
 	"golang.org/x/time/rate"
 )
@@ -213,6 +214,19 @@ type Interface interface {
 	// DeleteThingWithDateTimeComposite deletes a ThingWithDateTimeComposite from the database.
 	DeleteThingWithDateTimeComposite(ctx context.Context, typeVar string, id string, created strfmt.DateTime, resource string) error
 
+	// SaveThingWithDatetimeGSI saves a ThingWithDatetimeGSI to the database.
+	SaveThingWithDatetimeGSI(ctx context.Context, m models.ThingWithDatetimeGSI) error
+	// GetThingWithDatetimeGSI retrieves a ThingWithDatetimeGSI from the database.
+	GetThingWithDatetimeGSI(ctx context.Context, id string) (*models.ThingWithDatetimeGSI, error)
+	// ScanThingWithDatetimeGSIs runs a scan on the ThingWithDatetimeGSIs table.
+	ScanThingWithDatetimeGSIs(ctx context.Context, input ScanThingWithDatetimeGSIsInput, fn func(m *models.ThingWithDatetimeGSI, lastThingWithDatetimeGSI bool) bool) error
+	// DeleteThingWithDatetimeGSI deletes a ThingWithDatetimeGSI from the database.
+	DeleteThingWithDatetimeGSI(ctx context.Context, id string) error
+	// GetThingWithDatetimeGSIsByDatetimeAndID retrieves a page of ThingWithDatetimeGSIs from the database.
+	GetThingWithDatetimeGSIsByDatetimeAndID(ctx context.Context, input GetThingWithDatetimeGSIsByDatetimeAndIDInput, fn func(m *models.ThingWithDatetimeGSI, lastThingWithDatetimeGSI bool) bool) error
+	// ScanThingWithDatetimeGSIsByDatetimeAndID runs a scan on the DatetimeAndID index.
+	ScanThingWithDatetimeGSIsByDatetimeAndID(ctx context.Context, input ScanThingWithDatetimeGSIsByDatetimeAndIDInput, fn func(m *models.ThingWithDatetimeGSI, lastThingWithDatetimeGSI bool) bool) error
+
 	// SaveThingWithEnumHashKey saves a ThingWithEnumHashKey to the database.
 	SaveThingWithEnumHashKey(ctx context.Context, m models.ThingWithEnumHashKey) error
 	// GetThingWithEnumHashKey retrieves a ThingWithEnumHashKey from the database.
@@ -292,6 +306,30 @@ type Interface interface {
 	GetThingWithRequiredFields2sByNameAndID(ctx context.Context, input GetThingWithRequiredFields2sByNameAndIDInput, fn func(m *models.ThingWithRequiredFields2, lastThingWithRequiredFields2 bool) bool) error
 	// DeleteThingWithRequiredFields2 deletes a ThingWithRequiredFields2 from the database.
 	DeleteThingWithRequiredFields2(ctx context.Context, name string, id string) error
+
+	// SaveThingWithTransaction saves a ThingWithTransaction to the database.
+	SaveThingWithTransaction(ctx context.Context, m models.ThingWithTransaction) error
+	// GetThingWithTransaction retrieves a ThingWithTransaction from the database.
+	GetThingWithTransaction(ctx context.Context, name string) (*models.ThingWithTransaction, error)
+	// ScanThingWithTransactions runs a scan on the ThingWithTransactions table.
+	ScanThingWithTransactions(ctx context.Context, input ScanThingWithTransactionsInput, fn func(m *models.ThingWithTransaction, lastThingWithTransaction bool) bool) error
+	// DeleteThingWithTransaction deletes a ThingWithTransaction from the database.
+	DeleteThingWithTransaction(ctx context.Context, name string) error
+	// TransactSaveThingWithTransactionAndThing saves ThingWithTransaction and Thing as an atomic transaction.
+	// Use the optional condition parameters to require pre-transaction conditions for each put
+	TransactSaveThingWithTransactionAndThing(ctx context.Context, m1 models.ThingWithTransaction, m1Conditions *expression.ConditionBuilder, m2 models.Thing, m2Conditions *expression.ConditionBuilder) error
+
+	// SaveThingWithTransactionWithSimpleThing saves a ThingWithTransactionWithSimpleThing to the database.
+	SaveThingWithTransactionWithSimpleThing(ctx context.Context, m models.ThingWithTransactionWithSimpleThing) error
+	// GetThingWithTransactionWithSimpleThing retrieves a ThingWithTransactionWithSimpleThing from the database.
+	GetThingWithTransactionWithSimpleThing(ctx context.Context, name string) (*models.ThingWithTransactionWithSimpleThing, error)
+	// ScanThingWithTransactionWithSimpleThings runs a scan on the ThingWithTransactionWithSimpleThings table.
+	ScanThingWithTransactionWithSimpleThings(ctx context.Context, input ScanThingWithTransactionWithSimpleThingsInput, fn func(m *models.ThingWithTransactionWithSimpleThing, lastThingWithTransactionWithSimpleThing bool) bool) error
+	// DeleteThingWithTransactionWithSimpleThing deletes a ThingWithTransactionWithSimpleThing from the database.
+	DeleteThingWithTransactionWithSimpleThing(ctx context.Context, name string) error
+	// TransactSaveThingWithTransactionWithSimpleThingAndSimpleThing saves ThingWithTransactionWithSimpleThing and SimpleThing as an atomic transaction.
+	// Use the optional condition parameters to require pre-transaction conditions for each put
+	TransactSaveThingWithTransactionWithSimpleThingAndSimpleThing(ctx context.Context, m1 models.ThingWithTransactionWithSimpleThing, m1Conditions *expression.ConditionBuilder, m2 models.SimpleThing, m2Conditions *expression.ConditionBuilder) error
 
 	// SaveThingWithUnderscores saves a ThingWithUnderscores to the database.
 	SaveThingWithUnderscores(ctx context.Context, m models.ThingWithUnderscores) error
@@ -1552,6 +1590,78 @@ type CreatedResource struct {
 	Resource string
 }
 
+// ScanThingWithDatetimeGSIsInput is the input to the ScanThingWithDatetimeGSIs method.
+type ScanThingWithDatetimeGSIsInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithDatetimeGSI
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// ErrThingWithDatetimeGSINotFound is returned when the database fails to find a ThingWithDatetimeGSI.
+type ErrThingWithDatetimeGSINotFound struct {
+	ID string
+}
+
+var _ error = ErrThingWithDatetimeGSINotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithDatetimeGSINotFound) Error() string {
+	return "could not find ThingWithDatetimeGSI"
+}
+
+// GetThingWithDatetimeGSIsByDatetimeAndIDInput is the query input to GetThingWithDatetimeGSIsByDatetimeAndID.
+type GetThingWithDatetimeGSIsByDatetimeAndIDInput struct {
+	// Datetime is required
+	Datetime      strfmt.DateTime
+	IDStartingAt  *string
+	StartingAfter *models.ThingWithDatetimeGSI
+	Descending    bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+}
+
+// ErrThingWithDatetimeGSIByDatetimeAndIDNotFound is returned when the database fails to find a ThingWithDatetimeGSI.
+type ErrThingWithDatetimeGSIByDatetimeAndIDNotFound struct {
+	Datetime strfmt.DateTime
+	ID       string
+}
+
+var _ error = ErrThingWithDatetimeGSIByDatetimeAndIDNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithDatetimeGSIByDatetimeAndIDNotFound) Error() string {
+	return "could not find ThingWithDatetimeGSI"
+}
+
+// ScanThingWithDatetimeGSIsByDatetimeAndIDInput is the input to the ScanThingWithDatetimeGSIsByDatetimeAndID method.
+type ScanThingWithDatetimeGSIsByDatetimeAndIDInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithDatetimeGSI
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// ErrThingWithDatetimeGSIAlreadyExists is returned when trying to overwrite a ThingWithDatetimeGSI.
+type ErrThingWithDatetimeGSIAlreadyExists struct {
+	ID string
+}
+
+var _ error = ErrThingWithDatetimeGSIAlreadyExists{}
+
+// Error returns a description of the error.
+func (e ErrThingWithDatetimeGSIAlreadyExists) Error() string {
+	return "ThingWithDatetimeGSI already exists"
+}
+
 // ScanThingWithEnumHashKeysInput is the input to the ScanThingWithEnumHashKeys method.
 type ScanThingWithEnumHashKeysInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
@@ -2031,6 +2141,78 @@ var _ error = ErrThingWithRequiredFields2AlreadyExists{}
 // Error returns a description of the error.
 func (e ErrThingWithRequiredFields2AlreadyExists) Error() string {
 	return "ThingWithRequiredFields2 already exists"
+}
+
+// ScanThingWithTransactionsInput is the input to the ScanThingWithTransactions method.
+type ScanThingWithTransactionsInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithTransaction
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// ErrThingWithTransactionNotFound is returned when the database fails to find a ThingWithTransaction.
+type ErrThingWithTransactionNotFound struct {
+	Name string
+}
+
+var _ error = ErrThingWithTransactionNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithTransactionNotFound) Error() string {
+	return "could not find ThingWithTransaction"
+}
+
+// ErrThingWithTransactionAlreadyExists is returned when trying to overwrite a ThingWithTransaction.
+type ErrThingWithTransactionAlreadyExists struct {
+	Name string
+}
+
+var _ error = ErrThingWithTransactionAlreadyExists{}
+
+// Error returns a description of the error.
+func (e ErrThingWithTransactionAlreadyExists) Error() string {
+	return "ThingWithTransaction already exists"
+}
+
+// ScanThingWithTransactionWithSimpleThingsInput is the input to the ScanThingWithTransactionWithSimpleThings method.
+type ScanThingWithTransactionWithSimpleThingsInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithTransactionWithSimpleThing
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// ErrThingWithTransactionWithSimpleThingNotFound is returned when the database fails to find a ThingWithTransactionWithSimpleThing.
+type ErrThingWithTransactionWithSimpleThingNotFound struct {
+	Name string
+}
+
+var _ error = ErrThingWithTransactionWithSimpleThingNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithTransactionWithSimpleThingNotFound) Error() string {
+	return "could not find ThingWithTransactionWithSimpleThing"
+}
+
+// ErrThingWithTransactionWithSimpleThingAlreadyExists is returned when trying to overwrite a ThingWithTransactionWithSimpleThing.
+type ErrThingWithTransactionWithSimpleThingAlreadyExists struct {
+	Name string
+}
+
+var _ error = ErrThingWithTransactionWithSimpleThingAlreadyExists{}
+
+// Error returns a description of the error.
+func (e ErrThingWithTransactionWithSimpleThingAlreadyExists) Error() string {
+	return "ThingWithTransactionWithSimpleThing already exists"
 }
 
 // ErrThingWithUnderscoresNotFound is returned when the database fails to find a ThingWithUnderscores.

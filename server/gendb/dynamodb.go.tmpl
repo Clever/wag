@@ -9,6 +9,7 @@ import (
   "{{ .PackageName }}/{{ .OutputPath}}"
   "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	{{- if anyTableHasTransactionsEnabled .XDBConfigs }}
+  "github.com/aws/aws-sdk-go/service/dynamodb"
   "github.com/aws/aws-sdk-go/service/dynamodb/expression"
   {{- end }}
   "github.com/go-openapi/strfmt"
@@ -219,3 +220,21 @@ func toDynamoTimeString(d strfmt.DateTime) string {
 func toDynamoTimeStringPtr(d *strfmt.DateTime) string {
   return time.Time(*d).Format(time.RFC3339) // dynamodb attributevalue only supports RFC3339 resolution
 }
+
+{{- if anyTableHasTransactionsEnabled .XDBConfigs }}
+func buildCondExpr(conditions *expression.ConditionBuilder) (*string, map[string]*dynamodb.AttributeValue, map[string]*string, error) {
+	var condExpr *string
+	var exprVals map[string]*dynamodb.AttributeValue
+	var exprNames map[string]*string
+	if conditions != nil {
+    exprBuilder, err := expression.NewBuilder().WithCondition(*conditions).Build()
+    if err != nil {
+      return nil, nil, nil, err
+    }
+    condExpr = exprBuilder.Condition()
+    exprVals = exprBuilder.Values()
+    exprNames = exprBuilder.Names()
+	}
+  return condExpr, exprVals, exprNames, nil
+}
+{{- end }}

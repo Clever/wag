@@ -801,3 +801,57 @@ definitions:
       nestedObject:
         $ref: '#/definitions/Object'
 
+  ThingWithTransaction:
+    x-db:
+      AllowOverwrites: false
+      AllowPrimaryIndexScan: true
+      DynamoDB:
+        KeySchema:
+          - AttributeName: name
+            KeyType: HASH
+      EnableTransactions: [Thing]
+    type: object
+    properties:
+      name:
+        type: string
+
+  ThingWithTransactionWithSimpleThing:
+    x-db:
+      AllowOverwrites: false
+      AllowPrimaryIndexScan: true
+      DynamoDB:
+        KeySchema:
+          - AttributeName: name
+            KeyType: HASH
+      EnableTransactions: [SimpleThing]
+    type: object
+    properties:
+      name:
+        type: string
+
+  ThingWithDatetimeGSI:
+    x-db:
+      AllowOverwrites: false
+      AllowPrimaryIndexScan: true
+      AllowSecondaryIndexScan:
+        - byDate
+      DynamoDB:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: byDate
+            Projection:
+              ProjectionType: ALL
+            KeySchema:
+              - AttributeName: datetime
+                KeyType: HASH
+              - AttributeName: id
+                KeyType: RANGE
+    type: object
+    properties:
+      id:
+        type: string
+      datetime:
+        type: string
+        format: date-time

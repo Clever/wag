@@ -7,7 +7,9 @@ import (
 
 	"github.com/Clever/wag/samples/gen-go-db-only/models/v9"
 	"github.com/Clever/wag/samples/v9/gen-go-db-only/db"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 	"github.com/go-openapi/strfmt"
 )
 
@@ -54,6 +56,8 @@ type Config struct {
 	ThingWithDateRangeTable ThingWithDateRangeTable
 	// ThingWithDateTimeCompositeTable configuration.
 	ThingWithDateTimeCompositeTable ThingWithDateTimeCompositeTable
+	// ThingWithDatetimeGSITable configuration.
+	ThingWithDatetimeGSITable ThingWithDatetimeGSITable
 	// ThingWithEnumHashKeyTable configuration.
 	ThingWithEnumHashKeyTable ThingWithEnumHashKeyTable
 	// ThingWithMatchingKeysTable configuration.
@@ -66,6 +70,10 @@ type Config struct {
 	ThingWithRequiredFieldsTable ThingWithRequiredFieldsTable
 	// ThingWithRequiredFields2Table configuration.
 	ThingWithRequiredFields2Table ThingWithRequiredFields2Table
+	// ThingWithTransactionTable configuration.
+	ThingWithTransactionTable ThingWithTransactionTable
+	// ThingWithTransactionWithSimpleThingTable configuration.
+	ThingWithTransactionWithSimpleThingTable ThingWithTransactionWithSimpleThingTable
 	// ThingWithUnderscoresTable configuration.
 	ThingWithUnderscoresTable ThingWithUnderscoresTable
 }
@@ -271,6 +279,20 @@ func New(config Config) (*DB, error) {
 	if thingWithDateTimeCompositeTable.WriteCapacityUnits == 0 {
 		thingWithDateTimeCompositeTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	// configure ThingWithDatetimeGSI table
+	thingWithDatetimeGSITable := config.ThingWithDatetimeGSITable
+	if thingWithDatetimeGSITable.DynamoDBAPI == nil {
+		thingWithDatetimeGSITable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if thingWithDatetimeGSITable.Prefix == "" {
+		thingWithDatetimeGSITable.Prefix = config.DefaultPrefix
+	}
+	if thingWithDatetimeGSITable.ReadCapacityUnits == 0 {
+		thingWithDatetimeGSITable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if thingWithDatetimeGSITable.WriteCapacityUnits == 0 {
+		thingWithDatetimeGSITable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
 	// configure ThingWithEnumHashKey table
 	thingWithEnumHashKeyTable := config.ThingWithEnumHashKeyTable
 	if thingWithEnumHashKeyTable.DynamoDBAPI == nil {
@@ -355,6 +377,34 @@ func New(config Config) (*DB, error) {
 	if thingWithRequiredFields2Table.WriteCapacityUnits == 0 {
 		thingWithRequiredFields2Table.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	// configure ThingWithTransaction table
+	thingWithTransactionTable := config.ThingWithTransactionTable
+	if thingWithTransactionTable.DynamoDBAPI == nil {
+		thingWithTransactionTable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if thingWithTransactionTable.Prefix == "" {
+		thingWithTransactionTable.Prefix = config.DefaultPrefix
+	}
+	if thingWithTransactionTable.ReadCapacityUnits == 0 {
+		thingWithTransactionTable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if thingWithTransactionTable.WriteCapacityUnits == 0 {
+		thingWithTransactionTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
+	// configure ThingWithTransactionWithSimpleThing table
+	thingWithTransactionWithSimpleThingTable := config.ThingWithTransactionWithSimpleThingTable
+	if thingWithTransactionWithSimpleThingTable.DynamoDBAPI == nil {
+		thingWithTransactionWithSimpleThingTable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if thingWithTransactionWithSimpleThingTable.Prefix == "" {
+		thingWithTransactionWithSimpleThingTable.Prefix = config.DefaultPrefix
+	}
+	if thingWithTransactionWithSimpleThingTable.ReadCapacityUnits == 0 {
+		thingWithTransactionWithSimpleThingTable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if thingWithTransactionWithSimpleThingTable.WriteCapacityUnits == 0 {
+		thingWithTransactionWithSimpleThingTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
 	// configure ThingWithUnderscores table
 	thingWithUnderscoresTable := config.ThingWithUnderscoresTable
 	if thingWithUnderscoresTable.DynamoDBAPI == nil {
@@ -384,12 +434,15 @@ func New(config Config) (*DB, error) {
 		thingWithCompositeEnumAttributesTable:                thingWithCompositeEnumAttributesTable,
 		thingWithDateRangeTable:                              thingWithDateRangeTable,
 		thingWithDateTimeCompositeTable:                      thingWithDateTimeCompositeTable,
+		thingWithDatetimeGSITable:                            thingWithDatetimeGSITable,
 		thingWithEnumHashKeyTable:                            thingWithEnumHashKeyTable,
 		thingWithMatchingKeysTable:                           thingWithMatchingKeysTable,
 		thingWithMultiUseCompositeAttributeTable:             thingWithMultiUseCompositeAttributeTable,
 		thingWithRequiredCompositePropertiesAndKeysOnlyTable: thingWithRequiredCompositePropertiesAndKeysOnlyTable,
 		thingWithRequiredFieldsTable:                         thingWithRequiredFieldsTable,
 		thingWithRequiredFields2Table:                        thingWithRequiredFields2Table,
+		thingWithTransactionTable:                            thingWithTransactionTable,
+		thingWithTransactionWithSimpleThingTable:             thingWithTransactionWithSimpleThingTable,
 		thingWithUnderscoresTable:                            thingWithUnderscoresTable,
 	}, nil
 }
@@ -409,12 +462,15 @@ type DB struct {
 	thingWithCompositeEnumAttributesTable                ThingWithCompositeEnumAttributesTable
 	thingWithDateRangeTable                              ThingWithDateRangeTable
 	thingWithDateTimeCompositeTable                      ThingWithDateTimeCompositeTable
+	thingWithDatetimeGSITable                            ThingWithDatetimeGSITable
 	thingWithEnumHashKeyTable                            ThingWithEnumHashKeyTable
 	thingWithMatchingKeysTable                           ThingWithMatchingKeysTable
 	thingWithMultiUseCompositeAttributeTable             ThingWithMultiUseCompositeAttributeTable
 	thingWithRequiredCompositePropertiesAndKeysOnlyTable ThingWithRequiredCompositePropertiesAndKeysOnlyTable
 	thingWithRequiredFieldsTable                         ThingWithRequiredFieldsTable
 	thingWithRequiredFields2Table                        ThingWithRequiredFields2Table
+	thingWithTransactionTable                            ThingWithTransactionTable
+	thingWithTransactionWithSimpleThingTable             ThingWithTransactionWithSimpleThingTable
 	thingWithUnderscoresTable                            ThingWithUnderscoresTable
 }
 
@@ -461,6 +517,9 @@ func (d DB) CreateTables(ctx context.Context) error {
 	if err := d.thingWithDateTimeCompositeTable.create(ctx); err != nil {
 		return err
 	}
+	if err := d.thingWithDatetimeGSITable.create(ctx); err != nil {
+		return err
+	}
 	if err := d.thingWithEnumHashKeyTable.create(ctx); err != nil {
 		return err
 	}
@@ -477,6 +536,12 @@ func (d DB) CreateTables(ctx context.Context) error {
 		return err
 	}
 	if err := d.thingWithRequiredFields2Table.create(ctx); err != nil {
+		return err
+	}
+	if err := d.thingWithTransactionTable.create(ctx); err != nil {
+		return err
+	}
+	if err := d.thingWithTransactionWithSimpleThingTable.create(ctx); err != nil {
 		return err
 	}
 	if err := d.thingWithUnderscoresTable.create(ctx); err != nil {
@@ -955,6 +1020,36 @@ func (d DB) DeleteThingWithDateTimeComposite(ctx context.Context, typeVar string
 	return d.thingWithDateTimeCompositeTable.deleteThingWithDateTimeComposite(ctx, typeVar, id, created, resource)
 }
 
+// SaveThingWithDatetimeGSI saves a ThingWithDatetimeGSI to the database.
+func (d DB) SaveThingWithDatetimeGSI(ctx context.Context, m models.ThingWithDatetimeGSI) error {
+	return d.thingWithDatetimeGSITable.saveThingWithDatetimeGSI(ctx, m)
+}
+
+// GetThingWithDatetimeGSI retrieves a ThingWithDatetimeGSI from the database.
+func (d DB) GetThingWithDatetimeGSI(ctx context.Context, id string) (*models.ThingWithDatetimeGSI, error) {
+	return d.thingWithDatetimeGSITable.getThingWithDatetimeGSI(ctx, id)
+}
+
+// ScanThingWithDatetimeGSIs runs a scan on the ThingWithDatetimeGSIs table.
+func (d DB) ScanThingWithDatetimeGSIs(ctx context.Context, input db.ScanThingWithDatetimeGSIsInput, fn func(m *models.ThingWithDatetimeGSI, lastThingWithDatetimeGSI bool) bool) error {
+	return d.thingWithDatetimeGSITable.scanThingWithDatetimeGSIs(ctx, input, fn)
+}
+
+// DeleteThingWithDatetimeGSI deletes a ThingWithDatetimeGSI from the database.
+func (d DB) DeleteThingWithDatetimeGSI(ctx context.Context, id string) error {
+	return d.thingWithDatetimeGSITable.deleteThingWithDatetimeGSI(ctx, id)
+}
+
+// GetThingWithDatetimeGSIsByDatetimeAndID retrieves a page of ThingWithDatetimeGSIs from the database.
+func (d DB) GetThingWithDatetimeGSIsByDatetimeAndID(ctx context.Context, input db.GetThingWithDatetimeGSIsByDatetimeAndIDInput, fn func(m *models.ThingWithDatetimeGSI, lastThingWithDatetimeGSI bool) bool) error {
+	return d.thingWithDatetimeGSITable.getThingWithDatetimeGSIsByDatetimeAndID(ctx, input, fn)
+}
+
+// ScanThingWithDatetimeGSIsByDatetimeAndID runs a scan on the DatetimeAndID index.
+func (d DB) ScanThingWithDatetimeGSIsByDatetimeAndID(ctx context.Context, input db.ScanThingWithDatetimeGSIsByDatetimeAndIDInput, fn func(m *models.ThingWithDatetimeGSI, lastThingWithDatetimeGSI bool) bool) error {
+	return d.thingWithDatetimeGSITable.scanThingWithDatetimeGSIsByDatetimeAndID(ctx, input, fn)
+}
+
 // SaveThingWithEnumHashKey saves a ThingWithEnumHashKey to the database.
 func (d DB) SaveThingWithEnumHashKey(ctx context.Context, m models.ThingWithEnumHashKey) error {
 	return d.thingWithEnumHashKeyTable.saveThingWithEnumHashKey(ctx, m)
@@ -1140,6 +1235,56 @@ func (d DB) DeleteThingWithRequiredFields2(ctx context.Context, name string, id 
 	return d.thingWithRequiredFields2Table.deleteThingWithRequiredFields2(ctx, name, id)
 }
 
+// SaveThingWithTransaction saves a ThingWithTransaction to the database.
+func (d DB) SaveThingWithTransaction(ctx context.Context, m models.ThingWithTransaction) error {
+	return d.thingWithTransactionTable.saveThingWithTransaction(ctx, m)
+}
+
+// GetThingWithTransaction retrieves a ThingWithTransaction from the database.
+func (d DB) GetThingWithTransaction(ctx context.Context, name string) (*models.ThingWithTransaction, error) {
+	return d.thingWithTransactionTable.getThingWithTransaction(ctx, name)
+}
+
+// ScanThingWithTransactions runs a scan on the ThingWithTransactions table.
+func (d DB) ScanThingWithTransactions(ctx context.Context, input db.ScanThingWithTransactionsInput, fn func(m *models.ThingWithTransaction, lastThingWithTransaction bool) bool) error {
+	return d.thingWithTransactionTable.scanThingWithTransactions(ctx, input, fn)
+}
+
+// DeleteThingWithTransaction deletes a ThingWithTransaction from the database.
+func (d DB) DeleteThingWithTransaction(ctx context.Context, name string) error {
+	return d.thingWithTransactionTable.deleteThingWithTransaction(ctx, name)
+}
+
+// TransactSaveThingWithTransactionAndThing saves ThingWithTransaction and Thing as a transaction.
+func (d DB) TransactSaveThingWithTransactionAndThing(ctx context.Context, m1 models.ThingWithTransaction, m1Conditions *expression.ConditionBuilder, m2 models.Thing, m2Conditions *expression.ConditionBuilder) error {
+	return d.thingWithTransactionTable.transactSaveThingWithTransactionAndThing(ctx, m1, m1Conditions, m2, m2Conditions)
+}
+
+// SaveThingWithTransactionWithSimpleThing saves a ThingWithTransactionWithSimpleThing to the database.
+func (d DB) SaveThingWithTransactionWithSimpleThing(ctx context.Context, m models.ThingWithTransactionWithSimpleThing) error {
+	return d.thingWithTransactionWithSimpleThingTable.saveThingWithTransactionWithSimpleThing(ctx, m)
+}
+
+// GetThingWithTransactionWithSimpleThing retrieves a ThingWithTransactionWithSimpleThing from the database.
+func (d DB) GetThingWithTransactionWithSimpleThing(ctx context.Context, name string) (*models.ThingWithTransactionWithSimpleThing, error) {
+	return d.thingWithTransactionWithSimpleThingTable.getThingWithTransactionWithSimpleThing(ctx, name)
+}
+
+// ScanThingWithTransactionWithSimpleThings runs a scan on the ThingWithTransactionWithSimpleThings table.
+func (d DB) ScanThingWithTransactionWithSimpleThings(ctx context.Context, input db.ScanThingWithTransactionWithSimpleThingsInput, fn func(m *models.ThingWithTransactionWithSimpleThing, lastThingWithTransactionWithSimpleThing bool) bool) error {
+	return d.thingWithTransactionWithSimpleThingTable.scanThingWithTransactionWithSimpleThings(ctx, input, fn)
+}
+
+// DeleteThingWithTransactionWithSimpleThing deletes a ThingWithTransactionWithSimpleThing from the database.
+func (d DB) DeleteThingWithTransactionWithSimpleThing(ctx context.Context, name string) error {
+	return d.thingWithTransactionWithSimpleThingTable.deleteThingWithTransactionWithSimpleThing(ctx, name)
+}
+
+// TransactSaveThingWithTransactionWithSimpleThingAndSimpleThing saves ThingWithTransactionWithSimpleThing and SimpleThing as a transaction.
+func (d DB) TransactSaveThingWithTransactionWithSimpleThingAndSimpleThing(ctx context.Context, m1 models.ThingWithTransactionWithSimpleThing, m1Conditions *expression.ConditionBuilder, m2 models.SimpleThing, m2Conditions *expression.ConditionBuilder) error {
+	return d.thingWithTransactionWithSimpleThingTable.transactSaveThingWithTransactionWithSimpleThingAndSimpleThing(ctx, m1, m1Conditions, m2, m2Conditions)
+}
+
 // SaveThingWithUnderscores saves a ThingWithUnderscores to the database.
 func (d DB) SaveThingWithUnderscores(ctx context.Context, m models.ThingWithUnderscores) error {
 	return d.thingWithUnderscoresTable.saveThingWithUnderscores(ctx, m)
@@ -1161,4 +1306,19 @@ func toDynamoTimeString(d strfmt.DateTime) string {
 
 func toDynamoTimeStringPtr(d *strfmt.DateTime) string {
 	return time.Time(*d).Format(time.RFC3339) // dynamodb attributevalue only supports RFC3339 resolution
+}
+func buildCondExpr(conditions *expression.ConditionBuilder) (*string, map[string]*dynamodb.AttributeValue, map[string]*string, error) {
+	var condExpr *string
+	var exprVals map[string]*dynamodb.AttributeValue
+	var exprNames map[string]*string
+	if conditions != nil {
+		exprBuilder, err := expression.NewBuilder().WithCondition(*conditions).Build()
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		condExpr = exprBuilder.Condition()
+		exprVals = exprBuilder.Values()
+		exprNames = exprBuilder.Names()
+	}
+	return condExpr, exprVals, exprNames, nil
 }
