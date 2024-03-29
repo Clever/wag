@@ -23,6 +23,9 @@ generate:
 	../bin/wag -file ./nils.yml -output-path ./gen-go-nils -js-path ./gen-js-nils
 	cd ./gen-js-nils && jsdoc2md index.js types.js > ./README.md
 	go generate -mod=mod ./gen-go-nils...
+	../bin/wag -file ./strings.yml -output-path ./gen-go-strings -js-path ./gen-js-strings
+	cd ./gen-js-strings && jsdoc2md index.js types.js > ./README.md
+	go generate -mod=mod ./gen-go-strings...
 	../bin/wag -file ./blog.yml -output-path ./gen-go-blog -js-path ./gen-js-blog
 	cd ./gen-js-blog && jsdoc2md index.js types.js > ./README.md
 	go generate -mod=mod ./gen-go-nils...

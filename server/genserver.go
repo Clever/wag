@@ -628,7 +628,7 @@ var bodyParamTemplateStr = `
 			}
 			return &input, nil
 		{{- else}}
-			input.{{.ParamField}} = &models.{{.TypeName}}{}
+			input.{{.ParamField}} = new(models.{{.TypeName}})
 			if err := json.NewDecoder(bytes.NewReader(data)).Decode(input.{{.ParamField}}); err != nil {
 				return nil, err
 			}
