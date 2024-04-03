@@ -248,6 +248,24 @@ paths:
           schema:
             $ref: "#/definitions/AuthorsResponse"
 
+  /lowercaseModelsTest/{pathParam}:
+    post:
+      operationId: lowercaseModelsTest
+      description: testing that we can use a lowercase name for a model
+      parameters:
+        - name: lowercase
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/lowercase"
+        - name: pathParam
+          in: path
+          required: true
+          type: string
+      responses:
+        200:
+          description: MFAConfig for user
+
 definitions:
   Book:
     type: object
@@ -379,3 +397,6 @@ definitions:
         properties:
           breed:
             type: string
+
+  lowercase:
+    type: object
