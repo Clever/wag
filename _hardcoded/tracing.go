@@ -39,21 +39,26 @@ var headersToLogAs = map[string]string{"X-Request-ID": "envoy-request-id", "clev
 // SetupGlobalTraceProviderAndExporter sets up the global trace provider and exporter.
 func SetupGlobalTraceProviderAndExporter(ctx context.Context) (sdktrace.SpanExporter, *sdktrace.TracerProvider, error) {
 
-	addr := fmt.Sprintf("%s:%d", defaultCollectorHost, defaultCollectorPort)
-
 	// Every 15 seconds we'll try to connect to opentelemetry collector at
 	// the default location of localhost:4317
 	// When running in production this is a sidecar, and when running
 	// locally this is a locally running opetelemetry-collector.
-	otlpClient := otlptracegrpc.NewClient(
-		otlptracegrpc.WithReconnectionPeriod(15*time.Second),
-		otlptracegrpc.WithEndpoint(addr),
-		otlptracegrpc.WithInsecure(),
-	)
-	spanExporter, err := otlptrace.New(ctx, otlpClient)
+	var spanExporter sdktrace.SpanExporter
+	addr := fmt.Sprintf("%s:%d", defaultCollectorHost, defaultCollectorPort)
+	err := error(nil)
+	if (os.Getenv("_TRACING_ENABLED")) == "true" {
 
-	if err != nil {
-		return nil, nil, fmt.Errorf("error creating exporter: %v", err)
+		otlpClient := otlptracegrpc.NewClient(
+			otlptracegrpc.WithReconnectionPeriod(15*time.Second),
+			otlptracegrpc.WithEndpoint(addr),
+			otlptracegrpc.WithInsecure(),
+		)
+		spanExporter, err = otlptrace.New(ctx, otlpClient)
+		if err != nil {
+			return nil, nil, fmt.Errorf("error creating exporter: %v", err)
+		}
+	} else {
+		spanExporter = tracetest.NewNoopExporter()
 	}
 
 	tp := newTracerProvider(spanExporter, newResource())
@@ -131,10 +136,10 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 
 			// set clever-request-id header to crid
 			r.Header.Set("clever-request-id", crid)
-
+			ctx := r.Context()
 			for _, header := range headersToLogAs {
 				if r.Header.Get(header) != "" {
-					logger.FromContext(r.Context()).AddContext(headersToLogAs[header], r.Header.Get(header))
+					logger.FromContext(ctx).AddContext(headersToLogAs[header], r.Header.Get(header))
 				}
 			}
 
@@ -159,7 +164,7 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 					rw.Header().Set(header, r.Header.Get(header))
 				}
 			}
-
+			r = r.WithContext(ctx)
 			h.ServeHTTP(rw, r)
 		}))
 	}
