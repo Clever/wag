@@ -16,6 +16,7 @@ require (
 	github.com/Clever/wag/samples/gen-go-errors/models/v9 v9.0.0-00010101000000-000000000000
 	github.com/Clever/wag/samples/gen-go-nils/client/v9 v9.0.0-00010101000000-000000000000
 	github.com/Clever/wag/samples/gen-go-nils/models/v9 v9.0.0-00010101000000-000000000000
+	github.com/Clever/wag/samples/gen-go-strings/models/v9 v9.0.0-00010101000000-000000000000
 	github.com/Clever/wag/v9 v9.0.0-00010101000000-000000000000
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/aws/aws-sdk-go v1.44.89
@@ -36,7 +37,6 @@ require (
 	go.opentelemetry.io/otel v1.10.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.10.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.10.0
-	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.10.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.10.0
 	go.opentelemetry.io/otel/trace v1.10.0
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
@@ -46,6 +46,8 @@ require (
 )
 
 replace github.com/go-openapi/validate => github.com/go-openapi/validate v0.0.0-20180703152151-9a6e517cddf1 // pre-modules tag 0.15.0x
+
+replace github.com/Clever/wag/samples/gen-go-strings/models/v9 => ./gen-go-strings/models
 
 replace github.com/Clever/wag/samples/gen-go-basic/models/v9 => ./gen-go-basic/models
 
@@ -64,6 +66,8 @@ replace github.com/Clever/wag/samples/gen-go-deprecated/models/v9 => ./gen-go-de
 replace github.com/Clever/wag/samples/gen-go-errors/models/v9 => ./gen-go-errors/models
 
 replace github.com/Clever/wag/samples/gen-go-nils/models/v9 => ./gen-go-nils/models
+
+replace github.com/Clever/wag/samples/gen-go-strings/client/v9 => ./gen-go-strings/client
 
 replace github.com/Clever/wag/samples/gen-go-basic/client/v9 => ./gen-go-basic/client
 

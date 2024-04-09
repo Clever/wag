@@ -1,0 +1,80 @@
+swagger: '2.0'
+info:
+  title: nil-test
+  description: Testing Swagger Codegen
+  version: 9.0.0
+  x-npm-package: nil-test
+basePath: /v1
+schemes:
+  - http
+produces:
+  - application/json
+consumes:
+  - application/json
+responses:
+  BadRequest:
+    description: "Bad Request"
+    schema:
+      $ref: "#/definitions/BadRequest"
+  InternalError:
+    description: "Internal Error"
+    schema:
+      $ref: "#/definitions/InternalError"
+
+paths:
+  /check:
+    post:
+      summary: Get all district data for an app
+      operationId: getDistricts
+      parameters:
+        - name: where
+          description: JSON-serialized "where" filter to apply to the query.
+          schema:
+            $ref: "#/definitions/WhereQueryString"
+          in: body
+        - name: starting_after
+          in: query
+          type: string
+          format: mongo-id
+        - name: ending_before
+          in: query
+          type: string
+          format: mongo-id
+        - name: page_size
+          in: query
+          type: integer
+          default: 1000
+          minimum: 1
+          maximum: 10000
+      responses:
+        200:
+          description: "Success"
+        400:
+          $ref: "#/responses/BadRequest"
+
+definitions:
+  NilFields:
+    type: object
+    properties:
+      id:
+        type: string
+      optional:
+        type: string
+        x-nullable: true
+
+  WhereQueryString:
+    type: string
+
+  BadRequest:
+    type: object
+    properties:
+      message:
+        type: string
+
+  InternalError:
+    type: object
+    properties:
+      message:
+        type: string
+
+# TODO: simpler types??? (additional properties, arrays, direct definitions...)
