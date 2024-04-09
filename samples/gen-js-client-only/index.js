@@ -1679,6 +1679,116 @@ class SwaggerTest {
       }());
     });
   }
+
+  /**
+   * testing that we can use a lowercase name for a model
+   * @param {Object} params
+   * @param params.lowercase
+   * @param {string} params.pathParam
+   * @param {object} [options]
+   * @param {number} [options.timeout] - A request specific timeout
+   * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {function} [cb]
+   * @returns {Promise}
+   * @fulfill {undefined}
+   * @reject {module:swagger-test.Errors.BadRequest}
+   * @reject {module:swagger-test.Errors.InternalError}
+   * @reject {Error}
+   */
+  lowercaseModelsTest(params, options, cb) {
+    let callback = cb;
+    if (!cb && typeof options === "function") {
+      callback = options;
+    }
+    return applyCallback(this._hystrixCommand.execute(this._lowercaseModelsTest, arguments), callback);
+  }
+
+  _lowercaseModelsTest(params, options, cb) {
+    if (!cb && typeof options === "function") {
+      options = undefined;
+    }
+
+    return new Promise((resolve, reject) => {
+      if (!options) {
+        options = {};
+      }
+
+      const timeout = options.timeout || this.timeout;
+
+      const headers = {};
+      headers["Canonical-Resource"] = "lowercaseModelsTest";
+      headers[versionHeader] = version;
+      if (!params.pathParam) {
+        reject(new Error("pathParam must be non-empty because it's a path parameter"));
+        return;
+      }
+
+      const query = {};
+
+      const requestOptions = {
+        method: "POST",
+        uri: this.address + "/v1/lowercaseModelsTest/" + params.pathParam + "",
+        gzip: true,
+        json: true,
+        timeout,
+        headers,
+        qs: query,
+        useQuerystring: true,
+      };
+      if (this.keepalive) {
+        requestOptions.forever = true;
+      }
+
+      requestOptions.body = params.lowercase;
+
+
+      const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
+      const backoffs = retryPolicy.backoffs();
+      const logger = this.logger;
+
+      let retries = 0;
+      (function requestOnce() {
+        request(requestOptions, (err, response, body) => {
+          if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
+            const backoff = backoffs[retries];
+            retries += 1;
+            setTimeout(requestOnce, backoff);
+            return;
+          }
+          if (err) {
+            err._fromRequest = true;
+            responseLog(logger, requestOptions, response, err)
+            reject(err);
+            return;
+          }
+
+          switch (response.statusCode) {
+            case 200:
+              resolve();
+              break;
+
+            case 400:
+              var err = new Errors.BadRequest(body || {});
+              responseLog(logger, requestOptions, response, err);
+              reject(err);
+              return;
+
+            case 500:
+              var err = new Errors.InternalError(body || {});
+              responseLog(logger, requestOptions, response, err);
+              reject(err);
+              return;
+
+            default:
+              var err = new Error("Received unexpected statusCode " + response.statusCode);
+              responseLog(logger, requestOptions, response, err);
+              reject(err);
+              return;
+          }
+        });
+      }());
+    });
+  }
 };
 
 module.exports = SwaggerTest;

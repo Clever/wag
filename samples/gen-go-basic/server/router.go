@@ -179,6 +179,11 @@ func newRouter(c Controller) *mux.Router {
 		h.HealthCheckHandler(r.Context(), w, r)
 	})
 
+	router.Methods("POST").Path("/v1/lowercaseModelsTest/{pathParam}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger.FromContext(r.Context()).AddContext("op", "lowercaseModelsTest")
+		h.LowercaseModelsTestHandler(r.Context(), w, r)
+	})
+
 	return router
 }
 
