@@ -1,6 +1,8 @@
-v9.1.7
+v9.1.8
 
-v9.1.7 Fix for clientconfig overwriting global tracing providers/exporters, cleaner tracing setup
+v9.1.8 Fix for clientconfig overwriting global tracing providers/exporters, cleaner tracing setup
+
+v9.1.7 Fix a model that's just "type:string" generates invalid code 
 
 v9.1.6 Fix dynamodb codegen for datetime HASH keys in GSIs
 
