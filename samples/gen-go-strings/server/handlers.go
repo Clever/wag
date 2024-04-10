@@ -10,7 +10,7 @@ import (
 	"strconv"
 
 	"github.com/Clever/kayvee-go/v7/logger"
-	"github.com/Clever/wag/samples/gen-go-nils/models/v9"
+	"github.com/Clever/wag/samples/gen-go-strings/models/v9"
 	"github.com/go-errors/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -68,9 +68,9 @@ func jsonMarshalNoError(i interface{}) string {
 	return string(bytes)
 }
 
-// statusCodeForNilCheck returns the status code corresponding to the returned
+// statusCodeForGetDistricts returns the status code corresponding to the returned
 // object. It returns -1 if the type doesn't correspond to anything.
-func statusCodeForNilCheck(obj interface{}) int {
+func statusCodeForGetDistricts(obj interface{}) int {
 
 	switch obj.(type) {
 
@@ -91,9 +91,9 @@ func statusCodeForNilCheck(obj interface{}) int {
 	}
 }
 
-func (h handler) NilCheckHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func (h handler) GetDistrictsHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
-	input, err := newNilCheckInput(r)
+	input, err := newGetDistrictsInput(r)
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
 		http.Error(w, jsonMarshalNoError(models.BadRequest{Message: err.Error()}), http.StatusBadRequest)
@@ -108,7 +108,7 @@ func (h handler) NilCheckHandler(ctx context.Context, w http.ResponseWriter, r *
 		return
 	}
 
-	err = h.NilCheck(ctx, input)
+	err = h.GetDistricts(ctx, input)
 
 	if err != nil {
 		logger.FromContext(ctx).AddContext("error", err.Error())
@@ -117,7 +117,7 @@ func (h handler) NilCheckHandler(ctx context.Context, w http.ResponseWriter, r *
 		} else if xerr, ok := err.(xerrors.Formatter); ok {
 			logger.FromContext(ctx).AddContext("frames", fmt.Sprintf("%+v", xerr))
 		}
-		statusCode := statusCodeForNilCheck(err)
+		statusCode := statusCodeForGetDistricts(err)
 		if statusCode == -1 {
 			err = models.InternalError{Message: err.Error()}
 			statusCode = 500
@@ -131,59 +131,59 @@ func (h handler) NilCheckHandler(ctx context.Context, w http.ResponseWriter, r *
 
 }
 
-// newNilCheckInput takes in an http.Request an returns the input struct.
-func newNilCheckInput(r *http.Request) (*models.NilCheckInput, error) {
-	var input models.NilCheckInput
+// newGetDistrictsInput takes in an http.Request an returns the input struct.
+func newGetDistrictsInput(r *http.Request) (*models.GetDistrictsInput, error) {
+	var input models.GetDistrictsInput
 
 	var err error
 	_ = err
 
-	idStr := mux.Vars(r)["id"]
-	if len(idStr) == 0 {
-		return nil, errors.New("path parameter 'id' must be specified")
-	}
-	idStrs := []string{idStr}
-
-	if len(idStrs) > 0 {
-		var idTmp string
-		idStr := idStrs[0]
-		idTmp, err = idStr, error(nil)
-		if err != nil {
-			return nil, err
-		}
-		input.ID = idTmp
-	}
-
-	queryStrs := r.URL.Query()["query"]
-
-	if len(queryStrs) > 0 {
-		var queryTmp string
-		queryStr := queryStrs[0]
-		queryTmp, err = queryStr, error(nil)
-		if err != nil {
-			return nil, err
-		}
-		input.Query = &queryTmp
-	}
-
-	headerStrs := r.Header.Get("header")
-
-	if len(headerStrs) > 0 {
-		var headerTmp string
-		headerTmp = headerStrs
-		input.Header = headerTmp
-	}
-	if array, ok := r.URL.Query()["array"]; ok {
-		input.Array = array
-	}
-
 	data, err := ioutil.ReadAll(r.Body)
 
 	if len(data) > 0 {
-		input.Body = new(models.NilFields)
-		if err := json.NewDecoder(bytes.NewReader(data)).Decode(input.Body); err != nil {
+		input.Where = new(models.WhereQueryString)
+		if err := json.NewDecoder(bytes.NewReader(data)).Decode(input.Where); err != nil {
 			return nil, err
 		}
+	}
+
+	startingAfterStrs := r.URL.Query()["starting_after"]
+
+	if len(startingAfterStrs) > 0 {
+		var startingAfterTmp string
+		startingAfterStr := startingAfterStrs[0]
+		startingAfterTmp, err = startingAfterStr, error(nil)
+		if err != nil {
+			return nil, err
+		}
+		input.StartingAfter = &startingAfterTmp
+	}
+
+	endingBeforeStrs := r.URL.Query()["ending_before"]
+
+	if len(endingBeforeStrs) > 0 {
+		var endingBeforeTmp string
+		endingBeforeStr := endingBeforeStrs[0]
+		endingBeforeTmp, err = endingBeforeStr, error(nil)
+		if err != nil {
+			return nil, err
+		}
+		input.EndingBefore = &endingBeforeTmp
+	}
+
+	pageSizeStrs := r.URL.Query()["page_size"]
+
+	if len(pageSizeStrs) == 0 {
+		pageSizeStrs = []string{"1000"}
+	}
+	if len(pageSizeStrs) > 0 {
+		var pageSizeTmp int64
+		pageSizeStr := pageSizeStrs[0]
+		pageSizeTmp, err = swag.ConvertInt64(pageSizeStr)
+		if err != nil {
+			return nil, err
+		}
+		input.PageSize = &pageSizeTmp
 	}
 
 	return &input, nil

@@ -312,7 +312,7 @@ func newGetAuthorsWithPutInput(r *http.Request) (*models.GetAuthorsWithPutInput,
 	data, err := ioutil.ReadAll(r.Body)
 
 	if len(data) > 0 {
-		input.FavoriteBooks = &models.Book{}
+		input.FavoriteBooks = new(models.Book)
 		if err := json.NewDecoder(bytes.NewReader(data)).Decode(input.FavoriteBooks); err != nil {
 			return nil, err
 		}

@@ -8,7 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	v9 "github.com/Clever/wag/samples/gen-go-deprecated/models/v9"
+	v9 "github.com/Clever/wag/samples/gen-go-strings/models/v9"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -35,16 +35,16 @@ func (m *MockController) EXPECT() *MockControllerMockRecorder {
 	return m.recorder
 }
 
-// Health mocks base method.
-func (m *MockController) Health(ctx context.Context, i *v9.HealthInput) error {
+// GetDistricts mocks base method.
+func (m *MockController) GetDistricts(ctx context.Context, i *v9.GetDistrictsInput) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Health", ctx, i)
+	ret := m.ctrl.Call(m, "GetDistricts", ctx, i)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Health indicates an expected call of Health.
-func (mr *MockControllerMockRecorder) Health(ctx, i interface{}) *gomock.Call {
+// GetDistricts indicates an expected call of GetDistricts.
+func (mr *MockControllerMockRecorder) GetDistricts(ctx, i interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Health", reflect.TypeOf((*MockController)(nil).Health), ctx, i)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDistricts", reflect.TypeOf((*MockController)(nil).GetDistricts), ctx, i)
 }

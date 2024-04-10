@@ -8,7 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	models "github.com/Clever/wag/samples/gen-go-basic/models/v9"
+	v9 "github.com/Clever/wag/samples/gen-go-basic/models/v9"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -36,10 +36,10 @@ func (m *MockController) EXPECT() *MockControllerMockRecorder {
 }
 
 // CreateBook mocks base method.
-func (m *MockController) CreateBook(ctx context.Context, i *models.Book) (*models.Book, error) {
+func (m *MockController) CreateBook(ctx context.Context, i *v9.Book) (*v9.Book, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateBook", ctx, i)
-	ret0, _ := ret[0].(*models.Book)
+	ret0, _ := ret[0].(*v9.Book)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -51,10 +51,10 @@ func (mr *MockControllerMockRecorder) CreateBook(ctx, i interface{}) *gomock.Cal
 }
 
 // GetAuthors mocks base method.
-func (m *MockController) GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (*models.AuthorsResponse, string, error) {
+func (m *MockController) GetAuthors(ctx context.Context, i *v9.GetAuthorsInput) (*v9.AuthorsResponse, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAuthors", ctx, i)
-	ret0, _ := ret[0].(*models.AuthorsResponse)
+	ret0, _ := ret[0].(*v9.AuthorsResponse)
 	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
@@ -67,10 +67,10 @@ func (mr *MockControllerMockRecorder) GetAuthors(ctx, i interface{}) *gomock.Cal
 }
 
 // GetAuthorsWithPut mocks base method.
-func (m *MockController) GetAuthorsWithPut(ctx context.Context, i *models.GetAuthorsWithPutInput) (*models.AuthorsResponse, string, error) {
+func (m *MockController) GetAuthorsWithPut(ctx context.Context, i *v9.GetAuthorsWithPutInput) (*v9.AuthorsResponse, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAuthorsWithPut", ctx, i)
-	ret0, _ := ret[0].(*models.AuthorsResponse)
+	ret0, _ := ret[0].(*v9.AuthorsResponse)
 	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
@@ -83,10 +83,10 @@ func (mr *MockControllerMockRecorder) GetAuthorsWithPut(ctx, i interface{}) *gom
 }
 
 // GetBookByID mocks base method.
-func (m *MockController) GetBookByID(ctx context.Context, i *models.GetBookByIDInput) (*models.Book, error) {
+func (m *MockController) GetBookByID(ctx context.Context, i *v9.GetBookByIDInput) (*v9.Book, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetBookByID", ctx, i)
-	ret0, _ := ret[0].(*models.Book)
+	ret0, _ := ret[0].(*v9.Book)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -98,10 +98,10 @@ func (mr *MockControllerMockRecorder) GetBookByID(ctx, i interface{}) *gomock.Ca
 }
 
 // GetBookByID2 mocks base method.
-func (m *MockController) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
+func (m *MockController) GetBookByID2(ctx context.Context, id string) (*v9.Book, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetBookByID2", ctx, id)
-	ret0, _ := ret[0].(*models.Book)
+	ret0, _ := ret[0].(*v9.Book)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -113,10 +113,10 @@ func (mr *MockControllerMockRecorder) GetBookByID2(ctx, id interface{}) *gomock.
 }
 
 // GetBooks mocks base method.
-func (m *MockController) GetBooks(ctx context.Context, i *models.GetBooksInput) ([]models.Book, int64, error) {
+func (m *MockController) GetBooks(ctx context.Context, i *v9.GetBooksInput) ([]v9.Book, int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetBooks", ctx, i)
-	ret0, _ := ret[0].([]models.Book)
+	ret0, _ := ret[0].([]v9.Book)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
@@ -143,10 +143,10 @@ func (mr *MockControllerMockRecorder) HealthCheck(ctx interface{}) *gomock.Call 
 }
 
 // PutBook mocks base method.
-func (m *MockController) PutBook(ctx context.Context, i *models.Book) (*models.Book, error) {
+func (m *MockController) PutBook(ctx context.Context, i *v9.Book) (*v9.Book, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PutBook", ctx, i)
-	ret0, _ := ret[0].(*models.Book)
+	ret0, _ := ret[0].(*v9.Book)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
