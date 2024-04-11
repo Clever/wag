@@ -123,7 +123,6 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 	// fmt.Println("Adding mux server middleware")
 	return func(h http.Handler) http.Handler {
 		return otlmux(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-			// Probably worth adding this in the real version. No need to have middleware run on health checks.
 			if r.RequestURI == "/_health" {
 				h.ServeHTTP(rw, r)
 				return
@@ -143,6 +142,13 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 				}
 			}
 
+			// Add the headers to the response
+			for _, header := range headersToPropagate {
+				if r.Header.Get(header) != "" {
+					rw.Header().Set(header, r.Header.Get(header))
+				}
+			}
+
 			// Encode the trace/span ids in the DD format
 			if sc := s.SpanContext(); sc.HasTraceID() {
 				spanID, traceID := sc.SpanID().String(), sc.TraceID().String()
@@ -150,20 +156,14 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 				if len(traceID) == 32 && len(spanID) == 16 { // opentelemetry format: 16 byte (32-char hex), 8 byte (16-char hex) trace and span ids
 
 					traceIDBs, _ := hex.DecodeString(traceID)
-					logger.FromContext(r.Context()).AddContext("dd.trace_id",
+					logger.FromContext(ctx).AddContext("dd.trace_id",
 						fmt.Sprintf("%d", binary.BigEndian.Uint64(traceIDBs[8:])))
 					spanIDBs, _ := hex.DecodeString(spanID)
-					logger.FromContext(r.Context()).AddContext("dd.span_id",
+					logger.FromContext(ctx).AddContext("dd.span_id",
 						fmt.Sprintf("%d", binary.BigEndian.Uint64(spanIDBs)))
 				}
 			}
 
-			// Add the headers to the response
-			for _, header := range headersToPropagate {
-				if r.Header.Get(header) != "" {
-					rw.Header().Set(header, r.Header.Get(header))
-				}
-			}
 			r = r.WithContext(ctx)
 			h.ServeHTTP(rw, r)
 		}))
