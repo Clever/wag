@@ -142,6 +142,20 @@ func (mr *MockControllerMockRecorder) HealthCheck(ctx interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HealthCheck", reflect.TypeOf((*MockController)(nil).HealthCheck), ctx)
 }
 
+// LowercaseModelsTest mocks base method.
+func (m *MockController) LowercaseModelsTest(ctx context.Context, i *v9.LowercaseModelsTestInput) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LowercaseModelsTest", ctx, i)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// LowercaseModelsTest indicates an expected call of LowercaseModelsTest.
+func (mr *MockControllerMockRecorder) LowercaseModelsTest(ctx, i interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LowercaseModelsTest", reflect.TypeOf((*MockController)(nil).LowercaseModelsTest), ctx, i)
+}
+
 // PutBook mocks base method.
 func (m *MockController) PutBook(ctx context.Context, i *v9.Book) (*v9.Book, error) {
 	m.ctrl.T.Helper()
