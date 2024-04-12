@@ -12,6 +12,7 @@ import (
 
 	"github.com/Clever/kayvee-go/v7/logger"
 
+	"go.open-telemetry.io/otel/baggage"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
@@ -136,7 +137,15 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 
 			// set clever-request-id header to crid
 			r.Header.Set("clever-request-id", crid)
+
 			ctx := r.Context()
+			ctx := baggage.ContextWithValues(ctx, baggage.NewKeyValue("clever-request-id", crid))
+
+			// Add all baggage members to the logger
+			baggageItems := baggage.FromContext(ctx)
+			for _, item := range baggageItems {
+				logger.FromContext(ctx).AddContext(item.Key, item.Value)
+			}
 			for _, header := range headersToLogAs {
 				if r.Header.Get(header) != "" {
 					logger.FromContext(ctx).AddContext(headersToLogAs[header], r.Header.Get(header))
