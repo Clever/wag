@@ -139,7 +139,7 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 			r.Header.Set("clever-request-id", crid)
 
 			ctx := r.Context()
-			ctx := baggage.ContextWithValues(ctx, baggage.NewKeyValue("clever-request-id", crid))
+			ctx = baggage.ContextWithValues(ctx, baggage.NewKeyValue("clever-request-id", crid))
 
 			// Add all baggage members to the logger
 			baggageItems := baggage.FromContext(ctx)
