@@ -75,6 +75,8 @@ declare class SwaggerTest {
   
   healthCheck(options?: RequestOptions, cb?: Callback<void>): Promise<void>
   
+  lowercaseModelsTest(params: models.LowercaseModelsTestParams, options?: RequestOptions, cb?: Callback<void>): Promise<void>
+  
 }
 
 declare namespace SwaggerTest {
@@ -203,6 +205,11 @@ declare namespace SwaggerTest {
   id?: string;
 };
     
+    type LowercaseModelsTestParams = {
+  lowercase: lowercase;
+  pathParam: string;
+};
+    
     type OmitEmpty = {
   arrayFieldNotOmitted?: string[];
   arrayFieldOmitted?: string[];
@@ -219,6 +226,10 @@ declare namespace SwaggerTest {
     type UnknownResponse = {
   body?: string;
   statusCode?: number;
+};
+    
+    type lowercase = {
+  
 };
     
   }

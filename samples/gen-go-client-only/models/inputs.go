@@ -338,3 +338,39 @@ func (i HealthCheckInput) Path() (string, error) {
 
 	return path + "?" + urlVals.Encode(), nil
 }
+
+// LowercaseModelsTestInput holds the input parameters for a lowercaseModelsTest operation.
+type LowercaseModelsTestInput struct {
+	Lowercase *Lowercase
+	PathParam string
+}
+
+// Validate returns an error if any of the LowercaseModelsTestInput parameters don't satisfy the
+// requirements from the swagger yml file.
+func (i LowercaseModelsTestInput) Validate() error {
+
+	if i.Lowercase != nil {
+		if err := i.Lowercase.Validate(nil); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Path returns the URI path for the input.
+func (i LowercaseModelsTestInput) Path() (string, error) {
+	path := "/v1/lowercaseModelsTest/{pathParam}"
+	urlVals := url.Values{}
+
+	pathpathParam := i.PathParam
+	if pathpathParam == "" {
+		err := fmt.Errorf("pathParam cannot be empty because it's a path parameter")
+		if err != nil {
+			return "", err
+		}
+	}
+	path = strings.Replace(path, "{pathParam}", pathpathParam, -1)
+
+	return path + "?" + urlVals.Encode(), nil
+}

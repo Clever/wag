@@ -68,7 +68,7 @@ func ParamToType(param spec.Parameter) (string, bool, error) {
 		if err != nil {
 			return "", false, err
 		}
-		return typeName, true, nil
+		return Capitalize(typeName), true, nil
 	}
 
 	var typeName string
