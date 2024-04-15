@@ -77,6 +77,9 @@ func New(config Config) (*DB, error) {
   if {{ $modelNameCamel }}Table.WriteCapacityUnits == 0 {
     {{ $modelNameCamel }}Table.WriteCapacityUnits = config.DefaultWriteCapacityUnits
   }
+  if {{ $modelNameCamel }}Table.TableName == "" {
+    return nil, errors.New("must specify TableName for {{ $modelName }}Table")
+  }
   {{- end }}
 
   return &DB{
