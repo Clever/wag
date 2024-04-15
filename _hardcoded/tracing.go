@@ -136,6 +136,13 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 			// set clever-request-id header to crid
 			r.Header.Set("clever-request-id", crid)
 			ctx := r.Context()
+
+			// Log if sampled
+			if s.SpanContext().IsSampled() {
+				logger.FromContext(ctx).AddContext("sampled", "true")
+			}
+
+			// Add the headers to the logger
 			for _, header := range headersToLogAs {
 				if r.Header.Get(header) != "" {
 					logger.FromContext(ctx).AddContext(headersToLogAs[header], r.Header.Get(header))
