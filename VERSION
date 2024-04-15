@@ -1,6 +1,8 @@
-v9.2.1
+v9.2.0
 
-v9.2.1 Fix for clientconfig overwriting global tracing providers/exporters, cleaner tracing setup
+v9.2.0 Fix for clientconfig overwriting global tracing providers/exporters, cleaner tracing setup
+
+v9.1.8 Bugfix for generated JS client sync forEach method
 
 v9.1.7 Fix a model that's just "type:string" generates invalid code 
 
