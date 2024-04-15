@@ -1,6 +1,8 @@
-v9.1.7
+v9.1.8
 
-v9.1.7 Fix a model that's just "type:string" generates invalid code 
+v9.1.8 package `db` no longer provides default table names, instead `db.New` errors when a table name is not provided. This eliminates ambiguous errors when this step is missed.
+
+v9.1.7 Fix a model that's just "type:string" generates invalid code
 
 v9.1.6 Fix dynamodb codegen for datetime HASH keys in GSIs
 
