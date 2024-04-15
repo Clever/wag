@@ -1,4 +1,4 @@
-v9.1.7
+v9.1.8 Bugfix for generated JS client sync forEach method
 
 v9.1.7 Fix a model that's just "type:string" generates invalid code 
 
