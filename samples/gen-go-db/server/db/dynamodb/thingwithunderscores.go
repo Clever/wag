@@ -34,13 +34,6 @@ type ddbThingWithUnderscores struct {
 	models.ThingWithUnderscores
 }
 
-func (t ThingWithUnderscoresTable) name() string {
-	if t.TableName != "" {
-		return t.TableName
-	}
-	return fmt.Sprintf("%s-thing-with-underscoress", t.Prefix)
-}
-
 func (t ThingWithUnderscoresTable) create(ctx context.Context) error {
 	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
@@ -59,7 +52,7 @@ func (t ThingWithUnderscoresTable) create(ctx context.Context) error {
 			ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 			WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 		},
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 	}); err != nil {
 		return err
 	}
@@ -72,7 +65,7 @@ func (t ThingWithUnderscoresTable) saveThingWithUnderscores(ctx context.Context,
 		return err
 	}
 	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		Item:      data,
 	})
 	return err
@@ -87,7 +80,7 @@ func (t ThingWithUnderscoresTable) getThingWithUnderscores(ctx context.Context, 
 	}
 	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
 		Key:            key,
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(true),
 	})
 	if err != nil {
@@ -117,7 +110,7 @@ func (t ThingWithUnderscoresTable) deleteThingWithUnderscores(ctx context.Contex
 	}
 	_, err = t.DynamoDBAPI.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
 		Key:       key,
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 	})
 	if err != nil {
 		return err

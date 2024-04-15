@@ -41,13 +41,6 @@ type ddbThingWithRequiredCompositePropertiesAndKeysOnly struct {
 	models.ThingWithRequiredCompositePropertiesAndKeysOnly
 }
 
-func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) name() string {
-	if t.TableName != "" {
-		return t.TableName
-	}
-	return fmt.Sprintf("%s-thing-with-required-composite-properties-and-keys-onlys", t.Prefix)
-}
-
 func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) create(ctx context.Context) error {
 	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
@@ -92,7 +85,7 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) create(ctx context
 			ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 			WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 		},
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 	}); err != nil {
 		return err
 	}
@@ -105,7 +98,7 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) saveThingWithRequi
 		return err
 	}
 	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		Item:      data,
 	})
 	return err
@@ -120,7 +113,7 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) getThingWithRequir
 	}
 	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
 		Key:            key,
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(true),
 	})
 	if err != nil {
@@ -143,7 +136,7 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) getThingWithRequir
 
 func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) scanThingWithRequiredCompositePropertiesAndKeysOnlys(ctx context.Context, input db.ScanThingWithRequiredCompositePropertiesAndKeysOnlysInput, fn func(m *models.ThingWithRequiredCompositePropertiesAndKeysOnly, lastThingWithRequiredCompositePropertiesAndKeysOnly bool) bool) error {
 	scanInput := &dynamodb.ScanInput{
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
 		Limit:          input.Limit,
 	}
@@ -199,7 +192,7 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) deleteThingWithReq
 	}
 	_, err = t.DynamoDBAPI.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
 		Key:       key,
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 	})
 	if err != nil {
 		return err
@@ -219,7 +212,7 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) getThingWithRequir
 		return fmt.Errorf("Hash key input.PropertyTwo cannot be empty")
 	}
 	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		IndexName: aws.String("propertyOneAndTwo_PropertyThree"),
 		ExpressionAttributeNames: map[string]*string{
 			"#PROPERTYONEANDTWO": aws.String("propertyOneAndTwo"),
@@ -299,7 +292,7 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) getThingWithRequir
 }
 func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) scanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(ctx context.Context, input db.ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput, fn func(m *models.ThingWithRequiredCompositePropertiesAndKeysOnly, lastThingWithRequiredCompositePropertiesAndKeysOnly bool) bool) error {
 	scanInput := &dynamodb.ScanInput{
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
 		Limit:          input.Limit,
 		IndexName:      aws.String("propertyOneAndTwo_PropertyThree"),

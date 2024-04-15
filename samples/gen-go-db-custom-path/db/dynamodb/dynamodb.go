@@ -111,6 +111,9 @@ func New(config Config) (*DB, error) {
 	if deploymentTable.WriteCapacityUnits == 0 {
 		deploymentTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	if deploymentTable.TableName == "" {
+		return nil, errors.New("must specify TableName for DeploymentTable")
+	}
 	// configure Event table
 	eventTable := config.EventTable
 	if eventTable.DynamoDBAPI == nil {
@@ -124,6 +127,9 @@ func New(config Config) (*DB, error) {
 	}
 	if eventTable.WriteCapacityUnits == 0 {
 		eventTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
+	if eventTable.TableName == "" {
+		return nil, errors.New("must specify TableName for EventTable")
 	}
 	// configure NoRangeThingWithCompositeAttributes table
 	noRangeThingWithCompositeAttributesTable := config.NoRangeThingWithCompositeAttributesTable
@@ -139,6 +145,9 @@ func New(config Config) (*DB, error) {
 	if noRangeThingWithCompositeAttributesTable.WriteCapacityUnits == 0 {
 		noRangeThingWithCompositeAttributesTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	if noRangeThingWithCompositeAttributesTable.TableName == "" {
+		return nil, errors.New("must specify TableName for NoRangeThingWithCompositeAttributesTable")
+	}
 	// configure SimpleThing table
 	simpleThingTable := config.SimpleThingTable
 	if simpleThingTable.DynamoDBAPI == nil {
@@ -152,6 +161,9 @@ func New(config Config) (*DB, error) {
 	}
 	if simpleThingTable.WriteCapacityUnits == 0 {
 		simpleThingTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
+	if simpleThingTable.TableName == "" {
+		return nil, errors.New("must specify TableName for SimpleThingTable")
 	}
 	// configure TeacherSharingRule table
 	teacherSharingRuleTable := config.TeacherSharingRuleTable
@@ -167,6 +179,9 @@ func New(config Config) (*DB, error) {
 	if teacherSharingRuleTable.WriteCapacityUnits == 0 {
 		teacherSharingRuleTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	if teacherSharingRuleTable.TableName == "" {
+		return nil, errors.New("must specify TableName for TeacherSharingRuleTable")
+	}
 	// configure Thing table
 	thingTable := config.ThingTable
 	if thingTable.DynamoDBAPI == nil {
@@ -180,6 +195,9 @@ func New(config Config) (*DB, error) {
 	}
 	if thingTable.WriteCapacityUnits == 0 {
 		thingTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
+	if thingTable.TableName == "" {
+		return nil, errors.New("must specify TableName for ThingTable")
 	}
 	// configure ThingAllowingBatchWrites table
 	thingAllowingBatchWritesTable := config.ThingAllowingBatchWritesTable
@@ -195,6 +213,9 @@ func New(config Config) (*DB, error) {
 	if thingAllowingBatchWritesTable.WriteCapacityUnits == 0 {
 		thingAllowingBatchWritesTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	if thingAllowingBatchWritesTable.TableName == "" {
+		return nil, errors.New("must specify TableName for ThingAllowingBatchWritesTable")
+	}
 	// configure ThingAllowingBatchWritesWithCompositeAttributes table
 	thingAllowingBatchWritesWithCompositeAttributesTable := config.ThingAllowingBatchWritesWithCompositeAttributesTable
 	if thingAllowingBatchWritesWithCompositeAttributesTable.DynamoDBAPI == nil {
@@ -208,6 +229,9 @@ func New(config Config) (*DB, error) {
 	}
 	if thingAllowingBatchWritesWithCompositeAttributesTable.WriteCapacityUnits == 0 {
 		thingAllowingBatchWritesWithCompositeAttributesTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
+	if thingAllowingBatchWritesWithCompositeAttributesTable.TableName == "" {
+		return nil, errors.New("must specify TableName for ThingAllowingBatchWritesWithCompositeAttributesTable")
 	}
 	// configure ThingWithAdditionalAttributes table
 	thingWithAdditionalAttributesTable := config.ThingWithAdditionalAttributesTable
@@ -223,6 +247,9 @@ func New(config Config) (*DB, error) {
 	if thingWithAdditionalAttributesTable.WriteCapacityUnits == 0 {
 		thingWithAdditionalAttributesTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	if thingWithAdditionalAttributesTable.TableName == "" {
+		return nil, errors.New("must specify TableName for ThingWithAdditionalAttributesTable")
+	}
 	// configure ThingWithCompositeAttributes table
 	thingWithCompositeAttributesTable := config.ThingWithCompositeAttributesTable
 	if thingWithCompositeAttributesTable.DynamoDBAPI == nil {
@@ -236,6 +263,9 @@ func New(config Config) (*DB, error) {
 	}
 	if thingWithCompositeAttributesTable.WriteCapacityUnits == 0 {
 		thingWithCompositeAttributesTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
+	if thingWithCompositeAttributesTable.TableName == "" {
+		return nil, errors.New("must specify TableName for ThingWithCompositeAttributesTable")
 	}
 	// configure ThingWithCompositeEnumAttributes table
 	thingWithCompositeEnumAttributesTable := config.ThingWithCompositeEnumAttributesTable
@@ -251,6 +281,9 @@ func New(config Config) (*DB, error) {
 	if thingWithCompositeEnumAttributesTable.WriteCapacityUnits == 0 {
 		thingWithCompositeEnumAttributesTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	if thingWithCompositeEnumAttributesTable.TableName == "" {
+		return nil, errors.New("must specify TableName for ThingWithCompositeEnumAttributesTable")
+	}
 	// configure ThingWithDateRange table
 	thingWithDateRangeTable := config.ThingWithDateRangeTable
 	if thingWithDateRangeTable.DynamoDBAPI == nil {
@@ -264,6 +297,9 @@ func New(config Config) (*DB, error) {
 	}
 	if thingWithDateRangeTable.WriteCapacityUnits == 0 {
 		thingWithDateRangeTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
+	if thingWithDateRangeTable.TableName == "" {
+		return nil, errors.New("must specify TableName for ThingWithDateRangeTable")
 	}
 	// configure ThingWithDateTimeComposite table
 	thingWithDateTimeCompositeTable := config.ThingWithDateTimeCompositeTable
@@ -279,6 +315,9 @@ func New(config Config) (*DB, error) {
 	if thingWithDateTimeCompositeTable.WriteCapacityUnits == 0 {
 		thingWithDateTimeCompositeTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	if thingWithDateTimeCompositeTable.TableName == "" {
+		return nil, errors.New("must specify TableName for ThingWithDateTimeCompositeTable")
+	}
 	// configure ThingWithDatetimeGSI table
 	thingWithDatetimeGSITable := config.ThingWithDatetimeGSITable
 	if thingWithDatetimeGSITable.DynamoDBAPI == nil {
@@ -292,6 +331,9 @@ func New(config Config) (*DB, error) {
 	}
 	if thingWithDatetimeGSITable.WriteCapacityUnits == 0 {
 		thingWithDatetimeGSITable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
+	if thingWithDatetimeGSITable.TableName == "" {
+		return nil, errors.New("must specify TableName for ThingWithDatetimeGSITable")
 	}
 	// configure ThingWithEnumHashKey table
 	thingWithEnumHashKeyTable := config.ThingWithEnumHashKeyTable
@@ -307,6 +349,9 @@ func New(config Config) (*DB, error) {
 	if thingWithEnumHashKeyTable.WriteCapacityUnits == 0 {
 		thingWithEnumHashKeyTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	if thingWithEnumHashKeyTable.TableName == "" {
+		return nil, errors.New("must specify TableName for ThingWithEnumHashKeyTable")
+	}
 	// configure ThingWithMatchingKeys table
 	thingWithMatchingKeysTable := config.ThingWithMatchingKeysTable
 	if thingWithMatchingKeysTable.DynamoDBAPI == nil {
@@ -320,6 +365,9 @@ func New(config Config) (*DB, error) {
 	}
 	if thingWithMatchingKeysTable.WriteCapacityUnits == 0 {
 		thingWithMatchingKeysTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
+	if thingWithMatchingKeysTable.TableName == "" {
+		return nil, errors.New("must specify TableName for ThingWithMatchingKeysTable")
 	}
 	// configure ThingWithMultiUseCompositeAttribute table
 	thingWithMultiUseCompositeAttributeTable := config.ThingWithMultiUseCompositeAttributeTable
@@ -335,6 +383,9 @@ func New(config Config) (*DB, error) {
 	if thingWithMultiUseCompositeAttributeTable.WriteCapacityUnits == 0 {
 		thingWithMultiUseCompositeAttributeTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	if thingWithMultiUseCompositeAttributeTable.TableName == "" {
+		return nil, errors.New("must specify TableName for ThingWithMultiUseCompositeAttributeTable")
+	}
 	// configure ThingWithRequiredCompositePropertiesAndKeysOnly table
 	thingWithRequiredCompositePropertiesAndKeysOnlyTable := config.ThingWithRequiredCompositePropertiesAndKeysOnlyTable
 	if thingWithRequiredCompositePropertiesAndKeysOnlyTable.DynamoDBAPI == nil {
@@ -348,6 +399,9 @@ func New(config Config) (*DB, error) {
 	}
 	if thingWithRequiredCompositePropertiesAndKeysOnlyTable.WriteCapacityUnits == 0 {
 		thingWithRequiredCompositePropertiesAndKeysOnlyTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
+	if thingWithRequiredCompositePropertiesAndKeysOnlyTable.TableName == "" {
+		return nil, errors.New("must specify TableName for ThingWithRequiredCompositePropertiesAndKeysOnlyTable")
 	}
 	// configure ThingWithRequiredFields table
 	thingWithRequiredFieldsTable := config.ThingWithRequiredFieldsTable
@@ -363,6 +417,9 @@ func New(config Config) (*DB, error) {
 	if thingWithRequiredFieldsTable.WriteCapacityUnits == 0 {
 		thingWithRequiredFieldsTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	if thingWithRequiredFieldsTable.TableName == "" {
+		return nil, errors.New("must specify TableName for ThingWithRequiredFieldsTable")
+	}
 	// configure ThingWithRequiredFields2 table
 	thingWithRequiredFields2Table := config.ThingWithRequiredFields2Table
 	if thingWithRequiredFields2Table.DynamoDBAPI == nil {
@@ -376,6 +433,9 @@ func New(config Config) (*DB, error) {
 	}
 	if thingWithRequiredFields2Table.WriteCapacityUnits == 0 {
 		thingWithRequiredFields2Table.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
+	if thingWithRequiredFields2Table.TableName == "" {
+		return nil, errors.New("must specify TableName for ThingWithRequiredFields2Table")
 	}
 	// configure ThingWithTransaction table
 	thingWithTransactionTable := config.ThingWithTransactionTable
@@ -391,6 +451,9 @@ func New(config Config) (*DB, error) {
 	if thingWithTransactionTable.WriteCapacityUnits == 0 {
 		thingWithTransactionTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	if thingWithTransactionTable.TableName == "" {
+		return nil, errors.New("must specify TableName for ThingWithTransactionTable")
+	}
 	// configure ThingWithTransactionWithSimpleThing table
 	thingWithTransactionWithSimpleThingTable := config.ThingWithTransactionWithSimpleThingTable
 	if thingWithTransactionWithSimpleThingTable.DynamoDBAPI == nil {
@@ -405,6 +468,9 @@ func New(config Config) (*DB, error) {
 	if thingWithTransactionWithSimpleThingTable.WriteCapacityUnits == 0 {
 		thingWithTransactionWithSimpleThingTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
 	}
+	if thingWithTransactionWithSimpleThingTable.TableName == "" {
+		return nil, errors.New("must specify TableName for ThingWithTransactionWithSimpleThingTable")
+	}
 	// configure ThingWithUnderscores table
 	thingWithUnderscoresTable := config.ThingWithUnderscoresTable
 	if thingWithUnderscoresTable.DynamoDBAPI == nil {
@@ -418,6 +484,9 @@ func New(config Config) (*DB, error) {
 	}
 	if thingWithUnderscoresTable.WriteCapacityUnits == 0 {
 		thingWithUnderscoresTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
+	if thingWithUnderscoresTable.TableName == "" {
+		return nil, errors.New("must specify TableName for ThingWithUnderscoresTable")
 	}
 
 	return &DB{

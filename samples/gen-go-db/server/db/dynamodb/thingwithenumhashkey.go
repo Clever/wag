@@ -42,13 +42,6 @@ type ddbThingWithEnumHashKey struct {
 	models.ThingWithEnumHashKey
 }
 
-func (t ThingWithEnumHashKeyTable) name() string {
-	if t.TableName != "" {
-		return t.TableName
-	}
-	return fmt.Sprintf("%s-thing-with-enum-hash-keys", t.Prefix)
-}
-
 func (t ThingWithEnumHashKeyTable) create(ctx context.Context) error {
 	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
@@ -101,7 +94,7 @@ func (t ThingWithEnumHashKeyTable) create(ctx context.Context) error {
 			ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 			WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 		},
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 	}); err != nil {
 		return err
 	}
@@ -114,7 +107,7 @@ func (t ThingWithEnumHashKeyTable) saveThingWithEnumHashKey(ctx context.Context,
 		return err
 	}
 	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		Item:      data,
 		ExpressionAttributeNames: map[string]*string{
 			"#BRANCH": aws.String("branch"),
@@ -131,7 +124,7 @@ func (t ThingWithEnumHashKeyTable) saveThingWithEnumHashKey(ctx context.Context,
 					Date:   m.Date,
 				}
 			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.name())
+				return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return err
@@ -149,14 +142,14 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKey(ctx context.Context, 
 	}
 	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
 		Key:            key,
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(true),
 	})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case dynamodb.ErrCodeResourceNotFoundException:
-				return nil, fmt.Errorf("table or index not found: %s", t.name())
+				return nil, fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return nil, err
@@ -179,7 +172,7 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKey(ctx context.Context, 
 
 func (t ThingWithEnumHashKeyTable) scanThingWithEnumHashKeys(ctx context.Context, input db.ScanThingWithEnumHashKeysInput, fn func(m *models.ThingWithEnumHashKey, lastThingWithEnumHashKey bool) bool) error {
 	scanInput := &dynamodb.ScanInput{
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
 		Limit:          input.Limit,
 	}
@@ -249,7 +242,7 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDate(ctx c
 		return fmt.Errorf("Hash key input.Branch cannot be empty")
 	}
 	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		ExpressionAttributeNames: map[string]*string{
 			"#BRANCH": aws.String("branch"),
 		},
@@ -326,7 +319,7 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDate(ctx c
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.name())
+				return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return err
@@ -348,13 +341,13 @@ func (t ThingWithEnumHashKeyTable) deleteThingWithEnumHashKey(ctx context.Contex
 	}
 	_, err = t.DynamoDBAPI.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
 		Key:       key,
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 	})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.name())
+				return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return err
@@ -371,7 +364,7 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDate2(ctx 
 		return fmt.Errorf("Hash key input.Branch cannot be empty")
 	}
 	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		IndexName: aws.String("byBranch"),
 		ExpressionAttributeNames: map[string]*string{
 			"#BRANCH": aws.String("branch"),
@@ -447,7 +440,7 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDate2(ctx 
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.name())
+				return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return err
@@ -460,7 +453,7 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDate2(ctx 
 }
 func (t ThingWithEnumHashKeyTable) scanThingWithEnumHashKeysByBranchAndDate2(ctx context.Context, input db.ScanThingWithEnumHashKeysByBranchAndDate2Input, fn func(m *models.ThingWithEnumHashKey, lastThingWithEnumHashKey bool) bool) error {
 	scanInput := &dynamodb.ScanInput{
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
 		Limit:          input.Limit,
 		IndexName:      aws.String("byBranch"),

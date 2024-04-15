@@ -59,13 +59,6 @@ type ddbThingWithAdditionalAttributes struct {
 	models.ThingWithAdditionalAttributes
 }
 
-func (t ThingWithAdditionalAttributesTable) name() string {
-	if t.TableName != "" {
-		return t.TableName
-	}
-	return fmt.Sprintf("%s-thing-with-additional-attributess", t.Prefix)
-}
-
 func (t ThingWithAdditionalAttributesTable) create(ctx context.Context) error {
 	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
@@ -186,7 +179,7 @@ func (t ThingWithAdditionalAttributesTable) create(ctx context.Context) error {
 			ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 			WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 		},
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 	}); err != nil {
 		return err
 	}
@@ -199,7 +192,7 @@ func (t ThingWithAdditionalAttributesTable) saveThingWithAdditionalAttributes(ct
 		return err
 	}
 	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		Item:      data,
 		ExpressionAttributeNames: map[string]*string{
 			"#NAME":    aws.String("name"),
@@ -216,7 +209,7 @@ func (t ThingWithAdditionalAttributesTable) saveThingWithAdditionalAttributes(ct
 					Version: m.Version,
 				}
 			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.name())
+				return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return err
@@ -234,14 +227,14 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributes(ctx
 	}
 	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
 		Key:            key,
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(true),
 	})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case dynamodb.ErrCodeResourceNotFoundException:
-				return nil, fmt.Errorf("table or index not found: %s", t.name())
+				return nil, fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return nil, err
@@ -264,7 +257,7 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributes(ctx
 
 func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributess(ctx context.Context, input db.ScanThingWithAdditionalAttributessInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
 	scanInput := &dynamodb.ScanInput{
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
 		Limit:          input.Limit,
 	}
@@ -376,7 +369,7 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 		return fmt.Errorf("Hash key input.Name cannot be empty")
 	}
 	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		ExpressionAttributeNames: map[string]*string{
 			"#NAME": aws.String("name"),
 		},
@@ -453,7 +446,7 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.name())
+				return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return err
@@ -475,13 +468,13 @@ func (t ThingWithAdditionalAttributesTable) deleteThingWithAdditionalAttributes(
 	}
 	_, err = t.DynamoDBAPI.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
 		Key:       key,
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 	})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.name())
+				return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return err
@@ -492,7 +485,7 @@ func (t ThingWithAdditionalAttributesTable) deleteThingWithAdditionalAttributes(
 
 func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributesByID(ctx context.Context, id string) (*models.ThingWithAdditionalAttributes, error) {
 	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		IndexName: aws.String("thingID"),
 		ExpressionAttributeNames: map[string]*string{
 			"#ID": aws.String("id"),
@@ -510,7 +503,7 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributesByID
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case dynamodb.ErrCodeResourceNotFoundException:
-				return nil, fmt.Errorf("table or index not found: %s", t.name())
+				return nil, fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return nil, err
@@ -527,7 +520,7 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributesByID
 }
 func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributessByID(ctx context.Context, input db.ScanThingWithAdditionalAttributessByIDInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
 	scanInput := &dynamodb.ScanInput{
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
 		Limit:          input.Limit,
 		IndexName:      aws.String("thingID"),
@@ -585,7 +578,7 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 		return fmt.Errorf("Hash key input.Name cannot be empty")
 	}
 	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		IndexName: aws.String("name-createdAt"),
 		ExpressionAttributeNames: map[string]*string{
 			"#NAME": aws.String("name"),
@@ -661,7 +654,7 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.name())
+				return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return err
@@ -674,7 +667,7 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 }
 func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributessByNameAndCreatedAt(ctx context.Context, input db.ScanThingWithAdditionalAttributessByNameAndCreatedAtInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
 	scanInput := &dynamodb.ScanInput{
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
 		Limit:          input.Limit,
 		IndexName:      aws.String("name-createdAt"),
@@ -732,7 +725,7 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 		return fmt.Errorf("Hash key input.Name cannot be empty")
 	}
 	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		IndexName: aws.String("name-rangeNullable"),
 		ExpressionAttributeNames: map[string]*string{
 			"#NAME": aws.String("name"),
@@ -808,7 +801,7 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.name())
+				return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return err
@@ -821,7 +814,7 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 }
 func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributessByNameAndRangeNullable(ctx context.Context, input db.ScanThingWithAdditionalAttributessByNameAndRangeNullableInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
 	scanInput := &dynamodb.ScanInput{
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
 		Limit:          input.Limit,
 		IndexName:      aws.String("name-rangeNullable"),
@@ -879,7 +872,7 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByH
 		return fmt.Errorf("Hash key input.HashNullable cannot be empty")
 	}
 	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		IndexName: aws.String("name-hashNullable"),
 		ExpressionAttributeNames: map[string]*string{
 			"#HASHNULLABLE": aws.String("hashNullable"),
@@ -955,7 +948,7 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByH
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.name())
+				return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return err
