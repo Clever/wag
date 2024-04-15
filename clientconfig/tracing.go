@@ -9,9 +9,7 @@ import (
 )
 
 // DefaultInstrumentor returns the transport to use in client requests.
-// It takes in a transport to wrap, e.g. http.DefaultTransport, and the request
-// context value to pull the span name out from.
-// 99% sure this is wrapping a wrapped thing and totally redundant. Fix later.
+// It takes in a transport to wrap, e.g. http.DefaultTransport, and the app it will be a client of
 func DefaultInstrumentor(baseTransport http.RoundTripper, appName string) http.RoundTripper {
 	return roundTripperWithTracing{baseTransport: baseTransport, appName: appName}
 }
