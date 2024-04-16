@@ -1,6 +1,7 @@
 package clientconfig
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -12,15 +13,22 @@ func ClientLogger(wagAppName string) *logger.Logger {
 	return logger.NewConcreteLogger(fmt.Sprintf("%s-wagclient", wagAppName))
 }
 
+// WithoutTracing is now Deprecated and so is WithTracing, but both are still provided for backwards compatibility.
+// Use Default instead.
 func WithoutTracing(wagAppName string) (*logger.Logger, *http.RoundTripper) {
-	return ClientLogger(wagAppName), &http.DefaultTransport
+	return Default(wagAppName)
 }
 
-func WithTracing(wagAppName string, exporter sdktrace.SpanExporter) (*logger.Logger, *http.RoundTripper) {
+// Default returns a logger and a transport to use in client requests.
+// It is meant as a convenience function for initiating Wag clients
+func Default(wagAppName string) (logger.Logger, *http.RoundTripper) {
 	baseTransport := http.DefaultTransport
-	tp := newTracerProvider(exporter, wagAppName)
-
-	instrumentedTransport := DefaultInstrumentor(baseTransport, *tp)
-
+	instrumentedTransport := DefaultInstrumentor(baseTransport, wagAppName)
 	return ClientLogger(wagAppName), &instrumentedTransport
+}
+
+// WithTracing is now Deprecated and so is WithoutTracing, but both are still provided for backwards compatibility.
+// Use Default instad.
+func WithTracing(wagAppName string, exporter sdktrace.SpanExporter) (*logger.Logger, *http.RoundTripper) {
+	return Default(wagAppName)
 }
