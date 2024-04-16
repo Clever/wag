@@ -501,7 +501,7 @@ const methodTmplStr = `
                     }
                   }
                 } else {
-                  body.forEach(f)
+                  body{{$.IterResourceAccessString}}.forEach(f)
                 }
               }
               {{- else -}}

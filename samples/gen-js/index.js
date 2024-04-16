@@ -449,7 +449,7 @@ class SwaggerTest {
                     }
                   }
                 } else {
-                  body.forEach(f)
+                  body.authorSet.results.forEach(f)
                 }
               }
               break;
@@ -714,7 +714,7 @@ class SwaggerTest {
                     }
                   }
                 } else {
-                  body.forEach(f)
+                  body.authorSet.results.forEach(f)
                 }
               }
               break;
