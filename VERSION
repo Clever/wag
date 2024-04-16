@@ -1,4 +1,6 @@
-v9.2.0
+v9.2.1
+
+v9.2.1 package `db` no longer provides default table names, instead `db.New` errors when a table name is not provided. This eliminates ambiguous errors when this step is missed.
 
 v9.2.0 Fix for clientconfig overwriting global tracing providers/exporters, cleaner tracing setup
 
