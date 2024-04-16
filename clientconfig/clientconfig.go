@@ -1,7 +1,6 @@
 package clientconfig
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -21,7 +20,7 @@ func WithoutTracing(wagAppName string) (*logger.Logger, *http.RoundTripper) {
 
 // Default returns a logger and a transport to use in client requests.
 // It is meant as a convenience function for initiating Wag clients
-func Default(wagAppName string) (logger.Logger, *http.RoundTripper) {
+func Default(wagAppName string) (*logger.Logger, *http.RoundTripper) {
 	baseTransport := http.DefaultTransport
 	instrumentedTransport := DefaultInstrumentor(baseTransport, wagAppName)
 	return ClientLogger(wagAppName), &instrumentedTransport
