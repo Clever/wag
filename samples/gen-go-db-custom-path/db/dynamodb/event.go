@@ -41,13 +41,6 @@ type ddbEvent struct {
 	models.Event
 }
 
-func (t EventTable) name() string {
-	if t.TableName != "" {
-		return t.TableName
-	}
-	return fmt.Sprintf("%s-events", t.Prefix)
-}
-
 func (t EventTable) create(ctx context.Context) error {
 	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
@@ -100,7 +93,7 @@ func (t EventTable) create(ctx context.Context) error {
 			ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 			WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 		},
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 	}); err != nil {
 		return err
 	}
@@ -113,7 +106,7 @@ func (t EventTable) saveEvent(ctx context.Context, m models.Event) error {
 		return err
 	}
 	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		Item:      data,
 	})
 	return err
@@ -129,7 +122,7 @@ func (t EventTable) getEvent(ctx context.Context, pk string, sk string) (*models
 	}
 	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
 		Key:            key,
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(true),
 	})
 	if err != nil {
@@ -153,7 +146,7 @@ func (t EventTable) getEvent(ctx context.Context, pk string, sk string) (*models
 
 func (t EventTable) scanEvents(ctx context.Context, input db.ScanEventsInput, fn func(m *models.Event, lastEvent bool) bool) error {
 	scanInput := &dynamodb.ScanInput{
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
 		Limit:          input.Limit,
 	}
@@ -223,7 +216,7 @@ func (t EventTable) getEventsByPkAndSk(ctx context.Context, input db.GetEventsBy
 		return fmt.Errorf("Hash key input.Pk cannot be empty")
 	}
 	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		ExpressionAttributeNames: map[string]*string{
 			"#PK": aws.String("pk"),
 		},
@@ -316,7 +309,7 @@ func (t EventTable) deleteEvent(ctx context.Context, pk string, sk string) error
 	}
 	_, err = t.DynamoDBAPI.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
 		Key:       key,
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 	})
 	if err != nil {
 		return err
@@ -333,7 +326,7 @@ func (t EventTable) getEventsBySkAndData(ctx context.Context, input db.GetEvents
 		return fmt.Errorf("Hash key input.Sk cannot be empty")
 	}
 	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		IndexName: aws.String("bySK"),
 		ExpressionAttributeNames: map[string]*string{
 			"#SK": aws.String("sk"),
@@ -416,7 +409,7 @@ func (t EventTable) getEventsBySkAndData(ctx context.Context, input db.GetEvents
 }
 func (t EventTable) scanEventsBySkAndData(ctx context.Context, input db.ScanEventsBySkAndDataInput, fn func(m *models.Event, lastEvent bool) bool) error {
 	scanInput := &dynamodb.ScanInput{
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
 		Limit:          input.Limit,
 		IndexName:      aws.String("bySK"),

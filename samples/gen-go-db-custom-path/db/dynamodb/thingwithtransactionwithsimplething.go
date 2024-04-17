@@ -36,13 +36,6 @@ type ddbThingWithTransactionWithSimpleThing struct {
 	models.ThingWithTransactionWithSimpleThing
 }
 
-func (t ThingWithTransactionWithSimpleThingTable) name() string {
-	if t.TableName != "" {
-		return t.TableName
-	}
-	return fmt.Sprintf("%s-thing-with-transaction-with-simple-things", t.Prefix)
-}
-
 func (t ThingWithTransactionWithSimpleThingTable) create(ctx context.Context) error {
 	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
@@ -61,7 +54,7 @@ func (t ThingWithTransactionWithSimpleThingTable) create(ctx context.Context) er
 			ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 			WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 		},
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 	}); err != nil {
 		return err
 	}
@@ -74,7 +67,7 @@ func (t ThingWithTransactionWithSimpleThingTable) saveThingWithTransactionWithSi
 		return err
 	}
 	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		Item:      data,
 		ExpressionAttributeNames: map[string]*string{
 			"#NAME": aws.String("name"),
@@ -89,7 +82,7 @@ func (t ThingWithTransactionWithSimpleThingTable) saveThingWithTransactionWithSi
 					Name: m.Name,
 				}
 			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.name())
+				return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return err
@@ -106,14 +99,14 @@ func (t ThingWithTransactionWithSimpleThingTable) getThingWithTransactionWithSim
 	}
 	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
 		Key:            key,
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(true),
 	})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case dynamodb.ErrCodeResourceNotFoundException:
-				return nil, fmt.Errorf("table or index not found: %s", t.name())
+				return nil, fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return nil, err
@@ -135,7 +128,7 @@ func (t ThingWithTransactionWithSimpleThingTable) getThingWithTransactionWithSim
 
 func (t ThingWithTransactionWithSimpleThingTable) scanThingWithTransactionWithSimpleThings(ctx context.Context, input db.ScanThingWithTransactionWithSimpleThingsInput, fn func(m *models.ThingWithTransactionWithSimpleThing, lastThingWithTransactionWithSimpleThing bool) bool) error {
 	scanInput := &dynamodb.ScanInput{
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
 		Limit:          input.Limit,
 	}
@@ -191,13 +184,13 @@ func (t ThingWithTransactionWithSimpleThingTable) deleteThingWithTransactionWith
 	}
 	_, err = t.DynamoDBAPI.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
 		Key:       key,
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 	})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.name())
+				return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return err
@@ -231,7 +224,7 @@ func (t ThingWithTransactionWithSimpleThingTable) transactSaveThingWithTransacti
 		TransactItems: []*dynamodb.TransactWriteItem{
 			{
 				Put: &dynamodb.Put{
-					TableName:                 aws.String(t.name()),
+					TableName:                 aws.String(t.TableName),
 					Item:                      data1,
 					ConditionExpression:       m1CondExpr,
 					ExpressionAttributeValues: m1ExprVals,

@@ -35,13 +35,6 @@ type ddbThingWithDateRange struct {
 	models.ThingWithDateRange
 }
 
-func (t ThingWithDateRangeTable) name() string {
-	if t.TableName != "" {
-		return t.TableName
-	}
-	return fmt.Sprintf("%s-thing-with-date-ranges", t.Prefix)
-}
-
 func (t ThingWithDateRangeTable) create(ctx context.Context) error {
 	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
@@ -68,7 +61,7 @@ func (t ThingWithDateRangeTable) create(ctx context.Context) error {
 			ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 			WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 		},
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 	}); err != nil {
 		return err
 	}
@@ -81,7 +74,7 @@ func (t ThingWithDateRangeTable) saveThingWithDateRange(ctx context.Context, m m
 		return err
 	}
 	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		Item:      data,
 	})
 	return err
@@ -97,7 +90,7 @@ func (t ThingWithDateRangeTable) getThingWithDateRange(ctx context.Context, name
 	}
 	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
 		Key:            key,
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(true),
 	})
 	if err != nil {
@@ -121,7 +114,7 @@ func (t ThingWithDateRangeTable) getThingWithDateRange(ctx context.Context, name
 
 func (t ThingWithDateRangeTable) scanThingWithDateRanges(ctx context.Context, input db.ScanThingWithDateRangesInput, fn func(m *models.ThingWithDateRange, lastThingWithDateRange bool) bool) error {
 	scanInput := &dynamodb.ScanInput{
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
 		Limit:          input.Limit,
 	}
@@ -177,7 +170,7 @@ func (t ThingWithDateRangeTable) getThingWithDateRangesByNameAndDate(ctx context
 		return fmt.Errorf("Hash key input.Name cannot be empty")
 	}
 	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		ExpressionAttributeNames: map[string]*string{
 			"#NAME": aws.String("name"),
 		},
@@ -265,7 +258,7 @@ func (t ThingWithDateRangeTable) deleteThingWithDateRange(ctx context.Context, n
 	}
 	_, err = t.DynamoDBAPI.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
 		Key:       key,
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 	})
 	if err != nil {
 		return err

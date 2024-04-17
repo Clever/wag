@@ -36,13 +36,6 @@ type ddbThingAllowingBatchWrites struct {
 	models.ThingAllowingBatchWrites
 }
 
-func (t ThingAllowingBatchWritesTable) name() string {
-	if t.TableName != "" {
-		return t.TableName
-	}
-	return fmt.Sprintf("%s-thing-allowing-batch-writess", t.Prefix)
-}
-
 func (t ThingAllowingBatchWritesTable) create(ctx context.Context) error {
 	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
@@ -69,7 +62,7 @@ func (t ThingAllowingBatchWritesTable) create(ctx context.Context) error {
 			ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 			WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 		},
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 	}); err != nil {
 		return err
 	}
@@ -82,7 +75,7 @@ func (t ThingAllowingBatchWritesTable) saveThingAllowingBatchWrites(ctx context.
 		return err
 	}
 	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		Item:      data,
 		ExpressionAttributeNames: map[string]*string{
 			"#NAME":    aws.String("name"),
@@ -99,7 +92,7 @@ func (t ThingAllowingBatchWritesTable) saveThingAllowingBatchWrites(ctx context.
 					Version: m.Version,
 				}
 			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.name())
+				return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return err
@@ -127,7 +120,7 @@ func (t ThingAllowingBatchWritesTable) saveArrayOfThingAllowingBatchWrites(ctx c
 			},
 		}
 	}
-	tname := t.name()
+	tname := t.TableName
 	for {
 		if out, err := t.DynamoDBAPI.BatchWriteItemWithContext(ctx, &dynamodb.BatchWriteItemInput{
 			RequestItems: map[string][]*dynamodb.WriteRequest{
@@ -169,7 +162,7 @@ func (t ThingAllowingBatchWritesTable) deleteArrayOfThingAllowingBatchWrites(ctx
 			},
 		}
 	}
-	tname := t.name()
+	tname := t.TableName
 	for {
 		if out, err := t.DynamoDBAPI.BatchWriteItemWithContext(ctx, &dynamodb.BatchWriteItemInput{
 			RequestItems: map[string][]*dynamodb.WriteRequest{
@@ -196,14 +189,14 @@ func (t ThingAllowingBatchWritesTable) getThingAllowingBatchWrites(ctx context.C
 	}
 	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
 		Key:            key,
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(true),
 	})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case dynamodb.ErrCodeResourceNotFoundException:
-				return nil, fmt.Errorf("table or index not found: %s", t.name())
+				return nil, fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return nil, err
@@ -226,7 +219,7 @@ func (t ThingAllowingBatchWritesTable) getThingAllowingBatchWrites(ctx context.C
 
 func (t ThingAllowingBatchWritesTable) scanThingAllowingBatchWritess(ctx context.Context, input db.ScanThingAllowingBatchWritessInput, fn func(m *models.ThingAllowingBatchWrites, lastThingAllowingBatchWrites bool) bool) error {
 	scanInput := &dynamodb.ScanInput{
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
 		Limit:          input.Limit,
 	}
@@ -282,7 +275,7 @@ func (t ThingAllowingBatchWritesTable) getThingAllowingBatchWritessByNameAndVers
 		return fmt.Errorf("Hash key input.Name cannot be empty")
 	}
 	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		ExpressionAttributeNames: map[string]*string{
 			"#NAME": aws.String("name"),
 		},
@@ -354,7 +347,7 @@ func (t ThingAllowingBatchWritesTable) getThingAllowingBatchWritessByNameAndVers
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.name())
+				return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return err
@@ -376,13 +369,13 @@ func (t ThingAllowingBatchWritesTable) deleteThingAllowingBatchWrites(ctx contex
 	}
 	_, err = t.DynamoDBAPI.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
 		Key:       key,
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 	})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.name())
+				return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return err

@@ -1133,7 +1133,7 @@ func newLowercaseModelsTestInput(r *http.Request) (*models.LowercaseModelsTestIn
 		return nil, errors.New("request body is required, but was empty")
 	}
 	if len(data) > 0 {
-		input.Lowercase = &models.Lowercase{}
+		input.Lowercase = new(models.Lowercase)
 		if err := json.NewDecoder(bytes.NewReader(data)).Decode(input.Lowercase); err != nil {
 			return nil, err
 		}

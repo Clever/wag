@@ -53,13 +53,6 @@ type ddbDeployment struct {
 	models.Deployment
 }
 
-func (t DeploymentTable) name() string {
-	if t.TableName != "" {
-		return t.TableName
-	}
-	return fmt.Sprintf("%s-deployments", t.Prefix)
-}
-
 func (t DeploymentTable) create(ctx context.Context) error {
 	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
@@ -152,7 +145,7 @@ func (t DeploymentTable) create(ctx context.Context) error {
 			ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 			WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 		},
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 	}); err != nil {
 		return err
 	}
@@ -165,7 +158,7 @@ func (t DeploymentTable) saveDeployment(ctx context.Context, m models.Deployment
 		return err
 	}
 	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		Item:      data,
 	})
 	return err
@@ -181,7 +174,7 @@ func (t DeploymentTable) getDeployment(ctx context.Context, environment string, 
 	}
 	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
 		Key:            key,
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(true),
 	})
 	if err != nil {
@@ -206,7 +199,7 @@ func (t DeploymentTable) getDeployment(ctx context.Context, environment string, 
 
 func (t DeploymentTable) scanDeployments(ctx context.Context, input db.ScanDeploymentsInput, fn func(m *models.Deployment, lastDeployment bool) bool) error {
 	scanInput := &dynamodb.ScanInput{
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
 		Limit:          input.Limit,
 	}
@@ -281,7 +274,7 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, i
 		return fmt.Errorf("Hash key input.Application cannot be empty")
 	}
 	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		ExpressionAttributeNames: map[string]*string{
 			"#ENVAPP": aws.String("envApp"),
 		},
@@ -374,7 +367,7 @@ func (t DeploymentTable) deleteDeployment(ctx context.Context, environment strin
 	}
 	_, err = t.DynamoDBAPI.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
 		Key:       key,
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 	})
 	if err != nil {
 		return err
@@ -394,7 +387,7 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndDate(ctx context.Context, inpu
 		return fmt.Errorf("Hash key input.Application cannot be empty")
 	}
 	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		IndexName: aws.String("byDate"),
 		ExpressionAttributeNames: map[string]*string{
 			"#ENVAPP": aws.String("envApp"),
@@ -477,7 +470,7 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndDate(ctx context.Context, inpu
 }
 func (t DeploymentTable) scanDeploymentsByEnvAppAndDate(ctx context.Context, input db.ScanDeploymentsByEnvAppAndDateInput, fn func(m *models.Deployment, lastDeployment bool) bool) error {
 	scanInput := &dynamodb.ScanInput{
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
 		Limit:          input.Limit,
 		IndexName:      aws.String("byDate"),
@@ -537,7 +530,7 @@ func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context,
 		return fmt.Errorf("Hash key input.Environment cannot be empty")
 	}
 	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		IndexName: aws.String("byEnvironment"),
 		ExpressionAttributeNames: map[string]*string{
 			"#ENVIRONMENT": aws.String("environment"),
@@ -623,7 +616,7 @@ func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context,
 }
 func (t DeploymentTable) getDeploymentByVersion(ctx context.Context, version string) (*models.Deployment, error) {
 	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		IndexName: aws.String("byVersion"),
 		ExpressionAttributeNames: map[string]*string{
 			"#VERSION": aws.String("version"),
@@ -652,7 +645,7 @@ func (t DeploymentTable) getDeploymentByVersion(ctx context.Context, version str
 }
 func (t DeploymentTable) scanDeploymentsByVersion(ctx context.Context, input db.ScanDeploymentsByVersionInput, fn func(m *models.Deployment, lastDeployment bool) bool) error {
 	scanInput := &dynamodb.ScanInput{
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
 		Limit:          input.Limit,
 		IndexName:      aws.String("byVersion"),

@@ -47,13 +47,6 @@ type ddbThingWithMultiUseCompositeAttribute struct {
 	models.ThingWithMultiUseCompositeAttribute
 }
 
-func (t ThingWithMultiUseCompositeAttributeTable) name() string {
-	if t.TableName != "" {
-		return t.TableName
-	}
-	return fmt.Sprintf("%s-thing-with-multi-use-composite-attributes", t.Prefix)
-}
-
 func (t ThingWithMultiUseCompositeAttributeTable) create(ctx context.Context) error {
 	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
@@ -126,7 +119,7 @@ func (t ThingWithMultiUseCompositeAttributeTable) create(ctx context.Context) er
 			ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 			WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 		},
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 	}); err != nil {
 		return err
 	}
@@ -139,7 +132,7 @@ func (t ThingWithMultiUseCompositeAttributeTable) saveThingWithMultiUseComposite
 		return err
 	}
 	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		Item:      data,
 	})
 	return err
@@ -154,7 +147,7 @@ func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeA
 	}
 	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
 		Key:            key,
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(true),
 	})
 	if err != nil {
@@ -177,7 +170,7 @@ func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeA
 
 func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseCompositeAttributes(ctx context.Context, input db.ScanThingWithMultiUseCompositeAttributesInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error {
 	scanInput := &dynamodb.ScanInput{
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
 		Limit:          input.Limit,
 	}
@@ -233,7 +226,7 @@ func (t ThingWithMultiUseCompositeAttributeTable) deleteThingWithMultiUseComposi
 	}
 	_, err = t.DynamoDBAPI.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
 		Key:       key,
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 	})
 	if err != nil {
 		return err
@@ -250,7 +243,7 @@ func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeA
 		return fmt.Errorf("Hash key input.Three cannot be empty")
 	}
 	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		IndexName: aws.String("threeIndex"),
 		ExpressionAttributeNames: map[string]*string{
 			"#THREE": aws.String("three"),
@@ -333,7 +326,7 @@ func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeA
 }
 func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx context.Context, input db.ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwoInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error {
 	scanInput := &dynamodb.ScanInput{
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
 		Limit:          input.Limit,
 		IndexName:      aws.String("threeIndex"),
@@ -393,7 +386,7 @@ func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeA
 		return fmt.Errorf("Hash key input.Four cannot be empty")
 	}
 	queryInput := &dynamodb.QueryInput{
-		TableName: aws.String(t.name()),
+		TableName: aws.String(t.TableName),
 		IndexName: aws.String("fourIndex"),
 		ExpressionAttributeNames: map[string]*string{
 			"#FOUR": aws.String("four"),
@@ -476,7 +469,7 @@ func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeA
 }
 func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx context.Context, input db.ScanThingWithMultiUseCompositeAttributesByFourAndOneTwoInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error {
 	scanInput := &dynamodb.ScanInput{
-		TableName:      aws.String(t.name()),
+		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
 		Limit:          input.Limit,
 		IndexName:      aws.String("fourIndex"),
