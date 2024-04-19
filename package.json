@@ -1,1 +1,5 @@
-{}
+{
+  "dependencies": {
+    "hystrixjs": "^0.2.0"
+  }
+}

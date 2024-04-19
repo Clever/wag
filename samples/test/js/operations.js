@@ -122,6 +122,7 @@ describe("operations", function() {
           .get(`/v1/books`)
       .reply(function(uri, requestBody) {
         assert.equal(Client.Version, this.req.headers[Client.VersionHeader.toLowerCase()]);
+        
       }, 200);
     c.getBooks({}, {}).then(function() {
       assert(scope.isDone());

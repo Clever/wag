@@ -2,7 +2,7 @@ const async = require("async");
 const discovery = require("clever-discovery");
 const kayvee = require("kayvee");
 const request = require("request");
-const {commandFactory} = require("hystrixjs");
+const {commandFactory, circuitFactory, metricsFactory} = require("hystrixjs");
 const RollingNumberEvent = require("hystrixjs/lib/metrics/RollingNumberEvent");
 
 const { Errors } = require("./types");
@@ -191,6 +191,11 @@ class SwaggerTest {
     }
 
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
+    // hystrix implements a caching mechanism, we don't want this or we can't trust that clients
+    // are initialized with the values passed in. 
+    commandFactory.resetCache();
+    circuitFactory.resetCache();
+    metricsFactory.resetCache();
     this._hystrixCommand = commandFactory.getOrCreate(options.serviceName || "swagger-test").
       errorHandler(this._hystrixCommandErrorHandler).
       circuitBreakerForceClosed(circuitOptions.forceClosed).
@@ -818,7 +823,6 @@ class SwaggerTest {
       headers["Canonical-Resource"] = "getBooks";
       headers[versionHeader] = version;
       headers["authorization"] = params.authorization;
-
       const query = {};
       if (typeof params.authors !== "undefined") {
         query["authors"] = params.authors;
@@ -874,7 +878,6 @@ class SwaggerTest {
       if (this.keepalive) {
         requestOptions.forever = true;
       }
-
 
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();

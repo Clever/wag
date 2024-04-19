@@ -2,7 +2,7 @@ const async = require("async");
 const discovery = require("clever-discovery");
 const kayvee = require("kayvee");
 const request = require("request");
-const {commandFactory} = require("hystrixjs");
+const {commandFactory, circuitFactory, metricsFactory} = require("hystrixjs");
 const RollingNumberEvent = require("hystrixjs/lib/metrics/RollingNumberEvent");
 
 const { Errors } = require("./types");
@@ -191,6 +191,11 @@ class Blog {
     }
 
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
+    // hystrix implements a caching mechanism, we don't want this or we can't trust that clients
+    // are initialized with the values passed in. 
+    commandFactory.resetCache();
+    circuitFactory.resetCache();
+    metricsFactory.resetCache();
     this._hystrixCommand = commandFactory.getOrCreate(options.serviceName || "blog").
       errorHandler(this._hystrixCommandErrorHandler).
       circuitBreakerForceClosed(circuitOptions.forceClosed).

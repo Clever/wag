@@ -185,13 +185,8 @@ describe("circuit", function() {
         maxConcurrentRequests: 5,
         requestVolumeThreshold: 5,
       },
-      logger: {
-        errorD: () => {},
-        infoD: () => {},
-      },
       retryPolicy: RetryPolicies.None,
     });
-
     const promises = [];
     for (let i = 0; i < 10; i++) {
       const mockApi = nock(mockAddress).get("/v1/authors").reply(200, { authors: [] });
@@ -212,6 +207,7 @@ describe("circuit", function() {
     Promise.all(promises).then(() => {
       done();
     }).catch((err) => {
+      console.log("ERROR: ", err)
       done(err);
     });
   });
