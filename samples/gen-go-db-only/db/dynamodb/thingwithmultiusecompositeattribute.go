@@ -121,7 +121,7 @@ func (t ThingWithMultiUseCompositeAttributeTable) create(ctx context.Context) er
 		},
 		TableName: aws.String(t.TableName),
 	}); err != nil {
-		return err
+		return fmt.Errorf("failed to create table %s: %w", t.TableName, err)
 	}
 	return nil
 }
