@@ -7,6 +7,8 @@ const RollingNumberEvent = require("hystrixjs/lib/metrics/RollingNumberEvent");
 
 const { Errors } = require("./types");
 
+
+
 /**
  * The exponential retry policy will retry five times with an exponential backoff.
  * @alias module:swagger-test.RetryPolicies.Exponential
@@ -287,7 +289,7 @@ class SwaggerTest {
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
-      headers["Canonical-Resource"] = "getAuthors";
+      headers["canonical-resource"] = "getAuthors";
       headers[versionHeader] = version;
 
       const query = {};
@@ -387,7 +389,7 @@ class SwaggerTest {
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
-      headers["Canonical-Resource"] = "getAuthors";
+      headers["canonical-resource"] = "getAuthors";
       headers[versionHeader] = version;
 
       const query = {};
@@ -547,7 +549,7 @@ class SwaggerTest {
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
-      headers["Canonical-Resource"] = "getAuthorsWithPut";
+      headers["canonical-resource"] = "getAuthorsWithPut";
       headers[versionHeader] = version;
 
       const query = {};
@@ -650,7 +652,7 @@ class SwaggerTest {
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
-      headers["Canonical-Resource"] = "getAuthorsWithPut";
+      headers["canonical-resource"] = "getAuthorsWithPut";
       headers[versionHeader] = version;
 
       const query = {};
@@ -799,6 +801,13 @@ class SwaggerTest {
    * @reject {module:swagger-test.Errors.InternalError}
    * @reject {Error}
    */
+  getBooks2(params, options, cb) {
+    let callback = cb;
+    if (!cb && typeof options === "function") {
+      callback = options;
+    }
+    return applyCallback(this._hystrixCommand.execute(this._getBooks2, arguments), callback);
+  }
   getBooks(params, options, cb) {
     let callback = cb;
     if (!cb && typeof options === "function") {
@@ -820,7 +829,7 @@ class SwaggerTest {
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
-      headers["Canonical-Resource"] = "getBooks";
+      headers["canonical-resource"] = "getBooks";
       headers[versionHeader] = version;
       headers["authorization"] = params.authorization;
       const query = {};
@@ -879,6 +888,7 @@ class SwaggerTest {
         requestOptions.forever = true;
       }
 
+
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
@@ -927,7 +937,126 @@ class SwaggerTest {
     });
   }
 
+  _getBooks2(params, options, cb) {
+    if (!cb && typeof options === "function") {
+      options = undefined;
+    }
 
+    return new Promise((resolve, reject) => {
+      if (!options) {
+        options = {};
+      }
+
+      const timeout = options.timeout || this.timeout;
+
+      const headers = {};
+      headers["canonical-resource"] = "getBooks";
+      headers[versionHeader] = version;
+      headers["authorization"] = params.authorization;
+      const query = {};
+      if (typeof params.authors !== "undefined") {
+        query["authors"] = params.authors;
+      }
+
+      if (typeof params.available !== "undefined") {
+        query["available"] = params.available;
+      }
+
+      if (typeof params.state !== "undefined") {
+        query["state"] = params.state;
+      }
+
+      if (typeof params.published !== "undefined") {
+        query["published"] = params.published;
+      }
+
+      if (typeof params.snakeCase !== "undefined") {
+        query["snake_case"] = params.snakeCase;
+      }
+
+      if (typeof params.completed !== "undefined") {
+        query["completed"] = params.completed;
+      }
+
+      if (typeof params.maxPages !== "undefined") {
+        query["maxPages"] = params.maxPages;
+      }
+
+      if (typeof params.minPages !== "undefined") {
+        query["min_pages"] = params.minPages;
+      }
+
+      if (typeof params.pagesToTime !== "undefined") {
+        query["pagesToTime"] = params.pagesToTime;
+      }
+
+      if (typeof params.startingAfter !== "undefined") {
+        query["startingAfter"] = params.startingAfter;
+      }
+
+
+      const requestOptions = {
+        method: "GET",
+        uri: this.address + "/v1/books",
+        gzip: true,
+        json: true,
+        timeout,
+        headers,
+        qs: query,
+        useQuerystring: true,
+      };
+      if (this.keepalive) {
+        requestOptions.forever = true;
+      }
+
+
+      const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
+      const backoffs = retryPolicy.backoffs();
+      const logger = this.logger;
+
+      let retries = 0;
+      (function requestOnce() {
+        request(requestOptions, (err, response, body) => {
+          if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
+            const backoff = backoffs[retries];
+            retries += 1;
+            setTimeout(requestOnce, backoff);
+            return;
+          }
+          if (err) {
+            err._fromRequest = true;
+            responseLog(logger, requestOptions, response, err)
+            reject(err);
+            return;
+          }
+
+          switch (response.statusCode) {
+            case 200:
+              resolve(body);
+              break;
+
+            case 400:
+              var err = new Errors.BadRequest(body || {});
+              responseLog(logger, requestOptions, response, err);
+              reject(err);
+              return;
+
+            case 500:
+              var err = new Errors.InternalError(body || {});
+              responseLog(logger, requestOptions, response, err);
+              reject(err);
+              return;
+
+            default:
+              var err = new Error("Received unexpected statusCode " + response.statusCode);
+              responseLog(logger, requestOptions, response, err);
+              reject(err);
+              return;
+          }
+        });
+      }());
+    });
+  }
   /**
    * Returns a list of books
    * @param {Object} params
@@ -960,7 +1089,7 @@ class SwaggerTest {
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
-      headers["Canonical-Resource"] = "getBooks";
+      headers["canonical-resource"] = "getBooks";
       headers[versionHeader] = version;
       headers["authorization"] = params.authorization;
 
@@ -1149,11 +1278,11 @@ class SwaggerTest {
       if (!options) {
         options = {};
       }
-
+      
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
-      headers["Canonical-Resource"] = "createBook";
+      headers["canonical-resource"] = "createBook";
       headers[versionHeader] = version;
 
       const query = {};
@@ -1260,7 +1389,7 @@ class SwaggerTest {
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
-      headers["Canonical-Resource"] = "putBook";
+      headers["canonical-resource"] = "putBook";
       headers[versionHeader] = version;
 
       const query = {};
@@ -1371,7 +1500,7 @@ class SwaggerTest {
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
-      headers["Canonical-Resource"] = "getBookByID";
+      headers["canonical-resource"] = "getBookByID";
       headers[versionHeader] = version;
       if (!params.bookID) {
         reject(new Error("bookID must be non-empty because it's a path parameter"));
@@ -1503,7 +1632,7 @@ class SwaggerTest {
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
-      headers["Canonical-Resource"] = "getBookByID2";
+      headers["canonical-resource"] = "getBookByID2";
       headers[versionHeader] = version;
       if (!params.id) {
         reject(new Error("id must be non-empty because it's a path parameter"));
@@ -1615,7 +1744,7 @@ class SwaggerTest {
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
-      headers["Canonical-Resource"] = "healthCheck";
+      headers["canonical-resource"] = "healthCheck";
       headers[versionHeader] = version;
 
       const query = {};
@@ -1719,7 +1848,7 @@ class SwaggerTest {
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
-      headers["Canonical-Resource"] = "lowercaseModelsTest";
+      headers["canonical-resource"] = "lowercaseModelsTest";
       headers[versionHeader] = version;
       if (!params.pathParam) {
         reject(new Error("pathParam must be non-empty because it's a path parameter"));
@@ -1813,8 +1942,7 @@ module.exports.RetryPolicies = {
 module.exports.Errors = Errors;
 
 module.exports.DefaultCircuitOptions = defaultCircuitOptions;
-
 const version = "9.0.0";
-const versionHeader = "X-Client-Version";
+const versionHeader = "x-client-version";
 module.exports.Version = version;
 module.exports.VersionHeader = versionHeader;

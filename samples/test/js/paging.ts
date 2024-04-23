@@ -21,6 +21,7 @@ describe("paging", function() {
       .query({startingAfter: "2"})
       .reply(200, [{id: 3, name: "third"}]);
     const bookNames = await c.getBooksIter({}, {}).map(b => b.name);
+    console.log("Book names: ", bookNames);
     assert.deepEqual(bookNames, ["first", "second", "third"]);
     assert(scopeFirst.isDone());
     assert(scopeSecond.isDone());
