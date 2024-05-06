@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/go/src/github.com/Clever/wag
     docker:
-      - image: cimg/go:1.16-node
+      - image: cimg/go:1.16
     environment:
       CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
       CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
