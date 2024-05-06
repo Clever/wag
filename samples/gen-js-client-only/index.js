@@ -283,10 +283,16 @@ class SwaggerTest {
       if (!options) {
         options = {};
       }
+	  
+      const optionsBaggage = options.baggage || {}
 
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
+      for (const key in optionsBaggage) {
+        headers["clever_prop_" + key] = optionsBaggage[key];
+      }
+      
       headers["Canonical-Resource"] = "getAuthors";
       headers[versionHeader] = version;
 
@@ -383,10 +389,16 @@ class SwaggerTest {
       if (!options) {
         options = {};
       }
+	  
+      const optionsBaggage = options.baggage || {}
 
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
+      for (const key in optionsBaggage) {
+        headers["clever_prop_" + key] = optionsBaggage[key];
+      }
+      
       headers["Canonical-Resource"] = "getAuthors";
       headers[versionHeader] = version;
 
@@ -543,10 +555,16 @@ class SwaggerTest {
       if (!options) {
         options = {};
       }
+	  
+      const optionsBaggage = options.baggage || {}
 
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
+      for (const key in optionsBaggage) {
+        headers["clever_prop_" + key] = optionsBaggage[key];
+      }
+      
       headers["Canonical-Resource"] = "getAuthorsWithPut";
       headers[versionHeader] = version;
 
@@ -646,10 +664,16 @@ class SwaggerTest {
       if (!options) {
         options = {};
       }
+	  
+      const optionsBaggage = options.baggage || {}
 
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
+      for (const key in optionsBaggage) {
+        headers["clever_prop_" + key] = optionsBaggage[key];
+      }
+      
       headers["Canonical-Resource"] = "getAuthorsWithPut";
       headers[versionHeader] = version;
 
@@ -816,10 +840,16 @@ class SwaggerTest {
       if (!options) {
         options = {};
       }
+	  
+      const optionsBaggage = options.baggage || {}
 
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
+      for (const key in optionsBaggage) {
+        headers["clever_prop_" + key] = optionsBaggage[key];
+      }
+      
       headers["Canonical-Resource"] = "getBooks";
       headers[versionHeader] = version;
       headers["authorization"] = params.authorization;
@@ -958,10 +988,16 @@ class SwaggerTest {
       if (!options) {
         options = {};
       }
+	  
+      const optionsBaggage = options.baggage || {}
 
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
+      for (const key in optionsBaggage) {
+        headers["clever_prop_" + key] = optionsBaggage[key];
+      }
+      
       headers["Canonical-Resource"] = "getBooks";
       headers[versionHeader] = version;
       headers["authorization"] = params.authorization;
@@ -1151,10 +1187,16 @@ class SwaggerTest {
       if (!options) {
         options = {};
       }
+	  
+      const optionsBaggage = options.baggage || {}
 
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
+      for (const key in optionsBaggage) {
+        headers["clever_prop_" + key] = optionsBaggage[key];
+      }
+      
       headers["Canonical-Resource"] = "createBook";
       headers[versionHeader] = version;
 
@@ -1258,10 +1300,16 @@ class SwaggerTest {
       if (!options) {
         options = {};
       }
+	  
+      const optionsBaggage = options.baggage || {}
 
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
+      for (const key in optionsBaggage) {
+        headers["clever_prop_" + key] = optionsBaggage[key];
+      }
+      
       headers["Canonical-Resource"] = "putBook";
       headers[versionHeader] = version;
 
@@ -1369,10 +1417,16 @@ class SwaggerTest {
       if (!options) {
         options = {};
       }
+	  
+      const optionsBaggage = options.baggage || {}
 
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
+      for (const key in optionsBaggage) {
+        headers["clever_prop_" + key] = optionsBaggage[key];
+      }
+      
       headers["Canonical-Resource"] = "getBookByID";
       headers[versionHeader] = version;
       if (!params.bookID) {
@@ -1501,10 +1555,16 @@ class SwaggerTest {
       if (!options) {
         options = {};
       }
+	  
+      const optionsBaggage = options.baggage || {}
 
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
+      for (const key in optionsBaggage) {
+        headers["clever_prop_" + key] = optionsBaggage[key];
+      }
+      
       headers["Canonical-Resource"] = "getBookByID2";
       headers[versionHeader] = version;
       if (!params.id) {
@@ -1613,10 +1673,16 @@ class SwaggerTest {
       if (!options) {
         options = {};
       }
+	  
+      const optionsBaggage = options.baggage || {}
 
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
+      for (const key in optionsBaggage) {
+        headers["clever_prop_" + key] = optionsBaggage[key];
+      }
+      
       headers["Canonical-Resource"] = "healthCheck";
       headers[versionHeader] = version;
 
@@ -1717,10 +1783,16 @@ class SwaggerTest {
       if (!options) {
         options = {};
       }
+	  
+      const optionsBaggage = options.baggage || {}
 
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
+      for (const key in optionsBaggage) {
+        headers["clever_prop_" + key] = optionsBaggage[key];
+      }
+      
       headers["Canonical-Resource"] = "lowercaseModelsTest";
       headers[versionHeader] = version;
       if (!params.pathParam) {

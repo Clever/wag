@@ -283,10 +283,16 @@ class Blog {
       if (!options) {
         options = {};
       }
+	  
+      const optionsBaggage = options.baggage || {}
 
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
+      for (const key in optionsBaggage) {
+        headers["clever_prop_" + key] = optionsBaggage[key];
+      }
+      
       headers["Canonical-Resource"] = "postGradeFileForStudent";
       headers[versionHeader] = version;
       if (!params.studentID) {
@@ -394,10 +400,16 @@ class Blog {
       if (!options) {
         options = {};
       }
+	  
+      const optionsBaggage = options.baggage || {}
 
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
+      for (const key in optionsBaggage) {
+        headers["clever_prop_" + key] = optionsBaggage[key];
+      }
+      
       headers["Canonical-Resource"] = "getSectionsForStudent";
       headers[versionHeader] = version;
       if (!params.studentID) {
@@ -503,10 +515,16 @@ class Blog {
       if (!options) {
         options = {};
       }
+	  
+      const optionsBaggage = options.baggage || {}
 
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
+      for (const key in optionsBaggage) {
+        headers["clever_prop_" + key] = optionsBaggage[key];
+      }
+      
       headers["Canonical-Resource"] = "postSectionsForStudent";
       headers[versionHeader] = version;
       if (!params.studentID) {

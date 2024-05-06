@@ -14,6 +14,7 @@ import (
 
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/baggage"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
@@ -127,19 +128,37 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 				h.ServeHTTP(rw, r)
 				return
 			}
+			ctx := r.Context()
 
 			var crid string
 
-			s := trace.SpanFromContext(r.Context())
+			s := trace.SpanFromContext(ctx)
 			crid = s.SpanContext().TraceID().String()
+
+			// Add headers starting with clever_prop_ to baggage
+			r.Header.VisitAll(func(key, value []byte) {
+				prefix := "clever_prop_"
+				if len(key) > len(prefix) && string(key[:len(prefix)]) == prefix {
+					strippedKey := string(key[len(prefix):])
+					baggage.Set(ctx, strippedKey, string(value))
+				}
+			})
+
+			bags := baggage.FromContext(ctx)
+
+			// Add the baggage to the logger
+			bags.Foreach(func(k string, v string) {
+				logger.FromContext(ctx).AddContext(k, v)
+			})
 
 			// set clever-request-id header to crid
 			r.Header.Set("clever-request-id", crid)
-			ctx := r.Context()
 
 			// Log if sampled
 			if s.SpanContext().IsSampled() {
 				logger.FromContext(ctx).AddContext("sampled", "true")
+			} else {
+				logger.FromContext(ctx).AddContext("sampled", "false")
 			}
 
 			// Add the headers to the logger

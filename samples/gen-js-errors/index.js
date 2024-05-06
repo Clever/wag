@@ -284,10 +284,16 @@ class SwaggerTest {
       if (!options) {
         options = {};
       }
+	  
+      const optionsBaggage = options.baggage || {}
 
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
+      for (const key in optionsBaggage) {
+        headers["clever_prop_" + key] = optionsBaggage[key];
+      }
+      
       headers["Canonical-Resource"] = "getBook";
       headers[versionHeader] = version;
       if (!params.id) {

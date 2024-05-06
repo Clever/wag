@@ -7,6 +7,29 @@ const mockAddress = "http://localhost:8000";
 const alternateMockAddress = "http://localhost:8001";
 
 describe("operations", function() {
+  it("properly sets baggage headers", function(done) {
+
+    const c = new Client({address: mockAddress});
+    const params = {
+      bookID: "the-mediocre-gatsby",
+    }
+    const mockResponse = {hello: "world"};
+    const req = {
+      ClientIP: "123.123.123.123",
+      SessionID: "1234567890"
+    }
+    const scope = nock(mockAddress)
+      .get(`/v1/books/${params.bookID}`)
+      .reply(200, mockResponse);
+    const options = {
+      baggage: {
+       ClientIP: req.ClientIP,
+       session_id: req.SessionID
+      }
+    }
+    const resp = c.getBookByID({bookID: params.bookID}, options);
+  });
+
   it("correctly fill out path, header and query params", function(done) {
     const c = new Client({address: mockAddress});
     const params = {
@@ -125,7 +148,7 @@ describe("operations", function() {
         return [200, {}];
         
       });
-    c.getBooks2({}, {}).then(function() {
+    c.getBooks({}, {}).then(function() {
       assert(scope.isDone());
       done();
     });
