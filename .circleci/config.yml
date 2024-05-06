@@ -9,6 +9,11 @@ jobs:
       CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
     steps:
       - run:
+          command: |-
+            sudo apt-get install -y curl
+            curl -sL https://deb.nodesource.com/setup_18.x -o nodesource_setup.sh
+            sudo apt-get install -y nodejs=18.*
+      - run:
           command: cd $HOME && git clone --depth 1 -v https://github.com/Clever/ci-scripts.git && cd ci-scripts && git show --oneline -s
           name: Clone ci-scripts
       - checkout
