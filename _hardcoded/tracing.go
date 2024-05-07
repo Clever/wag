@@ -134,22 +134,26 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 
 			s := trace.SpanFromContext(ctx)
 			crid = s.SpanContext().TraceID().String()
-
-			// Add headers starting with clever_prop_ to baggage
-			r.Header.VisitAll(func(key, value []byte) {
-				prefix := "clever_prop_"
-				if len(key) > len(prefix) && string(key[:len(prefix)]) == prefix {
-					strippedKey := string(key[len(prefix):])
-					baggage.Set(ctx, strippedKey, string(value))
-				}
-			})
-
 			bags := baggage.FromContext(ctx)
+			// Add headers starting with clever_prop_ to baggage
+			for header := range r.Header {
+				prefix := "clever_prop_"
+				if len(header) > len(prefix) && header[:len(prefix)] == prefix {
+					member, err := baggage.NewMember(header[len(prefix):], r.Header.Get(header))
+					if err != nil {
+						s.RecordError(err)
+					}
+					bags, err = bags.SetMember(member)
+					if err != nil {
+						s.RecordError(err)
+					}
+				}
+			}
 
 			// Add the baggage to the logger
-			bags.Foreach(func(k string, v string) {
-				logger.FromContext(ctx).AddContext(k, v)
-			})
+			for _, bag := range bags.Members() {
+				logger.FromContext(ctx).AddContext(bag.Key(), bag.Value())
+			}
 
 			// set clever-request-id header to crid
 			r.Header.Set("clever-request-id", crid)
