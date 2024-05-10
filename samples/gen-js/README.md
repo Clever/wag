@@ -217,6 +217,7 @@ Creates a book
 | newBook |  |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
+| [options.baggage] | <code>object</code> | A request specific baggage to be propagated |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
@@ -236,6 +237,7 @@ Puts a book
 | newBook |  |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
+| [options.baggage] | <code>object</code> | A request specific baggage to be propagated |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
@@ -282,6 +284,7 @@ Retrieve a book
 | id | <code>string</code> |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
+| [options.baggage] | <code>object</code> | A request specific baggage to be propagated |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
@@ -298,6 +301,7 @@ Retrieve a book
 | --- | --- | --- |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
+| [options.baggage] | <code>object</code> | A request specific baggage to be propagated |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 

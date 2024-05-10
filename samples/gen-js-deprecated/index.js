@@ -7,6 +7,24 @@ const RollingNumberEvent = require("hystrixjs/lib/metrics/RollingNumberEvent");
 
 const { Errors } = require("./types");
 
+function parseForBaggage(entries) {
+  // Regular expression for valid characters in keys and values
+  const validChars = /^[a-zA-Z0-9!#$%&'*+`-.^_`|~]+$/;
+  // Transform the entries object into an array of strings
+  const baggageItems = Object.entries(entries).map(([key, value]) => {
+    // Remove invalid characters from key and value
+    const validKey = key.match(validChars) ? key : encodeURIComponent(key);
+    const validValue = value.match(validChars) ? value : encodeURIComponent(value);
+
+    return `${validKey}=${validValue}`;
+  });
+
+  // Combine the array of strings into the final baggageString
+  const baggageString = baggageItems.join(',');
+
+  return baggageString;
+}
+
 /**
  * The exponential retry policy will retry five times with an exponential backoff.
  * @alias module:swagger-test.RetryPolicies.Exponential

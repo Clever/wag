@@ -7,6 +7,24 @@ const RollingNumberEvent = require("hystrixjs/lib/metrics/RollingNumberEvent");
 
 const { Errors } = require("./types");
 
+function parseForBaggage(entries) {
+  // Regular expression for valid characters in keys and values
+  const validChars = /^[a-zA-Z0-9!#$%&'*+`-.^_`|~]+$/;
+  // Transform the entries object into an array of strings
+  const baggageItems = Object.entries(entries).map(([key, value]) => {
+    // Remove invalid characters from key and value
+    const validKey = key.match(validChars) ? key : encodeURIComponent(key);
+    const validValue = value.match(validChars) ? value : encodeURIComponent(value);
+
+    return `${validKey}=${validValue}`;
+  });
+
+  // Combine the array of strings into the final baggageString
+  const baggageString = baggageItems.join(',');
+
+  return baggageString;
+}
+
 /**
  * The exponential retry policy will retry five times with an exponential backoff.
  * @alias module:blog.RetryPolicies.Exponential
@@ -283,14 +301,30 @@ class Blog {
       if (!options) {
         options = {};
       }
-	  
+  
       const optionsBaggage = options.baggage || {}
 
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
-      for (const key in optionsBaggage) {
-        headers["clever_prop_" + key] = optionsBaggage[key];
+      
+      if (headers["baggage"]) {
+        const existingBaggageItems = headers["baggage"].split(',');
+        const existingBaggage = {};
+    
+        for (const item of existingBaggageItems) {
+          const [key, value] = item.split('=');
+          existingBaggage[key] = value;
+        }
+    
+        // Merge existingBaggage and optionsBaggage. Values in optionsBaggage will overwrite those in existingBaggage.
+        const mergedBaggage = {...existingBaggage, ...optionsBaggage};
+    
+        // Convert mergedBaggage back into a string using parseForBaggage
+        headers["baggage"] = parseForBaggage(mergedBaggage);
+      } else {
+        // Convert optionsBaggage into a string using parseForBaggage
+        headers["baggage"] = parseForBaggage(optionsBaggage);
       }
       
       headers["Canonical-Resource"] = "postGradeFileForStudent";
@@ -372,6 +406,7 @@ class Blog {
    * @param {string} studentID
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
+   * @param {object} [options.baggage] - A request specific baggage to be propagated
    * @param {module:blog.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -400,14 +435,30 @@ class Blog {
       if (!options) {
         options = {};
       }
-	  
+  
       const optionsBaggage = options.baggage || {}
 
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
-      for (const key in optionsBaggage) {
-        headers["clever_prop_" + key] = optionsBaggage[key];
+      
+      if (headers["baggage"]) {
+        const existingBaggageItems = headers["baggage"].split(',');
+        const existingBaggage = {};
+    
+        for (const item of existingBaggageItems) {
+          const [key, value] = item.split('=');
+          existingBaggage[key] = value;
+        }
+    
+        // Merge existingBaggage and optionsBaggage. Values in optionsBaggage will overwrite those in existingBaggage.
+        const mergedBaggage = {...existingBaggage, ...optionsBaggage};
+    
+        // Convert mergedBaggage back into a string using parseForBaggage
+        headers["baggage"] = parseForBaggage(mergedBaggage);
+      } else {
+        // Convert optionsBaggage into a string using parseForBaggage
+        headers["baggage"] = parseForBaggage(optionsBaggage);
       }
       
       headers["Canonical-Resource"] = "getSectionsForStudent";
@@ -515,14 +566,30 @@ class Blog {
       if (!options) {
         options = {};
       }
-	  
+  
       const optionsBaggage = options.baggage || {}
 
       const timeout = options.timeout || this.timeout;
 
       const headers = {};
-      for (const key in optionsBaggage) {
-        headers["clever_prop_" + key] = optionsBaggage[key];
+      
+      if (headers["baggage"]) {
+        const existingBaggageItems = headers["baggage"].split(',');
+        const existingBaggage = {};
+    
+        for (const item of existingBaggageItems) {
+          const [key, value] = item.split('=');
+          existingBaggage[key] = value;
+        }
+    
+        // Merge existingBaggage and optionsBaggage. Values in optionsBaggage will overwrite those in existingBaggage.
+        const mergedBaggage = {...existingBaggage, ...optionsBaggage};
+    
+        // Convert mergedBaggage back into a string using parseForBaggage
+        headers["baggage"] = parseForBaggage(mergedBaggage);
+      } else {
+        // Convert optionsBaggage into a string using parseForBaggage
+        headers["baggage"] = parseForBaggage(optionsBaggage);
       }
       
       headers["Canonical-Resource"] = "postSectionsForStudent";
