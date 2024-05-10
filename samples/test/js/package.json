@@ -14,9 +14,10 @@
     "nock": "^13.5.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
-    "mocha": "^3.1.2"
+    "mocha": "^10.0.6"
+
   },
   "scripts": {
-    "test": "mocha --require ts-node/register *"
+    "test": "mocha --require ts-node/register *.ts"
   }
 }
