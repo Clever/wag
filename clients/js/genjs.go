@@ -104,7 +104,7 @@ const { Errors } = require("./types");
 
 function parseForBaggage(entries) {
   // Regular expression for valid characters in keys and values
-  const validChars = /^[a-zA-Z0-9!#$%&'*+` + "`-.^_`" + `|~]+$/;
+  const validChars = /^[a-zA-Z0-9!#$%&'*+` + "`\\-.^_`" + `|~]+$/;
   // Transform the entries object into an array of strings
   const baggageItems = Object.entries(entries).map(([key, value]) => {
     // Remove invalid characters from key and value
