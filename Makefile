@@ -22,6 +22,7 @@ test: build generate $(PKGS) js-tests
 	$(MAKE) -C samples test
 
 js-tests:
+	cd samples/gen-js && rm -rf node_modules && npm install
 	cd samples/test/js && rm -rf node_modules && npm install && npm test
 
 jsdoc2md:
