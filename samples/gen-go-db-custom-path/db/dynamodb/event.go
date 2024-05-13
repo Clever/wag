@@ -95,7 +95,7 @@ func (t EventTable) create(ctx context.Context) error {
 		},
 		TableName: aws.String(t.TableName),
 	}); err != nil {
-		return err
+		return fmt.Errorf("failed to create table %s: %w", t.TableName, err)
 	}
 	return nil
 }
