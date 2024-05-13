@@ -1,4 +1,6 @@
-v10.2.1
+v9.2.3
+
+v9.2.3 Upgrade wag js to node v18, add baggage to wag js clients. Log/Propagate all baggage.
 
 v9.2.1 package `db` no longer provides default table names, instead `db.New` errors when a table name is not provided. This eliminates ambiguous errors when this step is missed.
 
