@@ -1,6 +1,6 @@
-v9.2.3
+v9.3.0
 
-v9.2.3 Upgrade wag js to node v18, add baggage to wag js clients. Log/Propagate all baggage.
+v9.3.0 Upgrade wag js to node v18, add baggage to wag js clients. Log/Propagate all baggage.
 
 v9.2.2 fixes an unused import caused by deleting code in 9.2.1
 

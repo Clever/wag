@@ -207,7 +207,6 @@ describe("circuit", function() {
     Promise.all(promises).then(() => {
       done();
     }).catch((err) => {
-      console.log("ERROR: ", err)
       done(err);
     });
   });
