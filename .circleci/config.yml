@@ -1,9 +1,9 @@
 version: 2
 jobs:
   build:
-    working_directory: /go/src/github.com/Clever/wag
+    working_directory: ~/go/src/github.com/Clever/wag
     docker:
-      - image: circleci/golang:1.16-buster
+      - image: cimg/go:1.16
     environment:
       CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
       CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
@@ -11,8 +11,10 @@ jobs:
       - run:
           command: |-
             sudo apt-get install -y curl
-            curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
-            sudo apt-get install -y nodejs=7.*
+            curl -sL https://deb.nodesource.com/setup_18.x -o nodesource_setup.sh
+            sudo bash nodesource_setup.sh
+            sudo apt-get install -y nodejs=18.*
+            rm nodesource_setup.sh
       - run:
           command: cd $HOME && git clone --depth 1 -v https://github.com/Clever/ci-scripts.git && cd ci-scripts && git show --oneline -s
           name: Clone ci-scripts

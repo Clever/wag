@@ -1,1 +1,10 @@
-{}
+{
+  "dependencies": {
+    "@opentelemetry/core": "^1.24.0",
+    "hystrixjs": "^0.2.0",
+    "node": "^18.20.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

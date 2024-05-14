@@ -70,6 +70,7 @@ Releases handles used in client
 | id | <code>number</code> |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
+| [options.baggage] | <code>object</code> | A request specific baggage to be propagated |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
