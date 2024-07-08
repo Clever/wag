@@ -1,3 +1,5 @@
+import { warn } from "console";
+
 const assert = require("assert");
 const nock = require("nock");
 
@@ -110,6 +112,7 @@ describe("circuit", function() {
       address: mockAddress,
       logger: {
         errorD: (title, data) => {},
+        warnD: (title, data) => {},
         infoD: (title, data) => {
           loggerCalls++;
           if (loggerCalls == 1) {
@@ -140,20 +143,17 @@ describe("circuit", function() {
     assert.equal(loggerCalls, 1);
   });
 
-  it("does not consider 4XXs errors", async () => {
+  it("4xxs are counted as warnings", async () => {
     let loggerCalls = 0;
     const c = new Client({
       address: mockAddress,
       retryPolicy: RetryPolicies.None,
       logger: {
         errorD: (title, data) => {},
-        infoD: (title, data) => {
+        warnD: (title, data) => {
           loggerCalls++;
-          if (loggerCalls == 1) {
-            assert.equal(data.errorCount, 0, "expected log to show 0 errors");
-            assert.equal(data.errorPercentage, 0, "expected error percent to be 0");
-          }
         },
+        infoD: (title, data) => {},
       },
       circuit: {
         forceClosed: true,
@@ -174,7 +174,7 @@ describe("circuit", function() {
       assert(scope.isDone(), "nock scope should be done");
     }
     await sleep(1500);
-    assert.equal(loggerCalls, 1);
+    assert.equal(loggerCalls, 20);
   });
 
   it("applies callback, if provided, to circuit-breaker error", (done) => {

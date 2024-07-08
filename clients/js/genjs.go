@@ -193,9 +193,13 @@ function responseLog(logger, req, res, err) {
     "message": err || (res.statusMessage || ""),
     "status_code": res.statusCode || 0,
   };
-
+  
   if (err) {
-    logger.errorD("client-request-finished", logData);
+	if (logData.status_code <= 499){
+		logger.warnD("client-request-finished", logData);
+	}else{
+		logger.errorD("client-request-finished", logData);
+	}
   } else {
     logger.infoD("client-request-finished", logData);
   }

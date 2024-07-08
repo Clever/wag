@@ -313,7 +313,11 @@ func (c *WagClient) doGetAuthorsRequest(ctx context.Context, req *http.Request, 
 		"uri":         req.URL,
 		"status_code": retCode,
 	}
-	if err == nil && retCode > 399 {
+	if err == nil && retCode > 399 && retCode < 500 {
+		logData["message"] = resp.Status
+		c.logger.Log(wcl.Warn, "client-request-finished", logData)
+	}
+	if err == nil && retCode > 499 {
 		logData["message"] = resp.Status
 		c.logger.Log(wcl.Error, "client-request-finished", logData)
 	}
@@ -525,7 +529,11 @@ func (c *WagClient) doGetAuthorsWithPutRequest(ctx context.Context, req *http.Re
 		"uri":         req.URL,
 		"status_code": retCode,
 	}
-	if err == nil && retCode > 399 {
+	if err == nil && retCode > 399 && retCode < 500 {
+		logData["message"] = resp.Status
+		c.logger.Log(wcl.Warn, "client-request-finished", logData)
+	}
+	if err == nil && retCode > 499 {
 		logData["message"] = resp.Status
 		c.logger.Log(wcl.Error, "client-request-finished", logData)
 	}
@@ -719,7 +727,11 @@ func (c *WagClient) doGetBooksRequest(ctx context.Context, req *http.Request, he
 		"uri":         req.URL,
 		"status_code": retCode,
 	}
-	if err == nil && retCode > 399 {
+	if err == nil && retCode > 399 && retCode < 500 {
+		logData["message"] = resp.Status
+		c.logger.Log(wcl.Warn, "client-request-finished", logData)
+	}
+	if err == nil && retCode > 499 {
 		logData["message"] = resp.Status
 		c.logger.Log(wcl.Error, "client-request-finished", logData)
 	}
@@ -828,7 +840,11 @@ func (c *WagClient) doCreateBookRequest(ctx context.Context, req *http.Request, 
 		"uri":         req.URL,
 		"status_code": retCode,
 	}
-	if err == nil && retCode > 399 {
+	if err == nil && retCode > 399 && retCode < 500 {
+		logData["message"] = resp.Status
+		c.logger.Log(wcl.Warn, "client-request-finished", logData)
+	}
+	if err == nil && retCode > 499 {
 		logData["message"] = resp.Status
 		c.logger.Log(wcl.Error, "client-request-finished", logData)
 	}
@@ -937,7 +953,11 @@ func (c *WagClient) doPutBookRequest(ctx context.Context, req *http.Request, hea
 		"uri":         req.URL,
 		"status_code": retCode,
 	}
-	if err == nil && retCode > 399 {
+	if err == nil && retCode > 399 && retCode < 500 {
+		logData["message"] = resp.Status
+		c.logger.Log(wcl.Warn, "client-request-finished", logData)
+	}
+	if err == nil && retCode > 499 {
 		logData["message"] = resp.Status
 		c.logger.Log(wcl.Error, "client-request-finished", logData)
 	}
@@ -1047,7 +1067,11 @@ func (c *WagClient) doGetBookByIDRequest(ctx context.Context, req *http.Request,
 		"uri":         req.URL,
 		"status_code": retCode,
 	}
-	if err == nil && retCode > 399 {
+	if err == nil && retCode > 399 && retCode < 500 {
+		logData["message"] = resp.Status
+		c.logger.Log(wcl.Warn, "client-request-finished", logData)
+	}
+	if err == nil && retCode > 499 {
 		logData["message"] = resp.Status
 		c.logger.Log(wcl.Error, "client-request-finished", logData)
 	}
@@ -1168,7 +1192,11 @@ func (c *WagClient) doGetBookByID2Request(ctx context.Context, req *http.Request
 		"uri":         req.URL,
 		"status_code": retCode,
 	}
-	if err == nil && retCode > 399 {
+	if err == nil && retCode > 399 && retCode < 500 {
+		logData["message"] = resp.Status
+		c.logger.Log(wcl.Warn, "client-request-finished", logData)
+	}
+	if err == nil && retCode > 499 {
 		logData["message"] = resp.Status
 		c.logger.Log(wcl.Error, "client-request-finished", logData)
 	}
@@ -1274,7 +1302,11 @@ func (c *WagClient) doHealthCheckRequest(ctx context.Context, req *http.Request,
 		"uri":         req.URL,
 		"status_code": retCode,
 	}
-	if err == nil && retCode > 399 {
+	if err == nil && retCode > 399 && retCode < 500 {
+		logData["message"] = resp.Status
+		c.logger.Log(wcl.Warn, "client-request-finished", logData)
+	}
+	if err == nil && retCode > 499 {
 		logData["message"] = resp.Status
 		c.logger.Log(wcl.Error, "client-request-finished", logData)
 	}
@@ -1384,7 +1416,11 @@ func (c *WagClient) doLowercaseModelsTestRequest(ctx context.Context, req *http.
 		"uri":         req.URL,
 		"status_code": retCode,
 	}
-	if err == nil && retCode > 399 {
+	if err == nil && retCode > 399 && retCode < 500 {
+		logData["message"] = resp.Status
+		c.logger.Log(wcl.Warn, "client-request-finished", logData)
+	}
+	if err == nil && retCode > 499 {
 		logData["message"] = resp.Status
 		c.logger.Log(wcl.Error, "client-request-finished", logData)
 	}
