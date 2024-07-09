@@ -1,5 +1,3 @@
-import { warn } from "console";
-
 const assert = require("assert");
 const nock = require("nock");
 
