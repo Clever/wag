@@ -240,7 +240,11 @@ func (c *WagClient) doNilCheckRequest(ctx context.Context, req *http.Request, he
 		"uri":         req.URL,
 		"status_code": retCode,
 	}
-	if err == nil && retCode > 399 {
+	if err == nil && retCode > 399 && retCode < 500 {
+		logData["message"] = resp.Status
+		c.logger.Log(wcl.Warn, "client-request-finished", logData)
+	}
+	if err == nil && retCode > 499 {
 		logData["message"] = resp.Status
 		c.logger.Log(wcl.Error, "client-request-finished", logData)
 	}
