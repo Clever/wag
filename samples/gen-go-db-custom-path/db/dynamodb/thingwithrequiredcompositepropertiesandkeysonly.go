@@ -233,7 +233,7 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) getThingWithRequir
 	} else {
 		queryInput.ExpressionAttributeNames["#PROPERTYTHREE"] = aws.String("propertyThree")
 		queryInput.ExpressionAttributeValues[":propertyThree"] = &dynamodb.AttributeValue{
-			S: aws.String(*input.PropertyThreeStartingAt),
+			S: aws.String(string(*input.PropertyThreeStartingAt)),
 		}
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#PROPERTYONEANDTWO = :propertyOneAndTwo AND #PROPERTYTHREE <= :propertyThree")
@@ -244,7 +244,7 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) getThingWithRequir
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"propertyThree": &dynamodb.AttributeValue{
-				S: aws.String(*input.StartingAfter.PropertyThree),
+				S: aws.String(string(*input.StartingAfter.PropertyThree)),
 			},
 			"propertyOneAndTwo": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s_%s", *input.StartingAfter.PropertyOne, *input.StartingAfter.PropertyTwo)),

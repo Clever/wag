@@ -294,7 +294,7 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, i
 	} else {
 		queryInput.ExpressionAttributeNames["#VERSION"] = aws.String("version")
 		queryInput.ExpressionAttributeValues[":version"] = &dynamodb.AttributeValue{
-			S: aws.String(*input.VersionStartingAt),
+			S: aws.String(string(*input.VersionStartingAt)),
 		}
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#ENVAPP = :envApp AND #VERSION <= :version")
@@ -305,7 +305,7 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, i
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"version": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.Version),
+				S: aws.String(string(input.StartingAfter.Version)),
 			},
 			"envApp": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application)),

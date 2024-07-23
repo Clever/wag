@@ -236,7 +236,7 @@ func (t EventTable) getEventsByPkAndSk(ctx context.Context, input db.GetEventsBy
 	} else {
 		queryInput.ExpressionAttributeNames["#SK"] = aws.String("sk")
 		queryInput.ExpressionAttributeValues[":sk"] = &dynamodb.AttributeValue{
-			S: aws.String(*input.SkStartingAt),
+			S: aws.String(string(*input.SkStartingAt)),
 		}
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#PK = :pk AND #SK <= :sk")
@@ -247,7 +247,7 @@ func (t EventTable) getEventsByPkAndSk(ctx context.Context, input db.GetEventsBy
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"sk": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.Sk),
+				S: aws.String(string(input.StartingAfter.Sk)),
 			},
 			"pk": &dynamodb.AttributeValue{
 				S: aws.String(input.StartingAfter.Pk),

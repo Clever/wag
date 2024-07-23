@@ -259,7 +259,7 @@ func (t ThingWithDatetimeGSITable) getThingWithDatetimeGSIsByDatetimeAndID(ctx c
 	} else {
 		queryInput.ExpressionAttributeNames["#ID"] = aws.String("id")
 		queryInput.ExpressionAttributeValues[":id"] = &dynamodb.AttributeValue{
-			S: aws.String(*input.IDStartingAt),
+			S: aws.String(string(*input.IDStartingAt)),
 		}
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#DATETIME = :datetime AND #ID <= :id")
@@ -270,7 +270,7 @@ func (t ThingWithDatetimeGSITable) getThingWithDatetimeGSIsByDatetimeAndID(ctx c
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"id": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.ID),
+				S: aws.String(string(input.StartingAfter.ID)),
 			},
 			"datetime": &dynamodb.AttributeValue{
 				S: aws.String(toDynamoTimeString(input.StartingAfter.Datetime)),

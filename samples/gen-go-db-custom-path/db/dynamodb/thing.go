@@ -872,7 +872,7 @@ func (t ThingTable) getThingsByHashNullableAndName(ctx context.Context, input db
 	} else {
 		queryInput.ExpressionAttributeNames["#NAME"] = aws.String("name")
 		queryInput.ExpressionAttributeValues[":name"] = &dynamodb.AttributeValue{
-			S: aws.String(*input.NameStartingAt),
+			S: aws.String(string(*input.NameStartingAt)),
 		}
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#HASHNULLABLE = :hashNullable AND #NAME <= :name")
@@ -883,7 +883,7 @@ func (t ThingTable) getThingsByHashNullableAndName(ctx context.Context, input db
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"name": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.Name),
+				S: aws.String(string(input.StartingAfter.Name)),
 			},
 			"hashNullable": &dynamodb.AttributeValue{
 				S: aws.String(*input.StartingAfter.HashNullable),
