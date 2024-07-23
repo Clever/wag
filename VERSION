@@ -1,4 +1,6 @@
-v9.3.1
+v9.3.2
+
+v9.3.2 Fix string enums as GSIs for dynamodb
 
 v9.3.1 4xxs errors now log at warn level
 
