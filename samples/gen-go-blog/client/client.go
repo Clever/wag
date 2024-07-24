@@ -228,7 +228,7 @@ func (c *WagClient) doPostGradeFileForStudentRequest(ctx context.Context, req *h
 	}
 	if err == nil && retCode > 399 && retCode < 500 {
 		logData["message"] = resp.Status
-		c.logger.Log(wcl.Warn, "client-request-finished", logData)
+		c.logger.Log(wcl.Warning, "client-request-finished", logData)
 	}
 	if err == nil && retCode > 499 {
 		logData["message"] = resp.Status
@@ -331,7 +331,7 @@ func (c *WagClient) doGetSectionsForStudentRequest(ctx context.Context, req *htt
 	}
 	if err == nil && retCode > 399 && retCode < 500 {
 		logData["message"] = resp.Status
-		c.logger.Log(wcl.Warn, "client-request-finished", logData)
+		c.logger.Log(wcl.Warning, "client-request-finished", logData)
 	}
 	if err == nil && retCode > 499 {
 		logData["message"] = resp.Status
@@ -439,7 +439,7 @@ func (c *WagClient) doPostSectionsForStudentRequest(ctx context.Context, req *ht
 	}
 	if err == nil && retCode > 399 && retCode < 500 {
 		logData["message"] = resp.Status
-		c.logger.Log(wcl.Warn, "client-request-finished", logData)
+		c.logger.Log(wcl.Warning, "client-request-finished", logData)
 	}
 	if err == nil && retCode > 499 {
 		logData["message"] = resp.Status
