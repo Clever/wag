@@ -223,7 +223,7 @@ func (c *WagClient) doHealthCheckRequest(ctx context.Context, req *http.Request,
 	}
 	if err == nil && retCode > 399 && retCode < 500 {
 		logData["message"] = resp.Status
-		c.logger.Log(wcl.Warn, "client-request-finished", logData)
+		c.logger.Log(wcl.Warning, "client-request-finished", logData)
 	}
 	if err == nil && retCode > 499 {
 		logData["message"] = resp.Status

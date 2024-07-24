@@ -1,4 +1,6 @@
-v9.3.2
+v9.3.3
+
+v9.3.3 Fix typo for generating warning logs
 
 v9.3.2 Fix string enums as GSIs for dynamodb
 
