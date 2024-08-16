@@ -6,7 +6,7 @@ Despite the presence of a `swagger.yml` file, WAG does not support all of the Sw
 WAG is a custom re-implementation of a subset of the Swagger version `2.0` standard.
 
 ## Usage
-Wag requires Go 1.16+ to build, and the generated code also requires Go 1.16+.
+Wag requires Go 1.21+ to build, and the generated code also requires Go 1.21+.
 
 ### Dependencies
 
