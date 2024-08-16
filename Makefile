@@ -48,6 +48,7 @@ release:
 	@rm "$@/$(EXECUTABLE)"
 
 install_deps:
+	go mod tidy
 	go mod vendor
 	go build -o bin/go-bindata ./vendor/github.com/kevinburke/go-bindata/go-bindata
 	go build -o bin/mockgen    ./vendor/github.com/golang/mock/mockgen
