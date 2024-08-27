@@ -1,4 +1,6 @@
-v9.3.3
+v9.3.4
+
+v9.3.4 go 1.21 update
 
 v9.3.3 Fix typo for generating warning logs
 

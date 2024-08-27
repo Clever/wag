@@ -75,7 +75,7 @@ func CreateModFile(path string, basePath, packageName, outputPath string) error 
 module ` + moduleName + outputPath + `/models` + versionSuffix + `
 
 
-go 1.16
+go 1.21
 
 require (
 	github.com/go-openapi/errors v0.20.2
