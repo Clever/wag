@@ -216,6 +216,14 @@ func (d DB) TransactSave{{ $modelName }}And{{ $transactWithModelName }}(ctx cont
 
 {{- end }}
 
+func dateToDynamoTimeString(d strfmt.Date) string {
+	return time.Time(d).Format(time.DateOnly)
+}
+
+func datePtrToDynamoTimeString(d *strfmt.Date) string {
+	return time.Time(*d).Format(time.DateOnly)
+}
+
 func datetimeToDynamoTimeString(d strfmt.DateTime) string {
   return time.Time(d).Format(time.RFC3339) // dynamodb attributevalue only supports RFC3339 resolution
 }
