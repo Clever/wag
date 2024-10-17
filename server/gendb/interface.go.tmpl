@@ -90,6 +90,11 @@ func String(s string) *string { return &s }
 func DateTime(d strfmt.DateTime) *strfmt.DateTime { return &d }
 {{- end }}
 
+{{- if anyTableUsesDate .XDBConfigs }}
+// Date returns a pointer to the strfmt.Date value passed in.
+func Date(d strfmt.Date) *strfmt.Date { return &d }
+{{- end }}
+
 {{- range $xdbConfig := .XDBConfigs }}
 {{- $modelName := pascalize $xdbConfig.SchemaName }}
 {{- if $xdbConfig.AllowPrimaryIndexScan }}

@@ -24,6 +24,14 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		}
 		return false
 	},
+	"anyTableUsesDate": func(configs []XDBConfig) bool {
+		for _, config := range configs {
+			if tableUsesDate(config) {
+				return true
+			}
+		}
+		return false
+	},
 	"tableAllowsScans": tableAllowsScans,
 	"anyTableAllowsScans": func(configs []XDBConfig) bool {
 		for _, config := range configs {
@@ -386,6 +394,8 @@ func goTypeForAttribute(config XDBConfig, attributeName string) string {
 	if propertySchema, ok := config.Schema.Properties[attributeName]; ok {
 		if isDateTimeFormat(propertySchema.Format) {
 			return "strfmt.DateTime"
+		} else if isDateFormat(propertySchema.Format) {
+			return "strfmt.Date"
 		} else if propertySchema.Format == "byte" {
 			return "[]byte"
 		} else if len(propertySchema.Type) > 0 {
@@ -592,6 +602,8 @@ func exampleValueNotPtrForAttribute(config XDBConfig, attributeName string, i in
 	if propertySchema, ok := config.Schema.Properties[attributeName]; ok {
 		if isDateTimeFormat(propertySchema.Format) {
 			return fmt.Sprintf(`mustTime("2018-03-11T15:04:0%d+07:00")`, i)
+		} else if isDateFormat(propertySchema.Format) {
+			return fmt.Sprintf(`mustDate("2018-03-1%d")`, i)
 		} else if len(propertySchema.Type) > 0 {
 			if propertySchema.Type[0] == "string" {
 				if propertySchema.Format == "byte" {
@@ -637,6 +649,8 @@ func exampleValuePtrForAttribute(config XDBConfig, attributeName string, i int) 
 	if propertySchema, ok := config.Schema.Properties[attributeName]; ok {
 		if isDateTimeFormat(propertySchema.Format) {
 			return fmt.Sprintf(`db.DateTime(mustTime("2018-03-11T15:04:0%d+07:00"))`, i)
+		} else if isDateFormat(propertySchema.Format) {
+			return fmt.Sprintf(`db.Date(mustDate("2018-03-1%d"))`, i)
 		} else if len(propertySchema.Type) > 0 {
 			if propertySchema.Type[0] == "string" {
 				if propertySchema.Format == "byte" {
@@ -681,6 +695,10 @@ func isDateTimeFormat(s string) bool {
 	return contains(s, []string{"datetime", "date-time"})
 }
 
+func isDateFormat(s string) bool {
+	return s == "date"
+}
+
 func tableUsesDateTime(config XDBConfig) bool {
 	keySchemas := config.DynamoDB.KeySchema
 	for _, gsi := range config.DynamoDB.GlobalSecondaryIndexes {
@@ -696,6 +714,27 @@ func tableUsesDateTime(config XDBConfig) bool {
 	}
 	for _, schemaProp := range schemaProperties {
 		if isDateTimeFormat(config.Schema.Properties[schemaProp].Format) {
+			return true
+		}
+	}
+	return false
+}
+
+func tableUsesDate(config XDBConfig) bool {
+	keySchemas := config.DynamoDB.KeySchema
+	for _, gsi := range config.DynamoDB.GlobalSecondaryIndexes {
+		keySchemas = append(keySchemas, gsi.KeySchema...)
+	}
+	schemaProperties := []string{}
+	for _, ks := range keySchemas {
+		if _, ok := config.Schema.Properties[ks.AttributeName]; ok {
+			schemaProperties = append(schemaProperties, ks.AttributeName)
+		} else if ca := findCompositeAttribute(config, ks.AttributeName); ca != nil {
+			schemaProperties = append(schemaProperties, ca.Properties...)
+		}
+	}
+	for _, schemaProp := range schemaProperties {
+		if isDateFormat(config.Schema.Properties[schemaProp].Format) {
 			return true
 		}
 	}

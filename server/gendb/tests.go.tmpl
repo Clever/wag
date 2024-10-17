@@ -25,6 +25,15 @@ func mustTime(s string) strfmt.DateTime {
   return strfmt.DateTime(t)
 }
 {{- end }}
+{{ if anyTableUsesDate .XDBConfigs }}
+func mustDate(s string) strfmt.Date {
+  t, err := time.Parse(time.DateOnly, s)
+  if err != nil {
+    panic(err)
+  }
+  return strfmt.Date(t)
+}
+{{- end }}
 
 func pointerToString(str string) *string{
   return &str
