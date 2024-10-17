@@ -256,7 +256,7 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndVersionParseFilters(queryInput
 			queryInput.ExpressionAttributeNames["#DATE"] = aws.String(string(db.DeploymentDate))
 			for i, attributeValue := range filterValue.AttributeValues {
 				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.DeploymentDate), i)] = &dynamodb.AttributeValue{
-					S: aws.String(toDynamoTimeString(attributeValue.(strfmt.DateTime))),
+					S: aws.String(datetimeToDynamoTimeString(attributeValue.(strfmt.DateTime))),
 				}
 			}
 		}
@@ -408,7 +408,7 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndDate(ctx context.Context, inpu
 	} else {
 		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
 		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
-			S: aws.String(toDynamoTimeString(*input.DateStartingAt)),
+			S: aws.String(datetimeToDynamoTimeString(*input.DateStartingAt)),
 		}
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#ENVAPP = :envApp AND #DATE <= :date")
@@ -419,7 +419,7 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndDate(ctx context.Context, inpu
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"date": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
+				S: aws.String(datetimeToDynamoTimeString(input.StartingAfter.Date)),
 			},
 			"envApp": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application)),
@@ -551,7 +551,7 @@ func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context,
 	} else {
 		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
 		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
-			S: aws.String(toDynamoTimeString(*input.DateStartingAt)),
+			S: aws.String(datetimeToDynamoTimeString(*input.DateStartingAt)),
 		}
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#ENVIRONMENT = :environment AND #DATE <= :date")
@@ -562,7 +562,7 @@ func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context,
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"date": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
+				S: aws.String(datetimeToDynamoTimeString(input.StartingAfter.Date)),
 			},
 			"environment": &dynamodb.AttributeValue{
 				S: aws.String(input.StartingAfter.Environment),

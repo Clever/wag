@@ -227,7 +227,7 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDateParseF
 			queryInput.ExpressionAttributeNames["#DATE2"] = aws.String(string(db.ThingWithEnumHashKeyDate2))
 			for i, attributeValue := range filterValue.AttributeValues {
 				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithEnumHashKeyDate2), i)] = &dynamodb.AttributeValue{
-					S: aws.String(toDynamoTimeString(attributeValue.(strfmt.DateTime))),
+					S: aws.String(datetimeToDynamoTimeString(attributeValue.(strfmt.DateTime))),
 				}
 			}
 		}
@@ -262,7 +262,7 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDate(ctx c
 	} else {
 		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
 		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
-			S: aws.String(toDynamoTimeString(*input.DateStartingAt)),
+			S: aws.String(datetimeToDynamoTimeString(*input.DateStartingAt)),
 		}
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#BRANCH = :branch AND #DATE <= :date")
@@ -273,7 +273,7 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDate(ctx c
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"date": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
+				S: aws.String(datetimeToDynamoTimeString(input.StartingAfter.Date)),
 			},
 			"branch": &dynamodb.AttributeValue{
 				S: aws.String(string(input.StartingAfter.Branch)),
@@ -385,7 +385,7 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDate2(ctx 
 	} else {
 		queryInput.ExpressionAttributeNames["#DATE2"] = aws.String("date2")
 		queryInput.ExpressionAttributeValues[":date2"] = &dynamodb.AttributeValue{
-			S: aws.String(toDynamoTimeString(*input.Date2StartingAt)),
+			S: aws.String(datetimeToDynamoTimeString(*input.Date2StartingAt)),
 		}
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#BRANCH = :branch AND #DATE2 <= :date2")
@@ -396,13 +396,13 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDate2(ctx 
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"date2": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeString(input.StartingAfter.Date2)),
+				S: aws.String(datetimeToDynamoTimeString(input.StartingAfter.Date2)),
 			},
 			"branch": &dynamodb.AttributeValue{
 				S: aws.String(string(input.StartingAfter.Branch)),
 			},
 			"date": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
+				S: aws.String(datetimeToDynamoTimeString(input.StartingAfter.Date)),
 			},
 		}
 	}

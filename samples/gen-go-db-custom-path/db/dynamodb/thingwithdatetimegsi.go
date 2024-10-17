@@ -234,7 +234,7 @@ func (t ThingWithDatetimeGSITable) getThingWithDatetimeGSIsByDatetimeAndID(ctx c
 	if input.IDStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.IDStartingAt or input.StartingAfter")
 	}
-	if toDynamoTimeString(input.Datetime) == "" {
+	if datetimeToDynamoTimeString(input.Datetime) == "" {
 		return fmt.Errorf("Hash key input.Datetime cannot be empty")
 	}
 	queryInput := &dynamodb.QueryInput{
@@ -245,7 +245,7 @@ func (t ThingWithDatetimeGSITable) getThingWithDatetimeGSIsByDatetimeAndID(ctx c
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":datetime": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeString(input.Datetime)),
+				S: aws.String(datetimeToDynamoTimeString(input.Datetime)),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
@@ -273,7 +273,7 @@ func (t ThingWithDatetimeGSITable) getThingWithDatetimeGSIsByDatetimeAndID(ctx c
 				S: aws.String(string(input.StartingAfter.ID)),
 			},
 			"datetime": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeString(input.StartingAfter.Datetime)),
+				S: aws.String(datetimeToDynamoTimeString(input.StartingAfter.Datetime)),
 			},
 		}
 	}
