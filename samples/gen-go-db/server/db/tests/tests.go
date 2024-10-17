@@ -20,6 +20,14 @@ func mustTime(s string) strfmt.DateTime {
 	return strfmt.DateTime(t)
 }
 
+func mustDate(s string) strfmt.Date {
+	t, err := time.Parse(time.DateOnly, s)
+	if err != nil {
+		panic(err)
+	}
+	return strfmt.Date(t)
+}
+
 func pointerToString(str string) *string {
 	return &str
 }
@@ -105,11 +113,22 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingWithCompositeEnumAttributessByNameBranchAndDate", GetThingWithCompositeEnumAttributessByNameBranchAndDate(dbFactory(), t))
 	t.Run("SaveThingWithCompositeEnumAttributes", SaveThingWithCompositeEnumAttributes(dbFactory(), t))
 	t.Run("DeleteThingWithCompositeEnumAttributes", DeleteThingWithCompositeEnumAttributes(dbFactory(), t))
+	t.Run("GetThingWithDateGSI", GetThingWithDateGSI(dbFactory(), t))
+	t.Run("ScanThingWithDateGSIs", ScanThingWithDateGSIs(dbFactory(), t))
+	t.Run("SaveThingWithDateGSI", SaveThingWithDateGSI(dbFactory(), t))
+	t.Run("DeleteThingWithDateGSI", DeleteThingWithDateGSI(dbFactory(), t))
+	t.Run("GetThingWithDateGSIsByIDAndDateR", GetThingWithDateGSIsByIDAndDateR(dbFactory(), t))
+	t.Run("GetThingWithDateGSIsByDateHAndID", GetThingWithDateGSIsByDateHAndID(dbFactory(), t))
 	t.Run("GetThingWithDateRange", GetThingWithDateRange(dbFactory(), t))
 	t.Run("ScanThingWithDateRanges", ScanThingWithDateRanges(dbFactory(), t))
 	t.Run("GetThingWithDateRangesByNameAndDate", GetThingWithDateRangesByNameAndDate(dbFactory(), t))
 	t.Run("SaveThingWithDateRange", SaveThingWithDateRange(dbFactory(), t))
 	t.Run("DeleteThingWithDateRange", DeleteThingWithDateRange(dbFactory(), t))
+	t.Run("GetThingWithDateRangeKey", GetThingWithDateRangeKey(dbFactory(), t))
+	t.Run("ScanThingWithDateRangeKeys", ScanThingWithDateRangeKeys(dbFactory(), t))
+	t.Run("GetThingWithDateRangeKeysByIDAndDate", GetThingWithDateRangeKeysByIDAndDate(dbFactory(), t))
+	t.Run("SaveThingWithDateRangeKey", SaveThingWithDateRangeKey(dbFactory(), t))
+	t.Run("DeleteThingWithDateRangeKey", DeleteThingWithDateRangeKey(dbFactory(), t))
 	t.Run("GetThingWithDateTimeComposite", GetThingWithDateTimeComposite(dbFactory(), t))
 	t.Run("ScanThingWithDateTimeComposites", ScanThingWithDateTimeComposites(dbFactory(), t))
 	t.Run("GetThingWithDateTimeCompositesByTypeIDAndCreatedResource", GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(dbFactory(), t))
@@ -8040,6 +8059,560 @@ func DeleteThingWithCompositeEnumAttributes(s db.Interface, t *testing.T) func(t
 	}
 }
 
+func GetThingWithDateGSI(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithDateGSI{
+			DateH: mustDate("2018-03-11"),
+			DateR: mustDate("2018-03-11"),
+			ID:    "string1",
+		}
+		require.Nil(t, s.SaveThingWithDateGSI(ctx, m))
+		m2, err := s.GetThingWithDateGSI(ctx, m.DateH)
+		require.Nil(t, err)
+		require.Equal(t, m.DateH, m2.DateH)
+
+		_, err = s.GetThingWithDateGSI(ctx, mustDate("2018-03-12"))
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrThingWithDateGSINotFound{})
+	}
+}
+
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
+func ScanThingWithDateGSIs(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithDateGSI(ctx, models.ThingWithDateGSI{
+			DateH: mustDate("2018-03-11"),
+			DateR: mustDate("2018-03-11"),
+			ID:    "string1",
+		}))
+		require.Nil(t, d.SaveThingWithDateGSI(ctx, models.ThingWithDateGSI{
+			DateH: mustDate("2018-03-12"),
+			DateR: mustDate("2018-03-12"),
+			ID:    "string2",
+		}))
+		require.Nil(t, d.SaveThingWithDateGSI(ctx, models.ThingWithDateGSI{
+			DateH: mustDate("2018-03-13"),
+			DateR: mustDate("2018-03-13"),
+			ID:    "string3",
+		}))
+
+		t.Run("basic", func(t *testing.T) {
+			expected := []models.ThingWithDateGSI{
+				models.ThingWithDateGSI{
+					DateH: mustDate("2018-03-11"),
+					DateR: mustDate("2018-03-11"),
+					ID:    "string1",
+				},
+				models.ThingWithDateGSI{
+					DateH: mustDate("2018-03-12"),
+					DateR: mustDate("2018-03-12"),
+					ID:    "string2",
+				},
+				models.ThingWithDateGSI{
+					DateH: mustDate("2018-03-13"),
+					DateR: mustDate("2018-03-13"),
+					ID:    "string3",
+				},
+			}
+			actual := []models.ThingWithDateGSI{}
+			err := d.ScanThingWithDateGSIs(ctx, db.ScanThingWithDateGSIsInput{}, func(m *models.ThingWithDateGSI, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+			// We can't use Equal here because Scan doesn't return items in any specific order.
+			require.ElementsMatch(t, expected, actual)
+		})
+
+		t.Run("starting after", func(t *testing.T) {
+			// Scan for everything.
+			allItems := []models.ThingWithDateGSI{}
+			err := d.ScanThingWithDateGSIs(ctx, db.ScanThingWithDateGSIsInput{}, func(m *models.ThingWithDateGSI, last bool) bool {
+				allItems = append(allItems, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			firstItem := allItems[0]
+
+			// Scan for everything after the first item.
+			scanInput := db.ScanThingWithDateGSIsInput{
+				StartingAfter: &models.ThingWithDateGSI{
+					DateH: firstItem.DateH,
+				},
+			}
+			actual := []models.ThingWithDateGSI{}
+			err = d.ScanThingWithDateGSIs(ctx, scanInput, func(m *models.ThingWithDateGSI, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			expected := allItems[1:]
+			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithDateGSIsInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithDateGSI{}
+			err := d.ScanThingWithDateGSIs(ctx, scanInput, func(m *models.ThingWithDateGSI, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
+		})
+	}
+}
+
+func SaveThingWithDateGSI(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithDateGSI{
+			DateH: mustDate("2018-03-11"),
+			DateR: mustDate("2018-03-11"),
+			ID:    "string1",
+		}
+		require.Nil(t, s.SaveThingWithDateGSI(ctx, m))
+		require.IsType(t, db.ErrThingWithDateGSIAlreadyExists{}, s.SaveThingWithDateGSI(ctx, m))
+	}
+}
+
+func DeleteThingWithDateGSI(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithDateGSI{
+			DateH: mustDate("2018-03-11"),
+			DateR: mustDate("2018-03-11"),
+			ID:    "string1",
+		}
+		require.Nil(t, s.SaveThingWithDateGSI(ctx, m))
+		require.Nil(t, s.DeleteThingWithDateGSI(ctx, m.DateH))
+	}
+}
+
+type getThingWithDateGSIsByIDAndDateRInput struct {
+	ctx   context.Context
+	input db.GetThingWithDateGSIsByIDAndDateRInput
+}
+type getThingWithDateGSIsByIDAndDateROutput struct {
+	thingWithDateGSIs []models.ThingWithDateGSI
+	err               error
+}
+type getThingWithDateGSIsByIDAndDateRTest struct {
+	testName string
+	d        db.Interface
+	input    getThingWithDateGSIsByIDAndDateRInput
+	output   getThingWithDateGSIsByIDAndDateROutput
+}
+
+func (g getThingWithDateGSIsByIDAndDateRTest) run(t *testing.T) {
+	thingWithDateGSIs := []models.ThingWithDateGSI{}
+	fn := func(m *models.ThingWithDateGSI, lastThingWithDateGSI bool) bool {
+		thingWithDateGSIs = append(thingWithDateGSIs, *m)
+		if lastThingWithDateGSI {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingWithDateGSIsByIDAndDateR(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.thingWithDateGSIs, thingWithDateGSIs)
+}
+
+func GetThingWithDateGSIsByIDAndDateR(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithDateGSI(ctx, models.ThingWithDateGSI{
+			ID:    "string1",
+			DateR: mustDate("2018-03-11"),
+			DateH: mustDate("2018-03-11"),
+		}))
+		require.Nil(t, d.SaveThingWithDateGSI(ctx, models.ThingWithDateGSI{
+			ID:    "string1",
+			DateR: mustDate("2018-03-12"),
+			DateH: mustDate("2018-03-13"),
+		}))
+		require.Nil(t, d.SaveThingWithDateGSI(ctx, models.ThingWithDateGSI{
+			ID:    "string1",
+			DateR: mustDate("2018-03-13"),
+			DateH: mustDate("2018-03-12"),
+		}))
+		limit := int64(3)
+		tests := []getThingWithDateGSIsByIDAndDateRTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getThingWithDateGSIsByIDAndDateRInput{
+					ctx: context.Background(),
+					input: db.GetThingWithDateGSIsByIDAndDateRInput{
+						ID:    "string1",
+						Limit: &limit,
+					},
+				},
+				output: getThingWithDateGSIsByIDAndDateROutput{
+					thingWithDateGSIs: []models.ThingWithDateGSI{
+						models.ThingWithDateGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-11"),
+							DateH: mustDate("2018-03-11"),
+						},
+						models.ThingWithDateGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-12"),
+							DateH: mustDate("2018-03-13"),
+						},
+						models.ThingWithDateGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-13"),
+							DateH: mustDate("2018-03-12"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getThingWithDateGSIsByIDAndDateRInput{
+					ctx: context.Background(),
+					input: db.GetThingWithDateGSIsByIDAndDateRInput{
+						ID:         "string1",
+						Descending: true,
+					},
+				},
+				output: getThingWithDateGSIsByIDAndDateROutput{
+					thingWithDateGSIs: []models.ThingWithDateGSI{
+						models.ThingWithDateGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-13"),
+							DateH: mustDate("2018-03-12"),
+						},
+						models.ThingWithDateGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-12"),
+							DateH: mustDate("2018-03-13"),
+						},
+						models.ThingWithDateGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-11"),
+							DateH: mustDate("2018-03-11"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getThingWithDateGSIsByIDAndDateRInput{
+					ctx: context.Background(),
+					input: db.GetThingWithDateGSIsByIDAndDateRInput{
+						ID: "string1",
+						StartingAfter: &models.ThingWithDateGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-11"),
+							DateH: mustDate("2018-03-11"),
+						},
+					},
+				},
+				output: getThingWithDateGSIsByIDAndDateROutput{
+					thingWithDateGSIs: []models.ThingWithDateGSI{
+						models.ThingWithDateGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-12"),
+							DateH: mustDate("2018-03-13"),
+						},
+						models.ThingWithDateGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-13"),
+							DateH: mustDate("2018-03-12"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after descending",
+				d:        d,
+				input: getThingWithDateGSIsByIDAndDateRInput{
+					ctx: context.Background(),
+					input: db.GetThingWithDateGSIsByIDAndDateRInput{
+						ID: "string1",
+						StartingAfter: &models.ThingWithDateGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-13"),
+							DateH: mustDate("2018-03-12"),
+						},
+						Descending: true,
+					},
+				},
+				output: getThingWithDateGSIsByIDAndDateROutput{
+					thingWithDateGSIs: []models.ThingWithDateGSI{
+						models.ThingWithDateGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-12"),
+							DateH: mustDate("2018-03-13"),
+						},
+						models.ThingWithDateGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-11"),
+							DateH: mustDate("2018-03-11"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingWithDateGSIsByIDAndDateRInput{
+					ctx: context.Background(),
+					input: db.GetThingWithDateGSIsByIDAndDateRInput{
+						ID:              "string1",
+						DateRStartingAt: db.Date(mustDate("2018-03-12")),
+					},
+				},
+				output: getThingWithDateGSIsByIDAndDateROutput{
+					thingWithDateGSIs: []models.ThingWithDateGSI{
+						models.ThingWithDateGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-12"),
+							DateH: mustDate("2018-03-13"),
+						},
+						models.ThingWithDateGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-13"),
+							DateH: mustDate("2018-03-12"),
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+type getThingWithDateGSIsByDateHAndIDInput struct {
+	ctx   context.Context
+	input db.GetThingWithDateGSIsByDateHAndIDInput
+}
+type getThingWithDateGSIsByDateHAndIDOutput struct {
+	thingWithDateGSIs []models.ThingWithDateGSI
+	err               error
+}
+type getThingWithDateGSIsByDateHAndIDTest struct {
+	testName string
+	d        db.Interface
+	input    getThingWithDateGSIsByDateHAndIDInput
+	output   getThingWithDateGSIsByDateHAndIDOutput
+}
+
+func (g getThingWithDateGSIsByDateHAndIDTest) run(t *testing.T) {
+	thingWithDateGSIs := []models.ThingWithDateGSI{}
+	fn := func(m *models.ThingWithDateGSI, lastThingWithDateGSI bool) bool {
+		thingWithDateGSIs = append(thingWithDateGSIs, *m)
+		if lastThingWithDateGSI {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingWithDateGSIsByDateHAndID(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.thingWithDateGSIs, thingWithDateGSIs)
+}
+
+func GetThingWithDateGSIsByDateHAndID(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithDateGSI(ctx, models.ThingWithDateGSI{
+			DateH: mustDate("2018-03-11"),
+			ID:    "string1",
+		}))
+		require.Nil(t, d.SaveThingWithDateGSI(ctx, models.ThingWithDateGSI{
+			DateH: mustDate("2018-03-11"),
+			ID:    "string2",
+		}))
+		require.Nil(t, d.SaveThingWithDateGSI(ctx, models.ThingWithDateGSI{
+			DateH: mustDate("2018-03-11"),
+			ID:    "string3",
+		}))
+		limit := int64(3)
+		tests := []getThingWithDateGSIsByDateHAndIDTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getThingWithDateGSIsByDateHAndIDInput{
+					ctx: context.Background(),
+					input: db.GetThingWithDateGSIsByDateHAndIDInput{
+						DateH: mustDate("2018-03-11"),
+						Limit: &limit,
+					},
+				},
+				output: getThingWithDateGSIsByDateHAndIDOutput{
+					thingWithDateGSIs: []models.ThingWithDateGSI{
+						models.ThingWithDateGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string1",
+						},
+						models.ThingWithDateGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string2",
+						},
+						models.ThingWithDateGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getThingWithDateGSIsByDateHAndIDInput{
+					ctx: context.Background(),
+					input: db.GetThingWithDateGSIsByDateHAndIDInput{
+						DateH:      mustDate("2018-03-11"),
+						Descending: true,
+					},
+				},
+				output: getThingWithDateGSIsByDateHAndIDOutput{
+					thingWithDateGSIs: []models.ThingWithDateGSI{
+						models.ThingWithDateGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string3",
+						},
+						models.ThingWithDateGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string2",
+						},
+						models.ThingWithDateGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getThingWithDateGSIsByDateHAndIDInput{
+					ctx: context.Background(),
+					input: db.GetThingWithDateGSIsByDateHAndIDInput{
+						DateH: mustDate("2018-03-11"),
+						StartingAfter: &models.ThingWithDateGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string1",
+						},
+					},
+				},
+				output: getThingWithDateGSIsByDateHAndIDOutput{
+					thingWithDateGSIs: []models.ThingWithDateGSI{
+						models.ThingWithDateGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string2",
+						},
+						models.ThingWithDateGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after descending",
+				d:        d,
+				input: getThingWithDateGSIsByDateHAndIDInput{
+					ctx: context.Background(),
+					input: db.GetThingWithDateGSIsByDateHAndIDInput{
+						DateH: mustDate("2018-03-11"),
+						StartingAfter: &models.ThingWithDateGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string3",
+						},
+						Descending: true,
+					},
+				},
+				output: getThingWithDateGSIsByDateHAndIDOutput{
+					thingWithDateGSIs: []models.ThingWithDateGSI{
+						models.ThingWithDateGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string2",
+						},
+						models.ThingWithDateGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingWithDateGSIsByDateHAndIDInput{
+					ctx: context.Background(),
+					input: db.GetThingWithDateGSIsByDateHAndIDInput{
+						DateH:        mustDate("2018-03-11"),
+						IDStartingAt: db.String("string2"),
+					},
+				},
+				output: getThingWithDateGSIsByDateHAndIDOutput{
+					thingWithDateGSIs: []models.ThingWithDateGSI{
+						models.ThingWithDateGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string2",
+						},
+						models.ThingWithDateGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
 func GetThingWithDateRange(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -8375,6 +8948,345 @@ func DeleteThingWithDateRange(s db.Interface, t *testing.T) func(t *testing.T) {
 		}
 		require.Nil(t, s.SaveThingWithDateRange(ctx, m))
 		require.Nil(t, s.DeleteThingWithDateRange(ctx, m.Name, m.Date))
+	}
+}
+
+func GetThingWithDateRangeKey(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithDateRangeKey{
+			Date: mustDate("2018-03-11"),
+			ID:   "string1",
+		}
+		require.Nil(t, s.SaveThingWithDateRangeKey(ctx, m))
+		m2, err := s.GetThingWithDateRangeKey(ctx, m.ID, m.Date)
+		require.Nil(t, err)
+		require.Equal(t, m.ID, m2.ID)
+		require.Equal(t, m.Date, m2.Date)
+
+		_, err = s.GetThingWithDateRangeKey(ctx, "string2", mustDate("2018-03-12"))
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrThingWithDateRangeKeyNotFound{})
+	}
+}
+
+type getThingWithDateRangeKeysByIDAndDateInput struct {
+	ctx   context.Context
+	input db.GetThingWithDateRangeKeysByIDAndDateInput
+}
+type getThingWithDateRangeKeysByIDAndDateOutput struct {
+	thingWithDateRangeKeys []models.ThingWithDateRangeKey
+	err                    error
+}
+type getThingWithDateRangeKeysByIDAndDateTest struct {
+	testName string
+	d        db.Interface
+	input    getThingWithDateRangeKeysByIDAndDateInput
+	output   getThingWithDateRangeKeysByIDAndDateOutput
+}
+
+func (g getThingWithDateRangeKeysByIDAndDateTest) run(t *testing.T) {
+	thingWithDateRangeKeys := []models.ThingWithDateRangeKey{}
+	fn := func(m *models.ThingWithDateRangeKey, lastThingWithDateRangeKey bool) bool {
+		thingWithDateRangeKeys = append(thingWithDateRangeKeys, *m)
+		if lastThingWithDateRangeKey {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingWithDateRangeKeysByIDAndDate(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.thingWithDateRangeKeys, thingWithDateRangeKeys)
+}
+
+func GetThingWithDateRangeKeysByIDAndDate(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithDateRangeKey(ctx, models.ThingWithDateRangeKey{
+			ID:   "string1",
+			Date: mustDate("2018-03-11"),
+		}))
+		require.Nil(t, d.SaveThingWithDateRangeKey(ctx, models.ThingWithDateRangeKey{
+			ID:   "string1",
+			Date: mustDate("2018-03-12"),
+		}))
+		require.Nil(t, d.SaveThingWithDateRangeKey(ctx, models.ThingWithDateRangeKey{
+			ID:   "string1",
+			Date: mustDate("2018-03-13"),
+		}))
+		limit := int64(3)
+		tests := []getThingWithDateRangeKeysByIDAndDateTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getThingWithDateRangeKeysByIDAndDateInput{
+					ctx: context.Background(),
+					input: db.GetThingWithDateRangeKeysByIDAndDateInput{
+						ID:    "string1",
+						Limit: &limit,
+					},
+				},
+				output: getThingWithDateRangeKeysByIDAndDateOutput{
+					thingWithDateRangeKeys: []models.ThingWithDateRangeKey{
+						models.ThingWithDateRangeKey{
+							ID:   "string1",
+							Date: mustDate("2018-03-11"),
+						},
+						models.ThingWithDateRangeKey{
+							ID:   "string1",
+							Date: mustDate("2018-03-12"),
+						},
+						models.ThingWithDateRangeKey{
+							ID:   "string1",
+							Date: mustDate("2018-03-13"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getThingWithDateRangeKeysByIDAndDateInput{
+					ctx: context.Background(),
+					input: db.GetThingWithDateRangeKeysByIDAndDateInput{
+						ID:         "string1",
+						Descending: true,
+					},
+				},
+				output: getThingWithDateRangeKeysByIDAndDateOutput{
+					thingWithDateRangeKeys: []models.ThingWithDateRangeKey{
+						models.ThingWithDateRangeKey{
+							ID:   "string1",
+							Date: mustDate("2018-03-13"),
+						},
+						models.ThingWithDateRangeKey{
+							ID:   "string1",
+							Date: mustDate("2018-03-12"),
+						},
+						models.ThingWithDateRangeKey{
+							ID:   "string1",
+							Date: mustDate("2018-03-11"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getThingWithDateRangeKeysByIDAndDateInput{
+					ctx: context.Background(),
+					input: db.GetThingWithDateRangeKeysByIDAndDateInput{
+						ID: "string1",
+						StartingAfter: &models.ThingWithDateRangeKey{
+							ID:   "string1",
+							Date: mustDate("2018-03-11"),
+						},
+					},
+				},
+				output: getThingWithDateRangeKeysByIDAndDateOutput{
+					thingWithDateRangeKeys: []models.ThingWithDateRangeKey{
+						models.ThingWithDateRangeKey{
+							ID:   "string1",
+							Date: mustDate("2018-03-12"),
+						},
+						models.ThingWithDateRangeKey{
+							ID:   "string1",
+							Date: mustDate("2018-03-13"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after descending",
+				d:        d,
+				input: getThingWithDateRangeKeysByIDAndDateInput{
+					ctx: context.Background(),
+					input: db.GetThingWithDateRangeKeysByIDAndDateInput{
+						ID: "string1",
+						StartingAfter: &models.ThingWithDateRangeKey{
+							ID:   "string1",
+							Date: mustDate("2018-03-13"),
+						},
+						Descending: true,
+					},
+				},
+				output: getThingWithDateRangeKeysByIDAndDateOutput{
+					thingWithDateRangeKeys: []models.ThingWithDateRangeKey{
+						models.ThingWithDateRangeKey{
+							ID:   "string1",
+							Date: mustDate("2018-03-12"),
+						},
+						models.ThingWithDateRangeKey{
+							ID:   "string1",
+							Date: mustDate("2018-03-11"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingWithDateRangeKeysByIDAndDateInput{
+					ctx: context.Background(),
+					input: db.GetThingWithDateRangeKeysByIDAndDateInput{
+						ID:             "string1",
+						DateStartingAt: db.Date(mustDate("2018-03-12")),
+					},
+				},
+				output: getThingWithDateRangeKeysByIDAndDateOutput{
+					thingWithDateRangeKeys: []models.ThingWithDateRangeKey{
+						models.ThingWithDateRangeKey{
+							ID:   "string1",
+							Date: mustDate("2018-03-12"),
+						},
+						models.ThingWithDateRangeKey{
+							ID:   "string1",
+							Date: mustDate("2018-03-13"),
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
+func ScanThingWithDateRangeKeys(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithDateRangeKey(ctx, models.ThingWithDateRangeKey{
+			Date: mustDate("2018-03-11"),
+			ID:   "string1",
+		}))
+		require.Nil(t, d.SaveThingWithDateRangeKey(ctx, models.ThingWithDateRangeKey{
+			Date: mustDate("2018-03-12"),
+			ID:   "string2",
+		}))
+		require.Nil(t, d.SaveThingWithDateRangeKey(ctx, models.ThingWithDateRangeKey{
+			Date: mustDate("2018-03-13"),
+			ID:   "string3",
+		}))
+
+		t.Run("basic", func(t *testing.T) {
+			expected := []models.ThingWithDateRangeKey{
+				models.ThingWithDateRangeKey{
+					Date: mustDate("2018-03-11"),
+					ID:   "string1",
+				},
+				models.ThingWithDateRangeKey{
+					Date: mustDate("2018-03-12"),
+					ID:   "string2",
+				},
+				models.ThingWithDateRangeKey{
+					Date: mustDate("2018-03-13"),
+					ID:   "string3",
+				},
+			}
+			actual := []models.ThingWithDateRangeKey{}
+			err := d.ScanThingWithDateRangeKeys(ctx, db.ScanThingWithDateRangeKeysInput{}, func(m *models.ThingWithDateRangeKey, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+			// We can't use Equal here because Scan doesn't return items in any specific order.
+			require.ElementsMatch(t, expected, actual)
+		})
+
+		t.Run("starting after", func(t *testing.T) {
+			// Scan for everything.
+			allItems := []models.ThingWithDateRangeKey{}
+			err := d.ScanThingWithDateRangeKeys(ctx, db.ScanThingWithDateRangeKeysInput{}, func(m *models.ThingWithDateRangeKey, last bool) bool {
+				allItems = append(allItems, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			firstItem := allItems[0]
+
+			// Scan for everything after the first item.
+			scanInput := db.ScanThingWithDateRangeKeysInput{
+				StartingAfter: &models.ThingWithDateRangeKey{
+					ID:   firstItem.ID,
+					Date: firstItem.Date,
+				},
+			}
+			actual := []models.ThingWithDateRangeKey{}
+			err = d.ScanThingWithDateRangeKeys(ctx, scanInput, func(m *models.ThingWithDateRangeKey, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			expected := allItems[1:]
+			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithDateRangeKeysInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithDateRangeKey{}
+			err := d.ScanThingWithDateRangeKeys(ctx, scanInput, func(m *models.ThingWithDateRangeKey, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
+		})
+	}
+}
+
+func SaveThingWithDateRangeKey(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithDateRangeKey{
+			Date: mustDate("2018-03-11"),
+			ID:   "string1",
+		}
+		require.Nil(t, s.SaveThingWithDateRangeKey(ctx, m))
+		require.IsType(t, db.ErrThingWithDateRangeKeyAlreadyExists{}, s.SaveThingWithDateRangeKey(ctx, m))
+	}
+}
+
+func DeleteThingWithDateRangeKey(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithDateRangeKey{
+			Date: mustDate("2018-03-11"),
+			ID:   "string1",
+		}
+		require.Nil(t, s.SaveThingWithDateRangeKey(ctx, m))
+		require.Nil(t, s.DeleteThingWithDateRangeKey(ctx, m.ID, m.Date))
 	}
 }
 

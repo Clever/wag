@@ -219,6 +219,20 @@ func (mr *MockInterfaceMockRecorder) DeleteThingWithCompositeEnumAttributes(ctx,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithCompositeEnumAttributes", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithCompositeEnumAttributes), ctx, name, branchID, date)
 }
 
+// DeleteThingWithDateGSI mocks base method.
+func (m *MockInterface) DeleteThingWithDateGSI(ctx context.Context, dateH strfmt.Date) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteThingWithDateGSI", ctx, dateH)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteThingWithDateGSI indicates an expected call of DeleteThingWithDateGSI.
+func (mr *MockInterfaceMockRecorder) DeleteThingWithDateGSI(ctx, dateH interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithDateGSI", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithDateGSI), ctx, dateH)
+}
+
 // DeleteThingWithDateRange mocks base method.
 func (m *MockInterface) DeleteThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) error {
 	m.ctrl.T.Helper()
@@ -231,6 +245,20 @@ func (m *MockInterface) DeleteThingWithDateRange(ctx context.Context, name strin
 func (mr *MockInterfaceMockRecorder) DeleteThingWithDateRange(ctx, name, date interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithDateRange", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithDateRange), ctx, name, date)
+}
+
+// DeleteThingWithDateRangeKey mocks base method.
+func (m *MockInterface) DeleteThingWithDateRangeKey(ctx context.Context, id string, date strfmt.Date) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteThingWithDateRangeKey", ctx, id, date)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteThingWithDateRangeKey indicates an expected call of DeleteThingWithDateRangeKey.
+func (mr *MockInterfaceMockRecorder) DeleteThingWithDateRangeKey(ctx, id, date interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithDateRangeKey", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithDateRangeKey), ctx, id, date)
 }
 
 // DeleteThingWithDateTimeComposite mocks base method.
@@ -835,6 +863,49 @@ func (mr *MockInterfaceMockRecorder) GetThingWithCompositeEnumAttributessByNameB
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithCompositeEnumAttributessByNameBranchAndDate", reflect.TypeOf((*MockInterface)(nil).GetThingWithCompositeEnumAttributessByNameBranchAndDate), ctx, input, fn)
 }
 
+// GetThingWithDateGSI mocks base method.
+func (m *MockInterface) GetThingWithDateGSI(ctx context.Context, dateH strfmt.Date) (*v9.ThingWithDateGSI, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetThingWithDateGSI", ctx, dateH)
+	ret0, _ := ret[0].(*v9.ThingWithDateGSI)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingWithDateGSI indicates an expected call of GetThingWithDateGSI.
+func (mr *MockInterfaceMockRecorder) GetThingWithDateGSI(ctx, dateH interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithDateGSI", reflect.TypeOf((*MockInterface)(nil).GetThingWithDateGSI), ctx, dateH)
+}
+
+// GetThingWithDateGSIsByDateHAndID mocks base method.
+func (m *MockInterface) GetThingWithDateGSIsByDateHAndID(ctx context.Context, input GetThingWithDateGSIsByDateHAndIDInput, fn func(*v9.ThingWithDateGSI, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetThingWithDateGSIsByDateHAndID", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingWithDateGSIsByDateHAndID indicates an expected call of GetThingWithDateGSIsByDateHAndID.
+func (mr *MockInterfaceMockRecorder) GetThingWithDateGSIsByDateHAndID(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithDateGSIsByDateHAndID", reflect.TypeOf((*MockInterface)(nil).GetThingWithDateGSIsByDateHAndID), ctx, input, fn)
+}
+
+// GetThingWithDateGSIsByIDAndDateR mocks base method.
+func (m *MockInterface) GetThingWithDateGSIsByIDAndDateR(ctx context.Context, input GetThingWithDateGSIsByIDAndDateRInput, fn func(*v9.ThingWithDateGSI, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetThingWithDateGSIsByIDAndDateR", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingWithDateGSIsByIDAndDateR indicates an expected call of GetThingWithDateGSIsByIDAndDateR.
+func (mr *MockInterfaceMockRecorder) GetThingWithDateGSIsByIDAndDateR(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithDateGSIsByIDAndDateR", reflect.TypeOf((*MockInterface)(nil).GetThingWithDateGSIsByIDAndDateR), ctx, input, fn)
+}
+
 // GetThingWithDateRange mocks base method.
 func (m *MockInterface) GetThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) (*v9.ThingWithDateRange, error) {
 	m.ctrl.T.Helper()
@@ -848,6 +919,35 @@ func (m *MockInterface) GetThingWithDateRange(ctx context.Context, name string, 
 func (mr *MockInterfaceMockRecorder) GetThingWithDateRange(ctx, name, date interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithDateRange", reflect.TypeOf((*MockInterface)(nil).GetThingWithDateRange), ctx, name, date)
+}
+
+// GetThingWithDateRangeKey mocks base method.
+func (m *MockInterface) GetThingWithDateRangeKey(ctx context.Context, id string, date strfmt.Date) (*v9.ThingWithDateRangeKey, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetThingWithDateRangeKey", ctx, id, date)
+	ret0, _ := ret[0].(*v9.ThingWithDateRangeKey)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingWithDateRangeKey indicates an expected call of GetThingWithDateRangeKey.
+func (mr *MockInterfaceMockRecorder) GetThingWithDateRangeKey(ctx, id, date interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithDateRangeKey", reflect.TypeOf((*MockInterface)(nil).GetThingWithDateRangeKey), ctx, id, date)
+}
+
+// GetThingWithDateRangeKeysByIDAndDate mocks base method.
+func (m *MockInterface) GetThingWithDateRangeKeysByIDAndDate(ctx context.Context, input GetThingWithDateRangeKeysByIDAndDateInput, fn func(*v9.ThingWithDateRangeKey, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetThingWithDateRangeKeysByIDAndDate", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingWithDateRangeKeysByIDAndDate indicates an expected call of GetThingWithDateRangeKeysByIDAndDate.
+func (mr *MockInterfaceMockRecorder) GetThingWithDateRangeKeysByIDAndDate(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithDateRangeKeysByIDAndDate", reflect.TypeOf((*MockInterface)(nil).GetThingWithDateRangeKeysByIDAndDate), ctx, input, fn)
 }
 
 // GetThingWithDateRangesByNameAndDate mocks base method.
@@ -1407,6 +1507,20 @@ func (mr *MockInterfaceMockRecorder) SaveThingWithCompositeEnumAttributes(ctx, m
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithCompositeEnumAttributes", reflect.TypeOf((*MockInterface)(nil).SaveThingWithCompositeEnumAttributes), ctx, m)
 }
 
+// SaveThingWithDateGSI mocks base method.
+func (m_2 *MockInterface) SaveThingWithDateGSI(ctx context.Context, m v9.ThingWithDateGSI) error {
+	m_2.ctrl.T.Helper()
+	ret := m_2.ctrl.Call(m_2, "SaveThingWithDateGSI", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveThingWithDateGSI indicates an expected call of SaveThingWithDateGSI.
+func (mr *MockInterfaceMockRecorder) SaveThingWithDateGSI(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithDateGSI", reflect.TypeOf((*MockInterface)(nil).SaveThingWithDateGSI), ctx, m)
+}
+
 // SaveThingWithDateRange mocks base method.
 func (m_2 *MockInterface) SaveThingWithDateRange(ctx context.Context, m v9.ThingWithDateRange) error {
 	m_2.ctrl.T.Helper()
@@ -1419,6 +1533,20 @@ func (m_2 *MockInterface) SaveThingWithDateRange(ctx context.Context, m v9.Thing
 func (mr *MockInterfaceMockRecorder) SaveThingWithDateRange(ctx, m interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithDateRange", reflect.TypeOf((*MockInterface)(nil).SaveThingWithDateRange), ctx, m)
+}
+
+// SaveThingWithDateRangeKey mocks base method.
+func (m_2 *MockInterface) SaveThingWithDateRangeKey(ctx context.Context, m v9.ThingWithDateRangeKey) error {
+	m_2.ctrl.T.Helper()
+	ret := m_2.ctrl.Call(m_2, "SaveThingWithDateRangeKey", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveThingWithDateRangeKey indicates an expected call of SaveThingWithDateRangeKey.
+func (mr *MockInterfaceMockRecorder) SaveThingWithDateRangeKey(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithDateRangeKey", reflect.TypeOf((*MockInterface)(nil).SaveThingWithDateRangeKey), ctx, m)
 }
 
 // SaveThingWithDateTimeComposite mocks base method.
@@ -1839,6 +1967,34 @@ func (m *MockInterface) ScanThingWithCompositeEnumAttributess(ctx context.Contex
 func (mr *MockInterfaceMockRecorder) ScanThingWithCompositeEnumAttributess(ctx, input, fn interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithCompositeEnumAttributess", reflect.TypeOf((*MockInterface)(nil).ScanThingWithCompositeEnumAttributess), ctx, input, fn)
+}
+
+// ScanThingWithDateGSIs mocks base method.
+func (m *MockInterface) ScanThingWithDateGSIs(ctx context.Context, input ScanThingWithDateGSIsInput, fn func(*v9.ThingWithDateGSI, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ScanThingWithDateGSIs", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ScanThingWithDateGSIs indicates an expected call of ScanThingWithDateGSIs.
+func (mr *MockInterfaceMockRecorder) ScanThingWithDateGSIs(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithDateGSIs", reflect.TypeOf((*MockInterface)(nil).ScanThingWithDateGSIs), ctx, input, fn)
+}
+
+// ScanThingWithDateRangeKeys mocks base method.
+func (m *MockInterface) ScanThingWithDateRangeKeys(ctx context.Context, input ScanThingWithDateRangeKeysInput, fn func(*v9.ThingWithDateRangeKey, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ScanThingWithDateRangeKeys", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ScanThingWithDateRangeKeys indicates an expected call of ScanThingWithDateRangeKeys.
+func (mr *MockInterfaceMockRecorder) ScanThingWithDateRangeKeys(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithDateRangeKeys", reflect.TypeOf((*MockInterface)(nil).ScanThingWithDateRangeKeys), ctx, input, fn)
 }
 
 // ScanThingWithDateRanges mocks base method.

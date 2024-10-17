@@ -189,9 +189,20 @@ declare namespace SwaggerTest {
   name: string;
 };
     
+    type ThingWithDateGSI = {
+  dateH?: string;
+  dateR?: string;
+  id?: string;
+};
+    
     type ThingWithDateRange = {
   date?: string;
   name?: string;
+};
+    
+    type ThingWithDateRangeKey = {
+  date?: string;
+  id?: string;
 };
     
     type ThingWithDateTimeComposite = {
