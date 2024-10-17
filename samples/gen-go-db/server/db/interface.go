@@ -192,6 +192,19 @@ type Interface interface {
 	// DeleteThingWithCompositeEnumAttributes deletes a ThingWithCompositeEnumAttributes from the database.
 	DeleteThingWithCompositeEnumAttributes(ctx context.Context, name string, branchID models.Branch, date strfmt.DateTime) error
 
+	// SaveThingWithDateGSI saves a ThingWithDateGSI to the database.
+	SaveThingWithDateGSI(ctx context.Context, m models.ThingWithDateGSI) error
+	// GetThingWithDateGSI retrieves a ThingWithDateGSI from the database.
+	GetThingWithDateGSI(ctx context.Context, dateH strfmt.Date) (*models.ThingWithDateGSI, error)
+	// ScanThingWithDateGSIs runs a scan on the ThingWithDateGSIs table.
+	ScanThingWithDateGSIs(ctx context.Context, input ScanThingWithDateGSIsInput, fn func(m *models.ThingWithDateGSI, lastThingWithDateGSI bool) bool) error
+	// DeleteThingWithDateGSI deletes a ThingWithDateGSI from the database.
+	DeleteThingWithDateGSI(ctx context.Context, dateH strfmt.Date) error
+	// GetThingWithDateGSIsByIDAndDateR retrieves a page of ThingWithDateGSIs from the database.
+	GetThingWithDateGSIsByIDAndDateR(ctx context.Context, input GetThingWithDateGSIsByIDAndDateRInput, fn func(m *models.ThingWithDateGSI, lastThingWithDateGSI bool) bool) error
+	// GetThingWithDateGSIsByDateHAndID retrieves a page of ThingWithDateGSIs from the database.
+	GetThingWithDateGSIsByDateHAndID(ctx context.Context, input GetThingWithDateGSIsByDateHAndIDInput, fn func(m *models.ThingWithDateGSI, lastThingWithDateGSI bool) bool) error
+
 	// SaveThingWithDateRange saves a ThingWithDateRange to the database.
 	SaveThingWithDateRange(ctx context.Context, m models.ThingWithDateRange) error
 	// GetThingWithDateRange retrieves a ThingWithDateRange from the database.
@@ -202,6 +215,17 @@ type Interface interface {
 	GetThingWithDateRangesByNameAndDate(ctx context.Context, input GetThingWithDateRangesByNameAndDateInput, fn func(m *models.ThingWithDateRange, lastThingWithDateRange bool) bool) error
 	// DeleteThingWithDateRange deletes a ThingWithDateRange from the database.
 	DeleteThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) error
+
+	// SaveThingWithDateRangeKey saves a ThingWithDateRangeKey to the database.
+	SaveThingWithDateRangeKey(ctx context.Context, m models.ThingWithDateRangeKey) error
+	// GetThingWithDateRangeKey retrieves a ThingWithDateRangeKey from the database.
+	GetThingWithDateRangeKey(ctx context.Context, id string, date strfmt.Date) (*models.ThingWithDateRangeKey, error)
+	// ScanThingWithDateRangeKeys runs a scan on the ThingWithDateRangeKeys table.
+	ScanThingWithDateRangeKeys(ctx context.Context, input ScanThingWithDateRangeKeysInput, fn func(m *models.ThingWithDateRangeKey, lastThingWithDateRangeKey bool) bool) error
+	// GetThingWithDateRangeKeysByIDAndDate retrieves a page of ThingWithDateRangeKeys from the database.
+	GetThingWithDateRangeKeysByIDAndDate(ctx context.Context, input GetThingWithDateRangeKeysByIDAndDateInput, fn func(m *models.ThingWithDateRangeKey, lastThingWithDateRangeKey bool) bool) error
+	// DeleteThingWithDateRangeKey deletes a ThingWithDateRangeKey from the database.
+	DeleteThingWithDateRangeKey(ctx context.Context, id string, date strfmt.Date) error
 
 	// SaveThingWithDateTimeComposite saves a ThingWithDateTimeComposite to the database.
 	SaveThingWithDateTimeComposite(ctx context.Context, m models.ThingWithDateTimeComposite) error
@@ -347,6 +371,9 @@ func String(s string) *string { return &s }
 
 // DateTime returns a pointer to the strfmt.DateTime value passed in.
 func DateTime(d strfmt.DateTime) *strfmt.DateTime { return &d }
+
+// Date returns a pointer to the strfmt.Date value passed in.
+func Date(d strfmt.Date) *strfmt.Date { return &d }
 
 // ScanDeploymentsInput is the input to the ScanDeployments method.
 type ScanDeploymentsInput struct {
@@ -1502,6 +1529,90 @@ func (e ErrThingWithCompositeEnumAttributesAlreadyExists) Error() string {
 	return "ThingWithCompositeEnumAttributes already exists"
 }
 
+// ScanThingWithDateGSIsInput is the input to the ScanThingWithDateGSIs method.
+type ScanThingWithDateGSIsInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithDateGSI
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// ErrThingWithDateGSINotFound is returned when the database fails to find a ThingWithDateGSI.
+type ErrThingWithDateGSINotFound struct {
+	DateH strfmt.Date
+}
+
+var _ error = ErrThingWithDateGSINotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithDateGSINotFound) Error() string {
+	return "could not find ThingWithDateGSI"
+}
+
+// GetThingWithDateGSIsByIDAndDateRInput is the query input to GetThingWithDateGSIsByIDAndDateR.
+type GetThingWithDateGSIsByIDAndDateRInput struct {
+	// ID is required
+	ID              string
+	DateRStartingAt *strfmt.Date
+	StartingAfter   *models.ThingWithDateGSI
+	Descending      bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+}
+
+// ErrThingWithDateGSIByIDAndDateRNotFound is returned when the database fails to find a ThingWithDateGSI.
+type ErrThingWithDateGSIByIDAndDateRNotFound struct {
+	ID    string
+	DateR strfmt.Date
+}
+
+var _ error = ErrThingWithDateGSIByIDAndDateRNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithDateGSIByIDAndDateRNotFound) Error() string {
+	return "could not find ThingWithDateGSI"
+}
+
+// GetThingWithDateGSIsByDateHAndIDInput is the query input to GetThingWithDateGSIsByDateHAndID.
+type GetThingWithDateGSIsByDateHAndIDInput struct {
+	// DateH is required
+	DateH         strfmt.Date
+	IDStartingAt  *string
+	StartingAfter *models.ThingWithDateGSI
+	Descending    bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+}
+
+// ErrThingWithDateGSIByDateHAndIDNotFound is returned when the database fails to find a ThingWithDateGSI.
+type ErrThingWithDateGSIByDateHAndIDNotFound struct {
+	DateH strfmt.Date
+	ID    string
+}
+
+var _ error = ErrThingWithDateGSIByDateHAndIDNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithDateGSIByDateHAndIDNotFound) Error() string {
+	return "could not find ThingWithDateGSI"
+}
+
+// ErrThingWithDateGSIAlreadyExists is returned when trying to overwrite a ThingWithDateGSI.
+type ErrThingWithDateGSIAlreadyExists struct {
+	DateH strfmt.Date
+}
+
+var _ error = ErrThingWithDateGSIAlreadyExists{}
+
+// Error returns a description of the error.
+func (e ErrThingWithDateGSIAlreadyExists) Error() string {
+	return "ThingWithDateGSI already exists"
+}
+
 // ScanThingWithDateRangesInput is the input to the ScanThingWithDateRanges method.
 type ScanThingWithDateRangesInput struct {
 	// StartingAfter is an optional specification of an (exclusive) starting point.
@@ -1539,6 +1650,58 @@ var _ error = ErrThingWithDateRangeNotFound{}
 // Error returns a description of the error.
 func (e ErrThingWithDateRangeNotFound) Error() string {
 	return "could not find ThingWithDateRange"
+}
+
+// ScanThingWithDateRangeKeysInput is the input to the ScanThingWithDateRangeKeys method.
+type ScanThingWithDateRangeKeysInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithDateRangeKey
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// GetThingWithDateRangeKeysByIDAndDateInput is the query input to GetThingWithDateRangeKeysByIDAndDate.
+type GetThingWithDateRangeKeysByIDAndDateInput struct {
+	// ID is required
+	ID             string
+	DateStartingAt *strfmt.Date
+	// StartingAfter is a required specification of an exclusive starting point.
+	StartingAfter *models.ThingWithDateRangeKey
+	Descending    bool
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+}
+
+// ErrThingWithDateRangeKeyNotFound is returned when the database fails to find a ThingWithDateRangeKey.
+type ErrThingWithDateRangeKeyNotFound struct {
+	ID   string
+	Date strfmt.Date
+}
+
+var _ error = ErrThingWithDateRangeKeyNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithDateRangeKeyNotFound) Error() string {
+	return "could not find ThingWithDateRangeKey"
+}
+
+// ErrThingWithDateRangeKeyAlreadyExists is returned when trying to overwrite a ThingWithDateRangeKey.
+type ErrThingWithDateRangeKeyAlreadyExists struct {
+	ID   string
+	Date strfmt.Date
+}
+
+var _ error = ErrThingWithDateRangeKeyAlreadyExists{}
+
+// Error returns a description of the error.
+func (e ErrThingWithDateRangeKeyAlreadyExists) Error() string {
+	return "ThingWithDateRangeKey already exists"
 }
 
 // ScanThingWithDateTimeCompositesInput is the input to the ScanThingWithDateTimeComposites method.

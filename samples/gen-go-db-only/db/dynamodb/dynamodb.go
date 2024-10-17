@@ -52,8 +52,12 @@ type Config struct {
 	ThingWithCompositeAttributesTable ThingWithCompositeAttributesTable
 	// ThingWithCompositeEnumAttributesTable configuration.
 	ThingWithCompositeEnumAttributesTable ThingWithCompositeEnumAttributesTable
+	// ThingWithDateGSITable configuration.
+	ThingWithDateGSITable ThingWithDateGSITable
 	// ThingWithDateRangeTable configuration.
 	ThingWithDateRangeTable ThingWithDateRangeTable
+	// ThingWithDateRangeKeyTable configuration.
+	ThingWithDateRangeKeyTable ThingWithDateRangeKeyTable
 	// ThingWithDateTimeCompositeTable configuration.
 	ThingWithDateTimeCompositeTable ThingWithDateTimeCompositeTable
 	// ThingWithDatetimeGSITable configuration.
@@ -284,6 +288,23 @@ func New(config Config) (*DB, error) {
 	if thingWithCompositeEnumAttributesTable.TableName == "" {
 		return nil, errors.New("must specify TableName for ThingWithCompositeEnumAttributesTable")
 	}
+	// configure ThingWithDateGSI table
+	thingWithDateGSITable := config.ThingWithDateGSITable
+	if thingWithDateGSITable.DynamoDBAPI == nil {
+		thingWithDateGSITable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if thingWithDateGSITable.Prefix == "" {
+		thingWithDateGSITable.Prefix = config.DefaultPrefix
+	}
+	if thingWithDateGSITable.ReadCapacityUnits == 0 {
+		thingWithDateGSITable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if thingWithDateGSITable.WriteCapacityUnits == 0 {
+		thingWithDateGSITable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
+	if thingWithDateGSITable.TableName == "" {
+		return nil, errors.New("must specify TableName for ThingWithDateGSITable")
+	}
 	// configure ThingWithDateRange table
 	thingWithDateRangeTable := config.ThingWithDateRangeTable
 	if thingWithDateRangeTable.DynamoDBAPI == nil {
@@ -300,6 +321,23 @@ func New(config Config) (*DB, error) {
 	}
 	if thingWithDateRangeTable.TableName == "" {
 		return nil, errors.New("must specify TableName for ThingWithDateRangeTable")
+	}
+	// configure ThingWithDateRangeKey table
+	thingWithDateRangeKeyTable := config.ThingWithDateRangeKeyTable
+	if thingWithDateRangeKeyTable.DynamoDBAPI == nil {
+		thingWithDateRangeKeyTable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if thingWithDateRangeKeyTable.Prefix == "" {
+		thingWithDateRangeKeyTable.Prefix = config.DefaultPrefix
+	}
+	if thingWithDateRangeKeyTable.ReadCapacityUnits == 0 {
+		thingWithDateRangeKeyTable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if thingWithDateRangeKeyTable.WriteCapacityUnits == 0 {
+		thingWithDateRangeKeyTable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
+	if thingWithDateRangeKeyTable.TableName == "" {
+		return nil, errors.New("must specify TableName for ThingWithDateRangeKeyTable")
 	}
 	// configure ThingWithDateTimeComposite table
 	thingWithDateTimeCompositeTable := config.ThingWithDateTimeCompositeTable
@@ -501,7 +539,9 @@ func New(config Config) (*DB, error) {
 		thingWithAdditionalAttributesTable:                   thingWithAdditionalAttributesTable,
 		thingWithCompositeAttributesTable:                    thingWithCompositeAttributesTable,
 		thingWithCompositeEnumAttributesTable:                thingWithCompositeEnumAttributesTable,
+		thingWithDateGSITable:                                thingWithDateGSITable,
 		thingWithDateRangeTable:                              thingWithDateRangeTable,
+		thingWithDateRangeKeyTable:                           thingWithDateRangeKeyTable,
 		thingWithDateTimeCompositeTable:                      thingWithDateTimeCompositeTable,
 		thingWithDatetimeGSITable:                            thingWithDatetimeGSITable,
 		thingWithEnumHashKeyTable:                            thingWithEnumHashKeyTable,
@@ -529,7 +569,9 @@ type DB struct {
 	thingWithAdditionalAttributesTable                   ThingWithAdditionalAttributesTable
 	thingWithCompositeAttributesTable                    ThingWithCompositeAttributesTable
 	thingWithCompositeEnumAttributesTable                ThingWithCompositeEnumAttributesTable
+	thingWithDateGSITable                                ThingWithDateGSITable
 	thingWithDateRangeTable                              ThingWithDateRangeTable
+	thingWithDateRangeKeyTable                           ThingWithDateRangeKeyTable
 	thingWithDateTimeCompositeTable                      ThingWithDateTimeCompositeTable
 	thingWithDatetimeGSITable                            ThingWithDatetimeGSITable
 	thingWithEnumHashKeyTable                            ThingWithEnumHashKeyTable
@@ -580,7 +622,13 @@ func (d DB) CreateTables(ctx context.Context) error {
 	if err := d.thingWithCompositeEnumAttributesTable.create(ctx); err != nil {
 		return err
 	}
+	if err := d.thingWithDateGSITable.create(ctx); err != nil {
+		return err
+	}
 	if err := d.thingWithDateRangeTable.create(ctx); err != nil {
+		return err
+	}
+	if err := d.thingWithDateRangeKeyTable.create(ctx); err != nil {
 		return err
 	}
 	if err := d.thingWithDateTimeCompositeTable.create(ctx); err != nil {
@@ -1039,6 +1087,36 @@ func (d DB) DeleteThingWithCompositeEnumAttributes(ctx context.Context, name str
 	return d.thingWithCompositeEnumAttributesTable.deleteThingWithCompositeEnumAttributes(ctx, name, branchID, date)
 }
 
+// SaveThingWithDateGSI saves a ThingWithDateGSI to the database.
+func (d DB) SaveThingWithDateGSI(ctx context.Context, m models.ThingWithDateGSI) error {
+	return d.thingWithDateGSITable.saveThingWithDateGSI(ctx, m)
+}
+
+// GetThingWithDateGSI retrieves a ThingWithDateGSI from the database.
+func (d DB) GetThingWithDateGSI(ctx context.Context, dateH strfmt.Date) (*models.ThingWithDateGSI, error) {
+	return d.thingWithDateGSITable.getThingWithDateGSI(ctx, dateH)
+}
+
+// ScanThingWithDateGSIs runs a scan on the ThingWithDateGSIs table.
+func (d DB) ScanThingWithDateGSIs(ctx context.Context, input db.ScanThingWithDateGSIsInput, fn func(m *models.ThingWithDateGSI, lastThingWithDateGSI bool) bool) error {
+	return d.thingWithDateGSITable.scanThingWithDateGSIs(ctx, input, fn)
+}
+
+// DeleteThingWithDateGSI deletes a ThingWithDateGSI from the database.
+func (d DB) DeleteThingWithDateGSI(ctx context.Context, dateH strfmt.Date) error {
+	return d.thingWithDateGSITable.deleteThingWithDateGSI(ctx, dateH)
+}
+
+// GetThingWithDateGSIsByIDAndDateR retrieves a page of ThingWithDateGSIs from the database.
+func (d DB) GetThingWithDateGSIsByIDAndDateR(ctx context.Context, input db.GetThingWithDateGSIsByIDAndDateRInput, fn func(m *models.ThingWithDateGSI, lastThingWithDateGSI bool) bool) error {
+	return d.thingWithDateGSITable.getThingWithDateGSIsByIDAndDateR(ctx, input, fn)
+}
+
+// GetThingWithDateGSIsByDateHAndID retrieves a page of ThingWithDateGSIs from the database.
+func (d DB) GetThingWithDateGSIsByDateHAndID(ctx context.Context, input db.GetThingWithDateGSIsByDateHAndIDInput, fn func(m *models.ThingWithDateGSI, lastThingWithDateGSI bool) bool) error {
+	return d.thingWithDateGSITable.getThingWithDateGSIsByDateHAndID(ctx, input, fn)
+}
+
 // SaveThingWithDateRange saves a ThingWithDateRange to the database.
 func (d DB) SaveThingWithDateRange(ctx context.Context, m models.ThingWithDateRange) error {
 	return d.thingWithDateRangeTable.saveThingWithDateRange(ctx, m)
@@ -1062,6 +1140,31 @@ func (d DB) GetThingWithDateRangesByNameAndDate(ctx context.Context, input db.Ge
 // DeleteThingWithDateRange deletes a ThingWithDateRange from the database.
 func (d DB) DeleteThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) error {
 	return d.thingWithDateRangeTable.deleteThingWithDateRange(ctx, name, date)
+}
+
+// SaveThingWithDateRangeKey saves a ThingWithDateRangeKey to the database.
+func (d DB) SaveThingWithDateRangeKey(ctx context.Context, m models.ThingWithDateRangeKey) error {
+	return d.thingWithDateRangeKeyTable.saveThingWithDateRangeKey(ctx, m)
+}
+
+// GetThingWithDateRangeKey retrieves a ThingWithDateRangeKey from the database.
+func (d DB) GetThingWithDateRangeKey(ctx context.Context, id string, date strfmt.Date) (*models.ThingWithDateRangeKey, error) {
+	return d.thingWithDateRangeKeyTable.getThingWithDateRangeKey(ctx, id, date)
+}
+
+// ScanThingWithDateRangeKeys runs a scan on the ThingWithDateRangeKeys table.
+func (d DB) ScanThingWithDateRangeKeys(ctx context.Context, input db.ScanThingWithDateRangeKeysInput, fn func(m *models.ThingWithDateRangeKey, lastThingWithDateRangeKey bool) bool) error {
+	return d.thingWithDateRangeKeyTable.scanThingWithDateRangeKeys(ctx, input, fn)
+}
+
+// GetThingWithDateRangeKeysByIDAndDate retrieves a page of ThingWithDateRangeKeys from the database.
+func (d DB) GetThingWithDateRangeKeysByIDAndDate(ctx context.Context, input db.GetThingWithDateRangeKeysByIDAndDateInput, fn func(m *models.ThingWithDateRangeKey, lastThingWithDateRangeKey bool) bool) error {
+	return d.thingWithDateRangeKeyTable.getThingWithDateRangeKeysByIDAndDate(ctx, input, fn)
+}
+
+// DeleteThingWithDateRangeKey deletes a ThingWithDateRangeKey from the database.
+func (d DB) DeleteThingWithDateRangeKey(ctx context.Context, id string, date strfmt.Date) error {
+	return d.thingWithDateRangeKeyTable.deleteThingWithDateRangeKey(ctx, id, date)
 }
 
 // SaveThingWithDateTimeComposite saves a ThingWithDateTimeComposite to the database.
@@ -1367,6 +1470,14 @@ func (d DB) GetThingWithUnderscores(ctx context.Context, iDApp string) (*models.
 // DeleteThingWithUnderscores deletes a ThingWithUnderscores from the database.
 func (d DB) DeleteThingWithUnderscores(ctx context.Context, iDApp string) error {
 	return d.thingWithUnderscoresTable.deleteThingWithUnderscores(ctx, iDApp)
+}
+
+func dateToDynamoTimeString(d strfmt.Date) string {
+	return time.Time(d).Format(time.DateOnly)
+}
+
+func datePtrToDynamoTimeString(d *strfmt.Date) string {
+	return time.Time(*d).Format(time.DateOnly)
 }
 
 func datetimeToDynamoTimeString(d strfmt.DateTime) string {

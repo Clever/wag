@@ -30,8 +30,8 @@ type ddbThingWithDatetimeGSIPrimaryKey struct {
 	ID string `dynamodbav:"id"`
 }
 
-// ddbThingWithDatetimeGSIGSIByDate represents the byDate GSI.
-type ddbThingWithDatetimeGSIGSIByDate struct {
+// ddbThingWithDatetimeGSIGSIByDateTime represents the byDateTime GSI.
+type ddbThingWithDatetimeGSIGSIByDateTime struct {
 	Datetime strfmt.DateTime `dynamodbav:"datetime"`
 	ID       string          `dynamodbav:"id"`
 }
@@ -61,7 +61,7 @@ func (t ThingWithDatetimeGSITable) create(ctx context.Context) error {
 		},
 		GlobalSecondaryIndexes: []*dynamodb.GlobalSecondaryIndex{
 			{
-				IndexName: aws.String("byDate"),
+				IndexName: aws.String("byDateTime"),
 				Projection: &dynamodb.Projection{
 					ProjectionType: aws.String("ALL"),
 				},
@@ -239,7 +239,7 @@ func (t ThingWithDatetimeGSITable) getThingWithDatetimeGSIsByDatetimeAndID(ctx c
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
-		IndexName: aws.String("byDate"),
+		IndexName: aws.String("byDateTime"),
 		ExpressionAttributeNames: map[string]*string{
 			"#DATETIME": aws.String("datetime"),
 		},
@@ -327,7 +327,7 @@ func (t ThingWithDatetimeGSITable) scanThingWithDatetimeGSIsByDatetimeAndID(ctx 
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
 		Limit:          input.Limit,
-		IndexName:      aws.String("byDate"),
+		IndexName:      aws.String("byDateTime"),
 	}
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
