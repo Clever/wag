@@ -190,7 +190,7 @@ func (t ThingWithDateRangeTable) getThingWithDateRangesByNameAndDate(ctx context
 	} else {
 		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
 		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
-			S: aws.String(toDynamoTimeString(*input.DateStartingAt)),
+			S: aws.String(datetimeToDynamoTimeString(*input.DateStartingAt)),
 		}
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #DATE <= :date")
@@ -201,7 +201,7 @@ func (t ThingWithDateRangeTable) getThingWithDateRangesByNameAndDate(ctx context
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"date": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeString(input.StartingAfter.Date)),
+				S: aws.String(datetimeToDynamoTimeString(input.StartingAfter.Date)),
 			},
 			"name": &dynamodb.AttributeValue{
 				S: aws.String(input.StartingAfter.Name),

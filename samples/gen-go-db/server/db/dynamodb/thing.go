@@ -312,7 +312,7 @@ func (t ThingTable) getThingsByNameAndVersionParseFilters(queryInput *dynamodb.Q
 			queryInput.ExpressionAttributeNames["#CREATEDAT"] = aws.String(string(db.ThingCreatedAt))
 			for i, attributeValue := range filterValue.AttributeValues {
 				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingCreatedAt), i)] = &dynamodb.AttributeValue{
-					S: aws.String(toDynamoTimeString(attributeValue.(strfmt.DateTime))),
+					S: aws.String(datetimeToDynamoTimeString(attributeValue.(strfmt.DateTime))),
 				}
 			}
 		case db.ThingHashNullable:
@@ -333,7 +333,7 @@ func (t ThingTable) getThingsByNameAndVersionParseFilters(queryInput *dynamodb.Q
 			queryInput.ExpressionAttributeNames["#RANGENULLABLE"] = aws.String(string(db.ThingRangeNullable))
 			for i, attributeValue := range filterValue.AttributeValues {
 				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingRangeNullable), i)] = &dynamodb.AttributeValue{
-					S: aws.String(toDynamoTimeString(attributeValue.(strfmt.DateTime))),
+					S: aws.String(datetimeToDynamoTimeString(attributeValue.(strfmt.DateTime))),
 				}
 			}
 		}
@@ -578,7 +578,7 @@ func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.Ge
 	} else {
 		queryInput.ExpressionAttributeNames["#CREATEDAT"] = aws.String("createdAt")
 		queryInput.ExpressionAttributeValues[":createdAt"] = &dynamodb.AttributeValue{
-			S: aws.String(toDynamoTimeString(*input.CreatedAtStartingAt)),
+			S: aws.String(datetimeToDynamoTimeString(*input.CreatedAtStartingAt)),
 		}
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #CREATEDAT <= :createdAt")
@@ -589,7 +589,7 @@ func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.Ge
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"createdAt": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeString(input.StartingAfter.CreatedAt)),
+				S: aws.String(datetimeToDynamoTimeString(input.StartingAfter.CreatedAt)),
 			},
 			"name": &dynamodb.AttributeValue{
 				S: aws.String(input.StartingAfter.Name),
@@ -725,7 +725,7 @@ func (t ThingTable) getThingsByNameAndRangeNullable(ctx context.Context, input d
 	} else {
 		queryInput.ExpressionAttributeNames["#RANGENULLABLE"] = aws.String("rangeNullable")
 		queryInput.ExpressionAttributeValues[":rangeNullable"] = &dynamodb.AttributeValue{
-			S: aws.String(toDynamoTimeString(*input.RangeNullableStartingAt)),
+			S: aws.String(datetimeToDynamoTimeString(*input.RangeNullableStartingAt)),
 		}
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #RANGENULLABLE <= :rangeNullable")
@@ -736,7 +736,7 @@ func (t ThingTable) getThingsByNameAndRangeNullable(ctx context.Context, input d
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"rangeNullable": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.RangeNullable)),
+				S: aws.String(datetimePtrToDynamoTimeString(input.StartingAfter.RangeNullable)),
 			},
 			"name": &dynamodb.AttributeValue{
 				S: aws.String(input.StartingAfter.Name),

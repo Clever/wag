@@ -1369,11 +1369,11 @@ func (d DB) DeleteThingWithUnderscores(ctx context.Context, iDApp string) error 
 	return d.thingWithUnderscoresTable.deleteThingWithUnderscores(ctx, iDApp)
 }
 
-func toDynamoTimeString(d strfmt.DateTime) string {
+func datetimeToDynamoTimeString(d strfmt.DateTime) string {
 	return time.Time(d).Format(time.RFC3339) // dynamodb attributevalue only supports RFC3339 resolution
 }
 
-func toDynamoTimeStringPtr(d *strfmt.DateTime) string {
+func datetimePtrToDynamoTimeString(d *strfmt.DateTime) string {
 	return time.Time(*d).Format(time.RFC3339) // dynamodb attributevalue only supports RFC3339 resolution
 }
 func buildCondExpr(conditions *expression.ConditionBuilder) (*string, map[string]*dynamodb.AttributeValue, map[string]*string, error) {

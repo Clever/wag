@@ -302,7 +302,7 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) getThingAllowingBa
 	} else {
 		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
 		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
-			S: aws.String(toDynamoTimeString(*input.DateStartingAt)),
+			S: aws.String(datetimeToDynamoTimeString(*input.DateStartingAt)),
 		}
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#NAME_ID = :nameId AND #DATE <= :date")
@@ -313,7 +313,7 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) getThingAllowingBa
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"date": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.Date)),
+				S: aws.String(datetimePtrToDynamoTimeString(input.StartingAfter.Date)),
 			},
 			"name_id": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.ID)),

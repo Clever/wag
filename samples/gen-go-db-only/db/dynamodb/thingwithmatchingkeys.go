@@ -205,7 +205,7 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByBearAndAssocTypeI
 			queryInput.ExpressionAttributeNames["#CREATED"] = aws.String(string(db.ThingWithMatchingKeysCreated))
 			for i, attributeValue := range filterValue.AttributeValues {
 				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithMatchingKeysCreated), i)] = &dynamodb.AttributeValue{
-					S: aws.String(toDynamoTimeString(attributeValue.(strfmt.DateTime))),
+					S: aws.String(datetimeToDynamoTimeString(attributeValue.(strfmt.DateTime))),
 				}
 			}
 		}

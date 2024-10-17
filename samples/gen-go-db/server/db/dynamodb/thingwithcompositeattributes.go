@@ -269,7 +269,7 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 	} else {
 		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
 		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
-			S: aws.String(toDynamoTimeString(*input.DateStartingAt)),
+			S: aws.String(datetimeToDynamoTimeString(*input.DateStartingAt)),
 		}
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE <= :date")
@@ -280,7 +280,7 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"date": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.Date)),
+				S: aws.String(datetimePtrToDynamoTimeString(input.StartingAfter.Date)),
 			},
 			"name_branch": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
@@ -392,7 +392,7 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 	} else {
 		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
 		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
-			S: aws.String(toDynamoTimeString(*input.DateStartingAt)),
+			S: aws.String(datetimeToDynamoTimeString(*input.DateStartingAt)),
 		}
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion AND #DATE <= :date")
@@ -403,7 +403,7 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
 			"date": &dynamodb.AttributeValue{
-				S: aws.String(toDynamoTimeStringPtr(input.StartingAfter.Date)),
+				S: aws.String(datetimePtrToDynamoTimeString(input.StartingAfter.Date)),
 			},
 			"name_version": &dynamodb.AttributeValue{
 				S: aws.String(fmt.Sprintf("%s:%d", *input.StartingAfter.Name, input.StartingAfter.Version)),
