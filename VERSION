@@ -1,4 +1,6 @@
-v9.3.4
+v9.4.0
+
+v9.4.0 Add support for date keys for dynamodb codegen
 
 v9.3.4 go 1.21 update
 
