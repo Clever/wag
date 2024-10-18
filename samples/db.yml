@@ -911,3 +911,42 @@ definitions:
       date:
         type: string
         format: date
+
+  ThingWithTransactMultipleGSI:
+    x-db:
+      AllowOverwrites: false
+      AllowPrimaryIndexScan: true
+      AllowSecondaryIndexScan:
+        - byDate
+      DynamoDB:
+        KeySchema:
+          - AttributeName: dateH
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: rangeDate
+            Projection:
+              ProjectionType: ALL
+            KeySchema:
+              - AttributeName: id
+                KeyType: HASH
+              - AttributeName: dateR
+                KeyType: RANGE
+          - IndexName: hash
+            Projection:
+              ProjectionType: ALL
+            KeySchema:
+              - AttributeName: dateH
+                KeyType: HASH
+              - AttributeName: id
+                KeyType: RANGE
+      EnableTransactions: [Thing]
+    type: object
+    properties:
+      id:
+        type: string
+      dateH:
+        type: string
+        format: date
+      dateR:
+        type: string
+        format: date
