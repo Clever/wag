@@ -1247,6 +1247,8 @@ func Scan{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.
 }
 {{- end }}
 
+{{ end }}
+
 {{- range $transactWithSchemaName := $xdbConfig.EnableTransactions }}
 {{- $transactWithModelName := pascalize $transactWithSchemaName }}
 {{- $transactWithConfig := configForSchemaName $xdbConfigs $transactWithSchemaName }}
@@ -1268,5 +1270,4 @@ func TransactSave{{ $modelName }}And{{ $transactWithModelName }}(s db.Interface,
 }
 {{- end }}
 
-{{ end }}
 {{ end }}
