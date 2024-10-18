@@ -331,6 +331,22 @@ type Interface interface {
 	// DeleteThingWithRequiredFields2 deletes a ThingWithRequiredFields2 from the database.
 	DeleteThingWithRequiredFields2(ctx context.Context, name string, id string) error
 
+	// SaveThingWithTransactMultipleGSI saves a ThingWithTransactMultipleGSI to the database.
+	SaveThingWithTransactMultipleGSI(ctx context.Context, m models.ThingWithTransactMultipleGSI) error
+	// GetThingWithTransactMultipleGSI retrieves a ThingWithTransactMultipleGSI from the database.
+	GetThingWithTransactMultipleGSI(ctx context.Context, dateH strfmt.Date) (*models.ThingWithTransactMultipleGSI, error)
+	// ScanThingWithTransactMultipleGSIs runs a scan on the ThingWithTransactMultipleGSIs table.
+	ScanThingWithTransactMultipleGSIs(ctx context.Context, input ScanThingWithTransactMultipleGSIsInput, fn func(m *models.ThingWithTransactMultipleGSI, lastThingWithTransactMultipleGSI bool) bool) error
+	// DeleteThingWithTransactMultipleGSI deletes a ThingWithTransactMultipleGSI from the database.
+	DeleteThingWithTransactMultipleGSI(ctx context.Context, dateH strfmt.Date) error
+	// GetThingWithTransactMultipleGSIsByIDAndDateR retrieves a page of ThingWithTransactMultipleGSIs from the database.
+	GetThingWithTransactMultipleGSIsByIDAndDateR(ctx context.Context, input GetThingWithTransactMultipleGSIsByIDAndDateRInput, fn func(m *models.ThingWithTransactMultipleGSI, lastThingWithTransactMultipleGSI bool) bool) error
+	// GetThingWithTransactMultipleGSIsByDateHAndID retrieves a page of ThingWithTransactMultipleGSIs from the database.
+	GetThingWithTransactMultipleGSIsByDateHAndID(ctx context.Context, input GetThingWithTransactMultipleGSIsByDateHAndIDInput, fn func(m *models.ThingWithTransactMultipleGSI, lastThingWithTransactMultipleGSI bool) bool) error
+	// TransactSaveThingWithTransactMultipleGSIAndThing saves ThingWithTransactMultipleGSI and Thing as an atomic transaction.
+	// Use the optional condition parameters to require pre-transaction conditions for each put
+	TransactSaveThingWithTransactMultipleGSIAndThing(ctx context.Context, m1 models.ThingWithTransactMultipleGSI, m1Conditions *expression.ConditionBuilder, m2 models.Thing, m2Conditions *expression.ConditionBuilder) error
+
 	// SaveThingWithTransaction saves a ThingWithTransaction to the database.
 	SaveThingWithTransaction(ctx context.Context, m models.ThingWithTransaction) error
 	// GetThingWithTransaction retrieves a ThingWithTransaction from the database.
@@ -2304,6 +2320,90 @@ var _ error = ErrThingWithRequiredFields2AlreadyExists{}
 // Error returns a description of the error.
 func (e ErrThingWithRequiredFields2AlreadyExists) Error() string {
 	return "ThingWithRequiredFields2 already exists"
+}
+
+// ScanThingWithTransactMultipleGSIsInput is the input to the ScanThingWithTransactMultipleGSIs method.
+type ScanThingWithTransactMultipleGSIsInput struct {
+	// StartingAfter is an optional specification of an (exclusive) starting point.
+	StartingAfter *models.ThingWithTransactMultipleGSI
+	// DisableConsistentRead turns off the default behavior of running a consistent read.
+	DisableConsistentRead bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+	// Limiter is an optional limit on how quickly items are scanned.
+	Limiter *rate.Limiter
+}
+
+// ErrThingWithTransactMultipleGSINotFound is returned when the database fails to find a ThingWithTransactMultipleGSI.
+type ErrThingWithTransactMultipleGSINotFound struct {
+	DateH strfmt.Date
+}
+
+var _ error = ErrThingWithTransactMultipleGSINotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithTransactMultipleGSINotFound) Error() string {
+	return "could not find ThingWithTransactMultipleGSI"
+}
+
+// GetThingWithTransactMultipleGSIsByIDAndDateRInput is the query input to GetThingWithTransactMultipleGSIsByIDAndDateR.
+type GetThingWithTransactMultipleGSIsByIDAndDateRInput struct {
+	// ID is required
+	ID              string
+	DateRStartingAt *strfmt.Date
+	StartingAfter   *models.ThingWithTransactMultipleGSI
+	Descending      bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+}
+
+// ErrThingWithTransactMultipleGSIByIDAndDateRNotFound is returned when the database fails to find a ThingWithTransactMultipleGSI.
+type ErrThingWithTransactMultipleGSIByIDAndDateRNotFound struct {
+	ID    string
+	DateR strfmt.Date
+}
+
+var _ error = ErrThingWithTransactMultipleGSIByIDAndDateRNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithTransactMultipleGSIByIDAndDateRNotFound) Error() string {
+	return "could not find ThingWithTransactMultipleGSI"
+}
+
+// GetThingWithTransactMultipleGSIsByDateHAndIDInput is the query input to GetThingWithTransactMultipleGSIsByDateHAndID.
+type GetThingWithTransactMultipleGSIsByDateHAndIDInput struct {
+	// DateH is required
+	DateH         strfmt.Date
+	IDStartingAt  *string
+	StartingAfter *models.ThingWithTransactMultipleGSI
+	Descending    bool
+	// Limit is an optional limit of how many items to evaluate.
+	Limit *int64
+}
+
+// ErrThingWithTransactMultipleGSIByDateHAndIDNotFound is returned when the database fails to find a ThingWithTransactMultipleGSI.
+type ErrThingWithTransactMultipleGSIByDateHAndIDNotFound struct {
+	DateH strfmt.Date
+	ID    string
+}
+
+var _ error = ErrThingWithTransactMultipleGSIByDateHAndIDNotFound{}
+
+// Error returns a description of the error.
+func (e ErrThingWithTransactMultipleGSIByDateHAndIDNotFound) Error() string {
+	return "could not find ThingWithTransactMultipleGSI"
+}
+
+// ErrThingWithTransactMultipleGSIAlreadyExists is returned when trying to overwrite a ThingWithTransactMultipleGSI.
+type ErrThingWithTransactMultipleGSIAlreadyExists struct {
+	DateH strfmt.Date
+}
+
+var _ error = ErrThingWithTransactMultipleGSIAlreadyExists{}
+
+// Error returns a description of the error.
+func (e ErrThingWithTransactMultipleGSIAlreadyExists) Error() string {
+	return "ThingWithTransactMultipleGSI already exists"
 }
 
 // ScanThingWithTransactionsInput is the input to the ScanThingWithTransactions method.

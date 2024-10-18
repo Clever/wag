@@ -253,6 +253,12 @@ declare namespace SwaggerTest {
   name: string;
 };
     
+    type ThingWithTransactMultipleGSI = {
+  dateH?: string;
+  dateR?: string;
+  id?: string;
+};
+    
     type ThingWithTransaction = {
   name?: string;
 };

@@ -74,6 +74,8 @@ type Config struct {
 	ThingWithRequiredFieldsTable ThingWithRequiredFieldsTable
 	// ThingWithRequiredFields2Table configuration.
 	ThingWithRequiredFields2Table ThingWithRequiredFields2Table
+	// ThingWithTransactMultipleGSITable configuration.
+	ThingWithTransactMultipleGSITable ThingWithTransactMultipleGSITable
 	// ThingWithTransactionTable configuration.
 	ThingWithTransactionTable ThingWithTransactionTable
 	// ThingWithTransactionWithSimpleThingTable configuration.
@@ -475,6 +477,23 @@ func New(config Config) (*DB, error) {
 	if thingWithRequiredFields2Table.TableName == "" {
 		return nil, errors.New("must specify TableName for ThingWithRequiredFields2Table")
 	}
+	// configure ThingWithTransactMultipleGSI table
+	thingWithTransactMultipleGSITable := config.ThingWithTransactMultipleGSITable
+	if thingWithTransactMultipleGSITable.DynamoDBAPI == nil {
+		thingWithTransactMultipleGSITable.DynamoDBAPI = config.DynamoDBAPI
+	}
+	if thingWithTransactMultipleGSITable.Prefix == "" {
+		thingWithTransactMultipleGSITable.Prefix = config.DefaultPrefix
+	}
+	if thingWithTransactMultipleGSITable.ReadCapacityUnits == 0 {
+		thingWithTransactMultipleGSITable.ReadCapacityUnits = config.DefaultReadCapacityUnits
+	}
+	if thingWithTransactMultipleGSITable.WriteCapacityUnits == 0 {
+		thingWithTransactMultipleGSITable.WriteCapacityUnits = config.DefaultWriteCapacityUnits
+	}
+	if thingWithTransactMultipleGSITable.TableName == "" {
+		return nil, errors.New("must specify TableName for ThingWithTransactMultipleGSITable")
+	}
 	// configure ThingWithTransaction table
 	thingWithTransactionTable := config.ThingWithTransactionTable
 	if thingWithTransactionTable.DynamoDBAPI == nil {
@@ -550,6 +569,7 @@ func New(config Config) (*DB, error) {
 		thingWithRequiredCompositePropertiesAndKeysOnlyTable: thingWithRequiredCompositePropertiesAndKeysOnlyTable,
 		thingWithRequiredFieldsTable:                         thingWithRequiredFieldsTable,
 		thingWithRequiredFields2Table:                        thingWithRequiredFields2Table,
+		thingWithTransactMultipleGSITable:                    thingWithTransactMultipleGSITable,
 		thingWithTransactionTable:                            thingWithTransactionTable,
 		thingWithTransactionWithSimpleThingTable:             thingWithTransactionWithSimpleThingTable,
 		thingWithUnderscoresTable:                            thingWithUnderscoresTable,
@@ -580,6 +600,7 @@ type DB struct {
 	thingWithRequiredCompositePropertiesAndKeysOnlyTable ThingWithRequiredCompositePropertiesAndKeysOnlyTable
 	thingWithRequiredFieldsTable                         ThingWithRequiredFieldsTable
 	thingWithRequiredFields2Table                        ThingWithRequiredFields2Table
+	thingWithTransactMultipleGSITable                    ThingWithTransactMultipleGSITable
 	thingWithTransactionTable                            ThingWithTransactionTable
 	thingWithTransactionWithSimpleThingTable             ThingWithTransactionWithSimpleThingTable
 	thingWithUnderscoresTable                            ThingWithUnderscoresTable
@@ -653,6 +674,9 @@ func (d DB) CreateTables(ctx context.Context) error {
 		return err
 	}
 	if err := d.thingWithRequiredFields2Table.create(ctx); err != nil {
+		return err
+	}
+	if err := d.thingWithTransactMultipleGSITable.create(ctx); err != nil {
 		return err
 	}
 	if err := d.thingWithTransactionTable.create(ctx); err != nil {
@@ -1405,6 +1429,41 @@ func (d DB) GetThingWithRequiredFields2sByNameAndID(ctx context.Context, input d
 // DeleteThingWithRequiredFields2 deletes a ThingWithRequiredFields2 from the database.
 func (d DB) DeleteThingWithRequiredFields2(ctx context.Context, name string, id string) error {
 	return d.thingWithRequiredFields2Table.deleteThingWithRequiredFields2(ctx, name, id)
+}
+
+// SaveThingWithTransactMultipleGSI saves a ThingWithTransactMultipleGSI to the database.
+func (d DB) SaveThingWithTransactMultipleGSI(ctx context.Context, m models.ThingWithTransactMultipleGSI) error {
+	return d.thingWithTransactMultipleGSITable.saveThingWithTransactMultipleGSI(ctx, m)
+}
+
+// GetThingWithTransactMultipleGSI retrieves a ThingWithTransactMultipleGSI from the database.
+func (d DB) GetThingWithTransactMultipleGSI(ctx context.Context, dateH strfmt.Date) (*models.ThingWithTransactMultipleGSI, error) {
+	return d.thingWithTransactMultipleGSITable.getThingWithTransactMultipleGSI(ctx, dateH)
+}
+
+// ScanThingWithTransactMultipleGSIs runs a scan on the ThingWithTransactMultipleGSIs table.
+func (d DB) ScanThingWithTransactMultipleGSIs(ctx context.Context, input db.ScanThingWithTransactMultipleGSIsInput, fn func(m *models.ThingWithTransactMultipleGSI, lastThingWithTransactMultipleGSI bool) bool) error {
+	return d.thingWithTransactMultipleGSITable.scanThingWithTransactMultipleGSIs(ctx, input, fn)
+}
+
+// DeleteThingWithTransactMultipleGSI deletes a ThingWithTransactMultipleGSI from the database.
+func (d DB) DeleteThingWithTransactMultipleGSI(ctx context.Context, dateH strfmt.Date) error {
+	return d.thingWithTransactMultipleGSITable.deleteThingWithTransactMultipleGSI(ctx, dateH)
+}
+
+// GetThingWithTransactMultipleGSIsByIDAndDateR retrieves a page of ThingWithTransactMultipleGSIs from the database.
+func (d DB) GetThingWithTransactMultipleGSIsByIDAndDateR(ctx context.Context, input db.GetThingWithTransactMultipleGSIsByIDAndDateRInput, fn func(m *models.ThingWithTransactMultipleGSI, lastThingWithTransactMultipleGSI bool) bool) error {
+	return d.thingWithTransactMultipleGSITable.getThingWithTransactMultipleGSIsByIDAndDateR(ctx, input, fn)
+}
+
+// GetThingWithTransactMultipleGSIsByDateHAndID retrieves a page of ThingWithTransactMultipleGSIs from the database.
+func (d DB) GetThingWithTransactMultipleGSIsByDateHAndID(ctx context.Context, input db.GetThingWithTransactMultipleGSIsByDateHAndIDInput, fn func(m *models.ThingWithTransactMultipleGSI, lastThingWithTransactMultipleGSI bool) bool) error {
+	return d.thingWithTransactMultipleGSITable.getThingWithTransactMultipleGSIsByDateHAndID(ctx, input, fn)
+}
+
+// TransactSaveThingWithTransactMultipleGSIAndThing saves ThingWithTransactMultipleGSI and Thing as a transaction.
+func (d DB) TransactSaveThingWithTransactMultipleGSIAndThing(ctx context.Context, m1 models.ThingWithTransactMultipleGSI, m1Conditions *expression.ConditionBuilder, m2 models.Thing, m2Conditions *expression.ConditionBuilder) error {
+	return d.thingWithTransactMultipleGSITable.transactSaveThingWithTransactMultipleGSIAndThing(ctx, m1, m1Conditions, m2, m2Conditions)
 }
 
 // SaveThingWithTransaction saves a ThingWithTransaction to the database.

@@ -177,6 +177,14 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingWithRequiredFields2sByNameAndID", GetThingWithRequiredFields2sByNameAndID(dbFactory(), t))
 	t.Run("SaveThingWithRequiredFields2", SaveThingWithRequiredFields2(dbFactory(), t))
 	t.Run("DeleteThingWithRequiredFields2", DeleteThingWithRequiredFields2(dbFactory(), t))
+	t.Run("GetThingWithTransactMultipleGSI", GetThingWithTransactMultipleGSI(dbFactory(), t))
+	t.Run("ScanThingWithTransactMultipleGSIs", ScanThingWithTransactMultipleGSIs(dbFactory(), t))
+	t.Run("SaveThingWithTransactMultipleGSI", SaveThingWithTransactMultipleGSI(dbFactory(), t))
+	t.Run("DeleteThingWithTransactMultipleGSI", DeleteThingWithTransactMultipleGSI(dbFactory(), t))
+	t.Run("GetThingWithTransactMultipleGSIsByIDAndDateR", GetThingWithTransactMultipleGSIsByIDAndDateR(dbFactory(), t))
+	t.Run("TransactSaveThingWithTransactMultipleGSIAndThing", TransactSaveThingWithTransactMultipleGSIAndThing(dbFactory(), t))
+	t.Run("GetThingWithTransactMultipleGSIsByDateHAndID", GetThingWithTransactMultipleGSIsByDateHAndID(dbFactory(), t))
+	t.Run("TransactSaveThingWithTransactMultipleGSIAndThing", TransactSaveThingWithTransactMultipleGSIAndThing(dbFactory(), t))
 	t.Run("GetThingWithTransaction", GetThingWithTransaction(dbFactory(), t))
 	t.Run("ScanThingWithTransactions", ScanThingWithTransactions(dbFactory(), t))
 	t.Run("SaveThingWithTransaction", SaveThingWithTransaction(dbFactory(), t))
@@ -13377,6 +13385,580 @@ func DeleteThingWithRequiredFields2(s db.Interface, t *testing.T) func(t *testin
 	}
 }
 
+func GetThingWithTransactMultipleGSI(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithTransactMultipleGSI{
+			DateH: mustDate("2018-03-11"),
+			DateR: mustDate("2018-03-11"),
+			ID:    "string1",
+		}
+		require.Nil(t, s.SaveThingWithTransactMultipleGSI(ctx, m))
+		m2, err := s.GetThingWithTransactMultipleGSI(ctx, m.DateH)
+		require.Nil(t, err)
+		require.Equal(t, m.DateH, m2.DateH)
+
+		_, err = s.GetThingWithTransactMultipleGSI(ctx, mustDate("2018-03-12"))
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrThingWithTransactMultipleGSINotFound{})
+	}
+}
+
+// The scan tests are structured differently compared to other tests in because items returned by scans
+// are not returned in any particular order, so we can't simply declare what the expected arrays of items are.
+func ScanThingWithTransactMultipleGSIs(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithTransactMultipleGSI(ctx, models.ThingWithTransactMultipleGSI{
+			DateH: mustDate("2018-03-11"),
+			DateR: mustDate("2018-03-11"),
+			ID:    "string1",
+		}))
+		require.Nil(t, d.SaveThingWithTransactMultipleGSI(ctx, models.ThingWithTransactMultipleGSI{
+			DateH: mustDate("2018-03-12"),
+			DateR: mustDate("2018-03-12"),
+			ID:    "string2",
+		}))
+		require.Nil(t, d.SaveThingWithTransactMultipleGSI(ctx, models.ThingWithTransactMultipleGSI{
+			DateH: mustDate("2018-03-13"),
+			DateR: mustDate("2018-03-13"),
+			ID:    "string3",
+		}))
+
+		t.Run("basic", func(t *testing.T) {
+			expected := []models.ThingWithTransactMultipleGSI{
+				models.ThingWithTransactMultipleGSI{
+					DateH: mustDate("2018-03-11"),
+					DateR: mustDate("2018-03-11"),
+					ID:    "string1",
+				},
+				models.ThingWithTransactMultipleGSI{
+					DateH: mustDate("2018-03-12"),
+					DateR: mustDate("2018-03-12"),
+					ID:    "string2",
+				},
+				models.ThingWithTransactMultipleGSI{
+					DateH: mustDate("2018-03-13"),
+					DateR: mustDate("2018-03-13"),
+					ID:    "string3",
+				},
+			}
+			actual := []models.ThingWithTransactMultipleGSI{}
+			err := d.ScanThingWithTransactMultipleGSIs(ctx, db.ScanThingWithTransactMultipleGSIsInput{}, func(m *models.ThingWithTransactMultipleGSI, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+			// We can't use Equal here because Scan doesn't return items in any specific order.
+			require.ElementsMatch(t, expected, actual)
+		})
+
+		t.Run("starting after", func(t *testing.T) {
+			// Scan for everything.
+			allItems := []models.ThingWithTransactMultipleGSI{}
+			err := d.ScanThingWithTransactMultipleGSIs(ctx, db.ScanThingWithTransactMultipleGSIsInput{}, func(m *models.ThingWithTransactMultipleGSI, last bool) bool {
+				allItems = append(allItems, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			firstItem := allItems[0]
+
+			// Scan for everything after the first item.
+			scanInput := db.ScanThingWithTransactMultipleGSIsInput{
+				StartingAfter: &models.ThingWithTransactMultipleGSI{
+					DateH: firstItem.DateH,
+				},
+			}
+			actual := []models.ThingWithTransactMultipleGSI{}
+			err = d.ScanThingWithTransactMultipleGSIs(ctx, scanInput, func(m *models.ThingWithTransactMultipleGSI, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			expected := allItems[1:]
+			require.Equal(t, expected, actual)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			limit := int64(1)
+			// Scan for just the first item.
+			scanInput := db.ScanThingWithTransactMultipleGSIsInput{
+				Limit: &limit,
+			}
+			actual := []models.ThingWithTransactMultipleGSI{}
+			err := d.ScanThingWithTransactMultipleGSIs(ctx, scanInput, func(m *models.ThingWithTransactMultipleGSI, last bool) bool {
+				actual = append(actual, *m)
+				return true
+			})
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			require.NoError(t, err, errStr)
+
+			require.Len(t, actual, 1)
+		})
+	}
+}
+
+func SaveThingWithTransactMultipleGSI(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithTransactMultipleGSI{
+			DateH: mustDate("2018-03-11"),
+			DateR: mustDate("2018-03-11"),
+			ID:    "string1",
+		}
+		require.Nil(t, s.SaveThingWithTransactMultipleGSI(ctx, m))
+		require.IsType(t, db.ErrThingWithTransactMultipleGSIAlreadyExists{}, s.SaveThingWithTransactMultipleGSI(ctx, m))
+	}
+}
+
+func DeleteThingWithTransactMultipleGSI(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.ThingWithTransactMultipleGSI{
+			DateH: mustDate("2018-03-11"),
+			DateR: mustDate("2018-03-11"),
+			ID:    "string1",
+		}
+		require.Nil(t, s.SaveThingWithTransactMultipleGSI(ctx, m))
+		require.Nil(t, s.DeleteThingWithTransactMultipleGSI(ctx, m.DateH))
+	}
+}
+
+type getThingWithTransactMultipleGSIsByIDAndDateRInput struct {
+	ctx   context.Context
+	input db.GetThingWithTransactMultipleGSIsByIDAndDateRInput
+}
+type getThingWithTransactMultipleGSIsByIDAndDateROutput struct {
+	thingWithTransactMultipleGSIs []models.ThingWithTransactMultipleGSI
+	err                           error
+}
+type getThingWithTransactMultipleGSIsByIDAndDateRTest struct {
+	testName string
+	d        db.Interface
+	input    getThingWithTransactMultipleGSIsByIDAndDateRInput
+	output   getThingWithTransactMultipleGSIsByIDAndDateROutput
+}
+
+func (g getThingWithTransactMultipleGSIsByIDAndDateRTest) run(t *testing.T) {
+	thingWithTransactMultipleGSIs := []models.ThingWithTransactMultipleGSI{}
+	fn := func(m *models.ThingWithTransactMultipleGSI, lastThingWithTransactMultipleGSI bool) bool {
+		thingWithTransactMultipleGSIs = append(thingWithTransactMultipleGSIs, *m)
+		if lastThingWithTransactMultipleGSI {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingWithTransactMultipleGSIsByIDAndDateR(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.thingWithTransactMultipleGSIs, thingWithTransactMultipleGSIs)
+}
+
+func GetThingWithTransactMultipleGSIsByIDAndDateR(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithTransactMultipleGSI(ctx, models.ThingWithTransactMultipleGSI{
+			ID:    "string1",
+			DateR: mustDate("2018-03-11"),
+			DateH: mustDate("2018-03-11"),
+		}))
+		require.Nil(t, d.SaveThingWithTransactMultipleGSI(ctx, models.ThingWithTransactMultipleGSI{
+			ID:    "string1",
+			DateR: mustDate("2018-03-12"),
+			DateH: mustDate("2018-03-13"),
+		}))
+		require.Nil(t, d.SaveThingWithTransactMultipleGSI(ctx, models.ThingWithTransactMultipleGSI{
+			ID:    "string1",
+			DateR: mustDate("2018-03-13"),
+			DateH: mustDate("2018-03-12"),
+		}))
+		limit := int64(3)
+		tests := []getThingWithTransactMultipleGSIsByIDAndDateRTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getThingWithTransactMultipleGSIsByIDAndDateRInput{
+					ctx: context.Background(),
+					input: db.GetThingWithTransactMultipleGSIsByIDAndDateRInput{
+						ID:    "string1",
+						Limit: &limit,
+					},
+				},
+				output: getThingWithTransactMultipleGSIsByIDAndDateROutput{
+					thingWithTransactMultipleGSIs: []models.ThingWithTransactMultipleGSI{
+						models.ThingWithTransactMultipleGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-11"),
+							DateH: mustDate("2018-03-11"),
+						},
+						models.ThingWithTransactMultipleGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-12"),
+							DateH: mustDate("2018-03-13"),
+						},
+						models.ThingWithTransactMultipleGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-13"),
+							DateH: mustDate("2018-03-12"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getThingWithTransactMultipleGSIsByIDAndDateRInput{
+					ctx: context.Background(),
+					input: db.GetThingWithTransactMultipleGSIsByIDAndDateRInput{
+						ID:         "string1",
+						Descending: true,
+					},
+				},
+				output: getThingWithTransactMultipleGSIsByIDAndDateROutput{
+					thingWithTransactMultipleGSIs: []models.ThingWithTransactMultipleGSI{
+						models.ThingWithTransactMultipleGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-13"),
+							DateH: mustDate("2018-03-12"),
+						},
+						models.ThingWithTransactMultipleGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-12"),
+							DateH: mustDate("2018-03-13"),
+						},
+						models.ThingWithTransactMultipleGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-11"),
+							DateH: mustDate("2018-03-11"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getThingWithTransactMultipleGSIsByIDAndDateRInput{
+					ctx: context.Background(),
+					input: db.GetThingWithTransactMultipleGSIsByIDAndDateRInput{
+						ID: "string1",
+						StartingAfter: &models.ThingWithTransactMultipleGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-11"),
+							DateH: mustDate("2018-03-11"),
+						},
+					},
+				},
+				output: getThingWithTransactMultipleGSIsByIDAndDateROutput{
+					thingWithTransactMultipleGSIs: []models.ThingWithTransactMultipleGSI{
+						models.ThingWithTransactMultipleGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-12"),
+							DateH: mustDate("2018-03-13"),
+						},
+						models.ThingWithTransactMultipleGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-13"),
+							DateH: mustDate("2018-03-12"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after descending",
+				d:        d,
+				input: getThingWithTransactMultipleGSIsByIDAndDateRInput{
+					ctx: context.Background(),
+					input: db.GetThingWithTransactMultipleGSIsByIDAndDateRInput{
+						ID: "string1",
+						StartingAfter: &models.ThingWithTransactMultipleGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-13"),
+							DateH: mustDate("2018-03-12"),
+						},
+						Descending: true,
+					},
+				},
+				output: getThingWithTransactMultipleGSIsByIDAndDateROutput{
+					thingWithTransactMultipleGSIs: []models.ThingWithTransactMultipleGSI{
+						models.ThingWithTransactMultipleGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-12"),
+							DateH: mustDate("2018-03-13"),
+						},
+						models.ThingWithTransactMultipleGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-11"),
+							DateH: mustDate("2018-03-11"),
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingWithTransactMultipleGSIsByIDAndDateRInput{
+					ctx: context.Background(),
+					input: db.GetThingWithTransactMultipleGSIsByIDAndDateRInput{
+						ID:              "string1",
+						DateRStartingAt: db.Date(mustDate("2018-03-12")),
+					},
+				},
+				output: getThingWithTransactMultipleGSIsByIDAndDateROutput{
+					thingWithTransactMultipleGSIs: []models.ThingWithTransactMultipleGSI{
+						models.ThingWithTransactMultipleGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-12"),
+							DateH: mustDate("2018-03-13"),
+						},
+						models.ThingWithTransactMultipleGSI{
+							ID:    "string1",
+							DateR: mustDate("2018-03-13"),
+							DateH: mustDate("2018-03-12"),
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+type getThingWithTransactMultipleGSIsByDateHAndIDInput struct {
+	ctx   context.Context
+	input db.GetThingWithTransactMultipleGSIsByDateHAndIDInput
+}
+type getThingWithTransactMultipleGSIsByDateHAndIDOutput struct {
+	thingWithTransactMultipleGSIs []models.ThingWithTransactMultipleGSI
+	err                           error
+}
+type getThingWithTransactMultipleGSIsByDateHAndIDTest struct {
+	testName string
+	d        db.Interface
+	input    getThingWithTransactMultipleGSIsByDateHAndIDInput
+	output   getThingWithTransactMultipleGSIsByDateHAndIDOutput
+}
+
+func (g getThingWithTransactMultipleGSIsByDateHAndIDTest) run(t *testing.T) {
+	thingWithTransactMultipleGSIs := []models.ThingWithTransactMultipleGSI{}
+	fn := func(m *models.ThingWithTransactMultipleGSI, lastThingWithTransactMultipleGSI bool) bool {
+		thingWithTransactMultipleGSIs = append(thingWithTransactMultipleGSIs, *m)
+		if lastThingWithTransactMultipleGSI {
+			return false
+		}
+		return true
+	}
+	err := g.d.GetThingWithTransactMultipleGSIsByDateHAndID(g.input.ctx, g.input.input, fn)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	require.Equal(t, g.output.err, err)
+	require.Equal(t, g.output.thingWithTransactMultipleGSIs, thingWithTransactMultipleGSIs)
+}
+
+func GetThingWithTransactMultipleGSIsByDateHAndID(d db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		require.Nil(t, d.SaveThingWithTransactMultipleGSI(ctx, models.ThingWithTransactMultipleGSI{
+			DateH: mustDate("2018-03-11"),
+			ID:    "string1",
+		}))
+		require.Nil(t, d.SaveThingWithTransactMultipleGSI(ctx, models.ThingWithTransactMultipleGSI{
+			DateH: mustDate("2018-03-11"),
+			ID:    "string2",
+		}))
+		require.Nil(t, d.SaveThingWithTransactMultipleGSI(ctx, models.ThingWithTransactMultipleGSI{
+			DateH: mustDate("2018-03-11"),
+			ID:    "string3",
+		}))
+		limit := int64(3)
+		tests := []getThingWithTransactMultipleGSIsByDateHAndIDTest{
+			{
+				testName: "basic",
+				d:        d,
+				input: getThingWithTransactMultipleGSIsByDateHAndIDInput{
+					ctx: context.Background(),
+					input: db.GetThingWithTransactMultipleGSIsByDateHAndIDInput{
+						DateH: mustDate("2018-03-11"),
+						Limit: &limit,
+					},
+				},
+				output: getThingWithTransactMultipleGSIsByDateHAndIDOutput{
+					thingWithTransactMultipleGSIs: []models.ThingWithTransactMultipleGSI{
+						models.ThingWithTransactMultipleGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string1",
+						},
+						models.ThingWithTransactMultipleGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string2",
+						},
+						models.ThingWithTransactMultipleGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "descending",
+				d:        d,
+				input: getThingWithTransactMultipleGSIsByDateHAndIDInput{
+					ctx: context.Background(),
+					input: db.GetThingWithTransactMultipleGSIsByDateHAndIDInput{
+						DateH:      mustDate("2018-03-11"),
+						Descending: true,
+					},
+				},
+				output: getThingWithTransactMultipleGSIsByDateHAndIDOutput{
+					thingWithTransactMultipleGSIs: []models.ThingWithTransactMultipleGSI{
+						models.ThingWithTransactMultipleGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string3",
+						},
+						models.ThingWithTransactMultipleGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string2",
+						},
+						models.ThingWithTransactMultipleGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after",
+				d:        d,
+				input: getThingWithTransactMultipleGSIsByDateHAndIDInput{
+					ctx: context.Background(),
+					input: db.GetThingWithTransactMultipleGSIsByDateHAndIDInput{
+						DateH: mustDate("2018-03-11"),
+						StartingAfter: &models.ThingWithTransactMultipleGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string1",
+						},
+					},
+				},
+				output: getThingWithTransactMultipleGSIsByDateHAndIDOutput{
+					thingWithTransactMultipleGSIs: []models.ThingWithTransactMultipleGSI{
+						models.ThingWithTransactMultipleGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string2",
+						},
+						models.ThingWithTransactMultipleGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting after descending",
+				d:        d,
+				input: getThingWithTransactMultipleGSIsByDateHAndIDInput{
+					ctx: context.Background(),
+					input: db.GetThingWithTransactMultipleGSIsByDateHAndIDInput{
+						DateH: mustDate("2018-03-11"),
+						StartingAfter: &models.ThingWithTransactMultipleGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string3",
+						},
+						Descending: true,
+					},
+				},
+				output: getThingWithTransactMultipleGSIsByDateHAndIDOutput{
+					thingWithTransactMultipleGSIs: []models.ThingWithTransactMultipleGSI{
+						models.ThingWithTransactMultipleGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string2",
+						},
+						models.ThingWithTransactMultipleGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string1",
+						},
+					},
+					err: nil,
+				},
+			},
+			{
+				testName: "starting at",
+				d:        d,
+				input: getThingWithTransactMultipleGSIsByDateHAndIDInput{
+					ctx: context.Background(),
+					input: db.GetThingWithTransactMultipleGSIsByDateHAndIDInput{
+						DateH:        mustDate("2018-03-11"),
+						IDStartingAt: db.String("string2"),
+					},
+				},
+				output: getThingWithTransactMultipleGSIsByDateHAndIDOutput{
+					thingWithTransactMultipleGSIs: []models.ThingWithTransactMultipleGSI{
+						models.ThingWithTransactMultipleGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string2",
+						},
+						models.ThingWithTransactMultipleGSI{
+							DateH: mustDate("2018-03-11"),
+							ID:    "string3",
+						},
+					},
+					err: nil,
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.testName, test.run)
+		}
+	}
+}
+
+func TransactSaveThingWithTransactMultipleGSIAndThing(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.ThingWithTransactMultipleGSI{
+			DateH: mustDate("2018-03-11"),
+			DateR: mustDate("2018-03-11"),
+			ID:    "string1",
+		}
+		m2 := models.Thing{
+			CreatedAt:     mustTime("2018-03-11T15:04:01+07:00"),
+			HashNullable:  db.String("string1"),
+			ID:            "string1",
+			Name:          "string1",
+			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Version:       1,
+		}
+		require.Nil(t, s.TransactSaveThingWithTransactMultipleGSIAndThing(ctx, m1, nil, m2, nil))
+	}
+}
+
 func GetThingWithTransaction(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -13514,6 +14096,24 @@ func DeleteThingWithTransaction(s db.Interface, t *testing.T) func(t *testing.T)
 	}
 }
 
+func TransactSaveThingWithTransactionAndThing(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.ThingWithTransaction{
+			Name: "string1",
+		}
+		m2 := models.Thing{
+			CreatedAt:     mustTime("2018-03-11T15:04:01+07:00"),
+			HashNullable:  db.String("string1"),
+			ID:            "string1",
+			Name:          "string1",
+			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Version:       1,
+		}
+		require.Nil(t, s.TransactSaveThingWithTransactionAndThing(ctx, m1, nil, m2, nil))
+	}
+}
+
 func GetThingWithTransactionWithSimpleThing(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -13648,6 +14248,19 @@ func DeleteThingWithTransactionWithSimpleThing(s db.Interface, t *testing.T) fun
 		}
 		require.Nil(t, s.SaveThingWithTransactionWithSimpleThing(ctx, m))
 		require.Nil(t, s.DeleteThingWithTransactionWithSimpleThing(ctx, m.Name))
+	}
+}
+
+func TransactSaveThingWithTransactionWithSimpleThingAndSimpleThing(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.ThingWithTransactionWithSimpleThing{
+			Name: "string1",
+		}
+		m2 := models.SimpleThing{
+			Name: "string1",
+		}
+		require.Nil(t, s.TransactSaveThingWithTransactionWithSimpleThingAndSimpleThing(ctx, m1, nil, m2, nil))
 	}
 }
 
