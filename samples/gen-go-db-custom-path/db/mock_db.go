@@ -373,6 +373,20 @@ func (mr *MockInterfaceMockRecorder) DeleteThingWithRequiredFields2(ctx, name, i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithRequiredFields2", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithRequiredFields2), ctx, name, id)
 }
 
+// DeleteThingWithTransactMultipleGSI mocks base method.
+func (m *MockInterface) DeleteThingWithTransactMultipleGSI(ctx context.Context, dateH strfmt.Date) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteThingWithTransactMultipleGSI", ctx, dateH)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteThingWithTransactMultipleGSI indicates an expected call of DeleteThingWithTransactMultipleGSI.
+func (mr *MockInterfaceMockRecorder) DeleteThingWithTransactMultipleGSI(ctx, dateH interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithTransactMultipleGSI", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithTransactMultipleGSI), ctx, dateH)
+}
+
 // DeleteThingWithTransaction mocks base method.
 func (m *MockInterface) DeleteThingWithTransaction(ctx context.Context, name string) error {
 	m.ctrl.T.Helper()
@@ -1224,6 +1238,49 @@ func (mr *MockInterfaceMockRecorder) GetThingWithRequiredFields2sByNameAndID(ctx
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithRequiredFields2sByNameAndID", reflect.TypeOf((*MockInterface)(nil).GetThingWithRequiredFields2sByNameAndID), ctx, input, fn)
 }
 
+// GetThingWithTransactMultipleGSI mocks base method.
+func (m *MockInterface) GetThingWithTransactMultipleGSI(ctx context.Context, dateH strfmt.Date) (*v9.ThingWithTransactMultipleGSI, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetThingWithTransactMultipleGSI", ctx, dateH)
+	ret0, _ := ret[0].(*v9.ThingWithTransactMultipleGSI)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetThingWithTransactMultipleGSI indicates an expected call of GetThingWithTransactMultipleGSI.
+func (mr *MockInterfaceMockRecorder) GetThingWithTransactMultipleGSI(ctx, dateH interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithTransactMultipleGSI", reflect.TypeOf((*MockInterface)(nil).GetThingWithTransactMultipleGSI), ctx, dateH)
+}
+
+// GetThingWithTransactMultipleGSIsByDateHAndID mocks base method.
+func (m *MockInterface) GetThingWithTransactMultipleGSIsByDateHAndID(ctx context.Context, input GetThingWithTransactMultipleGSIsByDateHAndIDInput, fn func(*v9.ThingWithTransactMultipleGSI, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetThingWithTransactMultipleGSIsByDateHAndID", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingWithTransactMultipleGSIsByDateHAndID indicates an expected call of GetThingWithTransactMultipleGSIsByDateHAndID.
+func (mr *MockInterfaceMockRecorder) GetThingWithTransactMultipleGSIsByDateHAndID(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithTransactMultipleGSIsByDateHAndID", reflect.TypeOf((*MockInterface)(nil).GetThingWithTransactMultipleGSIsByDateHAndID), ctx, input, fn)
+}
+
+// GetThingWithTransactMultipleGSIsByIDAndDateR mocks base method.
+func (m *MockInterface) GetThingWithTransactMultipleGSIsByIDAndDateR(ctx context.Context, input GetThingWithTransactMultipleGSIsByIDAndDateRInput, fn func(*v9.ThingWithTransactMultipleGSI, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetThingWithTransactMultipleGSIsByIDAndDateR", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetThingWithTransactMultipleGSIsByIDAndDateR indicates an expected call of GetThingWithTransactMultipleGSIsByIDAndDateR.
+func (mr *MockInterfaceMockRecorder) GetThingWithTransactMultipleGSIsByIDAndDateR(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetThingWithTransactMultipleGSIsByIDAndDateR", reflect.TypeOf((*MockInterface)(nil).GetThingWithTransactMultipleGSIsByIDAndDateR), ctx, input, fn)
+}
+
 // GetThingWithTransaction mocks base method.
 func (m *MockInterface) GetThingWithTransaction(ctx context.Context, name string) (*v9.ThingWithTransaction, error) {
 	m.ctrl.T.Helper()
@@ -1659,6 +1716,20 @@ func (m_2 *MockInterface) SaveThingWithRequiredFields2(ctx context.Context, m v9
 func (mr *MockInterfaceMockRecorder) SaveThingWithRequiredFields2(ctx, m interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithRequiredFields2", reflect.TypeOf((*MockInterface)(nil).SaveThingWithRequiredFields2), ctx, m)
+}
+
+// SaveThingWithTransactMultipleGSI mocks base method.
+func (m_2 *MockInterface) SaveThingWithTransactMultipleGSI(ctx context.Context, m v9.ThingWithTransactMultipleGSI) error {
+	m_2.ctrl.T.Helper()
+	ret := m_2.ctrl.Call(m_2, "SaveThingWithTransactMultipleGSI", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveThingWithTransactMultipleGSI indicates an expected call of SaveThingWithTransactMultipleGSI.
+func (mr *MockInterfaceMockRecorder) SaveThingWithTransactMultipleGSI(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveThingWithTransactMultipleGSI", reflect.TypeOf((*MockInterface)(nil).SaveThingWithTransactMultipleGSI), ctx, m)
 }
 
 // SaveThingWithTransaction mocks base method.
@@ -2207,6 +2278,20 @@ func (mr *MockInterfaceMockRecorder) ScanThingWithRequiredFieldss(ctx, input, fn
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithRequiredFieldss", reflect.TypeOf((*MockInterface)(nil).ScanThingWithRequiredFieldss), ctx, input, fn)
 }
 
+// ScanThingWithTransactMultipleGSIs mocks base method.
+func (m *MockInterface) ScanThingWithTransactMultipleGSIs(ctx context.Context, input ScanThingWithTransactMultipleGSIsInput, fn func(*v9.ThingWithTransactMultipleGSI, bool) bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ScanThingWithTransactMultipleGSIs", ctx, input, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ScanThingWithTransactMultipleGSIs indicates an expected call of ScanThingWithTransactMultipleGSIs.
+func (mr *MockInterfaceMockRecorder) ScanThingWithTransactMultipleGSIs(ctx, input, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingWithTransactMultipleGSIs", reflect.TypeOf((*MockInterface)(nil).ScanThingWithTransactMultipleGSIs), ctx, input, fn)
+}
+
 // ScanThingWithTransactionWithSimpleThings mocks base method.
 func (m *MockInterface) ScanThingWithTransactionWithSimpleThings(ctx context.Context, input ScanThingWithTransactionWithSimpleThingsInput, fn func(*v9.ThingWithTransactionWithSimpleThing, bool) bool) error {
 	m.ctrl.T.Helper()
@@ -2289,6 +2374,20 @@ func (m *MockInterface) ScanThingsByNameAndRangeNullable(ctx context.Context, in
 func (mr *MockInterfaceMockRecorder) ScanThingsByNameAndRangeNullable(ctx, input, fn interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanThingsByNameAndRangeNullable", reflect.TypeOf((*MockInterface)(nil).ScanThingsByNameAndRangeNullable), ctx, input, fn)
+}
+
+// TransactSaveThingWithTransactMultipleGSIAndThing mocks base method.
+func (m *MockInterface) TransactSaveThingWithTransactMultipleGSIAndThing(ctx context.Context, m1 v9.ThingWithTransactMultipleGSI, m1Conditions *expression.ConditionBuilder, m2 v9.Thing, m2Conditions *expression.ConditionBuilder) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TransactSaveThingWithTransactMultipleGSIAndThing", ctx, m1, m1Conditions, m2, m2Conditions)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TransactSaveThingWithTransactMultipleGSIAndThing indicates an expected call of TransactSaveThingWithTransactMultipleGSIAndThing.
+func (mr *MockInterfaceMockRecorder) TransactSaveThingWithTransactMultipleGSIAndThing(ctx, m1, m1Conditions, m2, m2Conditions interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransactSaveThingWithTransactMultipleGSIAndThing", reflect.TypeOf((*MockInterface)(nil).TransactSaveThingWithTransactMultipleGSIAndThing), ctx, m1, m1Conditions, m2, m2Conditions)
 }
 
 // TransactSaveThingWithTransactionAndThing mocks base method.
