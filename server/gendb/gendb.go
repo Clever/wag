@@ -211,6 +211,7 @@ func GenerateDB(packageName, basePath, goOutputPath string, s *spec.Swagger, out
 			outputFilename: path.Join(outputPath, "dynamodb/dynamodb_test.go"),
 			data: map[string]interface{}{
 				"PackageName":   packageName,
+				"XDBConfigs":    xdbConfigs,
 				"OutputPath":    outputPath,
 				"ModuleName":    moduleName,
 				"VersionSuffix": versionSuffix,

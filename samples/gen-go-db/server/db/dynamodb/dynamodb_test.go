@@ -115,6 +115,84 @@ func TestDynamoDBStore(t *testing.T) {
 			DefaultPrefix:             prefix,
 			DefaultReadCapacityUnits:  10,
 			DefaultWriteCapacityUnits: 10,
+			DeploymentTable: DeploymentTable{
+				TableName: "automated-testing-Deployment",
+			},
+			EventTable: EventTable{
+				TableName: "automated-testing-Event",
+			},
+			NoRangeThingWithCompositeAttributesTable: NoRangeThingWithCompositeAttributesTable{
+				TableName: "automated-testing-NoRangeThingWithCompositeAttributes",
+			},
+			SimpleThingTable: SimpleThingTable{
+				TableName: "automated-testing-SimpleThing",
+			},
+			TeacherSharingRuleTable: TeacherSharingRuleTable{
+				TableName: "automated-testing-TeacherSharingRule",
+			},
+			ThingTable: ThingTable{
+				TableName: "automated-testing-Thing",
+			},
+			ThingAllowingBatchWritesTable: ThingAllowingBatchWritesTable{
+				TableName: "automated-testing-ThingAllowingBatchWrites",
+			},
+			ThingAllowingBatchWritesWithCompositeAttributesTable: ThingAllowingBatchWritesWithCompositeAttributesTable{
+				TableName: "automated-testing-ThingAllowingBatchWritesWithCompositeAttributes",
+			},
+			ThingWithAdditionalAttributesTable: ThingWithAdditionalAttributesTable{
+				TableName: "automated-testing-ThingWithAdditionalAttributes",
+			},
+			ThingWithCompositeAttributesTable: ThingWithCompositeAttributesTable{
+				TableName: "automated-testing-ThingWithCompositeAttributes",
+			},
+			ThingWithCompositeEnumAttributesTable: ThingWithCompositeEnumAttributesTable{
+				TableName: "automated-testing-ThingWithCompositeEnumAttributes",
+			},
+			ThingWithDateGSITable: ThingWithDateGSITable{
+				TableName: "automated-testing-ThingWithDateGSI",
+			},
+			ThingWithDateRangeTable: ThingWithDateRangeTable{
+				TableName: "automated-testing-ThingWithDateRange",
+			},
+			ThingWithDateRangeKeyTable: ThingWithDateRangeKeyTable{
+				TableName: "automated-testing-ThingWithDateRangeKey",
+			},
+			ThingWithDateTimeCompositeTable: ThingWithDateTimeCompositeTable{
+				TableName: "automated-testing-ThingWithDateTimeComposite",
+			},
+			ThingWithDatetimeGSITable: ThingWithDatetimeGSITable{
+				TableName: "automated-testing-ThingWithDatetimeGSI",
+			},
+			ThingWithEnumHashKeyTable: ThingWithEnumHashKeyTable{
+				TableName: "automated-testing-ThingWithEnumHashKey",
+			},
+			ThingWithMatchingKeysTable: ThingWithMatchingKeysTable{
+				TableName: "automated-testing-ThingWithMatchingKeys",
+			},
+			ThingWithMultiUseCompositeAttributeTable: ThingWithMultiUseCompositeAttributeTable{
+				TableName: "automated-testing-ThingWithMultiUseCompositeAttribute",
+			},
+			ThingWithRequiredCompositePropertiesAndKeysOnlyTable: ThingWithRequiredCompositePropertiesAndKeysOnlyTable{
+				TableName: "automated-testing-ThingWithRequiredCompositePropertiesAndKeysOnly",
+			},
+			ThingWithRequiredFieldsTable: ThingWithRequiredFieldsTable{
+				TableName: "automated-testing-ThingWithRequiredFields",
+			},
+			ThingWithRequiredFields2Table: ThingWithRequiredFields2Table{
+				TableName: "automated-testing-ThingWithRequiredFields2",
+			},
+			ThingWithTransactMultipleGSITable: ThingWithTransactMultipleGSITable{
+				TableName: "automated-testing-ThingWithTransactMultipleGSI",
+			},
+			ThingWithTransactionTable: ThingWithTransactionTable{
+				TableName: "automated-testing-ThingWithTransaction",
+			},
+			ThingWithTransactionWithSimpleThingTable: ThingWithTransactionWithSimpleThingTable{
+				TableName: "automated-testing-ThingWithTransactionWithSimpleThing",
+			},
+			ThingWithUnderscoresTable: ThingWithUnderscoresTable{
+				TableName: "automated-testing-ThingWithUnderscores",
+			},
 		})
 		if err != nil {
 			t.Fatal(err)
