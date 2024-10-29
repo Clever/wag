@@ -1,6 +1,8 @@
-v9.4.0
+v9.4.1
 
-v9.4.0 
+v9.4.1 Fix generated DynamoDB tests
+
+v9.4.0
 - Add support for date keys for dynamodb codegen
 - Fix bug in transaction codegen where transaction funcs where generated multiple times
 
