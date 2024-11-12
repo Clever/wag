@@ -56,6 +56,7 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("DeleteNoRangeThingWithCompositeAttributes", DeleteNoRangeThingWithCompositeAttributes(dbFactory(), t))
 	t.Run("GetNoRangeThingWithCompositeAttributessByNameVersionAndDate", GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(dbFactory(), t))
 	t.Run("ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate", ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate(dbFactory(), t))
+	t.Run("GetNoRangeThingWithCompositeAttributesByNameBranchCommit", GetNoRangeThingWithCompositeAttributesByNameBranchCommit(dbFactory(), t))
 	t.Run("GetSimpleThing", GetSimpleThing(dbFactory(), t))
 	t.Run("ScanSimpleThings", ScanSimpleThings(dbFactory(), t))
 	t.Run("SaveSimpleThing", SaveSimpleThing(dbFactory(), t))
@@ -1980,6 +1981,7 @@ func GetNoRangeThingWithCompositeAttributes(s db.Interface, t *testing.T) func(t
 		ctx := context.Background()
 		m := models.NoRangeThingWithCompositeAttributes{
 			Branch:  db.String("string1"),
+			Commit:  db.String("string1"),
 			Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 			Name:    db.String("string1"),
 			Version: 1,
@@ -2003,18 +2005,21 @@ func ScanNoRangeThingWithCompositeAttributess(d db.Interface, t *testing.T) func
 		ctx := context.Background()
 		require.Nil(t, d.SaveNoRangeThingWithCompositeAttributes(ctx, models.NoRangeThingWithCompositeAttributes{
 			Branch:  db.String("string1"),
+			Commit:  db.String("string1"),
 			Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 			Name:    db.String("string1"),
 			Version: 1,
 		}))
 		require.Nil(t, d.SaveNoRangeThingWithCompositeAttributes(ctx, models.NoRangeThingWithCompositeAttributes{
 			Branch:  db.String("string2"),
+			Commit:  db.String("string2"),
 			Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 			Name:    db.String("string2"),
 			Version: 2,
 		}))
 		require.Nil(t, d.SaveNoRangeThingWithCompositeAttributes(ctx, models.NoRangeThingWithCompositeAttributes{
 			Branch:  db.String("string3"),
+			Commit:  db.String("string3"),
 			Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 			Name:    db.String("string3"),
 			Version: 3,
@@ -2024,18 +2029,21 @@ func ScanNoRangeThingWithCompositeAttributess(d db.Interface, t *testing.T) func
 			expected := []models.NoRangeThingWithCompositeAttributes{
 				models.NoRangeThingWithCompositeAttributes{
 					Branch:  db.String("string1"),
+					Commit:  db.String("string1"),
 					Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 					Name:    db.String("string1"),
 					Version: 1,
 				},
 				models.NoRangeThingWithCompositeAttributes{
 					Branch:  db.String("string2"),
+					Commit:  db.String("string2"),
 					Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 					Name:    db.String("string2"),
 					Version: 2,
 				},
 				models.NoRangeThingWithCompositeAttributes{
 					Branch:  db.String("string3"),
+					Commit:  db.String("string3"),
 					Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 					Name:    db.String("string3"),
 					Version: 3,
@@ -2118,6 +2126,7 @@ func SaveNoRangeThingWithCompositeAttributes(s db.Interface, t *testing.T) func(
 		ctx := context.Background()
 		m := models.NoRangeThingWithCompositeAttributes{
 			Branch:  db.String("string1"),
+			Commit:  db.String("string1"),
 			Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 			Name:    db.String("string1"),
 			Version: 1,
@@ -2132,6 +2141,7 @@ func DeleteNoRangeThingWithCompositeAttributes(s db.Interface, t *testing.T) fun
 		ctx := context.Background()
 		m := models.NoRangeThingWithCompositeAttributes{
 			Branch:  db.String("string1"),
+			Commit:  db.String("string1"),
 			Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 			Name:    db.String("string1"),
 			Version: 1,
@@ -2181,18 +2191,21 @@ func GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface,
 			Version: 1,
 			Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 			Branch:  db.String("string1"),
+			Commit:  db.String("string1"),
 		}))
 		require.Nil(t, d.SaveNoRangeThingWithCompositeAttributes(ctx, models.NoRangeThingWithCompositeAttributes{
 			Name:    db.String("string1"),
 			Version: 1,
 			Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 			Branch:  db.String("string3"),
+			Commit:  db.String("string3"),
 		}))
 		require.Nil(t, d.SaveNoRangeThingWithCompositeAttributes(ctx, models.NoRangeThingWithCompositeAttributes{
 			Name:    db.String("string1"),
 			Version: 1,
 			Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 			Branch:  db.String("string2"),
+			Commit:  db.String("string2"),
 		}))
 		limit := int64(3)
 		tests := []getNoRangeThingWithCompositeAttributessByNameVersionAndDateTest{
@@ -2214,18 +2227,21 @@ func GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface,
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 							Branch:  db.String("string1"),
+							Commit:  db.String("string1"),
 						},
 						models.NoRangeThingWithCompositeAttributes{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 							Branch:  db.String("string3"),
+							Commit:  db.String("string3"),
 						},
 						models.NoRangeThingWithCompositeAttributes{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 							Branch:  db.String("string2"),
+							Commit:  db.String("string2"),
 						},
 					},
 					err: nil,
@@ -2249,18 +2265,21 @@ func GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface,
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 							Branch:  db.String("string2"),
+							Commit:  db.String("string2"),
 						},
 						models.NoRangeThingWithCompositeAttributes{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 							Branch:  db.String("string3"),
+							Commit:  db.String("string3"),
 						},
 						models.NoRangeThingWithCompositeAttributes{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 							Branch:  db.String("string1"),
+							Commit:  db.String("string1"),
 						},
 					},
 					err: nil,
@@ -2279,6 +2298,7 @@ func GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface,
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 							Branch:  db.String("string1"),
+							Commit:  db.String("string1"),
 						},
 					},
 				},
@@ -2289,12 +2309,14 @@ func GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface,
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 							Branch:  db.String("string3"),
+							Commit:  db.String("string3"),
 						},
 						models.NoRangeThingWithCompositeAttributes{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 							Branch:  db.String("string2"),
+							Commit:  db.String("string2"),
 						},
 					},
 					err: nil,
@@ -2313,6 +2335,7 @@ func GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface,
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 							Branch:  db.String("string2"),
+							Commit:  db.String("string2"),
 						},
 						Descending: true,
 					},
@@ -2324,12 +2347,14 @@ func GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface,
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 							Branch:  db.String("string3"),
+							Commit:  db.String("string3"),
 						},
 						models.NoRangeThingWithCompositeAttributes{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 							Branch:  db.String("string1"),
+							Commit:  db.String("string1"),
 						},
 					},
 					err: nil,
@@ -2353,12 +2378,14 @@ func GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface,
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 							Branch:  db.String("string3"),
+							Commit:  db.String("string3"),
 						},
 						models.NoRangeThingWithCompositeAttributes{
 							Name:    db.String("string1"),
 							Version: 1,
 							Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 							Branch:  db.String("string2"),
+							Commit:  db.String("string2"),
 						},
 					},
 					err: nil,
@@ -2381,18 +2408,21 @@ func ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface
 			Version: 1,
 			Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 			Branch:  db.String("string1"),
+			Commit:  db.String("string1"),
 		}))
 		require.Nil(t, d.SaveNoRangeThingWithCompositeAttributes(ctx, models.NoRangeThingWithCompositeAttributes{
 			Name:    db.String("string2"),
 			Version: 2,
 			Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 			Branch:  db.String("string2"),
+			Commit:  db.String("string2"),
 		}))
 		require.Nil(t, d.SaveNoRangeThingWithCompositeAttributes(ctx, models.NoRangeThingWithCompositeAttributes{
 			Name:    db.String("string3"),
 			Version: 3,
 			Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 			Branch:  db.String("string3"),
+			Commit:  db.String("string3"),
 		}))
 
 		t.Run("basic", func(t *testing.T) {
@@ -2402,18 +2432,21 @@ func ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface
 					Version: 1,
 					Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
 					Branch:  db.String("string1"),
+					Commit:  db.String("string1"),
 				},
 				models.NoRangeThingWithCompositeAttributes{
 					Name:    db.String("string2"),
 					Version: 2,
 					Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
 					Branch:  db.String("string2"),
+					Commit:  db.String("string2"),
 				},
 				models.NoRangeThingWithCompositeAttributes{
 					Name:    db.String("string3"),
 					Version: 3,
 					Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 					Branch:  db.String("string3"),
+					Commit:  db.String("string3"),
 				},
 			}
 			// Consistent read must be disabled when scaning a GSI.
@@ -2492,6 +2525,31 @@ func ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface
 
 			require.Len(t, actual, 1)
 		})
+	}
+}
+
+func GetNoRangeThingWithCompositeAttributesByNameBranchCommit(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m := models.NoRangeThingWithCompositeAttributes{
+			Branch:  db.String("string1"),
+			Commit:  db.String("string1"),
+			Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Name:    db.String("string1"),
+			Version: 1,
+		}
+		require.Nil(t, s.SaveNoRangeThingWithCompositeAttributes(ctx, m))
+		m2, err := s.GetNoRangeThingWithCompositeAttributesByNameBranchCommit(ctx, *m.Name, *m.Branch, *m.Commit)
+		require.Nil(t, err)
+		require.Equal(t, m.Branch, m2.Branch)
+		require.Equal(t, m.Commit, m2.Commit)
+		require.Equal(t, m.Date.String(), m2.Date.String())
+		require.Equal(t, m.Name, m2.Name)
+		require.Equal(t, m.Version, m2.Version)
+
+		_, err = s.GetNoRangeThingWithCompositeAttributesByNameBranchCommit(ctx, "string2", "string2", "string2")
+		require.NotNil(t, err)
+		require.IsType(t, err, db.ErrNoRangeThingWithCompositeAttributesByNameBranchCommitNotFound{})
 	}
 }
 

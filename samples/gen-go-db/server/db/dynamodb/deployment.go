@@ -634,7 +634,9 @@ func (t DeploymentTable) getDeploymentByVersion(ctx context.Context, version str
 		return nil, err
 	}
 	if len(queryOutput.Items) == 0 {
-		return nil, db.ErrDeploymentByVersionNotFound{Version: version}
+		return nil, db.ErrDeploymentByVersionNotFound{
+			Version: version,
+		}
 	}
 
 	var deployment models.Deployment

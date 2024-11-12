@@ -112,6 +112,7 @@ declare namespace SwaggerTest {
     
     type NoRangeThingWithCompositeAttributes = {
   branch: string;
+  commit: string;
   date: string;
   name: string;
   version?: number;

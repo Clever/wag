@@ -61,6 +61,8 @@ type Interface interface {
 	GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input GetNoRangeThingWithCompositeAttributessByNameVersionAndDateInput, fn func(m *models.NoRangeThingWithCompositeAttributes, lastNoRangeThingWithCompositeAttributes bool) bool) error
 	// ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate runs a scan on the NameVersionAndDate index.
 	ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input ScanNoRangeThingWithCompositeAttributessByNameVersionAndDateInput, fn func(m *models.NoRangeThingWithCompositeAttributes, lastNoRangeThingWithCompositeAttributes bool) bool) error
+	// GetNoRangeThingWithCompositeAttributesByNameBranchCommit retrieves a NoRangeThingWithCompositeAttributes from the database.
+	GetNoRangeThingWithCompositeAttributesByNameBranchCommit(ctx context.Context, name string, branch string, commit string) (*models.NoRangeThingWithCompositeAttributes, error)
 
 	// SaveSimpleThing saves a SimpleThing to the database.
 	SaveSimpleThing(ctx context.Context, m models.SimpleThing) error
@@ -703,6 +705,20 @@ type ScanNoRangeThingWithCompositeAttributessByNameVersionAndDateInput struct {
 	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
+}
+
+// ErrNoRangeThingWithCompositeAttributesByNameBranchCommitNotFound is returned when the database fails to find a NoRangeThingWithCompositeAttributes.
+type ErrNoRangeThingWithCompositeAttributesByNameBranchCommitNotFound struct {
+	Name   string
+	Branch string
+	Commit string
+}
+
+var _ error = ErrNoRangeThingWithCompositeAttributesByNameBranchCommitNotFound{}
+
+// Error returns a description of the error.
+func (e ErrNoRangeThingWithCompositeAttributesByNameBranchCommitNotFound) Error() string {
+	return "could not find NoRangeThingWithCompositeAttributes"
 }
 
 // ErrNoRangeThingWithCompositeAttributesAlreadyExists is returned when trying to overwrite a NoRangeThingWithCompositeAttributes.
