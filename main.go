@@ -30,6 +30,7 @@ type config struct {
 	clientLanguage     *string
 	clientOnly         *bool
 	dynamoOnly         *bool
+	withTests          *bool
 	outputPath         *string
 	versionFlag        *bool
 	swaggerFile        *string
@@ -52,7 +53,6 @@ type config struct {
 var version string
 
 func main() {
-
 	conf := config{
 		swaggerFile:        flag.String("file", "swagger.yml", "the spec file to use"),
 		goPackageName:      flag.String("go-package", "", "package of the generated go code"),
@@ -63,6 +63,7 @@ func main() {
 		clientLanguage:     flag.String("client-language", "", "generate client code in specific language [go|js]"),
 		dynamoOnly:         flag.Bool("dynamo-only", false, "only generate dynamo code"),
 		relativeDynamoPath: flag.String("dynamo-path", "", "path to generate dynamo code relative to go package path"),
+		withTests:          flag.Bool("with-tests", false, "generate tests for the generated db code"),
 	}
 	flag.Parse()
 	if *conf.versionFlag {
@@ -110,7 +111,7 @@ func main() {
 	}
 
 	if conf.generateDynamo {
-		if err := generateDynamo(conf.dynamoPath, *conf.goPackageName, conf.goAbsolutePackagePath, *conf.relativeDynamoPath, *conf.outputPath, swaggerSpec); err != nil {
+		if err := generateDynamo(conf.dynamoPath, *conf.goPackageName, conf.goAbsolutePackagePath, *conf.relativeDynamoPath, *conf.outputPath, *conf.withTests, swaggerSpec); err != nil {
 			log.Fatal(err.Error())
 		}
 	}
@@ -133,7 +134,6 @@ func generateGoModels(packageName, basePath, outputPath string, swaggerSpec spec
 		return err
 	}
 	if err := models.Generate(packageName, basePath, outputPath, swaggerSpec); err != nil {
-
 		return fmt.Errorf("Error generating models: %s", err)
 	}
 	return nil
@@ -157,7 +157,6 @@ func generateServer(goPackageName, basePath, outputPath string, swaggerSpec spec
 
 func generateTracing(basePath, outputPath string) error {
 	if err := prepareDir(filepath.Join(basePath, "servertracing")); err != nil {
-
 		return err
 	}
 
@@ -170,11 +169,11 @@ func generateTracing(basePath, outputPath string) error {
 	return nil
 }
 
-func generateDynamo(dynamoPath, goPackageName, basePath, relativeDynamoPath, OutputPath string, swaggerSpec spec.Swagger) error {
+func generateDynamo(dynamoPath, goPackageName, basePath, relativeDynamoPath, OutputPath string, withTests bool, swaggerSpec spec.Swagger) error {
 	if err := prepareDir(dynamoPath); err != nil {
 		return err
 	}
-	if err := gendb.GenerateDB(goPackageName, basePath, OutputPath, &swaggerSpec, relativeDynamoPath); err != nil {
+	if err := gendb.GenerateDB(goPackageName, basePath, OutputPath, withTests, &swaggerSpec, relativeDynamoPath); err != nil {
 		return fmt.Errorf("Failed to generate database: %s", err)
 	}
 	return nil
@@ -210,7 +209,7 @@ func prepareDir(dir string) error {
 		return fmt.Errorf("Could not remove directory: %s, error :%s", dir, err)
 	}
 
-	if err := os.MkdirAll(dir, 0700); err != nil {
+	if err := os.MkdirAll(dir, 0o700); err != nil {
 		if !os.IsExist(err.(*os.PathError)) {
 			return fmt.Errorf("Could not create directory: %s, error: %s", dir, err)
 		}
