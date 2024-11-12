@@ -57,10 +57,11 @@ type Interface interface {
     // Get{{ $modelName }}sBy{{ $indexName }} retrieves a page of {{ $modelName }}s from the database.
     Get{{ $modelName }}sBy{{ $indexName }}(ctx context.Context, input Get{{ $modelName }}sBy{{ $indexName }}Input, fn func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool) error
     {{- else }}
+    {{- $gsiModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $gsi.KeySchema }}
     // Get{{ $modelName }}By{{ $indexName }} retrieves a {{ $modelName }} from the database.
     Get{{ $modelName }}By{{ $indexName }}(ctx context.Context,
-      {{- range $_, $ks := $gsi.KeySchema }}
-      {{- varname $ks.AttributeName }} {{ goTypeForAttribute $xdbConfig $ks.AttributeName }},
+      {{- range $_, $attributeName := $gsiModelAttributeNames }}
+      {{- varname $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
       {{- end -}}
     ) (*models.{{ $modelName }}, error)
     {{- end }}
