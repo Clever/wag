@@ -37,6 +37,11 @@ type ddbNoRangeThingWithCompositeAttributesGSINameVersion struct {
 	Date        strfmt.DateTime `dynamodbav:"date"`
 }
 
+// ddbNoRangeThingWithCompositeAttributesGSINameBranchCommit represents the nameBranchCommit GSI.
+type ddbNoRangeThingWithCompositeAttributesGSINameBranchCommit struct {
+	NameBranchCommit string `dynamodbav:"name_branch_commit"`
+}
+
 // ddbNoRangeThingWithCompositeAttributes represents a NoRangeThingWithCompositeAttributes as stored in DynamoDB.
 type ddbNoRangeThingWithCompositeAttributes struct {
 	models.NoRangeThingWithCompositeAttributes
@@ -51,6 +56,10 @@ func (t NoRangeThingWithCompositeAttributesTable) create(ctx context.Context) er
 			},
 			{
 				AttributeName: aws.String("name_branch"),
+				AttributeType: aws.String("S"),
+			},
+			{
+				AttributeName: aws.String("name_branch_commit"),
 				AttributeType: aws.String("S"),
 			},
 			{
@@ -78,6 +87,22 @@ func (t NoRangeThingWithCompositeAttributesTable) create(ctx context.Context) er
 					{
 						AttributeName: aws.String("date"),
 						KeyType:       aws.String(dynamodb.KeyTypeRange),
+					},
+				},
+				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
+					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
+				},
+			},
+			{
+				IndexName: aws.String("nameBranchCommit"),
+				Projection: &dynamodb.Projection{
+					ProjectionType: aws.String("ALL"),
+				},
+				KeySchema: []*dynamodb.KeySchemaElement{
+					{
+						AttributeName: aws.String("name_branch_commit"),
+						KeyType:       aws.String(dynamodb.KeyTypeHash),
 					},
 				},
 				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
@@ -385,6 +410,45 @@ func (t NoRangeThingWithCompositeAttributesTable) scanNoRangeThingWithCompositeA
 	}
 	return err
 }
+func (t NoRangeThingWithCompositeAttributesTable) getNoRangeThingWithCompositeAttributesByNameBranchCommit(ctx context.Context, name string, branch string, commit string) (*models.NoRangeThingWithCompositeAttributes, error) {
+	queryInput := &dynamodb.QueryInput{
+		TableName: aws.String(t.TableName),
+		IndexName: aws.String("nameBranchCommit"),
+		ExpressionAttributeNames: map[string]*string{
+			"#NAME_BRANCH_COMMIT": aws.String("name_branch_commit"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":nameBranchCommit": &dynamodb.AttributeValue{
+				S: aws.String(fmt.Sprintf("%s--%s--%s", name, branch, commit)),
+			},
+		},
+		KeyConditionExpression: aws.String("#NAME_BRANCH_COMMIT = :nameBranchCommit"),
+	}
+
+	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case dynamodb.ErrCodeResourceNotFoundException:
+				return nil, fmt.Errorf("table or index not found: %s", t.TableName)
+			}
+		}
+		return nil, err
+	}
+	if len(queryOutput.Items) == 0 {
+		return nil, db.ErrNoRangeThingWithCompositeAttributesByNameBranchCommitNotFound{
+			Name:   name,
+			Branch: branch,
+			Commit: commit,
+		}
+	}
+
+	var noRangeThingWithCompositeAttributes models.NoRangeThingWithCompositeAttributes
+	if err := decodeNoRangeThingWithCompositeAttributes(queryOutput.Items[0], &noRangeThingWithCompositeAttributes); err != nil {
+		return nil, err
+	}
+	return &noRangeThingWithCompositeAttributes, nil
+}
 
 // encodeNoRangeThingWithCompositeAttributes encodes a NoRangeThingWithCompositeAttributes as a DynamoDB map of attribute values.
 func encodeNoRangeThingWithCompositeAttributes(m models.NoRangeThingWithCompositeAttributes) (map[string]*dynamodb.AttributeValue, error) {
@@ -395,6 +459,15 @@ func encodeNoRangeThingWithCompositeAttributes(m models.NoRangeThingWithComposit
 		return nil, err
 	}
 	// make sure composite attributes don't contain separator characters
+	if strings.Contains(*m.Branch, "--") {
+		return nil, fmt.Errorf("branch cannot contain '--': %s", *m.Branch)
+	}
+	if strings.Contains(*m.Commit, "--") {
+		return nil, fmt.Errorf("commit cannot contain '--': %s", *m.Commit)
+	}
+	if strings.Contains(*m.Name, "--") {
+		return nil, fmt.Errorf("name cannot contain '--': %s", *m.Name)
+	}
 	if strings.Contains(*m.Name, ":") {
 		return nil, fmt.Errorf("name cannot contain ':': %s", *m.Name)
 	}
@@ -422,6 +495,15 @@ func encodeNoRangeThingWithCompositeAttributes(m models.NoRangeThingWithComposit
 		return nil, err
 	}
 	for k, v := range nameVersion {
+		val[k] = v
+	}
+	nameBranchCommit, err := dynamodbattribute.MarshalMap(ddbNoRangeThingWithCompositeAttributesGSINameBranchCommit{
+		NameBranchCommit: fmt.Sprintf("%s--%s--%s", *m.Name, *m.Branch, *m.Commit),
+	})
+	if err != nil {
+		return nil, err
+	}
+	for k, v := range nameBranchCommit {
 		val[k] = v
 	}
 	return val, err

@@ -559,6 +559,21 @@ func (mr *MockInterfaceMockRecorder) GetNoRangeThingWithCompositeAttributes(ctx,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNoRangeThingWithCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).GetNoRangeThingWithCompositeAttributes), ctx, name, branch)
 }
 
+// GetNoRangeThingWithCompositeAttributesByNameBranchCommit mocks base method.
+func (m *MockInterface) GetNoRangeThingWithCompositeAttributesByNameBranchCommit(ctx context.Context, name, branch, commit string) (*v9.NoRangeThingWithCompositeAttributes, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetNoRangeThingWithCompositeAttributesByNameBranchCommit", ctx, name, branch, commit)
+	ret0, _ := ret[0].(*v9.NoRangeThingWithCompositeAttributes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetNoRangeThingWithCompositeAttributesByNameBranchCommit indicates an expected call of GetNoRangeThingWithCompositeAttributesByNameBranchCommit.
+func (mr *MockInterfaceMockRecorder) GetNoRangeThingWithCompositeAttributesByNameBranchCommit(ctx, name, branch, commit interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNoRangeThingWithCompositeAttributesByNameBranchCommit", reflect.TypeOf((*MockInterface)(nil).GetNoRangeThingWithCompositeAttributesByNameBranchCommit), ctx, name, branch, commit)
+}
+
 // GetNoRangeThingWithCompositeAttributessByNameVersionAndDate mocks base method.
 func (m *MockInterface) GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input GetNoRangeThingWithCompositeAttributessByNameVersionAndDateInput, fn func(*v9.NoRangeThingWithCompositeAttributes, bool) bool) error {
 	m.ctrl.T.Helper()

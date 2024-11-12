@@ -1,4 +1,6 @@
-v9.4.2
+v9.5.0
+
+v9.5.0 Bugfix composite keys in a GSI with no range key. Also, generated tests are only added when opted in via a new flag, instead of by default.
 
 v9.4.2 Add updated clientconfig to release 
 

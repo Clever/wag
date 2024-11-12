@@ -21,6 +21,10 @@ type NoRangeThingWithCompositeAttributes struct {
 	// Required: true
 	Branch *string `json:"branch"`
 
+	// commit
+	// Required: true
+	Commit *string `json:"commit"`
+
 	// date
 	// Required: true
 	// Format: date-time
@@ -42,6 +46,10 @@ func (m *NoRangeThingWithCompositeAttributes) Validate(formats strfmt.Registry) 
 		res = append(res, err)
 	}
 
+	if err := m.validateCommit(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateDate(formats); err != nil {
 		res = append(res, err)
 	}
@@ -59,6 +67,15 @@ func (m *NoRangeThingWithCompositeAttributes) Validate(formats strfmt.Registry) 
 func (m *NoRangeThingWithCompositeAttributes) validateBranch(formats strfmt.Registry) error {
 
 	if err := validate.Required("branch", "body", m.Branch); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NoRangeThingWithCompositeAttributes) validateCommit(formats strfmt.Registry) error {
+
+	if err := validate.Required("commit", "body", m.Commit); err != nil {
 		return err
 	}
 

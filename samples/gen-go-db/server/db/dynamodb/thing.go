@@ -488,7 +488,9 @@ func (t ThingTable) getThingByID(ctx context.Context, id string) (*models.Thing,
 		return nil, err
 	}
 	if len(queryOutput.Items) == 0 {
-		return nil, db.ErrThingByIDNotFound{ID: id}
+		return nil, db.ErrThingByIDNotFound{
+			ID: id,
+		}
 	}
 
 	var thing models.Thing

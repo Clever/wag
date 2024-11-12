@@ -957,10 +957,14 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
   return nil
 }
 {{- else }}
+{{- $gsiModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $gsi.KeySchema }}
 {{- $ks := index $gsi.KeySchema 0 }}
 {{- $ksAttrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $ks.AttributeName }}
 func (t {{ $modelName}}Table) get{{ $modelName }}By{{ $computedIndexName }}(ctx context.Context,
-      {{- varname $ks.AttributeName }} {{ goTypeForAttribute $xdbConfig $ks.AttributeName }}) (*models.{{ $modelName }}, error) {
+  {{- range $_, $attributeName := $gsiModelAttributeNames }}
+  {{- varname $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
+  {{- end -}}
+    ) (*models.{{ $modelName }}, error) {
   queryInput := &dynamodb.QueryInput{
     TableName: aws.String(t.TableName),
     IndexName: aws.String("{{ $gsi.IndexName }}"),
@@ -970,7 +974,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}By{{ $computedIndexName }}(ctx 
     ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
       ":{{ camelize $ks.AttributeName }}": &dynamodb.AttributeValue{
                           {{- if eq $ksAttrDynamoDBType "S" }}
-        S: aws.String({{- varname $ks.AttributeName }}),
+        S: aws.String({{ if isComposite $xdbConfig $ks.AttributeName }}{{ compositeValue $xdbConfig $ks.AttributeName "" }}{{ else }}{{ varname $ks.AttributeName }}{{ end }}),
                           {{- else if eq $ksAttrDynamoDBType "N" }}
         N: aws.String(fmt.Sprintf("%d", {{ varname $ks.AttributeName }})),
                           {{- end }}
@@ -997,8 +1001,10 @@ func (t {{ $modelName}}Table) get{{ $modelName }}By{{ $computedIndexName }}(ctx 
 	{{- end }}
 	if len(queryOutput.Items) == 0 {
 		return nil, db.Err{{ $modelName }}By{{ $computedIndexName }}NotFound{
-                {{- pascalize $ks.AttributeName }}: {{ varname $ks.AttributeName -}}
-                }
+    {{- range $_, $attributeName := $gsiModelAttributeNames }}
+    {{ pascalize $attributeName }}: {{ varname $attributeName }},
+    {{- end }}
+    }
   }
 
   var {{ camelize $modelName }} models.{{ $modelName }}

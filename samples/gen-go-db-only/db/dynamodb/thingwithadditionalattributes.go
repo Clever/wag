@@ -509,7 +509,9 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributesByID
 		return nil, err
 	}
 	if len(queryOutput.Items) == 0 {
-		return nil, db.ErrThingWithAdditionalAttributesByIDNotFound{ID: id}
+		return nil, db.ErrThingWithAdditionalAttributesByIDNotFound{
+			ID: id,
+		}
 	}
 
 	var thingWithAdditionalAttributes models.ThingWithAdditionalAttributes

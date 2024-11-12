@@ -1080,6 +1080,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
 }
 {{- else }}
 {{- $hashKey := index $gsi.KeySchema 0 }}
+{{- $hashKeyAttributes := modelAttributeNamesForKeyType $xdbConfig $gsi.KeySchema "HASH" }}
 func Get{{ $modelName }}By{{ $computedIndexName }}(s db.Interface, t *testing.T) func(t *testing.T) {
   return func(t *testing.T) {
     ctx := context.Background()
@@ -1089,9 +1090,9 @@ func Get{{ $modelName }}By{{ $computedIndexName }}(s db.Interface, t *testing.T)
       {{- end }}
     }
     require.Nil(t, s.Save{{ $modelName }}(ctx, m))
-    m2, err := s.Get{{ $modelName }}By{{ $computedIndexName }}(ctx, {{ range $ks := $gsi.KeySchema }}m.{{ pascalize $ks.AttributeName }},{{ end }})
+    m2, err := s.Get{{ $modelName }}By{{ $computedIndexName }}(ctx, {{ range $an := $hashKeyAttributes }}{{ attributeToModelValue $xdbConfig $an "m." }},{{ end }})
     require.Nil(t, err)
-     {{- range $attributeName := modelAttributeNames $xdbConfig }}
+    {{- range $attributeName := modelAttributeNames $xdbConfig }}
     {{- $attrGoType := goTypeForAttribute $xdbConfig $attributeName }}
                 {{- if eq $attrGoType "strfmt.DateTime" }}
     require.Equal(t, m.{{ pascalize $attributeName }}.String(), m2.{{ pascalize $attributeName }}.String())
@@ -1100,7 +1101,7 @@ func Get{{ $modelName }}By{{ $computedIndexName }}(s db.Interface, t *testing.T)
     {{- end }}
     {{- end }}
 
-    _, err = s.Get{{ $modelName }}By{{ $computedIndexName }}(ctx, {{ exampleValueForAttribute $xdbConfig $hashKey.AttributeName 2 }})
+    _, err = s.Get{{ $modelName }}By{{ $computedIndexName }}(ctx, {{ range $an := $hashKeyAttributes }}{{ exampleValueNotPtrForAttribute $xdbConfig $an 2 }},{{ end }})
     require.NotNil(t, err)
     require.IsType(t, err, db.Err{{ $modelName }}By{{ $computedIndexName }}NotFound{})
   }

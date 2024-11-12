@@ -467,6 +467,10 @@ definitions:
       - AttributeName: name_version
         Properties: [ name, version ]
         Separator: ":"
+      # 3 part composite in a GSI
+      - AttributeName: name_branch_commit
+        Properties: [ name, branch, commit ]
+        Separator: "--"
       DynamoDB:
         KeySchema:
         - AttributeName: name_branch
@@ -480,15 +484,24 @@ definitions:
             KeyType: HASH
           - AttributeName: date
             KeyType: RANGE
+        - IndexName: nameBranchCommit
+          Projection:
+            ProjectionType: ALL
+          KeySchema:
+          - AttributeName: name_branch_commit
+            KeyType: HASH
     type: object
     required:
     - name
     - branch
     - date
+    - commit
     properties:
       name:
         type: string
       branch:
+        type: string
+      commit:
         type: string
       version:
         type: integer
