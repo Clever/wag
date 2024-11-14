@@ -1,4 +1,5 @@
 v9.5.1
+
 v9.5.1 Minor bug fix in the typing of options in the generated JS client
 
 v9.5.0 Bugfix composite keys in a GSI with no range key. Also, generated tests are only added when opted in via a new flag, instead of by default.
