@@ -280,6 +280,7 @@ class SwaggerTest {
    * @param {string} [params.startingAfter]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
+   * @param {object} [options.baggage] - A request specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -415,6 +416,7 @@ class SwaggerTest {
    * @param {string} [params.startingAfter]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
+   * @param {object} [options.baggage] - A request specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @returns {Object} iter
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
@@ -584,6 +586,7 @@ class SwaggerTest {
    * @param [params.favoriteBooks]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
+   * @param {object} [options.baggage] - A request specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -722,6 +725,7 @@ class SwaggerTest {
    * @param [params.favoriteBooks]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
+   * @param {object} [options.baggage] - A request specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @returns {Object} iter
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
@@ -901,6 +905,7 @@ class SwaggerTest {
    * @param {number} [params.startingAfter]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
+   * @param {object} [options.baggage] - A request specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -1078,6 +1083,7 @@ class SwaggerTest {
    * @param {number} [params.startingAfter]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
+   * @param {object} [options.baggage] - A request specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @returns {Object} iter
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
@@ -1542,6 +1548,7 @@ class SwaggerTest {
    * @param {string} [params.randomBytes]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
+   * @param {object} [options.baggage] - A request specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -1960,6 +1967,7 @@ class SwaggerTest {
    * @param {string} params.pathParam
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
+   * @param {object} [options.baggage] - A request specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}

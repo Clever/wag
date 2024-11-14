@@ -281,6 +281,7 @@ class NilTest {
    * @param {number} [params.pageSize=1000]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
+   * @param {object} [options.baggage] - A request specific baggage to be propagated
    * @param {module:nil-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}

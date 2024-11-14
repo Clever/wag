@@ -654,6 +654,7 @@ const pluralParamMethodDefinitionTemplateString = `/**{{if .Description}}
    * @param {{if $param.JSDocType}}{{.JSDocType}} {{end}}{{if not $param.Required}}[{{end}}params.{{$param.JSName}}{{if $param.Default}}={{$param.Default}}{{end}}{{if not $param.Required}}]{{end}}{{if $param.Description}} - {{.Description}}{{end}}{{end}}
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
+   * @param {object} [options.baggage] - A request specific baggage to be propagated
    * @param {module:{{.ServiceName}}.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    {{- if .IterMethod}}
    * @returns {Object} iter
@@ -1376,6 +1377,7 @@ interface RetryPolicy {
 
 interface RequestOptions {
   timeout?: number;
+  baggage?: object;
   retryPolicy?: RetryPolicy;
 }
 
@@ -1396,6 +1398,7 @@ interface CircuitOptions {
 
 interface GenericOptions {
   timeout?: number;
+  baggage?: object;
   keepalive?: boolean;
   retryPolicy?: RetryPolicy;
   logger?: Logger;
