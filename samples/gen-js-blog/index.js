@@ -280,6 +280,7 @@ class Blog {
    * @param [params.file]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
+   * @param {object} [options.baggage] - A request specific baggage to be propagated
    * @param {module:blog.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -545,6 +546,7 @@ class Blog {
    * @param {string} params.userType
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
+   * @param {object} [options.baggage] - A request specific baggage to be propagated
    * @param {module:blog.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}

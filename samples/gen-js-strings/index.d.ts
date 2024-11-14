@@ -10,6 +10,7 @@ interface RetryPolicy {
 
 interface RequestOptions {
   timeout?: number;
+  baggage?: object;
   retryPolicy?: RetryPolicy;
 }
 
@@ -30,6 +31,7 @@ interface CircuitOptions {
 
 interface GenericOptions {
   timeout?: number;
+  baggage?: object;
   keepalive?: boolean;
   retryPolicy?: RetryPolicy;
   logger?: Logger;
