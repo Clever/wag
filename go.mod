@@ -15,7 +15,7 @@ require (
 	github.com/go-swagger/go-swagger v0.23.0
 	github.com/golang/mock v1.6.0
 	github.com/kevinburke/go-bindata v3.24.0+incompatible
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.10.0
 )
 
 require (
