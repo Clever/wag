@@ -132,15 +132,17 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 			// Add baggage to the context
 			ctx = baggage.ContextWithBaggage(ctx, bags)
 
-			// Log if sampled
-			if s.SpanContext().IsSampled() {
-				logger.FromContext(ctx).AddContext("sampled", "true")
-			} else {
-				logger.FromContext(ctx).AddContext("sampled", "false")
-			}
 
 			// Encode the trace/span ids in the DD format
 			if sc := s.SpanContext(); sc.HasTraceID() {
+
+				// Log if sampled
+				if s.SpanContext().IsSampled() {
+					logger.FromContext(ctx).AddContext("sampled", "true")
+				} else {
+					logger.FromContext(ctx).AddContext("sampled", "false")
+				}
+
 				spanID, traceID := sc.SpanID().String(), sc.TraceID().String()
 				// datadog converts hex strings to uint64 IDs, so log those so that correlating logs and traces works
 				if len(traceID) == 32 && len(spanID) == 16 { // opentelemetry format: 16 byte (32-char hex), 8 byte (16-char hex) trace and span ids

@@ -11,10 +11,15 @@ function parseForBaggage(entries) {
   if (!entries) {
     return "";
   }
+  // Regular expression for valid characters in keys and values
+  const validChars = /^[a-zA-Z0-9!#$%&'*+`\-.^_`|~]+$/;
+
   const pairs = [];
 
   entries.forEach((value, key) => {
-    pairs.push(`${key}=${value}`);
+    const validKey = key.match(validChars) ? key : encodeURIComponent(key);
+    const validValue = value.match(validChars) ? value : encodeURIComponent(value);
+    pairs.push(`${validKey}=${validValue}`);
   });
 
   return pairs.join(",");
