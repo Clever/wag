@@ -8,21 +8,16 @@ const RollingNumberEvent = require("hystrixjs/lib/metrics/RollingNumberEvent");
 const { Errors } = require("./types");
 
 function parseForBaggage(entries) {
-  // Regular expression for valid characters in keys and values
-  const validChars = /^[a-zA-Z0-9!#$%&'*+`\-.^_`|~]+$/;
-  // Transform the entries object into an array of strings
-  const baggageItems = Object.entries(entries).map(([key, value]) => {
-    // Remove invalid characters from key and value
-    const validKey = key.match(validChars) ? key : encodeURIComponent(key);
-    const validValue = value.match(validChars) ? value : encodeURIComponent(value);
+  if (!entries) {
+    return "";
+  }
+  const pairs = [];
 
-    return `${validKey}=${validValue}`;
+  entries.forEach((value, key) => {
+    pairs.push(`${key}=${value}`);
   });
 
-  // Combine the array of strings into the final baggageString
-  const baggageString = baggageItems.join(',');
-
-  return baggageString;
+  return pairs.join(",");
 }
 
 /**

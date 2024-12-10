@@ -121,21 +121,8 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 			}
 			ctx := r.Context()
 
-			var crid string
-
 			s := trace.SpanFromContext(ctx)
-			crid = s.SpanContext().TraceID().String()
 			bags := baggage.FromContext(ctx)
-			// Add clever-request-id to baggage
-			member, err := baggage.NewMember("clever-request-id", crid)
-			if err != nil {
-				logger.FromContext(ctx).WarnD("error-creating-baggage", logger.M{"error": err.Error()})
-			} else {
-				bags, err = bags.SetMember(member)
-				if err != nil {
-					logger.FromContext(ctx).WarnD("error-creating-baggage", logger.M{"error": err.Error()})
-				}
-			}
 
 			// Add the baggage to the logger
 			for _, bag := range bags.Members() {

@@ -85,7 +85,7 @@ Gets authors
 | [params.startingAfter] | <code>string</code> |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.baggage] | <code>object</code> | A request specific baggage to be propagated |
+| [options.baggage] | <code>[ &#x27;Map&#x27; ].&lt;string, (string\|number)&gt;</code> | A request-specific baggage to be propagated |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
@@ -104,7 +104,7 @@ Gets authors
 | [params.startingAfter] | <code>string</code> |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.baggage] | <code>object</code> | A request specific baggage to be propagated |
+| [options.baggage] | <code>[ &#x27;Map&#x27; ].&lt;string, (string\|number)&gt;</code> | A request-specific baggage to be propagated |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 
 <a name="module_swagger-test--SwaggerTest+getAuthorsWithPut"></a>
@@ -126,7 +126,7 @@ Gets authors, but needs to use the body so it's a PUT
 | [params.favoriteBooks] |  |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.baggage] | <code>object</code> | A request specific baggage to be propagated |
+| [options.baggage] | <code>[ &#x27;Map&#x27; ].&lt;string, (string\|number)&gt;</code> | A request-specific baggage to be propagated |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
@@ -146,7 +146,7 @@ Gets authors, but needs to use the body so it's a PUT
 | [params.favoriteBooks] |  |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.baggage] | <code>object</code> | A request specific baggage to be propagated |
+| [options.baggage] | <code>[ &#x27;Map&#x27; ].&lt;string, (string\|number)&gt;</code> | A request-specific baggage to be propagated |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 
 <a name="module_swagger-test--SwaggerTest+getBooks"></a>
@@ -176,7 +176,7 @@ Returns a list of books
 | [params.startingAfter] | <code>number</code> |  |  |
 | [options] | <code>object</code> |  |  |
 | [options.timeout] | <code>number</code> |  | A request specific timeout |
-| [options.baggage] | <code>object</code> |  | A request specific baggage to be propagated |
+| [options.baggage] | <code>[ &#x27;Map&#x27; ].&lt;string, (string\|number)&gt;</code> |  | A request-specific baggage to be propagated |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) |  | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |  |
 
@@ -204,7 +204,7 @@ Returns a list of books
 | [params.startingAfter] | <code>number</code> |  |  |
 | [options] | <code>object</code> |  |  |
 | [options.timeout] | <code>number</code> |  | A request specific timeout |
-| [options.baggage] | <code>object</code> |  | A request specific baggage to be propagated |
+| [options.baggage] | <code>[ &#x27;Map&#x27; ].&lt;string, (string\|number)&gt;</code> |  | A request-specific baggage to be propagated |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) |  | A request specific retryPolicy |
 
 <a name="module_swagger-test--SwaggerTest+createBook"></a>
@@ -223,7 +223,7 @@ Creates a book
 | newBook |  |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.baggage] | <code>object</code> | A request specific baggage to be propagated |
+| [options.baggage] | <code>[ &#x27;Map&#x27; ].&lt;string, (string\|number)&gt;</code> | A request-specific baggage to be propagated |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
@@ -243,7 +243,7 @@ Puts a book
 | newBook |  |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.baggage] | <code>object</code> | A request specific baggage to be propagated |
+| [options.baggage] | <code>[ &#x27;Map&#x27; ].&lt;string, (string\|number)&gt;</code> | A request-specific baggage to be propagated |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
@@ -270,7 +270,7 @@ Returns a book
 | [params.randomBytes] | <code>string</code> |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.baggage] | <code>object</code> | A request specific baggage to be propagated |
+| [options.baggage] | <code>[ &#x27;Map&#x27; ].&lt;string, (string\|number)&gt;</code> | A request-specific baggage to be propagated |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
@@ -291,7 +291,7 @@ Retrieve a book
 | id | <code>string</code> |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.baggage] | <code>object</code> | A request specific baggage to be propagated |
+| [options.baggage] | <code>[ &#x27;Map&#x27; ].&lt;string, (string\|number)&gt;</code> | A request-specific baggage to be propagated |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
@@ -308,7 +308,7 @@ Retrieve a book
 | --- | --- | --- |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.baggage] | <code>object</code> | A request specific baggage to be propagated |
+| [options.baggage] | <code>[ &#x27;Map&#x27; ].&lt;string, (string\|number)&gt;</code> | A request-specific baggage to be propagated |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 
@@ -330,7 +330,7 @@ testing that we can use a lowercase name for a model
 | params.pathParam | <code>string</code> |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.baggage] | <code>object</code> | A request specific baggage to be propagated |
+| [options.baggage] | <code>[ &#x27;Map&#x27; ].&lt;string, (string\|number)&gt;</code> | A request-specific baggage to be propagated |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |
 

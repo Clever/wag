@@ -8,21 +8,16 @@ const RollingNumberEvent = require("hystrixjs/lib/metrics/RollingNumberEvent");
 const { Errors } = require("./types");
 
 function parseForBaggage(entries) {
-  // Regular expression for valid characters in keys and values
-  const validChars = /^[a-zA-Z0-9!#$%&'*+`\-.^_`|~]+$/;
-  // Transform the entries object into an array of strings
-  const baggageItems = Object.entries(entries).map(([key, value]) => {
-    // Remove invalid characters from key and value
-    const validKey = key.match(validChars) ? key : encodeURIComponent(key);
-    const validValue = value.match(validChars) ? value : encodeURIComponent(value);
+  if (!entries) {
+    return "";
+  }
+  const pairs = [];
 
-    return `${validKey}=${validValue}`;
+  entries.forEach((value, key) => {
+    pairs.push(`${key}=${value}`);
   });
 
-  // Combine the array of strings into the final baggageString
-  const baggageString = baggageItems.join(',');
-
-  return baggageString;
+  return pairs.join(",");
 }
 
 /**
@@ -280,7 +275,7 @@ class SwaggerTest {
    * @param {string} [params.startingAfter]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {object} [options.baggage] - A request specific baggage to be propagated
+   * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -307,30 +302,14 @@ class SwaggerTest {
         options = {};
       }
   
-      const optionsBaggage = options.baggage || {}
+      const optionsBaggage = options.baggage || new Map();
 
       const timeout = options.timeout || this.timeout;
 
-      const headers = {};
+      let headers = {};
       
-      if (headers["baggage"]) {
-        const existingBaggageItems = headers["baggage"].split(',');
-        const existingBaggage = {};
-    
-        for (const item of existingBaggageItems) {
-          const [key, value] = item.split('=');
-          existingBaggage[key] = value;
-        }
-    
-        // Merge existingBaggage and optionsBaggage. Values in optionsBaggage will overwrite those in existingBaggage.
-        const mergedBaggage = {...existingBaggage, ...optionsBaggage};
-    
-        // Convert mergedBaggage back into a string using parseForBaggage
-        headers["baggage"] = parseForBaggage(mergedBaggage);
-      } else {
-        // Convert optionsBaggage into a string using parseForBaggage
-        headers["baggage"] = parseForBaggage(optionsBaggage);
-      }
+      // Convert optionsBaggage into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(optionsBaggage);
       
       headers["Canonical-Resource"] = "getAuthors";
       headers[versionHeader] = version;
@@ -416,7 +395,7 @@ class SwaggerTest {
    * @param {string} [params.startingAfter]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {object} [options.baggage] - A request specific baggage to be propagated
+   * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @returns {Object} iter
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
@@ -430,30 +409,14 @@ class SwaggerTest {
         options = {};
       }
   
-      const optionsBaggage = options.baggage || {}
+      const optionsBaggage = options.baggage || new Map();
 
       const timeout = options.timeout || this.timeout;
 
-      const headers = {};
+      let headers = {};
       
-      if (headers["baggage"]) {
-        const existingBaggageItems = headers["baggage"].split(',');
-        const existingBaggage = {};
-    
-        for (const item of existingBaggageItems) {
-          const [key, value] = item.split('=');
-          existingBaggage[key] = value;
-        }
-    
-        // Merge existingBaggage and optionsBaggage. Values in optionsBaggage will overwrite those in existingBaggage.
-        const mergedBaggage = {...existingBaggage, ...optionsBaggage};
-    
-        // Convert mergedBaggage back into a string using parseForBaggage
-        headers["baggage"] = parseForBaggage(mergedBaggage);
-      } else {
-        // Convert optionsBaggage into a string using parseForBaggage
-        headers["baggage"] = parseForBaggage(optionsBaggage);
-      }
+      // Convert optionsBaggage into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(optionsBaggage);
       
       headers["Canonical-Resource"] = "getAuthors";
       headers[versionHeader] = version;
@@ -586,7 +549,7 @@ class SwaggerTest {
    * @param [params.favoriteBooks]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {object} [options.baggage] - A request specific baggage to be propagated
+   * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -613,30 +576,14 @@ class SwaggerTest {
         options = {};
       }
   
-      const optionsBaggage = options.baggage || {}
+      const optionsBaggage = options.baggage || new Map();
 
       const timeout = options.timeout || this.timeout;
 
-      const headers = {};
+      let headers = {};
       
-      if (headers["baggage"]) {
-        const existingBaggageItems = headers["baggage"].split(',');
-        const existingBaggage = {};
-    
-        for (const item of existingBaggageItems) {
-          const [key, value] = item.split('=');
-          existingBaggage[key] = value;
-        }
-    
-        // Merge existingBaggage and optionsBaggage. Values in optionsBaggage will overwrite those in existingBaggage.
-        const mergedBaggage = {...existingBaggage, ...optionsBaggage};
-    
-        // Convert mergedBaggage back into a string using parseForBaggage
-        headers["baggage"] = parseForBaggage(mergedBaggage);
-      } else {
-        // Convert optionsBaggage into a string using parseForBaggage
-        headers["baggage"] = parseForBaggage(optionsBaggage);
-      }
+      // Convert optionsBaggage into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(optionsBaggage);
       
       headers["Canonical-Resource"] = "getAuthorsWithPut";
       headers[versionHeader] = version;
@@ -725,7 +672,7 @@ class SwaggerTest {
    * @param [params.favoriteBooks]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {object} [options.baggage] - A request specific baggage to be propagated
+   * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @returns {Object} iter
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
@@ -739,30 +686,14 @@ class SwaggerTest {
         options = {};
       }
   
-      const optionsBaggage = options.baggage || {}
+      const optionsBaggage = options.baggage || new Map();
 
       const timeout = options.timeout || this.timeout;
 
-      const headers = {};
+      let headers = {};
       
-      if (headers["baggage"]) {
-        const existingBaggageItems = headers["baggage"].split(',');
-        const existingBaggage = {};
-    
-        for (const item of existingBaggageItems) {
-          const [key, value] = item.split('=');
-          existingBaggage[key] = value;
-        }
-    
-        // Merge existingBaggage and optionsBaggage. Values in optionsBaggage will overwrite those in existingBaggage.
-        const mergedBaggage = {...existingBaggage, ...optionsBaggage};
-    
-        // Convert mergedBaggage back into a string using parseForBaggage
-        headers["baggage"] = parseForBaggage(mergedBaggage);
-      } else {
-        // Convert optionsBaggage into a string using parseForBaggage
-        headers["baggage"] = parseForBaggage(optionsBaggage);
-      }
+      // Convert optionsBaggage into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(optionsBaggage);
       
       headers["Canonical-Resource"] = "getAuthorsWithPut";
       headers[versionHeader] = version;
@@ -905,7 +836,7 @@ class SwaggerTest {
    * @param {number} [params.startingAfter]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {object} [options.baggage] - A request specific baggage to be propagated
+   * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -932,30 +863,14 @@ class SwaggerTest {
         options = {};
       }
   
-      const optionsBaggage = options.baggage || {}
+      const optionsBaggage = options.baggage || new Map();
 
       const timeout = options.timeout || this.timeout;
 
-      const headers = {};
+      let headers = {};
       
-      if (headers["baggage"]) {
-        const existingBaggageItems = headers["baggage"].split(',');
-        const existingBaggage = {};
-    
-        for (const item of existingBaggageItems) {
-          const [key, value] = item.split('=');
-          existingBaggage[key] = value;
-        }
-    
-        // Merge existingBaggage and optionsBaggage. Values in optionsBaggage will overwrite those in existingBaggage.
-        const mergedBaggage = {...existingBaggage, ...optionsBaggage};
-    
-        // Convert mergedBaggage back into a string using parseForBaggage
-        headers["baggage"] = parseForBaggage(mergedBaggage);
-      } else {
-        // Convert optionsBaggage into a string using parseForBaggage
-        headers["baggage"] = parseForBaggage(optionsBaggage);
-      }
+      // Convert optionsBaggage into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(optionsBaggage);
       
       headers["Canonical-Resource"] = "getBooks";
       headers[versionHeader] = version;
@@ -1083,7 +998,7 @@ class SwaggerTest {
    * @param {number} [params.startingAfter]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {object} [options.baggage] - A request specific baggage to be propagated
+   * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @returns {Object} iter
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
@@ -1097,30 +1012,14 @@ class SwaggerTest {
         options = {};
       }
   
-      const optionsBaggage = options.baggage || {}
+      const optionsBaggage = options.baggage || new Map();
 
       const timeout = options.timeout || this.timeout;
 
-      const headers = {};
+      let headers = {};
       
-      if (headers["baggage"]) {
-        const existingBaggageItems = headers["baggage"].split(',');
-        const existingBaggage = {};
-    
-        for (const item of existingBaggageItems) {
-          const [key, value] = item.split('=');
-          existingBaggage[key] = value;
-        }
-    
-        // Merge existingBaggage and optionsBaggage. Values in optionsBaggage will overwrite those in existingBaggage.
-        const mergedBaggage = {...existingBaggage, ...optionsBaggage};
-    
-        // Convert mergedBaggage back into a string using parseForBaggage
-        headers["baggage"] = parseForBaggage(mergedBaggage);
-      } else {
-        // Convert optionsBaggage into a string using parseForBaggage
-        headers["baggage"] = parseForBaggage(optionsBaggage);
-      }
+      // Convert optionsBaggage into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(optionsBaggage);
       
       headers["Canonical-Resource"] = "getBooks";
       headers[versionHeader] = version;
@@ -1283,7 +1182,7 @@ class SwaggerTest {
    * @param newBook
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {object} [options.baggage] - A request specific baggage to be propagated
+   * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -1313,30 +1212,14 @@ class SwaggerTest {
         options = {};
       }
   
-      const optionsBaggage = options.baggage || {}
+      const optionsBaggage = options.baggage || new Map();
 
       const timeout = options.timeout || this.timeout;
 
-      const headers = {};
+      let headers = {};
       
-      if (headers["baggage"]) {
-        const existingBaggageItems = headers["baggage"].split(',');
-        const existingBaggage = {};
-    
-        for (const item of existingBaggageItems) {
-          const [key, value] = item.split('=');
-          existingBaggage[key] = value;
-        }
-    
-        // Merge existingBaggage and optionsBaggage. Values in optionsBaggage will overwrite those in existingBaggage.
-        const mergedBaggage = {...existingBaggage, ...optionsBaggage};
-    
-        // Convert mergedBaggage back into a string using parseForBaggage
-        headers["baggage"] = parseForBaggage(mergedBaggage);
-      } else {
-        // Convert optionsBaggage into a string using parseForBaggage
-        headers["baggage"] = parseForBaggage(optionsBaggage);
-      }
+      // Convert optionsBaggage into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(optionsBaggage);
       
       headers["Canonical-Resource"] = "createBook";
       headers[versionHeader] = version;
@@ -1413,7 +1296,7 @@ class SwaggerTest {
    * @param newBook
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {object} [options.baggage] - A request specific baggage to be propagated
+   * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -1443,30 +1326,14 @@ class SwaggerTest {
         options = {};
       }
   
-      const optionsBaggage = options.baggage || {}
+      const optionsBaggage = options.baggage || new Map();
 
       const timeout = options.timeout || this.timeout;
 
-      const headers = {};
+      let headers = {};
       
-      if (headers["baggage"]) {
-        const existingBaggageItems = headers["baggage"].split(',');
-        const existingBaggage = {};
-    
-        for (const item of existingBaggageItems) {
-          const [key, value] = item.split('=');
-          existingBaggage[key] = value;
-        }
-    
-        // Merge existingBaggage and optionsBaggage. Values in optionsBaggage will overwrite those in existingBaggage.
-        const mergedBaggage = {...existingBaggage, ...optionsBaggage};
-    
-        // Convert mergedBaggage back into a string using parseForBaggage
-        headers["baggage"] = parseForBaggage(mergedBaggage);
-      } else {
-        // Convert optionsBaggage into a string using parseForBaggage
-        headers["baggage"] = parseForBaggage(optionsBaggage);
-      }
+      // Convert optionsBaggage into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(optionsBaggage);
       
       headers["Canonical-Resource"] = "putBook";
       headers[versionHeader] = version;
@@ -1548,7 +1415,7 @@ class SwaggerTest {
    * @param {string} [params.randomBytes]
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {object} [options.baggage] - A request specific baggage to be propagated
+   * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -1577,30 +1444,14 @@ class SwaggerTest {
         options = {};
       }
   
-      const optionsBaggage = options.baggage || {}
+      const optionsBaggage = options.baggage || new Map();
 
       const timeout = options.timeout || this.timeout;
 
-      const headers = {};
+      let headers = {};
       
-      if (headers["baggage"]) {
-        const existingBaggageItems = headers["baggage"].split(',');
-        const existingBaggage = {};
-    
-        for (const item of existingBaggageItems) {
-          const [key, value] = item.split('=');
-          existingBaggage[key] = value;
-        }
-    
-        // Merge existingBaggage and optionsBaggage. Values in optionsBaggage will overwrite those in existingBaggage.
-        const mergedBaggage = {...existingBaggage, ...optionsBaggage};
-    
-        // Convert mergedBaggage back into a string using parseForBaggage
-        headers["baggage"] = parseForBaggage(mergedBaggage);
-      } else {
-        // Convert optionsBaggage into a string using parseForBaggage
-        headers["baggage"] = parseForBaggage(optionsBaggage);
-      }
+      // Convert optionsBaggage into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(optionsBaggage);
       
       headers["Canonical-Resource"] = "getBookByID";
       headers[versionHeader] = version;
@@ -1701,7 +1552,7 @@ class SwaggerTest {
    * @param {string} id
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {object} [options.baggage] - A request specific baggage to be propagated
+   * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -1732,30 +1583,14 @@ class SwaggerTest {
         options = {};
       }
   
-      const optionsBaggage = options.baggage || {}
+      const optionsBaggage = options.baggage || new Map();
 
       const timeout = options.timeout || this.timeout;
 
-      const headers = {};
+      let headers = {};
       
-      if (headers["baggage"]) {
-        const existingBaggageItems = headers["baggage"].split(',');
-        const existingBaggage = {};
-    
-        for (const item of existingBaggageItems) {
-          const [key, value] = item.split('=');
-          existingBaggage[key] = value;
-        }
-    
-        // Merge existingBaggage and optionsBaggage. Values in optionsBaggage will overwrite those in existingBaggage.
-        const mergedBaggage = {...existingBaggage, ...optionsBaggage};
-    
-        // Convert mergedBaggage back into a string using parseForBaggage
-        headers["baggage"] = parseForBaggage(mergedBaggage);
-      } else {
-        // Convert optionsBaggage into a string using parseForBaggage
-        headers["baggage"] = parseForBaggage(optionsBaggage);
-      }
+      // Convert optionsBaggage into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(optionsBaggage);
       
       headers["Canonical-Resource"] = "getBookByID2";
       headers[versionHeader] = version;
@@ -1838,7 +1673,7 @@ class SwaggerTest {
   /**
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {object} [options.baggage] - A request specific baggage to be propagated
+   * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -1867,30 +1702,14 @@ class SwaggerTest {
         options = {};
       }
   
-      const optionsBaggage = options.baggage || {}
+      const optionsBaggage = options.baggage || new Map();
 
       const timeout = options.timeout || this.timeout;
 
-      const headers = {};
+      let headers = {};
       
-      if (headers["baggage"]) {
-        const existingBaggageItems = headers["baggage"].split(',');
-        const existingBaggage = {};
-    
-        for (const item of existingBaggageItems) {
-          const [key, value] = item.split('=');
-          existingBaggage[key] = value;
-        }
-    
-        // Merge existingBaggage and optionsBaggage. Values in optionsBaggage will overwrite those in existingBaggage.
-        const mergedBaggage = {...existingBaggage, ...optionsBaggage};
-    
-        // Convert mergedBaggage back into a string using parseForBaggage
-        headers["baggage"] = parseForBaggage(mergedBaggage);
-      } else {
-        // Convert optionsBaggage into a string using parseForBaggage
-        headers["baggage"] = parseForBaggage(optionsBaggage);
-      }
+      // Convert optionsBaggage into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(optionsBaggage);
       
       headers["Canonical-Resource"] = "healthCheck";
       headers[versionHeader] = version;
@@ -1967,7 +1786,7 @@ class SwaggerTest {
    * @param {string} params.pathParam
    * @param {object} [options]
    * @param {number} [options.timeout] - A request specific timeout
-   * @param {object} [options.baggage] - A request specific baggage to be propagated
+   * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
    * @param {function} [cb]
    * @returns {Promise}
@@ -1994,30 +1813,14 @@ class SwaggerTest {
         options = {};
       }
   
-      const optionsBaggage = options.baggage || {}
+      const optionsBaggage = options.baggage || new Map();
 
       const timeout = options.timeout || this.timeout;
 
-      const headers = {};
+      let headers = {};
       
-      if (headers["baggage"]) {
-        const existingBaggageItems = headers["baggage"].split(',');
-        const existingBaggage = {};
-    
-        for (const item of existingBaggageItems) {
-          const [key, value] = item.split('=');
-          existingBaggage[key] = value;
-        }
-    
-        // Merge existingBaggage and optionsBaggage. Values in optionsBaggage will overwrite those in existingBaggage.
-        const mergedBaggage = {...existingBaggage, ...optionsBaggage};
-    
-        // Convert mergedBaggage back into a string using parseForBaggage
-        headers["baggage"] = parseForBaggage(mergedBaggage);
-      } else {
-        // Convert optionsBaggage into a string using parseForBaggage
-        headers["baggage"] = parseForBaggage(optionsBaggage);
-      }
+      // Convert optionsBaggage into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(optionsBaggage);
       
       headers["Canonical-Resource"] = "lowercaseModelsTest";
       headers[versionHeader] = version;
