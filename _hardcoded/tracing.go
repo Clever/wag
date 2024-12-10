@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/Clever/kayvee-go/v7/logger"
 
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
@@ -124,6 +126,15 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 			s := trace.SpanFromContext(ctx)
 			bags := baggage.FromContext(ctx)
 
+			if bags.Member("clever-request-id") == "" {
+				reqid, err := baggage.NewMember("clever-request-id", uuid.New().String())
+				if err != nil {
+					bags, err = bags.SetMember(reqid)
+				} else {
+					logger.FromContext(ctx).WarnD("error-creating-baggage", logger.M{"error": err.Error()})
+				}
+			}
+
 			// Add the baggage to the logger
 			for _, bag := range bags.Members() {
 				logger.FromContext(ctx).AddContext(bag.Key(), bag.Value())
@@ -131,7 +142,6 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 
 			// Add baggage to the context
 			ctx = baggage.ContextWithBaggage(ctx, bags)
-
 
 			// Encode the trace/span ids in the DD format
 			if sc := s.SpanContext(); sc.HasTraceID() {
