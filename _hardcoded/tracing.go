@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/Clever/kayvee-go/v7/logger"
 
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
@@ -121,19 +123,19 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 			}
 			ctx := r.Context()
 
-			var crid string
-
 			s := trace.SpanFromContext(ctx)
-			crid = s.SpanContext().TraceID().String()
 			bags := baggage.FromContext(ctx)
-			// Add clever-request-id to baggage
-			member, err := baggage.NewMember("clever-request-id", crid)
-			if err != nil {
-				logger.FromContext(ctx).WarnD("error-creating-baggage", logger.M{"error": err.Error()})
-			} else {
-				bags, err = bags.SetMember(member)
+
+			if bags.Member("clever-request-id").String() == "=" { // if clever-request-id is not set
+				reqid, err := baggage.NewMember("clever-request-id", uuid.New().String())
 				if err != nil {
-					logger.FromContext(ctx).WarnD("error-creating-baggage", logger.M{"error": err.Error()})
+					logger.FromContext(ctx).ErrorD("error creating baggage member", logger.M{"error": err.Error()})
+				} else {
+					bags, err = bags.SetMember(reqid)
+					if err != nil {
+						logger.FromContext(ctx).ErrorD("error setting baggage member", logger.M{"error": err.Error()})
+					}
+
 				}
 			}
 
@@ -145,15 +147,16 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 			// Add baggage to the context
 			ctx = baggage.ContextWithBaggage(ctx, bags)
 
-			// Log if sampled
-			if s.SpanContext().IsSampled() {
-				logger.FromContext(ctx).AddContext("sampled", "true")
-			} else {
-				logger.FromContext(ctx).AddContext("sampled", "false")
-			}
-
 			// Encode the trace/span ids in the DD format
 			if sc := s.SpanContext(); sc.HasTraceID() {
+
+				// Log if sampled
+				if s.SpanContext().IsSampled() {
+					logger.FromContext(ctx).AddContext("sampled", "true")
+				} else {
+					logger.FromContext(ctx).AddContext("sampled", "false")
+				}
+
 				spanID, traceID := sc.SpanID().String(), sc.TraceID().String()
 				// datadog converts hex strings to uint64 IDs, so log those so that correlating logs and traces works
 				if len(traceID) == 32 && len(spanID) == 16 { // opentelemetry format: 16 byte (32-char hex), 8 byte (16-char hex) trace and span ids
