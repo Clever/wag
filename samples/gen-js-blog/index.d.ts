@@ -10,7 +10,7 @@ interface RetryPolicy {
 
 interface RequestOptions {
   timeout?: number;
-  baggage?: object;
+  baggage?: Map<string, string | number>;
   retryPolicy?: RetryPolicy;
 }
 
@@ -31,7 +31,7 @@ interface CircuitOptions {
 
 interface GenericOptions {
   timeout?: number;
-  baggage?: object;
+  baggage?: Map<string, string | number>;
   keepalive?: boolean;
   retryPolicy?: RetryPolicy;
   logger?: Logger;

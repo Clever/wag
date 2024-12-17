@@ -26,11 +26,12 @@ describe("operations", function() {
       baggageHeader = this.req.headers["baggage"];
       return mockResponse;
     });
+    const baggage = new Map();
+    baggage.set("ClientIP", req.ClientIP);
+    baggage.set("session_id", req.SessionID);
+
     const options = {
-      baggage: {
-       ClientIP: req.ClientIP,
-       session_id: req.SessionID
-      }
+      baggage
     }
     c.getBookByID({bookID: params.bookID}, options, function(err, resp) {
       assert.ifError(err);
