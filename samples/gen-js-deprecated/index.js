@@ -216,6 +216,7 @@ class SwaggerTest {
       this.asynclocalstore = options.asynclocalstore;
     }
 
+
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
     // hystrix implements a caching mechanism, we don't want this or we can't trust that clients
     // are initialized with the values passed in. 

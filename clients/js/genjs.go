@@ -311,6 +311,7 @@ class {{.ClassName}} {
       this.asynclocalstore = options.asynclocalstore;
     }
 
+
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
     // hystrix implements a caching mechanism, we don't want this or we can't trust that clients
     // are initialized with the values passed in. 
@@ -435,7 +436,9 @@ const methodTmplStr = `
   
       const optionsBaggage = options.baggage || new Map();
 
-      const combinedContext = new Map([...this.asynclocalstore.get("context"), ...optionsBaggage]);
+      const storeContext = this.asynclocalstore?.get("context") || new Map();
+
+      const combinedContext = new Map([...storeContext, ...optionsBaggage]);
 
       const timeout = options.timeout || this.timeout;
 
