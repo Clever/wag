@@ -47,6 +47,7 @@ Create a new client object.
 | [options.circuit.requestVolumeThreshold] | <code>number</code> |  | The minimum number of requests needed before a circuit can be tripped due to health. Default: 20. |
 | [options.circuit.sleepWindow] | <code>number</code> |  | how long, in milliseconds, to wait after a circuit opens before testing for recovery. Default: 5000. |
 | [options.circuit.errorPercentThreshold] | <code>number</code> |  | the threshold to place on the rolling error rate. Once the error rate exceeds this percentage, the circuit opens. Default: 90. |
+| [options.asynclocalstore] | <code>object</code> |  | a request scoped async store |
 
 <a name="module_nil-test--NilTest+close"></a>
 

@@ -126,12 +126,16 @@ func MuxServerMiddleware(serviceName string) func(http.Handler) http.Handler {
 			s := trace.SpanFromContext(ctx)
 			bags := baggage.FromContext(ctx)
 
-			if bags.Member("clever-request-id") == "" {
+			if bags.Member("clever-request-id").String() == "=" { // if clever-request-id is not set
 				reqid, err := baggage.NewMember("clever-request-id", uuid.New().String())
 				if err != nil {
-					bags, err = bags.SetMember(reqid)
+					logger.FromContext(ctx).ErrorD("error creating baggage member", logger.M{"error": err.Error()})
 				} else {
-					logger.FromContext(ctx).WarnD("error-creating-baggage", logger.M{"error": err.Error()})
+					bags, err = bags.SetMember(reqid)
+					if err != nil {
+						logger.FromContext(ctx).ErrorD("error setting baggage member", logger.M{"error": err.Error()})
+					}
+
 				}
 			}
 

@@ -273,6 +273,7 @@ class {{.ClassName}} {
    * @param {number} [options.circuit.errorPercentThreshold] - the threshold to place on the rolling error
    * rate. Once the error rate exceeds this percentage, the circuit opens.
    * Default: 90.
+   * @param {object} [options.asynclocalstore] a request scoped async store 
    */
   constructor(options) {
     options = options || {};
@@ -305,6 +306,9 @@ class {{.ClassName}} {
       this.logger = options.logger;
     } else {
       this.logger = new kayvee.logger((options.serviceName || "{{.ServiceName}}") + "-wagclient");
+    }
+    if (options.asynclocalstore) {
+      this.asynclocalstore = options.asynclocalstore;
     }
 
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
@@ -431,12 +435,14 @@ const methodTmplStr = `
   
       const optionsBaggage = options.baggage || new Map();
 
+      const combinedContext = new Map([...this.asynclocalstore.get("context"), ...optionsBaggage]);
+
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
       
-      // Convert optionsBaggage into a string using parseForBaggage
-      headers["baggage"] = parseForBaggage(optionsBaggage);
+      // Convert combinedContext into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(combinedContext);
       
       headers["Canonical-Resource"] = "{{.Operation}}";
       headers[versionHeader] = version;
@@ -1388,6 +1394,8 @@ interface GenericOptions {
   logger?: Logger;
   circuit?: CircuitOptions;
   serviceName?: string;
+  asynclocalstore?: object;
+
 }
 
 interface DiscoveryOptions {

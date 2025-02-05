@@ -178,6 +178,7 @@ class SwaggerTest {
    * @param {number} [options.circuit.errorPercentThreshold] - the threshold to place on the rolling error
    * rate. Once the error rate exceeds this percentage, the circuit opens.
    * Default: 90.
+   * @param {object} [options.asynclocalstore] a request scoped async store 
    */
   constructor(options) {
     options = options || {};
@@ -210,6 +211,9 @@ class SwaggerTest {
       this.logger = options.logger;
     } else {
       this.logger = new kayvee.logger((options.serviceName || "swagger-test") + "-wagclient");
+    }
+    if (options.asynclocalstore) {
+      this.asynclocalstore = options.asynclocalstore;
     }
 
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
@@ -309,12 +313,14 @@ class SwaggerTest {
   
       const optionsBaggage = options.baggage || new Map();
 
+      const combinedContext = new Map([...this.asynclocalstore.get("context"), ...optionsBaggage]);
+
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
       
-      // Convert optionsBaggage into a string using parseForBaggage
-      headers["baggage"] = parseForBaggage(optionsBaggage);
+      // Convert combinedContext into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(combinedContext);
       
       headers["Canonical-Resource"] = "getAuthors";
       headers[versionHeader] = version;
@@ -416,12 +422,14 @@ class SwaggerTest {
   
       const optionsBaggage = options.baggage || new Map();
 
+      const combinedContext = new Map([...this.asynclocalstore.get("context"), ...optionsBaggage]);
+
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
       
-      // Convert optionsBaggage into a string using parseForBaggage
-      headers["baggage"] = parseForBaggage(optionsBaggage);
+      // Convert combinedContext into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(combinedContext);
       
       headers["Canonical-Resource"] = "getAuthors";
       headers[versionHeader] = version;
@@ -583,12 +591,14 @@ class SwaggerTest {
   
       const optionsBaggage = options.baggage || new Map();
 
+      const combinedContext = new Map([...this.asynclocalstore.get("context"), ...optionsBaggage]);
+
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
       
-      // Convert optionsBaggage into a string using parseForBaggage
-      headers["baggage"] = parseForBaggage(optionsBaggage);
+      // Convert combinedContext into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(combinedContext);
       
       headers["Canonical-Resource"] = "getAuthorsWithPut";
       headers[versionHeader] = version;
@@ -693,12 +703,14 @@ class SwaggerTest {
   
       const optionsBaggage = options.baggage || new Map();
 
+      const combinedContext = new Map([...this.asynclocalstore.get("context"), ...optionsBaggage]);
+
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
       
-      // Convert optionsBaggage into a string using parseForBaggage
-      headers["baggage"] = parseForBaggage(optionsBaggage);
+      // Convert combinedContext into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(combinedContext);
       
       headers["Canonical-Resource"] = "getAuthorsWithPut";
       headers[versionHeader] = version;
@@ -870,12 +882,14 @@ class SwaggerTest {
   
       const optionsBaggage = options.baggage || new Map();
 
+      const combinedContext = new Map([...this.asynclocalstore.get("context"), ...optionsBaggage]);
+
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
       
-      // Convert optionsBaggage into a string using parseForBaggage
-      headers["baggage"] = parseForBaggage(optionsBaggage);
+      // Convert combinedContext into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(combinedContext);
       
       headers["Canonical-Resource"] = "getBooks";
       headers[versionHeader] = version;
@@ -1019,12 +1033,14 @@ class SwaggerTest {
   
       const optionsBaggage = options.baggage || new Map();
 
+      const combinedContext = new Map([...this.asynclocalstore.get("context"), ...optionsBaggage]);
+
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
       
-      // Convert optionsBaggage into a string using parseForBaggage
-      headers["baggage"] = parseForBaggage(optionsBaggage);
+      // Convert combinedContext into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(combinedContext);
       
       headers["Canonical-Resource"] = "getBooks";
       headers[versionHeader] = version;
@@ -1219,12 +1235,14 @@ class SwaggerTest {
   
       const optionsBaggage = options.baggage || new Map();
 
+      const combinedContext = new Map([...this.asynclocalstore.get("context"), ...optionsBaggage]);
+
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
       
-      // Convert optionsBaggage into a string using parseForBaggage
-      headers["baggage"] = parseForBaggage(optionsBaggage);
+      // Convert combinedContext into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(combinedContext);
       
       headers["Canonical-Resource"] = "createBook";
       headers[versionHeader] = version;
@@ -1333,12 +1351,14 @@ class SwaggerTest {
   
       const optionsBaggage = options.baggage || new Map();
 
+      const combinedContext = new Map([...this.asynclocalstore.get("context"), ...optionsBaggage]);
+
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
       
-      // Convert optionsBaggage into a string using parseForBaggage
-      headers["baggage"] = parseForBaggage(optionsBaggage);
+      // Convert combinedContext into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(combinedContext);
       
       headers["Canonical-Resource"] = "putBook";
       headers[versionHeader] = version;
@@ -1451,12 +1471,14 @@ class SwaggerTest {
   
       const optionsBaggage = options.baggage || new Map();
 
+      const combinedContext = new Map([...this.asynclocalstore.get("context"), ...optionsBaggage]);
+
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
       
-      // Convert optionsBaggage into a string using parseForBaggage
-      headers["baggage"] = parseForBaggage(optionsBaggage);
+      // Convert combinedContext into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(combinedContext);
       
       headers["Canonical-Resource"] = "getBookByID";
       headers[versionHeader] = version;
@@ -1590,12 +1612,14 @@ class SwaggerTest {
   
       const optionsBaggage = options.baggage || new Map();
 
+      const combinedContext = new Map([...this.asynclocalstore.get("context"), ...optionsBaggage]);
+
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
       
-      // Convert optionsBaggage into a string using parseForBaggage
-      headers["baggage"] = parseForBaggage(optionsBaggage);
+      // Convert combinedContext into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(combinedContext);
       
       headers["Canonical-Resource"] = "getBookByID2";
       headers[versionHeader] = version;
@@ -1709,12 +1733,14 @@ class SwaggerTest {
   
       const optionsBaggage = options.baggage || new Map();
 
+      const combinedContext = new Map([...this.asynclocalstore.get("context"), ...optionsBaggage]);
+
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
       
-      // Convert optionsBaggage into a string using parseForBaggage
-      headers["baggage"] = parseForBaggage(optionsBaggage);
+      // Convert combinedContext into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(combinedContext);
       
       headers["Canonical-Resource"] = "healthCheck";
       headers[versionHeader] = version;
@@ -1820,12 +1846,14 @@ class SwaggerTest {
   
       const optionsBaggage = options.baggage || new Map();
 
+      const combinedContext = new Map([...this.asynclocalstore.get("context"), ...optionsBaggage]);
+
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
       
-      // Convert optionsBaggage into a string using parseForBaggage
-      headers["baggage"] = parseForBaggage(optionsBaggage);
+      // Convert combinedContext into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(combinedContext);
       
       headers["Canonical-Resource"] = "lowercaseModelsTest";
       headers[versionHeader] = version;

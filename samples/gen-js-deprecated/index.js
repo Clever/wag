@@ -178,6 +178,7 @@ class SwaggerTest {
    * @param {number} [options.circuit.errorPercentThreshold] - the threshold to place on the rolling error
    * rate. Once the error rate exceeds this percentage, the circuit opens.
    * Default: 90.
+   * @param {object} [options.asynclocalstore] a request scoped async store 
    */
   constructor(options) {
     options = options || {};
@@ -210,6 +211,9 @@ class SwaggerTest {
       this.logger = options.logger;
     } else {
       this.logger = new kayvee.logger((options.serviceName || "swagger-test") + "-wagclient");
+    }
+    if (options.asynclocalstore) {
+      this.asynclocalstore = options.asynclocalstore;
     }
 
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);

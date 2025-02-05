@@ -37,6 +37,8 @@ interface GenericOptions {
   logger?: Logger;
   circuit?: CircuitOptions;
   serviceName?: string;
+  asynclocalstore?: object;
+
 }
 
 interface DiscoveryOptions {
