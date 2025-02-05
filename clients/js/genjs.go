@@ -1398,7 +1398,6 @@ interface GenericOptions {
   circuit?: CircuitOptions;
   serviceName?: string;
   asynclocalstore?: object;
-
 }
 
 interface DiscoveryOptions {
