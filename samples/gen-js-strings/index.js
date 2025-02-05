@@ -178,6 +178,7 @@ class NilTest {
    * @param {number} [options.circuit.errorPercentThreshold] - the threshold to place on the rolling error
    * rate. Once the error rate exceeds this percentage, the circuit opens.
    * Default: 90.
+   * @param {object} [options.asynclocalstore] a request scoped async store 
    */
   constructor(options) {
     options = options || {};
@@ -211,6 +212,10 @@ class NilTest {
     } else {
       this.logger = new kayvee.logger((options.serviceName || "nil-test") + "-wagclient");
     }
+    if (options.asynclocalstore) {
+      this.asynclocalstore = options.asynclocalstore;
+    }
+
 
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
     // hystrix implements a caching mechanism, we don't want this or we can't trust that clients
@@ -310,12 +315,16 @@ class NilTest {
   
       const optionsBaggage = options.baggage || new Map();
 
+      const storeContext = this.asynclocalstore?.get("context") || new Map();
+
+      const combinedContext = new Map([...storeContext, ...optionsBaggage]);
+
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
       
-      // Convert optionsBaggage into a string using parseForBaggage
-      headers["baggage"] = parseForBaggage(optionsBaggage);
+      // Convert combinedContext into a string using parseForBaggage
+      headers["baggage"] = parseForBaggage(combinedContext);
       
       headers["Canonical-Resource"] = "getDistricts";
       headers[versionHeader] = version;

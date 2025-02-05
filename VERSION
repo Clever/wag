@@ -1,4 +1,7 @@
-v9.5.2
+v9.5.3
+
+v9.5.3 wag-js client can now accept an optional asynclocalstore at initialization whose context can
+then be passed on as baggage. 
 
 v9.5.2 Bug fix in baggage options for JS client, wag-js baggage is now always a map. Server propagation now uses clever-request-id provided in baggage if available, and produces a uuid if it is not, instead of defaulting to traceid.
 
