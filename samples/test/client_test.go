@@ -6,19 +6,17 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"net/http/httptrace"
 	"os"
 	"strings"
-	"sync/atomic"
 	"testing"
 	"time"
 
+	"github.com/Clever/wag/clientconfig/v9"
 	"github.com/Clever/wag/samples/gen-go-basic/client/v9"
 	"github.com/Clever/wag/samples/gen-go-basic/models/v9"
 	"github.com/Clever/wag/samples/v9/gen-go-basic/server"
 	kayvee "gopkg.in/Clever/kayvee-go.v6/logger"
 
-	"github.com/afex/hystrix-go/hystrix"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -66,53 +64,6 @@ func (c *ClientContextTest) GetAuthorsWithPut(ctx context.Context, i *models.Get
 	return nil, "", nil
 }
 func (c *ClientContextTest) HealthCheck(ctx context.Context) error {
-	return nil
-}
-
-type ClientCircuitTest struct {
-	down bool
-}
-
-func (c *ClientCircuitTest) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, int64, error) {
-	if c.down {
-		return nil, int64(0), errors.New("fail")
-	}
-	return []models.Book{}, int64(0), nil
-}
-func (c *ClientCircuitTest) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (*models.Book, error) {
-	if c.down {
-		return nil, errors.New("fail")
-	}
-	return nil, nil
-}
-func (c *ClientCircuitTest) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
-	if c.down {
-		return nil, errors.New("fail")
-	}
-	return nil, nil
-}
-func (c *ClientCircuitTest) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
-	if c.down {
-		return nil, errors.New("fail")
-	}
-	return &models.Book{}, nil
-}
-func (c *ClientCircuitTest) PutBook(ctx context.Context, input *models.Book) (*models.Book, error) {
-	if c.down {
-		return nil, errors.New("fail")
-	}
-	return &models.Book{}, nil
-}
-func (c *ClientCircuitTest) GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (*models.AuthorsResponse, string, error) {
-	return nil, "", nil
-}
-func (c *ClientCircuitTest) GetAuthorsWithPut(ctx context.Context, i *models.GetAuthorsWithPutInput) (*models.AuthorsResponse, string, error) {
-	return nil, "", nil
-}
-func (c *ClientCircuitTest) HealthCheck(ctx context.Context) error {
-	if c.down {
-		return errors.New("fail")
-	}
 	return nil
 }
 
@@ -164,7 +115,6 @@ func TestPutIterator(t *testing.T) {
 	s := server.New(&controller, "")
 	testServer := httptest.NewServer(s.Handler)
 	defer testServer.Close()
-	hystrix.Flush()
 	c := client.New(testServer.URL)
 
 	requestBody := &models.Book{
@@ -313,72 +263,6 @@ func TestNewWithDiscovery(t *testing.T) {
 	_, err = c.GetBooks(context.Background(), &models.GetBooksInput{})
 	assert.NoError(t, err)
 	assert.Equal(t, 3, controller.getCount)
-}
-
-func TestCircuitBreaker(t *testing.T) {
-	controller := ClientCircuitTest{}
-	s := server.New(&controller, "")
-	testServer := httptest.NewServer(s.Handler)
-	defer testServer.Close()
-	hystrix.Flush()
-	c := client.New(testServer.URL)
-	c.SetCircuitBreakerDebug(false)
-	c.SetCircuitBreakerSettings(client.CircuitBreakerSettings{
-		MaxConcurrentRequests:  client.DefaultCircuitBreakerSettings.MaxConcurrentRequests,
-		RequestVolumeThreshold: 1,
-		SleepWindow:            2000,
-		ErrorPercentThreshold:  client.DefaultCircuitBreakerSettings.ErrorPercentThreshold,
-	})
-
-	// the circuit should open after one or two failed attempts, since the volume
-	// threshold (set above) is 1.
-	controller.down = true
-	var connAttempts int64
-	ctx := httptrace.WithClientTrace(context.Background(),
-		&httptrace.ClientTrace{
-			GetConn: func(hostPort string) {
-				atomic.AddInt64(&connAttempts, 1)
-			},
-		})
-
-	_, err := c.CreateBook(ctx, &models.Book{})
-	assert.Error(t, err)
-	_, err = c.CreateBook(ctx, &models.Book{})
-	assert.Error(t, err)
-	_, err = c.CreateBook(ctx, &models.Book{})
-	assert.Error(t, err)
-	assert.Equal(t, true, connAttempts <= int64(2), "circuit should have opened, saw too many connection attempts: %d", connAttempts)
-
-	// we should see an attempt go through after two seconds (this is the
-	// sleep window configured above).
-	circuitOpened := time.Now()
-	for range time.Tick(100 * time.Millisecond) {
-		_, err := c.CreateBook(ctx, &models.Book{})
-		assert.Error(t, err)
-		if connAttempts == 2 {
-			assert.WithinDuration(t, time.Now(), circuitOpened,
-				2*time.Second+500*time.Millisecond)
-			break
-		}
-		if time.Now().Sub(circuitOpened) > 10*time.Second {
-			t.Fatal("circuit should let through a 2nd attempt by now")
-		}
-	}
-
-	// bring the server back up, and we should see successes after another
-	// two seconds, for a total of 4 seconds.
-	controller.down = false
-	for range time.Tick(100 * time.Millisecond) {
-		_, err := c.CreateBook(ctx, &models.Book{})
-		if err == nil {
-			assert.WithinDuration(t, time.Now(), circuitOpened,
-				4*time.Second+500*time.Millisecond)
-			break
-		}
-		if time.Now().Sub(circuitOpened) > 10*time.Second {
-			t.Fatal("circuit should have closed by now")
-		}
-	}
 }
 
 func TestIterator(t *testing.T) {
