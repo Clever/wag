@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	clientconfig "github.com/Clever/wag/clientconfig/v9"
 	"github.com/Clever/wag/samples/gen-go-basic/client/v9"
 	"github.com/Clever/wag/samples/gen-go-basic/models/v9"
 	"github.com/Clever/wag/samples/v9/gen-go-basic/servertracing"
@@ -21,7 +22,7 @@ func TestOpenTelemetryInstrumentation(t *testing.T) {
 	// 1. generate a span
 	// 2. log trace and span ids
 	ctx := context.Background()
-	exporter, provider, err := tracing.SetupGlobalTraceProviderAndExporterForTest()
+	exporter, provider, err := servertracing.SetupGlobalTraceProviderAndExporterForTest()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -29,7 +30,9 @@ func TestOpenTelemetryInstrumentation(t *testing.T) {
 	defer provider.Shutdown(ctx)
 	s, _ := setupServer()
 	defer s.Close()
-	c := client.New(s.URL)
+	logger, transport := clientconfig.WithTracing("service", exporter)
+
+	c := client.New(s.URL, logger, transport)
 	c.HealthCheck(ctx)
 	spans := exporter.GetSpans()
 	require.Equal(t, 2, len(spans))
