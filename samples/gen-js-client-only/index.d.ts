@@ -38,7 +38,6 @@ interface GenericOptions {
   circuit?: CircuitOptions;
   serviceName?: string;
   asynclocalstore?: object;
-
 }
 
 interface DiscoveryOptions {
@@ -232,9 +231,7 @@ declare namespace SwaggerTest {
   statusCode?: number;
 };
     
-    type lowercase = {
-  
-};
+    type lowercase = string;
     
   }
 }
