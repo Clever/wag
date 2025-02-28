@@ -9,7 +9,7 @@ TEST_DB_PKG := "./gen-go-db/server/db/dynamodb"
 # If not for that, it's difficult to bootstrap
 generate:
 	@echo  $(TEST_PKGS) $(TEST_DB_PKG)
-	
+
 	../bin/wag -with-tests -file ./swagger.yml -output-path ./gen-go-basic -js-path ./gen-js
 	cd ./gen-js && jsdoc2md index.js types.js > ./README.md
 	go generate -mod=mod ./gen-go-basic...
@@ -42,7 +42,7 @@ generate:
 	go generate -mod=mod ./gen-go-db-custom-path...
 
  $(TEST_PKGS) $(TEST_DB_PKG): golang-test-all-strict-deps
-	$(call echo golang-test-all,$@)
+	$(call golang-test-all,$@)
 
 install_deps:
 	go mod vendor
