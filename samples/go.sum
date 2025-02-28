@@ -61,11 +61,11 @@ github.com/Clever/discovery-go v1.8.1/go.mod h1:2W318WszWlVde/hKBvxM3xrQKcmxWwv+
 github.com/Clever/go-process-metrics v0.4.0 h1:f7sqN8NxRlLV0phlTRPe1/wDmVOqW/EnILM6J+MkcLE=
 github.com/Clever/go-process-metrics v0.4.0/go.mod h1:nT1q7aJkDqYYwRFfqmuM3akED4ambORB+WhunT9jTEk=
 github.com/Clever/kayvee-go/v7 v7.4.0/go.mod h1:LvO0+U9vKd45yv2j9MtTA1r5LTTf+epSXsxMfw1WNd8=
-github.com/Clever/kayvee-go/v7 v7.6.0 h1:0oKF/yLSZZG0cJoYyuXj49zVU41I1eySvfHunlJkw7A=
-github.com/Clever/kayvee-go/v7 v7.6.0/go.mod h1:B2IcQE7OK8rpYvDotSAvCtfZqZ1UqTs1YacM+YFtxR8=
+github.com/Clever/kayvee-go/v7 v7.7.0 h1:quAQ5s1mcLqXjU3AgLg1A2lOIH102G8zEkasvJdBVlY=
+github.com/Clever/kayvee-go/v7 v7.7.0/go.mod h1:B2IcQE7OK8rpYvDotSAvCtfZqZ1UqTs1YacM+YFtxR8=
 github.com/Clever/wag/logging/wagclientlogger v0.0.0-20220916194010-36f974d66e08/go.mod h1:NPerIFemV/7da/vNGALWkky+mit4ulSa24NSalIXgpo=
-github.com/Clever/wag/logging/wagclientlogger v0.0.0-20221024182247-2bf828ef51be h1:1q4fCi5CfB+ru7uqnwRg4xWKBDwwATDptNxebm2Kx0g=
-github.com/Clever/wag/logging/wagclientlogger v0.0.0-20221024182247-2bf828ef51be/go.mod h1:NPerIFemV/7da/vNGALWkky+mit4ulSa24NSalIXgpo=
+github.com/Clever/wag/logging/wagclientlogger v0.0.0-20230110184825-edb52117e67a h1:IMRK5WZ0kEFhe4tc/7GNQ4M3JaLCudB+1KsuxvSj97o=
+github.com/Clever/wag/logging/wagclientlogger v0.0.0-20230110184825-edb52117e67a/go.mod h1:NPerIFemV/7da/vNGALWkky+mit4ulSa24NSalIXgpo=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/PuerkitoBio/purell v1.1.1/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578/go.mod h1:uGdkoq3SwY9Y+13GIhn11/XLaGBb4BfwItxLd5jeuXE=
@@ -104,6 +104,8 @@ github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/docker/go-units v0.4.0/go.mod h1:fgPhTUdO+D/Jk86RDLlptpiXQzgHJF7gydDDbaIK4Dk=
+github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b h1:eR1P/A4QMYF2/LpHRhYAts9wyYEtF7qNk/tVNiYCWc8=
+github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b/go.mod h1:56wL82FO0bfMU5RvfXoIwSOP2ggqqxT+tAfNEIyxuHw=
 github.com/eapache/go-resiliency v1.2.0/go.mod h1:kFI+JgMyC7bLPUVY133qvEBtVayf5mFgVsvEsIPBvNs=
 github.com/eapache/go-resiliency v1.3.0/go.mod h1:5yPzW0MIvSe0JDsv0v+DvcjEv2FyD6iZYSs1ZI+iQho=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=

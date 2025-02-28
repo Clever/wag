@@ -2,17 +2,13 @@ package client
 
 import (
 	"bytes"
-	"context"
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/Clever/wag/samples/gen-go-deprecated/models/v9"
 
 	discovery "github.com/Clever/discovery-go"
 	wcl "github.com/Clever/wag/logging/wagclientlogger"

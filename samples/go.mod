@@ -6,8 +6,8 @@ toolchain go1.21.0
 
 require (
 	github.com/Clever/go-process-metrics v0.4.0
-	github.com/Clever/kayvee-go/v7 v7.6.0
-	github.com/Clever/wag/logging/wagclientlogger v0.0.0-20221024182247-2bf828ef51be
+	github.com/Clever/kayvee-go/v7 v7.7.0
+	github.com/Clever/wag/logging/wagclientlogger v0.0.0-20230110184825-edb52117e67a
 	github.com/Clever/wag/samples/gen-go-basic/client/v9 v9.0.0-00010101000000-000000000000
 	github.com/Clever/wag/samples/gen-go-basic/models/v9 v9.0.0-00010101000000-000000000000
 	github.com/Clever/wag/samples/gen-go-blog/models/v9 v9.0.0-00010101000000-000000000000
@@ -47,6 +47,7 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
 	github.com/cenkalti/backoff/v4 v4.1.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b // indirect
 	github.com/felixge/httpsnoop v1.0.3 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
