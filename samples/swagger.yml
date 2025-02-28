@@ -398,4 +398,4 @@ definitions:
             type: string
 
   lowercase:
-    type: object
+    type: string
