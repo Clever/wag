@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 
@@ -24,7 +24,7 @@ var _ = swag.ConvertInt32
 var _ = errors.New
 var _ = mux.Vars
 var _ = bytes.Compare
-var _ = io.ReadAll
+var _ = ioutil.ReadAll
 
 var formats = strfmt.Default
 var _ = formats
@@ -309,7 +309,7 @@ func newGetAuthorsWithPutInput(r *http.Request) (*models.GetAuthorsWithPutInput,
 		input.StartingAfter = &startingAfterTmp
 	}
 
-	data, err := io.ReadAll(r.Body)
+	data, err := ioutil.ReadAll(r.Body)
 
 	if len(data) > 0 {
 		input.FavoriteBooks = new(models.Book)
@@ -640,7 +640,7 @@ func newCreateBookInput(r *http.Request) (*models.Book, error) {
 	var err error
 	_ = err
 
-	data, err := io.ReadAll(r.Body)
+	data, err := ioutil.ReadAll(r.Body)
 	if len(data) == 0 {
 		return nil, errors.New("request body is required, but was empty")
 	}
@@ -739,7 +739,7 @@ func newPutBookInput(r *http.Request) (*models.Book, error) {
 	var err error
 	_ = err
 
-	data, err := io.ReadAll(r.Body)
+	data, err := ioutil.ReadAll(r.Body)
 
 	if len(data) > 0 {
 		var input models.Book
@@ -1128,7 +1128,7 @@ func newLowercaseModelsTestInput(r *http.Request) (*models.LowercaseModelsTestIn
 	var err error
 	_ = err
 
-	data, err := io.ReadAll(r.Body)
+	data, err := ioutil.ReadAll(r.Body)
 	if len(data) == 0 {
 		return nil, errors.New("request body is required, but was empty")
 	}

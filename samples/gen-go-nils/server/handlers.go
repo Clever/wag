@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 
@@ -24,7 +24,7 @@ var _ = swag.ConvertInt32
 var _ = errors.New
 var _ = mux.Vars
 var _ = bytes.Compare
-var _ = io.ReadAll
+var _ = ioutil.ReadAll
 
 var formats = strfmt.Default
 var _ = formats
@@ -177,7 +177,7 @@ func newNilCheckInput(r *http.Request) (*models.NilCheckInput, error) {
 		input.Array = array
 	}
 
-	data, err := io.ReadAll(r.Body)
+	data, err := ioutil.ReadAll(r.Body)
 
 	if len(data) > 0 {
 		input.Body = new(models.NilFields)
