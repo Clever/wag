@@ -11,7 +11,7 @@ require (
 	github.com/go-openapi/spec v0.19.8
 	github.com/go-openapi/strfmt v0.19.5
 	github.com/go-openapi/swag v0.22.3
-	github.com/go-openapi/validate v0.19.15
+	github.com/go-openapi/validate v0.19.12
 	github.com/go-swagger/go-swagger v0.23.0
 	github.com/golang/mock v1.6.0
 	github.com/kevinburke/go-bindata v3.24.0+incompatible

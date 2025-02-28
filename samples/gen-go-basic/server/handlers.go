@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -24,7 +24,7 @@ var _ = swag.ConvertInt32
 var _ = errors.New
 var _ = mux.Vars
 var _ = bytes.Compare
-var _ = ioutil.ReadAll
+var _ = io.ReadAll
 
 var formats = strfmt.Default
 var _ = formats
@@ -309,7 +309,7 @@ func newGetAuthorsWithPutInput(r *http.Request) (*models.GetAuthorsWithPutInput,
 		input.StartingAfter = &startingAfterTmp
 	}
 
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 
 	if len(data) > 0 {
 		input.FavoriteBooks = new(models.Book)
@@ -640,7 +640,7 @@ func newCreateBookInput(r *http.Request) (*models.Book, error) {
 	var err error
 	_ = err
 
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 	if len(data) == 0 {
 		return nil, errors.New("request body is required, but was empty")
 	}
@@ -739,7 +739,7 @@ func newPutBookInput(r *http.Request) (*models.Book, error) {
 	var err error
 	_ = err
 
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 
 	if len(data) > 0 {
 		var input models.Book
@@ -1054,106 +1054,6 @@ func newHealthCheckInput(r *http.Request) (*models.HealthCheckInput, error) {
 
 	var err error
 	_ = err
-
-	return &input, nil
-}
-
-// statusCodeForLowercaseModelsTest returns the status code corresponding to the returned
-// object. It returns -1 if the type doesn't correspond to anything.
-func statusCodeForLowercaseModelsTest(obj interface{}) int {
-
-	switch obj.(type) {
-
-	case *models.BadRequest:
-		return 400
-
-	case *models.InternalError:
-		return 500
-
-	case models.BadRequest:
-		return 400
-
-	case models.InternalError:
-		return 500
-
-	default:
-		return -1
-	}
-}
-
-func (h handler) LowercaseModelsTestHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-
-	input, err := newLowercaseModelsTestInput(r)
-	if err != nil {
-		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.BadRequest{Message: err.Error()}), http.StatusBadRequest)
-		return
-	}
-
-	err = input.Validate()
-
-	if err != nil {
-		logger.FromContext(ctx).AddContext("error", err.Error())
-		http.Error(w, jsonMarshalNoError(models.BadRequest{Message: err.Error()}), http.StatusBadRequest)
-		return
-	}
-
-	err = h.LowercaseModelsTest(ctx, input)
-
-	if err != nil {
-		logger.FromContext(ctx).AddContext("error", err.Error())
-		if btErr, ok := err.(*errors.Error); ok {
-			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
-		} else if xerr, ok := err.(xerrors.Formatter); ok {
-			logger.FromContext(ctx).AddContext("frames", fmt.Sprintf("%+v", xerr))
-		}
-		statusCode := statusCodeForLowercaseModelsTest(err)
-		if statusCode == -1 {
-			err = models.InternalError{Message: err.Error()}
-			statusCode = 500
-		}
-		http.Error(w, jsonMarshalNoError(err), statusCode)
-		return
-	}
-
-	w.WriteHeader(200)
-	w.Write([]byte(""))
-
-}
-
-// newLowercaseModelsTestInput takes in an http.Request an returns the input struct.
-func newLowercaseModelsTestInput(r *http.Request) (*models.LowercaseModelsTestInput, error) {
-	var input models.LowercaseModelsTestInput
-
-	var err error
-	_ = err
-
-	data, err := ioutil.ReadAll(r.Body)
-	if len(data) == 0 {
-		return nil, errors.New("request body is required, but was empty")
-	}
-	if len(data) > 0 {
-		input.Lowercase = new(models.Lowercase)
-		if err := json.NewDecoder(bytes.NewReader(data)).Decode(input.Lowercase); err != nil {
-			return nil, err
-		}
-	}
-
-	pathParamStr := mux.Vars(r)["pathParam"]
-	if len(pathParamStr) == 0 {
-		return nil, errors.New("path parameter 'pathParam' must be specified")
-	}
-	pathParamStrs := []string{pathParamStr}
-
-	if len(pathParamStrs) > 0 {
-		var pathParamTmp string
-		pathParamStr := pathParamStrs[0]
-		pathParamTmp, err = pathParamStr, error(nil)
-		if err != nil {
-			return nil, err
-		}
-		input.PathParam = pathParamTmp
-	}
 
 	return &input, nil
 }

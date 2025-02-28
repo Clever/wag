@@ -2,8 +2,6 @@ package client
 
 import (
 	"context"
-
-	"github.com/Clever/wag/samples/gen-go-db/models/v9"
 )
 
 //go:generate mockgen -source=$GOFILE -destination=mock_client.go -package client --build_flags=--mod=mod -imports=models=github.com/Clever/wag/samples/gen-go-db /models/v9

@@ -177,7 +177,7 @@ var _ = swag.ConvertInt32
 var _ = errors.New
 var _ = mux.Vars
 var _ = bytes.Compare
-var _ = ioutil.ReadAll
+var _ = io.ReadAll
 
 {{.BaseStringToTypeCode}}
 
@@ -202,7 +202,7 @@ func generateHandlers(packageName, basePath, outputPath string, s *spec.Swagger,
 		ImportStatements: swagger.ImportStatements([]string{"context", "github.com/gorilla/mux",
 			"github.com/Clever/kayvee-go/v7/logger",
 			"net/http", "strconv", "encoding/json", "strconv", "fmt", moduleName + outputPath + "/models" + versionSuffix,
-			"github.com/go-openapi/strfmt", "github.com/go-openapi/swag", "io/ioutil", "bytes",
+			"github.com/go-openapi/strfmt", "github.com/go-openapi/swag", "io", "bytes",
 			"github.com/go-errors/errors", "golang.org/x/xerrors",
 		}),
 		BaseStringToTypeCode: swagger.BaseStringToTypeCode(),
@@ -545,10 +545,6 @@ func generateNewInput(op *spec.Operation, definitions map[string]spec.Schema) (s
 	return buf.String(), nil
 }
 
-func capitalize(str string) string {
-	return swagger.Capitalize(str)
-}
-
 type paramTemplate struct {
 	Required        bool
 	ParamType       string
@@ -616,7 +612,7 @@ type bodyParamTemplate struct {
 
 var bodyParamTemplateStr = `
 	{{ if not .IsBinary }}
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 	{{if .Required}} if len(data) == 0 {
 		return nil, errors.New("request body is required, but was empty")
 	}{{end}}

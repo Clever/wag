@@ -80,12 +80,4 @@ type Controller interface {
 	// 500: *models.InternalError
 	// default: client side HTTP errors, for example: context.DeadlineExceeded.
 	HealthCheck(ctx context.Context) error
-
-	// LowercaseModelsTest handles POST requests to /lowercaseModelsTest/{pathParam}
-	// testing that we can use a lowercase name for a model
-	// 200: nil
-	// 400: *models.BadRequest
-	// 500: *models.InternalError
-	// default: client side HTTP errors, for example: context.DeadlineExceeded.
-	LowercaseModelsTest(ctx context.Context, i *models.LowercaseModelsTestInput) error
 }

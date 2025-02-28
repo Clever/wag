@@ -3,7 +3,7 @@ package swagger
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/go-openapi/spec"
 )
@@ -15,7 +15,7 @@ func WriteToFile(s *spec.Swagger) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("internal error: wag patch type marshal failure: %s", err)
 	}
-	tmpfile, err := ioutil.TempFile("", "example")
+	tmpfile, err := os.CreateTemp("", "example")
 	if err != nil {
 		return "", err
 	}

@@ -64,7 +64,7 @@ paths:
         200:
           description: "Success"
           schema:
-            $ref: "#/definitions/Book"
+            $ref: "#/definitions/book"
         401:
           description: "Unauthorized"
           schema:
@@ -88,7 +88,7 @@ paths:
         200:
           description: OK response
           schema:
-            $ref: "#/definitions/Book"
+            $ref: "#/definitions/book"
         404:
           description: Job not found
           schema:
@@ -164,7 +164,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: "#/definitions/Book"
+              $ref: "#/definitions/book"
         default:
           description: "Error"
           schema:
@@ -176,13 +176,13 @@ paths:
         - name: newBook
           in: body
           schema:
-            $ref: "#/definitions/Book"
+            $ref: "#/definitions/book"
           required: true
       responses:
         200:
           description: "Success"
           schema:
-            $ref: "#/definitions/Book"
+            $ref: "#/definitions/book"
         default:
           description: "Error"
           schema:
@@ -195,12 +195,12 @@ paths:
         - name: newBook
           in: body
           schema:
-            $ref: "#/definitions/Book"
+            $ref: "#/definitions/book"
       responses:
         200:
           description: "Success"
           schema:
-            $ref: "#/definitions/Book"
+            $ref: "#/definitions/book"
         default:
           description: "Error"
           schema:
@@ -241,32 +241,15 @@ paths:
         - name: favoriteBooks
           in: body
           schema:
-            $ref: "#/definitions/Book"
+            $ref: "#/definitions/book"
       responses:
         200:
           description: "Success"
           schema:
             $ref: "#/definitions/AuthorsResponse"
-  /lowercaseModelsTest/{pathParam}:
-    post:
-      operationId: lowercaseModelsTest
-      description: testing that we can use a lowercase name for a model
-      parameters:
-        - name: lowercase
-          in: body
-          required: true
-          schema:
-            $ref: "#/definitions/lowercase"
-        - name: pathParam
-          in: path
-          required: true
-          type: string
-      responses:
-        200:
-          description: MFAConfig for user
 
 definitions:
-  Book:
+  book:
     type: object
     properties:
       id:
@@ -397,5 +380,3 @@ definitions:
           breed:
             type: string
 
-  lowercase:
-    type: object

@@ -45,8 +45,8 @@ import (
 		"encoding/json"
 		"strconv"
 		"time"
+		"io"
 		"fmt"
-		"io/ioutil"
 		"crypto/md5"
 
 		"{{.ModuleName}}{{.OutputPath}}/models{{.VersionSuffix}}"
@@ -647,7 +647,7 @@ func parseResponseCode(s *spec.Swagger, op *spec.Operation, capOpID string) stri
 
 	buf.WriteString(fmt.Sprintf(`
 	default:
-		bs, _ := ioutil.ReadAll(resp.Body)
+		bs, _ := io.ReadAll(resp.Body)
  		return %smodels.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
 	}
 }

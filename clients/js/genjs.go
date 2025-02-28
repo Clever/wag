@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -69,19 +69,19 @@ func Generate(modulePath string, s spec.Swagger) error {
 		return err
 	}
 
-	if err = ioutil.WriteFile(filepath.Join(modulePath, "types.js"), []byte(errorsJS), 0644); err != nil {
+	if err = os.WriteFile(filepath.Join(modulePath, "types.js"), []byte(errorsJS), 0644); err != nil {
 		return err
 	}
 
-	if err = ioutil.WriteFile(filepath.Join(modulePath, "index.js"), []byte(indexJS), 0644); err != nil {
+	if err = os.WriteFile(filepath.Join(modulePath, "index.js"), []byte(indexJS), 0644); err != nil {
 		return err
 	}
 
-	if ioutil.WriteFile(filepath.Join(modulePath, "package.json"), []byte(packageJSON), 0644); err != nil {
+	if os.WriteFile(filepath.Join(modulePath, "package.json"), []byte(packageJSON), 0644); err != nil {
 		return err
 	}
 
-	return ioutil.WriteFile(filepath.Join(modulePath, "index.d.ts"), []byte(indexDTS), 0644)
+	return os.WriteFile(filepath.Join(modulePath, "index.d.ts"), []byte(indexDTS), 0644)
 }
 
 type clientCodeTemplate struct {

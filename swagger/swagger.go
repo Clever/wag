@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"go/format"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -61,7 +60,7 @@ func (g *Generator) WriteFile(path string) error {
 	if strings.HasSuffix(path, ".sh") {
 		fileMode = os.FileMode(0755) // chmod +x
 	}
-	return ioutil.WriteFile(absPath, fileBytes, fileMode)
+	return os.WriteFile(absPath, fileBytes, fileMode)
 }
 
 // ImportStatements takes a list of import strings and converts them to a formatted imports

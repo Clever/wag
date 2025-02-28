@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -24,7 +24,7 @@ var _ = swag.ConvertInt32
 var _ = errors.New
 var _ = mux.Vars
 var _ = bytes.Compare
-var _ = ioutil.ReadAll
+var _ = io.ReadAll
 
 var formats = strfmt.Default
 var _ = formats
@@ -138,7 +138,7 @@ func newGetDistrictsInput(r *http.Request) (*models.GetDistrictsInput, error) {
 	var err error
 	_ = err
 
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 
 	if len(data) > 0 {
 		input.Where = new(models.WhereQueryString)

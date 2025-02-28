@@ -3,7 +3,7 @@ package client
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"io"
 	"math/rand"
 	"net/http"
 	"time"
@@ -119,7 +119,7 @@ func (d *retryDoer) Do(c *http.Client, r *http.Request) (*http.Response, error) 
 	var buf []byte
 	if r.Body != nil {
 		var err error
-		buf, err = ioutil.ReadAll(r.Body)
+		buf, err = io.ReadAll(r.Body)
 		if err != nil {
 			return nil, err
 		}
@@ -127,7 +127,7 @@ func (d *retryDoer) Do(c *http.Client, r *http.Request) (*http.Response, error) 
 
 	for retries := 0; true; retries++ {
 		if r.Body != nil {
-			rdr := ioutil.NopCloser(bytes.NewBuffer(buf))
+			rdr := io.NopCloser(bytes.NewBuffer(buf))
 			r.Body = rdr
 		}
 		resp, err = d.d.Do(c, r)

@@ -20,7 +20,6 @@ swagger-test client library.
             * [.getBookByID(params, [options], [cb])](#module_swagger-test--SwaggerTest+getBookByID) ⇒ <code>Promise</code>
             * [.getBookByID2(id, [options], [cb])](#module_swagger-test--SwaggerTest+getBookByID2) ⇒ <code>Promise</code>
             * [.healthCheck([options], [cb])](#module_swagger-test--SwaggerTest+healthCheck) ⇒ <code>Promise</code>
-            * [.lowercaseModelsTest(params, [options], [cb])](#module_swagger-test--SwaggerTest+lowercaseModelsTest) ⇒ <code>Promise</code>
         * _static_
             * [.RetryPolicies](#module_swagger-test--SwaggerTest.RetryPolicies)
                 * [.Exponential](#module_swagger-test--SwaggerTest.RetryPolicies.Exponential)
@@ -307,28 +306,6 @@ Retrieve a book
 
 | Param | Type | Description |
 | --- | --- | --- |
-| [options] | <code>object</code> |  |
-| [options.timeout] | <code>number</code> | A request specific timeout |
-| [options.baggage] | <code>[ &#x27;Map&#x27; ].&lt;string, (string\|number)&gt;</code> | A request-specific baggage to be propagated |
-| [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
-| [cb] | <code>function</code> |  |
-
-<a name="module_swagger-test--SwaggerTest+lowercaseModelsTest"></a>
-
-#### swaggerTest.lowercaseModelsTest(params, [options], [cb]) ⇒ <code>Promise</code>
-testing that we can use a lowercase name for a model
-
-**Kind**: instance method of [<code>SwaggerTest</code>](#exp_module_swagger-test--SwaggerTest)  
-**Fulfill**: <code>undefined</code>  
-**Reject**: [<code>BadRequest</code>](#module_swagger-test--SwaggerTest.Errors.BadRequest)  
-**Reject**: [<code>InternalError</code>](#module_swagger-test--SwaggerTest.Errors.InternalError)  
-**Reject**: <code>Error</code>  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| params | <code>Object</code> |  |
-| params.lowercase |  |  |
-| params.pathParam | <code>string</code> |  |
 | [options] | <code>object</code> |  |
 | [options.timeout] | <code>number</code> | A request specific timeout |
 | [options.baggage] | <code>[ &#x27;Map&#x27; ].&lt;string, (string\|number)&gt;</code> | A request-specific baggage to be propagated |

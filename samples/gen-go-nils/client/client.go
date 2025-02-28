@@ -6,7 +6,7 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -215,7 +215,7 @@ func (c *WagClient) doNilCheckRequest(ctx context.Context, req *http.Request, he
 		return &output
 
 	default:
-		bs, _ := ioutil.ReadAll(resp.Body)
+		bs, _ := io.ReadAll(resp.Body)
 		return models.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
 	}
 }

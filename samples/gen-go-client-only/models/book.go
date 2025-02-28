@@ -16,7 +16,7 @@ import (
 
 // Book book
 //
-// swagger:model Book
+// swagger:model book
 type Book struct {
 
 	// author

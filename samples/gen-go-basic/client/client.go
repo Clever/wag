@@ -6,7 +6,7 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -293,7 +293,7 @@ func (c *WagClient) doGetAuthorsRequest(ctx context.Context, req *http.Request, 
 		return nil, "", &output
 
 	default:
-		bs, _ := ioutil.ReadAll(resp.Body)
+		bs, _ := io.ReadAll(resp.Body)
 		return nil, "", models.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
 	}
 }
@@ -509,7 +509,7 @@ func (c *WagClient) doGetAuthorsWithPutRequest(ctx context.Context, req *http.Re
 		return nil, "", &output
 
 	default:
-		bs, _ := ioutil.ReadAll(resp.Body)
+		bs, _ := io.ReadAll(resp.Body)
 		return nil, "", models.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
 	}
 }
@@ -707,7 +707,7 @@ func (c *WagClient) doGetBooksRequest(ctx context.Context, req *http.Request, he
 		return nil, "", &output
 
 	default:
-		bs, _ := ioutil.ReadAll(resp.Body)
+		bs, _ := io.ReadAll(resp.Body)
 		return nil, "", models.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
 	}
 }
@@ -820,7 +820,7 @@ func (c *WagClient) doCreateBookRequest(ctx context.Context, req *http.Request, 
 		return nil, &output
 
 	default:
-		bs, _ := ioutil.ReadAll(resp.Body)
+		bs, _ := io.ReadAll(resp.Body)
 		return nil, models.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
 	}
 }
@@ -933,7 +933,7 @@ func (c *WagClient) doPutBookRequest(ctx context.Context, req *http.Request, hea
 		return nil, &output
 
 	default:
-		bs, _ := ioutil.ReadAll(resp.Body)
+		bs, _ := io.ReadAll(resp.Body)
 		return nil, models.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
 	}
 }
@@ -1063,7 +1063,7 @@ func (c *WagClient) doGetBookByIDRequest(ctx context.Context, req *http.Request,
 		return nil, &output
 
 	default:
-		bs, _ := ioutil.ReadAll(resp.Body)
+		bs, _ := io.ReadAll(resp.Body)
 		return nil, models.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
 	}
 }
@@ -1180,7 +1180,7 @@ func (c *WagClient) doGetBookByID2Request(ctx context.Context, req *http.Request
 		return nil, &output
 
 	default:
-		bs, _ := ioutil.ReadAll(resp.Body)
+		bs, _ := io.ReadAll(resp.Body)
 		return nil, models.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
 	}
 }
@@ -1277,121 +1277,7 @@ func (c *WagClient) doHealthCheckRequest(ctx context.Context, req *http.Request,
 		return &output
 
 	default:
-		bs, _ := ioutil.ReadAll(resp.Body)
-		return models.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
-	}
-}
-
-// LowercaseModelsTest makes a POST request to /lowercaseModelsTest/{pathParam}
-// testing that we can use a lowercase name for a model
-// 200: nil
-// 400: *models.BadRequest
-// 500: *models.InternalError
-// default: client side HTTP errors, for example: context.DeadlineExceeded.
-func (c *WagClient) LowercaseModelsTest(ctx context.Context, i *models.LowercaseModelsTestInput) error {
-	headers := make(map[string]string)
-
-	var body []byte
-	path, err := i.Path()
-
-	if err != nil {
-		return err
-	}
-
-	path = c.basePath + path
-
-	if i.Lowercase != nil {
-
-		var err error
-		body, err = json.Marshal(i.Lowercase)
-
-		if err != nil {
-			return err
-		}
-
-	}
-
-	req, err := http.NewRequestWithContext(ctx, "POST", path, bytes.NewBuffer(body))
-
-	if err != nil {
-		return err
-	}
-
-	return c.doLowercaseModelsTestRequest(ctx, req, headers)
-}
-
-func (c *WagClient) doLowercaseModelsTestRequest(ctx context.Context, req *http.Request, headers map[string]string) error {
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Canonical-Resource", "lowercaseModelsTest")
-	req.Header.Set(VersionHeader, Version)
-
-	for field, value := range headers {
-		req.Header.Set(field, value)
-	}
-
-	// Add the opname for doers like tracing
-	ctx = context.WithValue(ctx, opNameCtx{}, "lowercaseModelsTest")
-	req = req.WithContext(ctx)
-	// Don't add the timeout in a "doer" because we don't want to call "defer.cancel()"
-	// until we've finished all the processing of the request object. Otherwise we'll cancel
-	// our own request before we've finished it.
-	if c.defaultTimeout != 0 {
-		ctx, cancel := context.WithTimeout(req.Context(), c.defaultTimeout)
-		defer cancel()
-		req = req.WithContext(ctx)
-	}
-
-	resp, err := c.requestDoer.Do(c.client, req)
-	retCode := 0
-	if resp != nil {
-		retCode = resp.StatusCode
-	}
-
-	// log all client failures and non-successful HT
-	logData := map[string]interface{}{
-		"backend":     "swagger-test",
-		"method":      req.Method,
-		"uri":         req.URL,
-		"status_code": retCode,
-	}
-	if err == nil && retCode > 399 && retCode < 500 {
-		logData["message"] = resp.Status
-		c.logger.Log(wcl.Warning, "client-request-finished", logData)
-	}
-	if err == nil && retCode > 499 {
-		logData["message"] = resp.Status
-		c.logger.Log(wcl.Error, "client-request-finished", logData)
-	}
-	if err != nil {
-		logData["message"] = err.Error()
-		c.logger.Log(wcl.Error, "client-request-finished", logData)
-		return err
-	}
-	defer resp.Body.Close()
-	switch resp.StatusCode {
-
-	case 200:
-
-		return nil
-
-	case 400:
-
-		var output models.BadRequest
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return err
-		}
-		return &output
-
-	case 500:
-
-		var output models.InternalError
-		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
-			return err
-		}
-		return &output
-
-	default:
-		bs, _ := ioutil.ReadAll(resp.Body)
+		bs, _ := io.ReadAll(resp.Body)
 		return models.UnknownResponse{StatusCode: int64(resp.StatusCode), Body: string(bs)}
 	}
 }

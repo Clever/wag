@@ -65,20 +65,18 @@ declare class SwaggerTest {
   getAuthorsWithPut(params: models.GetAuthorsWithPutParams, options?: RequestOptions, cb?: Callback<models.AuthorsResponse>): Promise<models.AuthorsResponse>
   getAuthorsWithPutIter(params: models.GetAuthorsWithPutParams, options?: RequestOptions): IterResult<ArrayInner<models.AuthorsResponse["authorSet"]["results"]>>
   
-  getBooks(params: models.GetBooksParams, options?: RequestOptions, cb?: Callback<models.Book[]>): Promise<models.Book[]>
-  getBooksIter(params: models.GetBooksParams, options?: RequestOptions): IterResult<ArrayInner<models.Book[]>>
+  getBooks(params: models.GetBooksParams, options?: RequestOptions, cb?: Callback<models.book[]>): Promise<models.book[]>
+  getBooksIter(params: models.GetBooksParams, options?: RequestOptions): IterResult<ArrayInner<models.book[]>>
   
-  createBook(newBook: models.Book, options?: RequestOptions, cb?: Callback<models.Book>): Promise<models.Book>
+  createBook(newBook: models.book, options?: RequestOptions, cb?: Callback<models.book>): Promise<models.book>
   
-  putBook(newBook?: models.Book, options?: RequestOptions, cb?: Callback<models.Book>): Promise<models.Book>
+  putBook(newBook?: models.book, options?: RequestOptions, cb?: Callback<models.book>): Promise<models.book>
   
-  getBookByID(params: models.GetBookByIDParams, options?: RequestOptions, cb?: Callback<models.Book>): Promise<models.Book>
+  getBookByID(params: models.GetBookByIDParams, options?: RequestOptions, cb?: Callback<models.book>): Promise<models.book>
   
-  getBookByID2(id: string, options?: RequestOptions, cb?: Callback<models.Book>): Promise<models.Book>
+  getBookByID2(id: string, options?: RequestOptions, cb?: Callback<models.book>): Promise<models.book>
   
   healthCheck(options?: RequestOptions, cb?: Callback<void>): Promise<void>
-  
-  lowercaseModelsTest(params: models.LowercaseModelsTestParams, options?: RequestOptions, cb?: Callback<void>): Promise<void>
   
 }
 
@@ -153,15 +151,6 @@ declare namespace SwaggerTest {
   count?: number;
 };
     
-    type Book = {
-  author?: string;
-  genre?: ("scifi" | "mystery" | "horror");
-  id?: number;
-  name?: string;
-  other?: { [key: string]: string };
-  otherArray?: { [key: string]: string[] };
-};
-    
     type Dog = Pet & Identifiable & {
   breed?: string;
 };
@@ -179,7 +168,7 @@ declare namespace SwaggerTest {
     type GetAuthorsWithPutParams = {
   name?: string;
   startingAfter?: string;
-  favoriteBooks?: Book;
+  favoriteBooks?: book;
 };
     
     type GetBookByIDParams = {
@@ -208,11 +197,6 @@ declare namespace SwaggerTest {
   id?: string;
 };
     
-    type LowercaseModelsTestParams = {
-  lowercase: lowercase;
-  pathParam: string;
-};
-    
     type OmitEmpty = {
   arrayFieldNotOmitted?: string[];
   arrayFieldOmitted?: string[];
@@ -231,8 +215,13 @@ declare namespace SwaggerTest {
   statusCode?: number;
 };
     
-    type lowercase = {
-  
+    type book = {
+  author?: string;
+  genre?: ("scifi" | "mystery" | "horror");
+  id?: number;
+  name?: string;
+  other?: { [key: string]: string };
+  otherArray?: { [key: string]: string[] };
 };
     
   }

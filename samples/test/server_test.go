@@ -29,7 +29,7 @@ func TestBasicEndToEnd(t *testing.T) {
 	s, _ := setupServer()
 	defer s.Close()
 
-	c := client.New(s.URL)
+	c := client.New(s.URL, wcl, &http.DefaultTransport)
 
 	bookID := int64(124)
 	bookName := "Test"
@@ -57,7 +57,7 @@ func TestNextPageHeader(t *testing.T) {
 
 	controller.pageSize = 2
 
-	c := client.New(s.URL)
+	c := client.New(s.URL, wcl, &http.DefaultTransport)
 
 	_, err := c.CreateBook(context.Background(), &models.Book{
 		ID: int64(1), Name: "Test",
@@ -92,7 +92,7 @@ func TestNilArray(t *testing.T) {
 	s, _ := setupServer()
 	defer s.Close()
 
-	c := client.New(s.URL)
+	c := client.New(s.URL, wcl, &http.DefaultTransport)
 	books, err := c.GetBooks(context.Background(), &models.GetBooksInput{})
 	require.NoError(t, err)
 	assert.Equal(t, 0, len(books))
@@ -103,7 +103,7 @@ func TestNilBody(t *testing.T) {
 	s, _ := setupServer()
 	defer s.Close()
 
-	c := client.New(s.URL)
+	c := client.New(s.URL, wcl, &http.DefaultTransport)
 	name := "foo"
 	_, err := c.GetAuthorsWithPut(context.Background(), &models.GetAuthorsWithPutInput{
 		Name:          &name,
@@ -116,7 +116,7 @@ func TestNilBodySingleParam(t *testing.T) {
 	s, controller := setupServer()
 	defer s.Close()
 
-	c := client.New(s.URL)
+	c := client.New(s.URL, wcl, &http.DefaultTransport)
 	_, err := c.PutBook(context.Background(), nil /* nil body param */)
 	require.NoError(t, err)
 	assert.Equal(t, 1, controller.nilPutBookCount)
@@ -127,7 +127,7 @@ func TestUserDefinedErrorResponse(t *testing.T) {
 	s, _ := setupServer()
 	defer s.Close()
 
-	c := client.New(s.URL)
+	c := client.New(s.URL, wcl, &http.DefaultTransport)
 
 	_, err := c.GetBookByID(context.Background(), &models.GetBookByIDInput{BookID: 124})
 	assert.Error(t, err)
@@ -138,7 +138,7 @@ func TestDefaultErrorResponse(t *testing.T) {
 	s, _ := setupServer()
 	defer s.Close()
 
-	c := client.New(s.URL)
+	c := client.New(s.URL, wcl, &http.DefaultTransport)
 
 	_, err := c.GetBookByID(context.Background(), &models.GetBookByIDInput{BookID: 400})
 	assert.Error(t, err)
@@ -151,7 +151,7 @@ func TestValidationErrorResponse(t *testing.T) {
 	s, _ := setupServer()
 	defer s.Close()
 
-	c := client.New(s.URL)
+	c := client.New(s.URL, wcl, &http.DefaultTransport)
 
 	// Book ID should be a multiple of two
 	_, err := c.GetBookByID(context.Background(), &models.GetBookByIDInput{BookID: 123})
@@ -160,7 +160,7 @@ func TestValidationErrorResponse(t *testing.T) {
 }
 
 func TestClientSideError(t *testing.T) {
-	c := client.New("badServer")
+	c := client.New("badServer", wcl, &http.DefaultTransport)
 
 	_, err := c.GetBooks(context.Background(), &models.GetBooksInput{})
 	assert.Error(t, err)
@@ -172,7 +172,7 @@ func TestHeaders(t *testing.T) {
 	defer s.Close()
 
 	bookID := int64(124)
-	c := client.New(s.URL)
+	c := client.New(s.URL, wcl, &http.DefaultTransport)
 	_, err := c.CreateBook(context.Background(),
 		&models.Book{ID: bookID, Name: "test"})
 	assert.NoError(t, err)
@@ -188,7 +188,7 @@ func TestCustomStringValidation(t *testing.T) {
 	s, _ := setupServer()
 	defer s.Close()
 
-	c := client.New(s.URL)
+	c := client.New(s.URL, wcl, &http.DefaultTransport)
 
 	bookID := int64(124)
 	_, err := c.CreateBook(context.Background(),
@@ -249,7 +249,7 @@ func TestDefaultValue(t *testing.T) {
 	d := LastCallServer{}
 	s := server.New(&d, ":8080")
 	testServer := httptest.NewServer(s.Handler)
-	c := client.New(testServer.URL)
+	c := client.New(testServer.URL, wcl, &http.DefaultTransport)
 
 	_, err := c.GetBooks(context.Background(), &models.GetBooksInput{})
 	require.NoError(t, err)
@@ -263,7 +263,7 @@ func TestPassInArray(t *testing.T) {
 	d := LastCallServer{}
 	s := server.New(&d, ":8080")
 	testServer := httptest.NewServer(s.Handler)
-	c := client.New(testServer.URL)
+	c := client.New(testServer.URL, wcl, &http.DefaultTransport)
 
 	_, err := c.GetBooks(context.Background(),
 		&models.GetBooksInput{Authors: []string{"author1", "author2"}})
@@ -340,7 +340,7 @@ func TestMiddleware(t *testing.T) {
 	s := server.NewWithMiddleware(&controller, "", []func(http.Handler) http.Handler{
 		ordering.First, ordering.Second, testContextMiddleware})
 	testServer := httptest.NewServer(s.Handler)
-	c := client.New(testServer.URL)
+	c := client.New(testServer.URL, wcl, &http.DefaultTransport)
 	_, err := c.GetBooks(context.Background(), &models.GetBooksInput{})
 
 	// Setting context
@@ -387,7 +387,7 @@ func (m *TimeoutController) HealthCheck(ctx context.Context) error {
 func TestTimeout(t *testing.T) {
 	s := server.New(&TimeoutController{}, "")
 	testServer := httptest.NewServer(testContextMiddleware(s.Handler))
-	c := client.New(testServer.URL)
+	c := client.New(testServer.URL, wcl, &http.DefaultTransport)
 
 	// Without a timeout, no error
 	_, err := c.GetBooks(context.Background(), &models.GetBooksInput{})

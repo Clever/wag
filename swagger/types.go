@@ -50,7 +50,7 @@ func TypeFromSchema(schema *spec.Schema, includeModels bool) (string, error) {
 // DefFromRef returns the schema definition given the reference
 func DefFromRef(ref string) (string, error) {
 	if strings.HasPrefix(ref, "#/definitions/") {
-		return ref[len("#/definitions/"):], nil
+		return Capitalize(ref[len("#/definitions/"):]), nil
 	}
 	return "", fmt.Errorf("schema.$ref has undefined reference type \"%s\". "+
 		"Must start with #/definitions or #/responses.", ref)
