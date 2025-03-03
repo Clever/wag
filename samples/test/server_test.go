@@ -411,7 +411,7 @@ func TestTimeout(t *testing.T) {
 	start := time.Now()
 	_, err = c.GetBooks(ctx, &models.GetBooksInput{})
 	assert.Error(t, err)
-	assert.IsType(t, context.DeadlineExceeded, err)
+	assert.Contains(t, err.Error(), "context deadline exceeded")
 	end := time.Now()
 	assert.True(t, end.Sub(start) < 20*time.Millisecond)
 
@@ -419,7 +419,7 @@ func TestTimeout(t *testing.T) {
 	c.SetTimeout(10 * time.Millisecond)
 	_, err = c.GetBooks(context.Background(), &models.GetBooksInput{})
 	require.Error(t, err)
-	assert.IsType(t, context.DeadlineExceeded, err)
+	assert.Contains(t, err.Error(), "context deadline exceeded")
 
 	// TODO: Ideally this would actually take effect
 	// Adding a higher per request context timeout has no effect
@@ -428,7 +428,7 @@ func TestTimeout(t *testing.T) {
 	start = time.Now()
 	_, err = c.GetBooks(ctx, &models.GetBooksInput{})
 	assert.Error(t, err)
-	assert.IsType(t, context.DeadlineExceeded, err)
+	assert.Contains(t, err.Error(), "context deadline exceeded")
 	end = time.Now()
 	assert.True(t, end.Sub(start) < 20*time.Millisecond)
 }

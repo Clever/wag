@@ -63,8 +63,6 @@ github.com/Clever/go-process-metrics v0.4.0/go.mod h1:nT1q7aJkDqYYwRFfqmuM3akED4
 github.com/Clever/kayvee-go/v7 v7.4.0/go.mod h1:LvO0+U9vKd45yv2j9MtTA1r5LTTf+epSXsxMfw1WNd8=
 github.com/Clever/kayvee-go/v7 v7.7.0 h1:quAQ5s1mcLqXjU3AgLg1A2lOIH102G8zEkasvJdBVlY=
 github.com/Clever/kayvee-go/v7 v7.7.0/go.mod h1:B2IcQE7OK8rpYvDotSAvCtfZqZ1UqTs1YacM+YFtxR8=
-github.com/Clever/wag/clientconfig/v9 v9.5.3 h1:hNHySP83Me1swPowCXVdXYY7aVdutnLXo/cLlAvceec=
-github.com/Clever/wag/clientconfig/v9 v9.5.3/go.mod h1:sbm4jRuGrNIZ+SBpUZ4B/aNbTMbnfbiaZNDrURlqbbY=
 github.com/Clever/wag/logging/wagclientlogger v0.0.0-20220916194010-36f974d66e08/go.mod h1:NPerIFemV/7da/vNGALWkky+mit4ulSa24NSalIXgpo=
 github.com/Clever/wag/logging/wagclientlogger v0.0.0-20230110184825-edb52117e67a h1:IMRK5WZ0kEFhe4tc/7GNQ4M3JaLCudB+1KsuxvSj97o=
 github.com/Clever/wag/logging/wagclientlogger v0.0.0-20230110184825-edb52117e67a/go.mod h1:NPerIFemV/7da/vNGALWkky+mit4ulSa24NSalIXgpo=
@@ -409,8 +407,6 @@ go.opencensus.io v0.22.5/go.mod h1:5pWMHQbX5EPX2/62yrJeAkowc+lfs/XD7Uxpq3pI6kk=
 go.opencensus.io v0.23.0/go.mod h1:XItmlyltB5F7CS4xOC1DcqMoFqwtC6OG2xF7mCv7P7E=
 go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.34.0 h1:OkXMRbgldT4yZR7RwB4SFYTjYJGTXwPQVX69pYtTnc4=
 go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.34.0/go.mod h1:zMu+r6aEorSQi8Ad0Y1fNrznm+VM8F10D2WlZp3HeFw=
-go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.35.0 h1:Ajldaqhxqw/gNzQA45IKFWLdG7jZuXX/wBW1d5qvbUI=
-go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.35.0/go.mod h1:9NiG9I2aHTKkcxqCILhjtyNA1QEiCjdBACv4IvrFQ+c=
 go.opentelemetry.io/otel v1.3.0/go.mod h1:PWIKzi6JCp7sM0k9yZ43VX+T345uNbAkDKwHVjb2PTs=
 go.opentelemetry.io/otel v1.8.0/go.mod h1:2pkj+iMj0o03Y+cW6/m8Y4WkRdYN3AvCXCnzRMp9yvM=
 go.opentelemetry.io/otel v1.9.0/go.mod h1:np4EoPGzoPs3O67xUVNoPPcmSvsfOxNlNA4F4AC+0Eo=
