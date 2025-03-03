@@ -61,14 +61,14 @@ generate:
 
 	../bin/wag -with-tests -file ./db.yml -output-path ./gen-go-db-only -dynamo-only
 	cd ./gen-go-db-only/models && go mod tidy
-	cd ./gen-go-db-only/ go mod tidy
+	cd ./gen-go-db-only/ && go mod tidy
 	go generate -mod=mod ./gen-go-db-only...
 
 	../bin/wag -with-tests -file ./db.yml -output-path ./gen-go-db-custom-path -js-path ./gen-js-db-custom-path -dynamo-path db
 	cd ./gen-js-db-custom-path && jsdoc2md index.js types.js > ./README.md
 	cd ./gen-go-db-custom-path/client && go mod tidy
 	cd ./gen-go-db-custom-path/models && go mod tidy
-	cd ./gen-go-db-custom-path/ go mod tidy
+	cd ./gen-go-db-custom-path/ && go mod tidy
 	go generate -mod=mod ./gen-go-db-custom-path...
 
 	go install -mod=mod golang.org/x/tools/cmd/goimports@v0.24.0
