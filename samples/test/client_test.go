@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -77,57 +78,6 @@ func (c *ClientContextTest) HealthCheck(ctx context.Context) error {
 }
 
 func (c *ClientContextTest) LowercaseModelsTest(ctx context.Context, i *models.LowercaseModelsTestInput) error {
-	return nil
-}
-
-type ClientCircuitTest struct {
-	down bool
-}
-
-func (c *ClientCircuitTest) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, int64, error) {
-	if c.down {
-		return nil, int64(0), errors.New("fail")
-	}
-	return []models.Book{}, int64(0), nil
-}
-func (c *ClientCircuitTest) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (*models.Book, error) {
-	if c.down {
-		return nil, errors.New("fail")
-	}
-	return nil, nil
-}
-func (c *ClientCircuitTest) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
-	if c.down {
-		return nil, errors.New("fail")
-	}
-	return nil, nil
-}
-func (c *ClientCircuitTest) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
-	if c.down {
-		return nil, errors.New("fail")
-	}
-	return &models.Book{}, nil
-}
-func (c *ClientCircuitTest) PutBook(ctx context.Context, input *models.Book) (*models.Book, error) {
-	if c.down {
-		return nil, errors.New("fail")
-	}
-	return &models.Book{}, nil
-}
-func (c *ClientCircuitTest) GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (*models.AuthorsResponse, string, error) {
-	return nil, "", nil
-}
-func (c *ClientCircuitTest) GetAuthorsWithPut(ctx context.Context, i *models.GetAuthorsWithPutInput) (*models.AuthorsResponse, string, error) {
-	return nil, "", nil
-}
-func (c *ClientCircuitTest) HealthCheck(ctx context.Context) error {
-	if c.down {
-		return errors.New("fail")
-	}
-	return nil
-}
-
-func (c *ClientCircuitTest) LowercaseModelsTest(ctx context.Context, i *models.LowercaseModelsTestInput) error {
 	return nil
 }
 
@@ -316,8 +266,11 @@ func TestNewWithDiscovery(t *testing.T) {
 	os.Setenv("SERVICE_SWAGGER_TEST_DEFAULT_HOST", splitURL[1][2:])
 
 	c, err := client.NewFromDiscovery(wcl, &http.DefaultTransport)
+
 	assert.NoError(t, err)
 	_, err = c.GetBooks(context.Background(), &models.GetBooksInput{})
+	log.Default().Print("the error: ", err.Error())
+
 	assert.NoError(t, err)
 	assert.Equal(t, 2, controller.getCount)
 

@@ -6,8 +6,6 @@ require (
 	github.com/Clever/discovery-go v1.8.1
 	github.com/Clever/wag/logging/wagclientlogger v0.0.0-20221024182247-2bf828ef51be
 	github.com/Clever/wag/samples/gen-go-db-custom-path/models/v9 v9.0.0-00010101000000-000000000000
-	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
-	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b
 )
 
 require (
@@ -28,7 +26,6 @@ require (
 	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
-	github.com/smartystreets/goconvey v1.7.2 // indirect
 	go.mongodb.org/mongo-driver v1.7.5 // indirect
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e // indirect
 	golang.org/x/text v0.3.7 // indirect
