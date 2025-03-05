@@ -99,7 +99,7 @@ func New(basePath string, logger wcl.WagClientLogger, transport *http.RoundTripp
 
 	client := &WagClient{
 		basePath: basePath,
-		requestDoer: &base,
+		requestDoer: &retry,
 		client: &http.Client{
 			Transport: t,
 		},
