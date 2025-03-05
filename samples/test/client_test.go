@@ -4,24 +4,32 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
-	"net/http/httptrace"
 	"os"
 	"strings"
-	"sync/atomic"
 	"testing"
 	"time"
 
+	"github.com/Clever/wag/logging/wagclientlogger"
 	"github.com/Clever/wag/samples/gen-go-basic/client/v9"
 	"github.com/Clever/wag/samples/gen-go-basic/models/v9"
 	"github.com/Clever/wag/samples/v9/gen-go-basic/server"
-	kayvee "gopkg.in/Clever/kayvee-go.v6/logger"
 
 	"github.com/afex/hystrix-go/hystrix"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+type NoopLogger struct{}
+
+// Log is a no-op implementation of the Log method.
+func (n *NoopLogger) Log(level wagclientlogger.LogLevel, message string, pairs map[string]interface{}) {
+	// No operation performed
+}
+
+var wcl wagclientlogger.WagClientLogger = &NoopLogger{}
 
 type ClientContextTest struct {
 	getCount      int
@@ -69,50 +77,7 @@ func (c *ClientContextTest) HealthCheck(ctx context.Context) error {
 	return nil
 }
 
-type ClientCircuitTest struct {
-	down bool
-}
-
-func (c *ClientCircuitTest) GetBooks(ctx context.Context, input *models.GetBooksInput) ([]models.Book, int64, error) {
-	if c.down {
-		return nil, int64(0), errors.New("fail")
-	}
-	return []models.Book{}, int64(0), nil
-}
-func (c *ClientCircuitTest) GetBookByID(ctx context.Context, input *models.GetBookByIDInput) (*models.Book, error) {
-	if c.down {
-		return nil, errors.New("fail")
-	}
-	return nil, nil
-}
-func (c *ClientCircuitTest) GetBookByID2(ctx context.Context, id string) (*models.Book, error) {
-	if c.down {
-		return nil, errors.New("fail")
-	}
-	return nil, nil
-}
-func (c *ClientCircuitTest) CreateBook(ctx context.Context, input *models.Book) (*models.Book, error) {
-	if c.down {
-		return nil, errors.New("fail")
-	}
-	return &models.Book{}, nil
-}
-func (c *ClientCircuitTest) PutBook(ctx context.Context, input *models.Book) (*models.Book, error) {
-	if c.down {
-		return nil, errors.New("fail")
-	}
-	return &models.Book{}, nil
-}
-func (c *ClientCircuitTest) GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (*models.AuthorsResponse, string, error) {
-	return nil, "", nil
-}
-func (c *ClientCircuitTest) GetAuthorsWithPut(ctx context.Context, i *models.GetAuthorsWithPutInput) (*models.AuthorsResponse, string, error) {
-	return nil, "", nil
-}
-func (c *ClientCircuitTest) HealthCheck(ctx context.Context) error {
-	if c.down {
-		return errors.New("fail")
-	}
+func (c *ClientContextTest) LowercaseModelsTest(ctx context.Context, i *models.LowercaseModelsTestInput) error {
 	return nil
 }
 
@@ -141,6 +106,11 @@ func (c *ClientPutPagingTest) PutBook(ctx context.Context, input *models.Book) (
 func (c *ClientPutPagingTest) GetAuthors(ctx context.Context, i *models.GetAuthorsInput) (*models.AuthorsResponse, string, error) {
 	return nil, "", nil
 }
+
+func (c *ClientPutPagingTest) LowercaseModelsTest(ctx context.Context, i *models.LowercaseModelsTestInput) error {
+	return nil
+}
+
 func (c *ClientPutPagingTest) GetAuthorsWithPut(ctx context.Context, i *models.GetAuthorsWithPutInput) (*models.AuthorsResponse, string, error) {
 	assert.Equal(c.t, c.expectedRequestBody, i.FavoriteBooks)
 	c.timesPutCalled++
@@ -165,7 +135,7 @@ func TestPutIterator(t *testing.T) {
 	testServer := httptest.NewServer(s.Handler)
 	defer testServer.Close()
 	hystrix.Flush()
-	c := client.New(testServer.URL)
+	c := client.New(testServer.URL, wcl, &http.DefaultTransport)
 
 	requestBody := &models.Book{
 		ID:   int64(123),
@@ -203,7 +173,7 @@ func TestExponentialClientRetries(t *testing.T) {
 	s := server.New(&controller, "")
 	testServer := httptest.NewServer(s.Handler)
 	defer testServer.Close()
-	c := client.New(testServer.URL)
+	c := client.New(testServer.URL, wcl, &http.DefaultTransport)
 	c.SetRetryPolicy(client.ExponentialRetryPolicy{})
 	_, err := c.GetBooks(context.Background(), &models.GetBooksInput{})
 	require.NoError(t, err)
@@ -221,7 +191,8 @@ func TestCustomClientRetries(t *testing.T) {
 	defer testServer.Close()
 
 	// Should fail if no retries
-	c := client.New(testServer.URL)
+
+	c := client.New(testServer.URL, wcl, &http.DefaultTransport)
 	c.SetRetryPolicy(client.NoRetryPolicy{})
 	_, err := c.GetBooks(context.Background(), &models.GetBooksInput{})
 	assert.Error(t, err)
@@ -235,7 +206,7 @@ func TestCustomContextRetries(t *testing.T) {
 	defer testServer.Close()
 
 	// Should fail if no retries
-	c := client.New(testServer.URL)
+	c := client.New(testServer.URL, wcl, &http.DefaultTransport)
 	_, err := c.GetBooks(client.WithRetryPolicy(context.Background(), client.NoRetryPolicy{}), &models.GetBooksInput{})
 	assert.Error(t, err)
 	assert.Equal(t, 1, controller.getCount)
@@ -246,7 +217,7 @@ func TestNonGetRetries(t *testing.T) {
 	s := server.New(&controller, "")
 	testServer := httptest.NewServer(s.Handler)
 	defer testServer.Close()
-	c := client.New(testServer.URL)
+	c := client.New(testServer.URL, wcl, &http.DefaultTransport)
 	_, err := c.CreateBook(context.Background(), &models.Book{})
 	assert.Error(t, err)
 	assert.Equal(t, 1, controller.postCount)
@@ -257,7 +228,7 @@ func TestPutRetries(t *testing.T) {
 	s := server.New(&controller, "")
 	testServer := httptest.NewServer(s.Handler)
 	defer testServer.Close()
-	c := client.New(testServer.URL)
+	c := client.New(testServer.URL, wcl, &http.DefaultTransport)
 	returnedBook, err := c.PutBook(context.Background(), &models.Book{Name: "test"})
 	require.NoError(t, err)
 	assert.Equal(t, 2, controller.putCount)
@@ -266,14 +237,14 @@ func TestPutRetries(t *testing.T) {
 
 func TestErrorOnMissingPathParams(t *testing.T) {
 	// Should fail client side
-	c := client.New("badUrl")
+	c := client.New("badUrl", wcl, &http.DefaultTransport)
 	_, err := c.GetBookByID2(context.Background(), "")
 	require.Error(t, err)
 	assert.Equal(t, "id cannot be empty because it's a path parameter", err.Error())
 }
 
 func TestNetworkErrorRetries(t *testing.T) {
-	c := client.New("https://thisshouldnotresolve1234567890.com/")
+	c := client.New("https://thisshouldnotresolve1234567890.com/", wcl, &http.DefaultTransport)
 	_, err := c.CreateBook(context.Background(), &models.Book{})
 	assert.Error(t, err)
 }
@@ -284,7 +255,7 @@ func TestNewWithDiscovery(t *testing.T) {
 	testServer := httptest.NewServer(s.Handler)
 
 	// Should be an err if env vars aren't set
-	_, err := client.NewFromDiscovery()
+	_, err := client.NewFromDiscovery(wcl, &http.DefaultTransport)
 	assert.Error(t, err)
 
 	splitURL := strings.Split(testServer.URL, ":")
@@ -294,9 +265,12 @@ func TestNewWithDiscovery(t *testing.T) {
 	os.Setenv("SERVICE_SWAGGER_TEST_DEFAULT_PORT", splitURL[2])
 	os.Setenv("SERVICE_SWAGGER_TEST_DEFAULT_HOST", splitURL[1][2:])
 
-	c, err := client.NewFromDiscovery()
+	c, err := client.NewFromDiscovery(wcl, &http.DefaultTransport)
+
 	assert.NoError(t, err)
 	_, err = c.GetBooks(context.Background(), &models.GetBooksInput{})
+	log.Default().Print("the error: ", err.Error())
+
 	assert.NoError(t, err)
 	assert.Equal(t, 2, controller.getCount)
 
@@ -308,77 +282,11 @@ func TestNewWithDiscovery(t *testing.T) {
 	os.Setenv("SERVICE_SWAGGER_TEST_HTTP_PORT", splitURL[2])
 	os.Setenv("SERVICE_SWAGGER_TEST_HTTP_HOST", splitURL[1][2:])
 
-	c, err = client.NewFromDiscovery()
+	c, err = client.NewFromDiscovery(wcl, &http.DefaultTransport)
 	assert.NoError(t, err)
 	_, err = c.GetBooks(context.Background(), &models.GetBooksInput{})
 	assert.NoError(t, err)
 	assert.Equal(t, 3, controller.getCount)
-}
-
-func TestCircuitBreaker(t *testing.T) {
-	controller := ClientCircuitTest{}
-	s := server.New(&controller, "")
-	testServer := httptest.NewServer(s.Handler)
-	defer testServer.Close()
-	hystrix.Flush()
-	c := client.New(testServer.URL)
-	c.SetCircuitBreakerDebug(false)
-	c.SetCircuitBreakerSettings(client.CircuitBreakerSettings{
-		MaxConcurrentRequests:  client.DefaultCircuitBreakerSettings.MaxConcurrentRequests,
-		RequestVolumeThreshold: 1,
-		SleepWindow:            2000,
-		ErrorPercentThreshold:  client.DefaultCircuitBreakerSettings.ErrorPercentThreshold,
-	})
-
-	// the circuit should open after one or two failed attempts, since the volume
-	// threshold (set above) is 1.
-	controller.down = true
-	var connAttempts int64
-	ctx := httptrace.WithClientTrace(context.Background(),
-		&httptrace.ClientTrace{
-			GetConn: func(hostPort string) {
-				atomic.AddInt64(&connAttempts, 1)
-			},
-		})
-
-	_, err := c.CreateBook(ctx, &models.Book{})
-	assert.Error(t, err)
-	_, err = c.CreateBook(ctx, &models.Book{})
-	assert.Error(t, err)
-	_, err = c.CreateBook(ctx, &models.Book{})
-	assert.Error(t, err)
-	assert.Equal(t, true, connAttempts <= int64(2), "circuit should have opened, saw too many connection attempts: %d", connAttempts)
-
-	// we should see an attempt go through after two seconds (this is the
-	// sleep window configured above).
-	circuitOpened := time.Now()
-	for range time.Tick(100 * time.Millisecond) {
-		_, err := c.CreateBook(ctx, &models.Book{})
-		assert.Error(t, err)
-		if connAttempts == 2 {
-			assert.WithinDuration(t, time.Now(), circuitOpened,
-				2*time.Second+500*time.Millisecond)
-			break
-		}
-		if time.Now().Sub(circuitOpened) > 10*time.Second {
-			t.Fatal("circuit should let through a 2nd attempt by now")
-		}
-	}
-
-	// bring the server back up, and we should see successes after another
-	// two seconds, for a total of 4 seconds.
-	controller.down = false
-	for range time.Tick(100 * time.Millisecond) {
-		_, err := c.CreateBook(ctx, &models.Book{})
-		if err == nil {
-			assert.WithinDuration(t, time.Now(), circuitOpened,
-				4*time.Second+500*time.Millisecond)
-			break
-		}
-		if time.Now().Sub(circuitOpened) > 10*time.Second {
-			t.Fatal("circuit should have closed by now")
-		}
-	}
 }
 
 func TestIterator(t *testing.T) {
@@ -386,7 +294,7 @@ func TestIterator(t *testing.T) {
 	// through and we need to loop through more than one item on a single page
 	s, controller := setupServer()
 	controller.pageSize = 2
-	c := client.New(s.URL)
+	c := client.New(s.URL, wcl, &http.DefaultTransport)
 
 	book1ID := int64(1)
 	book1Name := "First"
@@ -448,7 +356,7 @@ func TestIteratorWithResourcePath(t *testing.T) {
 			Name: "Jenny",
 		},
 	}
-	c := client.New(s.URL)
+	c := client.New(s.URL, wcl, &http.DefaultTransport)
 
 	iter, err := c.NewGetAuthorsIter(context.Background(), &models.GetAuthorsInput{})
 	require.NoError(t, err)
@@ -505,6 +413,10 @@ func (c *IterFailTest) HealthCheck(ctx context.Context) error {
 	return nil
 }
 
+func (c *IterFailTest) LowercaseModelsTest(ctx context.Context, i *models.LowercaseModelsTestInput) error {
+	return nil
+}
+
 func TestIteratorFail(t *testing.T) {
 	controller := IterFailTest{sampleController: &ControllerImpl{
 		books:    make(map[int64]*models.Book),
@@ -513,7 +425,7 @@ func TestIteratorFail(t *testing.T) {
 	s := server.New(&controller, "")
 	testServer := httptest.NewServer(s.Handler)
 	defer testServer.Close()
-	c := client.New(testServer.URL)
+	c := client.New(testServer.URL, wcl, &http.DefaultTransport)
 
 	book1ID := int64(1)
 	book1Name := "Test"
@@ -580,6 +492,10 @@ func (c *IterHeadersTest) HealthCheck(ctx context.Context) error {
 	return nil
 }
 
+func (c *IterHeadersTest) LowercaseModelsTest(ctx context.Context, i *models.LowercaseModelsTestInput) error {
+	return nil
+}
+
 func TestIteratorHeaders(t *testing.T) {
 	controller := IterHeadersTest{
 		t:                t,
@@ -588,10 +504,10 @@ func TestIteratorHeaders(t *testing.T) {
 	s := server.New(&controller, "")
 	testServer := httptest.NewServer(s.Handler)
 	defer testServer.Close()
-	c := client.New(testServer.URL)
+	c := client.New(testServer.URL, wcl, &http.DefaultTransport)
 
 	t.Log("Ensure client.SetLogger works")
-	c.SetLogger(kayvee.New("test-custom-logger"))
+	c.SetLogger(wcl)
 
 	book1ID := int64(1)
 	book1Name := "Test"
@@ -628,7 +544,7 @@ func TestVersionHeader(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	}))
 	defer testServer.Close()
-	c := client.New(testServer.URL)
+	c := client.New(testServer.URL, wcl, &http.DefaultTransport)
 	c.HealthCheck(context.Background())
 }
 
@@ -638,7 +554,7 @@ func TestUnknownResponseBody(t *testing.T) {
 		w.Write([]byte(`{"enhance": "your calm"}`))
 	}))
 	defer testServer.Close()
-	c := client.New(testServer.URL)
+	c := client.New(testServer.URL, wcl, &http.DefaultTransport)
 	_, err := c.GetBookByID(context.Background(), &models.GetBookByIDInput{BookID: 420})
 	assert.Error(t, err)
 	assert.IsType(t, models.UnknownResponse{}, err)

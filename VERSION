@@ -1,4 +1,7 @@
-v9.5.3
+v9.6.0
+remove hystrix-go dependency from wag go clients, fix some tests.
+
+Previously:
 
 v9.5.3 wag-js client can now accept an optional asynclocalstore at initialization whose context can
 then be passed on as baggage. 

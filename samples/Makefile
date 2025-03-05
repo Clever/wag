@@ -5,46 +5,54 @@ TEST_DB_PKG := "./gen-go-db/server/db/dynamodb"
 
 .PHONY: generate test $(TEST_PKGS) $(TEST_DB_PKG) install_deps
 
+# Function to generate code, run jsdoc2md, and tidy go modules
+define generate_code
+    ../bin/wag -with-tests -file $(1) -output-path $(2) -js-path $(3) $(4)
+    cd $(3) && jsdoc2md index.js types.js > ./README.md
+    cd $(2)/client && go mod tidy
+    cd $(2)/models && go mod tidy
+    go generate -mod=mod $(2)...
+endef
+
+# Function to generate code without client
+define generate_code_no_client
+    ../bin/wag -with-tests -file $(1) -output-path $(2) -js-path $(3) $(4)
+    cd $(3) && jsdoc2md index.js types.js > ./README.md
+    cd $(2)/models && go mod tidy
+    go generate -mod=mod $(2)...
+endef
+
+# Function to generate code without jsdoc2md
+define generate_code_no_js
+    ../bin/wag -with-tests -file $(1) -output-path $(2) $(3)
+    cd $(2)/client && go mod tidy
+    cd $(2)/models && go mod tidy
+    go generate -mod=mod $(2)...
+endef
+
 # These go:generate don't actually care about dependencies, so we use -mod=mod to override -mod=vendor
 # If not for that, it's difficult to bootstrap
 generate:
-	@echo  $(TEST_PKGS) $(TEST_DB_PKG)
-	
-	../bin/wag -with-tests -file ./swagger.yml -output-path ./gen-go-basic -js-path ./gen-js
-	cd ./gen-js && jsdoc2md index.js types.js > ./README.md
-	go generate -mod=mod ./gen-go-basic...
+    echo  $(TEST_PKGS) $(TEST_DB_PKG)
+    $(call generate_code,./swagger.yml,./gen-go-basic,./gen-js)
+    $(call generate_code,./deprecated.yml,./gen-go-deprecated,./gen-js-deprecated)
+    $(call generate_code,./errors.yml,./gen-go-errors,./gen-js-errors)
+    $(call generate_code,./nils.yml,./gen-go-nils,./gen-js-nils)
+    $(call generate_code,./strings.yml,./gen-go-strings,./gen-js-strings)
+    $(call generate_code,./blog.yml,./gen-go-blog,./gen-js-blog)
+    $(call generate_code_no_js,./db.yml,./gen-go-db,./gen-js-db)
+    $(call generate_code_no_client,./swagger.yml,./gen-go-client-only,./gen-js-client-only,--client-only)
+    $(call generate_code_no_js,./db.yml,./gen-go-db-only,,--dynamo-only)
+    $(call generate_code,./db.yml,./gen-go-db-custom-path,./gen-js-db-custom-path,-dynamo-path db)
 
-	../bin/wag -with-tests -file ./deprecated.yml -output-path ./gen-go-deprecated -js-path ./gen-js-deprecated
-	cd ./gen-js-deprecated && jsdoc2md index.js types.js > ./README.md
-	go generate -mod=mod ./gen-go-deprecated...
-	../bin/wag -with-tests -file ./errors.yml -output-path ./gen-go-errors -js-path ./gen-js-errors
-	cd ./gen-js-errors && jsdoc2md index.js types.js > ./README.md
-	go generate -mod=mod ./gen-go-errors...
-	../bin/wag -with-tests -file ./nils.yml -output-path ./gen-go-nils -js-path ./gen-js-nils
-	cd ./gen-js-nils && jsdoc2md index.js types.js > ./README.md
-	go generate -mod=mod ./gen-go-nils...
-	../bin/wag -with-tests -file ./strings.yml -output-path ./gen-go-strings -js-path ./gen-js-strings
-	cd ./gen-js-strings && jsdoc2md index.js types.js > ./README.md
-	go generate -mod=mod ./gen-go-strings...
-	../bin/wag -with-tests -file ./blog.yml -output-path ./gen-go-blog -js-path ./gen-js-blog
-	cd ./gen-js-blog && jsdoc2md index.js types.js > ./README.md
-	go generate -mod=mod ./gen-go-nils...
-	../bin/wag -with-tests -file ./db.yml -output-path ./gen-go-db -js-path ./gen-js-db
-	cd ./gen-js-db && jsdoc2md index.js types.js > ./README.md
-	go generate -mod=mod ./gen-go-db...
-	../bin/wag -with-tests -file ./swagger.yml -output-path ./gen-go-client-only -js-path ./gen-js-client-only --client-only
-	cd ./gen-js-client-only && jsdoc2md index.js types.js > ./README.md
-	go generate -mod=mod ./gen-go-client-only...
-	../bin/wag -with-tests -file ./db.yml -output-path ./gen-go-db-only -dynamo-only
-	go generate -mod=mod ./gen-go-db-only...
-	../bin/wag -with-tests -file ./db.yml -output-path ./gen-go-db-custom-path -js-path ./gen-js-db-custom-path -dynamo-path db
-	cd ./gen-js-db-custom-path && jsdoc2md index.js types.js > ./README.md
-	go generate -mod=mod ./gen-go-db-custom-path...
+    go install -mod=mod golang.org/x/tools/cmd/goimports@v0.24.0
+    goimports -w .
 
- $(TEST_PKGS) $(TEST_DB_PKG): golang-test-all-strict-deps
-	$(call echo golang-test-all,$@)
+$(TEST_PKGS) $(TEST_DB_PKG): golang-test-all-strict-deps
+    $(call golang-test-all,$@)
 
 install_deps:
-	go mod vendor
+    go mod tidy
+    go mod vendor
 
 test: install_deps $(TEST_PKGS) $(TEST_DB_PKG)

@@ -119,6 +119,10 @@ func (c *ControllerImpl) HealthCheck(ctx context.Context) error {
 	return nil
 }
 
+func (c *ControllerImpl) LowercaseModelsTest(ctx context.Context, i *models.LowercaseModelsTestInput) error {
+	return nil
+}
+
 func setupServer() (*httptest.Server, *ControllerImpl) {
 	controller := ControllerImpl{books: make(map[int64]*models.Book), pageSize: 100}
 

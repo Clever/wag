@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -25,7 +26,7 @@ func (e *ErrorsController) GetBook(ctx context.Context, i *models.GetBookInput) 
 func TestGlobal404(t *testing.T) {
 	s := server.New(&ErrorsController{}, "")
 	testServer := httptest.NewServer(s.Handler)
-	c := client.New(testServer.URL)
+	c := client.New(testServer.URL, wcl, &http.DefaultTransport)
 
 	err := c.GetBook(context.Background(), &models.GetBookInput{ID: 404})
 	require.Error(t, err)
@@ -35,7 +36,7 @@ func TestGlobal404(t *testing.T) {
 func TestOverridenBadRequest(t *testing.T) {
 	s := server.New(&ErrorsController{}, "")
 	testServer := httptest.NewServer(s.Handler)
-	c := client.New(testServer.URL)
+	c := client.New(testServer.URL, wcl, &http.DefaultTransport)
 
 	err := c.GetBook(context.Background(), &models.GetBookInput{ID: 50000})
 	require.Error(t, err)

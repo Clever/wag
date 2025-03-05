@@ -894,7 +894,6 @@ class SwaggerTest {
       const storeContext = this.asynclocalstore?.get("context") || new Map();
 
       const combinedContext = new Map([...storeContext, ...optionsBaggage]);
-      console.log("combinedContext:", combinedContext)
 
       const timeout = options.timeout || this.timeout;
 
@@ -1492,7 +1491,6 @@ class SwaggerTest {
       const storeContext = this.asynclocalstore?.get("context") || new Map();
 
       const combinedContext = new Map([...storeContext, ...optionsBaggage]);
-      console.log("combinedContext:", combinedContext)
 
       const timeout = options.timeout || this.timeout;
 

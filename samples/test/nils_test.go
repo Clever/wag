@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -29,7 +30,7 @@ func (c *NilsController) NilCheck(ctx context.Context, i *models.NilCheckInput) 
 func TestNils(t *testing.T) {
 	s := server.New(&NilsController{t: t}, "")
 	testServer := httptest.NewServer(s.Handler)
-	c := client.New(testServer.URL)
+	c := client.New(testServer.URL, wcl, &http.DefaultTransport)
 
 	require.NoError(t, c.NilCheck(context.Background(), &models.NilCheckInput{ID: "a"}))
 }
@@ -53,7 +54,7 @@ func (c *EmptyController) NilCheck(ctx context.Context, i *models.NilCheckInput)
 func TestEmptyStringsAndFields(t *testing.T) {
 	s := server.New(&EmptyController{t: t}, "")
 	testServer := httptest.NewServer(s.Handler)
-	c := client.New(testServer.URL)
+	c := client.New(testServer.URL, wcl, &http.DefaultTransport)
 
 	require.NoError(t, c.NilCheck(context.Background(), &models.NilCheckInput{
 		ID:     "a",
