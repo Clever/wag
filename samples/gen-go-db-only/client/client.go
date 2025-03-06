@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Clever/wag/samples/gen-go-strings/models/v9"
+	"github.com/Clever/wag/samples/gen-go-db-only/models/v9"
 
 	discovery "github.com/Clever/discovery-go"
 	wcl "github.com/Clever/wag/logging/wagclientlogger"
@@ -29,7 +29,7 @@ const Version = "9.0.0"
 // VersionHeader is sent with every request.
 const VersionHeader = "X-Client-Version"
 
-// WagClient is used to make requests to the nil-test service.
+// WagClient is used to make requests to the swagger-test service.
 type WagClient struct {
 	basePath    string
 	requestDoer doer
@@ -73,14 +73,14 @@ func New(basePath string, logger wcl.WagClientLogger, transport *http.RoundTripp
 }
 
 // NewFromDiscovery creates a client from the discovery environment variables. This method requires
-// the three env vars: SERVICE_NIL_TEST_HTTP_(HOST/PORT/PROTO) to be set. Otherwise it returns an error.
+// the three env vars: SERVICE_SWAGGER_TEST_HTTP_(HOST/PORT/PROTO) to be set. Otherwise it returns an error.
 // The logger provided should be specifically created for this wag client. If tracing is required,
 // provide an instrumented transport using the wag clientconfig module. If no tracing is required, pass nil to use
 // the default transport.
 func NewFromDiscovery(logger wcl.WagClientLogger, transport *http.RoundTripper) (*WagClient, error) {
-	url, err := discovery.URL("nil-test", "default")
+	url, err := discovery.URL("swagger-test", "default")
 	if err != nil {
-		url, err = discovery.URL("nil-test", "http") // Added fallback to maintain reverse compatibility
+		url, err = discovery.URL("swagger-test", "http") // Added fallback to maintain reverse compatibility
 		if err != nil {
 			return nil, err
 		}
@@ -104,47 +104,30 @@ func (c *WagClient) SetTimeout(timeout time.Duration) {
 	c.defaultTimeout = timeout
 }
 
-// GetDistricts makes a POST request to /check
+// HealthCheck makes a GET request to /health/check
 //
 // 200: nil
 // 400: *models.BadRequest
 // 500: *models.InternalError
 // default: client side HTTP errors, for example: context.DeadlineExceeded.
-func (c *WagClient) GetDistricts(ctx context.Context, i *models.GetDistrictsInput) error {
+func (c *WagClient) HealthCheck(ctx context.Context) error {
 	headers := make(map[string]string)
 
 	var body []byte
-	path, err := i.Path()
+	path := c.basePath + "/v1/health/check"
+
+	req, err := http.NewRequestWithContext(ctx, "GET", path, bytes.NewBuffer(body))
 
 	if err != nil {
 		return err
 	}
 
-	path = c.basePath + path
-
-	if i.Where != nil {
-
-		var err error
-		body, err = json.Marshal(i.Where)
-
-		if err != nil {
-			return err
-		}
-
-	}
-
-	req, err := http.NewRequestWithContext(ctx, "POST", path, bytes.NewBuffer(body))
-
-	if err != nil {
-		return err
-	}
-
-	return c.doGetDistrictsRequest(ctx, req, headers)
+	return c.doHealthCheckRequest(ctx, req, headers)
 }
 
-func (c *WagClient) doGetDistrictsRequest(ctx context.Context, req *http.Request, headers map[string]string) error {
+func (c *WagClient) doHealthCheckRequest(ctx context.Context, req *http.Request, headers map[string]string) error {
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Canonical-Resource", "getDistricts")
+	req.Header.Set("Canonical-Resource", "healthCheck")
 	req.Header.Set(VersionHeader, Version)
 
 	for field, value := range headers {
@@ -152,7 +135,7 @@ func (c *WagClient) doGetDistrictsRequest(ctx context.Context, req *http.Request
 	}
 
 	// Add the opname for doers like tracing
-	ctx = context.WithValue(ctx, opNameCtx{}, "getDistricts")
+	ctx = context.WithValue(ctx, opNameCtx{}, "healthCheck")
 	req = req.WithContext(ctx)
 	// Don't add the timeout in a "doer" because we don't want to call "defer.cancel()"
 	// until we've finished all the processing of the request object. Otherwise we'll cancel
@@ -171,7 +154,7 @@ func (c *WagClient) doGetDistrictsRequest(ctx context.Context, req *http.Request
 
 	// log all client failures and non-successful HT
 	logData := map[string]interface{}{
-		"backend":     "nil-test",
+		"backend":     "swagger-test",
 		"method":      req.Method,
 		"uri":         req.URL,
 		"status_code": retCode,

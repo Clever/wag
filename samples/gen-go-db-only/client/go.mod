@@ -1,5 +1,5 @@
 
-module github.com/Clever/wag/samples/gen-go-client-only/client/v9
+module github.com/Clever/wag/samples/gen-go-db-only/client/v9
 
 go 1.21
 
@@ -9,4 +9,4 @@ require (
 	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b
 )
 //Replace directives will work locally but mess up imports.
-replace github.com/Clever/wag/samples/gen-go-client-only/models/v9 => ../models 
+replace github.com/Clever/wag/samples/gen-go-db-only/models/v9 => ../models 
