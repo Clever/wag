@@ -179,7 +179,7 @@ func GenerateDB(packageName, basePath, goOutputPath string, withTests bool, s *s
 		}
 
 		g := swagger.Generator{BasePath: basePath}
-		g.Printf(tmpBuf.String())
+		g.Print(tmpBuf.String())
 		return g.WriteFile(outputFilename)
 	}
 

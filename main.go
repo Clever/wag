@@ -72,7 +72,7 @@ func main() {
 	}
 
 	if err := conf.parse(); err != nil {
-		log.Fatalf(err.Error())
+		log.Fatal(err.Error())
 	}
 
 	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)

@@ -147,12 +147,11 @@ func (c *WagClient) SetTimeout(timeout time.Duration){
 {{end}}
 
 func shortHash(s string) string {
-	return fmt.Sprintf("%%x", md5.Sum([]byte(s)))[0:6]
+	return fmt.Sprintf("%x", md5.Sum([]byte(s)))[0:6]
 }
 `
 
 func generateClient(packageName, basePath, outputPath string, s spec.Swagger) error {
-
 	outputPath = strings.TrimPrefix(outputPath, ".")
 	moduleName, versionSuffix := utils.ExtractModuleNameAndVersionSuffix(packageName, outputPath)
 	codeTemplate := clientCodeTemplate{
@@ -187,22 +186,19 @@ func generateClient(packageName, basePath, outputPath string, s spec.Swagger) er
 	}
 
 	g := swagger.Generator{BasePath: basePath}
-	g.Printf(clientCode)
+	g.Print(clientCode)
 	err = g.WriteFile("client/client.go")
 	if err != nil {
 		return err
 	}
 
 	return CreateModFile("client/go.mod", basePath, codeTemplate)
-
 }
 
 // CreateModFile creates a go.mod file for the client module.
 func CreateModFile(path string, basePath string, codeTemplate clientCodeTemplate) error {
-
 	absPath := basePath + "/" + path
 	f, err := os.Create(absPath)
-
 	if err != nil {
 		return err
 	}
@@ -211,7 +207,7 @@ func CreateModFile(path string, basePath string, codeTemplate clientCodeTemplate
 	modFileString := `
 module ` + codeTemplate.ModuleName + codeTemplate.OutputPath + `/client` + codeTemplate.VersionSuffix + `
 
-go 1.21
+go 1.24
 
 require (
 	github.com/Clever/discovery-go v1.8.1
@@ -222,7 +218,6 @@ require (
 replace ` + codeTemplate.ModuleName + codeTemplate.OutputPath + `/models` + codeTemplate.VersionSuffix + ` => ../models `
 
 	_, err = f.WriteString(modFileString)
-
 	if err != nil {
 		return err
 	}
@@ -249,10 +244,10 @@ func IsBinaryParam(param spec.Parameter, definitions map[string]spec.Schema) boo
 func generateInterface(packageName, basePath, outputPath string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
 	outputPath = strings.TrimPrefix(outputPath, ".")
 	g := swagger.Generator{BasePath: basePath}
-	g.Printf("package client\n\n")
+	g.Print("package client\n\n")
 	moduleName, versionSuffix := utils.ExtractModuleNameAndVersionSuffix(packageName, outputPath)
-	g.Printf(swagger.ImportStatements([]string{"context", moduleName + outputPath + "/models" + versionSuffix}))
-	g.Printf("//go:generate mockgen -source=$GOFILE -destination=mock_client.go -package client --build_flags=--mod=mod -imports=models=" + moduleName + outputPath + "/models" + versionSuffix + "\n\n")
+	g.Print(swagger.ImportStatements([]string{"context", moduleName + outputPath + "/models" + versionSuffix}))
+	g.Print("//go:generate mockgen -source=$GOFILE -destination=mock_client.go -package client --build_flags=--mod=mod -imports=models=" + moduleName + outputPath + "/models" + versionSuffix + "\n\n")
 
 	if err := generateClientInterface(s, &g, serviceName, paths); err != nil {
 		return err
@@ -266,7 +261,7 @@ func generateInterface(packageName, basePath, outputPath string, s *spec.Swagger
 
 func generateClientInterface(s *spec.Swagger, g *swagger.Generator, serviceName string, paths *spec.Paths) error {
 	g.Printf("// Client defines the methods available to clients of the %s service.\n", serviceName)
-	g.Printf("type Client interface {\n\n")
+	g.Print("type Client interface {\n\n")
 
 	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
 		path := paths.Paths[pathKey]
@@ -313,8 +308,8 @@ func generateIteratorTypes(s *spec.Swagger, g *swagger.Generator, paths *spec.Pa
 				g.Printf("// %sIter defines the methods available on %s iterators.\n", capOpID, capOpID)
 				g.Printf("type %sIter interface {\n", capOpID)
 				g.Printf("\tNext(*%s) bool\n", resourceType)
-				g.Printf("\tErr() error\n")
-				g.Printf("}\n\n")
+				g.Print("\tErr() error\n")
+				g.Print("}\n\n")
 			}
 		}
 	}
@@ -337,7 +332,7 @@ func operationCode(s *spec.Swagger, op *spec.Operation, basePath, method, method
 		}
 		buf.WriteString(iter)
 	}
-	buf.WriteString(fmt.Sprintf(methodDoerCode(s, op)))
+	buf.WriteString(fmt.Sprint(methodDoerCode(s, op)))
 	return buf.String(), nil
 }
 
@@ -352,14 +347,14 @@ func methodCode(s *spec.Swagger, op *spec.Operation, basePath, method, methodPat
 	buf.WriteString(interfaceComment + "\n")
 	buf.WriteString(fmt.Sprintf("func (c *WagClient) %s {\n", swagger.ClientInterface(s, op)))
 
-	buf.WriteString(fmt.Sprintf("\theaders := make(map[string]string)\n\n"))
+	buf.WriteString("\theaders := make(map[string]string)\n\n")
 	if !binaryBody {
-		buf.WriteString(fmt.Sprintf("\tvar body []byte\n"))
+		buf.WriteString("\tvar body []byte\n")
 	}
 
-	buf.WriteString(fmt.Sprintf(buildPathCode(s, op, basePath, methodPath)))
-	buf.WriteString(fmt.Sprintf(buildHeadersCode(s, op)))
-	buf.WriteString(fmt.Sprintf(buildRequestCode(s, op, method, binaryBody)))
+	buf.WriteString(fmt.Sprint(buildPathCode(s, op, basePath, methodPath)))
+	buf.WriteString(fmt.Sprint(buildHeadersCode(s, op)))
+	buf.WriteString(fmt.Sprint(buildRequestCode(s, op, method, binaryBody)))
 
 	if _, hasPaging := swagger.PagingParam(op); !hasPaging {
 		buf.WriteString(fmt.Sprintf(`
@@ -580,7 +575,8 @@ var bodyParamStr = `
 
 func errorMessage(s *spec.Swagger, op *spec.Operation) string {
 	str, err := templates.WriteTemplate(errMsgTemplStr, errMsgTmpl{
-		NoSuccessType: swagger.SuccessType(s, op) == nil})
+		NoSuccessType: swagger.SuccessType(s, op) == nil,
+	})
 	if err != nil {
 		panic("internal error generating client")
 	}

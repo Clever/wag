@@ -15,7 +15,6 @@ import (
 
 // Generate server package for a swagger spec.
 func Generate(packageName, basePath, outputPath string, s spec.Swagger) error {
-
 	if err := generateRouter(packageName, basePath, outputPath, s, s.Paths); err != nil {
 		return err
 	}
@@ -42,7 +41,6 @@ type routerTemplate struct {
 }
 
 func generateRouter(packageName, basePath, outputPath string, s spec.Swagger, paths *spec.Paths) error {
-
 	var template routerTemplate
 	template.Title = s.Info.Title
 	for _, path := range swagger.SortedPathItemKeys(paths.Paths) {
@@ -83,7 +81,7 @@ func generateRouter(packageName, basePath, outputPath string, s spec.Swagger, pa
 		return err
 	}
 	g := swagger.Generator{BasePath: basePath}
-	g.Printf(routerCode)
+	g.Print(routerCode)
 	return g.WriteFile("server/router.go")
 }
 
@@ -151,7 +149,7 @@ func generateInterface(packageName, basePath, outputPath string, s *spec.Swagger
 		return err
 	}
 	g := swagger.Generator{BasePath: basePath}
-	g.Printf(interfaceCode)
+	g.Print(interfaceCode)
 	return g.WriteFile("server/interface.go")
 }
 
@@ -199,7 +197,8 @@ func generateHandlers(packageName, basePath, outputPath string, s *spec.Swagger,
 	outputPath = strings.TrimPrefix(outputPath, ".")
 	moduleName, versionSuffix := utils.ExtractModuleNameAndVersionSuffix(packageName, outputPath)
 	tmpl := handlerFileTemplate{
-		ImportStatements: swagger.ImportStatements([]string{"context", "github.com/gorilla/mux",
+		ImportStatements: swagger.ImportStatements([]string{
+			"context", "github.com/gorilla/mux",
 			"github.com/Clever/kayvee-go/v7/logger",
 			"net/http", "strconv", "encoding/json", "strconv", "fmt", moduleName + outputPath + "/models" + versionSuffix,
 			"github.com/go-openapi/strfmt", "github.com/go-openapi/swag", "io/ioutil", "bytes",
@@ -227,7 +226,7 @@ func generateHandlers(packageName, basePath, outputPath string, s *spec.Swagger,
 		return err
 	}
 	g := swagger.Generator{BasePath: basePath}
-	g.Printf(handlerCode)
+	g.Print(handlerCode)
 	return g.WriteFile("server/handlers.go")
 }
 
@@ -386,7 +385,7 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 		if btErr, ok := err.(*errors.Error); ok {
 			logger.FromContext(ctx).AddContext("stacktrace", string(btErr.Stack()))
 		} else if xerr, ok := err.(xerrors.Formatter); ok {
-			logger.FromContext(ctx).AddContext("frames", fmt.Sprintf("%%+v", xerr))
+			logger.FromContext(ctx).AddContext("frames", fmt.Sprintf("%+v", xerr))
 		}
 		statusCode := statusCodeFor{{.Op}}(err)
 		if statusCode == -1 {

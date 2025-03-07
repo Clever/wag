@@ -43,7 +43,7 @@ func TestDynamoDBStore(t *testing.T) {
 	stdout, _ := cmd.StdoutPipe()
 	stderr, _ := cmd.StderrPipe()
 	if err := cmd.Start(); err != nil {
-		t.Fatalf("cmd.Start: %%v", err)
+		t.Fatalf("cmd.Start: %v", err)
 	}
 
 	// relay stdout and stderr of the ddblocal process, and
@@ -52,13 +52,13 @@ func TestDynamoDBStore(t *testing.T) {
 	errLines := bufio.NewScanner(stderr)
 	go func() {
 		for outLines.Scan() {
-			t.Logf("ddblocal stdout: %%s", outLines.Text())
+			t.Logf("ddblocal stdout: %s", outLines.Text())
 		}
 	}()
 	go func() {
 		for errLines.Scan() {
 			txt := errLines.Text()
-			t.Logf("ddblocal stderr: %%s", txt)
+			t.Logf("ddblocal stderr: %s", txt)
 			if txt == "java.net.BindException: Address already in use" {
 				t.Errorf(`zombie ddb local process running. Kill it and try again: pgrep -f "java -jar /tmp/DynamoDBLocal.jar" | xargs kill`)
 				return
@@ -69,7 +69,7 @@ func TestDynamoDBStore(t *testing.T) {
 	// the ddblocal command should not exit with an error before the test is finished
 	go func() {
 		if err := cmd.Wait(); err != nil && testCtx.Err() == nil {
-			t.Errorf("cmd.Wait: %%s", err)
+			t.Errorf("cmd.Wait: %s", err)
 			return
 		}
 	}()
@@ -82,7 +82,7 @@ func TestDynamoDBStore(t *testing.T) {
 			connected = true
 			break
 		} else {
-			t.Logf("could not connect to ddb local, will retry: %%s", err)
+			t.Logf("could not connect to ddb local, will retry: %s", err)
 		}
 	}
 	if connected == false {
