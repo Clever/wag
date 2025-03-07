@@ -20,6 +20,9 @@ build: go-generate
 
 test: build generate $(PKGS) js-tests
 	$(MAKE) -C samples test
+	echo "Currently DB tests are disabled because they are failing and aren't able to prioritize" \
+	"invesigating and fixing them. Remove t.Skip() from server/gendb/dynamodb_test.go.tmpl to re-enable" \
+	"https://clever.atlassian.net/browse/INFRANG-6880"
 
 js-tests:
 	cd samples/gen-js && rm -rf node_modules && npm install
