@@ -11,7 +11,7 @@ PKGS := $(shell go list ./... | grep -v /hardcoded | grep -v /tools | grep -v /g
 VERSION := $(shell head -n 1 VERSION)
 EXECUTABLE := wag
 
-$(eval $(call golang-version-check,1.21))
+$(eval $(call golang-version-check,1.24))
 
 .PHONY: test build release js-tests jsdoc2md go-generate generate $(PKGS) install_deps
 
@@ -34,7 +34,7 @@ go-generate:
 	go generate ./server/gendb/
 
 generate: build jsdoc2md
-	 $(MAKE) -C samples generate
+	$(MAKE) -C samples generate
 
 $(PKGS): golang-test-all-strict-deps
 	$(call golang-test-all-strict,$@)

@@ -20,7 +20,6 @@ import (
 
 // Generate writes the files to the client directories
 func Generate(packageName, basePath, outputPath string, s spec.Swagger) error {
-
 	tmpFile, err := swagger.WriteToFile(&s)
 	if err != nil {
 		return err
@@ -65,7 +64,6 @@ func CreateModFile(path string, basePath, packageName, outputPath string) error 
 
 	absPath := basePath + "/" + path
 	f, err := os.Create(absPath)
-
 	if err != nil {
 		return err
 	}
@@ -75,7 +73,7 @@ func CreateModFile(path string, basePath, packageName, outputPath string) error 
 module ` + moduleName + outputPath + `/models` + versionSuffix + `
 
 
-go 1.21
+go 1.24
 
 require (
 	github.com/go-openapi/errors v0.20.2
@@ -89,15 +87,14 @@ require (
 
 	`
 	_, err = f.WriteString(modFileString)
-
 	if err != nil {
 		return err
 	}
 
 	return nil
 }
-func generateInputs(basePath string, s spec.Swagger) error {
 
+func generateInputs(basePath string, s spec.Swagger) error {
 	g := swagger.Generator{BasePath: basePath}
 
 	g.Printf(`
@@ -217,10 +214,10 @@ func printInputValidation(g *swagger.Generator, op *spec.Operation, binaryBody b
 		if err != nil {
 			return err
 		}
-		g.Printf(str)
+		g.Print(str)
 	}
-	g.Printf("\treturn nil\n")
-	g.Printf("}\n\n")
+	g.Print("\treturn nil\n")
+	g.Print("}\n\n")
 
 	return nil
 }
@@ -296,18 +293,18 @@ func printInputSerializer(g *swagger.Generator, op *spec.Operation, basePath, me
 			if err != nil {
 				panic(fmt.Errorf("unexpected error: %s", err))
 			}
-			g.Printf(str)
+			g.Print(str)
 		} else if param.In == "query" {
 			str, err := templates.WriteTemplate(queryParamStr, t)
 			if err != nil {
 				panic(fmt.Errorf("unexpected error: %s", err))
 			}
-			g.Printf(str)
+			g.Print(str)
 		}
 	}
 
-	g.Printf("\n\treturn path + \"?\" + urlVals.Encode(), nil\n")
-	g.Printf("}\n\n")
+	g.Print("\n\treturn path + \"?\" + urlVals.Encode(), nil\n")
+	g.Print("}\n\n")
 
 	return nil
 }
@@ -359,7 +356,7 @@ func generateOutputs(basePath string, s spec.Swagger) error {
 	if err != nil {
 		return err
 	}
-	g.Printf(errorMethodCode)
+	g.Print(errorMethodCode)
 	return g.WriteFile("models/outputs.go")
 }
 
@@ -404,11 +401,10 @@ func (o %s) Error() string {
 	// default unknown response type is also an error type
 	buf.WriteString(`
 	func (u UnknownResponse) Error() string {
-		return fmt.Sprintf("unknown response with status: %%d body: %%s", u.StatusCode, u.Body)
+		return fmt.Sprintf("unknown response with status: %d body: %s", u.StatusCode, u.Body)
 	}
 	
 `)
 
 	return buf.String(), nil
-
 }

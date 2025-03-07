@@ -35,7 +35,7 @@ func (s *Server) Serve() error {
 
 	go func() {
 		// This should never return. Listen on the pprof port
-		log.Printf("PProf server crashed: %%s", http.ListenAndServe("localhost:6060", nil))
+		log.Printf("PProf server crashed: %s", http.ListenAndServe("localhost:6060", nil))
 	}()
 
 	dir, err := osext.ExecutableFolder()

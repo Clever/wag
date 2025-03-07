@@ -123,7 +123,7 @@ func (t {{ $modelName }}Table) create(ctx context.Context) error {
     },
     TableName: aws.String(t.TableName),
   }); err != nil {
-    return fmt.Errorf("failed to create table %%s: %%w", t.TableName, err)
+    return fmt.Errorf("failed to create table %s: %w", t.TableName, err)
   }
   return nil
 }
@@ -165,7 +165,7 @@ func (t {{ $modelName }}Table) save{{ $modelName }}(ctx context.Context, m model
 						{{- end }}
 					}
 				case dynamodb.ErrCodeResourceNotFoundException:
-					return fmt.Errorf("table or index not found: %%s", t.TableName)
+					return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return err
@@ -177,7 +177,7 @@ func (t {{ $modelName }}Table) save{{ $modelName }}(ctx context.Context, m model
 {{- if $xdbConfig.AllowBatchWrites }}
 func (t {{ $modelName }}Table) saveArrayOf{{ $modelName }}(ctx context.Context, ms []models.{{ $modelName }}) error {
 	if len(ms) > maxDynamoDBBatchItems {
-		return fmt.Errorf("saveArrayOf{{ $modelName }} received %%d items to save, which is greater than the maximum of %%d", len(ms), maxDynamoDBBatchItems)
+		return fmt.Errorf("saveArrayOf{{ $modelName }} received %d items to save, which is greater than the maximum of %d", len(ms), maxDynamoDBBatchItems)
 	}
 
 	if len(ms) == 0 {
@@ -203,7 +203,7 @@ func (t {{ $modelName }}Table) saveArrayOf{{ $modelName }}(ctx context.Context, 
 				tname: batch,
 			},
 		}); err != nil {
-			return fmt.Errorf("BatchWriteItem: %%v", err)
+			return fmt.Errorf("BatchWriteItem: %v", err)
 		} else if out.UnprocessedItems != nil && len(out.UnprocessedItems[tname]) > 0 {
 			batch = out.UnprocessedItems[tname]
 		} else {
@@ -215,7 +215,7 @@ func (t {{ $modelName }}Table) saveArrayOf{{ $modelName }}(ctx context.Context, 
 
 func (t {{ $modelName }}Table) deleteArrayOf{{ $modelName }}(ctx context.Context, ms []models.{{ $modelName }}) error {
 	if len(ms) > maxDynamoDBBatchItems {
-		return fmt.Errorf("deleteArrayOf{{ $modelName }} received %%d items to delete, which is greater than the maximum of %%d", len(ms), maxDynamoDBBatchItems)
+		return fmt.Errorf("deleteArrayOf{{ $modelName }} received %d items to delete, which is greater than the maximum of %d", len(ms), maxDynamoDBBatchItems)
 	}
   
 	if len(ms) == 0 {
@@ -246,7 +246,7 @@ func (t {{ $modelName }}Table) deleteArrayOf{{ $modelName }}(ctx context.Context
 				tname: batch,
 			},
 		}); err != nil {
-			return fmt.Errorf("BatchWriteItem: %%v", err)
+			return fmt.Errorf("BatchWriteItem: %v", err)
 		} else if out.UnprocessedItems != nil && len(out.UnprocessedItems[tname]) > 0 {
 			batch = out.UnprocessedItems[tname]
 		} else {
@@ -285,7 +285,7 @@ func (t {{ $modelName }}Table) get{{ $modelName }}(ctx context.Context,
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 				case dynamodb.ErrCodeResourceNotFoundException:
-					return nil, fmt.Errorf("table or index not found: %%s", t.TableName)
+					return nil, fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return nil, err
@@ -319,7 +319,7 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
   {{- if indexContainsNonCompositeAttribute $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
     exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
     if err != nil {
-      return fmt.Errorf("error encoding exclusive start key for scan: %%s", err.Error())
+      return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
     }
   {{- end }}
     // must provide only the fields constituting the index
@@ -340,7 +340,7 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
   err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
     items, err := decode{{ $modelName }}s(out.Items)
     if err != nil {
-      innerErr = fmt.Errorf("error decoding %%s", err.Error())
+      innerErr = fmt.Errorf("error decoding %s", err.Error())
       return false
     }
     for i := range items {
@@ -393,24 +393,24 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
         for i, attributeValue := range filterValue.AttributeValues {
           {{- if eq $attrDynamoDBType "S" }}
             {{- if eq $attrGoType "strfmt.DateTime" }}
-              queryInput.ExpressionAttributeValues[fmt.Sprintf(":%%s_value%%d", string(db.{{ $modelName }}{{ pascalize $attributeName }}), i)] = &dynamodb.AttributeValue{
+              queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.{{ $modelName }}{{ pascalize $attributeName }}), i)] = &dynamodb.AttributeValue{
                 S: aws.String(datetimeToDynamoTimeString(attributeValue.({{$attrGoType}}))),
               }
             {{- else if eq $attrGoType "strfmt.Date" }}
-              queryInput.ExpressionAttributeValues[fmt.Sprintf(":%%s_value%%d", string(db.{{ $modelName }}{{ pascalize $attributeName }}), i)] = &dynamodb.AttributeValue{
+              queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.{{ $modelName }}{{ pascalize $attributeName }}), i)] = &dynamodb.AttributeValue{
                 S: aws.String(dateToDynamoTimeString(attributeValue.({{$attrGoType}}))),
               }
             {{- else }}
-              queryInput.ExpressionAttributeValues[fmt.Sprintf(":%%s_value%%d", string(db.{{ $modelName }}{{ pascalize $attributeName }}), i)] = &dynamodb.AttributeValue{
+              queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.{{ $modelName }}{{ pascalize $attributeName }}), i)] = &dynamodb.AttributeValue{
                 S: aws.String(attributeValue.(string)),
               }
             {{- end }}
           {{- else if eq $attrDynamoDBType "N" }}
-            queryInput.ExpressionAttributeValues[fmt.Sprintf(":%%s_value%%d", string(db.{{ $modelName }}{{ pascalize $attributeName }}), i)] = &dynamodb.AttributeValue{
+            queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.{{ $modelName }}{{ pascalize $attributeName }}), i)] = &dynamodb.AttributeValue{
               N: aws.String(fmt.Sprint(attributeValue.({{$attrGoType}}))),
             }
           {{- else if eq $attrDynamoDBType "B" }}
-            queryInput.ExpressionAttributeValues[fmt.Sprintf(":%%s_value%%d", string(db.{{ $modelName }}{{ pascalize $attributeName }}), i)] = &dynamodb.AttributeValue{
+            queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.{{ $modelName }}{{ pascalize $attributeName }}), i)] = &dynamodb.AttributeValue{
               B: attributeValue.({{$attrGoType}}),
             }
           {{- end }}
@@ -489,7 +489,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
     S: aws.String(string(*input.{{ pascalize $rangeKey.AttributeName }}StartingAt)),
                       {{- end }}
                       {{- else if eq $attrDynamoDBType "N" }}
-    N: aws.String(fmt.Sprintf("%%d", *input.{{ pascalize $rangeKey.AttributeName }}StartingAt)),
+    N: aws.String(fmt.Sprintf("%d", *input.{{ pascalize $rangeKey.AttributeName }}StartingAt)),
                       {{- else if eq $attrDynamoDBType "B" }}
     B: input.{{ pascalize $rangeKey.AttributeName }}StartingAt,
                       {{- end }}
@@ -526,7 +526,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
       S: aws.String(string({{if attributeIsPointer $xdbConfig $rangeKey.AttributeName }}*{{end}}input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
           {{- end }}
         {{- else if eq $attrDynamoDBType "N" }}
-      N: aws.String(fmt.Sprintf("%%d", input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
+      N: aws.String(fmt.Sprintf("%d", input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
         {{- else if eq $attrDynamoDBType "B" }}
       B: input.StartingAfter.{{ pascalize $rangeKey.AttributeName }},
         {{- end }}
@@ -557,7 +557,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
             S: aws.String({{if attributeIsPointer $xdbConfig $hashKey.AttributeName }}*{{end}}input.StartingAfter.{{ pascalize $hashKey.AttributeName }}),
           {{- end }}
         {{- else if eq $attrDynamoDBType "N" }}
-      N: aws.String(fmt.Sprintf("%%d", *input.StartingAfter.{{ pascalize $hashKey.AttributeName }})),
+      N: aws.String(fmt.Sprintf("%d", *input.StartingAfter.{{ pascalize $hashKey.AttributeName }})),
         {{- end }}
       {{- end }}
       },
@@ -616,7 +616,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 				case dynamodb.ErrCodeResourceNotFoundException:
-					return fmt.Errorf("table or index not found: %%s", t.TableName)
+					return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return err
@@ -656,7 +656,7 @@ func (t {{ $modelName }}Table) delete{{ $modelName }}(ctx context.Context,
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 				case dynamodb.ErrCodeResourceNotFoundException:
-					return fmt.Errorf("table or index not found: %%s", t.TableName)
+					return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return err
@@ -760,7 +760,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
       S: aws.String(string(*input.{{ pascalize $rangeKey.AttributeName }}StartingAt)),
                         {{- end }}
                          {{- else if eq $attrDynamoDBType "N" }}
-      N: aws.String(fmt.Sprintf("%%d", *input.{{ pascalize $rangeKey.AttributeName }}StartingAt)),
+      N: aws.String(fmt.Sprintf("%d", *input.{{ pascalize $rangeKey.AttributeName }}StartingAt)),
                          {{- else if eq $attrDynamoDBType "B" }}
       B: input.{{ pascalize $rangeKey.AttributeName }}StartingAt,
                         {{- end }}
@@ -797,7 +797,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
       S: aws.String(string({{if attributeIsPointer $xdbConfig $rangeKey.AttributeName }}*{{end}}input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
           {{- end }}
         {{- else if eq $attrDynamoDBType "N" }}
-      N: aws.String(fmt.Sprintf("%%d", input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
+      N: aws.String(fmt.Sprintf("%d", input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
         {{- else if eq $attrDynamoDBType "B" }}
       B: input.StartingAfter.{{ pascalize $rangeKey.AttributeName }},
         {{- end }}
@@ -828,7 +828,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
             S: aws.String({{if attributeIsPointer $xdbConfig $hashKey.AttributeName }}*{{end}}input.StartingAfter.{{ pascalize $hashKey.AttributeName }}),
           {{- end }}
         {{- else if eq $attrDynamoDBType "N" }}
-      N: aws.String(fmt.Sprintf("%%d", *input.StartingAfter.{{ pascalize $hashKey.AttributeName }})),
+      N: aws.String(fmt.Sprintf("%d", *input.StartingAfter.{{ pascalize $hashKey.AttributeName }})),
         {{- end }}
       {{- end }}
       },
@@ -863,7 +863,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
               S: aws.String({{if attributeIsPointer $xdbConfig $primaryRangeKey.AttributeName }}*{{end}}input.StartingAfter.{{ pascalize $primaryRangeKey.AttributeName }}),
             {{- end }}
           {{- else if eq $attrDynamoDBType "N" }}
-            N: aws.String(fmt.Sprintf("%%d", input.StartingAfter.{{ pascalize $primaryRangeKey.AttributeName }})),
+            N: aws.String(fmt.Sprintf("%d", input.StartingAfter.{{ pascalize $primaryRangeKey.AttributeName }})),
           {{- end }}
         {{- end }}
       },
@@ -897,7 +897,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
       S: aws.String({{if attributeIsPointer $xdbConfig $primaryHashKey.AttributeName }}*{{end}}input.StartingAfter.{{ pascalize $primaryHashKey.AttributeName }}),
           {{- end }}
         {{- else if eq $attrDynamoDBType "N" }}
-      N: aws.String(fmt.Sprintf("%%d", *input.StartingAfter.{{ pascalize $primaryHashKey.AttributeName }})),
+      N: aws.String(fmt.Sprintf("%d", *input.StartingAfter.{{ pascalize $primaryHashKey.AttributeName }})),
         {{- end }}
       {{- end }}
       },
@@ -944,7 +944,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 				case dynamodb.ErrCodeResourceNotFoundException:
-					return fmt.Errorf("table or index not found: %%s", t.TableName)
+					return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return err
@@ -993,7 +993,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}By{{ $computedIndexName }}(ctx 
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 				case dynamodb.ErrCodeResourceNotFoundException:
-					return nil, fmt.Errorf("table or index not found: %%s", t.TableName)
+					return nil, fmt.Errorf("table or index not found: %s", t.TableName)
 			}
 		}
 		return nil, err
@@ -1028,7 +1028,7 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}sBy{{ $computedIndexName }}(c
   {{- if indexContainsNonCompositeAttribute $xdbConfig $primaryAndSecondaryKeySchemas }}
     exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
     if err != nil {
-      return fmt.Errorf("error encoding exclusive start key for scan: %%s", err.Error())
+      return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
     }
   {{- end }}
     // must provide the fields constituting the index and the primary key
@@ -1050,7 +1050,7 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}sBy{{ $computedIndexName }}(c
   err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
     items, err := decode{{ $modelName }}s(out.Items)
     if err != nil {
-      innerErr = fmt.Errorf("error decoding %%s", err.Error())
+      innerErr = fmt.Errorf("error decoding %s", err.Error())
       return false
     }
     for i := range items {
@@ -1117,7 +1117,7 @@ func (t {{ $modelName }}Table) transactSave{{ $modelName }}And{{ $transactWithMo
 			},
 			{
 				Put: &dynamodb.Put{
-    			TableName: aws.String(fmt.Sprintf("%%s-{{ $transactWithModelName }}s", t.Prefix)),
+    			TableName: aws.String(fmt.Sprintf("%s-{{ $transactWithModelName }}s", t.Prefix)),
 					Item:      data2,
 					ConditionExpression:       m2CondExpr,
 					ExpressionAttributeValues: m2ExprVals,
@@ -1151,7 +1151,7 @@ func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]*dynamodb.Att
         {{- range $_, $sep := sortedKeys $strPropertiesInComposites }}
         {{- range $compositeProp := index $strPropertiesInComposites $sep }}
   if strings.Contains({{ attributeToModelValue $xdbConfig $compositeProp "m." }}, "{{ $sep }}") {
-    return nil, fmt.Errorf("{{ $compositeProp }} cannot contain '{{ $sep }}': %%s", {{ attributeToModelValue $xdbConfig $compositeProp "m." }})
+    return nil, fmt.Errorf("{{ $compositeProp }} cannot contain '{{ $sep }}': %s", {{ attributeToModelValue $xdbConfig $compositeProp "m." }})
   }
         {{- end }}
         {{- end }}
@@ -1205,7 +1205,7 @@ func decode{{ $modelName }}(m map[string]*dynamodb.AttributeValue, out *models.{
         if v, ok := m["{{ $ks.AttributeName }}"]; ok && v.S != nil {
     parts := strings.Split(*v.S, "{{ $ca.Separator }}")
     if len(parts) != {{ len $ca.Properties }} {
-      return fmt.Errorf("expected {{ len $ca.Properties }} parts: '%%s'", *v.S)
+      return fmt.Errorf("expected {{ len $ca.Properties }} parts: '%s'", *v.S)
     }
                 {{- range $i, $prop := $ca.Properties }}
     out.{{ pascalize $prop }} = {{if attributeIsPointer $xdbConfig $prop }}&{{end}}parts[{{ $i }}]

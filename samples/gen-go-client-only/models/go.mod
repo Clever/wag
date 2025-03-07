@@ -1,6 +1,6 @@
 module github.com/Clever/wag/samples/gen-go-client-only/models/v9
 
-go 1.21
+go 1.24
 
 require (
 	github.com/go-openapi/errors v0.20.2

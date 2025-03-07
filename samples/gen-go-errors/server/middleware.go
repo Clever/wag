@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"runtime/debug"
@@ -21,7 +22,7 @@ func PanicMiddleware(h http.Handler) http.Handler {
 
 			switch panicErr := panicErr.(type) {
 			case string:
-				err = fmt.Errorf(panicErr)
+				err = errors.New(panicErr)
 			case error:
 				err = panicErr
 			default:

@@ -6,12 +6,13 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/Clever/go-utils/stringset"
-	"github.com/Clever/wag/v9/utils"
 	"github.com/awslabs/goformation/v2/cloudformation/resources"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
 	"github.com/go-swagger/go-swagger/generator"
+
+	"github.com/Clever/go-utils/stringset"
+	"github.com/Clever/wag/v9/utils"
 )
 
 // funcMap contains useful functions to use in templates
@@ -184,9 +185,9 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		for i, prop := range ca.Properties {
 			goTyp := goTypeForAttribute(config, prop)
 			if goTyp == "int64" {
-				value += `%%d`
+				value += `%d`
 			} else {
-				value += `%%s`
+				value += `%s`
 			}
 			if i != len(ca.Properties)-1 {
 				value += ca.Separator
@@ -218,9 +219,9 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		for i, prop := range ca.Properties {
 			goTyp := goTypeForAttribute(config, prop)
 			if goTyp == "int64" {
-				value += `%%d`
+				value += `%d`
 			} else {
-				value += `%%s`
+				value += `%s`
 			}
 			if i != len(ca.Properties)-1 {
 				value += ca.Separator
@@ -254,9 +255,9 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		for i, prop := range ca.Properties {
 			goTyp := goTypeForAttribute(config, prop)
 			if goTyp == "int64" {
-				value += `%%d`
+				value += `%d`
 			} else {
-				value += `%%s`
+				value += `%s`
 			}
 			if i != len(ca.Properties)-1 {
 				value += ca.Separator
@@ -665,7 +666,6 @@ func exampleValuePtrForAttribute(config XDBConfig, attributeName string, i int) 
 		// composite attributes must be strings, since they are
 		// a concatenation of values
 		return fmt.Sprintf(`db.String("string%d")`, i)
-
 	}
 	return "unknownType"
 }
