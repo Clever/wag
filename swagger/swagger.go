@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"go/format"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -22,6 +21,11 @@ type Generator struct {
 // Printf writes a formatted string to the buffer.
 func (g *Generator) Printf(format string, args ...interface{}) {
 	fmt.Fprintf(&g.buf, format, args...)
+}
+
+// Print writes args to the buffer.
+func (g *Generator) Print(args ...interface{}) {
+	fmt.Fprint(&g.buf, args...)
 }
 
 // Write bytes to the buffer.
@@ -54,14 +58,14 @@ func (g *Generator) WriteFile(path string) error {
 	}
 	absPath := filepath.Join(g.BasePath, path)
 	dir := filepath.Dir(absPath)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
-	fileMode := os.FileMode(0644)
+	fileMode := os.FileMode(0o644)
 	if strings.HasSuffix(path, ".sh") {
-		fileMode = os.FileMode(0755) // chmod +x
+		fileMode = os.FileMode(0o755) // chmod +x
 	}
-	return ioutil.WriteFile(absPath, fileBytes, fileMode)
+	return os.WriteFile(absPath, fileBytes, fileMode)
 }
 
 // ImportStatements takes a list of import strings and converts them to a formatted imports
