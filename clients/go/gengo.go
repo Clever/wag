@@ -207,7 +207,7 @@ func CreateModFile(path string, basePath string, codeTemplate clientCodeTemplate
 	modFileString := `
 module ` + codeTemplate.ModuleName + codeTemplate.OutputPath + `/client` + codeTemplate.VersionSuffix + `
 
-go 1.24
+go 1.21
 
 require (
 	github.com/Clever/discovery-go v1.8.1
