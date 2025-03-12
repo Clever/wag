@@ -31,6 +31,9 @@ jobs:
       # Many of these may be bad tests, but we need to investigate.
       # Please run tests locally before merging.
       # - run: make test
+      - run:
+          name: vet
+          command: go vet -mod=readonly $(go list ./...)
       - run: if [ "${CIRCLE_BRANCH}" == "master" ]; then make release && $HOME/ci-scripts/circleci/submodule-github-release $GH_RELEASE_TOKEN clientconfig; fi;
       - run: if [ "${CIRCLE_BRANCH}" == "master" ]; then make release && $HOME/ci-scripts/circleci/submodule-github-release $GH_RELEASE_TOKEN logging/wagclientlogger; fi;
       - run: if [ "${CIRCLE_BRANCH}" == "master" ]; then make release && $HOME/ci-scripts/circleci/github-release $GH_RELEASE_TOKEN release; fi;
