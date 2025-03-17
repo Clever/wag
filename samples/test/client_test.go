@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -269,7 +268,6 @@ func TestNewWithDiscovery(t *testing.T) {
 
 	assert.NoError(t, err)
 	_, err = c.GetBooks(context.Background(), &models.GetBooksInput{})
-	log.Default().Print("the error: ", err.Error())
 
 	assert.NoError(t, err)
 	assert.Equal(t, 2, controller.getCount)
