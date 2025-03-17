@@ -1,6 +1,6 @@
 module github.com/Clever/wag/tracing
 
-go 1.24
+go 1.21
 
 require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.2 // indirect
