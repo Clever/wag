@@ -1,5 +1,5 @@
-v9.7.2
-Upgrade otel modules to stable versions where available, and also consume the latest kayvee which eliminates otel dependencies
+v9.8.0
+Upgrade to 1.24 and upgrade otel modules to stable versions where available, and consume the latest kayvee which eliminates otel dependencies
 
 Previously:
 

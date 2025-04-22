@@ -1,8 +1,6 @@
 module github.com/Clever/wag/tracing
 
-go 1.22.0
-
-toolchain go1.24.0
+go 1.24.0
 
 require (
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.60.0

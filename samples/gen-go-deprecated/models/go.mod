@@ -1,6 +1,6 @@
 module github.com/Clever/wag/samples/gen-go-deprecated/models/v9
 
-go 1.21
+go 1.24.0
 
 require (
 	github.com/go-openapi/strfmt v0.21.2

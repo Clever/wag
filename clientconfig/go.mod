@@ -1,8 +1,6 @@
 module github.com/Clever/wag/clientconfig/v9
 
-go 1.22.0
-
-toolchain go1.24.0
+go 1.24.0
 
 require (
 	github.com/Clever/kayvee-go/v7 v7.10.0
