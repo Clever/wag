@@ -1,7 +1,10 @@
-v9.7.1
-Downgrade generated modules and submodules to 1.21 until every wag service is upgraded
+v9.8.0
+Upgrade to 1.24 and upgrade otel modules to stable versions where available, and consume the latest kayvee which eliminates otel dependencies
 
 Previously:
+
+v9.7.1
+Downgrade generated modules and submodules to 1.21 until every wag service is upgraded
 
 v9.7.0
 Go 1.24 upgrade
