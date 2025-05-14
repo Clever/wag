@@ -1,6 +1,6 @@
 module github.com/Clever/wag/samples/gen-go-basic/client/v9
 
-go 1.24.0
+go 1.24
 
 require (
 	github.com/Clever/discovery-go v1.8.1
