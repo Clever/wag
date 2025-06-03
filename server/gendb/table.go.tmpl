@@ -282,11 +282,9 @@ func (t {{ $modelName }}Table) get{{ $modelName }}(ctx context.Context,
 	}
 	{{- else }}
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-				case dynamodb.ErrCodeResourceNotFoundException:
-					return nil, fmt.Errorf("table or index not found: %s", t.TableName)
-			}
+		var resourceNotFoundErr *types.ResourceNotFoundException
+		if errors.As(err, &resourceNotFoundErr) {
+			return nil, fmt.Errorf("table or index not found: %s", t.TableName)
 		}
 		return nil, err
 	}
@@ -431,7 +429,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
       return fmt.Errorf("Can specify only one of input.{{ pascalize $rangeKey.AttributeName }}StartingAt or input.StartingAfter")
     }
   {{- end }}
-  {{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
+  {{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema  "HASH" }}
     {{- $dynamoDBType := dynamoDBTypeForAttribute $xdbConfig $attributeName }}
     {{- $attrGoType := goTypeForAttribute $xdbConfig $attributeName }}
     {{- if eq $dynamoDBType "S" }}
@@ -580,53 +578,50 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
 
   totalRecordsProcessed := int64(0)
   var pageFnErr error
-	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
-		{{- if gt $lenNonIndexAttributes 0 }}
-      // Only assume an empty page means no more results if there are no filters applied
-      if (len(input.FilterValues) == 0 || input.FilterExpression == "") && len(queryOutput.Items) == 0 {
-			  return false
-		  }
-    {{- else }}
-      if len(queryOutput.Items) == 0 {
-			  return false
-		  }
-    {{- end }}
-		items, err := decode{{ $modelName }}s(queryOutput.Items)
+  pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
+    if len(queryOutput.Items) == 0 {
+      return false
+    }
+    items, err := decode{{ $modelName }}s(queryOutput.Items)
     if err != nil {
       pageFnErr = err
       return false
     }
-		hasMore := true
-		for i := range items {
-			if lastPage == true {
-				hasMore = i < len(items)-1
-			}
-			if !fn(&items[i], !hasMore) {
-				return false
-			}
+    hasMore := true
+    for i := range items {
+      if lastPage == true {
+        hasMore = i < len(items)-1
+      }
+      if !fn(&items[i], !hasMore) {
+        return false
+      }
       totalRecordsProcessed++
       // if the Limit of records have been passed to fn, don't pass anymore records.
       if input.Limit != nil && totalRecordsProcessed == *input.Limit {
         return false
       }
-		}
-		return true
-	}
+    }
+    return true
+  }
 
-	paginator := dynamodb.NewQueryPaginator(t.DynamoDBAPI, queryInput)
-	for paginator.HasMorePages() {
-		output, err := paginator.NextPage(ctx)
-		if err != nil {
-			var resourceNotFoundErr *types.ResourceNotFoundException
-			if errors.As(err, &resourceNotFoundErr) {
-				return fmt.Errorf("table or index not found: %s", t.TableName)
-			}
-			return err
-		}
-		if !pageFn(output, !paginator.HasMorePages()) {
-			break
-		}
-	}
+  paginator := dynamodb.NewQueryPaginator(t.DynamoDBAPI, queryInput)
+  for paginator.HasMorePages() {
+    output, err := paginator.NextPage(ctx)
+    if err != nil {
+      var resourceNotFoundErr *types.ResourceNotFoundException
+      if errors.As(err, &resourceNotFoundErr) {
+        return fmt.Errorf("table or index not found: %s", t.TableName)
+      }
+      return err
+    }
+    if !pageFn(output, !paginator.HasMorePages()) {
+      break
+    }
+  }
+
+  if pageFnErr != nil {
+    return pageFnErr
+  }
 
   return nil
 }
@@ -655,11 +650,9 @@ func (t {{ $modelName }}Table) delete{{ $modelName }}(ctx context.Context,
 	}
 	{{- else }}
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-				case dynamodb.ErrCodeResourceNotFoundException:
-					return fmt.Errorf("table or index not found: %s", t.TableName)
-			}
+		var resourceNotFoundErr *types.ResourceNotFoundException
+		if errors.As(err, &resourceNotFoundErr) {
+			return fmt.Errorf("table or index not found: %s", t.TableName)
 		}
 		return err
 	}
@@ -696,7 +689,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
     {{- $attrGoType := goTypeForAttribute $xdbConfig $attributeName }}
     {{- if eq $dynamoDBType "S" }}
     {{- if eq $attrGoType "strfmt.DateTime" }}
-      if datetimeToDynamoTimeString(input.{{ pascalize $attributeName }}) == "" {
+      if input.{{ pascalize $attributeName }} == "" {
     {{- else if eq $attrGoType "strfmt.Date" }}
       if dateToDynamoTimeString(input.{{ pascalize $attributeName }}) == "" {
     {{- else }}
@@ -910,46 +903,50 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
 
   totalRecordsProcessed := int64(0)
   var pageFnErr error
-	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
-		if len(queryOutput.Items) == 0 {
-			return false
-		}
-		items, err := decode{{ $modelName }}s(queryOutput.Items)
+  pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
+    if len(queryOutput.Items) == 0 {
+      return false
+    }
+    items, err := decode{{ $modelName }}s(queryOutput.Items)
     if err != nil {
       pageFnErr = err
       return false
     }
-		hasMore := true
-		for i := range items {
-			if lastPage == true {
-				hasMore = i < len(items)-1
-			}
-			if !fn(&items[i], !hasMore) {
-				return false
-			}
+    hasMore := true
+    for i := range items {
+      if lastPage == true {
+        hasMore = i < len(items)-1
+      }
+      if !fn(&items[i], !hasMore) {
+        return false
+      }
       totalRecordsProcessed++
       // if the Limit of records have been passed to fn, don't pass anymore records.
       if input.Limit != nil && totalRecordsProcessed == *input.Limit {
         return false
       }
-		}
-		return true
-	}
+    }
+    return true
+  }
 
-	paginator := dynamodb.NewQueryPaginator(t.DynamoDBAPI, queryInput)
-	for paginator.HasMorePages() {
-		output, err := paginator.NextPage(ctx)
-		if err != nil {
-			var resourceNotFoundErr *types.ResourceNotFoundException
-			if errors.As(err, &resourceNotFoundErr) {
-				return fmt.Errorf("table or index not found: %s", t.TableName)
-			}
-			return err
-		}
-		if !pageFn(output, !paginator.HasMorePages()) {
-			break
-		}
-	}
+  paginator := dynamodb.NewQueryPaginator(t.DynamoDBAPI, queryInput)
+  for paginator.HasMorePages() {
+    output, err := paginator.NextPage(ctx)
+    if err != nil {
+      var resourceNotFoundErr *types.ResourceNotFoundException
+      if errors.As(err, &resourceNotFoundErr) {
+        return fmt.Errorf("table or index not found: %s", t.TableName)
+      }
+      return err
+    }
+    if !pageFn(output, !paginator.HasMorePages()) {
+      break
+    }
+  }
+
+  if pageFnErr != nil {
+    return pageFnErr
+  }
 
   return nil
 }
@@ -987,11 +984,9 @@ func (t {{ $modelName}}Table) get{{ $modelName }}By{{ $computedIndexName }}(ctx 
 	}
 	{{- else }}
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-				case dynamodb.ErrCodeResourceNotFoundException:
-					return nil, fmt.Errorf("table or index not found: %s", t.TableName)
-			}
+		var resourceNotFoundErr *types.ResourceNotFoundException
+		if errors.As(err, &resourceNotFoundErr) {
+			return nil, fmt.Errorf("table or index not found: %s", t.TableName)
 		}
 		return nil, err
 	}
