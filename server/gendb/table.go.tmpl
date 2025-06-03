@@ -12,6 +12,7 @@ package dynamodb
 
 import (
   "context"
+  "errors"
   "fmt"
         {{- if or $hasProjectedIndexesWithCompositeAttributes $hasStringPropertiesInComposites }}
         "strings"
@@ -19,15 +20,14 @@ import (
 
   "{{ .ModuleName }}{{.GoOutputPath}}/models{{.VersionSuffix}}"
   "{{ .PackageName }}/{{ .OutputPath }}"
-  "github.com/aws/aws-sdk-go/aws"
+  "github.com/aws/aws-sdk-go-v2/aws"
         {{- if not $xdbConfig.AllowOverwrites }}
-  "github.com/aws/aws-sdk-go/aws/awserr"
+  "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
         {{- end }}
-  "github.com/aws/aws-sdk-go/service/dynamodb"
-  "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-  "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+  "github.com/aws/aws-sdk-go-v2/service/dynamodb"
+  "github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
   {{- if transactionsEnabled $xdbConfig }}
-  "github.com/aws/aws-sdk-go/service/dynamodb/expression"
+  "github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
   {{- end }}
   "github.com/go-openapi/strfmt"
 )
@@ -36,7 +36,7 @@ var _ = strfmt.DateTime{}
 
 // {{ $modelName }}Table represents the user-configurable properties of the {{ $modelName }} table.
 type {{ $modelName }}Table struct {
-  DynamoDBAPI        dynamodbiface.DynamoDBAPI
+  DynamoDBAPI        *dynamodb.Client
   Prefix             string
   TableName          string
   ReadCapacityUnits  int64
@@ -66,50 +66,50 @@ type ddb{{ $modelName }} struct {
 }
 
 func (t {{ $modelName }}Table) create(ctx context.Context) error {
-  if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
-    AttributeDefinitions: []*dynamodb.AttributeDefinition{
+  if _, err := t.DynamoDBAPI.CreateTable(ctx, &dynamodb.CreateTableInput{
+    AttributeDefinitions: []types.AttributeDefinition{
                         {{- $attrs := attributeNames $xdbConfig.DynamoDB }}
                         {{- range $attr := $attrs }}
       {
         AttributeName: aws.String("{{- $attr }}"),
-        AttributeType: aws.String("{{ dynamoDBTypeForAttribute $xdbConfig $attr }}"),
+        AttributeType: types.ScalarAttributeType("{{ dynamoDBTypeForAttribute $xdbConfig $attr }}"),
       },
                         {{- end }}
     },
-    KeySchema: []*dynamodb.KeySchemaElement{
+    KeySchema: []types.KeySchemaElement{
                         {{- range $_, $ks := $xdbConfig.DynamoDB.KeySchema }}
       {
         AttributeName: aws.String("{{- $ks.AttributeName }}"),
                                 {{- if eq $ks.KeyType "HASH" }}
-        KeyType:       aws.String(dynamodb.KeyTypeHash),
+        KeyType:       types.KeyTypeHash,
                                 {{- else if eq $ks.KeyType "RANGE" }}
-        KeyType:       aws.String(dynamodb.KeyTypeRange),
+        KeyType:       types.KeyTypeRange,
                                 {{- end }}
       },
                         {{- end }}
     },
                 {{- $lenGSIs := len $xdbConfig.DynamoDB.GlobalSecondaryIndexes }}
                 {{- if gt $lenGSIs 0 }}
-    GlobalSecondaryIndexes: []*dynamodb.GlobalSecondaryIndex{
+    GlobalSecondaryIndexes: []types.GlobalSecondaryIndex{
                         {{- range $gsi := $xdbConfig.DynamoDB.GlobalSecondaryIndexes }}
       {
         IndexName: aws.String("{{ $gsi.IndexName }}"),
-        Projection: &dynamodb.Projection{
-          ProjectionType: aws.String("{{ $gsi.Projection.ProjectionType }}"),
+        Projection: &types.Projection{
+          ProjectionType: types.ProjectionType("{{ $gsi.Projection.ProjectionType }}"),
         },
-        KeySchema: []*dynamodb.KeySchemaElement{
+        KeySchema: []types.KeySchemaElement{
                                         {{- range $_, $ks := $gsi.KeySchema }}
           {
                                           AttributeName: aws.String("{{- $ks.AttributeName }}"),
                                           {{- if eq $ks.KeyType "HASH" }}
-            KeyType:       aws.String(dynamodb.KeyTypeHash),
+            KeyType:       types.KeyTypeHash,
                                           {{- else if eq $ks.KeyType "RANGE" }}
-            KeyType:       aws.String(dynamodb.KeyTypeRange),
+            KeyType:       types.KeyTypeRange,
                                           {{- end }}
           },
                                         {{- end }}
         },
-        ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+        ProvisionedThroughput: &types.ProvisionedThroughput{
           ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
           WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
         },
@@ -117,7 +117,7 @@ func (t {{ $modelName }}Table) create(ctx context.Context) error {
                         {{- end }}
     },
                 {{- end }}
-    ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+    ProvisionedThroughput: &types.ProvisionedThroughput{
       ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
       WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
     },
@@ -134,18 +134,18 @@ func (t {{ $modelName }}Table) save{{ $modelName }}(ctx context.Context, m model
     return err
   }
         {{- if $xdbConfig.AllowOverwrites }}
-  _, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
+  _, err = t.DynamoDBAPI.PutItem(ctx, &dynamodb.PutItemInput{
     TableName: aws.String(t.TableName),
     Item:      data,
   })
   return err
         {{- else }}
-  _, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
+  _, err = t.DynamoDBAPI.PutItem(ctx, &dynamodb.PutItemInput{
     TableName: aws.String(t.TableName),
     Item:      data,
-    ExpressionAttributeNames: map[string]*string{
+    ExpressionAttributeNames: map[string]string{
       {{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-      "#{{ upper $pk.AttributeName }}": aws.String("{{ $pk.AttributeName }}"),
+      "#{{ upper $pk.AttributeName }}": "{{ $pk.AttributeName }}",
       {{- end }}
     },
     ConditionExpression: aws.String("
@@ -156,16 +156,16 @@ func (t {{ $modelName }}Table) save{{ $modelName }}(ctx context.Context, m model
                         "),
 	})
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-				case dynamodb.ErrCodeConditionalCheckFailedException:
-					return db.Err{{ $modelName }}AlreadyExists{
-						{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-						{{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValue $xdbConfig $pk.AttributeName "m" }}{{ else }}{{ attributeToModelValue $xdbConfig $pk.AttributeName "m." }}{{ end }},
-						{{- end }}
-					}
-				case dynamodb.ErrCodeResourceNotFoundException:
-					return fmt.Errorf("table or index not found: %s", t.TableName)
+		var resourceNotFoundErr *types.ResourceNotFoundException
+		var conditionalCheckFailedErr *types.ConditionalCheckFailedException
+		if errors.As(err, &resourceNotFoundErr) {
+			return fmt.Errorf("table or index not found: %s", t.TableName)
+		}
+		if errors.As(err, &conditionalCheckFailedErr) {
+			return db.Err{{ $modelName }}AlreadyExists{
+				{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+				{{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValue $xdbConfig $pk.AttributeName "m" }}{{ else }}{{ attributeToModelValue $xdbConfig $pk.AttributeName "m." }}{{ end }},
+				{{- end }}
 			}
 		}
 		return err
@@ -198,7 +198,7 @@ func (t {{ $modelName }}Table) saveArrayOf{{ $modelName }}(ctx context.Context, 
 	}
 	tname := t.TableName
 	for {
-		if out, err := t.DynamoDBAPI.BatchWriteItemWithContext(ctx, &dynamodb.BatchWriteItemInput{
+		if out, err := t.DynamoDBAPI.BatchWriteItem(ctx, &dynamodb.BatchWriteItemInput{
 			RequestItems: map[string][]*dynamodb.WriteRequest{
 				tname: batch,
 			},
@@ -241,7 +241,7 @@ func (t {{ $modelName }}Table) deleteArrayOf{{ $modelName }}(ctx context.Context
 	}
 	tname := t.TableName
 	for {
-		if out, err := t.DynamoDBAPI.BatchWriteItemWithContext(ctx, &dynamodb.BatchWriteItemInput{
+		if out, err := t.DynamoDBAPI.BatchWriteItem(ctx, &dynamodb.BatchWriteItemInput{
 			RequestItems: map[string][]*dynamodb.WriteRequest{
 				tname: batch,
 			},
@@ -271,7 +271,7 @@ func (t {{ $modelName }}Table) get{{ $modelName }}(ctx context.Context,
 	if err != nil {
 		return nil, err
 	}
-	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
+	res, err := t.DynamoDBAPI.GetItem(ctx, &dynamodb.GetItemInput{
 		Key:       key,
 		TableName: aws.String(t.TableName),
 		ConsistentRead: aws.Bool(true),
@@ -337,7 +337,7 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
   }
   totalRecordsProcessed := int64(0)
   var innerErr error
-  err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+  err := t.DynamoDBAPI.ScanPages(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
     items, err := decode{{ $modelName }}s(out.Items)
     if err != nil {
       innerErr = fmt.Errorf("error decoding %s", err.Error())
@@ -431,10 +431,17 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
       return fmt.Errorf("Can specify only one of input.{{ pascalize $rangeKey.AttributeName }}StartingAt or input.StartingAfter")
     }
   {{- end }}
-  {{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
+  {{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema  "HASH" }}
     {{- $dynamoDBType := dynamoDBTypeForAttribute $xdbConfig $attributeName }}
+    {{- $attrGoType := goTypeForAttribute $xdbConfig $attributeName }}
     {{- if eq $dynamoDBType "S" }}
+    {{- if eq $attrGoType "strfmt.DateTime" }}
       if input.{{ pascalize $attributeName }} == "" {
+    {{- else if eq $attrGoType "strfmt.Date" }}
+      if dateToDynamoTimeString(input.{{ pascalize $attributeName }}) == "" {
+    {{- else }}
+      if input.{{ pascalize $attributeName }} == "" {
+    {{- end }}
         return fmt.Errorf("Hash key input.{{ pascalize $attributeName }} cannot be empty")
       }
     {{- end }}
@@ -606,7 +613,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
 		return true
 	}
 
-	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
+	err := t.DynamoDBAPI.QueryPages(ctx, queryInput, pageFn)
 	{{- if $xdbConfig.AllowOverwrites }}
 	if err != nil {
 		return err
@@ -643,7 +650,7 @@ func (t {{ $modelName }}Table) delete{{ $modelName }}(ctx context.Context,
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
+	_, err = t.DynamoDBAPI.DeleteItem(ctx, &dynamodb.DeleteItemInput{
 		Key:       key,
 		TableName: aws.String(t.TableName),
 	})
@@ -886,13 +893,13 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
             S: aws.String(datetimePtrToDynamoTimeString(input.StartingAfter.{{ pascalize $primaryHashKey.AttributeName }})),
           {{- else }}
             S: aws.String(datetimeToDynamoTimeString(input.StartingAfter.{{ pascalize $primaryHashKey.AttributeName }})),
-          {{- end}}
+            {{- end}}
           {{- else if eq $attrGoType "strfmt.Date" }}
-          {{- if attributeIsPointer $xdbConfig $primaryHashKey.AttributeName }}
-            S: aws.String(datePtrToDynamoTimeString(input.StartingAfter.{{ pascalize $primaryHashKey.AttributeName }})),
-          {{- else }}
-            S: aws.String(dateToDynamoTimeString(input.StartingAfter.{{ pascalize $primaryHashKey.AttributeName }})),
-          {{- end}}
+            {{- if attributeIsPointer $xdbConfig $primaryHashKey.AttributeName }}
+              S: aws.String(datePtrToDynamoTimeString(input.StartingAfter.{{ pascalize $primaryHashKey.AttributeName }})),
+            {{- else }}
+              S: aws.String(dateToDynamoTimeString(input.StartingAfter.{{ pascalize $primaryHashKey.AttributeName }})),
+            {{- end}}
           {{- else }}
       S: aws.String({{if attributeIsPointer $xdbConfig $primaryHashKey.AttributeName }}*{{end}}input.StartingAfter.{{ pascalize $primaryHashKey.AttributeName }}),
           {{- end }}
@@ -934,7 +941,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
 		return true
 	}
 
-	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
+	err := t.DynamoDBAPI.QueryPages(ctx, queryInput, pageFn)
 	{{- if $xdbConfig.AllowOverwrites }}
 	if err != nil {
 		return err
@@ -983,7 +990,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}By{{ $computedIndexName }}(ctx 
     KeyConditionExpression: aws.String("#{{ upper $ks.AttributeName }} = :{{ camelize $ks.AttributeName }}"),
   }
 
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	queryOutput, err := t.DynamoDBAPI.Query(ctx, queryInput)
 	{{- if $xdbConfig.AllowOverwrites }}
 	if err != nil {
 		return nil, err
@@ -1047,7 +1054,7 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}sBy{{ $computedIndexName }}(c
   }
   totalRecordsProcessed := int64(0)
   var innerErr error
-  err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+  err := t.DynamoDBAPI.ScanPages(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
     items, err := decode{{ $modelName }}s(out.Items)
     if err != nil {
       innerErr = fmt.Errorf("error decoding %s", err.Error())
@@ -1126,7 +1133,7 @@ func (t {{ $modelName }}Table) transactSave{{ $modelName }}And{{ $transactWithMo
 			},
 		},
 	}  
-  _, err = t.DynamoDBAPI.TransactWriteItemsWithContext(ctx, input)
+  _, err = t.DynamoDBAPI.TransactWriteItems(ctx, input)
 
   return err
 }
@@ -1168,7 +1175,6 @@ func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]*dynamodb.Att
   for k, v := range primaryKey {
     val[k] = v
   }
-        {{- end }}
         {{- range $gsi := $xdbConfig.DynamoDB.GlobalSecondaryIndexes }}
         {{- if indexContainsCompositeAttribute $xdbConfig $gsi.KeySchema }}
   {{ camelize $gsi.IndexName }}, err := dynamodbattribute.MarshalMap(ddb{{ $modelName }}GSI{{ pascalize $gsi.IndexName }}{
