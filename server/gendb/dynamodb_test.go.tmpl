@@ -12,12 +12,12 @@ import (
 	"testing"
 	"time"
 
+	"{{ .ModuleName }}{{.GoOutputPath}}/models{{.VersionSuffix}}"
 	"{{ .PackageName }}/{{ .OutputPath }}"
-	"{{ .PackageName }}/{{ .OutputPath }}/tests"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/go-openapi/strfmt"
 )
 
 /* FAILING_TEST */
@@ -91,23 +91,17 @@ func TestDynamoDBStore(t *testing.T) {
 		t.Fatal("failed to connect within 60 seconds")
 	}
 
-	dynamoDBAPI := dynamodb.New(session.Must(session.NewSessionWithOptions(session.Options{
-		Config: aws.Config{
-			Region:      aws.String("doesntmatter"),
-			Endpoint:    aws.String("http://localhost:8002" /* default dynamodb-local port */),
-			Credentials: credentials.NewStaticCredentials("id", "secret", "token"),
-		},
-	})))
+	dynamoDBAPI := dynamodb.NewFromConfig(config.LoadDefaultConfig(context.Background()))
 
 	tests.RunDBTests(t, func() db.Interface {
 		prefix := "automated-testing"
-		listTablesOutput, err := dynamoDBAPI.ListTablesWithContext(testCtx, &dynamodb.ListTablesInput{})
+		listTablesOutput, err := dynamoDBAPI.ListTables(context.Background(), &dynamodb.ListTablesInput{})
 		if err != nil {
 			t.Fatal(err)
 		}
 		for _, tableName := range listTablesOutput.TableNames {
 			if strings.HasPrefix(*tableName, prefix) {
-				dynamoDBAPI.DeleteTableWithContext(testCtx, &dynamodb.DeleteTableInput{
+				dynamoDBAPI.DeleteTable(context.Background(), &dynamodb.DeleteTableInput{
 					TableName: tableName,
 				})
 			}
@@ -127,9 +121,32 @@ func TestDynamoDBStore(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if err := d.CreateTables(testCtx); err != nil {
+		if err := d.CreateTables(context.Background()); err != nil {
 			t.Fatal(err)
 		}
 		return d
 	})
+}
+
+func setupTestDB(t *testing.T) *DB {
+	ctx := context.Background()
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		t.Fatalf("failed to load config: %v", err)
+	}
+
+	client := dynamodb.NewFromConfig(cfg)
+	db, err := New(Config{
+		DynamoDBAPI: client,
+		DefaultPrefix: "test",
+	})
+	if err != nil {
+		t.Fatalf("failed to create DB: %v", err)
+	}
+
+	if err := db.CreateTables(ctx); err != nil {
+		t.Fatalf("failed to create tables: %v", err)
+	}
+
+	return db
 }
