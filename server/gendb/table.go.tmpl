@@ -755,13 +755,17 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
   } else {
     // swad-get-333
     queryInput.ExpressionAttributeNames["#{{ upper $rangeKey.AttributeName }}"] = "{{ $rangeKey.AttributeName }}"
-    queryInput.ExpressionAttributeValues[":{{ camelize $rangeKey.AttributeName }}"] = &types.AttributeValue{
-      {{- if gt $lenRangeKeyAttributes 1 }}
+
+    // swad-get-3331a
+    {{- if gt $lenRangeKeyAttributes 1 }}
+      queryInput.ExpressionAttributeValues[":{{ camelize $rangeKey.AttributeName }}"] = &types.AttributeValueMemberS{
         Value: {{ compositeValue $xdbConfig $rangeKey.AttributeName "input.StartingAt" }},
-      {{- else }}
-        {{- $attrGoType := goTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
-        {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
-        {{- if eq $attrDynamoDBType "S" }}
+      }
+    {{- else }}
+    {{- $attrGoType := goTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
+    {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
+    {{- if eq $attrDynamoDBType "S" }}
+      queryInput.ExpressionAttributeValues[":{{ camelize $rangeKey.AttributeName }}"] = &types.AttributeValueMemberS{
           {{- if eq $attrGoType "strfmt.DateTime" }}
             Value: datetimeToDynamoTimeString(*input.{{ pascalize $rangeKey.AttributeName }}StartingAt),
           {{- else if eq $attrGoType "strfmt.Date" }}
@@ -769,13 +773,18 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
           {{- else }}
             Value: string(*input.{{ pascalize $rangeKey.AttributeName }}StartingAt),
           {{- end }}
-        {{- else if eq $attrDynamoDBType "N" }}
-          N: aws.String(fmt.Sprintf("%d", *input.{{ pascalize $rangeKey.AttributeName }}StartingAt)),
-        {{- else if eq $attrDynamoDBType "B" }}
-          B: input.{{ pascalize $rangeKey.AttributeName }}StartingAt,
-        {{- end }}
-      {{- end }}
-    }
+      }
+    {{- else if eq $attrDynamoDBType "N" }}
+      queryInput.ExpressionAttributeValues[":{{ camelize $rangeKey.AttributeName }}"] = &types.AttributeValueMemberN{
+        Value: fmt.Sprintf("%d", *input.{{ pascalize $rangeKey.AttributeName }}StartingAt),
+      }
+    {{- else if eq $attrDynamoDBType "B" }}
+      queryInput.ExpressionAttributeValues[":{{ camelize $rangeKey.AttributeName }}"] = &types.AttributeValueMemberB{
+        Value: input.{{ pascalize $rangeKey.AttributeName }}StartingAt,
+      }
+    {{- end }}
+    {{- end }}
+
     if input.Descending {
       queryInput.KeyConditionExpression = aws.String("#{{ upper $hashKey.AttributeName }} = :{{ camelize $hashKey.AttributeName }} AND #{{ upper $rangeKey.AttributeName }} <= :{{ camelize $rangeKey.AttributeName }}")
     } else {
