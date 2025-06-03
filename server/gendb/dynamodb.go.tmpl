@@ -8,6 +8,7 @@ import (
   "{{ .ModuleName }}{{.GoOutputPath}}/models{{.VersionSuffix}}"
   "{{ .PackageName }}/{{ .OutputPath}}"
   "github.com/aws/aws-sdk-go-v2/service/dynamodb"
+  "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
   {{- if anyTableHasTransactionsEnabled .XDBConfigs }}
   "github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
   {{- end }}
