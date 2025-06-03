@@ -127,26 +127,3 @@ func TestDynamoDBStore(t *testing.T) {
 		return d
 	})
 }
-
-func setupTestDB(t *testing.T) *DB {
-	ctx := context.Background()
-	cfg, err := config.LoadDefaultConfig(ctx)
-	if err != nil {
-		t.Fatalf("failed to load config: %v", err)
-	}
-
-	client := dynamodb.NewFromConfig(cfg)
-	db, err := New(Config{
-		DynamoDBAPI: client,
-		DefaultPrefix: "test",
-	})
-	if err != nil {
-		t.Fatalf("failed to create DB: %v", err)
-	}
-
-	if err := db.CreateTables(ctx); err != nil {
-		t.Fatalf("failed to create tables: %v", err)
-	}
-
-	return db
-}
