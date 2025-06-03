@@ -39,8 +39,8 @@ type {{ $modelName }}Table struct {
   DynamoDBAPI        *dynamodb.Client
   Prefix             string
   TableName          string
-  ReadCapacityUnits  int32
-  WriteCapacityUnits int32
+  ReadCapacityUnits  int64
+  WriteCapacityUnits int64
 }
 
 // ddb{{ $modelName }}PrimaryKey represents the primary key of a {{ $modelName }} in DynamoDB.
@@ -110,16 +110,16 @@ func (t {{ $modelName }}Table) create(ctx context.Context) error {
                                         {{- end }}
         },
         ProvisionedThroughput: &types.ProvisionedThroughput{
-          ReadCapacityUnits:  aws.Int32(t.ReadCapacityUnits),
-          WriteCapacityUnits: aws.Int32(t.WriteCapacityUnits),
+          ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
+          WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
         },
       },
                         {{- end }}
     },
                 {{- end }}
     ProvisionedThroughput: &types.ProvisionedThroughput{
-      ReadCapacityUnits:  aws.Int32(t.ReadCapacityUnits),
-      WriteCapacityUnits: aws.Int32(t.WriteCapacityUnits),
+      ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
+      WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
     },
     TableName: aws.String(t.TableName),
   }); err != nil {
@@ -263,7 +263,7 @@ func (t {{ $modelName }}Table) get{{ $modelName }}(ctx context.Context,
   {{- varname $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
   {{- end -}}
 ) (*models.{{ $modelName }}, error) {
-	key, err := dynamodbattribute.MarshalMap(ddb{{ $modelName }}PrimaryKey{
+	key, err := attributevalue.MarshalMap(ddb{{ $modelName }}PrimaryKey{
 		{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
 		{{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValue $xdbConfig $pk.AttributeName "" }}{{ else }}{{ varname $pk.AttributeName }}{{ end }},
 		{{- end }}
@@ -315,17 +315,17 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
   }
   if input.StartingAfter != nil {
   {{- if indexContainsNonCompositeAttribute $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
-    exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+    exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
     if err != nil {
       return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
     }
   {{- end }}
     // must provide only the fields constituting the index
-    scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+    scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
                   {{- range $ks := $xdbConfig.DynamoDB.KeySchema }}
                     {{- if isComposite $xdbConfig $ks.AttributeName }}
-      "{{ $ks.AttributeName }}": &dynamodb.AttributeValue{
-          S: aws.String({{compositeValuePage $xdbConfig $ks.AttributeName "input.StartingAfter"}}),
+      "{{ $ks.AttributeName }}": &types.AttributeValueMemberS{
+          Value: {{compositeValuePage $xdbConfig $ks.AttributeName "input.StartingAfter"}},
       },
                     {{- else }}
       "{{ $ks.AttributeName }}":    exclusiveStartKey["{{ $ks.AttributeName }}"],
@@ -334,7 +334,6 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
     }
   }
   totalRecordsProcessed := int32(0)
-  var innerErr error
 
   paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
   for paginator.HasMorePages() {
@@ -343,7 +342,7 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
       return fmt.Errorf("error getting next page: %s", err.Error())
     }
 
-    items, err := decodeItems(out.Items)
+    items, err := decode{{ $modelName }}(out.Items)
     if err != nil {
       return fmt.Errorf("error decoding items: %s", err.Error())
     }
@@ -1032,8 +1031,8 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}sBy{{ $computedIndexName }}(c
     scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
                   {{- range $ks := $primaryAndSecondaryKeySchemas}}
                     {{- if isComposite $xdbConfig $ks.AttributeName }}
-        "{{ $ks.AttributeName }}": &types.AttributeValue{
-            S: aws.String({{compositeValuePage $xdbConfig $ks.AttributeName "input.StartingAfter"}}),
+        "{{ $ks.AttributeName }}": &types.AttributeValueMemberS{
+            Value: {{compositeValuePage $xdbConfig $ks.AttributeName "input.StartingAfter"}},
         },
                     {{- else }}
         "{{ $ks.AttributeName }}":    exclusiveStartKey["{{ $ks.AttributeName }}"],
@@ -1042,7 +1041,6 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}sBy{{ $computedIndexName }}(c
     }
   }
   totalRecordsProcessed := int32(0)
-  var innerErr error
 
   paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
   for paginator.HasMorePages() {
@@ -1051,7 +1049,7 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}sBy{{ $computedIndexName }}(c
       return fmt.Errorf("error getting next page: %s", err.Error())
     }
 
-    items, err := decodeItems(out.Items)
+    items, err := decode{{ $modelName }}s(out.Items)
     if err != nil {
       return fmt.Errorf("error decoding items: %s", err.Error())
     }
