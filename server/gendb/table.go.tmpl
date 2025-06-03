@@ -881,7 +881,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
             S: aws.String(datetimePtrToDynamoTimeString(input.StartingAfter.{{ pascalize $primaryHashKey.AttributeName }})),
           {{- else }}
             S: aws.String(datetimeToDynamoTimeString(input.StartingAfter.{{ pascalize $primaryHashKey.AttributeName }})),
-            {{- end}}
+          {{- end}}
           {{- else if eq $attrGoType "strfmt.Date" }}
             {{- if attributeIsPointer $xdbConfig $primaryHashKey.AttributeName }}
               S: aws.String(datePtrToDynamoTimeString(input.StartingAfter.{{ pascalize $primaryHashKey.AttributeName }})),
@@ -1160,6 +1160,7 @@ func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]*dynamodb.Att
   for k, v := range primaryKey {
     val[k] = v
   }
+        {{- end }}
         {{- range $gsi := $xdbConfig.DynamoDB.GlobalSecondaryIndexes }}
         {{- if indexContainsCompositeAttribute $xdbConfig $gsi.KeySchema }}
   {{ camelize $gsi.IndexName }}, err := dynamodbattribute.MarshalMap(ddb{{ $modelName }}GSI{{ pascalize $gsi.IndexName }}{
