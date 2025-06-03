@@ -39,8 +39,8 @@ type {{ $modelName }}Table struct {
   DynamoDBAPI        *dynamodb.Client
   Prefix             string
   TableName          string
-  ReadCapacityUnits  int64
-  WriteCapacityUnits int64
+  ReadCapacityUnits  int32
+  WriteCapacityUnits int32
 }
 
 // ddb{{ $modelName }}PrimaryKey represents the primary key of a {{ $modelName }} in DynamoDB.
@@ -110,16 +110,16 @@ func (t {{ $modelName }}Table) create(ctx context.Context) error {
                                         {{- end }}
         },
         ProvisionedThroughput: &types.ProvisionedThroughput{
-          ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
-          WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
+          ReadCapacityUnits:  aws.Int32(t.ReadCapacityUnits),
+          WriteCapacityUnits: aws.Int32(t.WriteCapacityUnits),
         },
       },
                         {{- end }}
     },
                 {{- end }}
     ProvisionedThroughput: &types.ProvisionedThroughput{
-      ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
-      WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
+      ReadCapacityUnits:  aws.Int32(t.ReadCapacityUnits),
+      WriteCapacityUnits: aws.Int32(t.WriteCapacityUnits),
     },
     TableName: aws.String(t.TableName),
   }); err != nil {
@@ -333,37 +333,41 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
                   {{- end }}
     }
   }
-  totalRecordsProcessed := int64(0)
+  totalRecordsProcessed := int32(0)
   var innerErr error
-  err := t.DynamoDBAPI.ScanPages(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
-    items, err := decode{{ $modelName }}s(out.Items)
+
+  paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+  for paginator.HasMorePages() {
+    out, err := paginator.NextPage(ctx)
     if err != nil {
-      innerErr = fmt.Errorf("error decoding %s", err.Error())
-      return false
+      return fmt.Errorf("error getting next page: %s", err.Error())
     }
+
+    items, err := decodeItems(out.Items)
+    if err != nil {
+      return fmt.Errorf("error decoding items: %s", err.Error())
+    }
+
     for i := range items {
       if input.Limiter != nil {
         if err := input.Limiter.Wait(ctx); err != nil {
-          innerErr = err
-          return false
+          return err
         }
       }
-      isLastModel := lastPage && i == len(items)-1
+
+      isLastModel := !paginator.HasMorePages() && i == len(items)-1
       if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-        return false
+        return nil
       }
+
       totalRecordsProcessed++
-      // if the Limit of records have been passed to fn, don't pass anymore records.
       if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-        return false
+        return nil
       }
     }
-    return true
-  })
-  if innerErr != nil {
-    return innerErr
   }
-  return err
+
+  return nil
 }
 {{- end }}
 
@@ -576,7 +580,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
     }
   {{- end }}
 
-  totalRecordsProcessed := int64(0)
+  totalRecordsProcessed := int32(0)
   var pageFnErr error
   pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
     if len(queryOutput.Items) == 0 {
@@ -881,7 +885,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
             S: aws.String(datetimePtrToDynamoTimeString(input.StartingAfter.{{ pascalize $primaryHashKey.AttributeName }})),
           {{- else }}
             S: aws.String(datetimeToDynamoTimeString(input.StartingAfter.{{ pascalize $primaryHashKey.AttributeName }})),
-          {{- end}}
+            {{- end}}
           {{- else if eq $attrGoType "strfmt.Date" }}
             {{- if attributeIsPointer $xdbConfig $primaryHashKey.AttributeName }}
               S: aws.String(datePtrToDynamoTimeString(input.StartingAfter.{{ pascalize $primaryHashKey.AttributeName }})),
@@ -901,7 +905,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
     }
   }
 
-  totalRecordsProcessed := int64(0)
+  totalRecordsProcessed := int32(0)
   var pageFnErr error
   pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
     if len(queryOutput.Items) == 0 {
@@ -1018,56 +1022,60 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}sBy{{ $computedIndexName }}(c
   if input.StartingAfter != nil {
   {{- $primaryAndSecondaryKeySchemas := unionKeySchemas $xdbConfig.DynamoDB.KeySchema $gsi.KeySchema }}
   {{- if indexContainsNonCompositeAttribute $xdbConfig $primaryAndSecondaryKeySchemas }}
-    exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+    exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
     if err != nil {
       return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
     }
   {{- end }}
     // must provide the fields constituting the index and the primary key
     // https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
-    scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+    scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
                   {{- range $ks := $primaryAndSecondaryKeySchemas}}
                     {{- if isComposite $xdbConfig $ks.AttributeName }}
-      "{{ $ks.AttributeName }}": &dynamodb.AttributeValue{
-          S: aws.String({{compositeValuePage $xdbConfig $ks.AttributeName "input.StartingAfter"}}),
-      },
+        "{{ $ks.AttributeName }}": &types.AttributeValue{
+            S: aws.String({{compositeValuePage $xdbConfig $ks.AttributeName "input.StartingAfter"}}),
+        },
                     {{- else }}
-      "{{ $ks.AttributeName }}":    exclusiveStartKey["{{ $ks.AttributeName }}"],
+        "{{ $ks.AttributeName }}":    exclusiveStartKey["{{ $ks.AttributeName }}"],
                     {{- end }}
                   {{- end }}
     }
   }
-  totalRecordsProcessed := int64(0)
+  totalRecordsProcessed := int32(0)
   var innerErr error
-  err := t.DynamoDBAPI.ScanPages(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
-    items, err := decode{{ $modelName }}s(out.Items)
+
+  paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+  for paginator.HasMorePages() {
+    out, err := paginator.NextPage(ctx)
     if err != nil {
-      innerErr = fmt.Errorf("error decoding %s", err.Error())
-      return false
+      return fmt.Errorf("error getting next page: %s", err.Error())
     }
+
+    items, err := decodeItems(out.Items)
+    if err != nil {
+      return fmt.Errorf("error decoding items: %s", err.Error())
+    }
+
     for i := range items {
       if input.Limiter != nil {
         if err := input.Limiter.Wait(ctx); err != nil {
-          innerErr = err
-          return false
+          return err
         }
       }
-      isLastModel := lastPage && i == len(items)-1
+
+      isLastModel := !paginator.HasMorePages() && i == len(items)-1
       if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-        return false
+        return nil
       }
+
       totalRecordsProcessed++
-      // if the Limit of records have been passed to fn, don't pass anymore records.
       if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-        return false
+        return nil
       }
     }
-    return true
-  })
-  if innerErr != nil {
-    return innerErr
   }
-  return err
+
+  return nil
 }
 {{- end }}
 {{- end }}
@@ -1126,13 +1134,13 @@ func (t {{ $modelName }}Table) transactSave{{ $modelName }}And{{ $transactWithMo
 {{ end }}
 
 // encode{{ $modelName }} encodes a {{ $modelName }} as a DynamoDB map of attribute values.
-func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]*dynamodb.AttributeValue, error) {
+func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]types.AttributeValue, error) {
 {{- if not $hasCompositeAttrs }}
-  return dynamodbattribute.MarshalMap(ddb{{ $modelName }}{
+  return attributevalue.MarshalMap(ddb{{ $modelName }}{
     {{ $modelName }}: m,
   })
 {{- else }}
-  val, err := dynamodbattribute.MarshalMap(ddb{{ $modelName }}{
+  val, err := attributevalue.MarshalMap(ddb{{ $modelName }}{
     {{ $modelName }}: m,
   })
   if err != nil {
@@ -1149,7 +1157,7 @@ func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]*dynamodb.Att
         {{- end }}
   // add in composite attributes
         {{- if indexContainsCompositeAttribute $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
-  primaryKey, err := dynamodbattribute.MarshalMap(ddb{{ $modelName }}PrimaryKey{
+  primaryKey, err := attributevalue.MarshalMap(ddb{{ $modelName }}PrimaryKey{
     {{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
     {{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValue $xdbConfig $pk.AttributeName "m" }}{{ else }}{{ attributeToModelValue $xdbConfig $pk.AttributeName "m." }}{{ end }},
                 {{- end }}
@@ -1163,7 +1171,7 @@ func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]*dynamodb.Att
         {{- end }}
         {{- range $gsi := $xdbConfig.DynamoDB.GlobalSecondaryIndexes }}
         {{- if indexContainsCompositeAttribute $xdbConfig $gsi.KeySchema }}
-  {{ camelize $gsi.IndexName }}, err := dynamodbattribute.MarshalMap(ddb{{ $modelName }}GSI{{ pascalize $gsi.IndexName }}{
+  {{ camelize $gsi.IndexName }}, err := attributevalue.MarshalMap(ddb{{ $modelName }}GSI{{ pascalize $gsi.IndexName }}{
     {{- range $_, $sk := $gsi.KeySchema }}
     {{ pascalize $sk.AttributeName }}: {{ if isComposite $xdbConfig $sk.AttributeName }}{{ compositeValue $xdbConfig $sk.AttributeName "m" }}{{ else }}{{ attributeToModelValue $xdbConfig $sk.AttributeName "m." }}{{ end }},
                 {{- end }}
@@ -1181,9 +1189,9 @@ func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]*dynamodb.Att
 }
 
 // decode{{ $modelName }} translates a {{ $modelName }} stored in DynamoDB to a {{ $modelName }} struct.
-func decode{{ $modelName }}(m map[string]*dynamodb.AttributeValue, out *models.{{ $modelName }}) error {
+func decode{{ $modelName }}(m map[string]types.AttributeValue, out *models.{{ $modelName }}) error {
   var ddb{{ $modelName }} ddb{{ $modelName }}
-  if err := dynamodbattribute.UnmarshalMap(m, &ddb{{ $modelName }}); err != nil {
+  if err := attributevalue.UnmarshalMap(m, &ddb{{ $modelName }}); err != nil {
     return err
   }
   *out = ddb{{ $modelName }}.{{ $modelName }}
@@ -1211,7 +1219,7 @@ func decode{{ $modelName }}(m map[string]*dynamodb.AttributeValue, out *models.{
 }
 
 // decode{{ $modelName }}s translates a list of {{ $modelName }}s stored in DynamoDB to a slice of {{ $modelName }} structs.
-func decode{{ $modelName }}s(ms []map[string]*dynamodb.AttributeValue) ([]models.{{ $modelName }}, error) {
+func decode{{ $modelName }}s(ms []map[string]types.AttributeValue) ([]models.{{ $modelName }}, error) {
   {{ camelize $modelName }}s := make([]models.{{ $modelName }}, len(ms))
   for i, m := range ms {
     var {{ camelize $modelName }} models.{{ $modelName }}
