@@ -509,8 +509,8 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
     }
   }
   if input.StartingAfter != nil {
-    queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-      "{{ $rangeKey.AttributeName }}": &dynamodb.AttributeValue{
+    queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
+      "{{ $rangeKey.AttributeName }}": &types.AttributeValue{
       {{- if gt $lenRangeKeyAttributes 1 }}
         S: aws.String({{ compositeValuePage $xdbConfig $rangeKey.AttributeName "input.StartingAfter" }}),
       {{- else }}
@@ -539,7 +539,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
         {{- end }}
       {{- end }}
       },
-      "{{ $hashKey.AttributeName }}": &dynamodb.AttributeValue{
+      "{{ $hashKey.AttributeName }}": &types.AttributeValue{
         {{- if gt $lenHashKeyAttributes 1 }}
           S: aws.String({{ compositeValuePage $xdbConfig $hashKey.AttributeName "input.StartingAfter" }}),
         {{- else }}
@@ -775,8 +775,8 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
     }
   }
   if input.StartingAfter != nil {
-    queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-      "{{ $rangeKey.AttributeName }}": &dynamodb.AttributeValue{
+    queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
+      "{{ $rangeKey.AttributeName }}": &types.AttributeValue{
       {{- if gt $lenRangeKeyAttributes 1 }}
         S: aws.String({{ compositeValuePage $xdbConfig $rangeKey.AttributeName "input.StartingAfter" }}),
       {{- else }}
@@ -805,7 +805,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
         {{- end }}
       {{- end }}
       },
-      "{{ $hashKey.AttributeName }}": &dynamodb.AttributeValue{
+      "{{ $hashKey.AttributeName }}": &types.AttributeValue{
         {{- if gt $lenHashKeyAttributes 1 }}
           S: aws.String({{ compositeValuePage $xdbConfig $hashKey.AttributeName "input.StartingAfter" }}),
         {{- else }}
