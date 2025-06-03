@@ -708,12 +708,14 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
       }
     {{- end }}
   {{- end }}
+  // swad-get-331
   queryInput := &dynamodb.QueryInput{
     TableName: aws.String(t.TableName),
     IndexName: aws.String("{{ $gsi.IndexName }}"),
     ExpressionAttributeNames: map[string]string{
       "#{{ upper $hashKey.AttributeName }}": "{{ $hashKey.AttributeName }}",
     },
+    // swad-get-3312
     ExpressionAttributeValues: map[string]types.AttributeValue{
       ":{{ camelize $hashKey.AttributeName }}": &dynamodb.AttributeValue{
                           {{- $dynamoDBType := dynamoDBTypeForAttribute $xdbConfig $hashKey.AttributeName }}
@@ -738,6 +740,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
     ScanIndexForward: aws.Bool(!input.Descending),
     ConsistentRead:   aws.Bool(false),
   }
+  // swad-get-332
   if input.Limit != nil {
      queryInput.Limit = input.Limit
   }
@@ -748,6 +751,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
         {{- end }}
     queryInput.KeyConditionExpression = aws.String("#{{ upper $hashKey.AttributeName }} = :{{ camelize $hashKey.AttributeName }}")
   } else {
+    // swad-get-333
     queryInput.ExpressionAttributeNames["#{{ upper $rangeKey.AttributeName }}"] = aws.String("{{ $rangeKey.AttributeName }}")
     queryInput.ExpressionAttributeValues[":{{ camelize $rangeKey.AttributeName }}"] = &types.AttributeValue{
       {{- if gt $lenRangeKeyAttributes 1 }}
@@ -776,6 +780,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
       queryInput.KeyConditionExpression = aws.String("#{{ upper $hashKey.AttributeName }} = :{{ camelize $hashKey.AttributeName }} AND #{{ upper $rangeKey.AttributeName }} >= :{{ camelize $rangeKey.AttributeName }}")
     }
   }
+  // swad-get-334
   if input.StartingAfter != nil {
     queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
       "{{ $rangeKey.AttributeName }}": &types.AttributeValueMemberS{
@@ -910,6 +915,8 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
     }
   }
 
+  // swad-get-339
+
   totalRecordsProcessed := int32(0)
   var pageFnErr error
   pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
@@ -976,12 +983,13 @@ func (t {{ $modelName}}Table) get{{ $modelName }}By{{ $computedIndexName }}(ctx 
       "#{{ upper $ks.AttributeName }}": "{{ $ks.AttributeName }}",
     },
     ExpressionAttributeValues: map[string]types.AttributeValue{
-      ":{{ camelize $ks.AttributeName }}": &types.AttributeValue{
-                          {{- if eq $ksAttrDynamoDBType "S" }}
-        S: aws.String({{ if isComposite $xdbConfig $ks.AttributeName }}{{ compositeValue $xdbConfig $ks.AttributeName "" }}{{ else }}{{ varname $ks.AttributeName }}{{ end }}),
-                          {{- else if eq $ksAttrDynamoDBType "N" }}
-        N: aws.String(fmt.Sprintf("%d", {{ varname $ks.AttributeName }})),
-                          {{- end }}
+    {{- if eq $ksAttrDynamoDBType "S" }}
+      ":{{ camelize $ks.AttributeName }}": &types.AttributeValueMemberS{                         
+        Value: {{ if isComposite $xdbConfig $ks.AttributeName }}{{ compositeValue $xdbConfig $ks.AttributeName "" }}{{ else }}{{ varname $ks.AttributeName }}{{ end }},
+    {{- else if eq $ksAttrDynamoDBType "N" }}  
+      ":{{ camelize $ks.AttributeName }}": &types.AttributeValueMemberN{                    
+        Value: fmt.Sprintf("%d", {{ varname $ks.AttributeName }}),
+    {{- end }}
       },
     },
     KeyConditionExpression: aws.String("#{{ upper $ks.AttributeName }} = :{{ camelize $ks.AttributeName }}"),
