@@ -2,12 +2,13 @@ package db
 
 import (
 	"context"
+  "time"
 
-	"{{ .ModuleName }}{{.GoOutputPath}}/models{{.VersionSuffix}}"
-	"{{ .PackageName }}/{{ .OutputPath }}"
-	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
-	"github.com/go-openapi/strfmt"
-	{{- if anyTableUsesDateTime .XDBConfigs }}
+  "{{ .ModuleName }}{{.GoOutputPath}}/models{{.VersionSuffix}}"
+	{{- if anyTableHasTransactionsEnabled .XDBConfigs }}
+  "github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
+  {{- end }}
+  {{- if anyTableUsesDateTime .XDBConfigs }}
 	"github.com/go-openapi/strfmt"
         {{- end -}}
 	{{- if anyTableAllowsScans .XDBConfigs }}
