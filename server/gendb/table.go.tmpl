@@ -717,24 +717,26 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
     },
     // swad-get-3312
     ExpressionAttributeValues: map[string]types.AttributeValue{
-      ":{{ camelize $hashKey.AttributeName }}": &dynamodb.AttributeValue{
-                          {{- $dynamoDBType := dynamoDBTypeForAttribute $xdbConfig $hashKey.AttributeName }}
-                          {{- $attrGoType := goTypeForAttribute $xdbConfig $hashKey.AttributeName }}
-                          {{- if eq $dynamoDBType "S" }}
-                            {{- if isComposite $xdbConfig $hashKey.AttributeName }}
-                              Value: {{ compositeValue $xdbConfig $hashKey.AttributeName "input" }},
-                            {{- else if eq $attrGoType "strfmt.DateTime" }}
-                              Value: {{ compositeValue $xdbConfig $hashKey.AttributeName "input" }},
-                            {{- else if eq $attrGoType "strfmt.Date" }}
-                              Value: {{ compositeValue $xdbConfig $hashKey.AttributeName "input" }},
-                            {{- else if attributeIsEnum $xdbConfig $hashKey.AttributeName }}
-                              Value: string(input.{{ pascalize $hashKey.AttributeName }}),
-                            {{- else }}
-                              Value: input.{{ pascalize $hashKey.AttributeName }},
-                            {{- end }}
-                          {{- else if eq $dynamoDBType "N" }}
-        N: aws.String(fmt.Sprintf("%d", input.{{ pascalize $hashKey.AttributeName }})),
-                          {{- end }}
+    {{- $dynamoDBType := dynamoDBTypeForAttribute $xdbConfig $hashKey.AttributeName }}
+    {{- if eq $dynamoDBType "S" }}
+      ":{{ camelize $hashKey.AttributeName }}": &types.AttributeValueMemberS{                          
+          {{- $attrGoType := goTypeForAttribute $xdbConfig $hashKey.AttributeName }}
+          {{- if isComposite $xdbConfig $hashKey.AttributeName }}
+            Value: {{ compositeValue $xdbConfig $hashKey.AttributeName "input" }},
+          {{- else if eq $attrGoType "strfmt.DateTime" }}
+            Value: {{ compositeValue $xdbConfig $hashKey.AttributeName "input" }},
+          {{- else if eq $attrGoType "strfmt.Date" }}
+            Value: {{ compositeValue $xdbConfig $hashKey.AttributeName "input" }},
+          {{- else if attributeIsEnum $xdbConfig $hashKey.AttributeName }}
+            Value: string(input.{{ pascalize $hashKey.AttributeName }}),
+          {{- else }}
+            Value: input.{{ pascalize $hashKey.AttributeName }},
+          {{- end }}
+    {{- else if eq $dynamoDBType "N" }}
+      ":{{ camelize $hashKey.AttributeName }}": &types.AttributeValueMemberN{
+        Value: fmt.Sprintf("%d", input.{{ pascalize $hashKey.AttributeName }}),
+    {{- end }}
+
       },
     },
     ScanIndexForward: aws.Bool(!input.Descending),
@@ -752,7 +754,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
     queryInput.KeyConditionExpression = aws.String("#{{ upper $hashKey.AttributeName }} = :{{ camelize $hashKey.AttributeName }}")
   } else {
     // swad-get-333
-    queryInput.ExpressionAttributeNames["#{{ upper $rangeKey.AttributeName }}"] = aws.String("{{ $rangeKey.AttributeName }}")
+    queryInput.ExpressionAttributeNames["#{{ upper $rangeKey.AttributeName }}"] = "{{ $rangeKey.AttributeName }}"
     queryInput.ExpressionAttributeValues[":{{ camelize $rangeKey.AttributeName }}"] = &types.AttributeValue{
       {{- if gt $lenRangeKeyAttributes 1 }}
         Value: {{ compositeValue $xdbConfig $rangeKey.AttributeName "input.StartingAt" }},
