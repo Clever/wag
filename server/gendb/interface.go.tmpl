@@ -84,6 +84,9 @@ type Interface interface {
 // Int64 returns a pointer to the int64 value passed in.
 func Int64(i int64) *int64 { return &i }
 
+// Int32 returns a pointer to the int32 value passed in.
+func Int32(i int32) *int32 { return &i }
+
 // String returns a pointer to the string value passed in.
 func String(s string) *string { return &s }
 
@@ -107,7 +110,7 @@ type Scan{{ $modelName }}sInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -159,7 +162,7 @@ type Get{{ $modelName }}sBy{{ $indexName }}Input struct {
   // DisableConsistentRead turns off the default behavior of running a consistent read.
   DisableConsistentRead bool
   // Limit is an optional limit of how many items to evaluate.
-	Limit  *int64
+	Limit  *int32
   {{- if gt $lenNonIndexAttributes 0 }}
     // FilterValues is an optional array of filters to apply on various table attributes
     FilterValues []{{ $modelName }}By{{ $indexName }}FilterValues
@@ -216,7 +219,7 @@ type Get{{ $modelName }}sBy{{ $computedIndexName }}Input struct {
 	StartingAfter *models.{{ $modelName }}
   Descending bool
   // Limit is an optional limit of how many items to evaluate.
-	Limit  *int64
+	Limit  *int32
 }
 {{- end }}
 
@@ -243,7 +246,7 @@ type Scan{{ $modelName }}sBy{{ $computedIndexName }}Input struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
