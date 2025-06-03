@@ -133,13 +133,17 @@ func (t {{ $modelName }}Table) save{{ $modelName }}(ctx context.Context, m model
   if err != nil {
     return err
   }
-        {{- if $xdbConfig.AllowOverwrites }}
+
+  {{- if $xdbConfig.AllowOverwrites }}
+  
   _, err = t.DynamoDBAPI.PutItem(ctx, &dynamodb.PutItemInput{
     TableName: aws.String(t.TableName),
     Item:      data,
   })
   return err
-        {{- else }}
+
+  {{- else }}
+
   _, err = t.DynamoDBAPI.PutItem(ctx, &dynamodb.PutItemInput{
     TableName: aws.String(t.TableName),
     Item:      data,
@@ -148,12 +152,7 @@ func (t {{ $modelName }}Table) save{{ $modelName }}(ctx context.Context, m model
       "#{{ upper $pk.AttributeName }}": "{{ $pk.AttributeName }}",
       {{- end }}
     },
-    ConditionExpression: aws.String("
-                  {{- range $i, $pk := $xdbConfig.DynamoDB.KeySchema -}}
-                  {{- if ne $i 0 }} AND {{ end -}}
-                  attribute_not_exists(#{{ upper $pk.AttributeName }})
-                  {{- end -}}
-                        "),
+    ConditionExpression: aws.String("{{- range $i, $pk := $xdbConfig.DynamoDB.KeySchema -}}{{- if $i }} AND {{ end }}attribute_not_exists(#{{ upper $pk.AttributeName }}){{- end }}"),
 	})
 	if err != nil {
 		var resourceNotFoundErr *types.ResourceNotFoundException
@@ -171,7 +170,8 @@ func (t {{ $modelName }}Table) save{{ $modelName }}(ctx context.Context, m model
 		return err
 	}
 	return nil
-        {{- end }}
+
+  {{- end }}
 }
 
 {{- if $xdbConfig.AllowBatchWrites }}
@@ -431,7 +431,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
       return fmt.Errorf("Can specify only one of input.{{ pascalize $rangeKey.AttributeName }}StartingAt or input.StartingAfter")
     }
   {{- end }}
-  {{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema  "HASH" }}
+  {{- range $attributeName := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
     {{- $dynamoDBType := dynamoDBTypeForAttribute $xdbConfig $attributeName }}
     {{- $attrGoType := goTypeForAttribute $xdbConfig $attributeName }}
     {{- if eq $dynamoDBType "S" }}
@@ -448,7 +448,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
   {{- end }}
   queryInput := &dynamodb.QueryInput{
     TableName: aws.String(t.TableName),
-    ExpressionAttributeNames: map[string]*string{
+    ExpressionAttributeNames: map[string]string{
       "#{{ upper $hashKey.AttributeName }}": aws.String("{{ $hashKey.AttributeName }}"),
     },
     ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
@@ -481,7 +481,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
     queryInput.KeyConditionExpression = aws.String("#{{ upper $hashKey.AttributeName }} = :{{ camelize $hashKey.AttributeName }}")
   } else {
     queryInput.ExpressionAttributeNames["#{{ upper $rangeKey.AttributeName }}"] = aws.String("{{ $rangeKey.AttributeName }}")
-    queryInput.ExpressionAttributeValues[":{{ camelize $rangeKey.AttributeName }}"] = &dynamodb.AttributeValue{
+    queryInput.ExpressionAttributeValues[":{{ camelize $rangeKey.AttributeName }}"] = &types.AttributeValue{
     {{- if gt $lenRangeKeyAttributes 1 }}
                       S: aws.String({{ compositeValue $xdbConfig $rangeKey.AttributeName "input.StartingAt" }}),
                       {{- else }}
@@ -613,24 +613,19 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
 		return true
 	}
 
-	err := t.DynamoDBAPI.QueryPages(ctx, queryInput, pageFn)
-	{{- if $xdbConfig.AllowOverwrites }}
-	if err != nil {
-		return err
-	}
-	{{- else }}
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-				case dynamodb.ErrCodeResourceNotFoundException:
-					return fmt.Errorf("table or index not found: %s", t.TableName)
+	paginator := dynamodb.NewQueryPaginator(t.DynamoDBAPI, queryInput)
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(ctx)
+		if err != nil {
+			var resourceNotFoundErr *types.ResourceNotFoundException
+			if errors.As(err, &resourceNotFoundErr) {
+				return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
+			return err
 		}
-		return err
-	}
-	{{- end }}
-	if pageFnErr != nil {
-		return pageFnErr
+		if !pageFn(output, !paginator.HasMorePages()) {
+			break
+		}
 	}
 
   return nil
@@ -752,7 +747,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
     queryInput.KeyConditionExpression = aws.String("#{{ upper $hashKey.AttributeName }} = :{{ camelize $hashKey.AttributeName }}")
   } else {
     queryInput.ExpressionAttributeNames["#{{ upper $rangeKey.AttributeName }}"] = aws.String("{{ $rangeKey.AttributeName }}")
-    queryInput.ExpressionAttributeValues[":{{ camelize $rangeKey.AttributeName }}"] = &dynamodb.AttributeValue{
+    queryInput.ExpressionAttributeValues[":{{ camelize $rangeKey.AttributeName }}"] = &types.AttributeValue{
       {{- if gt $lenRangeKeyAttributes 1 }}
                         S: aws.String({{ compositeValue $xdbConfig $rangeKey.AttributeName "input.StartingAt" }}),
                         {{- else }}
@@ -941,24 +936,19 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
 		return true
 	}
 
-	err := t.DynamoDBAPI.QueryPages(ctx, queryInput, pageFn)
-	{{- if $xdbConfig.AllowOverwrites }}
-	if err != nil {
-		return err
-	}
-	{{- else }}
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-				case dynamodb.ErrCodeResourceNotFoundException:
-					return fmt.Errorf("table or index not found: %s", t.TableName)
+	paginator := dynamodb.NewQueryPaginator(t.DynamoDBAPI, queryInput)
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(ctx)
+		if err != nil {
+			var resourceNotFoundErr *types.ResourceNotFoundException
+			if errors.As(err, &resourceNotFoundErr) {
+				return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
+			return err
 		}
-		return err
-	}
-	{{- end }}
-	if pageFnErr != nil {
-		return pageFnErr
+		if !pageFn(output, !paginator.HasMorePages()) {
+			break
+		}
 	}
 
   return nil
