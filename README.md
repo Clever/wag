@@ -1,4 +1,4 @@
-# wag
+# wag 
 
 sWAGger - Web API Generator.
 A custom Web API Generator written by Clever.
