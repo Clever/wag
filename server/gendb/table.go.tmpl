@@ -308,6 +308,7 @@ func (t {{ $modelName }}Table) get{{ $modelName }}(ctx context.Context,
 
 {{ if $xdbConfig.AllowPrimaryIndexScan }}
 func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input db.Scan{{ $modelName }}sInput, fn func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool) error {
+  // swad-scan-1
   scanInput := &dynamodb.ScanInput{
     TableName:      aws.String(t.TableName),
     ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -342,7 +343,7 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
       return fmt.Errorf("error getting next page: %s", err.Error())
     }
 
-    items, err := decode{{ $modelName }}(out.Items)
+    items, err := decode{{ $modelName }}s(out.Items)
     if err != nil {
       return fmt.Errorf("error decoding items: %s", err.Error())
     }
@@ -384,35 +385,36 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
 
 {{- if gt $lenNonIndexAttributes 0 }}
   func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}ParseFilters(queryInput *dynamodb.QueryInput, input db.Get{{ $modelName }}sBy{{ $computedIndexName }}Input) {
+    // swad-get-11
     for _, filterValue := range input.FilterValues {
       switch filterValue.AttributeName {
       {{- range $attributeName := $nonIndexAttributeNames}}
       case db.{{ $modelName }}{{ pascalize $attributeName }}:
-        queryInput.ExpressionAttributeNames["#{{ upper $attributeName }}"] = aws.String(string(db.{{ $modelName }}{{ pascalize $attributeName }}))
+        queryInput.ExpressionAttributeNames["#{{ upper $attributeName }}"] = string(db.{{ $modelName }}{{ pascalize $attributeName }})
         {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $attributeName }}
         {{- $attrGoType := goTypeForAttribute $xdbConfig $attributeName }}
         for i, attributeValue := range filterValue.AttributeValues {
           {{- if eq $attrDynamoDBType "S" }}
             {{- if eq $attrGoType "strfmt.DateTime" }}
-              queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.{{ $modelName }}{{ pascalize $attributeName }}), i)] = &dynamodb.AttributeValue{
-                S: aws.String(datetimeToDynamoTimeString(attributeValue.({{$attrGoType}}))),
+              queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.{{ $modelName }}{{ pascalize $attributeName }}), i)] = &types.AttributeValueMemberS{
+                Value: datetimeToDynamoTimeString(attributeValue.({{$attrGoType}})),
               }
             {{- else if eq $attrGoType "strfmt.Date" }}
-              queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.{{ $modelName }}{{ pascalize $attributeName }}), i)] = &dynamodb.AttributeValue{
-                S: aws.String(dateToDynamoTimeString(attributeValue.({{$attrGoType}}))),
+              queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.{{ $modelName }}{{ pascalize $attributeName }}), i)] = &types.AttributeValueMemberS{
+                Value: dateToDynamoTimeString(attributeValue.({{$attrGoType}})),
               }
             {{- else }}
-              queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.{{ $modelName }}{{ pascalize $attributeName }}), i)] = &dynamodb.AttributeValue{
-                S: aws.String(attributeValue.(string)),
+              queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.{{ $modelName }}{{ pascalize $attributeName }}), i)] = &types.AttributeValueMemberS{
+                Value: attributeValue.(string),
               }
             {{- end }}
           {{- else if eq $attrDynamoDBType "N" }}
-            queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.{{ $modelName }}{{ pascalize $attributeName }}), i)] = &dynamodb.AttributeValue{
-              N: aws.String(fmt.Sprint(attributeValue.({{$attrGoType}}))),
+            queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.{{ $modelName }}{{ pascalize $attributeName }}), i)] = &types.AttributeValueMemberN{
+              Value: fmt.Sprint(attributeValue.({{$attrGoType}})),
             }
           {{- else if eq $attrDynamoDBType "B" }}
-            queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.{{ $modelName }}{{ pascalize $attributeName }}), i)] = &dynamodb.AttributeValue{
-              B: attributeValue.({{$attrGoType}}),
+            queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.{{ $modelName }}{{ pascalize $attributeName }}), i)] = &types.AttributeValueMemberB{
+              Value: attributeValue.({{$attrGoType}}),
             }
           {{- end }}
         }
@@ -423,6 +425,7 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
 {{- end }}
 
 func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx context.Context, input db.Get{{ $modelName }}sBy{{ $computedIndexName }}Input, fn func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool) error {
+  // swad-get-2
   {{- if gt $lenRangeKeyAttributes 1 }}
     if (input.StartingAt != nil && input.StartingAfter != nil) {
       return fmt.Errorf("Can specify only one of StartingAt or StartingAfter")
@@ -450,10 +453,10 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
   queryInput := &dynamodb.QueryInput{
     TableName: aws.String(t.TableName),
     ExpressionAttributeNames: map[string]string{
-      "#{{ upper $hashKey.AttributeName }}": aws.String("{{ $hashKey.AttributeName }}"),
+      "#{{ upper $hashKey.AttributeName }}": "{{ $hashKey.AttributeName }}",
     },
-    ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-      ":{{ camelize $hashKey.AttributeName }}": &dynamodb.AttributeValue{
+    ExpressionAttributeValues: map[string]types.AttributeValue{
+      ":{{ camelize $hashKey.AttributeName }}": &types.AttributeValueMemberS{
                           {{- $dynamoDBType := dynamoDBTypeForAttribute $xdbConfig $hashKey.AttributeName }}
                           {{- if eq $dynamoDBType "S" }}
                             {{- if isComposite $xdbConfig $hashKey.AttributeName }}
@@ -481,10 +484,10 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
         {{- end }}
     queryInput.KeyConditionExpression = aws.String("#{{ upper $hashKey.AttributeName }} = :{{ camelize $hashKey.AttributeName }}")
   } else {
-    queryInput.ExpressionAttributeNames["#{{ upper $rangeKey.AttributeName }}"] = aws.String("{{ $rangeKey.AttributeName }}")
+    queryInput.ExpressionAttributeNames["#{{ upper $rangeKey.AttributeName }}"] = "{{ $rangeKey.AttributeName }}"
     queryInput.ExpressionAttributeValues[":{{ camelize $rangeKey.AttributeName }}"] = &types.AttributeValue{
     {{- if gt $lenRangeKeyAttributes 1 }}
-                      S: aws.String({{ compositeValue $xdbConfig $rangeKey.AttributeName "input.StartingAt" }}),
+                      Value: {{ compositeValue $xdbConfig $rangeKey.AttributeName "input.StartingAt" }},
                       {{- else }}
                       {{- $attrGoType := goTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
                       {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
@@ -513,7 +516,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
     queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
       "{{ $rangeKey.AttributeName }}": &types.AttributeValue{
       {{- if gt $lenRangeKeyAttributes 1 }}
-        S: aws.String({{ compositeValuePage $xdbConfig $rangeKey.AttributeName "input.StartingAfter" }}),
+        Value: {{ compositeValuePage $xdbConfig $rangeKey.AttributeName "input.StartingAfter" }},
       {{- else }}
           {{- $attrGoType := goTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
           {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
@@ -678,6 +681,7 @@ func (t {{ $modelName }}Table) delete{{ $modelName }}(ctx context.Context,
 {{- $primaryHashKeyAttributes := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
 {{- $lenPrimaryHashKeyAttributes := len $primaryHashKeyAttributes }}
 func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx context.Context, input db.Get{{ $modelName }}sBy{{ $computedIndexName }}Input, fn func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool) error {
+  // swad-get-33
   {{- if gt $lenRangeKeyAttributes 1 }}
     if input.StartingAt != nil && input.StartingAfter != nil {
       return fmt.Errorf("Can specify only one of input.StartingAt or input.StartingAfter")
