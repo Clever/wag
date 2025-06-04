@@ -2,15 +2,16 @@ package dynamodb
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/Clever/wag/samples/gen-go-db/models/v9"
 	"github.com/Clever/wag/samples/v9/gen-go-db/server/db"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/go-openapi/strfmt"
 )
 
@@ -18,7 +19,7 @@ var _ = strfmt.DateTime{}
 
 // ThingWithMultiUseCompositeAttributeTable represents the user-configurable properties of the ThingWithMultiUseCompositeAttribute table.
 type ThingWithMultiUseCompositeAttributeTable struct {
-	DynamoDBAPI        dynamodbiface.DynamoDBAPI
+	DynamoDBAPI        *dynamodb.Client
 	Prefix             string
 	TableName          string
 	ReadCapacityUnits  int64
@@ -48,74 +49,74 @@ type ddbThingWithMultiUseCompositeAttribute struct {
 }
 
 func (t ThingWithMultiUseCompositeAttributeTable) create(ctx context.Context) error {
-	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
-		AttributeDefinitions: []*dynamodb.AttributeDefinition{
+	if _, err := t.DynamoDBAPI.CreateTable(ctx, &dynamodb.CreateTableInput{
+		AttributeDefinitions: []types.AttributeDefinition{
 			{
 				AttributeName: aws.String("four"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 			{
 				AttributeName: aws.String("one"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 			{
 				AttributeName: aws.String("one_two"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 			{
 				AttributeName: aws.String("three"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 		},
-		KeySchema: []*dynamodb.KeySchemaElement{
+		KeySchema: []types.KeySchemaElement{
 			{
 				AttributeName: aws.String("one"),
-				KeyType:       aws.String(dynamodb.KeyTypeHash),
+				KeyType:       types.KeyTypeHash,
 			},
 		},
-		GlobalSecondaryIndexes: []*dynamodb.GlobalSecondaryIndex{
+		GlobalSecondaryIndexes: []types.GlobalSecondaryIndex{
 			{
 				IndexName: aws.String("threeIndex"),
-				Projection: &dynamodb.Projection{
-					ProjectionType: aws.String("ALL"),
+				Projection: &types.Projection{
+					ProjectionType: types.ProjectionType("ALL"),
 				},
-				KeySchema: []*dynamodb.KeySchemaElement{
+				KeySchema: []types.KeySchemaElement{
 					{
 						AttributeName: aws.String("three"),
-						KeyType:       aws.String(dynamodb.KeyTypeHash),
+						KeyType:       types.KeyTypeHash,
 					},
 					{
 						AttributeName: aws.String("one_two"),
-						KeyType:       aws.String(dynamodb.KeyTypeRange),
+						KeyType:       types.KeyTypeRange,
 					},
 				},
-				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+				ProvisionedThroughput: &types.ProvisionedThroughput{
 					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 				},
 			},
 			{
 				IndexName: aws.String("fourIndex"),
-				Projection: &dynamodb.Projection{
-					ProjectionType: aws.String("ALL"),
+				Projection: &types.Projection{
+					ProjectionType: types.ProjectionType("ALL"),
 				},
-				KeySchema: []*dynamodb.KeySchemaElement{
+				KeySchema: []types.KeySchemaElement{
 					{
 						AttributeName: aws.String("four"),
-						KeyType:       aws.String(dynamodb.KeyTypeHash),
+						KeyType:       types.KeyTypeHash,
 					},
 					{
 						AttributeName: aws.String("one_two"),
-						KeyType:       aws.String(dynamodb.KeyTypeRange),
+						KeyType:       types.KeyTypeRange,
 					},
 				},
-				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+				ProvisionedThroughput: &types.ProvisionedThroughput{
 					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 				},
 			},
 		},
-		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+		ProvisionedThroughput: &types.ProvisionedThroughput{
 			ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 			WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 		},
@@ -131,7 +132,8 @@ func (t ThingWithMultiUseCompositeAttributeTable) saveThingWithMultiUseComposite
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
+
+	_, err = t.DynamoDBAPI.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(t.TableName),
 		Item:      data,
 	})
@@ -139,13 +141,14 @@ func (t ThingWithMultiUseCompositeAttributeTable) saveThingWithMultiUseComposite
 }
 
 func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeAttribute(ctx context.Context, one string) (*models.ThingWithMultiUseCompositeAttribute, error) {
-	key, err := dynamodbattribute.MarshalMap(ddbThingWithMultiUseCompositeAttributePrimaryKey{
+	// swad-get-7
+	key, err := attributevalue.MarshalMap(ddbThingWithMultiUseCompositeAttributePrimaryKey{
 		One: one,
 	})
 	if err != nil {
 		return nil, err
 	}
-	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
+	res, err := t.DynamoDBAPI.GetItem(ctx, &dynamodb.GetItemInput{
 		Key:            key,
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(true),
@@ -169,62 +172,67 @@ func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeA
 }
 
 func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseCompositeAttributes(ctx context.Context, input db.ScanThingWithMultiUseCompositeAttributesInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error {
+	// swad-scan-1
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
 		Limit:          input.Limit,
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
 		// must provide only the fields constituting the index
-		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+		scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"one": exclusiveStartKey["one"],
 		}
 	}
-	totalRecordsProcessed := int64(0)
-	var innerErr error
-	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+	totalRecordsProcessed := int32(0)
+
+	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+	for paginator.HasMorePages() {
+		out, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting next page: %s", err.Error())
+		}
+
 		items, err := decodeThingWithMultiUseCompositeAttributes(out.Items)
 		if err != nil {
-			innerErr = fmt.Errorf("error decoding %s", err.Error())
-			return false
+			return fmt.Errorf("error decoding items: %s", err.Error())
 		}
+
 		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
-					innerErr = err
-					return false
+					return err
 				}
 			}
-			isLastModel := lastPage && i == len(items)-1
+
+			isLastModel := !paginator.HasMorePages() && i == len(items)-1
 			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-				return false
+				return nil
 			}
+
 			totalRecordsProcessed++
-			// if the Limit of records have been passed to fn, don't pass anymore records.
 			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-				return false
+				return nil
 			}
 		}
-		return true
-	})
-	if innerErr != nil {
-		return innerErr
 	}
-	return err
+
+	return nil
 }
 
 func (t ThingWithMultiUseCompositeAttributeTable) deleteThingWithMultiUseCompositeAttribute(ctx context.Context, one string) error {
-	key, err := dynamodbattribute.MarshalMap(ddbThingWithMultiUseCompositeAttributePrimaryKey{
+
+	key, err := attributevalue.MarshalMap(ddbThingWithMultiUseCompositeAttributePrimaryKey{
 		One: one,
 	})
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
+	_, err = t.DynamoDBAPI.DeleteItem(ctx, &dynamodb.DeleteItemInput{
 		Key:       key,
 		TableName: aws.String(t.TableName),
 	})
@@ -236,57 +244,74 @@ func (t ThingWithMultiUseCompositeAttributeTable) deleteThingWithMultiUseComposi
 }
 
 func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx context.Context, input db.GetThingWithMultiUseCompositeAttributesByThreeAndOneTwoInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error {
+	// swad-get-33
 	if input.StartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.StartingAt or input.StartingAfter")
 	}
+	// swad-get-33f
 	if input.Three == "" {
 		return fmt.Errorf("Hash key input.Three cannot be empty")
 	}
+	// swad-get-331
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("threeIndex"),
-		ExpressionAttributeNames: map[string]*string{
-			"#THREE": aws.String("three"),
+		ExpressionAttributeNames: map[string]string{
+			"#THREE": "three",
 		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":three": &dynamodb.AttributeValue{
-				S: aws.String(input.Three),
+		// swad-get-3312
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":three": &types.AttributeValueMemberS{
+				// swad-get-33e
+				Value: input.Three,
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
+	// swad-get-332
 	if input.Limit != nil {
 		queryInput.Limit = input.Limit
 	}
 	if input.StartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#THREE = :three")
 	} else {
-		queryInput.ExpressionAttributeNames["#ONE_TWO"] = aws.String("one_two")
-		queryInput.ExpressionAttributeValues[":oneTwo"] = &dynamodb.AttributeValue{
-			S: aws.String(fmt.Sprintf("%s_%s", input.StartingAt.One, input.StartingAt.Two)),
+		// swad-get-333
+		queryInput.ExpressionAttributeNames["#ONE_TWO"] = "one_two"
+
+		// swad-get-3331a
+		queryInput.ExpressionAttributeValues[":oneTwo"] = &types.AttributeValueMemberS{
+			Value: fmt.Sprintf("%s_%s", input.StartingAt.One, input.StartingAt.Two),
 		}
+
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#THREE = :three AND #ONE_TWO <= :oneTwo")
 		} else {
 			queryInput.KeyConditionExpression = aws.String("#THREE = :three AND #ONE_TWO >= :oneTwo")
 		}
 	}
+	// swad-get-334
 	if input.StartingAfter != nil {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"one_two": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s_%s", *input.StartingAfter.One, *input.StartingAfter.Two)),
+		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
+			"one_two": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s_%s", *input.StartingAfter.One, *input.StartingAfter.Two),
 			},
-			"three": &dynamodb.AttributeValue{
-				S: aws.String(*input.StartingAfter.Three),
+			// swad-get-3341
+			"three": &types.AttributeValueMemberS{
+				Value: *input.StartingAfter.Three,
 			},
-			"one": &dynamodb.AttributeValue{
-				S: aws.String(*input.StartingAfter.One),
+			// swad-get-3342
+
+			// swad-get-336
+			"one": &types.AttributeValueMemberS{
+				Value: *input.StartingAfter.One,
 			},
 		}
 	}
 
-	totalRecordsProcessed := int64(0)
+	// swad-get-339
+
+	totalRecordsProcessed := int32(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
@@ -314,10 +339,21 @@ func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeA
 		return true
 	}
 
-	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
-	if err != nil {
-		return err
+	paginator := dynamodb.NewQueryPaginator(t.DynamoDBAPI, queryInput)
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(ctx)
+		if err != nil {
+			var resourceNotFoundErr *types.ResourceNotFoundException
+			if errors.As(err, &resourceNotFoundErr) {
+				return fmt.Errorf("table or index not found: %s", t.TableName)
+			}
+			return err
+		}
+		if !pageFn(output, !paginator.HasMorePages()) {
+			break
+		}
 	}
+
 	if pageFnErr != nil {
 		return pageFnErr
 	}
@@ -332,104 +368,124 @@ func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseComposite
 		IndexName:      aws.String("threeIndex"),
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
 		// must provide the fields constituting the index and the primary key
 		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
-		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+		scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"one":   exclusiveStartKey["one"],
 			"three": exclusiveStartKey["three"],
-			"one_two": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s_%s", *input.StartingAfter.One, *input.StartingAfter.Two)),
+			"one_two": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s_%s", *input.StartingAfter.One, *input.StartingAfter.Two),
 			},
 		}
 	}
-	totalRecordsProcessed := int64(0)
-	var innerErr error
-	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+	totalRecordsProcessed := int32(0)
+
+	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+	for paginator.HasMorePages() {
+		out, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting next page: %s", err.Error())
+		}
+
 		items, err := decodeThingWithMultiUseCompositeAttributes(out.Items)
 		if err != nil {
-			innerErr = fmt.Errorf("error decoding %s", err.Error())
-			return false
+			return fmt.Errorf("error decoding items: %s", err.Error())
 		}
+
 		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
-					innerErr = err
-					return false
+					return err
 				}
 			}
-			isLastModel := lastPage && i == len(items)-1
+
+			isLastModel := !paginator.HasMorePages() && i == len(items)-1
 			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-				return false
+				return nil
 			}
+
 			totalRecordsProcessed++
-			// if the Limit of records have been passed to fn, don't pass anymore records.
 			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-				return false
+				return nil
 			}
 		}
-		return true
-	})
-	if innerErr != nil {
-		return innerErr
 	}
-	return err
+
+	return nil
 }
 func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx context.Context, input db.GetThingWithMultiUseCompositeAttributesByFourAndOneTwoInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error {
+	// swad-get-33
 	if input.StartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.StartingAt or input.StartingAfter")
 	}
+	// swad-get-33f
 	if input.Four == "" {
 		return fmt.Errorf("Hash key input.Four cannot be empty")
 	}
+	// swad-get-331
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("fourIndex"),
-		ExpressionAttributeNames: map[string]*string{
-			"#FOUR": aws.String("four"),
+		ExpressionAttributeNames: map[string]string{
+			"#FOUR": "four",
 		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":four": &dynamodb.AttributeValue{
-				S: aws.String(input.Four),
+		// swad-get-3312
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":four": &types.AttributeValueMemberS{
+				// swad-get-33e
+				Value: input.Four,
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
+	// swad-get-332
 	if input.Limit != nil {
 		queryInput.Limit = input.Limit
 	}
 	if input.StartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#FOUR = :four")
 	} else {
-		queryInput.ExpressionAttributeNames["#ONE_TWO"] = aws.String("one_two")
-		queryInput.ExpressionAttributeValues[":oneTwo"] = &dynamodb.AttributeValue{
-			S: aws.String(fmt.Sprintf("%s_%s", input.StartingAt.One, input.StartingAt.Two)),
+		// swad-get-333
+		queryInput.ExpressionAttributeNames["#ONE_TWO"] = "one_two"
+
+		// swad-get-3331a
+		queryInput.ExpressionAttributeValues[":oneTwo"] = &types.AttributeValueMemberS{
+			Value: fmt.Sprintf("%s_%s", input.StartingAt.One, input.StartingAt.Two),
 		}
+
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#FOUR = :four AND #ONE_TWO <= :oneTwo")
 		} else {
 			queryInput.KeyConditionExpression = aws.String("#FOUR = :four AND #ONE_TWO >= :oneTwo")
 		}
 	}
+	// swad-get-334
 	if input.StartingAfter != nil {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"one_two": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s_%s", *input.StartingAfter.One, *input.StartingAfter.Two)),
+		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
+			"one_two": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s_%s", *input.StartingAfter.One, *input.StartingAfter.Two),
 			},
-			"four": &dynamodb.AttributeValue{
-				S: aws.String(*input.StartingAfter.Four),
+			// swad-get-3341
+			"four": &types.AttributeValueMemberS{
+				Value: *input.StartingAfter.Four,
 			},
-			"one": &dynamodb.AttributeValue{
-				S: aws.String(*input.StartingAfter.One),
+			// swad-get-3342
+
+			// swad-get-336
+			"one": &types.AttributeValueMemberS{
+				Value: *input.StartingAfter.One,
 			},
 		}
 	}
 
-	totalRecordsProcessed := int64(0)
+	// swad-get-339
+
+	totalRecordsProcessed := int32(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
@@ -457,10 +513,21 @@ func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeA
 		return true
 	}
 
-	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
-	if err != nil {
-		return err
+	paginator := dynamodb.NewQueryPaginator(t.DynamoDBAPI, queryInput)
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(ctx)
+		if err != nil {
+			var resourceNotFoundErr *types.ResourceNotFoundException
+			if errors.As(err, &resourceNotFoundErr) {
+				return fmt.Errorf("table or index not found: %s", t.TableName)
+			}
+			return err
+		}
+		if !pageFn(output, !paginator.HasMorePages()) {
+			break
+		}
 	}
+
 	if pageFnErr != nil {
 		return pageFnErr
 	}
@@ -475,56 +542,59 @@ func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseComposite
 		IndexName:      aws.String("fourIndex"),
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
 		// must provide the fields constituting the index and the primary key
 		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
-		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+		scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"one":  exclusiveStartKey["one"],
 			"four": exclusiveStartKey["four"],
-			"one_two": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s_%s", *input.StartingAfter.One, *input.StartingAfter.Two)),
+			"one_two": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s_%s", *input.StartingAfter.One, *input.StartingAfter.Two),
 			},
 		}
 	}
-	totalRecordsProcessed := int64(0)
-	var innerErr error
-	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+	totalRecordsProcessed := int32(0)
+
+	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+	for paginator.HasMorePages() {
+		out, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting next page: %s", err.Error())
+		}
+
 		items, err := decodeThingWithMultiUseCompositeAttributes(out.Items)
 		if err != nil {
-			innerErr = fmt.Errorf("error decoding %s", err.Error())
-			return false
+			return fmt.Errorf("error decoding items: %s", err.Error())
 		}
+
 		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
-					innerErr = err
-					return false
+					return err
 				}
 			}
-			isLastModel := lastPage && i == len(items)-1
+
+			isLastModel := !paginator.HasMorePages() && i == len(items)-1
 			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-				return false
+				return nil
 			}
+
 			totalRecordsProcessed++
-			// if the Limit of records have been passed to fn, don't pass anymore records.
 			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-				return false
+				return nil
 			}
 		}
-		return true
-	})
-	if innerErr != nil {
-		return innerErr
 	}
-	return err
+
+	return nil
 }
 
 // encodeThingWithMultiUseCompositeAttribute encodes a ThingWithMultiUseCompositeAttribute as a DynamoDB map of attribute values.
-func encodeThingWithMultiUseCompositeAttribute(m models.ThingWithMultiUseCompositeAttribute) (map[string]*dynamodb.AttributeValue, error) {
-	val, err := dynamodbattribute.MarshalMap(ddbThingWithMultiUseCompositeAttribute{
+func encodeThingWithMultiUseCompositeAttribute(m models.ThingWithMultiUseCompositeAttribute) (map[string]types.AttributeValue, error) {
+	val, err := attributevalue.MarshalMap(ddbThingWithMultiUseCompositeAttribute{
 		ThingWithMultiUseCompositeAttribute: m,
 	})
 	if err != nil {
@@ -538,7 +608,7 @@ func encodeThingWithMultiUseCompositeAttribute(m models.ThingWithMultiUseComposi
 		return nil, fmt.Errorf("two cannot contain '_': %s", *m.Two)
 	}
 	// add in composite attributes
-	threeIndex, err := dynamodbattribute.MarshalMap(ddbThingWithMultiUseCompositeAttributeGSIThreeIndex{
+	threeIndex, err := attributevalue.MarshalMap(ddbThingWithMultiUseCompositeAttributeGSIThreeIndex{
 		Three:  *m.Three,
 		OneTwo: fmt.Sprintf("%s_%s", *m.One, *m.Two),
 	})
@@ -548,7 +618,7 @@ func encodeThingWithMultiUseCompositeAttribute(m models.ThingWithMultiUseComposi
 	for k, v := range threeIndex {
 		val[k] = v
 	}
-	fourIndex, err := dynamodbattribute.MarshalMap(ddbThingWithMultiUseCompositeAttributeGSIFourIndex{
+	fourIndex, err := attributevalue.MarshalMap(ddbThingWithMultiUseCompositeAttributeGSIFourIndex{
 		Four:   *m.Four,
 		OneTwo: fmt.Sprintf("%s_%s", *m.One, *m.Two),
 	})
@@ -562,9 +632,10 @@ func encodeThingWithMultiUseCompositeAttribute(m models.ThingWithMultiUseComposi
 }
 
 // decodeThingWithMultiUseCompositeAttribute translates a ThingWithMultiUseCompositeAttribute stored in DynamoDB to a ThingWithMultiUseCompositeAttribute struct.
-func decodeThingWithMultiUseCompositeAttribute(m map[string]*dynamodb.AttributeValue, out *models.ThingWithMultiUseCompositeAttribute) error {
+func decodeThingWithMultiUseCompositeAttribute(m map[string]types.AttributeValue, out *models.ThingWithMultiUseCompositeAttribute) error {
+	// swad-decode-1
 	var ddbThingWithMultiUseCompositeAttribute ddbThingWithMultiUseCompositeAttribute
-	if err := dynamodbattribute.UnmarshalMap(m, &ddbThingWithMultiUseCompositeAttribute); err != nil {
+	if err := attributevalue.UnmarshalMap(m, &ddbThingWithMultiUseCompositeAttribute); err != nil {
 		return err
 	}
 	*out = ddbThingWithMultiUseCompositeAttribute.ThingWithMultiUseCompositeAttribute
@@ -572,7 +643,7 @@ func decodeThingWithMultiUseCompositeAttribute(m map[string]*dynamodb.AttributeV
 }
 
 // decodeThingWithMultiUseCompositeAttributes translates a list of ThingWithMultiUseCompositeAttributes stored in DynamoDB to a slice of ThingWithMultiUseCompositeAttribute structs.
-func decodeThingWithMultiUseCompositeAttributes(ms []map[string]*dynamodb.AttributeValue) ([]models.ThingWithMultiUseCompositeAttribute, error) {
+func decodeThingWithMultiUseCompositeAttributes(ms []map[string]types.AttributeValue) ([]models.ThingWithMultiUseCompositeAttribute, error) {
 	thingWithMultiUseCompositeAttributes := make([]models.ThingWithMultiUseCompositeAttribute, len(ms))
 	for i, m := range ms {
 		var thingWithMultiUseCompositeAttribute models.ThingWithMultiUseCompositeAttribute

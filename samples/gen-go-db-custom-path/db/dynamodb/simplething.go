@@ -2,15 +2,15 @@ package dynamodb
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/Clever/wag/samples/gen-go-db-custom-path/models/v9"
 	"github.com/Clever/wag/samples/v9/gen-go-db-custom-path/db"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/go-openapi/strfmt"
 )
 
@@ -18,7 +18,7 @@ var _ = strfmt.DateTime{}
 
 // SimpleThingTable represents the user-configurable properties of the SimpleThing table.
 type SimpleThingTable struct {
-	DynamoDBAPI        dynamodbiface.DynamoDBAPI
+	DynamoDBAPI        *dynamodb.Client
 	Prefix             string
 	TableName          string
 	ReadCapacityUnits  int64
@@ -36,20 +36,20 @@ type ddbSimpleThing struct {
 }
 
 func (t SimpleThingTable) create(ctx context.Context) error {
-	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
-		AttributeDefinitions: []*dynamodb.AttributeDefinition{
+	if _, err := t.DynamoDBAPI.CreateTable(ctx, &dynamodb.CreateTableInput{
+		AttributeDefinitions: []types.AttributeDefinition{
 			{
 				AttributeName: aws.String("name"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 		},
-		KeySchema: []*dynamodb.KeySchemaElement{
+		KeySchema: []types.KeySchemaElement{
 			{
 				AttributeName: aws.String("name"),
-				KeyType:       aws.String(dynamodb.KeyTypeHash),
+				KeyType:       types.KeyTypeHash,
 			},
 		},
-		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+		ProvisionedThroughput: &types.ProvisionedThroughput{
 			ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 			WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 		},
@@ -65,23 +65,24 @@ func (t SimpleThingTable) saveSimpleThing(ctx context.Context, m models.SimpleTh
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
+
+	_, err = t.DynamoDBAPI.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(t.TableName),
 		Item:      data,
-		ExpressionAttributeNames: map[string]*string{
-			"#NAME": aws.String("name"),
+		ExpressionAttributeNames: map[string]string{
+			"#NAME": "name",
 		},
 		ConditionExpression: aws.String("attribute_not_exists(#NAME)"),
 	})
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeConditionalCheckFailedException:
-				return db.ErrSimpleThingAlreadyExists{
-					Name: m.Name,
-				}
-			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.TableName)
+		var resourceNotFoundErr *types.ResourceNotFoundException
+		var conditionalCheckFailedErr *types.ConditionalCheckFailedException
+		if errors.As(err, &resourceNotFoundErr) {
+			return fmt.Errorf("table or index not found: %s", t.TableName)
+		}
+		if errors.As(err, &conditionalCheckFailedErr) {
+			return db.ErrSimpleThingAlreadyExists{
+				Name: m.Name,
 			}
 		}
 		return err
@@ -90,23 +91,22 @@ func (t SimpleThingTable) saveSimpleThing(ctx context.Context, m models.SimpleTh
 }
 
 func (t SimpleThingTable) getSimpleThing(ctx context.Context, name string) (*models.SimpleThing, error) {
-	key, err := dynamodbattribute.MarshalMap(ddbSimpleThingPrimaryKey{
+	// swad-get-7
+	key, err := attributevalue.MarshalMap(ddbSimpleThingPrimaryKey{
 		Name: name,
 	})
 	if err != nil {
 		return nil, err
 	}
-	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
+	res, err := t.DynamoDBAPI.GetItem(ctx, &dynamodb.GetItemInput{
 		Key:            key,
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(true),
 	})
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeResourceNotFoundException:
-				return nil, fmt.Errorf("table or index not found: %s", t.TableName)
-			}
+		var resourceNotFoundErr *types.ResourceNotFoundException
+		if errors.As(err, &resourceNotFoundErr) {
+			return nil, fmt.Errorf("table or index not found: %s", t.TableName)
 		}
 		return nil, err
 	}
@@ -126,71 +126,74 @@ func (t SimpleThingTable) getSimpleThing(ctx context.Context, name string) (*mod
 }
 
 func (t SimpleThingTable) scanSimpleThings(ctx context.Context, input db.ScanSimpleThingsInput, fn func(m *models.SimpleThing, lastSimpleThing bool) bool) error {
+	// swad-scan-1
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
 		Limit:          input.Limit,
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
 		// must provide only the fields constituting the index
-		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+		scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"name": exclusiveStartKey["name"],
 		}
 	}
-	totalRecordsProcessed := int64(0)
-	var innerErr error
-	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+	totalRecordsProcessed := int32(0)
+
+	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+	for paginator.HasMorePages() {
+		out, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting next page: %s", err.Error())
+		}
+
 		items, err := decodeSimpleThings(out.Items)
 		if err != nil {
-			innerErr = fmt.Errorf("error decoding %s", err.Error())
-			return false
+			return fmt.Errorf("error decoding items: %s", err.Error())
 		}
+
 		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
-					innerErr = err
-					return false
+					return err
 				}
 			}
-			isLastModel := lastPage && i == len(items)-1
+
+			isLastModel := !paginator.HasMorePages() && i == len(items)-1
 			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-				return false
+				return nil
 			}
+
 			totalRecordsProcessed++
-			// if the Limit of records have been passed to fn, don't pass anymore records.
 			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-				return false
+				return nil
 			}
 		}
-		return true
-	})
-	if innerErr != nil {
-		return innerErr
 	}
-	return err
+
+	return nil
 }
 
 func (t SimpleThingTable) deleteSimpleThing(ctx context.Context, name string) error {
-	key, err := dynamodbattribute.MarshalMap(ddbSimpleThingPrimaryKey{
+
+	key, err := attributevalue.MarshalMap(ddbSimpleThingPrimaryKey{
 		Name: name,
 	})
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
+	_, err = t.DynamoDBAPI.DeleteItem(ctx, &dynamodb.DeleteItemInput{
 		Key:       key,
 		TableName: aws.String(t.TableName),
 	})
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.TableName)
-			}
+		var resourceNotFoundErr *types.ResourceNotFoundException
+		if errors.As(err, &resourceNotFoundErr) {
+			return fmt.Errorf("table or index not found: %s", t.TableName)
 		}
 		return err
 	}
@@ -199,16 +202,17 @@ func (t SimpleThingTable) deleteSimpleThing(ctx context.Context, name string) er
 }
 
 // encodeSimpleThing encodes a SimpleThing as a DynamoDB map of attribute values.
-func encodeSimpleThing(m models.SimpleThing) (map[string]*dynamodb.AttributeValue, error) {
-	return dynamodbattribute.MarshalMap(ddbSimpleThing{
+func encodeSimpleThing(m models.SimpleThing) (map[string]types.AttributeValue, error) {
+	return attributevalue.MarshalMap(ddbSimpleThing{
 		SimpleThing: m,
 	})
 }
 
 // decodeSimpleThing translates a SimpleThing stored in DynamoDB to a SimpleThing struct.
-func decodeSimpleThing(m map[string]*dynamodb.AttributeValue, out *models.SimpleThing) error {
+func decodeSimpleThing(m map[string]types.AttributeValue, out *models.SimpleThing) error {
+	// swad-decode-1
 	var ddbSimpleThing ddbSimpleThing
-	if err := dynamodbattribute.UnmarshalMap(m, &ddbSimpleThing); err != nil {
+	if err := attributevalue.UnmarshalMap(m, &ddbSimpleThing); err != nil {
 		return err
 	}
 	*out = ddbSimpleThing.SimpleThing
@@ -216,7 +220,7 @@ func decodeSimpleThing(m map[string]*dynamodb.AttributeValue, out *models.Simple
 }
 
 // decodeSimpleThings translates a list of SimpleThings stored in DynamoDB to a slice of SimpleThing structs.
-func decodeSimpleThings(ms []map[string]*dynamodb.AttributeValue) ([]models.SimpleThing, error) {
+func decodeSimpleThings(ms []map[string]types.AttributeValue) ([]models.SimpleThing, error) {
 	simpleThings := make([]models.SimpleThing, len(ms))
 	for i, m := range ms {
 		var simpleThing models.SimpleThing

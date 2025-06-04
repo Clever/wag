@@ -6,10 +6,10 @@ import (
 
 	"github.com/Clever/wag/samples/gen-go-db/models/v9"
 	"github.com/Clever/wag/samples/v9/gen-go-db/server/db"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/go-openapi/strfmt"
 )
 
@@ -17,7 +17,7 @@ var _ = strfmt.DateTime{}
 
 // ThingWithUnderscoresTable represents the user-configurable properties of the ThingWithUnderscores table.
 type ThingWithUnderscoresTable struct {
-	DynamoDBAPI        dynamodbiface.DynamoDBAPI
+	DynamoDBAPI        *dynamodb.Client
 	Prefix             string
 	TableName          string
 	ReadCapacityUnits  int64
@@ -35,20 +35,20 @@ type ddbThingWithUnderscores struct {
 }
 
 func (t ThingWithUnderscoresTable) create(ctx context.Context) error {
-	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
-		AttributeDefinitions: []*dynamodb.AttributeDefinition{
+	if _, err := t.DynamoDBAPI.CreateTable(ctx, &dynamodb.CreateTableInput{
+		AttributeDefinitions: []types.AttributeDefinition{
 			{
 				AttributeName: aws.String("id_app"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 		},
-		KeySchema: []*dynamodb.KeySchemaElement{
+		KeySchema: []types.KeySchemaElement{
 			{
 				AttributeName: aws.String("id_app"),
-				KeyType:       aws.String(dynamodb.KeyTypeHash),
+				KeyType:       types.KeyTypeHash,
 			},
 		},
-		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+		ProvisionedThroughput: &types.ProvisionedThroughput{
 			ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 			WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 		},
@@ -64,7 +64,8 @@ func (t ThingWithUnderscoresTable) saveThingWithUnderscores(ctx context.Context,
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
+
+	_, err = t.DynamoDBAPI.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(t.TableName),
 		Item:      data,
 	})
@@ -72,13 +73,14 @@ func (t ThingWithUnderscoresTable) saveThingWithUnderscores(ctx context.Context,
 }
 
 func (t ThingWithUnderscoresTable) getThingWithUnderscores(ctx context.Context, iDApp string) (*models.ThingWithUnderscores, error) {
-	key, err := dynamodbattribute.MarshalMap(ddbThingWithUnderscoresPrimaryKey{
+	// swad-get-7
+	key, err := attributevalue.MarshalMap(ddbThingWithUnderscoresPrimaryKey{
 		IDApp: iDApp,
 	})
 	if err != nil {
 		return nil, err
 	}
-	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
+	res, err := t.DynamoDBAPI.GetItem(ctx, &dynamodb.GetItemInput{
 		Key:            key,
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(true),
@@ -102,13 +104,14 @@ func (t ThingWithUnderscoresTable) getThingWithUnderscores(ctx context.Context, 
 }
 
 func (t ThingWithUnderscoresTable) deleteThingWithUnderscores(ctx context.Context, iDApp string) error {
-	key, err := dynamodbattribute.MarshalMap(ddbThingWithUnderscoresPrimaryKey{
+
+	key, err := attributevalue.MarshalMap(ddbThingWithUnderscoresPrimaryKey{
 		IDApp: iDApp,
 	})
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
+	_, err = t.DynamoDBAPI.DeleteItem(ctx, &dynamodb.DeleteItemInput{
 		Key:       key,
 		TableName: aws.String(t.TableName),
 	})
@@ -120,16 +123,17 @@ func (t ThingWithUnderscoresTable) deleteThingWithUnderscores(ctx context.Contex
 }
 
 // encodeThingWithUnderscores encodes a ThingWithUnderscores as a DynamoDB map of attribute values.
-func encodeThingWithUnderscores(m models.ThingWithUnderscores) (map[string]*dynamodb.AttributeValue, error) {
-	return dynamodbattribute.MarshalMap(ddbThingWithUnderscores{
+func encodeThingWithUnderscores(m models.ThingWithUnderscores) (map[string]types.AttributeValue, error) {
+	return attributevalue.MarshalMap(ddbThingWithUnderscores{
 		ThingWithUnderscores: m,
 	})
 }
 
 // decodeThingWithUnderscores translates a ThingWithUnderscores stored in DynamoDB to a ThingWithUnderscores struct.
-func decodeThingWithUnderscores(m map[string]*dynamodb.AttributeValue, out *models.ThingWithUnderscores) error {
+func decodeThingWithUnderscores(m map[string]types.AttributeValue, out *models.ThingWithUnderscores) error {
+	// swad-decode-1
 	var ddbThingWithUnderscores ddbThingWithUnderscores
-	if err := dynamodbattribute.UnmarshalMap(m, &ddbThingWithUnderscores); err != nil {
+	if err := attributevalue.UnmarshalMap(m, &ddbThingWithUnderscores); err != nil {
 		return err
 	}
 	*out = ddbThingWithUnderscores.ThingWithUnderscores
@@ -137,7 +141,7 @@ func decodeThingWithUnderscores(m map[string]*dynamodb.AttributeValue, out *mode
 }
 
 // decodeThingWithUnderscoress translates a list of ThingWithUnderscoress stored in DynamoDB to a slice of ThingWithUnderscores structs.
-func decodeThingWithUnderscoress(ms []map[string]*dynamodb.AttributeValue) ([]models.ThingWithUnderscores, error) {
+func decodeThingWithUnderscoress(ms []map[string]types.AttributeValue) ([]models.ThingWithUnderscores, error) {
 	thingWithUnderscoress := make([]models.ThingWithUnderscores, len(ms))
 	for i, m := range ms {
 		var thingWithUnderscores models.ThingWithUnderscores

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/Clever/wag/samples/gen-go-db/models/v9"
-	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/go-openapi/strfmt"
 	"golang.org/x/time/rate"
 )
@@ -384,6 +384,9 @@ type Interface interface {
 // Int64 returns a pointer to the int64 value passed in.
 func Int64(i int64) *int64 { return &i }
 
+// Int32 returns a pointer to the int32 value passed in.
+func Int32(i int32) *int32 { return &i }
+
 // String returns a pointer to the string value passed in.
 func String(s string) *string { return &s }
 
@@ -400,7 +403,7 @@ type ScanDeploymentsInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -431,7 +434,7 @@ type GetDeploymentsByEnvAppAndVersionInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// FilterValues is an optional array of filters to apply on various table attributes
 	FilterValues []DeploymentByEnvAppAndVersionFilterValues
 	// FilterExpression is the filter expression to be applied to our fitlered attributes
@@ -468,7 +471,7 @@ type GetDeploymentsByEnvAppAndDateInput struct {
 	StartingAfter  *models.Deployment
 	Descending     bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrDeploymentByEnvAppAndDateNotFound is returned when the database fails to find a Deployment.
@@ -492,7 +495,7 @@ type ScanDeploymentsByEnvAppAndDateInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -505,7 +508,7 @@ type GetDeploymentsByEnvironmentAndDateInput struct {
 	StartingAfter  *models.Deployment
 	Descending     bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrDeploymentByEnvironmentAndDateNotFound is returned when the database fails to find a Deployment.
@@ -540,7 +543,7 @@ type ScanDeploymentsByVersionInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -552,7 +555,7 @@ type ScanEventsInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -581,7 +584,7 @@ type GetEventsByPkAndSkInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// FilterValues is an optional array of filters to apply on various table attributes
 	FilterValues []EventByPkAndSkFilterValues
 	// FilterExpression is the filter expression to be applied to our fitlered attributes
@@ -615,7 +618,7 @@ type GetEventsBySkAndDataInput struct {
 	StartingAfter  *models.Event
 	Descending     bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrEventBySkAndDataNotFound is returned when the database fails to find a Event.
@@ -638,7 +641,7 @@ type ScanEventsBySkAndDataInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -650,7 +653,7 @@ type ScanNoRangeThingWithCompositeAttributessInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -678,7 +681,7 @@ type GetNoRangeThingWithCompositeAttributessByNameVersionAndDateInput struct {
 	StartingAfter  *models.NoRangeThingWithCompositeAttributes
 	Descending     bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrNoRangeThingWithCompositeAttributesByNameVersionAndDateNotFound is returned when the database fails to find a NoRangeThingWithCompositeAttributes.
@@ -702,7 +705,7 @@ type ScanNoRangeThingWithCompositeAttributessByNameVersionAndDateInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -740,7 +743,7 @@ type ScanSimpleThingsInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -776,7 +779,7 @@ type ScanTeacherSharingRulesInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -805,7 +808,7 @@ type GetTeacherSharingRulesByTeacherAndSchoolAppInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// FilterValues is an optional array of filters to apply on various table attributes
 	FilterValues []TeacherSharingRuleByTeacherAndSchoolAppFilterValues
 	// FilterExpression is the filter expression to be applied to our fitlered attributes
@@ -840,7 +843,7 @@ type GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput struct {
 	StartingAfter *models.TeacherSharingRule
 	Descending    bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrTeacherSharingRuleByDistrictAndSchoolTeacherAppNotFound is returned when the database fails to find a TeacherSharingRule.
@@ -865,7 +868,7 @@ type ScanTeacherSharingRulesByDistrictAndSchoolTeacherAppInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -890,7 +893,7 @@ type ScanThingsInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -922,7 +925,7 @@ type GetThingsByNameAndVersionInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// FilterValues is an optional array of filters to apply on various table attributes
 	FilterValues []ThingByNameAndVersionFilterValues
 	// FilterExpression is the filter expression to be applied to our fitlered attributes
@@ -967,7 +970,7 @@ type ScanThingsByIDInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -980,7 +983,7 @@ type GetThingsByNameAndCreatedAtInput struct {
 	StartingAfter       *models.Thing
 	Descending          bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrThingByNameAndCreatedAtNotFound is returned when the database fails to find a Thing.
@@ -1003,7 +1006,7 @@ type ScanThingsByNameAndCreatedAtInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1016,7 +1019,7 @@ type GetThingsByNameAndRangeNullableInput struct {
 	StartingAfter           *models.Thing
 	Descending              bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrThingByNameAndRangeNullableNotFound is returned when the database fails to find a Thing.
@@ -1039,7 +1042,7 @@ type ScanThingsByNameAndRangeNullableInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1052,7 +1055,7 @@ type GetThingsByHashNullableAndNameInput struct {
 	StartingAfter  *models.Thing
 	Descending     bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrThingByHashNullableAndNameNotFound is returned when the database fails to find a Thing.
@@ -1088,7 +1091,7 @@ type ScanThingAllowingBatchWritessInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1104,7 +1107,7 @@ type GetThingAllowingBatchWritessByNameAndVersionInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrThingAllowingBatchWritesNotFound is returned when the database fails to find a ThingAllowingBatchWrites.
@@ -1140,7 +1143,7 @@ type ScanThingAllowingBatchWritesWithCompositeAttributessInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1158,7 +1161,7 @@ type GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateInput str
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrThingAllowingBatchWritesWithCompositeAttributesNotFound is returned when the database fails to find a ThingAllowingBatchWritesWithCompositeAttributes.
@@ -1195,7 +1198,7 @@ type ScanThingWithAdditionalAttributessInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1230,7 +1233,7 @@ type GetThingWithAdditionalAttributessByNameAndVersionInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// FilterValues is an optional array of filters to apply on various table attributes
 	FilterValues []ThingWithAdditionalAttributesByNameAndVersionFilterValues
 	// FilterExpression is the filter expression to be applied to our fitlered attributes
@@ -1275,7 +1278,7 @@ type ScanThingWithAdditionalAttributessByIDInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1288,7 +1291,7 @@ type GetThingWithAdditionalAttributessByNameAndCreatedAtInput struct {
 	StartingAfter       *models.ThingWithAdditionalAttributes
 	Descending          bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrThingWithAdditionalAttributesByNameAndCreatedAtNotFound is returned when the database fails to find a ThingWithAdditionalAttributes.
@@ -1311,7 +1314,7 @@ type ScanThingWithAdditionalAttributessByNameAndCreatedAtInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1324,7 +1327,7 @@ type GetThingWithAdditionalAttributessByNameAndRangeNullableInput struct {
 	StartingAfter           *models.ThingWithAdditionalAttributes
 	Descending              bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrThingWithAdditionalAttributesByNameAndRangeNullableNotFound is returned when the database fails to find a ThingWithAdditionalAttributes.
@@ -1347,7 +1350,7 @@ type ScanThingWithAdditionalAttributessByNameAndRangeNullableInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1360,7 +1363,7 @@ type GetThingWithAdditionalAttributessByHashNullableAndNameInput struct {
 	StartingAfter  *models.ThingWithAdditionalAttributes
 	Descending     bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrThingWithAdditionalAttributesByHashNullableAndNameNotFound is returned when the database fails to find a ThingWithAdditionalAttributes.
@@ -1396,7 +1399,7 @@ type ScanThingWithCompositeAttributessInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1427,7 +1430,7 @@ type GetThingWithCompositeAttributessByNameBranchAndDateInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// FilterValues is an optional array of filters to apply on various table attributes
 	FilterValues []ThingWithCompositeAttributesByNameBranchAndDateFilterValues
 	// FilterExpression is the filter expression to be applied to our fitlered attributes
@@ -1464,7 +1467,7 @@ type GetThingWithCompositeAttributessByNameVersionAndDateInput struct {
 	StartingAfter  *models.ThingWithCompositeAttributes
 	Descending     bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrThingWithCompositeAttributesByNameVersionAndDateNotFound is returned when the database fails to find a ThingWithCompositeAttributes.
@@ -1488,7 +1491,7 @@ type ScanThingWithCompositeAttributessByNameVersionAndDateInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1513,7 +1516,7 @@ type ScanThingWithCompositeEnumAttributessInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1531,7 +1534,7 @@ type GetThingWithCompositeEnumAttributessByNameBranchAndDateInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrThingWithCompositeEnumAttributesNotFound is returned when the database fails to find a ThingWithCompositeEnumAttributes.
@@ -1568,7 +1571,7 @@ type ScanThingWithDateGSIsInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1593,7 +1596,7 @@ type GetThingWithDateGSIsByIDAndDateRInput struct {
 	StartingAfter   *models.ThingWithDateGSI
 	Descending      bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrThingWithDateGSIByIDAndDateRNotFound is returned when the database fails to find a ThingWithDateGSI.
@@ -1617,7 +1620,7 @@ type GetThingWithDateGSIsByDateHAndIDInput struct {
 	StartingAfter *models.ThingWithDateGSI
 	Descending    bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrThingWithDateGSIByDateHAndIDNotFound is returned when the database fails to find a ThingWithDateGSI.
@@ -1652,7 +1655,7 @@ type ScanThingWithDateRangesInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1668,7 +1671,7 @@ type GetThingWithDateRangesByNameAndDateInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrThingWithDateRangeNotFound is returned when the database fails to find a ThingWithDateRange.
@@ -1691,7 +1694,7 @@ type ScanThingWithDateRangeKeysInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1707,7 +1710,7 @@ type GetThingWithDateRangeKeysByIDAndDateInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrThingWithDateRangeKeyNotFound is returned when the database fails to find a ThingWithDateRangeKey.
@@ -1743,7 +1746,7 @@ type ScanThingWithDateTimeCompositesInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1761,7 +1764,7 @@ type GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrThingWithDateTimeCompositeNotFound is returned when the database fails to find a ThingWithDateTimeComposite.
@@ -1792,7 +1795,7 @@ type ScanThingWithDatetimeGSIsInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1817,7 +1820,7 @@ type GetThingWithDatetimeGSIsByDatetimeAndIDInput struct {
 	StartingAfter *models.ThingWithDatetimeGSI
 	Descending    bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrThingWithDatetimeGSIByDatetimeAndIDNotFound is returned when the database fails to find a ThingWithDatetimeGSI.
@@ -1840,7 +1843,7 @@ type ScanThingWithDatetimeGSIsByDatetimeAndIDInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1864,7 +1867,7 @@ type ScanThingWithEnumHashKeysInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1893,7 +1896,7 @@ type GetThingWithEnumHashKeysByBranchAndDateInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// FilterValues is an optional array of filters to apply on various table attributes
 	FilterValues []ThingWithEnumHashKeyByBranchAndDateFilterValues
 	// FilterExpression is the filter expression to be applied to our fitlered attributes
@@ -1927,7 +1930,7 @@ type GetThingWithEnumHashKeysByBranchAndDate2Input struct {
 	StartingAfter   *models.ThingWithEnumHashKey
 	Descending      bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrThingWithEnumHashKeyByBranchAndDate2NotFound is returned when the database fails to find a ThingWithEnumHashKey.
@@ -1950,7 +1953,7 @@ type ScanThingWithEnumHashKeysByBranchAndDate2Input struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -1975,7 +1978,7 @@ type ScanThingWithMatchingKeyssInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -2004,7 +2007,7 @@ type GetThingWithMatchingKeyssByBearAndAssocTypeIDInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// FilterValues is an optional array of filters to apply on various table attributes
 	FilterValues []ThingWithMatchingKeysByBearAndAssocTypeIDFilterValues
 	// FilterExpression is the filter expression to be applied to our fitlered attributes
@@ -2041,7 +2044,7 @@ type GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput struct {
 	StartingAfter *models.ThingWithMatchingKeys
 	Descending    bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrThingWithMatchingKeysByAssocTypeIDAndCreatedBearNotFound is returned when the database fails to find a ThingWithMatchingKeys.
@@ -2066,7 +2069,7 @@ type ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -2090,7 +2093,7 @@ type ScanThingWithMultiUseCompositeAttributesInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -2115,7 +2118,7 @@ type GetThingWithMultiUseCompositeAttributesByThreeAndOneTwoInput struct {
 	StartingAfter *models.ThingWithMultiUseCompositeAttribute
 	Descending    bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrThingWithMultiUseCompositeAttributeByThreeAndOneTwoNotFound is returned when the database fails to find a ThingWithMultiUseCompositeAttribute.
@@ -2139,7 +2142,7 @@ type ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwoInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -2152,7 +2155,7 @@ type GetThingWithMultiUseCompositeAttributesByFourAndOneTwoInput struct {
 	StartingAfter *models.ThingWithMultiUseCompositeAttribute
 	Descending    bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrThingWithMultiUseCompositeAttributeByFourAndOneTwoNotFound is returned when the database fails to find a ThingWithMultiUseCompositeAttribute.
@@ -2176,7 +2179,7 @@ type ScanThingWithMultiUseCompositeAttributesByFourAndOneTwoInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -2194,7 +2197,7 @@ type ScanThingWithRequiredCompositePropertiesAndKeysOnlysInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -2221,7 +2224,7 @@ type GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPr
 	StartingAfter           *models.ThingWithRequiredCompositePropertiesAndKeysOnly
 	Descending              bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrThingWithRequiredCompositePropertiesAndKeysOnlyByPropertyOneAndTwoAndPropertyThreeNotFound is returned when the database fails to find a ThingWithRequiredCompositePropertiesAndKeysOnly.
@@ -2245,7 +2248,7 @@ type ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndP
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -2257,7 +2260,7 @@ type ScanThingWithRequiredFieldssInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -2293,7 +2296,7 @@ type ScanThingWithRequiredFields2sInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -2309,7 +2312,7 @@ type GetThingWithRequiredFields2sByNameAndIDInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrThingWithRequiredFields2NotFound is returned when the database fails to find a ThingWithRequiredFields2.
@@ -2345,7 +2348,7 @@ type ScanThingWithTransactMultipleGSIsInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -2370,7 +2373,7 @@ type GetThingWithTransactMultipleGSIsByIDAndDateRInput struct {
 	StartingAfter   *models.ThingWithTransactMultipleGSI
 	Descending      bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrThingWithTransactMultipleGSIByIDAndDateRNotFound is returned when the database fails to find a ThingWithTransactMultipleGSI.
@@ -2394,7 +2397,7 @@ type GetThingWithTransactMultipleGSIsByDateHAndIDInput struct {
 	StartingAfter *models.ThingWithTransactMultipleGSI
 	Descending    bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 }
 
 // ErrThingWithTransactMultipleGSIByDateHAndIDNotFound is returned when the database fails to find a ThingWithTransactMultipleGSI.
@@ -2429,7 +2432,7 @@ type ScanThingWithTransactionsInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -2465,7 +2468,7 @@ type ScanThingWithTransactionWithSimpleThingsInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int64
+	Limit *int32
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
