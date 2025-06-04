@@ -21,9 +21,7 @@ import (
   "{{ .ModuleName }}{{.GoOutputPath}}/models{{.VersionSuffix}}"
   "{{ .PackageName }}/{{ .OutputPath }}"
   "github.com/aws/aws-sdk-go-v2/aws"
-        {{- if not $xdbConfig.AllowOverwrites }}
   "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-        {{- end }}
   "github.com/aws/aws-sdk-go-v2/service/dynamodb"
   "github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
   {{- if transactionsEnabled $xdbConfig }}
@@ -33,6 +31,8 @@ import (
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // {{ $modelName }}Table represents the user-configurable properties of the {{ $modelName }} table.
 type {{ $modelName }}Table struct {
