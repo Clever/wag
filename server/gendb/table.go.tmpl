@@ -729,10 +729,11 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
     {{- $attrGoType := goTypeForAttribute $xdbConfig $attributeName }}
     {{- if eq $dynamoDBType "S" }}
     {{- if eq $attrGoType "strfmt.DateTime" }}
-      if input.{{ pascalize $attributeName }} == "" {
+      if datetimeToDynamoTimeString(input.{{ pascalize $attributeName }}) == "" {
     {{- else if eq $attrGoType "strfmt.Date" }}
       if dateToDynamoTimeString(input.{{ pascalize $attributeName }}) == "" {
     {{- else }}
+      // swad-get-33f
       if input.{{ pascalize $attributeName }} == "" {
     {{- end }}
         return fmt.Errorf("Hash key input.{{ pascalize $attributeName }} cannot be empty")
@@ -753,14 +754,19 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
       ":{{ camelize $hashKey.AttributeName }}": &types.AttributeValueMemberS{                          
           {{- $attrGoType := goTypeForAttribute $xdbConfig $hashKey.AttributeName }}
           {{- if isComposite $xdbConfig $hashKey.AttributeName }}
+            // swad-get-33a
             Value: {{ compositeValue $xdbConfig $hashKey.AttributeName "input" }},
           {{- else if eq $attrGoType "strfmt.DateTime" }}
-            Value: {{ compositeValue $xdbConfig $hashKey.AttributeName "input" }},
+            // swad-get-33b 
+            Value: datetimeToDynamoTimeString(input.{{ pascalize $hashKey.AttributeName }}),
           {{- else if eq $attrGoType "strfmt.Date" }}
-            Value: {{ compositeValue $xdbConfig $hashKey.AttributeName "input" }},
+            // swad-get-33c
+            Value: dateToDynamoTimeString(input.{{ pascalize $hashKey.AttributeName }}),
           {{- else if attributeIsEnum $xdbConfig $hashKey.AttributeName }}
+            // swad-get-33d
             Value: string(input.{{ pascalize $hashKey.AttributeName }}),
           {{- else }}
+            // swad-get-33e
             Value: input.{{ pascalize $hashKey.AttributeName }},
           {{- end }}
     {{- else if eq $dynamoDBType "N" }}
@@ -1174,24 +1180,38 @@ func (t {{ $modelName }}Table) transactSave{{ $modelName }}And{{ $transactWithMo
     return err
   }
 
+  // Convert map[string]*string to map[string]string for ExpressionAttributeNames
+	toStringMap := func(in map[string]*string) map[string]string {
+		if in == nil {
+			return nil
+		}
+		out := make(map[string]string, len(in))
+		for k, v := range in {
+			if v != nil {
+				out[k] = *v
+			}
+		}
+		return out
+	}
+
 	input := &dynamodb.TransactWriteItemsInput{
-		TransactItems: []*dynamodb.TransactWriteItem{
+		TransactItems: []types.TransactWriteItem{
 			{
-				Put: &dynamodb.Put{
+				Put: &types.Put{
           TableName: aws.String(t.TableName),
 					Item:      data1,
 					ConditionExpression:       m1CondExpr,
 					ExpressionAttributeValues: m1ExprVals,
-					ExpressionAttributeNames:  m1ExprNames,
+					ExpressionAttributeNames:  toStringMap(m1ExprNames),
 				},
 			},
 			{
-				Put: &dynamodb.Put{
+				Put: &types.Put{
     			TableName: aws.String(fmt.Sprintf("%s-{{ $transactWithModelName }}s", t.Prefix)),
 					Item:      data2,
 					ConditionExpression:       m2CondExpr,
 					ExpressionAttributeValues: m2ExprVals,
-					ExpressionAttributeNames:  m2ExprNames,
+					ExpressionAttributeNames:  toStringMap(m2ExprNames),
 				},
 			},
 		},
