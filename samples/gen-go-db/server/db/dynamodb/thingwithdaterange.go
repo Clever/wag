@@ -15,6 +15,8 @@ import (
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // ThingWithDateRangeTable represents the user-configurable properties of the ThingWithDateRange table.
 type ThingWithDateRangeTable struct {

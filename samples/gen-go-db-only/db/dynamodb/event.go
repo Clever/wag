@@ -15,6 +15,8 @@ import (
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // EventTable represents the user-configurable properties of the Event table.
 type EventTable struct {

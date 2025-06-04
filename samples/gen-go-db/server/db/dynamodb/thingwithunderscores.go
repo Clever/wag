@@ -2,6 +2,7 @@ package dynamodb
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/Clever/wag/samples/gen-go-db/models/v9"
@@ -14,6 +15,8 @@ import (
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // ThingWithUnderscoresTable represents the user-configurable properties of the ThingWithUnderscores table.
 type ThingWithUnderscoresTable struct {

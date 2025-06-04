@@ -7,7 +7,6 @@ import (
 
 	"github.com/Clever/wag/samples/gen-go-db/models/v9"
 	"github.com/Clever/wag/samples/v9/gen-go-db/server/db"
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
@@ -1566,7 +1565,7 @@ func buildCondExpr(conditions *expression.ConditionBuilder) (*string, map[string
 		names := exprBuilder.Names()
 		exprNames = make(map[string]*string, len(names))
 		for k, v := range names {
-			exprNames[k] = aws.String(v)
+			exprNames[k] = &v
 		}
 	}
 	return condExpr, exprVals, exprNames, nil

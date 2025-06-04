@@ -16,6 +16,8 @@ import (
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // ThingWithTransactMultipleGSITable represents the user-configurable properties of the ThingWithTransactMultipleGSI table.
 type ThingWithTransactMultipleGSITable struct {

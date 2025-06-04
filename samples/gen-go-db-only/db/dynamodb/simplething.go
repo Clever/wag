@@ -15,6 +15,8 @@ import (
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // SimpleThingTable represents the user-configurable properties of the SimpleThing table.
 type SimpleThingTable struct {

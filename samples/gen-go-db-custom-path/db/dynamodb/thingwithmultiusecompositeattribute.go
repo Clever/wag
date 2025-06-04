@@ -16,6 +16,8 @@ import (
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // ThingWithMultiUseCompositeAttributeTable represents the user-configurable properties of the ThingWithMultiUseCompositeAttribute table.
 type ThingWithMultiUseCompositeAttributeTable struct {

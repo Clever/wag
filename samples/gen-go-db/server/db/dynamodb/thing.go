@@ -15,6 +15,8 @@ import (
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // ThingTable represents the user-configurable properties of the Thing table.
 type ThingTable struct {

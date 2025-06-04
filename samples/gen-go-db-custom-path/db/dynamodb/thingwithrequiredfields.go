@@ -15,6 +15,8 @@ import (
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // ThingWithRequiredFieldsTable represents the user-configurable properties of the ThingWithRequiredFields table.
 type ThingWithRequiredFieldsTable struct {

@@ -15,6 +15,8 @@ import (
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // ThingWithEnumHashKeyTable represents the user-configurable properties of the ThingWithEnumHashKey table.
 type ThingWithEnumHashKeyTable struct {

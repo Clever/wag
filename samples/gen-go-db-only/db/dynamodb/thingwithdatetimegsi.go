@@ -15,6 +15,8 @@ import (
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // ThingWithDatetimeGSITable represents the user-configurable properties of the ThingWithDatetimeGSI table.
 type ThingWithDatetimeGSITable struct {

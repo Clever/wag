@@ -16,6 +16,8 @@ import (
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // ThingWithTransactionTable represents the user-configurable properties of the ThingWithTransaction table.
 type ThingWithTransactionTable struct {
