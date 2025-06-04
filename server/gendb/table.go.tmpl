@@ -1254,14 +1254,17 @@ func decode{{ $modelName }}(m map[string]types.AttributeValue, out *models.{{ $m
         {{- range $ks := $projectedIndexWithCompositeAttributes }}
         {{- if isComposite $xdbConfig $ks.AttributeName }}
         {{- $ca := findCompositeAttribute $xdbConfig $ks.AttributeName }}
-        if v, ok := m["{{ $ks.AttributeName }}"]; ok && v.S != nil {
-    parts := strings.Split(*v.S, "{{ $ca.Separator }}")
-    if len(parts) != {{ len $ca.Properties }} {
-      return fmt.Errorf("expected {{ len $ca.Properties }} parts: '%s'", *v.S)
-    }
-                {{- range $i, $prop := $ca.Properties }}
-    out.{{ pascalize $prop }} = {{if attributeIsPointer $xdbConfig $prop }}&{{end}}parts[{{ $i }}]
-                {{- end }}
+        if v, ok := m["{{ $ks.AttributeName }}"]; ok {
+          if s, ok := v.(*types.AttributeValueMemberS); ok && s.Value != "" {
+            parts := strings.Split(s.Value, "{{ $ca.Separator }}")
+            if len(parts) != {{ len $ca.Properties }} {
+              return fmt.Errorf("expected {{ len $ca.Properties }} parts: '%s'", s.Value)
+            }
+            {{- range $i, $prop := $ca.Properties }}
+            out.{{ pascalize $prop }} = {{if attributeIsPointer $xdbConfig $prop }}&{{end}}parts[{{ $i }}]
+            {{- end }}
+          }
+        }
   }
         {{- end }}
         {{- end }}
