@@ -184,14 +184,14 @@ func (t {{ $modelName }}Table) saveArrayOf{{ $modelName }}(ctx context.Context, 
 		return nil
 	}
 
-	batch := make([]*dynamodb.WriteRequest, len(ms))
+	batch := make([]types.WriteRequest, len(ms))
 	for i := range ms {
 	data, err := encode{{ $modelName }}(ms[i])
 		if err != nil {
 			return err
 		}
-		batch[i] = &dynamodb.WriteRequest{
-			PutRequest: &dynamodb.PutRequest{
+		batch[i] = types.WriteRequest{
+			PutRequest: &types.PutRequest{
 				Item: data,
 			},
 		}
@@ -199,7 +199,7 @@ func (t {{ $modelName }}Table) saveArrayOf{{ $modelName }}(ctx context.Context, 
 	tname := t.TableName
 	for {
 		if out, err := t.DynamoDBAPI.BatchWriteItem(ctx, &dynamodb.BatchWriteItemInput{
-			RequestItems: map[string][]*dynamodb.WriteRequest{
+			RequestItems: map[string][]types.WriteRequest{
 				tname: batch,
 			},
 		}); err != nil {
@@ -222,9 +222,9 @@ func (t {{ $modelName }}Table) deleteArrayOf{{ $modelName }}(ctx context.Context
 		return nil
 	}
 
-	batch := make([]*dynamodb.WriteRequest, len(ms))
+	batch := make([]types.WriteRequest, len(ms))
 	for i := range ms {
-		key, err := dynamodbattribute.MarshalMap(ddb{{ $modelName }}PrimaryKey{
+		key, err := attributevalue.MarshalMap(ddb{{ $modelName }}PrimaryKey{
 		{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
 			{{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValueFromArray $xdbConfig $pk.AttributeName "ms[i]"}}{{ else }}{{ if attributeIsPointer $xdbConfig $pk.AttributeName }}*{{ end }}ms[i].{{ pascalize $pk.AttributeName }}{{ end }},
 		{{- end }}
@@ -233,8 +233,8 @@ func (t {{ $modelName }}Table) deleteArrayOf{{ $modelName }}(ctx context.Context
 			return err
 		}
 
-		batch[i] = &dynamodb.WriteRequest{
-			DeleteRequest: &dynamodb.DeleteRequest{
+		batch[i] = types.WriteRequest{
+			DeleteRequest: &types.DeleteRequest{
 				Key: key,
 			},
 		}
@@ -242,7 +242,7 @@ func (t {{ $modelName }}Table) deleteArrayOf{{ $modelName }}(ctx context.Context
 	tname := t.TableName
 	for {
 		if out, err := t.DynamoDBAPI.BatchWriteItem(ctx, &dynamodb.BatchWriteItemInput{
-			RequestItems: map[string][]*dynamodb.WriteRequest{
+			RequestItems: map[string][]types.WriteRequest{
 				tname: batch,
 			},
 		}); err != nil {
