@@ -244,7 +244,11 @@ func buildCondExpr(conditions *expression.ConditionBuilder) (*string, map[string
     }
     condExpr = exprBuilder.Condition()
     exprVals = exprBuilder.Values()
-    exprNames = exprBuilder.Names()
+    names := exprBuilder.Names()
+    exprNames = make(map[string]*string, len(names))
+    for k, v := range names {
+      exprNames[k] = aws.String(v)
+    }
 	}
   return condExpr, exprVals, exprNames, nil
 }
