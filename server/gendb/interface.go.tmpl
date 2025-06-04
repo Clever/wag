@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-
   "{{ .ModuleName }}{{.GoOutputPath}}/models{{.VersionSuffix}}"
 	{{- if anyTableHasTransactionsEnabled .XDBConfigs }}
   "github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
