@@ -219,7 +219,6 @@ func (t ThingTable) saveThing(ctx context.Context, m models.Thing) error {
 }
 
 func (t ThingTable) getThing(ctx context.Context, name string, version int64) (*models.Thing, error) {
-	// swad-get-7
 	key, err := attributevalue.MarshalMap(ddbThingPrimaryKey{
 		Name:    name,
 		Version: version,
@@ -256,7 +255,6 @@ func (t ThingTable) getThing(ctx context.Context, name string, version int64) (*
 }
 
 func (t ThingTable) scanThings(ctx context.Context, input db.ScanThingsInput, fn func(m *models.Thing, lastThing bool) bool) error {
-	// swad-scan-1
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -310,7 +308,6 @@ func (t ThingTable) scanThings(ctx context.Context, input db.ScanThingsInput, fn
 }
 
 func (t ThingTable) getThingsByNameAndVersionParseFilters(queryInput *dynamodb.QueryInput, input db.GetThingsByNameAndVersionInput) {
-	// swad-get-11
 	for _, filterValue := range input.FilterValues {
 		switch filterValue.AttributeName {
 		case db.ThingCreatedAt:
@@ -346,7 +343,6 @@ func (t ThingTable) getThingsByNameAndVersionParseFilters(queryInput *dynamodb.Q
 }
 
 func (t ThingTable) getThingsByNameAndVersion(ctx context.Context, input db.GetThingsByNameAndVersionInput, fn func(m *models.Thing, lastThing bool) bool) error {
-	// swad-get-2
 	if input.VersionStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.VersionStartingAt or input.StartingAfter")
 	}
@@ -372,7 +368,6 @@ func (t ThingTable) getThingsByNameAndVersion(ctx context.Context, input db.GetT
 	if input.VersionStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
 	} else {
-		// swad-get-21
 		queryInput.ExpressionAttributeNames["#VERSION"] = "version"
 		queryInput.ExpressionAttributeValues[":version"] = &types.AttributeValueMemberN{
 			Value: fmt.Sprintf("%d", *input.VersionStartingAt),
@@ -384,14 +379,12 @@ func (t ThingTable) getThingsByNameAndVersion(ctx context.Context, input db.GetT
 			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #VERSION >= :version")
 		}
 	}
-	// swad-get-22
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"version": &types.AttributeValueMemberN{
 				Value: fmt.Sprintf("%d", input.StartingAfter.Version),
 			},
 
-			// swad-get-223
 			"name": &types.AttributeValueMemberS{
 				Value: input.StartingAfter.Name,
 			},
@@ -477,7 +470,6 @@ func (t ThingTable) deleteThing(ctx context.Context, name string, version int64)
 }
 
 func (t ThingTable) getThingByID(ctx context.Context, id string) (*models.Thing, error) {
-	// swad-get-8
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("thingID"),
@@ -568,42 +560,33 @@ func (t ThingTable) scanThingsByID(ctx context.Context, input db.ScanThingsByIDI
 	return nil
 }
 func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.GetThingsByNameAndCreatedAtInput, fn func(m *models.Thing, lastThing bool) bool) error {
-	// swad-get-33
 	if input.CreatedAtStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.CreatedAtStartingAt or input.StartingAfter")
 	}
-	// swad-get-33f
 	if input.Name == "" {
 		return fmt.Errorf("Hash key input.Name cannot be empty")
 	}
-	// swad-get-331
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("name-createdAt"),
 		ExpressionAttributeNames: map[string]string{
 			"#NAME": "name",
 		},
-		// swad-get-3312
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":name": &types.AttributeValueMemberS{
-				// swad-get-33e
 				Value: input.Name,
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
-	// swad-get-332
 	if input.Limit != nil {
 		queryInput.Limit = input.Limit
 	}
 	if input.CreatedAtStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
 	} else {
-		// swad-get-333
 		queryInput.ExpressionAttributeNames["#CREATEDAT"] = "createdAt"
-
-		// swad-get-3331a
 		queryInput.ExpressionAttributeValues[":createdAt"] = &types.AttributeValueMemberS{
 			Value: datetimeToDynamoTimeString(*input.CreatedAtStartingAt),
 		}
@@ -614,26 +597,19 @@ func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.Ge
 			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #CREATEDAT >= :createdAt")
 		}
 	}
-	// swad-get-334
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"createdAt": &types.AttributeValueMemberS{
 				Value: datetimeToDynamoTimeString(input.StartingAfter.CreatedAt),
 			},
-			// swad-get-3341
 			"name": &types.AttributeValueMemberS{
 				Value: input.StartingAfter.Name,
 			},
-			// swad-get-3342
 			"version": &types.AttributeValueMemberN{
 				Value: fmt.Sprintf("%d", input.StartingAfter.Version),
 			},
-
-			// swad-get-336
 		}
 	}
-
-	// swad-get-339
 
 	totalRecordsProcessed := int32(0)
 	var pageFnErr error
@@ -740,42 +716,33 @@ func (t ThingTable) scanThingsByNameAndCreatedAt(ctx context.Context, input db.S
 	return nil
 }
 func (t ThingTable) getThingsByNameAndRangeNullable(ctx context.Context, input db.GetThingsByNameAndRangeNullableInput, fn func(m *models.Thing, lastThing bool) bool) error {
-	// swad-get-33
 	if input.RangeNullableStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.RangeNullableStartingAt or input.StartingAfter")
 	}
-	// swad-get-33f
 	if input.Name == "" {
 		return fmt.Errorf("Hash key input.Name cannot be empty")
 	}
-	// swad-get-331
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("name-rangeNullable"),
 		ExpressionAttributeNames: map[string]string{
 			"#NAME": "name",
 		},
-		// swad-get-3312
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":name": &types.AttributeValueMemberS{
-				// swad-get-33e
 				Value: input.Name,
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
-	// swad-get-332
 	if input.Limit != nil {
 		queryInput.Limit = input.Limit
 	}
 	if input.RangeNullableStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
 	} else {
-		// swad-get-333
 		queryInput.ExpressionAttributeNames["#RANGENULLABLE"] = "rangeNullable"
-
-		// swad-get-3331a
 		queryInput.ExpressionAttributeValues[":rangeNullable"] = &types.AttributeValueMemberS{
 			Value: datetimeToDynamoTimeString(*input.RangeNullableStartingAt),
 		}
@@ -786,26 +753,19 @@ func (t ThingTable) getThingsByNameAndRangeNullable(ctx context.Context, input d
 			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #RANGENULLABLE >= :rangeNullable")
 		}
 	}
-	// swad-get-334
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"rangeNullable": &types.AttributeValueMemberS{
 				Value: datetimePtrToDynamoTimeString(input.StartingAfter.RangeNullable),
 			},
-			// swad-get-3341
 			"name": &types.AttributeValueMemberS{
 				Value: input.StartingAfter.Name,
 			},
-			// swad-get-3342
 			"version": &types.AttributeValueMemberN{
 				Value: fmt.Sprintf("%d", input.StartingAfter.Version),
 			},
-
-			// swad-get-336
 		}
 	}
-
-	// swad-get-339
 
 	totalRecordsProcessed := int32(0)
 	var pageFnErr error
@@ -912,42 +872,33 @@ func (t ThingTable) scanThingsByNameAndRangeNullable(ctx context.Context, input 
 	return nil
 }
 func (t ThingTable) getThingsByHashNullableAndName(ctx context.Context, input db.GetThingsByHashNullableAndNameInput, fn func(m *models.Thing, lastThing bool) bool) error {
-	// swad-get-33
 	if input.NameStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.NameStartingAt or input.StartingAfter")
 	}
-	// swad-get-33f
 	if input.HashNullable == "" {
 		return fmt.Errorf("Hash key input.HashNullable cannot be empty")
 	}
-	// swad-get-331
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("name-hashNullable"),
 		ExpressionAttributeNames: map[string]string{
 			"#HASHNULLABLE": "hashNullable",
 		},
-		// swad-get-3312
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":hashNullable": &types.AttributeValueMemberS{
-				// swad-get-33e
 				Value: input.HashNullable,
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
-	// swad-get-332
 	if input.Limit != nil {
 		queryInput.Limit = input.Limit
 	}
 	if input.NameStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#HASHNULLABLE = :hashNullable")
 	} else {
-		// swad-get-333
 		queryInput.ExpressionAttributeNames["#NAME"] = "name"
-
-		// swad-get-3331a
 		queryInput.ExpressionAttributeValues[":name"] = &types.AttributeValueMemberS{
 			Value: string(*input.NameStartingAt),
 		}
@@ -958,26 +909,19 @@ func (t ThingTable) getThingsByHashNullableAndName(ctx context.Context, input db
 			queryInput.KeyConditionExpression = aws.String("#HASHNULLABLE = :hashNullable AND #NAME >= :name")
 		}
 	}
-	// swad-get-334
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"name": &types.AttributeValueMemberS{
 				Value: string(input.StartingAfter.Name),
 			},
-			// swad-get-3341
 			"hashNullable": &types.AttributeValueMemberS{
 				Value: *input.StartingAfter.HashNullable,
 			},
-			// swad-get-3342
 			"version": &types.AttributeValueMemberN{
 				Value: fmt.Sprintf("%d", input.StartingAfter.Version),
 			},
-
-			// swad-get-336
 		}
 	}
-
-	// swad-get-339
 
 	totalRecordsProcessed := int32(0)
 	var pageFnErr error
@@ -1038,7 +982,6 @@ func encodeThing(m models.Thing) (map[string]types.AttributeValue, error) {
 
 // decodeThing translates a Thing stored in DynamoDB to a Thing struct.
 func decodeThing(m map[string]types.AttributeValue, out *models.Thing) error {
-	// swad-decode-1
 	var ddbThing ddbThing
 	if err := attributevalue.UnmarshalMap(m, &ddbThing); err != nil {
 		return err

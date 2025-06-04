@@ -181,7 +181,6 @@ func (t ThingAllowingBatchWritesTable) deleteArrayOfThingAllowingBatchWrites(ctx
 }
 
 func (t ThingAllowingBatchWritesTable) getThingAllowingBatchWrites(ctx context.Context, name string, version int64) (*models.ThingAllowingBatchWrites, error) {
-	// swad-get-7
 	key, err := attributevalue.MarshalMap(ddbThingAllowingBatchWritesPrimaryKey{
 		Name:    name,
 		Version: version,
@@ -218,7 +217,6 @@ func (t ThingAllowingBatchWritesTable) getThingAllowingBatchWrites(ctx context.C
 }
 
 func (t ThingAllowingBatchWritesTable) scanThingAllowingBatchWritess(ctx context.Context, input db.ScanThingAllowingBatchWritessInput, fn func(m *models.ThingAllowingBatchWrites, lastThingAllowingBatchWrites bool) bool) error {
-	// swad-scan-1
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -272,7 +270,6 @@ func (t ThingAllowingBatchWritesTable) scanThingAllowingBatchWritess(ctx context
 }
 
 func (t ThingAllowingBatchWritesTable) getThingAllowingBatchWritessByNameAndVersion(ctx context.Context, input db.GetThingAllowingBatchWritessByNameAndVersionInput, fn func(m *models.ThingAllowingBatchWrites, lastThingAllowingBatchWrites bool) bool) error {
-	// swad-get-2
 	if input.VersionStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.VersionStartingAt or input.StartingAfter")
 	}
@@ -298,7 +295,6 @@ func (t ThingAllowingBatchWritesTable) getThingAllowingBatchWritessByNameAndVers
 	if input.VersionStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
 	} else {
-		// swad-get-21
 		queryInput.ExpressionAttributeNames["#VERSION"] = "version"
 		queryInput.ExpressionAttributeValues[":version"] = &types.AttributeValueMemberN{
 			Value: fmt.Sprintf("%d", *input.VersionStartingAt),
@@ -310,14 +306,12 @@ func (t ThingAllowingBatchWritesTable) getThingAllowingBatchWritessByNameAndVers
 			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #VERSION >= :version")
 		}
 	}
-	// swad-get-22
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"version": &types.AttributeValueMemberN{
 				Value: fmt.Sprintf("%d", input.StartingAfter.Version),
 			},
 
-			// swad-get-223
 			"name": &types.AttributeValueMemberS{
 				Value: input.StartingAfter.Name,
 			},
@@ -407,7 +401,6 @@ func encodeThingAllowingBatchWrites(m models.ThingAllowingBatchWrites) (map[stri
 
 // decodeThingAllowingBatchWrites translates a ThingAllowingBatchWrites stored in DynamoDB to a ThingAllowingBatchWrites struct.
 func decodeThingAllowingBatchWrites(m map[string]types.AttributeValue, out *models.ThingAllowingBatchWrites) error {
-	// swad-decode-1
 	var ddbThingAllowingBatchWrites ddbThingAllowingBatchWrites
 	if err := attributevalue.UnmarshalMap(m, &ddbThingAllowingBatchWrites); err != nil {
 		return err

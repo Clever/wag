@@ -153,7 +153,6 @@ func (t ThingWithDateGSITable) saveThingWithDateGSI(ctx context.Context, m model
 }
 
 func (t ThingWithDateGSITable) getThingWithDateGSI(ctx context.Context, dateH strfmt.Date) (*models.ThingWithDateGSI, error) {
-	// swad-get-7
 	key, err := attributevalue.MarshalMap(ddbThingWithDateGSIPrimaryKey{
 		DateH: dateH,
 	})
@@ -188,7 +187,6 @@ func (t ThingWithDateGSITable) getThingWithDateGSI(ctx context.Context, dateH st
 }
 
 func (t ThingWithDateGSITable) scanThingWithDateGSIs(ctx context.Context, input db.ScanThingWithDateGSIsInput, fn func(m *models.ThingWithDateGSI, lastThingWithDateGSI bool) bool) error {
-	// swad-scan-1
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -264,42 +262,33 @@ func (t ThingWithDateGSITable) deleteThingWithDateGSI(ctx context.Context, dateH
 }
 
 func (t ThingWithDateGSITable) getThingWithDateGSIsByIDAndDateR(ctx context.Context, input db.GetThingWithDateGSIsByIDAndDateRInput, fn func(m *models.ThingWithDateGSI, lastThingWithDateGSI bool) bool) error {
-	// swad-get-33
 	if input.DateRStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.DateRStartingAt or input.StartingAfter")
 	}
-	// swad-get-33f
 	if input.ID == "" {
 		return fmt.Errorf("Hash key input.ID cannot be empty")
 	}
-	// swad-get-331
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("rangeDate"),
 		ExpressionAttributeNames: map[string]string{
 			"#ID": "id",
 		},
-		// swad-get-3312
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":id": &types.AttributeValueMemberS{
-				// swad-get-33e
 				Value: input.ID,
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
-	// swad-get-332
 	if input.Limit != nil {
 		queryInput.Limit = input.Limit
 	}
 	if input.DateRStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#ID = :id")
 	} else {
-		// swad-get-333
 		queryInput.ExpressionAttributeNames["#DATER"] = "dateR"
-
-		// swad-get-3331a
 		queryInput.ExpressionAttributeValues[":dateR"] = &types.AttributeValueMemberS{
 			Value: dateToDynamoTimeString(*input.DateRStartingAt),
 		}
@@ -310,26 +299,19 @@ func (t ThingWithDateGSITable) getThingWithDateGSIsByIDAndDateR(ctx context.Cont
 			queryInput.KeyConditionExpression = aws.String("#ID = :id AND #DATER >= :dateR")
 		}
 	}
-	// swad-get-334
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"dateR": &types.AttributeValueMemberS{
 				Value: dateToDynamoTimeString(input.StartingAfter.DateR),
 			},
-			// swad-get-3341
 			"id": &types.AttributeValueMemberS{
 				Value: input.StartingAfter.ID,
 			},
-			// swad-get-3342
-
-			// swad-get-336
 			"dateH": &types.AttributeValueMemberS{
 				Value: dateToDynamoTimeString(input.StartingAfter.DateH),
 			},
 		}
 	}
-
-	// swad-get-339
 
 	totalRecordsProcessed := int32(0)
 	var pageFnErr error
@@ -381,41 +363,33 @@ func (t ThingWithDateGSITable) getThingWithDateGSIsByIDAndDateR(ctx context.Cont
 	return nil
 }
 func (t ThingWithDateGSITable) getThingWithDateGSIsByDateHAndID(ctx context.Context, input db.GetThingWithDateGSIsByDateHAndIDInput, fn func(m *models.ThingWithDateGSI, lastThingWithDateGSI bool) bool) error {
-	// swad-get-33
 	if input.IDStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.IDStartingAt or input.StartingAfter")
 	}
 	if dateToDynamoTimeString(input.DateH) == "" {
 		return fmt.Errorf("Hash key input.DateH cannot be empty")
 	}
-	// swad-get-331
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("hash"),
 		ExpressionAttributeNames: map[string]string{
 			"#DATEH": "dateH",
 		},
-		// swad-get-3312
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":dateH": &types.AttributeValueMemberS{
-				// swad-get-33c
 				Value: dateToDynamoTimeString(input.DateH),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
-	// swad-get-332
 	if input.Limit != nil {
 		queryInput.Limit = input.Limit
 	}
 	if input.IDStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#DATEH = :dateH")
 	} else {
-		// swad-get-333
 		queryInput.ExpressionAttributeNames["#ID"] = "id"
-
-		// swad-get-3331a
 		queryInput.ExpressionAttributeValues[":id"] = &types.AttributeValueMemberS{
 			Value: string(*input.IDStartingAt),
 		}
@@ -426,23 +400,16 @@ func (t ThingWithDateGSITable) getThingWithDateGSIsByDateHAndID(ctx context.Cont
 			queryInput.KeyConditionExpression = aws.String("#DATEH = :dateH AND #ID >= :id")
 		}
 	}
-	// swad-get-334
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"id": &types.AttributeValueMemberS{
 				Value: string(input.StartingAfter.ID),
 			},
-			// swad-get-3341
 			"dateH": &types.AttributeValueMemberS{
 				Value: dateToDynamoTimeString(input.StartingAfter.DateH),
 			},
-			// swad-get-3342
-
-			// swad-get-336
 		}
 	}
-
-	// swad-get-339
 
 	totalRecordsProcessed := int32(0)
 	var pageFnErr error
@@ -503,7 +470,6 @@ func encodeThingWithDateGSI(m models.ThingWithDateGSI) (map[string]types.Attribu
 
 // decodeThingWithDateGSI translates a ThingWithDateGSI stored in DynamoDB to a ThingWithDateGSI struct.
 func decodeThingWithDateGSI(m map[string]types.AttributeValue, out *models.ThingWithDateGSI) error {
-	// swad-decode-1
 	var ddbThingWithDateGSI ddbThingWithDateGSI
 	if err := attributevalue.UnmarshalMap(m, &ddbThingWithDateGSI); err != nil {
 		return err

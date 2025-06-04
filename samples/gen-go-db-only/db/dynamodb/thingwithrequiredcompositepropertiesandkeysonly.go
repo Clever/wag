@@ -107,7 +107,6 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) saveThingWithRequi
 }
 
 func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) getThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, propertyThree string) (*models.ThingWithRequiredCompositePropertiesAndKeysOnly, error) {
-	// swad-get-7
 	key, err := attributevalue.MarshalMap(ddbThingWithRequiredCompositePropertiesAndKeysOnlyPrimaryKey{
 		PropertyThree: propertyThree,
 	})
@@ -138,7 +137,6 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) getThingWithRequir
 }
 
 func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) scanThingWithRequiredCompositePropertiesAndKeysOnlys(ctx context.Context, input db.ScanThingWithRequiredCompositePropertiesAndKeysOnlysInput, fn func(m *models.ThingWithRequiredCompositePropertiesAndKeysOnly, lastThingWithRequiredCompositePropertiesAndKeysOnly bool) bool) error {
-	// swad-scan-1
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -210,46 +208,36 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) deleteThingWithReq
 }
 
 func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(ctx context.Context, input db.GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput, fn func(m *models.ThingWithRequiredCompositePropertiesAndKeysOnly, lastThingWithRequiredCompositePropertiesAndKeysOnly bool) bool) error {
-	// swad-get-33
 	if input.PropertyThreeStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.PropertyThreeStartingAt or input.StartingAfter")
 	}
-	// swad-get-33f
 	if input.PropertyOne == "" {
 		return fmt.Errorf("Hash key input.PropertyOne cannot be empty")
 	}
-	// swad-get-33f
 	if input.PropertyTwo == "" {
 		return fmt.Errorf("Hash key input.PropertyTwo cannot be empty")
 	}
-	// swad-get-331
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("propertyOneAndTwo_PropertyThree"),
 		ExpressionAttributeNames: map[string]string{
 			"#PROPERTYONEANDTWO": "propertyOneAndTwo",
 		},
-		// swad-get-3312
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":propertyOneAndTwo": &types.AttributeValueMemberS{
-				// swad-get-33a
 				Value: fmt.Sprintf("%s_%s", input.PropertyOne, input.PropertyTwo),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
-	// swad-get-332
 	if input.Limit != nil {
 		queryInput.Limit = input.Limit
 	}
 	if input.PropertyThreeStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#PROPERTYONEANDTWO = :propertyOneAndTwo")
 	} else {
-		// swad-get-333
 		queryInput.ExpressionAttributeNames["#PROPERTYTHREE"] = "propertyThree"
-
-		// swad-get-3331a
 		queryInput.ExpressionAttributeValues[":propertyThree"] = &types.AttributeValueMemberS{
 			Value: string(*input.PropertyThreeStartingAt),
 		}
@@ -260,23 +248,16 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) getThingWithRequir
 			queryInput.KeyConditionExpression = aws.String("#PROPERTYONEANDTWO = :propertyOneAndTwo AND #PROPERTYTHREE >= :propertyThree")
 		}
 	}
-	// swad-get-334
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"propertyThree": &types.AttributeValueMemberS{
 				Value: string(*input.StartingAfter.PropertyThree),
 			},
-			// swad-get-3341
 			"propertyOneAndTwo": &types.AttributeValueMemberS{
 				Value: fmt.Sprintf("%s_%s", *input.StartingAfter.PropertyOne, *input.StartingAfter.PropertyTwo),
 			},
-			// swad-get-3342
-
-			// swad-get-336
 		}
 	}
-
-	// swad-get-339
 
 	totalRecordsProcessed := int32(0)
 	var pageFnErr error
@@ -415,7 +396,6 @@ func encodeThingWithRequiredCompositePropertiesAndKeysOnly(m models.ThingWithReq
 
 // decodeThingWithRequiredCompositePropertiesAndKeysOnly translates a ThingWithRequiredCompositePropertiesAndKeysOnly stored in DynamoDB to a ThingWithRequiredCompositePropertiesAndKeysOnly struct.
 func decodeThingWithRequiredCompositePropertiesAndKeysOnly(m map[string]types.AttributeValue, out *models.ThingWithRequiredCompositePropertiesAndKeysOnly) error {
-	// swad-decode-1
 	var ddbThingWithRequiredCompositePropertiesAndKeysOnly ddbThingWithRequiredCompositePropertiesAndKeysOnly
 	if err := attributevalue.UnmarshalMap(m, &ddbThingWithRequiredCompositePropertiesAndKeysOnly); err != nil {
 		return err
@@ -423,7 +403,6 @@ func decodeThingWithRequiredCompositePropertiesAndKeysOnly(m map[string]types.At
 	*out = ddbThingWithRequiredCompositePropertiesAndKeysOnly.ThingWithRequiredCompositePropertiesAndKeysOnly
 	// parse composite attributes from projected secondary indexes and fill
 	// in model properties
-	// swad-decode-2
 	if v, ok := m["propertyOneAndTwo"]; ok {
 		if s, ok := v.(*types.AttributeValueMemberS); ok {
 			parts := strings.Split(s.Value, "_")

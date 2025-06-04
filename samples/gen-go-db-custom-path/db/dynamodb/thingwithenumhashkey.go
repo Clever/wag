@@ -134,7 +134,6 @@ func (t ThingWithEnumHashKeyTable) saveThingWithEnumHashKey(ctx context.Context,
 }
 
 func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKey(ctx context.Context, branch models.Branch, date strfmt.DateTime) (*models.ThingWithEnumHashKey, error) {
-	// swad-get-7
 	key, err := attributevalue.MarshalMap(ddbThingWithEnumHashKeyPrimaryKey{
 		Branch: branch,
 		Date:   date,
@@ -171,7 +170,6 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKey(ctx context.Context, 
 }
 
 func (t ThingWithEnumHashKeyTable) scanThingWithEnumHashKeys(ctx context.Context, input db.ScanThingWithEnumHashKeysInput, fn func(m *models.ThingWithEnumHashKey, lastThingWithEnumHashKey bool) bool) error {
-	// swad-scan-1
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -225,7 +223,6 @@ func (t ThingWithEnumHashKeyTable) scanThingWithEnumHashKeys(ctx context.Context
 }
 
 func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDateParseFilters(queryInput *dynamodb.QueryInput, input db.GetThingWithEnumHashKeysByBranchAndDateInput) {
-	// swad-get-11
 	for _, filterValue := range input.FilterValues {
 		switch filterValue.AttributeName {
 		case db.ThingWithEnumHashKeyDate2:
@@ -240,7 +237,6 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDateParseF
 }
 
 func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDate(ctx context.Context, input db.GetThingWithEnumHashKeysByBranchAndDateInput, fn func(m *models.ThingWithEnumHashKey, lastThingWithEnumHashKey bool) bool) error {
-	// swad-get-2
 	if input.DateStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.DateStartingAt or input.StartingAfter")
 	}
@@ -266,7 +262,6 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDate(ctx c
 	if input.DateStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#BRANCH = :branch")
 	} else {
-		// swad-get-21
 		queryInput.ExpressionAttributeNames["#DATE"] = "date"
 		queryInput.ExpressionAttributeValues[":date"] = &types.AttributeValueMemberS{
 			Value: datetimeToDynamoTimeString(*input.DateStartingAt),
@@ -278,14 +273,12 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDate(ctx c
 			queryInput.KeyConditionExpression = aws.String("#BRANCH = :branch AND #DATE >= :date")
 		}
 	}
-	// swad-get-22
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"date": &types.AttributeValueMemberS{
 				Value: datetimeToDynamoTimeString(input.StartingAfter.Date),
 			},
 
-			// swad-get-223
 			"branch": &types.AttributeValueMemberS{
 				Value: string(input.StartingAfter.Branch),
 			},
@@ -371,42 +364,33 @@ func (t ThingWithEnumHashKeyTable) deleteThingWithEnumHashKey(ctx context.Contex
 }
 
 func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDate2(ctx context.Context, input db.GetThingWithEnumHashKeysByBranchAndDate2Input, fn func(m *models.ThingWithEnumHashKey, lastThingWithEnumHashKey bool) bool) error {
-	// swad-get-33
 	if input.Date2StartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.Date2StartingAt or input.StartingAfter")
 	}
-	// swad-get-33f
 	if input.Branch == "" {
 		return fmt.Errorf("Hash key input.Branch cannot be empty")
 	}
-	// swad-get-331
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("byBranch"),
 		ExpressionAttributeNames: map[string]string{
 			"#BRANCH": "branch",
 		},
-		// swad-get-3312
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":branch": &types.AttributeValueMemberS{
-				// swad-get-33d
 				Value: string(input.Branch),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
-	// swad-get-332
 	if input.Limit != nil {
 		queryInput.Limit = input.Limit
 	}
 	if input.Date2StartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#BRANCH = :branch")
 	} else {
-		// swad-get-333
 		queryInput.ExpressionAttributeNames["#DATE2"] = "date2"
-
-		// swad-get-3331a
 		queryInput.ExpressionAttributeValues[":date2"] = &types.AttributeValueMemberS{
 			Value: datetimeToDynamoTimeString(*input.Date2StartingAt),
 		}
@@ -417,26 +401,19 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDate2(ctx 
 			queryInput.KeyConditionExpression = aws.String("#BRANCH = :branch AND #DATE2 >= :date2")
 		}
 	}
-	// swad-get-334
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"date2": &types.AttributeValueMemberS{
 				Value: datetimeToDynamoTimeString(input.StartingAfter.Date2),
 			},
-			// swad-get-3341
 			"branch": &types.AttributeValueMemberS{
 				Value: string(input.StartingAfter.Branch),
 			},
-			// swad-get-3342
 			"date": &types.AttributeValueMemberS{
 				Value: datetimeToDynamoTimeString(input.StartingAfter.Date),
 			},
-
-			// swad-get-336
 		}
 	}
-
-	// swad-get-339
 
 	totalRecordsProcessed := int32(0)
 	var pageFnErr error
@@ -552,7 +529,6 @@ func encodeThingWithEnumHashKey(m models.ThingWithEnumHashKey) (map[string]types
 
 // decodeThingWithEnumHashKey translates a ThingWithEnumHashKey stored in DynamoDB to a ThingWithEnumHashKey struct.
 func decodeThingWithEnumHashKey(m map[string]types.AttributeValue, out *models.ThingWithEnumHashKey) error {
-	// swad-decode-1
 	var ddbThingWithEnumHashKey ddbThingWithEnumHashKey
 	if err := attributevalue.UnmarshalMap(m, &ddbThingWithEnumHashKey); err != nil {
 		return err

@@ -84,7 +84,6 @@ func (t ThingWithDateTimeCompositeTable) saveThingWithDateTimeComposite(ctx cont
 }
 
 func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeComposite(ctx context.Context, typeVar string, id string, created strfmt.DateTime, resource string) (*models.ThingWithDateTimeComposite, error) {
-	// swad-get-7
 	key, err := attributevalue.MarshalMap(ddbThingWithDateTimeCompositePrimaryKey{
 		TypeID:          fmt.Sprintf("%s|%s", typeVar, id),
 		CreatedResource: fmt.Sprintf("%s|%s", created, resource),
@@ -119,7 +118,6 @@ func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeComposite(ctx conte
 }
 
 func (t ThingWithDateTimeCompositeTable) scanThingWithDateTimeComposites(ctx context.Context, input db.ScanThingWithDateTimeCompositesInput, fn func(m *models.ThingWithDateTimeComposite, lastThingWithDateTimeComposite bool) bool) error {
-	// swad-scan-1
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -173,7 +171,6 @@ func (t ThingWithDateTimeCompositeTable) scanThingWithDateTimeComposites(ctx con
 }
 
 func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx context.Context, input db.GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput, fn func(m *models.ThingWithDateTimeComposite, lastThingWithDateTimeComposite bool) bool) error {
-	// swad-get-2
 	if input.StartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of StartingAt or StartingAfter")
 	}
@@ -202,7 +199,6 @@ func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDA
 	if input.StartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#TYPEID = :typeId")
 	} else {
-		// swad-get-21
 		queryInput.ExpressionAttributeNames["#CREATEDRESOURCE"] = "createdResource"
 		queryInput.ExpressionAttributeValues[":createdResource"] = &types.AttributeValueMemberS{
 			Value: fmt.Sprintf("%s|%s", input.StartingAt.Created, input.StartingAt.Resource),
@@ -214,14 +210,12 @@ func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDA
 			queryInput.KeyConditionExpression = aws.String("#TYPEID = :typeId AND #CREATEDRESOURCE >= :createdResource")
 		}
 	}
-	// swad-get-22
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"createdResource": &types.AttributeValueMemberS{
 				Value: fmt.Sprintf("%s|%s", input.StartingAfter.Created, input.StartingAfter.Resource),
 			},
 
-			// swad-get-223
 			"typeID": &types.AttributeValueMemberS{
 				Value: fmt.Sprintf("%s|%s", input.StartingAfter.Type, input.StartingAfter.ID),
 			},
@@ -332,7 +326,6 @@ func encodeThingWithDateTimeComposite(m models.ThingWithDateTimeComposite) (map[
 
 // decodeThingWithDateTimeComposite translates a ThingWithDateTimeComposite stored in DynamoDB to a ThingWithDateTimeComposite struct.
 func decodeThingWithDateTimeComposite(m map[string]types.AttributeValue, out *models.ThingWithDateTimeComposite) error {
-	// swad-decode-1
 	var ddbThingWithDateTimeComposite ddbThingWithDateTimeComposite
 	if err := attributevalue.UnmarshalMap(m, &ddbThingWithDateTimeComposite); err != nil {
 		return err

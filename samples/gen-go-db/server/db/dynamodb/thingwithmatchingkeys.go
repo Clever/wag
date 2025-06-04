@@ -116,7 +116,6 @@ func (t ThingWithMatchingKeysTable) saveThingWithMatchingKeys(ctx context.Contex
 }
 
 func (t ThingWithMatchingKeysTable) getThingWithMatchingKeys(ctx context.Context, bear string, assocType string, assocID string) (*models.ThingWithMatchingKeys, error) {
-	// swad-get-7
 	key, err := attributevalue.MarshalMap(ddbThingWithMatchingKeysPrimaryKey{
 		Bear:        bear,
 		AssocTypeID: fmt.Sprintf("%s^%s", assocType, assocID),
@@ -150,7 +149,6 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeys(ctx context.Context
 }
 
 func (t ThingWithMatchingKeysTable) scanThingWithMatchingKeyss(ctx context.Context, input db.ScanThingWithMatchingKeyssInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error {
-	// swad-scan-1
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -206,7 +204,6 @@ func (t ThingWithMatchingKeysTable) scanThingWithMatchingKeyss(ctx context.Conte
 }
 
 func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByBearAndAssocTypeIDParseFilters(queryInput *dynamodb.QueryInput, input db.GetThingWithMatchingKeyssByBearAndAssocTypeIDInput) {
-	// swad-get-11
 	for _, filterValue := range input.FilterValues {
 		switch filterValue.AttributeName {
 		case db.ThingWithMatchingKeysCreated:
@@ -221,7 +218,6 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByBearAndAssocTypeI
 }
 
 func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByBearAndAssocTypeID(ctx context.Context, input db.GetThingWithMatchingKeyssByBearAndAssocTypeIDInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error {
-	// swad-get-2
 	if input.StartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of StartingAt or StartingAfter")
 	}
@@ -247,7 +243,6 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByBearAndAssocTypeI
 	if input.StartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#BEAR = :bear")
 	} else {
-		// swad-get-21
 		queryInput.ExpressionAttributeNames["#ASSOCTYPEID"] = "assocTypeID"
 		queryInput.ExpressionAttributeValues[":assocTypeId"] = &types.AttributeValueMemberS{
 			Value: fmt.Sprintf("%s^%s", input.StartingAt.AssocType, input.StartingAt.AssocID),
@@ -259,14 +254,12 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByBearAndAssocTypeI
 			queryInput.KeyConditionExpression = aws.String("#BEAR = :bear AND #ASSOCTYPEID >= :assocTypeId")
 		}
 	}
-	// swad-get-22
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"assocTypeID": &types.AttributeValueMemberS{
 				Value: fmt.Sprintf("%s^%s", input.StartingAfter.AssocType, input.StartingAfter.AssocID),
 			},
 
-			// swad-get-223
 			"bear": &types.AttributeValueMemberS{
 				Value: input.StartingAfter.Bear,
 			},
@@ -348,46 +341,36 @@ func (t ThingWithMatchingKeysTable) deleteThingWithMatchingKeys(ctx context.Cont
 }
 
 func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Context, input db.GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error {
-	// swad-get-33
 	if input.StartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.StartingAt or input.StartingAfter")
 	}
-	// swad-get-33f
 	if input.AssocType == "" {
 		return fmt.Errorf("Hash key input.AssocType cannot be empty")
 	}
-	// swad-get-33f
 	if input.AssocID == "" {
 		return fmt.Errorf("Hash key input.AssocID cannot be empty")
 	}
-	// swad-get-331
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("byAssoc"),
 		ExpressionAttributeNames: map[string]string{
 			"#ASSOCTYPEID": "assocTypeID",
 		},
-		// swad-get-3312
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":assocTypeId": &types.AttributeValueMemberS{
-				// swad-get-33a
 				Value: fmt.Sprintf("%s^%s", input.AssocType, input.AssocID),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
-	// swad-get-332
 	if input.Limit != nil {
 		queryInput.Limit = input.Limit
 	}
 	if input.StartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#ASSOCTYPEID = :assocTypeId")
 	} else {
-		// swad-get-333
 		queryInput.ExpressionAttributeNames["#CREATEDBEAR"] = "createdBear"
-
-		// swad-get-3331a
 		queryInput.ExpressionAttributeValues[":createdBear"] = &types.AttributeValueMemberS{
 			Value: fmt.Sprintf("%s^%s", input.StartingAt.Created, input.StartingAt.Bear),
 		}
@@ -398,26 +381,19 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByAssocTypeIDAndCre
 			queryInput.KeyConditionExpression = aws.String("#ASSOCTYPEID = :assocTypeId AND #CREATEDBEAR >= :createdBear")
 		}
 	}
-	// swad-get-334
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"createdBear": &types.AttributeValueMemberS{
 				Value: fmt.Sprintf("%s^%s", input.StartingAfter.Created, input.StartingAfter.Bear),
 			},
-			// swad-get-3341
 			"assocTypeID": &types.AttributeValueMemberS{
 				Value: fmt.Sprintf("%s^%s", input.StartingAfter.AssocType, input.StartingAfter.AssocID),
 			},
-			// swad-get-3342
-
-			// swad-get-336
 			"bear": &types.AttributeValueMemberS{
 				Value: input.StartingAfter.Bear,
 			},
 		}
 	}
-
-	// swad-get-339
 
 	totalRecordsProcessed := int32(0)
 	var pageFnErr error
@@ -572,7 +548,6 @@ func encodeThingWithMatchingKeys(m models.ThingWithMatchingKeys) (map[string]typ
 
 // decodeThingWithMatchingKeys translates a ThingWithMatchingKeys stored in DynamoDB to a ThingWithMatchingKeys struct.
 func decodeThingWithMatchingKeys(m map[string]types.AttributeValue, out *models.ThingWithMatchingKeys) error {
-	// swad-decode-1
 	var ddbThingWithMatchingKeys ddbThingWithMatchingKeys
 	if err := attributevalue.UnmarshalMap(m, &ddbThingWithMatchingKeys); err != nil {
 		return err

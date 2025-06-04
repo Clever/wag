@@ -73,7 +73,6 @@ func (t ThingWithUnderscoresTable) saveThingWithUnderscores(ctx context.Context,
 }
 
 func (t ThingWithUnderscoresTable) getThingWithUnderscores(ctx context.Context, iDApp string) (*models.ThingWithUnderscores, error) {
-	// swad-get-7
 	key, err := attributevalue.MarshalMap(ddbThingWithUnderscoresPrimaryKey{
 		IDApp: iDApp,
 	})
@@ -131,7 +130,6 @@ func encodeThingWithUnderscores(m models.ThingWithUnderscores) (map[string]types
 
 // decodeThingWithUnderscores translates a ThingWithUnderscores stored in DynamoDB to a ThingWithUnderscores struct.
 func decodeThingWithUnderscores(m map[string]types.AttributeValue, out *models.ThingWithUnderscores) error {
-	// swad-decode-1
 	var ddbThingWithUnderscores ddbThingWithUnderscores
 	if err := attributevalue.UnmarshalMap(m, &ddbThingWithUnderscores); err != nil {
 		return err

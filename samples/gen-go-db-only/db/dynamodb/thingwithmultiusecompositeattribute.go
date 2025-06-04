@@ -141,7 +141,6 @@ func (t ThingWithMultiUseCompositeAttributeTable) saveThingWithMultiUseComposite
 }
 
 func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeAttribute(ctx context.Context, one string) (*models.ThingWithMultiUseCompositeAttribute, error) {
-	// swad-get-7
 	key, err := attributevalue.MarshalMap(ddbThingWithMultiUseCompositeAttributePrimaryKey{
 		One: one,
 	})
@@ -172,7 +171,6 @@ func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeA
 }
 
 func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseCompositeAttributes(ctx context.Context, input db.ScanThingWithMultiUseCompositeAttributesInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error {
-	// swad-scan-1
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -244,42 +242,33 @@ func (t ThingWithMultiUseCompositeAttributeTable) deleteThingWithMultiUseComposi
 }
 
 func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx context.Context, input db.GetThingWithMultiUseCompositeAttributesByThreeAndOneTwoInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error {
-	// swad-get-33
 	if input.StartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.StartingAt or input.StartingAfter")
 	}
-	// swad-get-33f
 	if input.Three == "" {
 		return fmt.Errorf("Hash key input.Three cannot be empty")
 	}
-	// swad-get-331
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("threeIndex"),
 		ExpressionAttributeNames: map[string]string{
 			"#THREE": "three",
 		},
-		// swad-get-3312
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":three": &types.AttributeValueMemberS{
-				// swad-get-33e
 				Value: input.Three,
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
-	// swad-get-332
 	if input.Limit != nil {
 		queryInput.Limit = input.Limit
 	}
 	if input.StartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#THREE = :three")
 	} else {
-		// swad-get-333
 		queryInput.ExpressionAttributeNames["#ONE_TWO"] = "one_two"
-
-		// swad-get-3331a
 		queryInput.ExpressionAttributeValues[":oneTwo"] = &types.AttributeValueMemberS{
 			Value: fmt.Sprintf("%s_%s", input.StartingAt.One, input.StartingAt.Two),
 		}
@@ -290,26 +279,19 @@ func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeA
 			queryInput.KeyConditionExpression = aws.String("#THREE = :three AND #ONE_TWO >= :oneTwo")
 		}
 	}
-	// swad-get-334
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"one_two": &types.AttributeValueMemberS{
 				Value: fmt.Sprintf("%s_%s", *input.StartingAfter.One, *input.StartingAfter.Two),
 			},
-			// swad-get-3341
 			"three": &types.AttributeValueMemberS{
 				Value: *input.StartingAfter.Three,
 			},
-			// swad-get-3342
-
-			// swad-get-336
 			"one": &types.AttributeValueMemberS{
 				Value: *input.StartingAfter.One,
 			},
 		}
 	}
-
-	// swad-get-339
 
 	totalRecordsProcessed := int32(0)
 	var pageFnErr error
@@ -418,42 +400,33 @@ func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseComposite
 	return nil
 }
 func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeAttributesByFourAndOneTwo(ctx context.Context, input db.GetThingWithMultiUseCompositeAttributesByFourAndOneTwoInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error {
-	// swad-get-33
 	if input.StartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.StartingAt or input.StartingAfter")
 	}
-	// swad-get-33f
 	if input.Four == "" {
 		return fmt.Errorf("Hash key input.Four cannot be empty")
 	}
-	// swad-get-331
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("fourIndex"),
 		ExpressionAttributeNames: map[string]string{
 			"#FOUR": "four",
 		},
-		// swad-get-3312
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":four": &types.AttributeValueMemberS{
-				// swad-get-33e
 				Value: input.Four,
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
-	// swad-get-332
 	if input.Limit != nil {
 		queryInput.Limit = input.Limit
 	}
 	if input.StartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#FOUR = :four")
 	} else {
-		// swad-get-333
 		queryInput.ExpressionAttributeNames["#ONE_TWO"] = "one_two"
-
-		// swad-get-3331a
 		queryInput.ExpressionAttributeValues[":oneTwo"] = &types.AttributeValueMemberS{
 			Value: fmt.Sprintf("%s_%s", input.StartingAt.One, input.StartingAt.Two),
 		}
@@ -464,26 +437,19 @@ func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeA
 			queryInput.KeyConditionExpression = aws.String("#FOUR = :four AND #ONE_TWO >= :oneTwo")
 		}
 	}
-	// swad-get-334
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"one_two": &types.AttributeValueMemberS{
 				Value: fmt.Sprintf("%s_%s", *input.StartingAfter.One, *input.StartingAfter.Two),
 			},
-			// swad-get-3341
 			"four": &types.AttributeValueMemberS{
 				Value: *input.StartingAfter.Four,
 			},
-			// swad-get-3342
-
-			// swad-get-336
 			"one": &types.AttributeValueMemberS{
 				Value: *input.StartingAfter.One,
 			},
 		}
 	}
-
-	// swad-get-339
 
 	totalRecordsProcessed := int32(0)
 	var pageFnErr error
@@ -633,7 +599,6 @@ func encodeThingWithMultiUseCompositeAttribute(m models.ThingWithMultiUseComposi
 
 // decodeThingWithMultiUseCompositeAttribute translates a ThingWithMultiUseCompositeAttribute stored in DynamoDB to a ThingWithMultiUseCompositeAttribute struct.
 func decodeThingWithMultiUseCompositeAttribute(m map[string]types.AttributeValue, out *models.ThingWithMultiUseCompositeAttribute) error {
-	// swad-decode-1
 	var ddbThingWithMultiUseCompositeAttribute ddbThingWithMultiUseCompositeAttribute
 	if err := attributevalue.UnmarshalMap(m, &ddbThingWithMultiUseCompositeAttribute); err != nil {
 		return err

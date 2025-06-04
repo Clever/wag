@@ -167,7 +167,6 @@ func (t DeploymentTable) saveDeployment(ctx context.Context, m models.Deployment
 }
 
 func (t DeploymentTable) getDeployment(ctx context.Context, environment string, application string, version string) (*models.Deployment, error) {
-	// swad-get-7
 	key, err := attributevalue.MarshalMap(ddbDeploymentPrimaryKey{
 		EnvApp:  fmt.Sprintf("%s--%s", environment, application),
 		Version: version,
@@ -201,7 +200,6 @@ func (t DeploymentTable) getDeployment(ctx context.Context, environment string, 
 }
 
 func (t DeploymentTable) scanDeployments(ctx context.Context, input db.ScanDeploymentsInput, fn func(m *models.Deployment, lastDeployment bool) bool) error {
-	// swad-scan-1
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -257,7 +255,6 @@ func (t DeploymentTable) scanDeployments(ctx context.Context, input db.ScanDeplo
 }
 
 func (t DeploymentTable) getDeploymentsByEnvAppAndVersionParseFilters(queryInput *dynamodb.QueryInput, input db.GetDeploymentsByEnvAppAndVersionInput) {
-	// swad-get-11
 	for _, filterValue := range input.FilterValues {
 		switch filterValue.AttributeName {
 		case db.DeploymentDate:
@@ -272,7 +269,6 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndVersionParseFilters(queryInput
 }
 
 func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, input db.GetDeploymentsByEnvAppAndVersionInput, fn func(m *models.Deployment, lastDeployment bool) bool) error {
-	// swad-get-2
 	if input.VersionStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.VersionStartingAt or input.StartingAfter")
 	}
@@ -301,7 +297,6 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, i
 	if input.VersionStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#ENVAPP = :envApp")
 	} else {
-		// swad-get-21
 		queryInput.ExpressionAttributeNames["#VERSION"] = "version"
 		queryInput.ExpressionAttributeValues[":version"] = &types.AttributeValueMemberS{
 			Value: string(*input.VersionStartingAt),
@@ -313,14 +308,12 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, i
 			queryInput.KeyConditionExpression = aws.String("#ENVAPP = :envApp AND #VERSION >= :version")
 		}
 	}
-	// swad-get-22
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"version": &types.AttributeValueMemberS{
 				Value: string(input.StartingAfter.Version),
 			},
 
-			// swad-get-223
 			"envApp": &types.AttributeValueMemberS{
 				Value: fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application),
 			},
@@ -402,46 +395,36 @@ func (t DeploymentTable) deleteDeployment(ctx context.Context, environment strin
 }
 
 func (t DeploymentTable) getDeploymentsByEnvAppAndDate(ctx context.Context, input db.GetDeploymentsByEnvAppAndDateInput, fn func(m *models.Deployment, lastDeployment bool) bool) error {
-	// swad-get-33
 	if input.DateStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.DateStartingAt or input.StartingAfter")
 	}
-	// swad-get-33f
 	if input.Environment == "" {
 		return fmt.Errorf("Hash key input.Environment cannot be empty")
 	}
-	// swad-get-33f
 	if input.Application == "" {
 		return fmt.Errorf("Hash key input.Application cannot be empty")
 	}
-	// swad-get-331
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("byDate"),
 		ExpressionAttributeNames: map[string]string{
 			"#ENVAPP": "envApp",
 		},
-		// swad-get-3312
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":envApp": &types.AttributeValueMemberS{
-				// swad-get-33a
 				Value: fmt.Sprintf("%s--%s", input.Environment, input.Application),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
-	// swad-get-332
 	if input.Limit != nil {
 		queryInput.Limit = input.Limit
 	}
 	if input.DateStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#ENVAPP = :envApp")
 	} else {
-		// swad-get-333
 		queryInput.ExpressionAttributeNames["#DATE"] = "date"
-
-		// swad-get-3331a
 		queryInput.ExpressionAttributeValues[":date"] = &types.AttributeValueMemberS{
 			Value: datetimeToDynamoTimeString(*input.DateStartingAt),
 		}
@@ -452,26 +435,19 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndDate(ctx context.Context, inpu
 			queryInput.KeyConditionExpression = aws.String("#ENVAPP = :envApp AND #DATE >= :date")
 		}
 	}
-	// swad-get-334
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"date": &types.AttributeValueMemberS{
 				Value: datetimeToDynamoTimeString(input.StartingAfter.Date),
 			},
-			// swad-get-3341
 			"envApp": &types.AttributeValueMemberS{
 				Value: fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application),
 			},
-			// swad-get-3342
 			"version": &types.AttributeValueMemberS{
 				Value: input.StartingAfter.Version,
 			},
-
-			// swad-get-336
 		}
 	}
-
-	// swad-get-339
 
 	totalRecordsProcessed := int32(0)
 	var pageFnErr error
@@ -580,42 +556,33 @@ func (t DeploymentTable) scanDeploymentsByEnvAppAndDate(ctx context.Context, inp
 	return nil
 }
 func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context, input db.GetDeploymentsByEnvironmentAndDateInput, fn func(m *models.Deployment, lastDeployment bool) bool) error {
-	// swad-get-33
 	if input.DateStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.DateStartingAt or input.StartingAfter")
 	}
-	// swad-get-33f
 	if input.Environment == "" {
 		return fmt.Errorf("Hash key input.Environment cannot be empty")
 	}
-	// swad-get-331
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("byEnvironment"),
 		ExpressionAttributeNames: map[string]string{
 			"#ENVIRONMENT": "environment",
 		},
-		// swad-get-3312
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":environment": &types.AttributeValueMemberS{
-				// swad-get-33e
 				Value: input.Environment,
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
-	// swad-get-332
 	if input.Limit != nil {
 		queryInput.Limit = input.Limit
 	}
 	if input.DateStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#ENVIRONMENT = :environment")
 	} else {
-		// swad-get-333
 		queryInput.ExpressionAttributeNames["#DATE"] = "date"
-
-		// swad-get-3331a
 		queryInput.ExpressionAttributeValues[":date"] = &types.AttributeValueMemberS{
 			Value: datetimeToDynamoTimeString(*input.DateStartingAt),
 		}
@@ -626,29 +593,22 @@ func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context,
 			queryInput.KeyConditionExpression = aws.String("#ENVIRONMENT = :environment AND #DATE >= :date")
 		}
 	}
-	// swad-get-334
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"date": &types.AttributeValueMemberS{
 				Value: datetimeToDynamoTimeString(input.StartingAfter.Date),
 			},
-			// swad-get-3341
 			"environment": &types.AttributeValueMemberS{
 				Value: input.StartingAfter.Environment,
 			},
-			// swad-get-3342
 			"version": &types.AttributeValueMemberS{
 				Value: input.StartingAfter.Version,
 			},
-
-			// swad-get-336
 			"envApp": &types.AttributeValueMemberS{
 				Value: fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application),
 			},
 		}
 	}
-
-	// swad-get-339
 
 	totalRecordsProcessed := int32(0)
 	var pageFnErr error
@@ -700,7 +660,6 @@ func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context,
 	return nil
 }
 func (t DeploymentTable) getDeploymentByVersion(ctx context.Context, version string) (*models.Deployment, error) {
-	// swad-get-8
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("byVersion"),
@@ -829,7 +788,6 @@ func encodeDeployment(m models.Deployment) (map[string]types.AttributeValue, err
 
 // decodeDeployment translates a Deployment stored in DynamoDB to a Deployment struct.
 func decodeDeployment(m map[string]types.AttributeValue, out *models.Deployment) error {
-	// swad-decode-1
 	var ddbDeployment ddbDeployment
 	if err := attributevalue.UnmarshalMap(m, &ddbDeployment); err != nil {
 		return err

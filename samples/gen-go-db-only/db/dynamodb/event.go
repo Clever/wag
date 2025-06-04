@@ -115,7 +115,6 @@ func (t EventTable) saveEvent(ctx context.Context, m models.Event) error {
 }
 
 func (t EventTable) getEvent(ctx context.Context, pk string, sk string) (*models.Event, error) {
-	// swad-get-7
 	key, err := attributevalue.MarshalMap(ddbEventPrimaryKey{
 		Pk: pk,
 		Sk: sk,
@@ -148,7 +147,6 @@ func (t EventTable) getEvent(ctx context.Context, pk string, sk string) (*models
 }
 
 func (t EventTable) scanEvents(ctx context.Context, input db.ScanEventsInput, fn func(m *models.Event, lastEvent bool) bool) error {
-	// swad-scan-1
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -202,7 +200,6 @@ func (t EventTable) scanEvents(ctx context.Context, input db.ScanEventsInput, fn
 }
 
 func (t EventTable) getEventsByPkAndSkParseFilters(queryInput *dynamodb.QueryInput, input db.GetEventsByPkAndSkInput) {
-	// swad-get-11
 	for _, filterValue := range input.FilterValues {
 		switch filterValue.AttributeName {
 		case db.EventData:
@@ -217,7 +214,6 @@ func (t EventTable) getEventsByPkAndSkParseFilters(queryInput *dynamodb.QueryInp
 }
 
 func (t EventTable) getEventsByPkAndSk(ctx context.Context, input db.GetEventsByPkAndSkInput, fn func(m *models.Event, lastEvent bool) bool) error {
-	// swad-get-2
 	if input.SkStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.SkStartingAt or input.StartingAfter")
 	}
@@ -243,7 +239,6 @@ func (t EventTable) getEventsByPkAndSk(ctx context.Context, input db.GetEventsBy
 	if input.SkStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#PK = :pk")
 	} else {
-		// swad-get-21
 		queryInput.ExpressionAttributeNames["#SK"] = "sk"
 		queryInput.ExpressionAttributeValues[":sk"] = &types.AttributeValueMemberS{
 			Value: string(*input.SkStartingAt),
@@ -255,14 +250,12 @@ func (t EventTable) getEventsByPkAndSk(ctx context.Context, input db.GetEventsBy
 			queryInput.KeyConditionExpression = aws.String("#PK = :pk AND #SK >= :sk")
 		}
 	}
-	// swad-get-22
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"sk": &types.AttributeValueMemberS{
 				Value: string(input.StartingAfter.Sk),
 			},
 
-			// swad-get-223
 			"pk": &types.AttributeValueMemberS{
 				Value: input.StartingAfter.Pk,
 			},
@@ -344,42 +337,33 @@ func (t EventTable) deleteEvent(ctx context.Context, pk string, sk string) error
 }
 
 func (t EventTable) getEventsBySkAndData(ctx context.Context, input db.GetEventsBySkAndDataInput, fn func(m *models.Event, lastEvent bool) bool) error {
-	// swad-get-33
 	if input.DataStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.DataStartingAt or input.StartingAfter")
 	}
-	// swad-get-33f
 	if input.Sk == "" {
 		return fmt.Errorf("Hash key input.Sk cannot be empty")
 	}
-	// swad-get-331
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("bySK"),
 		ExpressionAttributeNames: map[string]string{
 			"#SK": "sk",
 		},
-		// swad-get-3312
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":sk": &types.AttributeValueMemberS{
-				// swad-get-33e
 				Value: input.Sk,
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
-	// swad-get-332
 	if input.Limit != nil {
 		queryInput.Limit = input.Limit
 	}
 	if input.DataStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#SK = :sk")
 	} else {
-		// swad-get-333
 		queryInput.ExpressionAttributeNames["#DATA"] = "data"
-
-		// swad-get-3331a
 		queryInput.ExpressionAttributeValues[":data"] = &types.AttributeValueMemberB{
 			Value: input.DataStartingAt,
 		}
@@ -390,26 +374,19 @@ func (t EventTable) getEventsBySkAndData(ctx context.Context, input db.GetEvents
 			queryInput.KeyConditionExpression = aws.String("#SK = :sk AND #DATA >= :data")
 		}
 	}
-	// swad-get-334
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"data": &types.AttributeValueMemberB{
 				Value: input.StartingAfter.Data,
 			},
-			// swad-get-3341
 			"sk": &types.AttributeValueMemberS{
 				Value: input.StartingAfter.Sk,
 			},
-			// swad-get-3342
-
-			// swad-get-336
 			"pk": &types.AttributeValueMemberS{
 				Value: input.StartingAfter.Pk,
 			},
 		}
 	}
-
-	// swad-get-339
 
 	totalRecordsProcessed := int32(0)
 	var pageFnErr error
@@ -525,7 +502,6 @@ func encodeEvent(m models.Event) (map[string]types.AttributeValue, error) {
 
 // decodeEvent translates a Event stored in DynamoDB to a Event struct.
 func decodeEvent(m map[string]types.AttributeValue, out *models.Event) error {
-	// swad-decode-1
 	var ddbEvent ddbEvent
 	if err := attributevalue.UnmarshalMap(m, &ddbEvent); err != nil {
 		return err

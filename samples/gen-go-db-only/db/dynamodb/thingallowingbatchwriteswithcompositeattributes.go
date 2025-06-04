@@ -182,7 +182,6 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) deleteArrayOfThing
 }
 
 func (t ThingAllowingBatchWritesWithCompositeAttributesTable) getThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name string, id string, date strfmt.DateTime) (*models.ThingAllowingBatchWritesWithCompositeAttributes, error) {
-	// swad-get-7
 	key, err := attributevalue.MarshalMap(ddbThingAllowingBatchWritesWithCompositeAttributesPrimaryKey{
 		NameID: fmt.Sprintf("%s@%s", name, id),
 		Date:   date,
@@ -220,7 +219,6 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) getThingAllowingBa
 }
 
 func (t ThingAllowingBatchWritesWithCompositeAttributesTable) scanThingAllowingBatchWritesWithCompositeAttributess(ctx context.Context, input db.ScanThingAllowingBatchWritesWithCompositeAttributessInput, fn func(m *models.ThingAllowingBatchWritesWithCompositeAttributes, lastThingAllowingBatchWritesWithCompositeAttributes bool) bool) error {
-	// swad-scan-1
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -276,7 +274,6 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) scanThingAllowingB
 }
 
 func (t ThingAllowingBatchWritesWithCompositeAttributesTable) getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate(ctx context.Context, input db.GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateInput, fn func(m *models.ThingAllowingBatchWritesWithCompositeAttributes, lastThingAllowingBatchWritesWithCompositeAttributes bool) bool) error {
-	// swad-get-2
 	if input.DateStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.DateStartingAt or input.StartingAfter")
 	}
@@ -305,7 +302,6 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) getThingAllowingBa
 	if input.DateStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME_ID = :nameId")
 	} else {
-		// swad-get-21
 		queryInput.ExpressionAttributeNames["#DATE"] = "date"
 		queryInput.ExpressionAttributeValues[":date"] = &types.AttributeValueMemberS{
 			Value: datetimeToDynamoTimeString(*input.DateStartingAt),
@@ -317,14 +313,12 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) getThingAllowingBa
 			queryInput.KeyConditionExpression = aws.String("#NAME_ID = :nameId AND #DATE >= :date")
 		}
 	}
-	// swad-get-22
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"date": &types.AttributeValueMemberS{
 				Value: datetimePtrToDynamoTimeString(input.StartingAfter.Date),
 			},
 
-			// swad-get-223
 			"name_id": &types.AttributeValueMemberS{
 				Value: fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.ID),
 			},
@@ -436,7 +430,6 @@ func encodeThingAllowingBatchWritesWithCompositeAttributes(m models.ThingAllowin
 
 // decodeThingAllowingBatchWritesWithCompositeAttributes translates a ThingAllowingBatchWritesWithCompositeAttributes stored in DynamoDB to a ThingAllowingBatchWritesWithCompositeAttributes struct.
 func decodeThingAllowingBatchWritesWithCompositeAttributes(m map[string]types.AttributeValue, out *models.ThingAllowingBatchWritesWithCompositeAttributes) error {
-	// swad-decode-1
 	var ddbThingAllowingBatchWritesWithCompositeAttributes ddbThingAllowingBatchWritesWithCompositeAttributes
 	if err := attributevalue.UnmarshalMap(m, &ddbThingAllowingBatchWritesWithCompositeAttributes); err != nil {
 		return err

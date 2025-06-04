@@ -153,7 +153,6 @@ func (t NoRangeThingWithCompositeAttributesTable) saveNoRangeThingWithCompositeA
 }
 
 func (t NoRangeThingWithCompositeAttributesTable) getNoRangeThingWithCompositeAttributes(ctx context.Context, name string, branch string) (*models.NoRangeThingWithCompositeAttributes, error) {
-	// swad-get-7
 	key, err := attributevalue.MarshalMap(ddbNoRangeThingWithCompositeAttributesPrimaryKey{
 		NameBranch: fmt.Sprintf("%s@%s", name, branch),
 	})
@@ -189,7 +188,6 @@ func (t NoRangeThingWithCompositeAttributesTable) getNoRangeThingWithCompositeAt
 }
 
 func (t NoRangeThingWithCompositeAttributesTable) scanNoRangeThingWithCompositeAttributess(ctx context.Context, input db.ScanNoRangeThingWithCompositeAttributessInput, fn func(m *models.NoRangeThingWithCompositeAttributes, lastNoRangeThingWithCompositeAttributes bool) bool) error {
-	// swad-scan-1
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -263,42 +261,33 @@ func (t NoRangeThingWithCompositeAttributesTable) deleteNoRangeThingWithComposit
 }
 
 func (t NoRangeThingWithCompositeAttributesTable) getNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input db.GetNoRangeThingWithCompositeAttributessByNameVersionAndDateInput, fn func(m *models.NoRangeThingWithCompositeAttributes, lastNoRangeThingWithCompositeAttributes bool) bool) error {
-	// swad-get-33
 	if input.DateStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.DateStartingAt or input.StartingAfter")
 	}
-	// swad-get-33f
 	if input.Name == "" {
 		return fmt.Errorf("Hash key input.Name cannot be empty")
 	}
-	// swad-get-331
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("nameVersion"),
 		ExpressionAttributeNames: map[string]string{
 			"#NAME_VERSION": "name_version",
 		},
-		// swad-get-3312
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":nameVersion": &types.AttributeValueMemberS{
-				// swad-get-33a
 				Value: fmt.Sprintf("%s:%d", input.Name, input.Version),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
-	// swad-get-332
 	if input.Limit != nil {
 		queryInput.Limit = input.Limit
 	}
 	if input.DateStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion")
 	} else {
-		// swad-get-333
 		queryInput.ExpressionAttributeNames["#DATE"] = "date"
-
-		// swad-get-3331a
 		queryInput.ExpressionAttributeValues[":date"] = &types.AttributeValueMemberS{
 			Value: datetimeToDynamoTimeString(*input.DateStartingAt),
 		}
@@ -309,26 +298,19 @@ func (t NoRangeThingWithCompositeAttributesTable) getNoRangeThingWithCompositeAt
 			queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion AND #DATE >= :date")
 		}
 	}
-	// swad-get-334
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"date": &types.AttributeValueMemberS{
 				Value: datetimePtrToDynamoTimeString(input.StartingAfter.Date),
 			},
-			// swad-get-3341
 			"name_version": &types.AttributeValueMemberS{
 				Value: fmt.Sprintf("%s:%d", *input.StartingAfter.Name, input.StartingAfter.Version),
 			},
-			// swad-get-3342
-
-			// swad-get-336
 			"name_branch": &types.AttributeValueMemberS{
 				Value: fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch),
 			},
 		}
 	}
-
-	// swad-get-339
 
 	totalRecordsProcessed := int32(0)
 	var pageFnErr error
@@ -439,7 +421,6 @@ func (t NoRangeThingWithCompositeAttributesTable) scanNoRangeThingWithCompositeA
 	return nil
 }
 func (t NoRangeThingWithCompositeAttributesTable) getNoRangeThingWithCompositeAttributesByNameBranchCommit(ctx context.Context, name string, branch string, commit string) (*models.NoRangeThingWithCompositeAttributes, error) {
-	// swad-get-8
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("nameBranchCommit"),
@@ -538,7 +519,6 @@ func encodeNoRangeThingWithCompositeAttributes(m models.NoRangeThingWithComposit
 
 // decodeNoRangeThingWithCompositeAttributes translates a NoRangeThingWithCompositeAttributes stored in DynamoDB to a NoRangeThingWithCompositeAttributes struct.
 func decodeNoRangeThingWithCompositeAttributes(m map[string]types.AttributeValue, out *models.NoRangeThingWithCompositeAttributes) error {
-	// swad-decode-1
 	var ddbNoRangeThingWithCompositeAttributes ddbNoRangeThingWithCompositeAttributes
 	if err := attributevalue.UnmarshalMap(m, &ddbNoRangeThingWithCompositeAttributes); err != nil {
 		return err

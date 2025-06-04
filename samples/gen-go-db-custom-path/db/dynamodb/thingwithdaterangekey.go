@@ -102,7 +102,6 @@ func (t ThingWithDateRangeKeyTable) saveThingWithDateRangeKey(ctx context.Contex
 }
 
 func (t ThingWithDateRangeKeyTable) getThingWithDateRangeKey(ctx context.Context, id string, date strfmt.Date) (*models.ThingWithDateRangeKey, error) {
-	// swad-get-7
 	key, err := attributevalue.MarshalMap(ddbThingWithDateRangeKeyPrimaryKey{
 		ID:   id,
 		Date: date,
@@ -139,7 +138,6 @@ func (t ThingWithDateRangeKeyTable) getThingWithDateRangeKey(ctx context.Context
 }
 
 func (t ThingWithDateRangeKeyTable) scanThingWithDateRangeKeys(ctx context.Context, input db.ScanThingWithDateRangeKeysInput, fn func(m *models.ThingWithDateRangeKey, lastThingWithDateRangeKey bool) bool) error {
-	// swad-scan-1
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -193,7 +191,6 @@ func (t ThingWithDateRangeKeyTable) scanThingWithDateRangeKeys(ctx context.Conte
 }
 
 func (t ThingWithDateRangeKeyTable) getThingWithDateRangeKeysByIDAndDate(ctx context.Context, input db.GetThingWithDateRangeKeysByIDAndDateInput, fn func(m *models.ThingWithDateRangeKey, lastThingWithDateRangeKey bool) bool) error {
-	// swad-get-2
 	if input.DateStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.DateStartingAt or input.StartingAfter")
 	}
@@ -219,7 +216,6 @@ func (t ThingWithDateRangeKeyTable) getThingWithDateRangeKeysByIDAndDate(ctx con
 	if input.DateStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#ID = :id")
 	} else {
-		// swad-get-21
 		queryInput.ExpressionAttributeNames["#DATE"] = "date"
 		queryInput.ExpressionAttributeValues[":date"] = &types.AttributeValueMemberS{
 			Value: dateToDynamoTimeString(*input.DateStartingAt),
@@ -231,14 +227,12 @@ func (t ThingWithDateRangeKeyTable) getThingWithDateRangeKeysByIDAndDate(ctx con
 			queryInput.KeyConditionExpression = aws.String("#ID = :id AND #DATE >= :date")
 		}
 	}
-	// swad-get-22
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"date": &types.AttributeValueMemberS{
 				Value: dateToDynamoTimeString(input.StartingAfter.Date),
 			},
 
-			// swad-get-223
 			"id": &types.AttributeValueMemberS{
 				Value: input.StartingAfter.ID,
 			},
@@ -328,7 +322,6 @@ func encodeThingWithDateRangeKey(m models.ThingWithDateRangeKey) (map[string]typ
 
 // decodeThingWithDateRangeKey translates a ThingWithDateRangeKey stored in DynamoDB to a ThingWithDateRangeKey struct.
 func decodeThingWithDateRangeKey(m map[string]types.AttributeValue, out *models.ThingWithDateRangeKey) error {
-	// swad-decode-1
 	var ddbThingWithDateRangeKey ddbThingWithDateRangeKey
 	if err := attributevalue.UnmarshalMap(m, &ddbThingWithDateRangeKey); err != nil {
 		return err

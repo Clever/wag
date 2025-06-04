@@ -92,7 +92,6 @@ func (t ThingWithTransactionWithSimpleThingTable) saveThingWithTransactionWithSi
 }
 
 func (t ThingWithTransactionWithSimpleThingTable) getThingWithTransactionWithSimpleThing(ctx context.Context, name string) (*models.ThingWithTransactionWithSimpleThing, error) {
-	// swad-get-7
 	key, err := attributevalue.MarshalMap(ddbThingWithTransactionWithSimpleThingPrimaryKey{
 		Name: name,
 	})
@@ -127,7 +126,6 @@ func (t ThingWithTransactionWithSimpleThingTable) getThingWithTransactionWithSim
 }
 
 func (t ThingWithTransactionWithSimpleThingTable) scanThingWithTransactionWithSimpleThings(ctx context.Context, input db.ScanThingWithTransactionWithSimpleThingsInput, fn func(m *models.ThingWithTransactionWithSimpleThing, lastThingWithTransactionWithSimpleThing bool) bool) error {
-	// swad-scan-1
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -273,7 +271,6 @@ func encodeThingWithTransactionWithSimpleThing(m models.ThingWithTransactionWith
 
 // decodeThingWithTransactionWithSimpleThing translates a ThingWithTransactionWithSimpleThing stored in DynamoDB to a ThingWithTransactionWithSimpleThing struct.
 func decodeThingWithTransactionWithSimpleThing(m map[string]types.AttributeValue, out *models.ThingWithTransactionWithSimpleThing) error {
-	// swad-decode-1
 	var ddbThingWithTransactionWithSimpleThing ddbThingWithTransactionWithSimpleThing
 	if err := attributevalue.UnmarshalMap(m, &ddbThingWithTransactionWithSimpleThing); err != nil {
 		return err

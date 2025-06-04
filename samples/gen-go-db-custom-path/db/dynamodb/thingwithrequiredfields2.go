@@ -102,7 +102,6 @@ func (t ThingWithRequiredFields2Table) saveThingWithRequiredFields2(ctx context.
 }
 
 func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2(ctx context.Context, name string, id string) (*models.ThingWithRequiredFields2, error) {
-	// swad-get-7
 	key, err := attributevalue.MarshalMap(ddbThingWithRequiredFields2PrimaryKey{
 		Name: name,
 		ID:   id,
@@ -139,7 +138,6 @@ func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2(ctx context.C
 }
 
 func (t ThingWithRequiredFields2Table) scanThingWithRequiredFields2s(ctx context.Context, input db.ScanThingWithRequiredFields2sInput, fn func(m *models.ThingWithRequiredFields2, lastThingWithRequiredFields2 bool) bool) error {
-	// swad-scan-1
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -193,7 +191,6 @@ func (t ThingWithRequiredFields2Table) scanThingWithRequiredFields2s(ctx context
 }
 
 func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2sByNameAndID(ctx context.Context, input db.GetThingWithRequiredFields2sByNameAndIDInput, fn func(m *models.ThingWithRequiredFields2, lastThingWithRequiredFields2 bool) bool) error {
-	// swad-get-2
 	if input.IDStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.IDStartingAt or input.StartingAfter")
 	}
@@ -219,7 +216,6 @@ func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2sByNameAndID(c
 	if input.IDStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
 	} else {
-		// swad-get-21
 		queryInput.ExpressionAttributeNames["#ID"] = "id"
 		queryInput.ExpressionAttributeValues[":id"] = &types.AttributeValueMemberS{
 			Value: string(*input.IDStartingAt),
@@ -231,14 +227,12 @@ func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2sByNameAndID(c
 			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #ID >= :id")
 		}
 	}
-	// swad-get-22
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"id": &types.AttributeValueMemberS{
 				Value: string(*input.StartingAfter.ID),
 			},
 
-			// swad-get-223
 			"name": &types.AttributeValueMemberS{
 				Value: *input.StartingAfter.Name,
 			},
@@ -328,7 +322,6 @@ func encodeThingWithRequiredFields2(m models.ThingWithRequiredFields2) (map[stri
 
 // decodeThingWithRequiredFields2 translates a ThingWithRequiredFields2 stored in DynamoDB to a ThingWithRequiredFields2 struct.
 func decodeThingWithRequiredFields2(m map[string]types.AttributeValue, out *models.ThingWithRequiredFields2) error {
-	// swad-decode-1
 	var ddbThingWithRequiredFields2 ddbThingWithRequiredFields2
 	if err := attributevalue.UnmarshalMap(m, &ddbThingWithRequiredFields2); err != nil {
 		return err

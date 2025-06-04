@@ -92,7 +92,6 @@ func (t ThingWithTransactionTable) saveThingWithTransaction(ctx context.Context,
 }
 
 func (t ThingWithTransactionTable) getThingWithTransaction(ctx context.Context, name string) (*models.ThingWithTransaction, error) {
-	// swad-get-7
 	key, err := attributevalue.MarshalMap(ddbThingWithTransactionPrimaryKey{
 		Name: name,
 	})
@@ -127,7 +126,6 @@ func (t ThingWithTransactionTable) getThingWithTransaction(ctx context.Context, 
 }
 
 func (t ThingWithTransactionTable) scanThingWithTransactions(ctx context.Context, input db.ScanThingWithTransactionsInput, fn func(m *models.ThingWithTransaction, lastThingWithTransaction bool) bool) error {
-	// swad-scan-1
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -273,7 +271,6 @@ func encodeThingWithTransaction(m models.ThingWithTransaction) (map[string]types
 
 // decodeThingWithTransaction translates a ThingWithTransaction stored in DynamoDB to a ThingWithTransaction struct.
 func decodeThingWithTransaction(m map[string]types.AttributeValue, out *models.ThingWithTransaction) error {
-	// swad-decode-1
 	var ddbThingWithTransaction ddbThingWithTransaction
 	if err := attributevalue.UnmarshalMap(m, &ddbThingWithTransaction); err != nil {
 		return err

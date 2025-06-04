@@ -120,7 +120,6 @@ func (t TeacherSharingRuleTable) saveTeacherSharingRule(ctx context.Context, m m
 }
 
 func (t TeacherSharingRuleTable) getTeacherSharingRule(ctx context.Context, teacher string, school string, app string) (*models.TeacherSharingRule, error) {
-	// swad-get-7
 	key, err := attributevalue.MarshalMap(ddbTeacherSharingRulePrimaryKey{
 		Teacher:   teacher,
 		SchoolApp: fmt.Sprintf("%s_%s", school, app),
@@ -154,7 +153,6 @@ func (t TeacherSharingRuleTable) getTeacherSharingRule(ctx context.Context, teac
 }
 
 func (t TeacherSharingRuleTable) scanTeacherSharingRules(ctx context.Context, input db.ScanTeacherSharingRulesInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error {
-	// swad-scan-1
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -210,7 +208,6 @@ func (t TeacherSharingRuleTable) scanTeacherSharingRules(ctx context.Context, in
 }
 
 func (t TeacherSharingRuleTable) getTeacherSharingRulesByTeacherAndSchoolAppParseFilters(queryInput *dynamodb.QueryInput, input db.GetTeacherSharingRulesByTeacherAndSchoolAppInput) {
-	// swad-get-11
 	for _, filterValue := range input.FilterValues {
 		switch filterValue.AttributeName {
 		case db.TeacherSharingRuleDistrict:
@@ -225,7 +222,6 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByTeacherAndSchoolAppPars
 }
 
 func (t TeacherSharingRuleTable) getTeacherSharingRulesByTeacherAndSchoolApp(ctx context.Context, input db.GetTeacherSharingRulesByTeacherAndSchoolAppInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error {
-	// swad-get-2
 	if input.StartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of StartingAt or StartingAfter")
 	}
@@ -251,7 +247,6 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByTeacherAndSchoolApp(ctx
 	if input.StartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#TEACHER = :teacher")
 	} else {
-		// swad-get-21
 		queryInput.ExpressionAttributeNames["#SCHOOL_APP"] = "school_app"
 		queryInput.ExpressionAttributeValues[":schoolApp"] = &types.AttributeValueMemberS{
 			Value: fmt.Sprintf("%s_%s", input.StartingAt.School, input.StartingAt.App),
@@ -263,14 +258,12 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByTeacherAndSchoolApp(ctx
 			queryInput.KeyConditionExpression = aws.String("#TEACHER = :teacher AND #SCHOOL_APP >= :schoolApp")
 		}
 	}
-	// swad-get-22
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"school_app": &types.AttributeValueMemberS{
 				Value: fmt.Sprintf("%s_%s", input.StartingAfter.School, input.StartingAfter.App),
 			},
 
-			// swad-get-223
 			"teacher": &types.AttributeValueMemberS{
 				Value: input.StartingAfter.Teacher,
 			},
@@ -352,42 +345,33 @@ func (t TeacherSharingRuleTable) deleteTeacherSharingRule(ctx context.Context, t
 }
 
 func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx context.Context, input db.GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error {
-	// swad-get-33
 	if input.StartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.StartingAt or input.StartingAfter")
 	}
-	// swad-get-33f
 	if input.District == "" {
 		return fmt.Errorf("Hash key input.District cannot be empty")
 	}
-	// swad-get-331
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("district_school_teacher_app"),
 		ExpressionAttributeNames: map[string]string{
 			"#DISTRICT": "district",
 		},
-		// swad-get-3312
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":district": &types.AttributeValueMemberS{
-				// swad-get-33e
 				Value: input.District,
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
-	// swad-get-332
 	if input.Limit != nil {
 		queryInput.Limit = input.Limit
 	}
 	if input.StartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#DISTRICT = :district")
 	} else {
-		// swad-get-333
 		queryInput.ExpressionAttributeNames["#SCHOOL_TEACHER_APP"] = "school_teacher_app"
-
-		// swad-get-3331a
 		queryInput.ExpressionAttributeValues[":schoolTeacherApp"] = &types.AttributeValueMemberS{
 			Value: fmt.Sprintf("%s_%s_%s", input.StartingAt.School, input.StartingAt.Teacher, input.StartingAt.App),
 		}
@@ -398,29 +382,22 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeache
 			queryInput.KeyConditionExpression = aws.String("#DISTRICT = :district AND #SCHOOL_TEACHER_APP >= :schoolTeacherApp")
 		}
 	}
-	// swad-get-334
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"school_teacher_app": &types.AttributeValueMemberS{
 				Value: fmt.Sprintf("%s_%s_%s", input.StartingAfter.School, input.StartingAfter.Teacher, input.StartingAfter.App),
 			},
-			// swad-get-3341
 			"district": &types.AttributeValueMemberS{
 				Value: input.StartingAfter.District,
 			},
-			// swad-get-3342
 			"school_app": &types.AttributeValueMemberS{
 				Value: fmt.Sprintf("%s_%s", input.StartingAfter.School, input.StartingAfter.App),
 			},
-
-			// swad-get-336
 			"teacher": &types.AttributeValueMemberS{
 				Value: input.StartingAfter.Teacher,
 			},
 		}
 	}
-
-	// swad-get-339
 
 	totalRecordsProcessed := int32(0)
 	var pageFnErr error
@@ -576,7 +553,6 @@ func encodeTeacherSharingRule(m models.TeacherSharingRule) (map[string]types.Att
 
 // decodeTeacherSharingRule translates a TeacherSharingRule stored in DynamoDB to a TeacherSharingRule struct.
 func decodeTeacherSharingRule(m map[string]types.AttributeValue, out *models.TeacherSharingRule) error {
-	// swad-decode-1
 	var ddbTeacherSharingRule ddbTeacherSharingRule
 	if err := attributevalue.UnmarshalMap(m, &ddbTeacherSharingRule); err != nil {
 		return err
@@ -584,7 +560,6 @@ func decodeTeacherSharingRule(m map[string]types.AttributeValue, out *models.Tea
 	*out = ddbTeacherSharingRule.TeacherSharingRule
 	// parse composite attributes from projected secondary indexes and fill
 	// in model properties
-	// swad-decode-2
 	if v, ok := m["school_teacher_app"]; ok {
 		if s, ok := v.(*types.AttributeValueMemberS); ok {
 			parts := strings.Split(s.Value, "_")

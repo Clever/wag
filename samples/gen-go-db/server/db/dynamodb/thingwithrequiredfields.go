@@ -91,7 +91,6 @@ func (t ThingWithRequiredFieldsTable) saveThingWithRequiredFields(ctx context.Co
 }
 
 func (t ThingWithRequiredFieldsTable) getThingWithRequiredFields(ctx context.Context, name string) (*models.ThingWithRequiredFields, error) {
-	// swad-get-7
 	key, err := attributevalue.MarshalMap(ddbThingWithRequiredFieldsPrimaryKey{
 		Name: name,
 	})
@@ -126,7 +125,6 @@ func (t ThingWithRequiredFieldsTable) getThingWithRequiredFields(ctx context.Con
 }
 
 func (t ThingWithRequiredFieldsTable) scanThingWithRequiredFieldss(ctx context.Context, input db.ScanThingWithRequiredFieldssInput, fn func(m *models.ThingWithRequiredFields, lastThingWithRequiredFields bool) bool) error {
-	// swad-scan-1
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -210,7 +208,6 @@ func encodeThingWithRequiredFields(m models.ThingWithRequiredFields) (map[string
 
 // decodeThingWithRequiredFields translates a ThingWithRequiredFields stored in DynamoDB to a ThingWithRequiredFields struct.
 func decodeThingWithRequiredFields(m map[string]types.AttributeValue, out *models.ThingWithRequiredFields) error {
-	// swad-decode-1
 	var ddbThingWithRequiredFields ddbThingWithRequiredFields
 	if err := attributevalue.UnmarshalMap(m, &ddbThingWithRequiredFields); err != nil {
 		return err

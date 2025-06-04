@@ -263,7 +263,6 @@ func (t {{ $modelName }}Table) get{{ $modelName }}(ctx context.Context,
   {{- varname $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
   {{- end -}}
 ) (*models.{{ $modelName }}, error) {
-  // swad-get-7
 	key, err := attributevalue.MarshalMap(ddb{{ $modelName }}PrimaryKey{
 		{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
 		{{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValue $xdbConfig $pk.AttributeName "" }}{{ else }}{{ varname $pk.AttributeName }}{{ end }},
@@ -309,7 +308,6 @@ func (t {{ $modelName }}Table) get{{ $modelName }}(ctx context.Context,
 
 {{ if $xdbConfig.AllowPrimaryIndexScan }}
 func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input db.Scan{{ $modelName }}sInput, fn func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool) error {
-  // swad-scan-1
   scanInput := &dynamodb.ScanInput{
     TableName:      aws.String(t.TableName),
     ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -386,7 +384,6 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
 
 {{- if gt $lenNonIndexAttributes 0 }}
   func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}ParseFilters(queryInput *dynamodb.QueryInput, input db.Get{{ $modelName }}sBy{{ $computedIndexName }}Input) {
-    // swad-get-11
     for _, filterValue := range input.FilterValues {
       switch filterValue.AttributeName {
       {{- range $attributeName := $nonIndexAttributeNames}}
@@ -426,7 +423,6 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
 {{- end }}
 
 func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx context.Context, input db.Get{{ $modelName }}sBy{{ $computedIndexName }}Input, fn func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool) error {
-  // swad-get-2
   {{- if gt $lenRangeKeyAttributes 1 }}
     if (input.StartingAt != nil && input.StartingAfter != nil) {
       return fmt.Errorf("Can specify only one of StartingAt or StartingAfter")
@@ -485,7 +481,6 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
         {{- end }}
     queryInput.KeyConditionExpression = aws.String("#{{ upper $hashKey.AttributeName }} = :{{ camelize $hashKey.AttributeName }}")
   } else {
-    // swad-get-21
     queryInput.ExpressionAttributeNames["#{{ upper $rangeKey.AttributeName }}"] = "{{ $rangeKey.AttributeName }}"
     {{- $valueKey := printf ":%s" (camelize $rangeKey.AttributeName) }}
       {{- if gt $lenRangeKeyAttributes 1 }}
@@ -526,7 +521,6 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
       queryInput.KeyConditionExpression = aws.String("#{{ upper $hashKey.AttributeName }} = :{{ camelize $hashKey.AttributeName }} AND #{{ upper $rangeKey.AttributeName }} >= :{{ camelize $rangeKey.AttributeName }}")
     }
   }
-  // swad-get-22
   if input.StartingAfter != nil {
     queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
             "{{ $rangeKey.AttributeName }}":
@@ -574,7 +568,6 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
         {{- end }}
       {{- end }}
 
-      // swad-get-223
       "{{ $hashKey.AttributeName }}": &types.AttributeValueMemberS{
         {{- if gt $lenHashKeyAttributes 1 }}
           Value: {{ compositeValuePage $xdbConfig $hashKey.AttributeName "input.StartingAfter" }},
@@ -714,7 +707,6 @@ func (t {{ $modelName }}Table) delete{{ $modelName }}(ctx context.Context,
 {{- $primaryHashKeyAttributes := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "HASH" }}
 {{- $lenPrimaryHashKeyAttributes := len $primaryHashKeyAttributes }}
 func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx context.Context, input db.Get{{ $modelName }}sBy{{ $computedIndexName }}Input, fn func(m *models.{{ $modelName }}, last{{ $modelName }} bool) bool) error {
-  // swad-get-33
   {{- if gt $lenRangeKeyAttributes 1 }}
     if input.StartingAt != nil && input.StartingAfter != nil {
       return fmt.Errorf("Can specify only one of input.StartingAt or input.StartingAfter")
@@ -733,40 +725,32 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
     {{- else if eq $attrGoType "strfmt.Date" }}
       if dateToDynamoTimeString(input.{{ pascalize $attributeName }}) == "" {
     {{- else }}
-      // swad-get-33f
       if input.{{ pascalize $attributeName }} == "" {
     {{- end }}
         return fmt.Errorf("Hash key input.{{ pascalize $attributeName }} cannot be empty")
       }
     {{- end }}
   {{- end }}
-  // swad-get-331
   queryInput := &dynamodb.QueryInput{
     TableName: aws.String(t.TableName),
     IndexName: aws.String("{{ $gsi.IndexName }}"),
     ExpressionAttributeNames: map[string]string{
       "#{{ upper $hashKey.AttributeName }}": "{{ $hashKey.AttributeName }}",
     },
-    // swad-get-3312
     ExpressionAttributeValues: map[string]types.AttributeValue{
     {{- $dynamoDBType := dynamoDBTypeForAttribute $xdbConfig $hashKey.AttributeName }}
     {{- if eq $dynamoDBType "S" }}
       ":{{ camelize $hashKey.AttributeName }}": &types.AttributeValueMemberS{                          
           {{- $attrGoType := goTypeForAttribute $xdbConfig $hashKey.AttributeName }}
           {{- if isComposite $xdbConfig $hashKey.AttributeName }}
-            // swad-get-33a
             Value: {{ compositeValue $xdbConfig $hashKey.AttributeName "input" }},
           {{- else if eq $attrGoType "strfmt.DateTime" }}
-            // swad-get-33b 
             Value: datetimeToDynamoTimeString(input.{{ pascalize $hashKey.AttributeName }}),
           {{- else if eq $attrGoType "strfmt.Date" }}
-            // swad-get-33c
             Value: dateToDynamoTimeString(input.{{ pascalize $hashKey.AttributeName }}),
           {{- else if attributeIsEnum $xdbConfig $hashKey.AttributeName }}
-            // swad-get-33d
             Value: string(input.{{ pascalize $hashKey.AttributeName }}),
           {{- else }}
-            // swad-get-33e
             Value: input.{{ pascalize $hashKey.AttributeName }},
           {{- end }}
     {{- else if eq $dynamoDBType "N" }}
@@ -779,7 +763,6 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
     ScanIndexForward: aws.Bool(!input.Descending),
     ConsistentRead:   aws.Bool(false),
   }
-  // swad-get-332
   if input.Limit != nil {
      queryInput.Limit = input.Limit
   }
@@ -790,10 +773,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
         {{- end }}
     queryInput.KeyConditionExpression = aws.String("#{{ upper $hashKey.AttributeName }} = :{{ camelize $hashKey.AttributeName }}")
   } else {
-    // swad-get-333
     queryInput.ExpressionAttributeNames["#{{ upper $rangeKey.AttributeName }}"] = "{{ $rangeKey.AttributeName }}"
-
-    // swad-get-3331a
     {{- if gt $lenRangeKeyAttributes 1 }}
       queryInput.ExpressionAttributeValues[":{{ camelize $rangeKey.AttributeName }}"] = &types.AttributeValueMemberS{
         Value: {{ compositeValue $xdbConfig $rangeKey.AttributeName "input.StartingAt" }},
@@ -828,7 +808,6 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
       queryInput.KeyConditionExpression = aws.String("#{{ upper $hashKey.AttributeName }} = :{{ camelize $hashKey.AttributeName }} AND #{{ upper $rangeKey.AttributeName }} >= :{{ camelize $rangeKey.AttributeName }}")
     }
   }
-  // swad-get-334
   if input.StartingAfter != nil {
     queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
       {{- if gt $lenRangeKeyAttributes 1 }}
@@ -863,7 +842,6 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
         {{- end }}
       {{- end }}
       },
-      // swad-get-3341
       "{{ $hashKey.AttributeName }}": &types.AttributeValueMemberS{
         {{- if gt $lenHashKeyAttributes 1 }}
           Value: {{ compositeValuePage $xdbConfig $hashKey.AttributeName "input.StartingAfter" }},
@@ -893,7 +871,6 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
         {{- end }}
       {{- end }}
       },
-      // swad-get-3342
       {{- if indexHasRangeKey $xdbConfig.DynamoDB.KeySchema }}
         {{- $primaryRangeKey := index $xdbConfig.DynamoDB.KeySchema 1 }}
         {{- $primaryRangeKeyAttributes := modelAttributeNamesForKeyType $xdbConfig $xdbConfig.DynamoDB.KeySchema "RANGE" }}
@@ -935,9 +912,6 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
       {{- end }}
       {{- end}}
 
-
-
-      // swad-get-336
       {{- $hashIsHash := stringsEqual $primaryHashKey.AttributeName $rangeKey.AttributeName }}
       {{- $hashIsRange := stringsEqual $primaryHashKey.AttributeName $hashKey.AttributeName }}
       {{- if not $hashIsHash }}
@@ -977,8 +951,6 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
       {{- end }}
     }
   }
-
-  // swad-get-339
 
   totalRecordsProcessed := int32(0)
   var pageFnErr error
@@ -1038,7 +1010,6 @@ func (t {{ $modelName}}Table) get{{ $modelName }}By{{ $computedIndexName }}(ctx 
   {{- varname $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
   {{- end -}}
     ) (*models.{{ $modelName }}, error) {
-  // swad-get-8
   queryInput := &dynamodb.QueryInput{
     TableName: aws.String(t.TableName),
     IndexName: aws.String("{{ $gsi.IndexName }}"),
@@ -1280,7 +1251,6 @@ func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]types.Attribu
 
 // decode{{ $modelName }} translates a {{ $modelName }} stored in DynamoDB to a {{ $modelName }} struct.
 func decode{{ $modelName }}(m map[string]types.AttributeValue, out *models.{{ $modelName }}) error {
-  // swad-decode-1
   var ddb{{ $modelName }} ddb{{ $modelName }}
   if err := attributevalue.UnmarshalMap(m, &ddb{{ $modelName }}); err != nil {
     return err
@@ -1289,7 +1259,6 @@ func decode{{ $modelName }}(m map[string]types.AttributeValue, out *models.{{ $m
         {{- if len $projectedIndexesWithCompositeAttributes }}
   // parse composite attributes from projected secondary indexes and fill
   // in model properties
-  // swad-decode-2
         {{- range $projectedIndexWithCompositeAttributes := $projectedIndexesWithCompositeAttributes }}
         {{- range $ks := $projectedIndexWithCompositeAttributes }}
         {{- if isComposite $xdbConfig $ks.AttributeName }}

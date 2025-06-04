@@ -135,7 +135,6 @@ func (t ThingWithCompositeAttributesTable) saveThingWithCompositeAttributes(ctx 
 }
 
 func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) (*models.ThingWithCompositeAttributes, error) {
-	// swad-get-7
 	key, err := attributevalue.MarshalMap(ddbThingWithCompositeAttributesPrimaryKey{
 		NameBranch: fmt.Sprintf("%s@%s", name, branch),
 		Date:       date,
@@ -173,7 +172,6 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributes(ctx c
 }
 
 func (t ThingWithCompositeAttributesTable) scanThingWithCompositeAttributess(ctx context.Context, input db.ScanThingWithCompositeAttributessInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error {
-	// swad-scan-1
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -229,7 +227,6 @@ func (t ThingWithCompositeAttributesTable) scanThingWithCompositeAttributess(ctx
 }
 
 func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNameBranchAndDateParseFilters(queryInput *dynamodb.QueryInput, input db.GetThingWithCompositeAttributessByNameBranchAndDateInput) {
-	// swad-get-11
 	for _, filterValue := range input.FilterValues {
 		switch filterValue.AttributeName {
 		case db.ThingWithCompositeAttributesVersion:
@@ -244,7 +241,6 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 }
 
 func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input db.GetThingWithCompositeAttributessByNameBranchAndDateInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error {
-	// swad-get-2
 	if input.DateStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.DateStartingAt or input.StartingAfter")
 	}
@@ -273,7 +269,6 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 	if input.DateStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch")
 	} else {
-		// swad-get-21
 		queryInput.ExpressionAttributeNames["#DATE"] = "date"
 		queryInput.ExpressionAttributeValues[":date"] = &types.AttributeValueMemberS{
 			Value: datetimeToDynamoTimeString(*input.DateStartingAt),
@@ -285,14 +280,12 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 			queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE >= :date")
 		}
 	}
-	// swad-get-22
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"date": &types.AttributeValueMemberS{
 				Value: datetimePtrToDynamoTimeString(input.StartingAfter.Date),
 			},
 
-			// swad-get-223
 			"name_branch": &types.AttributeValueMemberS{
 				Value: fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch),
 			},
@@ -378,42 +371,33 @@ func (t ThingWithCompositeAttributesTable) deleteThingWithCompositeAttributes(ct
 }
 
 func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input db.GetThingWithCompositeAttributessByNameVersionAndDateInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error {
-	// swad-get-33
 	if input.DateStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.DateStartingAt or input.StartingAfter")
 	}
-	// swad-get-33f
 	if input.Name == "" {
 		return fmt.Errorf("Hash key input.Name cannot be empty")
 	}
-	// swad-get-331
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("nameVersion"),
 		ExpressionAttributeNames: map[string]string{
 			"#NAME_VERSION": "name_version",
 		},
-		// swad-get-3312
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":nameVersion": &types.AttributeValueMemberS{
-				// swad-get-33a
 				Value: fmt.Sprintf("%s:%d", input.Name, input.Version),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
-	// swad-get-332
 	if input.Limit != nil {
 		queryInput.Limit = input.Limit
 	}
 	if input.DateStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion")
 	} else {
-		// swad-get-333
 		queryInput.ExpressionAttributeNames["#DATE"] = "date"
-
-		// swad-get-3331a
 		queryInput.ExpressionAttributeValues[":date"] = &types.AttributeValueMemberS{
 			Value: datetimeToDynamoTimeString(*input.DateStartingAt),
 		}
@@ -424,26 +408,19 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 			queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion AND #DATE >= :date")
 		}
 	}
-	// swad-get-334
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"date": &types.AttributeValueMemberS{
 				Value: datetimePtrToDynamoTimeString(input.StartingAfter.Date),
 			},
-			// swad-get-3341
 			"name_version": &types.AttributeValueMemberS{
 				Value: fmt.Sprintf("%s:%d", *input.StartingAfter.Name, input.StartingAfter.Version),
 			},
-			// swad-get-3342
-
-			// swad-get-336
 			"name_branch": &types.AttributeValueMemberS{
 				Value: fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch),
 			},
 		}
 	}
-
-	// swad-get-339
 
 	totalRecordsProcessed := int32(0)
 	var pageFnErr error
@@ -598,7 +575,6 @@ func encodeThingWithCompositeAttributes(m models.ThingWithCompositeAttributes) (
 
 // decodeThingWithCompositeAttributes translates a ThingWithCompositeAttributes stored in DynamoDB to a ThingWithCompositeAttributes struct.
 func decodeThingWithCompositeAttributes(m map[string]types.AttributeValue, out *models.ThingWithCompositeAttributes) error {
-	// swad-decode-1
 	var ddbThingWithCompositeAttributes ddbThingWithCompositeAttributes
 	if err := attributevalue.UnmarshalMap(m, &ddbThingWithCompositeAttributes); err != nil {
 		return err

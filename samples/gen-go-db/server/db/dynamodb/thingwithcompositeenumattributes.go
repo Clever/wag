@@ -103,7 +103,6 @@ func (t ThingWithCompositeEnumAttributesTable) saveThingWithCompositeEnumAttribu
 }
 
 func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttributes(ctx context.Context, name string, branchID models.Branch, date strfmt.DateTime) (*models.ThingWithCompositeEnumAttributes, error) {
-	// swad-get-7
 	key, err := attributevalue.MarshalMap(ddbThingWithCompositeEnumAttributesPrimaryKey{
 		NameBranch: fmt.Sprintf("%s@%s", name, branchID),
 		Date:       date,
@@ -141,7 +140,6 @@ func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttribut
 }
 
 func (t ThingWithCompositeEnumAttributesTable) scanThingWithCompositeEnumAttributess(ctx context.Context, input db.ScanThingWithCompositeEnumAttributessInput, fn func(m *models.ThingWithCompositeEnumAttributes, lastThingWithCompositeEnumAttributes bool) bool) error {
-	// swad-scan-1
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -197,7 +195,6 @@ func (t ThingWithCompositeEnumAttributesTable) scanThingWithCompositeEnumAttribu
 }
 
 func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttributessByNameBranchAndDate(ctx context.Context, input db.GetThingWithCompositeEnumAttributessByNameBranchAndDateInput, fn func(m *models.ThingWithCompositeEnumAttributes, lastThingWithCompositeEnumAttributes bool) bool) error {
-	// swad-get-2
 	if input.DateStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.DateStartingAt or input.StartingAfter")
 	}
@@ -226,7 +223,6 @@ func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttribut
 	if input.DateStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch")
 	} else {
-		// swad-get-21
 		queryInput.ExpressionAttributeNames["#DATE"] = "date"
 		queryInput.ExpressionAttributeValues[":date"] = &types.AttributeValueMemberS{
 			Value: datetimeToDynamoTimeString(*input.DateStartingAt),
@@ -238,14 +234,12 @@ func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttribut
 			queryInput.KeyConditionExpression = aws.String("#NAME_BRANCH = :nameBranch AND #DATE >= :date")
 		}
 	}
-	// swad-get-22
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"date": &types.AttributeValueMemberS{
 				Value: datetimePtrToDynamoTimeString(input.StartingAfter.Date),
 			},
 
-			// swad-get-223
 			"name_branch": &types.AttributeValueMemberS{
 				Value: fmt.Sprintf("%s@%s", *input.StartingAfter.Name, input.StartingAfter.BranchID),
 			},
@@ -354,7 +348,6 @@ func encodeThingWithCompositeEnumAttributes(m models.ThingWithCompositeEnumAttri
 
 // decodeThingWithCompositeEnumAttributes translates a ThingWithCompositeEnumAttributes stored in DynamoDB to a ThingWithCompositeEnumAttributes struct.
 func decodeThingWithCompositeEnumAttributes(m map[string]types.AttributeValue, out *models.ThingWithCompositeEnumAttributes) error {
-	// swad-decode-1
 	var ddbThingWithCompositeEnumAttributes ddbThingWithCompositeEnumAttributes
 	if err := attributevalue.UnmarshalMap(m, &ddbThingWithCompositeEnumAttributes); err != nil {
 		return err

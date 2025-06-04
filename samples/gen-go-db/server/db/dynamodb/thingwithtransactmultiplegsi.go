@@ -154,7 +154,6 @@ func (t ThingWithTransactMultipleGSITable) saveThingWithTransactMultipleGSI(ctx 
 }
 
 func (t ThingWithTransactMultipleGSITable) getThingWithTransactMultipleGSI(ctx context.Context, dateH strfmt.Date) (*models.ThingWithTransactMultipleGSI, error) {
-	// swad-get-7
 	key, err := attributevalue.MarshalMap(ddbThingWithTransactMultipleGSIPrimaryKey{
 		DateH: dateH,
 	})
@@ -189,7 +188,6 @@ func (t ThingWithTransactMultipleGSITable) getThingWithTransactMultipleGSI(ctx c
 }
 
 func (t ThingWithTransactMultipleGSITable) scanThingWithTransactMultipleGSIs(ctx context.Context, input db.ScanThingWithTransactMultipleGSIsInput, fn func(m *models.ThingWithTransactMultipleGSI, lastThingWithTransactMultipleGSI bool) bool) error {
-	// swad-scan-1
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
@@ -265,42 +263,33 @@ func (t ThingWithTransactMultipleGSITable) deleteThingWithTransactMultipleGSI(ct
 }
 
 func (t ThingWithTransactMultipleGSITable) getThingWithTransactMultipleGSIsByIDAndDateR(ctx context.Context, input db.GetThingWithTransactMultipleGSIsByIDAndDateRInput, fn func(m *models.ThingWithTransactMultipleGSI, lastThingWithTransactMultipleGSI bool) bool) error {
-	// swad-get-33
 	if input.DateRStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.DateRStartingAt or input.StartingAfter")
 	}
-	// swad-get-33f
 	if input.ID == "" {
 		return fmt.Errorf("Hash key input.ID cannot be empty")
 	}
-	// swad-get-331
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("rangeDate"),
 		ExpressionAttributeNames: map[string]string{
 			"#ID": "id",
 		},
-		// swad-get-3312
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":id": &types.AttributeValueMemberS{
-				// swad-get-33e
 				Value: input.ID,
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
-	// swad-get-332
 	if input.Limit != nil {
 		queryInput.Limit = input.Limit
 	}
 	if input.DateRStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#ID = :id")
 	} else {
-		// swad-get-333
 		queryInput.ExpressionAttributeNames["#DATER"] = "dateR"
-
-		// swad-get-3331a
 		queryInput.ExpressionAttributeValues[":dateR"] = &types.AttributeValueMemberS{
 			Value: dateToDynamoTimeString(*input.DateRStartingAt),
 		}
@@ -311,26 +300,19 @@ func (t ThingWithTransactMultipleGSITable) getThingWithTransactMultipleGSIsByIDA
 			queryInput.KeyConditionExpression = aws.String("#ID = :id AND #DATER >= :dateR")
 		}
 	}
-	// swad-get-334
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"dateR": &types.AttributeValueMemberS{
 				Value: dateToDynamoTimeString(input.StartingAfter.DateR),
 			},
-			// swad-get-3341
 			"id": &types.AttributeValueMemberS{
 				Value: input.StartingAfter.ID,
 			},
-			// swad-get-3342
-
-			// swad-get-336
 			"dateH": &types.AttributeValueMemberS{
 				Value: dateToDynamoTimeString(input.StartingAfter.DateH),
 			},
 		}
 	}
-
-	// swad-get-339
 
 	totalRecordsProcessed := int32(0)
 	var pageFnErr error
@@ -382,41 +364,33 @@ func (t ThingWithTransactMultipleGSITable) getThingWithTransactMultipleGSIsByIDA
 	return nil
 }
 func (t ThingWithTransactMultipleGSITable) getThingWithTransactMultipleGSIsByDateHAndID(ctx context.Context, input db.GetThingWithTransactMultipleGSIsByDateHAndIDInput, fn func(m *models.ThingWithTransactMultipleGSI, lastThingWithTransactMultipleGSI bool) bool) error {
-	// swad-get-33
 	if input.IDStartingAt != nil && input.StartingAfter != nil {
 		return fmt.Errorf("Can specify only one of input.IDStartingAt or input.StartingAfter")
 	}
 	if dateToDynamoTimeString(input.DateH) == "" {
 		return fmt.Errorf("Hash key input.DateH cannot be empty")
 	}
-	// swad-get-331
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("hash"),
 		ExpressionAttributeNames: map[string]string{
 			"#DATEH": "dateH",
 		},
-		// swad-get-3312
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":dateH": &types.AttributeValueMemberS{
-				// swad-get-33c
 				Value: dateToDynamoTimeString(input.DateH),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
-	// swad-get-332
 	if input.Limit != nil {
 		queryInput.Limit = input.Limit
 	}
 	if input.IDStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#DATEH = :dateH")
 	} else {
-		// swad-get-333
 		queryInput.ExpressionAttributeNames["#ID"] = "id"
-
-		// swad-get-3331a
 		queryInput.ExpressionAttributeValues[":id"] = &types.AttributeValueMemberS{
 			Value: string(*input.IDStartingAt),
 		}
@@ -427,23 +401,16 @@ func (t ThingWithTransactMultipleGSITable) getThingWithTransactMultipleGSIsByDat
 			queryInput.KeyConditionExpression = aws.String("#DATEH = :dateH AND #ID >= :id")
 		}
 	}
-	// swad-get-334
 	if input.StartingAfter != nil {
 		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"id": &types.AttributeValueMemberS{
 				Value: string(input.StartingAfter.ID),
 			},
-			// swad-get-3341
 			"dateH": &types.AttributeValueMemberS{
 				Value: dateToDynamoTimeString(input.StartingAfter.DateH),
 			},
-			// swad-get-3342
-
-			// swad-get-336
 		}
 	}
-
-	// swad-get-339
 
 	totalRecordsProcessed := int32(0)
 	var pageFnErr error
@@ -565,7 +532,6 @@ func encodeThingWithTransactMultipleGSI(m models.ThingWithTransactMultipleGSI) (
 
 // decodeThingWithTransactMultipleGSI translates a ThingWithTransactMultipleGSI stored in DynamoDB to a ThingWithTransactMultipleGSI struct.
 func decodeThingWithTransactMultipleGSI(m map[string]types.AttributeValue, out *models.ThingWithTransactMultipleGSI) error {
-	// swad-decode-1
 	var ddbThingWithTransactMultipleGSI ddbThingWithTransactMultipleGSI
 	if err := attributevalue.UnmarshalMap(m, &ddbThingWithTransactMultipleGSI); err != nil {
 		return err
