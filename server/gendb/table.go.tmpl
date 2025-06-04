@@ -529,35 +529,52 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
   // swad-get-22
   if input.StartingAfter != nil {
     queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
-      "{{ $rangeKey.AttributeName }}": &types.AttributeValueMemberS{
+            "{{ $rangeKey.AttributeName }}":
       {{- if gt $lenRangeKeyAttributes 1 }}
-        Value: {{ compositeValuePage $xdbConfig $rangeKey.AttributeName "input.StartingAfter" }},
+        &types.AttributeValueMemberS{
+          Value: {{ compositeValuePage $xdbConfig $rangeKey.AttributeName "input.StartingAfter" }},
+        },
       {{- else }}
-          {{- $attrGoType := goTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
-          {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
+        {{- $attrGoType := goTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
+        {{- $attrDynamoDBType := dynamoDBTypeForAttribute $xdbConfig $rangeKey.AttributeName }}
         {{- if eq $attrDynamoDBType "S" }}
           {{- if eq $attrGoType "strfmt.DateTime" }}
-          {{- if attributeIsPointer $xdbConfig $rangeKey.AttributeName }}
-            Value: datetimePtrToDynamoTimeString(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}),
-          {{- else }}
-            Value: datetimeToDynamoTimeString(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}),
-          {{- end}}
+            {{- if attributeIsPointer $xdbConfig $rangeKey.AttributeName }}
+        &types.AttributeValueMemberS{
+          Value: datetimePtrToDynamoTimeString(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}),
+        },
+            {{- else }}
+        &types.AttributeValueMemberS{
+          Value: datetimeToDynamoTimeString(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}),
+        },
+            {{- end }}
           {{- else if eq $attrGoType "strfmt.Date" }}
-          {{- if attributeIsPointer $xdbConfig $rangeKey.AttributeName }}
-            Value: datePtrToDynamoTimeString(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}),
+            {{- if attributeIsPointer $xdbConfig $rangeKey.AttributeName }}
+        &types.AttributeValueMemberS{
+          Value: datePtrToDynamoTimeString(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}),
+        },
+            {{- else }}
+        &types.AttributeValueMemberS{
+          Value: dateToDynamoTimeString(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}),
+        },
+            {{- end }}
           {{- else }}
-            Value: dateToDynamoTimeString(input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}),
-          {{- end}}
-          {{- else }}
-            Value: string({{if attributeIsPointer $xdbConfig $rangeKey.AttributeName }}*{{end}}input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}),
+        &types.AttributeValueMemberS{
+          Value: string({{ if attributeIsPointer $xdbConfig $rangeKey.AttributeName }}*{{ end }}input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}),
+        },
           {{- end }}
         {{- else if eq $attrDynamoDBType "N" }}
-      N: aws.String(fmt.Sprintf("%d", input.StartingAfter.{{ pascalize $rangeKey.AttributeName }})),
+        &types.AttributeValueMemberN{
+          Value: fmt.Sprintf("%d", input.StartingAfter.{{ pascalize $rangeKey.AttributeName }}),
+        },
         {{- else if eq $attrDynamoDBType "B" }}
-      B: input.StartingAfter.{{ pascalize $rangeKey.AttributeName }},
+        &types.AttributeValueMemberB{
+          Value: input.StartingAfter.{{ pascalize $rangeKey.AttributeName }},
+        },
         {{- end }}
       {{- end }}
-      },
+
+      // swad-get-223
       "{{ $hashKey.AttributeName }}": &types.AttributeValueMemberS{
         {{- if gt $lenHashKeyAttributes 1 }}
           Value: {{ compositeValuePage $xdbConfig $hashKey.AttributeName "input.StartingAfter" }},
