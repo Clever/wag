@@ -15,6 +15,8 @@ import (
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // ThingTable represents the user-configurable properties of the Thing table.
 type ThingTable struct {
@@ -199,7 +201,15 @@ func (t ThingTable) saveThing(ctx context.Context, m models.Thing) error {
 			"#NAME":    "name",
 			"#VERSION": "version",
 		},
-		ConditionExpression: aws.String("attribute_not_exists(#NAME) AND attribute_not_exists(#VERSION)"),
+		ConditionExpression: aws.String(
+			"" +
+				"" +
+				"attribute_not_exists(#NAME)" +
+				"" +
+				" AND " +
+				"attribute_not_exists(#VERSION)" +
+				"",
+		),
 	})
 	if err != nil {
 		var resourceNotFoundErr *types.ResourceNotFoundException
@@ -258,7 +268,7 @@ func (t ThingTable) scanThings(ctx context.Context, input db.ScanThingsInput, fn
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+		Limit:          aws.Int32(int32(*input.Limit)),
 	}
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
@@ -271,7 +281,7 @@ func (t ThingTable) scanThings(ctx context.Context, input db.ScanThingsInput, fn
 			"version": exclusiveStartKey["version"],
 		}
 	}
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 
 	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
 	for paginator.HasMorePages() {
@@ -363,7 +373,7 @@ func (t ThingTable) getThingsByNameAndVersion(ctx context.Context, input db.GetT
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.VersionStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
@@ -395,7 +405,7 @@ func (t ThingTable) getThingsByNameAndVersion(ctx context.Context, input db.GetT
 		queryInput.FilterExpression = aws.String(input.FilterExpression)
 	}
 
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
@@ -508,7 +518,7 @@ func (t ThingTable) scanThingsByID(ctx context.Context, input db.ScanThingsByIDI
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+		Limit:          aws.Int32(int32(*input.Limit)),
 		IndexName:      aws.String("thingID"),
 	}
 	if input.StartingAfter != nil {
@@ -524,7 +534,7 @@ func (t ThingTable) scanThingsByID(ctx context.Context, input db.ScanThingsByIDI
 			"id":      exclusiveStartKey["id"],
 		}
 	}
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 
 	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
 	for paginator.HasMorePages() {
@@ -581,7 +591,7 @@ func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.Ge
 		ConsistentRead:   aws.Bool(false),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.CreatedAtStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
@@ -611,7 +621,7 @@ func (t ThingTable) getThingsByNameAndCreatedAt(ctx context.Context, input db.Ge
 		}
 	}
 
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
@@ -664,7 +674,7 @@ func (t ThingTable) scanThingsByNameAndCreatedAt(ctx context.Context, input db.S
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+		Limit:          aws.Int32(int32(*input.Limit)),
 		IndexName:      aws.String("name-createdAt"),
 	}
 	if input.StartingAfter != nil {
@@ -680,7 +690,7 @@ func (t ThingTable) scanThingsByNameAndCreatedAt(ctx context.Context, input db.S
 			"createdAt": exclusiveStartKey["createdAt"],
 		}
 	}
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 
 	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
 	for paginator.HasMorePages() {
@@ -737,7 +747,7 @@ func (t ThingTable) getThingsByNameAndRangeNullable(ctx context.Context, input d
 		ConsistentRead:   aws.Bool(false),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.RangeNullableStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
@@ -767,7 +777,7 @@ func (t ThingTable) getThingsByNameAndRangeNullable(ctx context.Context, input d
 		}
 	}
 
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
@@ -820,7 +830,7 @@ func (t ThingTable) scanThingsByNameAndRangeNullable(ctx context.Context, input 
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+		Limit:          aws.Int32(int32(*input.Limit)),
 		IndexName:      aws.String("name-rangeNullable"),
 	}
 	if input.StartingAfter != nil {
@@ -836,7 +846,7 @@ func (t ThingTable) scanThingsByNameAndRangeNullable(ctx context.Context, input 
 			"rangeNullable": exclusiveStartKey["rangeNullable"],
 		}
 	}
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 
 	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
 	for paginator.HasMorePages() {
@@ -893,7 +903,7 @@ func (t ThingTable) getThingsByHashNullableAndName(ctx context.Context, input db
 		ConsistentRead:   aws.Bool(false),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.NameStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#HASHNULLABLE = :hashNullable")
@@ -923,7 +933,7 @@ func (t ThingTable) getThingsByHashNullableAndName(ctx context.Context, input db
 		}
 	}
 
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {

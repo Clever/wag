@@ -196,7 +196,7 @@ func Get{{ $modelName }}sBy{{ $indexName }}(d db.Interface, t *testing.T) func(t
                         {{- end }}
                         {{- end }}
     }))
-    limit := int32(3)
+    limit := int64(3)
     tests := []get{{ $modelName }}sBy{{ $indexName }}Test{
       {
         testName: "basic",
@@ -688,7 +688,7 @@ func Scan{{ $modelName }}s(d db.Interface, t *testing.T) func(t *testing.T) {
     })
 
     t.Run("limit", func(t *testing.T) {
-      limit := int32(1)
+      limit := int64(1)
       // Scan for just the first item.
       scanInput := db.Scan{{ $modelName }}sInput{
         Limit: &limit,
@@ -821,7 +821,7 @@ func Get{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.T
       {{ pascalize $attributeName }}:    {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
       {{- end }}
     }))
-    limit := int32(3)
+    limit := int64(3)
     tests := []get{{ $modelName }}sBy{{ $computedIndexName }}Test{
       {
         testName: "basic",
@@ -1230,7 +1230,7 @@ func Scan{{ $modelName }}sBy{{ $computedIndexName }}(d db.Interface, t *testing.
     })
 
     t.Run("limit", func(t *testing.T) {
-      limit := int32(1)
+      limit := int64(1)
       // Scan for just the first item.
       scanInput := db.Scan{{ $modelName }}sInput{
         Limit: &limit,

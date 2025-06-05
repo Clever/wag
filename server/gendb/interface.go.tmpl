@@ -2,8 +2,6 @@ package db
 
 import (
 	"context"
-  "time"
-
   "{{ .ModuleName }}{{.GoOutputPath}}/models{{.VersionSuffix}}"
 	{{- if anyTableHasTransactionsEnabled .XDBConfigs }}
   "github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
@@ -110,7 +108,7 @@ type Scan{{ $modelName }}sInput struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int32
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }
@@ -162,7 +160,7 @@ type Get{{ $modelName }}sBy{{ $indexName }}Input struct {
   // DisableConsistentRead turns off the default behavior of running a consistent read.
   DisableConsistentRead bool
   // Limit is an optional limit of how many items to evaluate.
-	Limit  *int32
+	Limit  *int64
   {{- if gt $lenNonIndexAttributes 0 }}
     // FilterValues is an optional array of filters to apply on various table attributes
     FilterValues []{{ $modelName }}By{{ $indexName }}FilterValues
@@ -219,7 +217,7 @@ type Get{{ $modelName }}sBy{{ $computedIndexName }}Input struct {
 	StartingAfter *models.{{ $modelName }}
   Descending bool
   // Limit is an optional limit of how many items to evaluate.
-	Limit  *int32
+	Limit  *int64
 }
 {{- end }}
 
@@ -246,7 +244,7 @@ type Scan{{ $modelName }}sBy{{ $computedIndexName }}Input struct {
 	// DisableConsistentRead turns off the default behavior of running a consistent read.
 	DisableConsistentRead bool
 	// Limit is an optional limit of how many items to evaluate.
-	Limit *int32
+	Limit *int64
 	// Limiter is an optional limit on how quickly items are scanned.
 	Limiter *rate.Limiter
 }

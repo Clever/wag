@@ -21,9 +21,7 @@ import (
   "{{ .ModuleName }}{{.GoOutputPath}}/models{{.VersionSuffix}}"
   "{{ .PackageName }}/{{ .OutputPath }}"
   "github.com/aws/aws-sdk-go-v2/aws"
-        {{- if not $xdbConfig.AllowOverwrites }}
   "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-        {{- end }}
   "github.com/aws/aws-sdk-go-v2/service/dynamodb"
   "github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
   {{- if transactionsEnabled $xdbConfig }}
@@ -33,6 +31,8 @@ import (
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // {{ $modelName }}Table represents the user-configurable properties of the {{ $modelName }} table.
 type {{ $modelName }}Table struct {
@@ -152,7 +152,12 @@ func (t {{ $modelName }}Table) save{{ $modelName }}(ctx context.Context, m model
       "#{{ upper $pk.AttributeName }}": "{{ $pk.AttributeName }}",
       {{- end }}
     },
-    ConditionExpression: aws.String("{{- range $i, $pk := $xdbConfig.DynamoDB.KeySchema -}}{{- if $i }} AND {{ end }}attribute_not_exists(#{{ upper $pk.AttributeName }}){{- end }}"),
+    ConditionExpression: aws.String(
+        "{{- range $i, $pk := $xdbConfig.DynamoDB.KeySchema -}}" +
+            "{{- if $i }} AND {{ end }}" +
+            "attribute_not_exists(#{{ upper $pk.AttributeName }})" +
+        "{{- end -}}",
+    ),
 	})
 	if err != nil {
 		var resourceNotFoundErr *types.ResourceNotFoundException
@@ -311,7 +316,7 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
   scanInput := &dynamodb.ScanInput{
     TableName:      aws.String(t.TableName),
     ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-    Limit:          input.Limit,
+    Limit:          aws.Int32(int32(*input.Limit)),
   }
   if input.StartingAfter != nil {
   {{- if indexContainsNonCompositeAttribute $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
@@ -333,7 +338,7 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
                   {{- end }}
     }
   }
-  totalRecordsProcessed := int32(0)
+  totalRecordsProcessed := int64(0)
 
   paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
   for paginator.HasMorePages() {
@@ -472,7 +477,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
     ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
   }
   if input.Limit != nil {
-    queryInput.Limit = input.Limit
+    queryInput.Limit = aws.Int32(int32(*input.Limit))
   }
   {{- if gt $lenRangeKeyAttributes 1 }}
   if input.StartingAt == nil {
@@ -607,7 +612,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
     }
   {{- end }}
 
-  totalRecordsProcessed := int32(0)
+  totalRecordsProcessed := int64(0)
   var pageFnErr error
   pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
     if len(queryOutput.Items) == 0 {
@@ -764,7 +769,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
     ConsistentRead:   aws.Bool(false),
   }
   if input.Limit != nil {
-     queryInput.Limit = input.Limit
+     queryInput.Limit = aws.Int32(int32(*input.Limit))
   }
   {{- if gt $lenRangeKeyAttributes 1 }}
   if input.StartingAt == nil {
@@ -952,7 +957,7 @@ func (t {{ $modelName}}Table) get{{ $modelName }}sBy{{ $computedIndexName }}(ctx
     }
   }
 
-  totalRecordsProcessed := int32(0)
+  totalRecordsProcessed := int64(0)
   var pageFnErr error
   pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
     if len(queryOutput.Items) == 0 {
@@ -1064,7 +1069,7 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}sBy{{ $computedIndexName }}(c
   scanInput := &dynamodb.ScanInput{
     TableName:      aws.String(t.TableName),
     ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-    Limit:          input.Limit,
+    Limit:          aws.Int32(int32(*input.Limit)),
     IndexName:      aws.String("{{ $gsi.IndexName }}"),
   }
   if input.StartingAfter != nil {
@@ -1089,7 +1094,7 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}sBy{{ $computedIndexName }}(c
                   {{- end }}
     }
   }
-  totalRecordsProcessed := int32(0)
+  totalRecordsProcessed := int64(0)
 
   paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
   for paginator.HasMorePages() {

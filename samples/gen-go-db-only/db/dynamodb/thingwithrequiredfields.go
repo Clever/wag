@@ -15,6 +15,8 @@ import (
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // ThingWithRequiredFieldsTable represents the user-configurable properties of the ThingWithRequiredFields table.
 type ThingWithRequiredFieldsTable struct {
@@ -72,7 +74,12 @@ func (t ThingWithRequiredFieldsTable) saveThingWithRequiredFields(ctx context.Co
 		ExpressionAttributeNames: map[string]string{
 			"#NAME": "name",
 		},
-		ConditionExpression: aws.String("attribute_not_exists(#NAME)"),
+		ConditionExpression: aws.String(
+			"" +
+				"" +
+				"attribute_not_exists(#NAME)" +
+				"",
+		),
 	})
 	if err != nil {
 		var resourceNotFoundErr *types.ResourceNotFoundException
@@ -128,7 +135,7 @@ func (t ThingWithRequiredFieldsTable) scanThingWithRequiredFieldss(ctx context.C
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+		Limit:          aws.Int32(int32(*input.Limit)),
 	}
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
@@ -140,7 +147,7 @@ func (t ThingWithRequiredFieldsTable) scanThingWithRequiredFieldss(ctx context.C
 			"name": exclusiveStartKey["name"],
 		}
 	}
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 
 	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
 	for paginator.HasMorePages() {

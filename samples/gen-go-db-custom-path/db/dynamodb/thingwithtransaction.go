@@ -16,6 +16,8 @@ import (
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // ThingWithTransactionTable represents the user-configurable properties of the ThingWithTransaction table.
 type ThingWithTransactionTable struct {
@@ -73,7 +75,12 @@ func (t ThingWithTransactionTable) saveThingWithTransaction(ctx context.Context,
 		ExpressionAttributeNames: map[string]string{
 			"#NAME": "name",
 		},
-		ConditionExpression: aws.String("attribute_not_exists(#NAME)"),
+		ConditionExpression: aws.String(
+			"" +
+				"" +
+				"attribute_not_exists(#NAME)" +
+				"",
+		),
 	})
 	if err != nil {
 		var resourceNotFoundErr *types.ResourceNotFoundException
@@ -129,7 +136,7 @@ func (t ThingWithTransactionTable) scanThingWithTransactions(ctx context.Context
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+		Limit:          aws.Int32(int32(*input.Limit)),
 	}
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
@@ -141,7 +148,7 @@ func (t ThingWithTransactionTable) scanThingWithTransactions(ctx context.Context
 			"name": exclusiveStartKey["name"],
 		}
 	}
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 
 	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
 	for paginator.HasMorePages() {
