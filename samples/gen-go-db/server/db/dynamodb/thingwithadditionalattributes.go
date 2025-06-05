@@ -201,7 +201,15 @@ func (t ThingWithAdditionalAttributesTable) saveThingWithAdditionalAttributes(ct
 			"#NAME":    "name",
 			"#VERSION": "version",
 		},
-		ConditionExpression: aws.String("attribute_not_exists(#NAME) AND attribute_not_exists(#VERSION)"),
+		ConditionExpression: aws.String(
+			"" +
+				"" +
+				"attribute_not_exists(#NAME)" +
+				"" +
+				" AND " +
+				"attribute_not_exists(#VERSION)" +
+				"",
+		),
 	})
 	if err != nil {
 		var resourceNotFoundErr *types.ResourceNotFoundException
@@ -260,7 +268,7 @@ func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributess(c
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+		Limit:          aws.Int32(int32(*input.Limit)),
 	}
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
@@ -273,7 +281,7 @@ func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributess(c
 			"version": exclusiveStartKey["version"],
 		}
 	}
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 
 	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
 	for paginator.HasMorePages() {
@@ -386,7 +394,7 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.VersionStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
@@ -418,7 +426,7 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 		queryInput.FilterExpression = aws.String(input.FilterExpression)
 	}
 
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
@@ -531,7 +539,7 @@ func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributessBy
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+		Limit:          aws.Int32(int32(*input.Limit)),
 		IndexName:      aws.String("thingID"),
 	}
 	if input.StartingAfter != nil {
@@ -547,7 +555,7 @@ func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributessBy
 			"id":      exclusiveStartKey["id"],
 		}
 	}
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 
 	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
 	for paginator.HasMorePages() {
@@ -604,7 +612,7 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 		ConsistentRead:   aws.Bool(false),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.CreatedAtStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
@@ -634,7 +642,7 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 		}
 	}
 
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
@@ -687,7 +695,7 @@ func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributessBy
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+		Limit:          aws.Int32(int32(*input.Limit)),
 		IndexName:      aws.String("name-createdAt"),
 	}
 	if input.StartingAfter != nil {
@@ -703,7 +711,7 @@ func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributessBy
 			"createdAt": exclusiveStartKey["createdAt"],
 		}
 	}
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 
 	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
 	for paginator.HasMorePages() {
@@ -760,7 +768,7 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 		ConsistentRead:   aws.Bool(false),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.RangeNullableStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
@@ -790,7 +798,7 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 		}
 	}
 
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
@@ -843,7 +851,7 @@ func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributessBy
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+		Limit:          aws.Int32(int32(*input.Limit)),
 		IndexName:      aws.String("name-rangeNullable"),
 	}
 	if input.StartingAfter != nil {
@@ -859,7 +867,7 @@ func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributessBy
 			"rangeNullable": exclusiveStartKey["rangeNullable"],
 		}
 	}
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 
 	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
 	for paginator.HasMorePages() {
@@ -916,7 +924,7 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByH
 		ConsistentRead:   aws.Bool(false),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.NameStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#HASHNULLABLE = :hashNullable")
@@ -946,7 +954,7 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByH
 		}
 	}
 
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {

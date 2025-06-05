@@ -137,7 +137,12 @@ func (t ThingWithTransactMultipleGSITable) saveThingWithTransactMultipleGSI(ctx 
 		ExpressionAttributeNames: map[string]string{
 			"#DATEH": "dateH",
 		},
-		ConditionExpression: aws.String("attribute_not_exists(#DATEH)"),
+		ConditionExpression: aws.String(
+			"" +
+				"" +
+				"attribute_not_exists(#DATEH)" +
+				"",
+		),
 	})
 	if err != nil {
 		var resourceNotFoundErr *types.ResourceNotFoundException
@@ -193,7 +198,7 @@ func (t ThingWithTransactMultipleGSITable) scanThingWithTransactMultipleGSIs(ctx
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+		Limit:          aws.Int32(int32(*input.Limit)),
 	}
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
@@ -205,7 +210,7 @@ func (t ThingWithTransactMultipleGSITable) scanThingWithTransactMultipleGSIs(ctx
 			"dateH": exclusiveStartKey["dateH"],
 		}
 	}
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 
 	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
 	for paginator.HasMorePages() {
@@ -286,7 +291,7 @@ func (t ThingWithTransactMultipleGSITable) getThingWithTransactMultipleGSIsByIDA
 		ConsistentRead:   aws.Bool(false),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.DateRStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#ID = :id")
@@ -316,7 +321,7 @@ func (t ThingWithTransactMultipleGSITable) getThingWithTransactMultipleGSIsByIDA
 		}
 	}
 
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
@@ -387,7 +392,7 @@ func (t ThingWithTransactMultipleGSITable) getThingWithTransactMultipleGSIsByDat
 		ConsistentRead:   aws.Bool(false),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.IDStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#DATEH = :dateH")
@@ -414,7 +419,7 @@ func (t ThingWithTransactMultipleGSITable) getThingWithTransactMultipleGSIsByDat
 		}
 	}
 
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {

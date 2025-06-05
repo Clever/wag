@@ -85,7 +85,15 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) saveThingAllowingB
 			"#NAME_ID": "name_id",
 			"#DATE":    "date",
 		},
-		ConditionExpression: aws.String("attribute_not_exists(#NAME_ID) AND attribute_not_exists(#DATE)"),
+		ConditionExpression: aws.String(
+			"" +
+				"" +
+				"attribute_not_exists(#NAME_ID)" +
+				"" +
+				" AND " +
+				"attribute_not_exists(#DATE)" +
+				"",
+		),
 	})
 	if err != nil {
 		var resourceNotFoundErr *types.ResourceNotFoundException
@@ -224,7 +232,7 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) scanThingAllowingB
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+		Limit:          aws.Int32(int32(*input.Limit)),
 	}
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
@@ -239,7 +247,7 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) scanThingAllowingB
 			"date": exclusiveStartKey["date"],
 		}
 	}
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 
 	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
 	for paginator.HasMorePages() {
@@ -299,7 +307,7 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) getThingAllowingBa
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.DateStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME_ID = :nameId")
@@ -327,7 +335,7 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) getThingAllowingBa
 		}
 	}
 
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {

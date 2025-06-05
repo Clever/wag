@@ -74,7 +74,12 @@ func (t SimpleThingTable) saveSimpleThing(ctx context.Context, m models.SimpleTh
 		ExpressionAttributeNames: map[string]string{
 			"#NAME": "name",
 		},
-		ConditionExpression: aws.String("attribute_not_exists(#NAME)"),
+		ConditionExpression: aws.String(
+			"" +
+				"" +
+				"attribute_not_exists(#NAME)" +
+				"",
+		),
 	})
 	if err != nil {
 		var resourceNotFoundErr *types.ResourceNotFoundException
@@ -130,7 +135,7 @@ func (t SimpleThingTable) scanSimpleThings(ctx context.Context, input db.ScanSim
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+		Limit:          aws.Int32(int32(*input.Limit)),
 	}
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
@@ -142,7 +147,7 @@ func (t SimpleThingTable) scanSimpleThings(ctx context.Context, input db.ScanSim
 			"name": exclusiveStartKey["name"],
 		}
 	}
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 
 	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
 	for paginator.HasMorePages() {

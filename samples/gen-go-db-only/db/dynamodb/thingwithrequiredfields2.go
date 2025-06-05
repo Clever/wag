@@ -84,7 +84,15 @@ func (t ThingWithRequiredFields2Table) saveThingWithRequiredFields2(ctx context.
 			"#NAME": "name",
 			"#ID":   "id",
 		},
-		ConditionExpression: aws.String("attribute_not_exists(#NAME) AND attribute_not_exists(#ID)"),
+		ConditionExpression: aws.String(
+			"" +
+				"" +
+				"attribute_not_exists(#NAME)" +
+				"" +
+				" AND " +
+				"attribute_not_exists(#ID)" +
+				"",
+		),
 	})
 	if err != nil {
 		var resourceNotFoundErr *types.ResourceNotFoundException
@@ -143,7 +151,7 @@ func (t ThingWithRequiredFields2Table) scanThingWithRequiredFields2s(ctx context
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+		Limit:          aws.Int32(int32(*input.Limit)),
 	}
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
@@ -156,7 +164,7 @@ func (t ThingWithRequiredFields2Table) scanThingWithRequiredFields2s(ctx context
 			"id":   exclusiveStartKey["id"],
 		}
 	}
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 
 	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
 	for paginator.HasMorePages() {
@@ -213,7 +221,7 @@ func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2sByNameAndID(c
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.IDStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
@@ -241,7 +249,7 @@ func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2sByNameAndID(c
 		}
 	}
 
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {

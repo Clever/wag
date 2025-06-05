@@ -152,7 +152,7 @@ func (t EventTable) scanEvents(ctx context.Context, input db.ScanEventsInput, fn
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+		Limit:          aws.Int32(int32(*input.Limit)),
 	}
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
@@ -165,7 +165,7 @@ func (t EventTable) scanEvents(ctx context.Context, input db.ScanEventsInput, fn
 			"sk": exclusiveStartKey["sk"],
 		}
 	}
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 
 	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
 	for paginator.HasMorePages() {
@@ -236,7 +236,7 @@ func (t EventTable) getEventsByPkAndSk(ctx context.Context, input db.GetEventsBy
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.SkStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#PK = :pk")
@@ -268,7 +268,7 @@ func (t EventTable) getEventsByPkAndSk(ctx context.Context, input db.GetEventsBy
 		queryInput.FilterExpression = aws.String(input.FilterExpression)
 	}
 
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
@@ -360,7 +360,7 @@ func (t EventTable) getEventsBySkAndData(ctx context.Context, input db.GetEvents
 		ConsistentRead:   aws.Bool(false),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.DataStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#SK = :sk")
@@ -390,7 +390,7 @@ func (t EventTable) getEventsBySkAndData(ctx context.Context, input db.GetEvents
 		}
 	}
 
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
@@ -443,7 +443,7 @@ func (t EventTable) scanEventsBySkAndData(ctx context.Context, input db.ScanEven
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+		Limit:          aws.Int32(int32(*input.Limit)),
 		IndexName:      aws.String("bySK"),
 	}
 	if input.StartingAfter != nil {
@@ -459,7 +459,7 @@ func (t EventTable) scanEventsBySkAndData(ctx context.Context, input db.ScanEven
 			"data": exclusiveStartKey["data"],
 		}
 	}
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 
 	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
 	for paginator.HasMorePages() {

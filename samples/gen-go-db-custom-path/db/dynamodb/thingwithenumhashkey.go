@@ -116,7 +116,15 @@ func (t ThingWithEnumHashKeyTable) saveThingWithEnumHashKey(ctx context.Context,
 			"#BRANCH": "branch",
 			"#DATE":   "date",
 		},
-		ConditionExpression: aws.String("attribute_not_exists(#BRANCH) AND attribute_not_exists(#DATE)"),
+		ConditionExpression: aws.String(
+			"" +
+				"" +
+				"attribute_not_exists(#BRANCH)" +
+				"" +
+				" AND " +
+				"attribute_not_exists(#DATE)" +
+				"",
+		),
 	})
 	if err != nil {
 		var resourceNotFoundErr *types.ResourceNotFoundException
@@ -175,7 +183,7 @@ func (t ThingWithEnumHashKeyTable) scanThingWithEnumHashKeys(ctx context.Context
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+		Limit:          aws.Int32(int32(*input.Limit)),
 	}
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
@@ -188,7 +196,7 @@ func (t ThingWithEnumHashKeyTable) scanThingWithEnumHashKeys(ctx context.Context
 			"date":   exclusiveStartKey["date"],
 		}
 	}
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 
 	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
 	for paginator.HasMorePages() {
@@ -259,7 +267,7 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDate(ctx c
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.DateStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#BRANCH = :branch")
@@ -291,7 +299,7 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDate(ctx c
 		queryInput.FilterExpression = aws.String(input.FilterExpression)
 	}
 
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
@@ -387,7 +395,7 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDate2(ctx 
 		ConsistentRead:   aws.Bool(false),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.Date2StartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#BRANCH = :branch")
@@ -417,7 +425,7 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDate2(ctx 
 		}
 	}
 
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
@@ -470,7 +478,7 @@ func (t ThingWithEnumHashKeyTable) scanThingWithEnumHashKeysByBranchAndDate2(ctx
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+		Limit:          aws.Int32(int32(*input.Limit)),
 		IndexName:      aws.String("byBranch"),
 	}
 	if input.StartingAfter != nil {
@@ -486,7 +494,7 @@ func (t ThingWithEnumHashKeyTable) scanThingWithEnumHashKeysByBranchAndDate2(ctx
 			"date2":  exclusiveStartKey["date2"],
 		}
 	}
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 
 	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
 	for paginator.HasMorePages() {

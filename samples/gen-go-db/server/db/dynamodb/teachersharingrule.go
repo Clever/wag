@@ -158,7 +158,7 @@ func (t TeacherSharingRuleTable) scanTeacherSharingRules(ctx context.Context, in
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+		Limit:          aws.Int32(int32(*input.Limit)),
 	}
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
@@ -173,7 +173,7 @@ func (t TeacherSharingRuleTable) scanTeacherSharingRules(ctx context.Context, in
 			},
 		}
 	}
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 
 	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
 	for paginator.HasMorePages() {
@@ -244,7 +244,7 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByTeacherAndSchoolApp(ctx
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#TEACHER = :teacher")
@@ -276,7 +276,7 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByTeacherAndSchoolApp(ctx
 		queryInput.FilterExpression = aws.String(input.FilterExpression)
 	}
 
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
@@ -368,7 +368,7 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeache
 		ConsistentRead:   aws.Bool(false),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#DISTRICT = :district")
@@ -401,7 +401,7 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByDistrictAndSchoolTeache
 		}
 	}
 
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
@@ -454,7 +454,7 @@ func (t TeacherSharingRuleTable) scanTeacherSharingRulesByDistrictAndSchoolTeach
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+		Limit:          aws.Int32(int32(*input.Limit)),
 		IndexName:      aws.String("district_school_teacher_app"),
 	}
 	if input.StartingAfter != nil {
@@ -475,7 +475,7 @@ func (t TeacherSharingRuleTable) scanTeacherSharingRulesByDistrictAndSchoolTeach
 			},
 		}
 	}
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 
 	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
 	for paginator.HasMorePages() {

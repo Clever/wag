@@ -205,7 +205,7 @@ func (t DeploymentTable) scanDeployments(ctx context.Context, input db.ScanDeplo
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+		Limit:          aws.Int32(int32(*input.Limit)),
 	}
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
@@ -220,7 +220,7 @@ func (t DeploymentTable) scanDeployments(ctx context.Context, input db.ScanDeplo
 			"version": exclusiveStartKey["version"],
 		}
 	}
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 
 	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
 	for paginator.HasMorePages() {
@@ -294,7 +294,7 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, i
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.VersionStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#ENVAPP = :envApp")
@@ -326,7 +326,7 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, i
 		queryInput.FilterExpression = aws.String(input.FilterExpression)
 	}
 
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
@@ -421,7 +421,7 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndDate(ctx context.Context, inpu
 		ConsistentRead:   aws.Bool(false),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.DateStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#ENVAPP = :envApp")
@@ -451,7 +451,7 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndDate(ctx context.Context, inpu
 		}
 	}
 
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
@@ -504,7 +504,7 @@ func (t DeploymentTable) scanDeploymentsByEnvAppAndDate(ctx context.Context, inp
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+		Limit:          aws.Int32(int32(*input.Limit)),
 		IndexName:      aws.String("byDate"),
 	}
 	if input.StartingAfter != nil {
@@ -522,7 +522,7 @@ func (t DeploymentTable) scanDeploymentsByEnvAppAndDate(ctx context.Context, inp
 			"date":    exclusiveStartKey["date"],
 		}
 	}
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 
 	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
 	for paginator.HasMorePages() {
@@ -579,7 +579,7 @@ func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context,
 		ConsistentRead:   aws.Bool(false),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.DateStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#ENVIRONMENT = :environment")
@@ -612,7 +612,7 @@ func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context,
 		}
 	}
 
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
@@ -696,7 +696,7 @@ func (t DeploymentTable) scanDeploymentsByVersion(ctx context.Context, input db.
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+		Limit:          aws.Int32(int32(*input.Limit)),
 		IndexName:      aws.String("byVersion"),
 	}
 	if input.StartingAfter != nil {
@@ -713,7 +713,7 @@ func (t DeploymentTable) scanDeploymentsByVersion(ctx context.Context, input db.
 			"version": exclusiveStartKey["version"],
 		}
 	}
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 
 	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
 	for paginator.HasMorePages() {

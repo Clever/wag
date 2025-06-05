@@ -271,7 +271,7 @@ func GetDeploymentsByEnvAppAndVersion(d db.Interface, t *testing.T) func(t *test
 			Application: "string1",
 			Version:     "string3",
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getDeploymentsByEnvAppAndVersionTest{
 			{
 				testName: "basic",
@@ -534,7 +534,7 @@ func ScanDeployments(d db.Interface, t *testing.T) func(t *testing.T) {
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanDeploymentsInput{
 				Limit: &limit,
@@ -635,7 +635,7 @@ func GetDeploymentsByEnvAppAndDate(d db.Interface, t *testing.T) func(t *testing
 			Date:        mustTime("2018-03-11T15:04:03+07:00"),
 			Version:     "string2",
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getDeploymentsByEnvAppAndDateTest{
 			{
 				testName: "basic",
@@ -916,7 +916,7 @@ func ScanDeploymentsByEnvAppAndDate(d db.Interface, t *testing.T) func(t *testin
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanDeploymentsInput{
 				Limit: &limit,
@@ -990,7 +990,7 @@ func GetDeploymentsByEnvironmentAndDate(d db.Interface, t *testing.T) func(t *te
 			Application: "string2",
 			Version:     "string2",
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getDeploymentsByEnvironmentAndDateTest{
 			{
 				testName: "basic",
@@ -1288,7 +1288,7 @@ func ScanDeploymentsByVersion(d db.Interface, t *testing.T) func(t *testing.T) {
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanDeploymentsInput{
 				Limit: &limit,
@@ -1376,7 +1376,7 @@ func GetEventsByPkAndSk(d db.Interface, t *testing.T) func(t *testing.T) {
 			Pk: "string1",
 			Sk: "string3",
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getEventsByPkAndSkTest{
 			{
 				testName: "basic",
@@ -1613,7 +1613,7 @@ func ScanEvents(d db.Interface, t *testing.T) func(t *testing.T) {
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanEventsInput{
 				Limit: &limit,
@@ -1709,7 +1709,7 @@ func GetEventsBySkAndData(d db.Interface, t *testing.T) func(t *testing.T) {
 			Data: []byte("string3"),
 			Pk:   "string2",
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getEventsBySkAndDataTest{
 			{
 				testName: "basic",
@@ -1964,7 +1964,7 @@ func ScanEventsBySkAndData(d db.Interface, t *testing.T) func(t *testing.T) {
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanEventsInput{
 				Limit: &limit,
@@ -2111,7 +2111,7 @@ func ScanNoRangeThingWithCompositeAttributess(d db.Interface, t *testing.T) func
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanNoRangeThingWithCompositeAttributessInput{
 				Limit: &limit,
@@ -2218,7 +2218,7 @@ func GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface,
 			Branch:  db.String("string2"),
 			Commit:  db.String("string2"),
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getNoRangeThingWithCompositeAttributessByNameVersionAndDateTest{
 			{
 				testName: "basic",
@@ -2519,7 +2519,7 @@ func ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate(d db.Interface
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanNoRangeThingWithCompositeAttributessInput{
 				Limit: &limit,
@@ -2661,7 +2661,7 @@ func ScanSimpleThings(d db.Interface, t *testing.T) func(t *testing.T) {
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanSimpleThingsInput{
 				Limit: &limit,
@@ -2779,7 +2779,7 @@ func GetTeacherSharingRulesByTeacherAndSchoolApp(d db.Interface, t *testing.T) f
 			App:      "string3",
 			District: "district2",
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getTeacherSharingRulesByTeacherAndSchoolAppTest{
 			{
 				testName: "basic",
@@ -3087,7 +3087,7 @@ func ScanTeacherSharingRules(d db.Interface, t *testing.T) func(t *testing.T) {
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanTeacherSharingRulesInput{
 				Limit: &limit,
@@ -3188,7 +3188,7 @@ func GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(d db.Interface, t *test
 			Teacher:  "string3",
 			App:      "string3",
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getTeacherSharingRulesByDistrictAndSchoolTeacherAppTest{
 			{
 				testName: "basic",
@@ -3468,7 +3468,7 @@ func ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp(d db.Interface, t *tes
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanTeacherSharingRulesInput{
 				Limit: &limit,
@@ -3559,7 +3559,7 @@ func GetThingsByNameAndVersion(d db.Interface, t *testing.T) func(t *testing.T) 
 			Name:    "string1",
 			Version: 3,
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingsByNameAndVersionTest{
 			{
 				testName: "basic",
@@ -3814,7 +3814,7 @@ func ScanThings(d db.Interface, t *testing.T) func(t *testing.T) {
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingsInput{
 				Limit: &limit,
@@ -3990,7 +3990,7 @@ func ScanThingsByID(d db.Interface, t *testing.T) func(t *testing.T) {
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingsInput{
 				Limit: &limit,
@@ -4061,7 +4061,7 @@ func GetThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.T
 			CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
 			Version:   2,
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingsByNameAndCreatedAtTest{
 			{
 				testName: "basic",
@@ -4316,7 +4316,7 @@ func ScanThingsByNameAndCreatedAt(d db.Interface, t *testing.T) func(t *testing.
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingsInput{
 				Limit: &limit,
@@ -4387,7 +4387,7 @@ func GetThingsByNameAndRangeNullable(d db.Interface, t *testing.T) func(t *testi
 			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 			Version:       2,
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingsByNameAndRangeNullableTest{
 			{
 				testName: "basic",
@@ -4642,7 +4642,7 @@ func ScanThingsByNameAndRangeNullable(d db.Interface, t *testing.T) func(t *test
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingsInput{
 				Limit: &limit,
@@ -4713,7 +4713,7 @@ func GetThingsByHashNullableAndName(d db.Interface, t *testing.T) func(t *testin
 			Name:         "string3",
 			Version:      2,
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingsByHashNullableAndNameTest{
 			{
 				testName: "basic",
@@ -4938,7 +4938,7 @@ func GetThingAllowingBatchWritessByNameAndVersion(d db.Interface, t *testing.T) 
 			Name:    "string1",
 			Version: 3,
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingAllowingBatchWritessByNameAndVersionTest{
 			{
 				testName: "basic",
@@ -5169,7 +5169,7 @@ func ScanThingAllowingBatchWritess(d db.Interface, t *testing.T) func(t *testing
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingAllowingBatchWritessInput{
 				Limit: &limit,
@@ -5285,7 +5285,7 @@ func GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate(d db.Int
 			ID:   db.String("string1"),
 			Date: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateTest{
 			{
 				testName: "basic",
@@ -5542,7 +5542,7 @@ func ScanThingAllowingBatchWritesWithCompositeAttributess(d db.Interface, t *tes
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingAllowingBatchWritesWithCompositeAttributessInput{
 				Limit: &limit,
@@ -5665,7 +5665,7 @@ func GetThingWithAdditionalAttributessByNameAndVersion(d db.Interface, t *testin
 			Version:              3,
 			AdditionalSAttribute: pointerToString("additionalSAttribute2"),
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingWithAdditionalAttributessByNameAndVersionTest{
 			{
 				testName: "basic",
@@ -5984,7 +5984,7 @@ func ScanThingWithAdditionalAttributess(d db.Interface, t *testing.T) func(t *te
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithAdditionalAttributessInput{
 				Limit: &limit,
@@ -6172,7 +6172,7 @@ func ScanThingWithAdditionalAttributessByID(d db.Interface, t *testing.T) func(t
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithAdditionalAttributessInput{
 				Limit: &limit,
@@ -6243,7 +6243,7 @@ func GetThingWithAdditionalAttributessByNameAndCreatedAt(d db.Interface, t *test
 			CreatedAt: mustTime("2018-03-11T15:04:03+07:00"),
 			Version:   2,
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingWithAdditionalAttributessByNameAndCreatedAtTest{
 			{
 				testName: "basic",
@@ -6498,7 +6498,7 @@ func ScanThingWithAdditionalAttributessByNameAndCreatedAt(d db.Interface, t *tes
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithAdditionalAttributessInput{
 				Limit: &limit,
@@ -6569,7 +6569,7 @@ func GetThingWithAdditionalAttributessByNameAndRangeNullable(d db.Interface, t *
 			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 			Version:       2,
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingWithAdditionalAttributessByNameAndRangeNullableTest{
 			{
 				testName: "basic",
@@ -6824,7 +6824,7 @@ func ScanThingWithAdditionalAttributessByNameAndRangeNullable(d db.Interface, t 
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithAdditionalAttributessInput{
 				Limit: &limit,
@@ -6895,7 +6895,7 @@ func GetThingWithAdditionalAttributessByHashNullableAndName(d db.Interface, t *t
 			Name:         "string3",
 			Version:      2,
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingWithAdditionalAttributessByHashNullableAndNameTest{
 			{
 				testName: "basic",
@@ -7126,7 +7126,7 @@ func GetThingWithCompositeAttributessByNameBranchAndDate(d db.Interface, t *test
 			Branch: db.String("string1"),
 			Date:   db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingWithCompositeAttributessByNameBranchAndDateTest{
 			{
 				testName: "basic",
@@ -7389,7 +7389,7 @@ func ScanThingWithCompositeAttributess(d db.Interface, t *testing.T) func(t *tes
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithCompositeAttributessInput{
 				Limit: &limit,
@@ -7491,7 +7491,7 @@ func GetThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *tes
 			Date:    db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 			Branch:  db.String("string2"),
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingWithCompositeAttributessByNameVersionAndDateTest{
 			{
 				testName: "basic",
@@ -7772,7 +7772,7 @@ func ScanThingWithCompositeAttributessByNameVersionAndDate(d db.Interface, t *te
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithCompositeAttributessInput{
 				Limit: &limit,
@@ -7864,7 +7864,7 @@ func GetThingWithCompositeEnumAttributessByNameBranchAndDate(d db.Interface, t *
 			BranchID: models.BranchMaster,
 			Date:     db.DateTime(mustTime("2018-03-11T15:04:03+07:00")),
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingWithCompositeEnumAttributessByNameBranchAndDateTest{
 			{
 				testName: "basic",
@@ -8121,7 +8121,7 @@ func ScanThingWithCompositeEnumAttributess(d db.Interface, t *testing.T) func(t 
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithCompositeEnumAttributessInput{
 				Limit: &limit,
@@ -8278,7 +8278,7 @@ func ScanThingWithDateGSIs(d db.Interface, t *testing.T) func(t *testing.T) {
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithDateGSIsInput{
 				Limit: &limit,
@@ -8375,7 +8375,7 @@ func GetThingWithDateGSIsByIDAndDateR(d db.Interface, t *testing.T) func(t *test
 			DateR: mustDate("2018-03-13"),
 			DateH: mustDate("2018-03-12"),
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingWithDateGSIsByIDAndDateRTest{
 			{
 				testName: "basic",
@@ -8581,7 +8581,7 @@ func GetThingWithDateGSIsByDateHAndID(d db.Interface, t *testing.T) func(t *test
 			DateH: mustDate("2018-03-11"),
 			ID:    "string3",
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingWithDateGSIsByDateHAndIDTest{
 			{
 				testName: "basic",
@@ -8792,7 +8792,7 @@ func GetThingWithDateRangesByNameAndDate(d db.Interface, t *testing.T) func(t *t
 			Name: "string1",
 			Date: mustTime("2018-03-11T15:04:03+07:00"),
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingWithDateRangesByNameAndDateTest{
 			{
 				testName: "basic",
@@ -9023,7 +9023,7 @@ func ScanThingWithDateRanges(d db.Interface, t *testing.T) func(t *testing.T) {
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithDateRangesInput{
 				Limit: &limit,
@@ -9133,7 +9133,7 @@ func GetThingWithDateRangeKeysByIDAndDate(d db.Interface, t *testing.T) func(t *
 			ID:   "string1",
 			Date: mustDate("2018-03-13"),
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingWithDateRangeKeysByIDAndDateTest{
 			{
 				testName: "basic",
@@ -9364,7 +9364,7 @@ func ScanThingWithDateRangeKeys(d db.Interface, t *testing.T) func(t *testing.T)
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithDateRangeKeysInput{
 				Limit: &limit,
@@ -9485,7 +9485,7 @@ func GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(d db.Interface, t 
 			Created:  mustTime("2018-03-11T15:04:03+07:00"),
 			Resource: "string3",
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingWithDateTimeCompositesByTypeIDAndCreatedResourceTest{
 			{
 				testName: "basic",
@@ -9766,7 +9766,7 @@ func ScanThingWithDateTimeComposites(d db.Interface, t *testing.T) func(t *testi
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithDateTimeCompositesInput{
 				Limit: &limit,
@@ -9917,7 +9917,7 @@ func ScanThingWithDatetimeGSIs(d db.Interface, t *testing.T) func(t *testing.T) 
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithDatetimeGSIsInput{
 				Limit: &limit,
@@ -10009,7 +10009,7 @@ func GetThingWithDatetimeGSIsByDatetimeAndID(d db.Interface, t *testing.T) func(
 			Datetime: mustTime("2018-03-11T15:04:01+07:00"),
 			ID:       "string3",
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingWithDatetimeGSIsByDatetimeAndIDTest{
 			{
 				testName: "basic",
@@ -10243,7 +10243,7 @@ func ScanThingWithDatetimeGSIsByDatetimeAndID(d db.Interface, t *testing.T) func
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithDatetimeGSIsInput{
 				Limit: &limit,
@@ -10331,7 +10331,7 @@ func GetThingWithEnumHashKeysByBranchAndDate(d db.Interface, t *testing.T) func(
 			Branch: models.BranchMaster,
 			Date:   mustTime("2018-03-11T15:04:03+07:00"),
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingWithEnumHashKeysByBranchAndDateTest{
 			{
 				testName: "basic",
@@ -10568,7 +10568,7 @@ func ScanThingWithEnumHashKeys(d db.Interface, t *testing.T) func(t *testing.T) 
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithEnumHashKeysInput{
 				Limit: &limit,
@@ -10665,7 +10665,7 @@ func GetThingWithEnumHashKeysByBranchAndDate2(d db.Interface, t *testing.T) func
 			Date2:  mustTime("2018-03-11T15:04:03+07:00"),
 			Date:   mustTime("2018-03-11T15:04:02+07:00"),
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingWithEnumHashKeysByBranchAndDate2Test{
 			{
 				testName: "basic",
@@ -10920,7 +10920,7 @@ func ScanThingWithEnumHashKeysByBranchAndDate2(d db.Interface, t *testing.T) fun
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithEnumHashKeysInput{
 				Limit: &limit,
@@ -11013,7 +11013,7 @@ func GetThingWithMatchingKeyssByBearAndAssocTypeID(d db.Interface, t *testing.T)
 			AssocType: "string3",
 			AssocID:   "string3",
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingWithMatchingKeyssByBearAndAssocTypeIDTest{
 			{
 				testName: "basic",
@@ -11274,7 +11274,7 @@ func ScanThingWithMatchingKeyss(d db.Interface, t *testing.T) func(t *testing.T)
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithMatchingKeyssInput{
 				Limit: &limit,
@@ -11375,7 +11375,7 @@ func GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(d db.Interface, t *tes
 			Created:   mustTime("2018-03-11T15:04:03+07:00"),
 			Bear:      "string3",
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingWithMatchingKeyssByAssocTypeIDAndCreatedBearTest{
 			{
 				testName: "basic",
@@ -11659,7 +11659,7 @@ func ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(d db.Interface, t *te
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithMatchingKeyssInput{
 				Limit: &limit,
@@ -11797,7 +11797,7 @@ func ScanThingWithMultiUseCompositeAttributes(d db.Interface, t *testing.T) func
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithMultiUseCompositeAttributesInput{
 				Limit: &limit,
@@ -11898,7 +11898,7 @@ func GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(d db.Interface, t *
 			Two:   db.String("string3"),
 			Four:  db.String("string2"),
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingWithMultiUseCompositeAttributesByThreeAndOneTwoTest{
 			{
 				testName: "basic",
@@ -12176,7 +12176,7 @@ func ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo(d db.Interface, t 
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithMultiUseCompositeAttributesInput{
 				Limit: &limit,
@@ -12250,7 +12250,7 @@ func GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(d db.Interface, t *t
 			Two:   db.String("string3"),
 			Three: db.String("string2"),
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingWithMultiUseCompositeAttributesByFourAndOneTwoTest{
 			{
 				testName: "basic",
@@ -12528,7 +12528,7 @@ func ScanThingWithMultiUseCompositeAttributesByFourAndOneTwo(d db.Interface, t *
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithMultiUseCompositeAttributesInput{
 				Limit: &limit,
@@ -12664,7 +12664,7 @@ func ScanThingWithRequiredCompositePropertiesAndKeysOnlys(d db.Interface, t *tes
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithRequiredCompositePropertiesAndKeysOnlysInput{
 				Limit: &limit,
@@ -12760,7 +12760,7 @@ func GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPr
 			PropertyTwo:   db.String("string1"),
 			PropertyThree: db.String("string3"),
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeTest{
 			{
 				testName: "basic",
@@ -13020,7 +13020,7 @@ func ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndP
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithRequiredCompositePropertiesAndKeysOnlysInput{
 				Limit: &limit,
@@ -13137,7 +13137,7 @@ func ScanThingWithRequiredFieldss(d db.Interface, t *testing.T) func(t *testing.
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithRequiredFieldssInput{
 				Limit: &limit,
@@ -13246,7 +13246,7 @@ func GetThingWithRequiredFields2sByNameAndID(d db.Interface, t *testing.T) func(
 			Name: db.String("string1"),
 			ID:   db.String("string3"),
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingWithRequiredFields2sByNameAndIDTest{
 			{
 				testName: "basic",
@@ -13477,7 +13477,7 @@ func ScanThingWithRequiredFields2s(d db.Interface, t *testing.T) func(t *testing
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithRequiredFields2sInput{
 				Limit: &limit,
@@ -13632,7 +13632,7 @@ func ScanThingWithTransactMultipleGSIs(d db.Interface, t *testing.T) func(t *tes
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithTransactMultipleGSIsInput{
 				Limit: &limit,
@@ -13729,7 +13729,7 @@ func GetThingWithTransactMultipleGSIsByIDAndDateR(d db.Interface, t *testing.T) 
 			DateR: mustDate("2018-03-13"),
 			DateH: mustDate("2018-03-12"),
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingWithTransactMultipleGSIsByIDAndDateRTest{
 			{
 				testName: "basic",
@@ -13935,7 +13935,7 @@ func GetThingWithTransactMultipleGSIsByDateHAndID(d db.Interface, t *testing.T) 
 			DateH: mustDate("2018-03-11"),
 			ID:    "string3",
 		}))
-		limit := int32(3)
+		limit := int64(3)
 		tests := []getThingWithTransactMultipleGSIsByDateHAndIDTest{
 			{
 				testName: "basic",
@@ -14196,7 +14196,7 @@ func ScanThingWithTransactions(d db.Interface, t *testing.T) func(t *testing.T) 
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithTransactionsInput{
 				Limit: &limit,
@@ -14353,7 +14353,7 @@ func ScanThingWithTransactionWithSimpleThings(d db.Interface, t *testing.T) func
 		})
 
 		t.Run("limit", func(t *testing.T) {
-			limit := int32(1)
+			limit := int64(1)
 			// Scan for just the first item.
 			scanInput := db.ScanThingWithTransactionWithSimpleThingsInput{
 				Limit: &limit,

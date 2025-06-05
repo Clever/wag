@@ -84,7 +84,15 @@ func (t ThingAllowingBatchWritesTable) saveThingAllowingBatchWrites(ctx context.
 			"#NAME":    "name",
 			"#VERSION": "version",
 		},
-		ConditionExpression: aws.String("attribute_not_exists(#NAME) AND attribute_not_exists(#VERSION)"),
+		ConditionExpression: aws.String(
+			"" +
+				"" +
+				"attribute_not_exists(#NAME)" +
+				"" +
+				" AND " +
+				"attribute_not_exists(#VERSION)" +
+				"",
+		),
 	})
 	if err != nil {
 		var resourceNotFoundErr *types.ResourceNotFoundException
@@ -222,7 +230,7 @@ func (t ThingAllowingBatchWritesTable) scanThingAllowingBatchWritess(ctx context
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+		Limit:          aws.Int32(int32(*input.Limit)),
 	}
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
@@ -235,7 +243,7 @@ func (t ThingAllowingBatchWritesTable) scanThingAllowingBatchWritess(ctx context
 			"version": exclusiveStartKey["version"],
 		}
 	}
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 
 	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
 	for paginator.HasMorePages() {
@@ -292,7 +300,7 @@ func (t ThingAllowingBatchWritesTable) getThingAllowingBatchWritessByNameAndVers
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.VersionStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
@@ -320,7 +328,7 @@ func (t ThingAllowingBatchWritesTable) getThingAllowingBatchWritessByNameAndVers
 		}
 	}
 
-	totalRecordsProcessed := int32(0)
+	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
 		if len(queryOutput.Items) == 0 {
