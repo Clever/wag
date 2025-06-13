@@ -268,7 +268,9 @@ func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributess(c
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          aws.Int32(int32(*input.Limit)),
+	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
@@ -539,9 +541,11 @@ func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributessBy
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          aws.Int32(int32(*input.Limit)),
-		IndexName:      aws.String("thingID"),
 	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
+	}
+	scanInput.IndexName = aws.String("thingID")
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
@@ -695,9 +699,11 @@ func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributessBy
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          aws.Int32(int32(*input.Limit)),
-		IndexName:      aws.String("name-createdAt"),
 	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
+	}
+	scanInput.IndexName = aws.String("name-createdAt")
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
@@ -851,9 +857,11 @@ func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributessBy
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          aws.Int32(int32(*input.Limit)),
-		IndexName:      aws.String("name-rangeNullable"),
 	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
+	}
+	scanInput.IndexName = aws.String("name-rangeNullable")
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
