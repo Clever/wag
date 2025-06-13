@@ -13,6 +13,8 @@ import (
 	"github.com/go-openapi/strfmt"
 )
 
+var _ types.AttributeValue = &types.AttributeValueMemberS{}
+
 // Config is used to create a new DB struct.
 type Config struct {
 	// DynamoDBAPI is used to communicate with DynamoDB. It is required.

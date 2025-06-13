@@ -176,7 +176,9 @@ func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseComposite
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          aws.Int32(int32(*input.Limit)),
+	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
@@ -348,9 +350,11 @@ func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseComposite
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          aws.Int32(int32(*input.Limit)),
-		IndexName:      aws.String("threeIndex"),
 	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
+	}
+	scanInput.IndexName = aws.String("threeIndex")
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
@@ -506,9 +510,11 @@ func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseComposite
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          aws.Int32(int32(*input.Limit)),
-		IndexName:      aws.String("fourIndex"),
 	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
+	}
+	scanInput.IndexName = aws.String("fourIndex")
 	if input.StartingAfter != nil {
 		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {

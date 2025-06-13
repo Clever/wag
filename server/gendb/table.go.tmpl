@@ -316,7 +316,9 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
   scanInput := &dynamodb.ScanInput{
     TableName:      aws.String(t.TableName),
     ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-    Limit:          aws.Int32(int32(*input.Limit)),
+  }
+  if input.Limit != nil {
+    scanInput.Limit = aws.Int32(int32(*input.Limit))
   }
   if input.StartingAfter != nil {
   {{- if indexContainsNonCompositeAttribute $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
@@ -1069,9 +1071,11 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}sBy{{ $computedIndexName }}(c
   scanInput := &dynamodb.ScanInput{
     TableName:      aws.String(t.TableName),
     ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-    Limit:          aws.Int32(int32(*input.Limit)),
-    IndexName:      aws.String("{{ $gsi.IndexName }}"),
   }
+  if input.Limit != nil {
+    scanInput.Limit = aws.Int32(int32(*input.Limit))
+  }
+  scanInput.IndexName = aws.String("{{ $gsi.IndexName }}")
   if input.StartingAfter != nil {
   {{- $primaryAndSecondaryKeySchemas := unionKeySchemas $xdbConfig.DynamoDB.KeySchema $gsi.KeySchema }}
   {{- if indexContainsNonCompositeAttribute $xdbConfig $primaryAndSecondaryKeySchemas }}
