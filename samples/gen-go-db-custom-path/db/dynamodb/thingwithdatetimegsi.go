@@ -40,7 +40,7 @@ type ddbThingWithDatetimeGSIGSIByDateTime struct {
 
 // ddbThingWithDatetimeGSI represents a ThingWithDatetimeGSI as stored in DynamoDB.
 type ddbThingWithDatetimeGSI struct {
-	models.ThingWithDatetimeGSI
+	models.ThingWithDatetimeGSI `dynamodbav:",inline"`
 }
 
 func (t ThingWithDatetimeGSITable) create(ctx context.Context) error {
@@ -397,45 +397,9 @@ func (t ThingWithDatetimeGSITable) scanThingWithDatetimeGSIsByDatetimeAndID(ctx 
 
 // encodeThingWithDatetimeGSI encodes a ThingWithDatetimeGSI as a DynamoDB map of attribute values.
 func encodeThingWithDatetimeGSI(m models.ThingWithDatetimeGSI) (map[string]types.AttributeValue, error) {
-	// First marshal the model to get all fields
-	val, err := attributevalue.MarshalMap(ddbThingWithDatetimeGSI{
+	return attributevalue.MarshalMap(ddbThingWithDatetimeGSI{
 		ThingWithDatetimeGSI: m,
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	// Ensure primary key attributes are properly named
-	if v, ok := val["ID"]; ok {
-		// Convert to the correct attribute value type
-		switch av := v.(type) {
-		case *types.AttributeValueMemberS:
-			val["id"] = &types.AttributeValueMemberS{Value: av.Value}
-		case *types.AttributeValueMemberN:
-			val["id"] = &types.AttributeValueMemberN{Value: av.Value}
-		case *types.AttributeValueMemberB:
-			val["id"] = &types.AttributeValueMemberB{Value: av.Value}
-		case *types.AttributeValueMemberBOOL:
-			val["id"] = &types.AttributeValueMemberBOOL{Value: av.Value}
-		case *types.AttributeValueMemberNULL:
-			val["id"] = &types.AttributeValueMemberNULL{Value: av.Value}
-		case *types.AttributeValueMemberM:
-			val["id"] = &types.AttributeValueMemberM{Value: av.Value}
-		case *types.AttributeValueMemberL:
-			val["id"] = &types.AttributeValueMemberL{Value: av.Value}
-		case *types.AttributeValueMemberSS:
-			val["id"] = &types.AttributeValueMemberSS{Value: av.Value}
-		case *types.AttributeValueMemberNS:
-			val["id"] = &types.AttributeValueMemberNS{Value: av.Value}
-		case *types.AttributeValueMemberBS:
-			val["id"] = &types.AttributeValueMemberBS{Value: av.Value}
-		default:
-			val["id"] = v
-		}
-		delete(val, "ID")
-	}
-
-	return val, nil
 }
 
 // decodeThingWithDatetimeGSI translates a ThingWithDatetimeGSI stored in DynamoDB to a ThingWithDatetimeGSI struct.

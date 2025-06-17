@@ -35,7 +35,7 @@ type ddbThingWithTransactionWithSimpleThingPrimaryKey struct {
 
 // ddbThingWithTransactionWithSimpleThing represents a ThingWithTransactionWithSimpleThing as stored in DynamoDB.
 type ddbThingWithTransactionWithSimpleThing struct {
-	models.ThingWithTransactionWithSimpleThing
+	models.ThingWithTransactionWithSimpleThing `dynamodbav:",inline"`
 }
 
 func (t ThingWithTransactionWithSimpleThingTable) create(ctx context.Context) error {
@@ -273,45 +273,9 @@ func (t ThingWithTransactionWithSimpleThingTable) transactSaveThingWithTransacti
 
 // encodeThingWithTransactionWithSimpleThing encodes a ThingWithTransactionWithSimpleThing as a DynamoDB map of attribute values.
 func encodeThingWithTransactionWithSimpleThing(m models.ThingWithTransactionWithSimpleThing) (map[string]types.AttributeValue, error) {
-	// First marshal the model to get all fields
-	val, err := attributevalue.MarshalMap(ddbThingWithTransactionWithSimpleThing{
+	return attributevalue.MarshalMap(ddbThingWithTransactionWithSimpleThing{
 		ThingWithTransactionWithSimpleThing: m,
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	// Ensure primary key attributes are properly named
-	if v, ok := val["Name"]; ok {
-		// Convert to the correct attribute value type
-		switch av := v.(type) {
-		case *types.AttributeValueMemberS:
-			val["name"] = &types.AttributeValueMemberS{Value: av.Value}
-		case *types.AttributeValueMemberN:
-			val["name"] = &types.AttributeValueMemberN{Value: av.Value}
-		case *types.AttributeValueMemberB:
-			val["name"] = &types.AttributeValueMemberB{Value: av.Value}
-		case *types.AttributeValueMemberBOOL:
-			val["name"] = &types.AttributeValueMemberBOOL{Value: av.Value}
-		case *types.AttributeValueMemberNULL:
-			val["name"] = &types.AttributeValueMemberNULL{Value: av.Value}
-		case *types.AttributeValueMemberM:
-			val["name"] = &types.AttributeValueMemberM{Value: av.Value}
-		case *types.AttributeValueMemberL:
-			val["name"] = &types.AttributeValueMemberL{Value: av.Value}
-		case *types.AttributeValueMemberSS:
-			val["name"] = &types.AttributeValueMemberSS{Value: av.Value}
-		case *types.AttributeValueMemberNS:
-			val["name"] = &types.AttributeValueMemberNS{Value: av.Value}
-		case *types.AttributeValueMemberBS:
-			val["name"] = &types.AttributeValueMemberBS{Value: av.Value}
-		default:
-			val["name"] = v
-		}
-		delete(val, "Name")
-	}
-
-	return val, nil
 }
 
 // decodeThingWithTransactionWithSimpleThing translates a ThingWithTransactionWithSimpleThing stored in DynamoDB to a ThingWithTransactionWithSimpleThing struct.

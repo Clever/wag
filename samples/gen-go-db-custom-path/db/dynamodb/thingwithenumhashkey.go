@@ -41,7 +41,7 @@ type ddbThingWithEnumHashKeyGSIByBranch struct {
 
 // ddbThingWithEnumHashKey represents a ThingWithEnumHashKey as stored in DynamoDB.
 type ddbThingWithEnumHashKey struct {
-	models.ThingWithEnumHashKey
+	models.ThingWithEnumHashKey `dynamodbav:",inline"`
 }
 
 func (t ThingWithEnumHashKeyTable) create(ctx context.Context) error {
@@ -536,73 +536,9 @@ func (t ThingWithEnumHashKeyTable) scanThingWithEnumHashKeysByBranchAndDate2(ctx
 
 // encodeThingWithEnumHashKey encodes a ThingWithEnumHashKey as a DynamoDB map of attribute values.
 func encodeThingWithEnumHashKey(m models.ThingWithEnumHashKey) (map[string]types.AttributeValue, error) {
-	// First marshal the model to get all fields
-	val, err := attributevalue.MarshalMap(ddbThingWithEnumHashKey{
+	return attributevalue.MarshalMap(ddbThingWithEnumHashKey{
 		ThingWithEnumHashKey: m,
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	// Ensure primary key attributes are properly named
-	if v, ok := val["Branch"]; ok {
-		// Convert to the correct attribute value type
-		switch av := v.(type) {
-		case *types.AttributeValueMemberS:
-			val["branch"] = &types.AttributeValueMemberS{Value: av.Value}
-		case *types.AttributeValueMemberN:
-			val["branch"] = &types.AttributeValueMemberN{Value: av.Value}
-		case *types.AttributeValueMemberB:
-			val["branch"] = &types.AttributeValueMemberB{Value: av.Value}
-		case *types.AttributeValueMemberBOOL:
-			val["branch"] = &types.AttributeValueMemberBOOL{Value: av.Value}
-		case *types.AttributeValueMemberNULL:
-			val["branch"] = &types.AttributeValueMemberNULL{Value: av.Value}
-		case *types.AttributeValueMemberM:
-			val["branch"] = &types.AttributeValueMemberM{Value: av.Value}
-		case *types.AttributeValueMemberL:
-			val["branch"] = &types.AttributeValueMemberL{Value: av.Value}
-		case *types.AttributeValueMemberSS:
-			val["branch"] = &types.AttributeValueMemberSS{Value: av.Value}
-		case *types.AttributeValueMemberNS:
-			val["branch"] = &types.AttributeValueMemberNS{Value: av.Value}
-		case *types.AttributeValueMemberBS:
-			val["branch"] = &types.AttributeValueMemberBS{Value: av.Value}
-		default:
-			val["branch"] = v
-		}
-		delete(val, "Branch")
-	}
-	if v, ok := val["Date"]; ok {
-		// Convert to the correct attribute value type
-		switch av := v.(type) {
-		case *types.AttributeValueMemberS:
-			val["date"] = &types.AttributeValueMemberS{Value: av.Value}
-		case *types.AttributeValueMemberN:
-			val["date"] = &types.AttributeValueMemberN{Value: av.Value}
-		case *types.AttributeValueMemberB:
-			val["date"] = &types.AttributeValueMemberB{Value: av.Value}
-		case *types.AttributeValueMemberBOOL:
-			val["date"] = &types.AttributeValueMemberBOOL{Value: av.Value}
-		case *types.AttributeValueMemberNULL:
-			val["date"] = &types.AttributeValueMemberNULL{Value: av.Value}
-		case *types.AttributeValueMemberM:
-			val["date"] = &types.AttributeValueMemberM{Value: av.Value}
-		case *types.AttributeValueMemberL:
-			val["date"] = &types.AttributeValueMemberL{Value: av.Value}
-		case *types.AttributeValueMemberSS:
-			val["date"] = &types.AttributeValueMemberSS{Value: av.Value}
-		case *types.AttributeValueMemberNS:
-			val["date"] = &types.AttributeValueMemberNS{Value: av.Value}
-		case *types.AttributeValueMemberBS:
-			val["date"] = &types.AttributeValueMemberBS{Value: av.Value}
-		default:
-			val["date"] = v
-		}
-		delete(val, "Date")
-	}
-
-	return val, nil
 }
 
 // decodeThingWithEnumHashKey translates a ThingWithEnumHashKey stored in DynamoDB to a ThingWithEnumHashKey struct.

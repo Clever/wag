@@ -36,7 +36,7 @@ type ddbThingAllowingBatchWritesWithCompositeAttributesPrimaryKey struct {
 
 // ddbThingAllowingBatchWritesWithCompositeAttributes represents a ThingAllowingBatchWritesWithCompositeAttributes as stored in DynamoDB.
 type ddbThingAllowingBatchWritesWithCompositeAttributes struct {
-	models.ThingAllowingBatchWritesWithCompositeAttributes
+	models.ThingAllowingBatchWritesWithCompositeAttributes `dynamodbav:",inline"`
 }
 
 func (t ThingAllowingBatchWritesWithCompositeAttributesTable) create(ctx context.Context) error {
@@ -437,65 +437,6 @@ func encodeThingAllowingBatchWritesWithCompositeAttributes(m models.ThingAllowin
 	for k, v := range primaryKey {
 		val[k] = v
 	}
-
-	// Ensure all attribute names match DynamoDB expectations
-	if v, ok := val["NameID"]; ok {
-		// Convert to the correct attribute value type
-		switch av := v.(type) {
-		case *types.AttributeValueMemberS:
-			val["name_id"] = &types.AttributeValueMemberS{Value: av.Value}
-		case *types.AttributeValueMemberN:
-			val["name_id"] = &types.AttributeValueMemberN{Value: av.Value}
-		case *types.AttributeValueMemberB:
-			val["name_id"] = &types.AttributeValueMemberB{Value: av.Value}
-		case *types.AttributeValueMemberBOOL:
-			val["name_id"] = &types.AttributeValueMemberBOOL{Value: av.Value}
-		case *types.AttributeValueMemberNULL:
-			val["name_id"] = &types.AttributeValueMemberNULL{Value: av.Value}
-		case *types.AttributeValueMemberM:
-			val["name_id"] = &types.AttributeValueMemberM{Value: av.Value}
-		case *types.AttributeValueMemberL:
-			val["name_id"] = &types.AttributeValueMemberL{Value: av.Value}
-		case *types.AttributeValueMemberSS:
-			val["name_id"] = &types.AttributeValueMemberSS{Value: av.Value}
-		case *types.AttributeValueMemberNS:
-			val["name_id"] = &types.AttributeValueMemberNS{Value: av.Value}
-		case *types.AttributeValueMemberBS:
-			val["name_id"] = &types.AttributeValueMemberBS{Value: av.Value}
-		default:
-			val["name_id"] = v
-		}
-		delete(val, "NameID")
-	}
-	if v, ok := val["Date"]; ok {
-		// Convert to the correct attribute value type
-		switch av := v.(type) {
-		case *types.AttributeValueMemberS:
-			val["date"] = &types.AttributeValueMemberS{Value: av.Value}
-		case *types.AttributeValueMemberN:
-			val["date"] = &types.AttributeValueMemberN{Value: av.Value}
-		case *types.AttributeValueMemberB:
-			val["date"] = &types.AttributeValueMemberB{Value: av.Value}
-		case *types.AttributeValueMemberBOOL:
-			val["date"] = &types.AttributeValueMemberBOOL{Value: av.Value}
-		case *types.AttributeValueMemberNULL:
-			val["date"] = &types.AttributeValueMemberNULL{Value: av.Value}
-		case *types.AttributeValueMemberM:
-			val["date"] = &types.AttributeValueMemberM{Value: av.Value}
-		case *types.AttributeValueMemberL:
-			val["date"] = &types.AttributeValueMemberL{Value: av.Value}
-		case *types.AttributeValueMemberSS:
-			val["date"] = &types.AttributeValueMemberSS{Value: av.Value}
-		case *types.AttributeValueMemberNS:
-			val["date"] = &types.AttributeValueMemberNS{Value: av.Value}
-		case *types.AttributeValueMemberBS:
-			val["date"] = &types.AttributeValueMemberBS{Value: av.Value}
-		default:
-			val["date"] = v
-		}
-		delete(val, "Date")
-	}
-
 	return val, err
 }
 

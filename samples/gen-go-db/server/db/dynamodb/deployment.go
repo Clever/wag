@@ -53,7 +53,7 @@ type ddbDeploymentGSIByVersion struct {
 
 // ddbDeployment represents a Deployment as stored in DynamoDB.
 type ddbDeployment struct {
-	models.Deployment
+	models.Deployment `dynamodbav:",inline"`
 }
 
 func (t DeploymentTable) create(ctx context.Context) error {
@@ -791,65 +791,6 @@ func encodeDeployment(m models.Deployment) (map[string]types.AttributeValue, err
 	for k, v := range byDate {
 		val[k] = v
 	}
-
-	// Ensure all attribute names match DynamoDB expectations
-	if v, ok := val["EnvApp"]; ok {
-		// Convert to the correct attribute value type
-		switch av := v.(type) {
-		case *types.AttributeValueMemberS:
-			val["envApp"] = &types.AttributeValueMemberS{Value: av.Value}
-		case *types.AttributeValueMemberN:
-			val["envApp"] = &types.AttributeValueMemberN{Value: av.Value}
-		case *types.AttributeValueMemberB:
-			val["envApp"] = &types.AttributeValueMemberB{Value: av.Value}
-		case *types.AttributeValueMemberBOOL:
-			val["envApp"] = &types.AttributeValueMemberBOOL{Value: av.Value}
-		case *types.AttributeValueMemberNULL:
-			val["envApp"] = &types.AttributeValueMemberNULL{Value: av.Value}
-		case *types.AttributeValueMemberM:
-			val["envApp"] = &types.AttributeValueMemberM{Value: av.Value}
-		case *types.AttributeValueMemberL:
-			val["envApp"] = &types.AttributeValueMemberL{Value: av.Value}
-		case *types.AttributeValueMemberSS:
-			val["envApp"] = &types.AttributeValueMemberSS{Value: av.Value}
-		case *types.AttributeValueMemberNS:
-			val["envApp"] = &types.AttributeValueMemberNS{Value: av.Value}
-		case *types.AttributeValueMemberBS:
-			val["envApp"] = &types.AttributeValueMemberBS{Value: av.Value}
-		default:
-			val["envApp"] = v
-		}
-		delete(val, "EnvApp")
-	}
-	if v, ok := val["Version"]; ok {
-		// Convert to the correct attribute value type
-		switch av := v.(type) {
-		case *types.AttributeValueMemberS:
-			val["version"] = &types.AttributeValueMemberS{Value: av.Value}
-		case *types.AttributeValueMemberN:
-			val["version"] = &types.AttributeValueMemberN{Value: av.Value}
-		case *types.AttributeValueMemberB:
-			val["version"] = &types.AttributeValueMemberB{Value: av.Value}
-		case *types.AttributeValueMemberBOOL:
-			val["version"] = &types.AttributeValueMemberBOOL{Value: av.Value}
-		case *types.AttributeValueMemberNULL:
-			val["version"] = &types.AttributeValueMemberNULL{Value: av.Value}
-		case *types.AttributeValueMemberM:
-			val["version"] = &types.AttributeValueMemberM{Value: av.Value}
-		case *types.AttributeValueMemberL:
-			val["version"] = &types.AttributeValueMemberL{Value: av.Value}
-		case *types.AttributeValueMemberSS:
-			val["version"] = &types.AttributeValueMemberSS{Value: av.Value}
-		case *types.AttributeValueMemberNS:
-			val["version"] = &types.AttributeValueMemberNS{Value: av.Value}
-		case *types.AttributeValueMemberBS:
-			val["version"] = &types.AttributeValueMemberBS{Value: av.Value}
-		default:
-			val["version"] = v
-		}
-		delete(val, "Version")
-	}
-
 	return val, err
 }
 

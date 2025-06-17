@@ -46,7 +46,7 @@ type ddbNoRangeThingWithCompositeAttributesGSINameBranchCommit struct {
 
 // ddbNoRangeThingWithCompositeAttributes represents a NoRangeThingWithCompositeAttributes as stored in DynamoDB.
 type ddbNoRangeThingWithCompositeAttributes struct {
-	models.NoRangeThingWithCompositeAttributes
+	models.NoRangeThingWithCompositeAttributes `dynamodbav:",inline"`
 }
 
 func (t NoRangeThingWithCompositeAttributesTable) create(ctx context.Context) error {
@@ -525,37 +525,6 @@ func encodeNoRangeThingWithCompositeAttributes(m models.NoRangeThingWithComposit
 	for k, v := range nameBranchCommit {
 		val[k] = v
 	}
-
-	// Ensure all attribute names match DynamoDB expectations
-	if v, ok := val["NameBranch"]; ok {
-		// Convert to the correct attribute value type
-		switch av := v.(type) {
-		case *types.AttributeValueMemberS:
-			val["name_branch"] = &types.AttributeValueMemberS{Value: av.Value}
-		case *types.AttributeValueMemberN:
-			val["name_branch"] = &types.AttributeValueMemberN{Value: av.Value}
-		case *types.AttributeValueMemberB:
-			val["name_branch"] = &types.AttributeValueMemberB{Value: av.Value}
-		case *types.AttributeValueMemberBOOL:
-			val["name_branch"] = &types.AttributeValueMemberBOOL{Value: av.Value}
-		case *types.AttributeValueMemberNULL:
-			val["name_branch"] = &types.AttributeValueMemberNULL{Value: av.Value}
-		case *types.AttributeValueMemberM:
-			val["name_branch"] = &types.AttributeValueMemberM{Value: av.Value}
-		case *types.AttributeValueMemberL:
-			val["name_branch"] = &types.AttributeValueMemberL{Value: av.Value}
-		case *types.AttributeValueMemberSS:
-			val["name_branch"] = &types.AttributeValueMemberSS{Value: av.Value}
-		case *types.AttributeValueMemberNS:
-			val["name_branch"] = &types.AttributeValueMemberNS{Value: av.Value}
-		case *types.AttributeValueMemberBS:
-			val["name_branch"] = &types.AttributeValueMemberBS{Value: av.Value}
-		default:
-			val["name_branch"] = v
-		}
-		delete(val, "NameBranch")
-	}
-
 	return val, err
 }
 

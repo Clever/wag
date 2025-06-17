@@ -41,7 +41,7 @@ type ddbThingWithRequiredCompositePropertiesAndKeysOnlyGSIPropertyOneAndTwoPrope
 
 // ddbThingWithRequiredCompositePropertiesAndKeysOnly represents a ThingWithRequiredCompositePropertiesAndKeysOnly as stored in DynamoDB.
 type ddbThingWithRequiredCompositePropertiesAndKeysOnly struct {
-	models.ThingWithRequiredCompositePropertiesAndKeysOnly
+	models.ThingWithRequiredCompositePropertiesAndKeysOnly `dynamodbav:",inline"`
 }
 
 func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) create(ctx context.Context) error {
@@ -397,37 +397,6 @@ func encodeThingWithRequiredCompositePropertiesAndKeysOnly(m models.ThingWithReq
 	for k, v := range propertyOneAndTwoPropertyThree {
 		val[k] = v
 	}
-
-	// Ensure all attribute names match DynamoDB expectations
-	if v, ok := val["PropertyThree"]; ok {
-		// Convert to the correct attribute value type
-		switch av := v.(type) {
-		case *types.AttributeValueMemberS:
-			val["propertyThree"] = &types.AttributeValueMemberS{Value: av.Value}
-		case *types.AttributeValueMemberN:
-			val["propertyThree"] = &types.AttributeValueMemberN{Value: av.Value}
-		case *types.AttributeValueMemberB:
-			val["propertyThree"] = &types.AttributeValueMemberB{Value: av.Value}
-		case *types.AttributeValueMemberBOOL:
-			val["propertyThree"] = &types.AttributeValueMemberBOOL{Value: av.Value}
-		case *types.AttributeValueMemberNULL:
-			val["propertyThree"] = &types.AttributeValueMemberNULL{Value: av.Value}
-		case *types.AttributeValueMemberM:
-			val["propertyThree"] = &types.AttributeValueMemberM{Value: av.Value}
-		case *types.AttributeValueMemberL:
-			val["propertyThree"] = &types.AttributeValueMemberL{Value: av.Value}
-		case *types.AttributeValueMemberSS:
-			val["propertyThree"] = &types.AttributeValueMemberSS{Value: av.Value}
-		case *types.AttributeValueMemberNS:
-			val["propertyThree"] = &types.AttributeValueMemberNS{Value: av.Value}
-		case *types.AttributeValueMemberBS:
-			val["propertyThree"] = &types.AttributeValueMemberBS{Value: av.Value}
-		default:
-			val["propertyThree"] = v
-		}
-		delete(val, "PropertyThree")
-	}
-
 	return val, err
 }
 

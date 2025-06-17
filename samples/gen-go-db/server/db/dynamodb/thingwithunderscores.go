@@ -34,7 +34,7 @@ type ddbThingWithUnderscoresPrimaryKey struct {
 
 // ddbThingWithUnderscores represents a ThingWithUnderscores as stored in DynamoDB.
 type ddbThingWithUnderscores struct {
-	models.ThingWithUnderscores
+	models.ThingWithUnderscores `dynamodbav:",inline"`
 }
 
 func (t ThingWithUnderscoresTable) create(ctx context.Context) error {
@@ -126,45 +126,9 @@ func (t ThingWithUnderscoresTable) deleteThingWithUnderscores(ctx context.Contex
 
 // encodeThingWithUnderscores encodes a ThingWithUnderscores as a DynamoDB map of attribute values.
 func encodeThingWithUnderscores(m models.ThingWithUnderscores) (map[string]types.AttributeValue, error) {
-	// First marshal the model to get all fields
-	val, err := attributevalue.MarshalMap(ddbThingWithUnderscores{
+	return attributevalue.MarshalMap(ddbThingWithUnderscores{
 		ThingWithUnderscores: m,
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	// Ensure primary key attributes are properly named
-	if v, ok := val["IDApp"]; ok {
-		// Convert to the correct attribute value type
-		switch av := v.(type) {
-		case *types.AttributeValueMemberS:
-			val["id_app"] = &types.AttributeValueMemberS{Value: av.Value}
-		case *types.AttributeValueMemberN:
-			val["id_app"] = &types.AttributeValueMemberN{Value: av.Value}
-		case *types.AttributeValueMemberB:
-			val["id_app"] = &types.AttributeValueMemberB{Value: av.Value}
-		case *types.AttributeValueMemberBOOL:
-			val["id_app"] = &types.AttributeValueMemberBOOL{Value: av.Value}
-		case *types.AttributeValueMemberNULL:
-			val["id_app"] = &types.AttributeValueMemberNULL{Value: av.Value}
-		case *types.AttributeValueMemberM:
-			val["id_app"] = &types.AttributeValueMemberM{Value: av.Value}
-		case *types.AttributeValueMemberL:
-			val["id_app"] = &types.AttributeValueMemberL{Value: av.Value}
-		case *types.AttributeValueMemberSS:
-			val["id_app"] = &types.AttributeValueMemberSS{Value: av.Value}
-		case *types.AttributeValueMemberNS:
-			val["id_app"] = &types.AttributeValueMemberNS{Value: av.Value}
-		case *types.AttributeValueMemberBS:
-			val["id_app"] = &types.AttributeValueMemberBS{Value: av.Value}
-		default:
-			val["id_app"] = v
-		}
-		delete(val, "IDApp")
-	}
-
-	return val, nil
 }
 
 // decodeThingWithUnderscores translates a ThingWithUnderscores stored in DynamoDB to a ThingWithUnderscores struct.

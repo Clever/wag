@@ -58,7 +58,7 @@ type ddbThingWithAdditionalAttributesGSINameHashNullable struct {
 
 // ddbThingWithAdditionalAttributes represents a ThingWithAdditionalAttributes as stored in DynamoDB.
 type ddbThingWithAdditionalAttributes struct {
-	models.ThingWithAdditionalAttributes
+	models.ThingWithAdditionalAttributes `dynamodbav:",inline"`
 }
 
 func (t ThingWithAdditionalAttributesTable) create(ctx context.Context) error {
@@ -1014,73 +1014,9 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByH
 
 // encodeThingWithAdditionalAttributes encodes a ThingWithAdditionalAttributes as a DynamoDB map of attribute values.
 func encodeThingWithAdditionalAttributes(m models.ThingWithAdditionalAttributes) (map[string]types.AttributeValue, error) {
-	// First marshal the model to get all fields
-	val, err := attributevalue.MarshalMap(ddbThingWithAdditionalAttributes{
+	return attributevalue.MarshalMap(ddbThingWithAdditionalAttributes{
 		ThingWithAdditionalAttributes: m,
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	// Ensure primary key attributes are properly named
-	if v, ok := val["Name"]; ok {
-		// Convert to the correct attribute value type
-		switch av := v.(type) {
-		case *types.AttributeValueMemberS:
-			val["name"] = &types.AttributeValueMemberS{Value: av.Value}
-		case *types.AttributeValueMemberN:
-			val["name"] = &types.AttributeValueMemberN{Value: av.Value}
-		case *types.AttributeValueMemberB:
-			val["name"] = &types.AttributeValueMemberB{Value: av.Value}
-		case *types.AttributeValueMemberBOOL:
-			val["name"] = &types.AttributeValueMemberBOOL{Value: av.Value}
-		case *types.AttributeValueMemberNULL:
-			val["name"] = &types.AttributeValueMemberNULL{Value: av.Value}
-		case *types.AttributeValueMemberM:
-			val["name"] = &types.AttributeValueMemberM{Value: av.Value}
-		case *types.AttributeValueMemberL:
-			val["name"] = &types.AttributeValueMemberL{Value: av.Value}
-		case *types.AttributeValueMemberSS:
-			val["name"] = &types.AttributeValueMemberSS{Value: av.Value}
-		case *types.AttributeValueMemberNS:
-			val["name"] = &types.AttributeValueMemberNS{Value: av.Value}
-		case *types.AttributeValueMemberBS:
-			val["name"] = &types.AttributeValueMemberBS{Value: av.Value}
-		default:
-			val["name"] = v
-		}
-		delete(val, "Name")
-	}
-	if v, ok := val["Version"]; ok {
-		// Convert to the correct attribute value type
-		switch av := v.(type) {
-		case *types.AttributeValueMemberS:
-			val["version"] = &types.AttributeValueMemberS{Value: av.Value}
-		case *types.AttributeValueMemberN:
-			val["version"] = &types.AttributeValueMemberN{Value: av.Value}
-		case *types.AttributeValueMemberB:
-			val["version"] = &types.AttributeValueMemberB{Value: av.Value}
-		case *types.AttributeValueMemberBOOL:
-			val["version"] = &types.AttributeValueMemberBOOL{Value: av.Value}
-		case *types.AttributeValueMemberNULL:
-			val["version"] = &types.AttributeValueMemberNULL{Value: av.Value}
-		case *types.AttributeValueMemberM:
-			val["version"] = &types.AttributeValueMemberM{Value: av.Value}
-		case *types.AttributeValueMemberL:
-			val["version"] = &types.AttributeValueMemberL{Value: av.Value}
-		case *types.AttributeValueMemberSS:
-			val["version"] = &types.AttributeValueMemberSS{Value: av.Value}
-		case *types.AttributeValueMemberNS:
-			val["version"] = &types.AttributeValueMemberNS{Value: av.Value}
-		case *types.AttributeValueMemberBS:
-			val["version"] = &types.AttributeValueMemberBS{Value: av.Value}
-		default:
-			val["version"] = v
-		}
-		delete(val, "Version")
-	}
-
-	return val, nil
 }
 
 // decodeThingWithAdditionalAttributes translates a ThingWithAdditionalAttributes stored in DynamoDB to a ThingWithAdditionalAttributes struct.

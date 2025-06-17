@@ -42,7 +42,7 @@ type ddbThingWithMatchingKeysGSIByAssoc struct {
 
 // ddbThingWithMatchingKeys represents a ThingWithMatchingKeys as stored in DynamoDB.
 type ddbThingWithMatchingKeys struct {
-	models.ThingWithMatchingKeys
+	models.ThingWithMatchingKeys `dynamodbav:",inline"`
 }
 
 func (t ThingWithMatchingKeysTable) create(ctx context.Context) error {
@@ -549,65 +549,6 @@ func encodeThingWithMatchingKeys(m models.ThingWithMatchingKeys) (map[string]typ
 	for k, v := range byAssoc {
 		val[k] = v
 	}
-
-	// Ensure all attribute names match DynamoDB expectations
-	if v, ok := val["Bear"]; ok {
-		// Convert to the correct attribute value type
-		switch av := v.(type) {
-		case *types.AttributeValueMemberS:
-			val["bear"] = &types.AttributeValueMemberS{Value: av.Value}
-		case *types.AttributeValueMemberN:
-			val["bear"] = &types.AttributeValueMemberN{Value: av.Value}
-		case *types.AttributeValueMemberB:
-			val["bear"] = &types.AttributeValueMemberB{Value: av.Value}
-		case *types.AttributeValueMemberBOOL:
-			val["bear"] = &types.AttributeValueMemberBOOL{Value: av.Value}
-		case *types.AttributeValueMemberNULL:
-			val["bear"] = &types.AttributeValueMemberNULL{Value: av.Value}
-		case *types.AttributeValueMemberM:
-			val["bear"] = &types.AttributeValueMemberM{Value: av.Value}
-		case *types.AttributeValueMemberL:
-			val["bear"] = &types.AttributeValueMemberL{Value: av.Value}
-		case *types.AttributeValueMemberSS:
-			val["bear"] = &types.AttributeValueMemberSS{Value: av.Value}
-		case *types.AttributeValueMemberNS:
-			val["bear"] = &types.AttributeValueMemberNS{Value: av.Value}
-		case *types.AttributeValueMemberBS:
-			val["bear"] = &types.AttributeValueMemberBS{Value: av.Value}
-		default:
-			val["bear"] = v
-		}
-		delete(val, "Bear")
-	}
-	if v, ok := val["AssocTypeID"]; ok {
-		// Convert to the correct attribute value type
-		switch av := v.(type) {
-		case *types.AttributeValueMemberS:
-			val["assocTypeID"] = &types.AttributeValueMemberS{Value: av.Value}
-		case *types.AttributeValueMemberN:
-			val["assocTypeID"] = &types.AttributeValueMemberN{Value: av.Value}
-		case *types.AttributeValueMemberB:
-			val["assocTypeID"] = &types.AttributeValueMemberB{Value: av.Value}
-		case *types.AttributeValueMemberBOOL:
-			val["assocTypeID"] = &types.AttributeValueMemberBOOL{Value: av.Value}
-		case *types.AttributeValueMemberNULL:
-			val["assocTypeID"] = &types.AttributeValueMemberNULL{Value: av.Value}
-		case *types.AttributeValueMemberM:
-			val["assocTypeID"] = &types.AttributeValueMemberM{Value: av.Value}
-		case *types.AttributeValueMemberL:
-			val["assocTypeID"] = &types.AttributeValueMemberL{Value: av.Value}
-		case *types.AttributeValueMemberSS:
-			val["assocTypeID"] = &types.AttributeValueMemberSS{Value: av.Value}
-		case *types.AttributeValueMemberNS:
-			val["assocTypeID"] = &types.AttributeValueMemberNS{Value: av.Value}
-		case *types.AttributeValueMemberBS:
-			val["assocTypeID"] = &types.AttributeValueMemberBS{Value: av.Value}
-		default:
-			val["assocTypeID"] = v
-		}
-		delete(val, "AssocTypeID")
-	}
-
 	return val, err
 }
 

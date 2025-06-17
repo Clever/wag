@@ -35,7 +35,7 @@ type ddbThingWithDateRangePrimaryKey struct {
 
 // ddbThingWithDateRange represents a ThingWithDateRange as stored in DynamoDB.
 type ddbThingWithDateRange struct {
-	models.ThingWithDateRange
+	models.ThingWithDateRange `dynamodbav:",inline"`
 }
 
 func (t ThingWithDateRangeTable) create(ctx context.Context) error {
@@ -292,73 +292,9 @@ func (t ThingWithDateRangeTable) deleteThingWithDateRange(ctx context.Context, n
 
 // encodeThingWithDateRange encodes a ThingWithDateRange as a DynamoDB map of attribute values.
 func encodeThingWithDateRange(m models.ThingWithDateRange) (map[string]types.AttributeValue, error) {
-	// First marshal the model to get all fields
-	val, err := attributevalue.MarshalMap(ddbThingWithDateRange{
+	return attributevalue.MarshalMap(ddbThingWithDateRange{
 		ThingWithDateRange: m,
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	// Ensure primary key attributes are properly named
-	if v, ok := val["Name"]; ok {
-		// Convert to the correct attribute value type
-		switch av := v.(type) {
-		case *types.AttributeValueMemberS:
-			val["name"] = &types.AttributeValueMemberS{Value: av.Value}
-		case *types.AttributeValueMemberN:
-			val["name"] = &types.AttributeValueMemberN{Value: av.Value}
-		case *types.AttributeValueMemberB:
-			val["name"] = &types.AttributeValueMemberB{Value: av.Value}
-		case *types.AttributeValueMemberBOOL:
-			val["name"] = &types.AttributeValueMemberBOOL{Value: av.Value}
-		case *types.AttributeValueMemberNULL:
-			val["name"] = &types.AttributeValueMemberNULL{Value: av.Value}
-		case *types.AttributeValueMemberM:
-			val["name"] = &types.AttributeValueMemberM{Value: av.Value}
-		case *types.AttributeValueMemberL:
-			val["name"] = &types.AttributeValueMemberL{Value: av.Value}
-		case *types.AttributeValueMemberSS:
-			val["name"] = &types.AttributeValueMemberSS{Value: av.Value}
-		case *types.AttributeValueMemberNS:
-			val["name"] = &types.AttributeValueMemberNS{Value: av.Value}
-		case *types.AttributeValueMemberBS:
-			val["name"] = &types.AttributeValueMemberBS{Value: av.Value}
-		default:
-			val["name"] = v
-		}
-		delete(val, "Name")
-	}
-	if v, ok := val["Date"]; ok {
-		// Convert to the correct attribute value type
-		switch av := v.(type) {
-		case *types.AttributeValueMemberS:
-			val["date"] = &types.AttributeValueMemberS{Value: av.Value}
-		case *types.AttributeValueMemberN:
-			val["date"] = &types.AttributeValueMemberN{Value: av.Value}
-		case *types.AttributeValueMemberB:
-			val["date"] = &types.AttributeValueMemberB{Value: av.Value}
-		case *types.AttributeValueMemberBOOL:
-			val["date"] = &types.AttributeValueMemberBOOL{Value: av.Value}
-		case *types.AttributeValueMemberNULL:
-			val["date"] = &types.AttributeValueMemberNULL{Value: av.Value}
-		case *types.AttributeValueMemberM:
-			val["date"] = &types.AttributeValueMemberM{Value: av.Value}
-		case *types.AttributeValueMemberL:
-			val["date"] = &types.AttributeValueMemberL{Value: av.Value}
-		case *types.AttributeValueMemberSS:
-			val["date"] = &types.AttributeValueMemberSS{Value: av.Value}
-		case *types.AttributeValueMemberNS:
-			val["date"] = &types.AttributeValueMemberNS{Value: av.Value}
-		case *types.AttributeValueMemberBS:
-			val["date"] = &types.AttributeValueMemberBS{Value: av.Value}
-		default:
-			val["date"] = v
-		}
-		delete(val, "Date")
-	}
-
-	return val, nil
 }
 
 // decodeThingWithDateRange translates a ThingWithDateRange stored in DynamoDB to a ThingWithDateRange struct.

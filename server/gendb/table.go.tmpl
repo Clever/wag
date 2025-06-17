@@ -62,7 +62,7 @@ type ddb{{$modelName}}GSI{{ pascalize $gsi.IndexName }} struct {
 
 // ddb{{ $modelName }} represents a {{ $modelName }} as stored in DynamoDB.
 type ddb{{ $modelName }} struct {
-  models.{{ $modelName }}
+  models.{{ $modelName }} `dynamodbav:",inline"`
 }
 
 func (t {{ $modelName }}Table) create(ctx context.Context) error {
@@ -1206,47 +1206,9 @@ func (t {{ $modelName }}Table) transactSave{{ $modelName }}And{{ $transactWithMo
 // encode{{ $modelName }} encodes a {{ $modelName }} as a DynamoDB map of attribute values.
 func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]types.AttributeValue, error) {
 {{- if not $hasCompositeAttrs }}
-  // First marshal the model to get all fields
-  val, err := attributevalue.MarshalMap(ddb{{ $modelName }}{
+  return attributevalue.MarshalMap(ddb{{ $modelName }}{
     {{ $modelName }}: m,
   })
-  if err != nil {
-    return nil, err
-  }
-
-  // Ensure primary key attributes are properly named
-  {{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-  if v, ok := val["{{ pascalize $pk.AttributeName }}"]; ok {
-    // Convert to the correct attribute value type
-    switch av := v.(type) {
-    case *types.AttributeValueMemberS:
-      val["{{ $pk.AttributeName }}"] = &types.AttributeValueMemberS{Value: av.Value}
-    case *types.AttributeValueMemberN:
-      val["{{ $pk.AttributeName }}"] = &types.AttributeValueMemberN{Value: av.Value}
-    case *types.AttributeValueMemberB:
-      val["{{ $pk.AttributeName }}"] = &types.AttributeValueMemberB{Value: av.Value}
-    case *types.AttributeValueMemberBOOL:
-      val["{{ $pk.AttributeName }}"] = &types.AttributeValueMemberBOOL{Value: av.Value}
-    case *types.AttributeValueMemberNULL:
-      val["{{ $pk.AttributeName }}"] = &types.AttributeValueMemberNULL{Value: av.Value}
-    case *types.AttributeValueMemberM:
-      val["{{ $pk.AttributeName }}"] = &types.AttributeValueMemberM{Value: av.Value}
-    case *types.AttributeValueMemberL:
-      val["{{ $pk.AttributeName }}"] = &types.AttributeValueMemberL{Value: av.Value}
-    case *types.AttributeValueMemberSS:
-      val["{{ $pk.AttributeName }}"] = &types.AttributeValueMemberSS{Value: av.Value}
-    case *types.AttributeValueMemberNS:
-      val["{{ $pk.AttributeName }}"] = &types.AttributeValueMemberNS{Value: av.Value}
-    case *types.AttributeValueMemberBS:
-      val["{{ $pk.AttributeName }}"] = &types.AttributeValueMemberBS{Value: av.Value}
-    default:
-      val["{{ $pk.AttributeName }}"] = v
-    }
-    delete(val, "{{ pascalize $pk.AttributeName }}")
-  }
-  {{- end }}
-
-  return val, nil
 {{- else }}
   val, err := attributevalue.MarshalMap(ddb{{ $modelName }}{
     {{ $modelName }}: m,
@@ -1292,39 +1254,6 @@ func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]types.Attribu
   }
         {{- end }}
         {{- end }}
-
-  // Ensure all attribute names match DynamoDB expectations
-  {{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-  if v, ok := val["{{ pascalize $pk.AttributeName }}"]; ok {
-    // Convert to the correct attribute value type
-    switch av := v.(type) {
-    case *types.AttributeValueMemberS:
-      val["{{ $pk.AttributeName }}"] = &types.AttributeValueMemberS{Value: av.Value}
-    case *types.AttributeValueMemberN:
-      val["{{ $pk.AttributeName }}"] = &types.AttributeValueMemberN{Value: av.Value}
-    case *types.AttributeValueMemberB:
-      val["{{ $pk.AttributeName }}"] = &types.AttributeValueMemberB{Value: av.Value}
-    case *types.AttributeValueMemberBOOL:
-      val["{{ $pk.AttributeName }}"] = &types.AttributeValueMemberBOOL{Value: av.Value}
-    case *types.AttributeValueMemberNULL:
-      val["{{ $pk.AttributeName }}"] = &types.AttributeValueMemberNULL{Value: av.Value}
-    case *types.AttributeValueMemberM:
-      val["{{ $pk.AttributeName }}"] = &types.AttributeValueMemberM{Value: av.Value}
-    case *types.AttributeValueMemberL:
-      val["{{ $pk.AttributeName }}"] = &types.AttributeValueMemberL{Value: av.Value}
-    case *types.AttributeValueMemberSS:
-      val["{{ $pk.AttributeName }}"] = &types.AttributeValueMemberSS{Value: av.Value}
-    case *types.AttributeValueMemberNS:
-      val["{{ $pk.AttributeName }}"] = &types.AttributeValueMemberNS{Value: av.Value}
-    case *types.AttributeValueMemberBS:
-      val["{{ $pk.AttributeName }}"] = &types.AttributeValueMemberBS{Value: av.Value}
-    default:
-      val["{{ $pk.AttributeName }}"] = v
-    }
-    delete(val, "{{ pascalize $pk.AttributeName }}")
-  }
-  {{- end }}
-
   return val, err
 {{- end }}
 }

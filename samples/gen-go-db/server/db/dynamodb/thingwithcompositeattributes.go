@@ -42,7 +42,7 @@ type ddbThingWithCompositeAttributesGSINameVersion struct {
 
 // ddbThingWithCompositeAttributes represents a ThingWithCompositeAttributes as stored in DynamoDB.
 type ddbThingWithCompositeAttributes struct {
-	models.ThingWithCompositeAttributes
+	models.ThingWithCompositeAttributes `dynamodbav:",inline"`
 }
 
 func (t ThingWithCompositeAttributesTable) create(ctx context.Context) error {
@@ -584,65 +584,6 @@ func encodeThingWithCompositeAttributes(m models.ThingWithCompositeAttributes) (
 	for k, v := range nameVersion {
 		val[k] = v
 	}
-
-	// Ensure all attribute names match DynamoDB expectations
-	if v, ok := val["NameBranch"]; ok {
-		// Convert to the correct attribute value type
-		switch av := v.(type) {
-		case *types.AttributeValueMemberS:
-			val["name_branch"] = &types.AttributeValueMemberS{Value: av.Value}
-		case *types.AttributeValueMemberN:
-			val["name_branch"] = &types.AttributeValueMemberN{Value: av.Value}
-		case *types.AttributeValueMemberB:
-			val["name_branch"] = &types.AttributeValueMemberB{Value: av.Value}
-		case *types.AttributeValueMemberBOOL:
-			val["name_branch"] = &types.AttributeValueMemberBOOL{Value: av.Value}
-		case *types.AttributeValueMemberNULL:
-			val["name_branch"] = &types.AttributeValueMemberNULL{Value: av.Value}
-		case *types.AttributeValueMemberM:
-			val["name_branch"] = &types.AttributeValueMemberM{Value: av.Value}
-		case *types.AttributeValueMemberL:
-			val["name_branch"] = &types.AttributeValueMemberL{Value: av.Value}
-		case *types.AttributeValueMemberSS:
-			val["name_branch"] = &types.AttributeValueMemberSS{Value: av.Value}
-		case *types.AttributeValueMemberNS:
-			val["name_branch"] = &types.AttributeValueMemberNS{Value: av.Value}
-		case *types.AttributeValueMemberBS:
-			val["name_branch"] = &types.AttributeValueMemberBS{Value: av.Value}
-		default:
-			val["name_branch"] = v
-		}
-		delete(val, "NameBranch")
-	}
-	if v, ok := val["Date"]; ok {
-		// Convert to the correct attribute value type
-		switch av := v.(type) {
-		case *types.AttributeValueMemberS:
-			val["date"] = &types.AttributeValueMemberS{Value: av.Value}
-		case *types.AttributeValueMemberN:
-			val["date"] = &types.AttributeValueMemberN{Value: av.Value}
-		case *types.AttributeValueMemberB:
-			val["date"] = &types.AttributeValueMemberB{Value: av.Value}
-		case *types.AttributeValueMemberBOOL:
-			val["date"] = &types.AttributeValueMemberBOOL{Value: av.Value}
-		case *types.AttributeValueMemberNULL:
-			val["date"] = &types.AttributeValueMemberNULL{Value: av.Value}
-		case *types.AttributeValueMemberM:
-			val["date"] = &types.AttributeValueMemberM{Value: av.Value}
-		case *types.AttributeValueMemberL:
-			val["date"] = &types.AttributeValueMemberL{Value: av.Value}
-		case *types.AttributeValueMemberSS:
-			val["date"] = &types.AttributeValueMemberSS{Value: av.Value}
-		case *types.AttributeValueMemberNS:
-			val["date"] = &types.AttributeValueMemberNS{Value: av.Value}
-		case *types.AttributeValueMemberBS:
-			val["date"] = &types.AttributeValueMemberBS{Value: av.Value}
-		default:
-			val["date"] = v
-		}
-		delete(val, "Date")
-	}
-
 	return val, err
 }
 

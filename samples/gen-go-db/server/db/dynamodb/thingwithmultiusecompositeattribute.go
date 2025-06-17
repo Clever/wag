@@ -47,7 +47,7 @@ type ddbThingWithMultiUseCompositeAttributeGSIFourIndex struct {
 
 // ddbThingWithMultiUseCompositeAttribute represents a ThingWithMultiUseCompositeAttribute as stored in DynamoDB.
 type ddbThingWithMultiUseCompositeAttribute struct {
-	models.ThingWithMultiUseCompositeAttribute
+	models.ThingWithMultiUseCompositeAttribute `dynamodbav:",inline"`
 }
 
 func (t ThingWithMultiUseCompositeAttributeTable) create(ctx context.Context) error {
@@ -602,37 +602,6 @@ func encodeThingWithMultiUseCompositeAttribute(m models.ThingWithMultiUseComposi
 	for k, v := range fourIndex {
 		val[k] = v
 	}
-
-	// Ensure all attribute names match DynamoDB expectations
-	if v, ok := val["One"]; ok {
-		// Convert to the correct attribute value type
-		switch av := v.(type) {
-		case *types.AttributeValueMemberS:
-			val["one"] = &types.AttributeValueMemberS{Value: av.Value}
-		case *types.AttributeValueMemberN:
-			val["one"] = &types.AttributeValueMemberN{Value: av.Value}
-		case *types.AttributeValueMemberB:
-			val["one"] = &types.AttributeValueMemberB{Value: av.Value}
-		case *types.AttributeValueMemberBOOL:
-			val["one"] = &types.AttributeValueMemberBOOL{Value: av.Value}
-		case *types.AttributeValueMemberNULL:
-			val["one"] = &types.AttributeValueMemberNULL{Value: av.Value}
-		case *types.AttributeValueMemberM:
-			val["one"] = &types.AttributeValueMemberM{Value: av.Value}
-		case *types.AttributeValueMemberL:
-			val["one"] = &types.AttributeValueMemberL{Value: av.Value}
-		case *types.AttributeValueMemberSS:
-			val["one"] = &types.AttributeValueMemberSS{Value: av.Value}
-		case *types.AttributeValueMemberNS:
-			val["one"] = &types.AttributeValueMemberNS{Value: av.Value}
-		case *types.AttributeValueMemberBS:
-			val["one"] = &types.AttributeValueMemberBS{Value: av.Value}
-		default:
-			val["one"] = v
-		}
-		delete(val, "One")
-	}
-
 	return val, err
 }
 
