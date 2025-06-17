@@ -122,6 +122,19 @@ func NewRouter(c Controller) *mux.Router {
 func newRouter(c Controller) *mux.Router {
 	router := mux.NewRouter()
 	router.Use(servertracing.MuxServerMiddleware("{{.Title}}"))
+	Register(router, c)
+
+	return router
+}
+
+// Register registers a controller's behavior at the appropriate routes within a given router.
+//
+// Making this function public supports using a wag-defined router as a subrouter. This
+// functionality allows for routers to be used in two ways:
+//
+// 1. Register the routes in newRouter in order to construct a Server (the traditional usage)
+// 2. Compose this router as a subrouter within a parent router
+func Register(router *mux.Router, c Controller) {
 	h := handler{Controller: c}
 
 	{{range $index, $val := .Functions}}
@@ -130,7 +143,6 @@ func newRouter(c Controller) *mux.Router {
 		h.{{$val.HandlerName}}Handler(r.Context(), w, r)
 	})
 	{{end}}
-	return router
 }
 
 // NewWithMiddleware returns a Server that implemenets the Controller interface. It runs the
