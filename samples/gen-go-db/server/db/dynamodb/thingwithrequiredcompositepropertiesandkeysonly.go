@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/Clever/wag/samples/gen-go-db/models/v9"
@@ -18,6 +19,8 @@ import (
 var _ = strfmt.DateTime{}
 var _ = errors.New("")
 var _ = []types.AttributeValue{}
+var _ = reflect.TypeOf(int(0))
+var _ = strings.Split("", "")
 
 // ThingWithRequiredCompositePropertiesAndKeysOnlyTable represents the user-configurable properties of the ThingWithRequiredCompositePropertiesAndKeysOnly table.
 type ThingWithRequiredCompositePropertiesAndKeysOnlyTable struct {
@@ -41,7 +44,7 @@ type ddbThingWithRequiredCompositePropertiesAndKeysOnlyGSIPropertyOneAndTwoPrope
 
 // ddbThingWithRequiredCompositePropertiesAndKeysOnly represents a ThingWithRequiredCompositePropertiesAndKeysOnly as stored in DynamoDB.
 type ddbThingWithRequiredCompositePropertiesAndKeysOnly struct {
-	models.ThingWithRequiredCompositePropertiesAndKeysOnly `dynamodbav:",inline"`
+	models.ThingWithRequiredCompositePropertiesAndKeysOnly
 }
 
 func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) create(ctx context.Context) error {
@@ -373,48 +376,69 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) scanThingWithRequi
 
 // encodeThingWithRequiredCompositePropertiesAndKeysOnly encodes a ThingWithRequiredCompositePropertiesAndKeysOnly as a DynamoDB map of attribute values.
 func encodeThingWithRequiredCompositePropertiesAndKeysOnly(m models.ThingWithRequiredCompositePropertiesAndKeysOnly) (map[string]types.AttributeValue, error) {
-	val, err := attributevalue.MarshalMap(ddbThingWithRequiredCompositePropertiesAndKeysOnly{
-		ThingWithRequiredCompositePropertiesAndKeysOnly: m,
-	})
+	// First marshal the model to get all fields
+	rawVal, err := attributevalue.MarshalMap(m)
 	if err != nil {
 		return nil, err
 	}
-	// make sure composite attributes don't contain separator characters
-	if strings.Contains(*m.PropertyOne, "_") {
-		return nil, fmt.Errorf("propertyOne cannot contain '_': %s", *m.PropertyOne)
-	}
-	if strings.Contains(*m.PropertyTwo, "_") {
-		return nil, fmt.Errorf("propertyTwo cannot contain '_': %s", *m.PropertyTwo)
-	}
-	// add in composite attributes
-	propertyOneAndTwoPropertyThree, err := attributevalue.MarshalMap(ddbThingWithRequiredCompositePropertiesAndKeysOnlyGSIPropertyOneAndTwoPropertyThree{
-		PropertyOneAndTwo: fmt.Sprintf("%s_%s", *m.PropertyOne, *m.PropertyTwo),
-		PropertyThree:     *m.PropertyThree,
+
+	// Create a new map with the correct field names from json tags
+	val := make(map[string]types.AttributeValue)
+
+	// Get the type of the ThingWithRequiredCompositePropertiesAndKeysOnly struct
+	t := reflect.TypeOf(m)
+
+	// Create a map of struct field names to their json tags and types
+	fieldMap := make(map[string]struct {
+		jsonName string
+		isMap    bool
 	})
-	if err != nil {
-		return nil, err
-	}
-	for k, v := range propertyOneAndTwoPropertyThree {
-		val[k] = v
-	}
-
-	// Ensure all attribute names match DynamoDB expectations
-	if v, ok := val["PropertyThree"]; ok {
-		val["propertyThree"] = v
-		delete(val, "PropertyThree")
-	}
-
-	// Ensure all model fields are properly named
-	if v, ok := val["PropertyOneAndTwo"]; ok {
-		val["propertyOneAndTwo"] = v
-		delete(val, "PropertyOneAndTwo")
-	}
-	if v, ok := val["PropertyThree"]; ok {
-		val["propertyThree"] = v
-		delete(val, "PropertyThree")
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		jsonTag := field.Tag.Get("json")
+		if jsonTag != "" && jsonTag != "-" {
+			// Handle omitempty in the tag
+			jsonTag = strings.Split(jsonTag, ",")[0]
+			fieldMap[field.Name] = struct {
+				jsonName string
+				isMap    bool
+			}{
+				jsonName: jsonTag,
+				isMap:    field.Type.Kind() == reflect.Map || field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Map,
+			}
+		}
 	}
 
-	return val, err
+	for k, v := range rawVal {
+		// Skip null values
+		if _, ok := v.(*types.AttributeValueMemberNULL); ok {
+			continue
+		}
+
+		// Get the field info from the map
+		if fieldInfo, ok := fieldMap[k]; ok {
+			// Handle map fields
+			if fieldInfo.isMap {
+				if memberM, ok := v.(*types.AttributeValueMemberM); ok {
+					// Create a new map for the nested structure
+					nestedVal := make(map[string]types.AttributeValue)
+					for mk, mv := range memberM.Value {
+						// Skip null values in nested map
+						if _, ok := mv.(*types.AttributeValueMemberNULL); ok {
+							continue
+						}
+						nestedVal[mk] = mv
+					}
+					val[fieldInfo.jsonName] = &types.AttributeValueMemberM{Value: nestedVal}
+				}
+				continue
+			}
+
+			val[fieldInfo.jsonName] = v
+		}
+	}
+
+	return val, nil
 }
 
 // decodeThingWithRequiredCompositePropertiesAndKeysOnly translates a ThingWithRequiredCompositePropertiesAndKeysOnly stored in DynamoDB to a ThingWithRequiredCompositePropertiesAndKeysOnly struct.

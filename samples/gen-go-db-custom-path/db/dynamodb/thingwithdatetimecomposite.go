@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/Clever/wag/samples/gen-go-db-custom-path/models/v9"
@@ -18,6 +19,8 @@ import (
 var _ = strfmt.DateTime{}
 var _ = errors.New("")
 var _ = []types.AttributeValue{}
+var _ = reflect.TypeOf(int(0))
+var _ = strings.Split("", "")
 
 // ThingWithDateTimeCompositeTable represents the user-configurable properties of the ThingWithDateTimeComposite table.
 type ThingWithDateTimeCompositeTable struct {
@@ -36,7 +39,7 @@ type ddbThingWithDateTimeCompositePrimaryKey struct {
 
 // ddbThingWithDateTimeComposite represents a ThingWithDateTimeComposite as stored in DynamoDB.
 type ddbThingWithDateTimeComposite struct {
-	models.ThingWithDateTimeComposite `dynamodbav:",inline"`
+	models.ThingWithDateTimeComposite
 }
 
 func (t ThingWithDateTimeCompositeTable) create(ctx context.Context) error {
@@ -298,55 +301,69 @@ func (t ThingWithDateTimeCompositeTable) deleteThingWithDateTimeComposite(ctx co
 
 // encodeThingWithDateTimeComposite encodes a ThingWithDateTimeComposite as a DynamoDB map of attribute values.
 func encodeThingWithDateTimeComposite(m models.ThingWithDateTimeComposite) (map[string]types.AttributeValue, error) {
-	val, err := attributevalue.MarshalMap(ddbThingWithDateTimeComposite{
-		ThingWithDateTimeComposite: m,
-	})
+	// First marshal the model to get all fields
+	rawVal, err := attributevalue.MarshalMap(m)
 	if err != nil {
 		return nil, err
 	}
-	// make sure composite attributes don't contain separator characters
-	if strings.Contains(m.ID, "|") {
-		return nil, fmt.Errorf("id cannot contain '|': %s", m.ID)
-	}
-	if strings.Contains(m.Resource, "|") {
-		return nil, fmt.Errorf("resource cannot contain '|': %s", m.Resource)
-	}
-	if strings.Contains(m.Type, "|") {
-		return nil, fmt.Errorf("type cannot contain '|': %s", m.Type)
-	}
-	// add in composite attributes
-	primaryKey, err := attributevalue.MarshalMap(ddbThingWithDateTimeCompositePrimaryKey{
-		TypeID:          fmt.Sprintf("%s|%s", m.Type, m.ID),
-		CreatedResource: fmt.Sprintf("%s|%s", m.Created, m.Resource),
+
+	// Create a new map with the correct field names from json tags
+	val := make(map[string]types.AttributeValue)
+
+	// Get the type of the ThingWithDateTimeComposite struct
+	t := reflect.TypeOf(m)
+
+	// Create a map of struct field names to their json tags and types
+	fieldMap := make(map[string]struct {
+		jsonName string
+		isMap    bool
 	})
-	if err != nil {
-		return nil, err
-	}
-	for k, v := range primaryKey {
-		val[k] = v
-	}
-
-	// Ensure all attribute names match DynamoDB expectations
-	if v, ok := val["TypeID"]; ok {
-		val["typeID"] = v
-		delete(val, "TypeID")
-	}
-	if v, ok := val["CreatedResource"]; ok {
-		val["createdResource"] = v
-		delete(val, "CreatedResource")
-	}
-
-	// Ensure all model fields are properly named
-	if v, ok := val["CreatedResource"]; ok {
-		val["createdResource"] = v
-		delete(val, "CreatedResource")
-	}
-	if v, ok := val["TypeID"]; ok {
-		val["typeID"] = v
-		delete(val, "TypeID")
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		jsonTag := field.Tag.Get("json")
+		if jsonTag != "" && jsonTag != "-" {
+			// Handle omitempty in the tag
+			jsonTag = strings.Split(jsonTag, ",")[0]
+			fieldMap[field.Name] = struct {
+				jsonName string
+				isMap    bool
+			}{
+				jsonName: jsonTag,
+				isMap:    field.Type.Kind() == reflect.Map || field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Map,
+			}
+		}
 	}
 
-	return val, err
+	for k, v := range rawVal {
+		// Skip null values
+		if _, ok := v.(*types.AttributeValueMemberNULL); ok {
+			continue
+		}
+
+		// Get the field info from the map
+		if fieldInfo, ok := fieldMap[k]; ok {
+			// Handle map fields
+			if fieldInfo.isMap {
+				if memberM, ok := v.(*types.AttributeValueMemberM); ok {
+					// Create a new map for the nested structure
+					nestedVal := make(map[string]types.AttributeValue)
+					for mk, mv := range memberM.Value {
+						// Skip null values in nested map
+						if _, ok := mv.(*types.AttributeValueMemberNULL); ok {
+							continue
+						}
+						nestedVal[mk] = mv
+					}
+					val[fieldInfo.jsonName] = &types.AttributeValueMemberM{Value: nestedVal}
+				}
+				continue
+			}
+
+			val[fieldInfo.jsonName] = v
+		}
+	}
+
+	return val, nil
 }
 
 // decodeThingWithDateTimeComposite translates a ThingWithDateTimeComposite stored in DynamoDB to a ThingWithDateTimeComposite struct.

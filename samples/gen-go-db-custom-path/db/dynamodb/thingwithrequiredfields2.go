@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
+	"strings"
 
 	"github.com/Clever/wag/samples/gen-go-db-custom-path/models/v9"
 	"github.com/Clever/wag/samples/v9/gen-go-db-custom-path/db"
@@ -17,6 +19,8 @@ import (
 var _ = strfmt.DateTime{}
 var _ = errors.New("")
 var _ = []types.AttributeValue{}
+var _ = reflect.TypeOf(int(0))
+var _ = strings.Split("", "")
 
 // ThingWithRequiredFields2Table represents the user-configurable properties of the ThingWithRequiredFields2 table.
 type ThingWithRequiredFields2Table struct {
@@ -35,7 +39,7 @@ type ddbThingWithRequiredFields2PrimaryKey struct {
 
 // ddbThingWithRequiredFields2 represents a ThingWithRequiredFields2 as stored in DynamoDB.
 type ddbThingWithRequiredFields2 struct {
-	models.ThingWithRequiredFields2 `dynamodbav:",inline"`
+	models.ThingWithRequiredFields2
 }
 
 func (t ThingWithRequiredFields2Table) create(ctx context.Context) error {
@@ -328,31 +332,65 @@ func (t ThingWithRequiredFields2Table) deleteThingWithRequiredFields2(ctx contex
 // encodeThingWithRequiredFields2 encodes a ThingWithRequiredFields2 as a DynamoDB map of attribute values.
 func encodeThingWithRequiredFields2(m models.ThingWithRequiredFields2) (map[string]types.AttributeValue, error) {
 	// First marshal the model to get all fields
-	val, err := attributevalue.MarshalMap(ddbThingWithRequiredFields2{
-		ThingWithRequiredFields2: m,
-	})
+	rawVal, err := attributevalue.MarshalMap(m)
 	if err != nil {
 		return nil, err
 	}
 
-	// Ensure primary key attributes are properly named
-	if v, ok := val["Name"]; ok {
-		val["name"] = v
-		delete(val, "Name")
-	}
-	if v, ok := val["ID"]; ok {
-		val["id"] = v
-		delete(val, "ID")
+	// Create a new map with the correct field names from json tags
+	val := make(map[string]types.AttributeValue)
+
+	// Get the type of the ThingWithRequiredFields2 struct
+	t := reflect.TypeOf(m)
+
+	// Create a map of struct field names to their json tags and types
+	fieldMap := make(map[string]struct {
+		jsonName string
+		isMap    bool
+	})
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		jsonTag := field.Tag.Get("json")
+		if jsonTag != "" && jsonTag != "-" {
+			// Handle omitempty in the tag
+			jsonTag = strings.Split(jsonTag, ",")[0]
+			fieldMap[field.Name] = struct {
+				jsonName string
+				isMap    bool
+			}{
+				jsonName: jsonTag,
+				isMap:    field.Type.Kind() == reflect.Map || field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Map,
+			}
+		}
 	}
 
-	// Ensure all model fields are properly named
-	if v, ok := val["ID"]; ok {
-		val["id"] = v
-		delete(val, "ID")
-	}
-	if v, ok := val["Name"]; ok {
-		val["name"] = v
-		delete(val, "Name")
+	for k, v := range rawVal {
+		// Skip null values
+		if _, ok := v.(*types.AttributeValueMemberNULL); ok {
+			continue
+		}
+
+		// Get the field info from the map
+		if fieldInfo, ok := fieldMap[k]; ok {
+			// Handle map fields
+			if fieldInfo.isMap {
+				if memberM, ok := v.(*types.AttributeValueMemberM); ok {
+					// Create a new map for the nested structure
+					nestedVal := make(map[string]types.AttributeValue)
+					for mk, mv := range memberM.Value {
+						// Skip null values in nested map
+						if _, ok := mv.(*types.AttributeValueMemberNULL); ok {
+							continue
+						}
+						nestedVal[mk] = mv
+					}
+					val[fieldInfo.jsonName] = &types.AttributeValueMemberM{Value: nestedVal}
+				}
+				continue
+			}
+
+			val[fieldInfo.jsonName] = v
+		}
 	}
 
 	return val, nil

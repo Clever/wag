@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/Clever/wag/samples/gen-go-db/models/v9"
@@ -18,6 +19,8 @@ import (
 var _ = strfmt.DateTime{}
 var _ = errors.New("")
 var _ = []types.AttributeValue{}
+var _ = reflect.TypeOf(int(0))
+var _ = strings.Split("", "")
 
 // DeploymentTable represents the user-configurable properties of the Deployment table.
 type DeploymentTable struct {
@@ -53,7 +56,7 @@ type ddbDeploymentGSIByVersion struct {
 
 // ddbDeployment represents a Deployment as stored in DynamoDB.
 type ddbDeployment struct {
-	models.Deployment `dynamodbav:",inline"`
+	models.Deployment
 }
 
 func (t DeploymentTable) create(ctx context.Context) error {
@@ -757,70 +760,69 @@ func (t DeploymentTable) scanDeploymentsByVersion(ctx context.Context, input db.
 
 // encodeDeployment encodes a Deployment as a DynamoDB map of attribute values.
 func encodeDeployment(m models.Deployment) (map[string]types.AttributeValue, error) {
-	val, err := attributevalue.MarshalMap(ddbDeployment{
-		Deployment: m,
-	})
+	// First marshal the model to get all fields
+	rawVal, err := attributevalue.MarshalMap(m)
 	if err != nil {
 		return nil, err
 	}
-	// make sure composite attributes don't contain separator characters
-	if strings.Contains(m.Application, "--") {
-		return nil, fmt.Errorf("application cannot contain '--': %s", m.Application)
-	}
-	if strings.Contains(m.Environment, "--") {
-		return nil, fmt.Errorf("environment cannot contain '--': %s", m.Environment)
-	}
-	// add in composite attributes
-	primaryKey, err := attributevalue.MarshalMap(ddbDeploymentPrimaryKey{
-		EnvApp:  fmt.Sprintf("%s--%s", m.Environment, m.Application),
-		Version: m.Version,
+
+	// Create a new map with the correct field names from json tags
+	val := make(map[string]types.AttributeValue)
+
+	// Get the type of the Deployment struct
+	t := reflect.TypeOf(m)
+
+	// Create a map of struct field names to their json tags and types
+	fieldMap := make(map[string]struct {
+		jsonName string
+		isMap    bool
 	})
-	if err != nil {
-		return nil, err
-	}
-	for k, v := range primaryKey {
-		val[k] = v
-	}
-	byDate, err := attributevalue.MarshalMap(ddbDeploymentGSIByDate{
-		EnvApp: fmt.Sprintf("%s--%s", m.Environment, m.Application),
-		Date:   m.Date,
-	})
-	if err != nil {
-		return nil, err
-	}
-	for k, v := range byDate {
-		val[k] = v
-	}
-
-	// Ensure all attribute names match DynamoDB expectations
-	if v, ok := val["EnvApp"]; ok {
-		val["envApp"] = v
-		delete(val, "EnvApp")
-	}
-	if v, ok := val["Version"]; ok {
-		val["version"] = v
-		delete(val, "Version")
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		jsonTag := field.Tag.Get("json")
+		if jsonTag != "" && jsonTag != "-" {
+			// Handle omitempty in the tag
+			jsonTag = strings.Split(jsonTag, ",")[0]
+			fieldMap[field.Name] = struct {
+				jsonName string
+				isMap    bool
+			}{
+				jsonName: jsonTag,
+				isMap:    field.Type.Kind() == reflect.Map || field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Map,
+			}
+		}
 	}
 
-	// Ensure all model fields are properly named
-	if v, ok := val["Date"]; ok {
-		val["date"] = v
-		delete(val, "Date")
-	}
-	if v, ok := val["EnvApp"]; ok {
-		val["envApp"] = v
-		delete(val, "EnvApp")
-	}
-	if v, ok := val["Environment"]; ok {
-		val["environment"] = v
-		delete(val, "Environment")
-	}
-	if v, ok := val["Version"]; ok {
-		val["version"] = v
-		delete(val, "Version")
+	for k, v := range rawVal {
+		// Skip null values
+		if _, ok := v.(*types.AttributeValueMemberNULL); ok {
+			continue
+		}
+
+		// Get the field info from the map
+		if fieldInfo, ok := fieldMap[k]; ok {
+			// Handle map fields
+			if fieldInfo.isMap {
+				if memberM, ok := v.(*types.AttributeValueMemberM); ok {
+					// Create a new map for the nested structure
+					nestedVal := make(map[string]types.AttributeValue)
+					for mk, mv := range memberM.Value {
+						// Skip null values in nested map
+						if _, ok := mv.(*types.AttributeValueMemberNULL); ok {
+							continue
+						}
+						nestedVal[mk] = mv
+					}
+					val[fieldInfo.jsonName] = &types.AttributeValueMemberM{Value: nestedVal}
+				}
+				continue
+			}
+
+			val[fieldInfo.jsonName] = v
+		}
 	}
 
-	return val, err
+	return val, nil
 }
 
 // decodeDeployment translates a Deployment stored in DynamoDB to a Deployment struct.

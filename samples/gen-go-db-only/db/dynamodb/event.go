@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
+	"strings"
 
 	"github.com/Clever/wag/samples/gen-go-db-only/models/v9"
 	"github.com/Clever/wag/samples/v9/gen-go-db-only/db"
@@ -17,6 +19,8 @@ import (
 var _ = strfmt.DateTime{}
 var _ = errors.New("")
 var _ = []types.AttributeValue{}
+var _ = reflect.TypeOf(int(0))
+var _ = strings.Split("", "")
 
 // EventTable represents the user-configurable properties of the Event table.
 type EventTable struct {
@@ -41,7 +45,7 @@ type ddbEventGSIBySK struct {
 
 // ddbEvent represents a Event as stored in DynamoDB.
 type ddbEvent struct {
-	models.Event `dynamodbav:",inline"`
+	models.Event
 }
 
 func (t EventTable) create(ctx context.Context) error {
@@ -502,35 +506,65 @@ func (t EventTable) scanEventsBySkAndData(ctx context.Context, input db.ScanEven
 // encodeEvent encodes a Event as a DynamoDB map of attribute values.
 func encodeEvent(m models.Event) (map[string]types.AttributeValue, error) {
 	// First marshal the model to get all fields
-	val, err := attributevalue.MarshalMap(ddbEvent{
-		Event: m,
-	})
+	rawVal, err := attributevalue.MarshalMap(m)
 	if err != nil {
 		return nil, err
 	}
 
-	// Ensure primary key attributes are properly named
-	if v, ok := val["Pk"]; ok {
-		val["pk"] = v
-		delete(val, "Pk")
-	}
-	if v, ok := val["Sk"]; ok {
-		val["sk"] = v
-		delete(val, "Sk")
+	// Create a new map with the correct field names from json tags
+	val := make(map[string]types.AttributeValue)
+
+	// Get the type of the Event struct
+	t := reflect.TypeOf(m)
+
+	// Create a map of struct field names to their json tags and types
+	fieldMap := make(map[string]struct {
+		jsonName string
+		isMap    bool
+	})
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		jsonTag := field.Tag.Get("json")
+		if jsonTag != "" && jsonTag != "-" {
+			// Handle omitempty in the tag
+			jsonTag = strings.Split(jsonTag, ",")[0]
+			fieldMap[field.Name] = struct {
+				jsonName string
+				isMap    bool
+			}{
+				jsonName: jsonTag,
+				isMap:    field.Type.Kind() == reflect.Map || field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Map,
+			}
+		}
 	}
 
-	// Ensure all model fields are properly named
-	if v, ok := val["Data"]; ok {
-		val["data"] = v
-		delete(val, "Data")
-	}
-	if v, ok := val["Pk"]; ok {
-		val["pk"] = v
-		delete(val, "Pk")
-	}
-	if v, ok := val["Sk"]; ok {
-		val["sk"] = v
-		delete(val, "Sk")
+	for k, v := range rawVal {
+		// Skip null values
+		if _, ok := v.(*types.AttributeValueMemberNULL); ok {
+			continue
+		}
+
+		// Get the field info from the map
+		if fieldInfo, ok := fieldMap[k]; ok {
+			// Handle map fields
+			if fieldInfo.isMap {
+				if memberM, ok := v.(*types.AttributeValueMemberM); ok {
+					// Create a new map for the nested structure
+					nestedVal := make(map[string]types.AttributeValue)
+					for mk, mv := range memberM.Value {
+						// Skip null values in nested map
+						if _, ok := mv.(*types.AttributeValueMemberNULL); ok {
+							continue
+						}
+						nestedVal[mk] = mv
+					}
+					val[fieldInfo.jsonName] = &types.AttributeValueMemberM{Value: nestedVal}
+				}
+				continue
+			}
+
+			val[fieldInfo.jsonName] = v
+		}
 	}
 
 	return val, nil

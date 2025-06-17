@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/Clever/wag/samples/gen-go-db/models/v9"
@@ -18,6 +19,8 @@ import (
 var _ = strfmt.DateTime{}
 var _ = errors.New("")
 var _ = []types.AttributeValue{}
+var _ = reflect.TypeOf(int(0))
+var _ = strings.Split("", "")
 
 // NoRangeThingWithCompositeAttributesTable represents the user-configurable properties of the NoRangeThingWithCompositeAttributes table.
 type NoRangeThingWithCompositeAttributesTable struct {
@@ -46,7 +49,7 @@ type ddbNoRangeThingWithCompositeAttributesGSINameBranchCommit struct {
 
 // ddbNoRangeThingWithCompositeAttributes represents a NoRangeThingWithCompositeAttributes as stored in DynamoDB.
 type ddbNoRangeThingWithCompositeAttributes struct {
-	models.NoRangeThingWithCompositeAttributes `dynamodbav:",inline"`
+	models.NoRangeThingWithCompositeAttributes
 }
 
 func (t NoRangeThingWithCompositeAttributesTable) create(ctx context.Context) error {
@@ -471,86 +474,69 @@ func (t NoRangeThingWithCompositeAttributesTable) getNoRangeThingWithCompositeAt
 
 // encodeNoRangeThingWithCompositeAttributes encodes a NoRangeThingWithCompositeAttributes as a DynamoDB map of attribute values.
 func encodeNoRangeThingWithCompositeAttributes(m models.NoRangeThingWithCompositeAttributes) (map[string]types.AttributeValue, error) {
-	val, err := attributevalue.MarshalMap(ddbNoRangeThingWithCompositeAttributes{
-		NoRangeThingWithCompositeAttributes: m,
-	})
+	// First marshal the model to get all fields
+	rawVal, err := attributevalue.MarshalMap(m)
 	if err != nil {
 		return nil, err
-	}
-	// make sure composite attributes don't contain separator characters
-	if strings.Contains(*m.Branch, "--") {
-		return nil, fmt.Errorf("branch cannot contain '--': %s", *m.Branch)
-	}
-	if strings.Contains(*m.Commit, "--") {
-		return nil, fmt.Errorf("commit cannot contain '--': %s", *m.Commit)
-	}
-	if strings.Contains(*m.Name, "--") {
-		return nil, fmt.Errorf("name cannot contain '--': %s", *m.Name)
-	}
-	if strings.Contains(*m.Name, ":") {
-		return nil, fmt.Errorf("name cannot contain ':': %s", *m.Name)
-	}
-	if strings.Contains(*m.Branch, "@") {
-		return nil, fmt.Errorf("branch cannot contain '@': %s", *m.Branch)
-	}
-	if strings.Contains(*m.Name, "@") {
-		return nil, fmt.Errorf("name cannot contain '@': %s", *m.Name)
-	}
-	// add in composite attributes
-	primaryKey, err := attributevalue.MarshalMap(ddbNoRangeThingWithCompositeAttributesPrimaryKey{
-		NameBranch: fmt.Sprintf("%s@%s", *m.Name, *m.Branch),
-	})
-	if err != nil {
-		return nil, err
-	}
-	for k, v := range primaryKey {
-		val[k] = v
-	}
-	nameVersion, err := attributevalue.MarshalMap(ddbNoRangeThingWithCompositeAttributesGSINameVersion{
-		NameVersion: fmt.Sprintf("%s:%d", *m.Name, m.Version),
-		Date:        *m.Date,
-	})
-	if err != nil {
-		return nil, err
-	}
-	for k, v := range nameVersion {
-		val[k] = v
-	}
-	nameBranchCommit, err := attributevalue.MarshalMap(ddbNoRangeThingWithCompositeAttributesGSINameBranchCommit{
-		NameBranchCommit: fmt.Sprintf("%s--%s--%s", *m.Name, *m.Branch, *m.Commit),
-	})
-	if err != nil {
-		return nil, err
-	}
-	for k, v := range nameBranchCommit {
-		val[k] = v
 	}
 
-	// Ensure all attribute names match DynamoDB expectations
-	if v, ok := val["NameBranch"]; ok {
-		val["name_branch"] = v
-		delete(val, "NameBranch")
+	// Create a new map with the correct field names from json tags
+	val := make(map[string]types.AttributeValue)
+
+	// Get the type of the NoRangeThingWithCompositeAttributes struct
+	t := reflect.TypeOf(m)
+
+	// Create a map of struct field names to their json tags and types
+	fieldMap := make(map[string]struct {
+		jsonName string
+		isMap    bool
+	})
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		jsonTag := field.Tag.Get("json")
+		if jsonTag != "" && jsonTag != "-" {
+			// Handle omitempty in the tag
+			jsonTag = strings.Split(jsonTag, ",")[0]
+			fieldMap[field.Name] = struct {
+				jsonName string
+				isMap    bool
+			}{
+				jsonName: jsonTag,
+				isMap:    field.Type.Kind() == reflect.Map || field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Map,
+			}
+		}
 	}
 
-	// Ensure all model fields are properly named
-	if v, ok := val["Date"]; ok {
-		val["date"] = v
-		delete(val, "Date")
-	}
-	if v, ok := val["NameBranch"]; ok {
-		val["name_branch"] = v
-		delete(val, "NameBranch")
-	}
-	if v, ok := val["NameBranchCommit"]; ok {
-		val["name_branch_commit"] = v
-		delete(val, "NameBranchCommit")
-	}
-	if v, ok := val["NameVersion"]; ok {
-		val["name_version"] = v
-		delete(val, "NameVersion")
+	for k, v := range rawVal {
+		// Skip null values
+		if _, ok := v.(*types.AttributeValueMemberNULL); ok {
+			continue
+		}
+
+		// Get the field info from the map
+		if fieldInfo, ok := fieldMap[k]; ok {
+			// Handle map fields
+			if fieldInfo.isMap {
+				if memberM, ok := v.(*types.AttributeValueMemberM); ok {
+					// Create a new map for the nested structure
+					nestedVal := make(map[string]types.AttributeValue)
+					for mk, mv := range memberM.Value {
+						// Skip null values in nested map
+						if _, ok := mv.(*types.AttributeValueMemberNULL); ok {
+							continue
+						}
+						nestedVal[mk] = mv
+					}
+					val[fieldInfo.jsonName] = &types.AttributeValueMemberM{Value: nestedVal}
+				}
+				continue
+			}
+
+			val[fieldInfo.jsonName] = v
+		}
 	}
 
-	return val, err
+	return val, nil
 }
 
 // decodeNoRangeThingWithCompositeAttributes translates a NoRangeThingWithCompositeAttributes stored in DynamoDB to a NoRangeThingWithCompositeAttributes struct.

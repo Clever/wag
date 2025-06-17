@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
+	"strings"
 
 	"github.com/Clever/wag/samples/gen-go-db/models/v9"
 	"github.com/Clever/wag/samples/v9/gen-go-db/server/db"
@@ -17,6 +19,8 @@ import (
 var _ = strfmt.DateTime{}
 var _ = errors.New("")
 var _ = []types.AttributeValue{}
+var _ = reflect.TypeOf(int(0))
+var _ = strings.Split("", "")
 
 // ThingWithEnumHashKeyTable represents the user-configurable properties of the ThingWithEnumHashKey table.
 type ThingWithEnumHashKeyTable struct {
@@ -41,7 +45,7 @@ type ddbThingWithEnumHashKeyGSIByBranch struct {
 
 // ddbThingWithEnumHashKey represents a ThingWithEnumHashKey as stored in DynamoDB.
 type ddbThingWithEnumHashKey struct {
-	models.ThingWithEnumHashKey `dynamodbav:",inline"`
+	models.ThingWithEnumHashKey
 }
 
 func (t ThingWithEnumHashKeyTable) create(ctx context.Context) error {
@@ -537,35 +541,65 @@ func (t ThingWithEnumHashKeyTable) scanThingWithEnumHashKeysByBranchAndDate2(ctx
 // encodeThingWithEnumHashKey encodes a ThingWithEnumHashKey as a DynamoDB map of attribute values.
 func encodeThingWithEnumHashKey(m models.ThingWithEnumHashKey) (map[string]types.AttributeValue, error) {
 	// First marshal the model to get all fields
-	val, err := attributevalue.MarshalMap(ddbThingWithEnumHashKey{
-		ThingWithEnumHashKey: m,
-	})
+	rawVal, err := attributevalue.MarshalMap(m)
 	if err != nil {
 		return nil, err
 	}
 
-	// Ensure primary key attributes are properly named
-	if v, ok := val["Branch"]; ok {
-		val["branch"] = v
-		delete(val, "Branch")
-	}
-	if v, ok := val["Date"]; ok {
-		val["date"] = v
-		delete(val, "Date")
+	// Create a new map with the correct field names from json tags
+	val := make(map[string]types.AttributeValue)
+
+	// Get the type of the ThingWithEnumHashKey struct
+	t := reflect.TypeOf(m)
+
+	// Create a map of struct field names to their json tags and types
+	fieldMap := make(map[string]struct {
+		jsonName string
+		isMap    bool
+	})
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		jsonTag := field.Tag.Get("json")
+		if jsonTag != "" && jsonTag != "-" {
+			// Handle omitempty in the tag
+			jsonTag = strings.Split(jsonTag, ",")[0]
+			fieldMap[field.Name] = struct {
+				jsonName string
+				isMap    bool
+			}{
+				jsonName: jsonTag,
+				isMap:    field.Type.Kind() == reflect.Map || field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Map,
+			}
+		}
 	}
 
-	// Ensure all model fields are properly named
-	if v, ok := val["Branch"]; ok {
-		val["branch"] = v
-		delete(val, "Branch")
-	}
-	if v, ok := val["Date"]; ok {
-		val["date"] = v
-		delete(val, "Date")
-	}
-	if v, ok := val["Date2"]; ok {
-		val["date2"] = v
-		delete(val, "Date2")
+	for k, v := range rawVal {
+		// Skip null values
+		if _, ok := v.(*types.AttributeValueMemberNULL); ok {
+			continue
+		}
+
+		// Get the field info from the map
+		if fieldInfo, ok := fieldMap[k]; ok {
+			// Handle map fields
+			if fieldInfo.isMap {
+				if memberM, ok := v.(*types.AttributeValueMemberM); ok {
+					// Create a new map for the nested structure
+					nestedVal := make(map[string]types.AttributeValue)
+					for mk, mv := range memberM.Value {
+						// Skip null values in nested map
+						if _, ok := mv.(*types.AttributeValueMemberNULL); ok {
+							continue
+						}
+						nestedVal[mk] = mv
+					}
+					val[fieldInfo.jsonName] = &types.AttributeValueMemberM{Value: nestedVal}
+				}
+				continue
+			}
+
+			val[fieldInfo.jsonName] = v
+		}
 	}
 
 	return val, nil

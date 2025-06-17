@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/Clever/wag/samples/gen-go-db/models/v9"
@@ -18,6 +19,8 @@ import (
 var _ = strfmt.DateTime{}
 var _ = errors.New("")
 var _ = []types.AttributeValue{}
+var _ = reflect.TypeOf(int(0))
+var _ = strings.Split("", "")
 
 // ThingWithMatchingKeysTable represents the user-configurable properties of the ThingWithMatchingKeys table.
 type ThingWithMatchingKeysTable struct {
@@ -42,7 +45,7 @@ type ddbThingWithMatchingKeysGSIByAssoc struct {
 
 // ddbThingWithMatchingKeys represents a ThingWithMatchingKeys as stored in DynamoDB.
 type ddbThingWithMatchingKeys struct {
-	models.ThingWithMatchingKeys `dynamodbav:",inline"`
+	models.ThingWithMatchingKeys
 }
 
 func (t ThingWithMatchingKeysTable) create(ctx context.Context) error {
@@ -512,69 +515,69 @@ func (t ThingWithMatchingKeysTable) scanThingWithMatchingKeyssByAssocTypeIDAndCr
 
 // encodeThingWithMatchingKeys encodes a ThingWithMatchingKeys as a DynamoDB map of attribute values.
 func encodeThingWithMatchingKeys(m models.ThingWithMatchingKeys) (map[string]types.AttributeValue, error) {
-	val, err := attributevalue.MarshalMap(ddbThingWithMatchingKeys{
-		ThingWithMatchingKeys: m,
-	})
+	// First marshal the model to get all fields
+	rawVal, err := attributevalue.MarshalMap(m)
 	if err != nil {
 		return nil, err
 	}
-	// make sure composite attributes don't contain separator characters
-	if strings.Contains(m.AssocID, "^") {
-		return nil, fmt.Errorf("assocID cannot contain '^': %s", m.AssocID)
-	}
-	if strings.Contains(m.AssocType, "^") {
-		return nil, fmt.Errorf("assocType cannot contain '^': %s", m.AssocType)
-	}
-	if strings.Contains(m.Bear, "^") {
-		return nil, fmt.Errorf("bear cannot contain '^': %s", m.Bear)
-	}
-	// add in composite attributes
-	primaryKey, err := attributevalue.MarshalMap(ddbThingWithMatchingKeysPrimaryKey{
-		Bear:        m.Bear,
-		AssocTypeID: fmt.Sprintf("%s^%s", m.AssocType, m.AssocID),
+
+	// Create a new map with the correct field names from json tags
+	val := make(map[string]types.AttributeValue)
+
+	// Get the type of the ThingWithMatchingKeys struct
+	t := reflect.TypeOf(m)
+
+	// Create a map of struct field names to their json tags and types
+	fieldMap := make(map[string]struct {
+		jsonName string
+		isMap    bool
 	})
-	if err != nil {
-		return nil, err
-	}
-	for k, v := range primaryKey {
-		val[k] = v
-	}
-	byAssoc, err := attributevalue.MarshalMap(ddbThingWithMatchingKeysGSIByAssoc{
-		AssocTypeID: fmt.Sprintf("%s^%s", m.AssocType, m.AssocID),
-		CreatedBear: fmt.Sprintf("%s^%s", m.Created, m.Bear),
-	})
-	if err != nil {
-		return nil, err
-	}
-	for k, v := range byAssoc {
-		val[k] = v
-	}
-
-	// Ensure all attribute names match DynamoDB expectations
-	if v, ok := val["Bear"]; ok {
-		val["bear"] = v
-		delete(val, "Bear")
-	}
-	if v, ok := val["AssocTypeID"]; ok {
-		val["assocTypeID"] = v
-		delete(val, "AssocTypeID")
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		jsonTag := field.Tag.Get("json")
+		if jsonTag != "" && jsonTag != "-" {
+			// Handle omitempty in the tag
+			jsonTag = strings.Split(jsonTag, ",")[0]
+			fieldMap[field.Name] = struct {
+				jsonName string
+				isMap    bool
+			}{
+				jsonName: jsonTag,
+				isMap:    field.Type.Kind() == reflect.Map || field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Map,
+			}
+		}
 	}
 
-	// Ensure all model fields are properly named
-	if v, ok := val["AssocTypeID"]; ok {
-		val["assocTypeID"] = v
-		delete(val, "AssocTypeID")
-	}
-	if v, ok := val["Bear"]; ok {
-		val["bear"] = v
-		delete(val, "Bear")
-	}
-	if v, ok := val["CreatedBear"]; ok {
-		val["createdBear"] = v
-		delete(val, "CreatedBear")
+	for k, v := range rawVal {
+		// Skip null values
+		if _, ok := v.(*types.AttributeValueMemberNULL); ok {
+			continue
+		}
+
+		// Get the field info from the map
+		if fieldInfo, ok := fieldMap[k]; ok {
+			// Handle map fields
+			if fieldInfo.isMap {
+				if memberM, ok := v.(*types.AttributeValueMemberM); ok {
+					// Create a new map for the nested structure
+					nestedVal := make(map[string]types.AttributeValue)
+					for mk, mv := range memberM.Value {
+						// Skip null values in nested map
+						if _, ok := mv.(*types.AttributeValueMemberNULL); ok {
+							continue
+						}
+						nestedVal[mk] = mv
+					}
+					val[fieldInfo.jsonName] = &types.AttributeValueMemberM{Value: nestedVal}
+				}
+				continue
+			}
+
+			val[fieldInfo.jsonName] = v
+		}
 	}
 
-	return val, err
+	return val, nil
 }
 
 // decodeThingWithMatchingKeys translates a ThingWithMatchingKeys stored in DynamoDB to a ThingWithMatchingKeys struct.

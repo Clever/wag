@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/Clever/wag/samples/gen-go-db/models/v9"
@@ -18,6 +19,8 @@ import (
 var _ = strfmt.DateTime{}
 var _ = errors.New("")
 var _ = []types.AttributeValue{}
+var _ = reflect.TypeOf(int(0))
+var _ = strings.Split("", "")
 
 // ThingWithCompositeEnumAttributesTable represents the user-configurable properties of the ThingWithCompositeEnumAttributes table.
 type ThingWithCompositeEnumAttributesTable struct {
@@ -36,7 +39,7 @@ type ddbThingWithCompositeEnumAttributesPrimaryKey struct {
 
 // ddbThingWithCompositeEnumAttributes represents a ThingWithCompositeEnumAttributes as stored in DynamoDB.
 type ddbThingWithCompositeEnumAttributes struct {
-	models.ThingWithCompositeEnumAttributes `dynamodbav:",inline"`
+	models.ThingWithCompositeEnumAttributes
 }
 
 func (t ThingWithCompositeEnumAttributesTable) create(ctx context.Context) error {
@@ -334,49 +337,69 @@ func (t ThingWithCompositeEnumAttributesTable) deleteThingWithCompositeEnumAttri
 
 // encodeThingWithCompositeEnumAttributes encodes a ThingWithCompositeEnumAttributes as a DynamoDB map of attribute values.
 func encodeThingWithCompositeEnumAttributes(m models.ThingWithCompositeEnumAttributes) (map[string]types.AttributeValue, error) {
-	val, err := attributevalue.MarshalMap(ddbThingWithCompositeEnumAttributes{
-		ThingWithCompositeEnumAttributes: m,
-	})
+	// First marshal the model to get all fields
+	rawVal, err := attributevalue.MarshalMap(m)
 	if err != nil {
 		return nil, err
 	}
-	// make sure composite attributes don't contain separator characters
-	if strings.Contains(*m.Name, "@") {
-		return nil, fmt.Errorf("name cannot contain '@': %s", *m.Name)
-	}
-	// add in composite attributes
-	primaryKey, err := attributevalue.MarshalMap(ddbThingWithCompositeEnumAttributesPrimaryKey{
-		NameBranch: fmt.Sprintf("%s@%s", *m.Name, m.BranchID),
-		Date:       *m.Date,
+
+	// Create a new map with the correct field names from json tags
+	val := make(map[string]types.AttributeValue)
+
+	// Get the type of the ThingWithCompositeEnumAttributes struct
+	t := reflect.TypeOf(m)
+
+	// Create a map of struct field names to their json tags and types
+	fieldMap := make(map[string]struct {
+		jsonName string
+		isMap    bool
 	})
-	if err != nil {
-		return nil, err
-	}
-	for k, v := range primaryKey {
-		val[k] = v
-	}
-
-	// Ensure all attribute names match DynamoDB expectations
-	if v, ok := val["NameBranch"]; ok {
-		val["name_branch"] = v
-		delete(val, "NameBranch")
-	}
-	if v, ok := val["Date"]; ok {
-		val["date"] = v
-		delete(val, "Date")
-	}
-
-	// Ensure all model fields are properly named
-	if v, ok := val["Date"]; ok {
-		val["date"] = v
-		delete(val, "Date")
-	}
-	if v, ok := val["NameBranch"]; ok {
-		val["name_branch"] = v
-		delete(val, "NameBranch")
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		jsonTag := field.Tag.Get("json")
+		if jsonTag != "" && jsonTag != "-" {
+			// Handle omitempty in the tag
+			jsonTag = strings.Split(jsonTag, ",")[0]
+			fieldMap[field.Name] = struct {
+				jsonName string
+				isMap    bool
+			}{
+				jsonName: jsonTag,
+				isMap:    field.Type.Kind() == reflect.Map || field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Map,
+			}
+		}
 	}
 
-	return val, err
+	for k, v := range rawVal {
+		// Skip null values
+		if _, ok := v.(*types.AttributeValueMemberNULL); ok {
+			continue
+		}
+
+		// Get the field info from the map
+		if fieldInfo, ok := fieldMap[k]; ok {
+			// Handle map fields
+			if fieldInfo.isMap {
+				if memberM, ok := v.(*types.AttributeValueMemberM); ok {
+					// Create a new map for the nested structure
+					nestedVal := make(map[string]types.AttributeValue)
+					for mk, mv := range memberM.Value {
+						// Skip null values in nested map
+						if _, ok := mv.(*types.AttributeValueMemberNULL); ok {
+							continue
+						}
+						nestedVal[mk] = mv
+					}
+					val[fieldInfo.jsonName] = &types.AttributeValueMemberM{Value: nestedVal}
+				}
+				continue
+			}
+
+			val[fieldInfo.jsonName] = v
+		}
+	}
+
+	return val, nil
 }
 
 // decodeThingWithCompositeEnumAttributes translates a ThingWithCompositeEnumAttributes stored in DynamoDB to a ThingWithCompositeEnumAttributes struct.

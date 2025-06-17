@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/Clever/wag/samples/gen-go-db-custom-path/models/v9"
@@ -18,6 +19,8 @@ import (
 var _ = strfmt.DateTime{}
 var _ = errors.New("")
 var _ = []types.AttributeValue{}
+var _ = reflect.TypeOf(int(0))
+var _ = strings.Split("", "")
 
 // ThingWithMultiUseCompositeAttributeTable represents the user-configurable properties of the ThingWithMultiUseCompositeAttribute table.
 type ThingWithMultiUseCompositeAttributeTable struct {
@@ -47,7 +50,7 @@ type ddbThingWithMultiUseCompositeAttributeGSIFourIndex struct {
 
 // ddbThingWithMultiUseCompositeAttribute represents a ThingWithMultiUseCompositeAttribute as stored in DynamoDB.
 type ddbThingWithMultiUseCompositeAttribute struct {
-	models.ThingWithMultiUseCompositeAttribute `dynamodbav:",inline"`
+	models.ThingWithMultiUseCompositeAttribute
 }
 
 func (t ThingWithMultiUseCompositeAttributeTable) create(ctx context.Context) error {
@@ -568,66 +571,69 @@ func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseComposite
 
 // encodeThingWithMultiUseCompositeAttribute encodes a ThingWithMultiUseCompositeAttribute as a DynamoDB map of attribute values.
 func encodeThingWithMultiUseCompositeAttribute(m models.ThingWithMultiUseCompositeAttribute) (map[string]types.AttributeValue, error) {
-	val, err := attributevalue.MarshalMap(ddbThingWithMultiUseCompositeAttribute{
-		ThingWithMultiUseCompositeAttribute: m,
-	})
+	// First marshal the model to get all fields
+	rawVal, err := attributevalue.MarshalMap(m)
 	if err != nil {
 		return nil, err
 	}
-	// make sure composite attributes don't contain separator characters
-	if strings.Contains(*m.One, "_") {
-		return nil, fmt.Errorf("one cannot contain '_': %s", *m.One)
-	}
-	if strings.Contains(*m.Two, "_") {
-		return nil, fmt.Errorf("two cannot contain '_': %s", *m.Two)
-	}
-	// add in composite attributes
-	threeIndex, err := attributevalue.MarshalMap(ddbThingWithMultiUseCompositeAttributeGSIThreeIndex{
-		Three:  *m.Three,
-		OneTwo: fmt.Sprintf("%s_%s", *m.One, *m.Two),
+
+	// Create a new map with the correct field names from json tags
+	val := make(map[string]types.AttributeValue)
+
+	// Get the type of the ThingWithMultiUseCompositeAttribute struct
+	t := reflect.TypeOf(m)
+
+	// Create a map of struct field names to their json tags and types
+	fieldMap := make(map[string]struct {
+		jsonName string
+		isMap    bool
 	})
-	if err != nil {
-		return nil, err
-	}
-	for k, v := range threeIndex {
-		val[k] = v
-	}
-	fourIndex, err := attributevalue.MarshalMap(ddbThingWithMultiUseCompositeAttributeGSIFourIndex{
-		Four:   *m.Four,
-		OneTwo: fmt.Sprintf("%s_%s", *m.One, *m.Two),
-	})
-	if err != nil {
-		return nil, err
-	}
-	for k, v := range fourIndex {
-		val[k] = v
-	}
-
-	// Ensure all attribute names match DynamoDB expectations
-	if v, ok := val["One"]; ok {
-		val["one"] = v
-		delete(val, "One")
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		jsonTag := field.Tag.Get("json")
+		if jsonTag != "" && jsonTag != "-" {
+			// Handle omitempty in the tag
+			jsonTag = strings.Split(jsonTag, ",")[0]
+			fieldMap[field.Name] = struct {
+				jsonName string
+				isMap    bool
+			}{
+				jsonName: jsonTag,
+				isMap:    field.Type.Kind() == reflect.Map || field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Map,
+			}
+		}
 	}
 
-	// Ensure all model fields are properly named
-	if v, ok := val["Four"]; ok {
-		val["four"] = v
-		delete(val, "Four")
-	}
-	if v, ok := val["One"]; ok {
-		val["one"] = v
-		delete(val, "One")
-	}
-	if v, ok := val["OneTwo"]; ok {
-		val["one_two"] = v
-		delete(val, "OneTwo")
-	}
-	if v, ok := val["Three"]; ok {
-		val["three"] = v
-		delete(val, "Three")
+	for k, v := range rawVal {
+		// Skip null values
+		if _, ok := v.(*types.AttributeValueMemberNULL); ok {
+			continue
+		}
+
+		// Get the field info from the map
+		if fieldInfo, ok := fieldMap[k]; ok {
+			// Handle map fields
+			if fieldInfo.isMap {
+				if memberM, ok := v.(*types.AttributeValueMemberM); ok {
+					// Create a new map for the nested structure
+					nestedVal := make(map[string]types.AttributeValue)
+					for mk, mv := range memberM.Value {
+						// Skip null values in nested map
+						if _, ok := mv.(*types.AttributeValueMemberNULL); ok {
+							continue
+						}
+						nestedVal[mk] = mv
+					}
+					val[fieldInfo.jsonName] = &types.AttributeValueMemberM{Value: nestedVal}
+				}
+				continue
+			}
+
+			val[fieldInfo.jsonName] = v
+		}
 	}
 
-	return val, err
+	return val, nil
 }
 
 // decodeThingWithMultiUseCompositeAttribute translates a ThingWithMultiUseCompositeAttribute stored in DynamoDB to a ThingWithMultiUseCompositeAttribute struct.
