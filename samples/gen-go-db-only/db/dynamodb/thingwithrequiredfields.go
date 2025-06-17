@@ -210,9 +210,45 @@ func (t ThingWithRequiredFieldsTable) deleteThingWithRequiredFields(ctx context.
 
 // encodeThingWithRequiredFields encodes a ThingWithRequiredFields as a DynamoDB map of attribute values.
 func encodeThingWithRequiredFields(m models.ThingWithRequiredFields) (map[string]types.AttributeValue, error) {
-	return attributevalue.MarshalMap(ddbThingWithRequiredFields{
+	// First marshal the model to get all fields
+	val, err := attributevalue.MarshalMap(ddbThingWithRequiredFields{
 		ThingWithRequiredFields: m,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Ensure primary key attributes are properly named
+	if v, ok := val["Name"]; ok {
+		// Convert to the correct attribute value type
+		switch av := v.(type) {
+		case *types.AttributeValueMemberS:
+			val["name"] = &types.AttributeValueMemberS{Value: av.Value}
+		case *types.AttributeValueMemberN:
+			val["name"] = &types.AttributeValueMemberN{Value: av.Value}
+		case *types.AttributeValueMemberB:
+			val["name"] = &types.AttributeValueMemberB{Value: av.Value}
+		case *types.AttributeValueMemberBOOL:
+			val["name"] = &types.AttributeValueMemberBOOL{Value: av.Value}
+		case *types.AttributeValueMemberNULL:
+			val["name"] = &types.AttributeValueMemberNULL{Value: av.Value}
+		case *types.AttributeValueMemberM:
+			val["name"] = &types.AttributeValueMemberM{Value: av.Value}
+		case *types.AttributeValueMemberL:
+			val["name"] = &types.AttributeValueMemberL{Value: av.Value}
+		case *types.AttributeValueMemberSS:
+			val["name"] = &types.AttributeValueMemberSS{Value: av.Value}
+		case *types.AttributeValueMemberNS:
+			val["name"] = &types.AttributeValueMemberNS{Value: av.Value}
+		case *types.AttributeValueMemberBS:
+			val["name"] = &types.AttributeValueMemberBS{Value: av.Value}
+		default:
+			val["name"] = v
+		}
+		delete(val, "Name")
+	}
+
+	return val, nil
 }
 
 // decodeThingWithRequiredFields translates a ThingWithRequiredFields stored in DynamoDB to a ThingWithRequiredFields struct.

@@ -554,6 +554,65 @@ func encodeTeacherSharingRule(m models.TeacherSharingRule) (map[string]types.Att
 	for k, v := range districtSchoolTeacherApp {
 		val[k] = v
 	}
+
+	// Ensure all attribute names match DynamoDB expectations
+	if v, ok := val["Teacher"]; ok {
+		// Convert to the correct attribute value type
+		switch av := v.(type) {
+		case *types.AttributeValueMemberS:
+			val["teacher"] = &types.AttributeValueMemberS{Value: av.Value}
+		case *types.AttributeValueMemberN:
+			val["teacher"] = &types.AttributeValueMemberN{Value: av.Value}
+		case *types.AttributeValueMemberB:
+			val["teacher"] = &types.AttributeValueMemberB{Value: av.Value}
+		case *types.AttributeValueMemberBOOL:
+			val["teacher"] = &types.AttributeValueMemberBOOL{Value: av.Value}
+		case *types.AttributeValueMemberNULL:
+			val["teacher"] = &types.AttributeValueMemberNULL{Value: av.Value}
+		case *types.AttributeValueMemberM:
+			val["teacher"] = &types.AttributeValueMemberM{Value: av.Value}
+		case *types.AttributeValueMemberL:
+			val["teacher"] = &types.AttributeValueMemberL{Value: av.Value}
+		case *types.AttributeValueMemberSS:
+			val["teacher"] = &types.AttributeValueMemberSS{Value: av.Value}
+		case *types.AttributeValueMemberNS:
+			val["teacher"] = &types.AttributeValueMemberNS{Value: av.Value}
+		case *types.AttributeValueMemberBS:
+			val["teacher"] = &types.AttributeValueMemberBS{Value: av.Value}
+		default:
+			val["teacher"] = v
+		}
+		delete(val, "Teacher")
+	}
+	if v, ok := val["SchoolApp"]; ok {
+		// Convert to the correct attribute value type
+		switch av := v.(type) {
+		case *types.AttributeValueMemberS:
+			val["school_app"] = &types.AttributeValueMemberS{Value: av.Value}
+		case *types.AttributeValueMemberN:
+			val["school_app"] = &types.AttributeValueMemberN{Value: av.Value}
+		case *types.AttributeValueMemberB:
+			val["school_app"] = &types.AttributeValueMemberB{Value: av.Value}
+		case *types.AttributeValueMemberBOOL:
+			val["school_app"] = &types.AttributeValueMemberBOOL{Value: av.Value}
+		case *types.AttributeValueMemberNULL:
+			val["school_app"] = &types.AttributeValueMemberNULL{Value: av.Value}
+		case *types.AttributeValueMemberM:
+			val["school_app"] = &types.AttributeValueMemberM{Value: av.Value}
+		case *types.AttributeValueMemberL:
+			val["school_app"] = &types.AttributeValueMemberL{Value: av.Value}
+		case *types.AttributeValueMemberSS:
+			val["school_app"] = &types.AttributeValueMemberSS{Value: av.Value}
+		case *types.AttributeValueMemberNS:
+			val["school_app"] = &types.AttributeValueMemberNS{Value: av.Value}
+		case *types.AttributeValueMemberBS:
+			val["school_app"] = &types.AttributeValueMemberBS{Value: av.Value}
+		default:
+			val["school_app"] = v
+		}
+		delete(val, "SchoolApp")
+	}
+
 	return val, err
 }
 

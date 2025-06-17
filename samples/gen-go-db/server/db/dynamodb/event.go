@@ -501,9 +501,73 @@ func (t EventTable) scanEventsBySkAndData(ctx context.Context, input db.ScanEven
 
 // encodeEvent encodes a Event as a DynamoDB map of attribute values.
 func encodeEvent(m models.Event) (map[string]types.AttributeValue, error) {
-	return attributevalue.MarshalMap(ddbEvent{
+	// First marshal the model to get all fields
+	val, err := attributevalue.MarshalMap(ddbEvent{
 		Event: m,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Ensure primary key attributes are properly named
+	if v, ok := val["Pk"]; ok {
+		// Convert to the correct attribute value type
+		switch av := v.(type) {
+		case *types.AttributeValueMemberS:
+			val["pk"] = &types.AttributeValueMemberS{Value: av.Value}
+		case *types.AttributeValueMemberN:
+			val["pk"] = &types.AttributeValueMemberN{Value: av.Value}
+		case *types.AttributeValueMemberB:
+			val["pk"] = &types.AttributeValueMemberB{Value: av.Value}
+		case *types.AttributeValueMemberBOOL:
+			val["pk"] = &types.AttributeValueMemberBOOL{Value: av.Value}
+		case *types.AttributeValueMemberNULL:
+			val["pk"] = &types.AttributeValueMemberNULL{Value: av.Value}
+		case *types.AttributeValueMemberM:
+			val["pk"] = &types.AttributeValueMemberM{Value: av.Value}
+		case *types.AttributeValueMemberL:
+			val["pk"] = &types.AttributeValueMemberL{Value: av.Value}
+		case *types.AttributeValueMemberSS:
+			val["pk"] = &types.AttributeValueMemberSS{Value: av.Value}
+		case *types.AttributeValueMemberNS:
+			val["pk"] = &types.AttributeValueMemberNS{Value: av.Value}
+		case *types.AttributeValueMemberBS:
+			val["pk"] = &types.AttributeValueMemberBS{Value: av.Value}
+		default:
+			val["pk"] = v
+		}
+		delete(val, "Pk")
+	}
+	if v, ok := val["Sk"]; ok {
+		// Convert to the correct attribute value type
+		switch av := v.(type) {
+		case *types.AttributeValueMemberS:
+			val["sk"] = &types.AttributeValueMemberS{Value: av.Value}
+		case *types.AttributeValueMemberN:
+			val["sk"] = &types.AttributeValueMemberN{Value: av.Value}
+		case *types.AttributeValueMemberB:
+			val["sk"] = &types.AttributeValueMemberB{Value: av.Value}
+		case *types.AttributeValueMemberBOOL:
+			val["sk"] = &types.AttributeValueMemberBOOL{Value: av.Value}
+		case *types.AttributeValueMemberNULL:
+			val["sk"] = &types.AttributeValueMemberNULL{Value: av.Value}
+		case *types.AttributeValueMemberM:
+			val["sk"] = &types.AttributeValueMemberM{Value: av.Value}
+		case *types.AttributeValueMemberL:
+			val["sk"] = &types.AttributeValueMemberL{Value: av.Value}
+		case *types.AttributeValueMemberSS:
+			val["sk"] = &types.AttributeValueMemberSS{Value: av.Value}
+		case *types.AttributeValueMemberNS:
+			val["sk"] = &types.AttributeValueMemberNS{Value: av.Value}
+		case *types.AttributeValueMemberBS:
+			val["sk"] = &types.AttributeValueMemberBS{Value: av.Value}
+		default:
+			val["sk"] = v
+		}
+		delete(val, "Sk")
+	}
+
+	return val, nil
 }
 
 // decodeEvent translates a Event stored in DynamoDB to a Event struct.

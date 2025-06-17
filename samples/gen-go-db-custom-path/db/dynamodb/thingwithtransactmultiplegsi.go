@@ -534,9 +534,45 @@ func (t ThingWithTransactMultipleGSITable) transactSaveThingWithTransactMultiple
 
 // encodeThingWithTransactMultipleGSI encodes a ThingWithTransactMultipleGSI as a DynamoDB map of attribute values.
 func encodeThingWithTransactMultipleGSI(m models.ThingWithTransactMultipleGSI) (map[string]types.AttributeValue, error) {
-	return attributevalue.MarshalMap(ddbThingWithTransactMultipleGSI{
+	// First marshal the model to get all fields
+	val, err := attributevalue.MarshalMap(ddbThingWithTransactMultipleGSI{
 		ThingWithTransactMultipleGSI: m,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Ensure primary key attributes are properly named
+	if v, ok := val["DateH"]; ok {
+		// Convert to the correct attribute value type
+		switch av := v.(type) {
+		case *types.AttributeValueMemberS:
+			val["dateH"] = &types.AttributeValueMemberS{Value: av.Value}
+		case *types.AttributeValueMemberN:
+			val["dateH"] = &types.AttributeValueMemberN{Value: av.Value}
+		case *types.AttributeValueMemberB:
+			val["dateH"] = &types.AttributeValueMemberB{Value: av.Value}
+		case *types.AttributeValueMemberBOOL:
+			val["dateH"] = &types.AttributeValueMemberBOOL{Value: av.Value}
+		case *types.AttributeValueMemberNULL:
+			val["dateH"] = &types.AttributeValueMemberNULL{Value: av.Value}
+		case *types.AttributeValueMemberM:
+			val["dateH"] = &types.AttributeValueMemberM{Value: av.Value}
+		case *types.AttributeValueMemberL:
+			val["dateH"] = &types.AttributeValueMemberL{Value: av.Value}
+		case *types.AttributeValueMemberSS:
+			val["dateH"] = &types.AttributeValueMemberSS{Value: av.Value}
+		case *types.AttributeValueMemberNS:
+			val["dateH"] = &types.AttributeValueMemberNS{Value: av.Value}
+		case *types.AttributeValueMemberBS:
+			val["dateH"] = &types.AttributeValueMemberBS{Value: av.Value}
+		default:
+			val["dateH"] = v
+		}
+		delete(val, "DateH")
+	}
+
+	return val, nil
 }
 
 // decodeThingWithTransactMultipleGSI translates a ThingWithTransactMultipleGSI stored in DynamoDB to a ThingWithTransactMultipleGSI struct.

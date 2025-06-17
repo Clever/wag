@@ -325,6 +325,65 @@ func encodeThingWithDateTimeComposite(m models.ThingWithDateTimeComposite) (map[
 	for k, v := range primaryKey {
 		val[k] = v
 	}
+
+	// Ensure all attribute names match DynamoDB expectations
+	if v, ok := val["TypeID"]; ok {
+		// Convert to the correct attribute value type
+		switch av := v.(type) {
+		case *types.AttributeValueMemberS:
+			val["typeID"] = &types.AttributeValueMemberS{Value: av.Value}
+		case *types.AttributeValueMemberN:
+			val["typeID"] = &types.AttributeValueMemberN{Value: av.Value}
+		case *types.AttributeValueMemberB:
+			val["typeID"] = &types.AttributeValueMemberB{Value: av.Value}
+		case *types.AttributeValueMemberBOOL:
+			val["typeID"] = &types.AttributeValueMemberBOOL{Value: av.Value}
+		case *types.AttributeValueMemberNULL:
+			val["typeID"] = &types.AttributeValueMemberNULL{Value: av.Value}
+		case *types.AttributeValueMemberM:
+			val["typeID"] = &types.AttributeValueMemberM{Value: av.Value}
+		case *types.AttributeValueMemberL:
+			val["typeID"] = &types.AttributeValueMemberL{Value: av.Value}
+		case *types.AttributeValueMemberSS:
+			val["typeID"] = &types.AttributeValueMemberSS{Value: av.Value}
+		case *types.AttributeValueMemberNS:
+			val["typeID"] = &types.AttributeValueMemberNS{Value: av.Value}
+		case *types.AttributeValueMemberBS:
+			val["typeID"] = &types.AttributeValueMemberBS{Value: av.Value}
+		default:
+			val["typeID"] = v
+		}
+		delete(val, "TypeID")
+	}
+	if v, ok := val["CreatedResource"]; ok {
+		// Convert to the correct attribute value type
+		switch av := v.(type) {
+		case *types.AttributeValueMemberS:
+			val["createdResource"] = &types.AttributeValueMemberS{Value: av.Value}
+		case *types.AttributeValueMemberN:
+			val["createdResource"] = &types.AttributeValueMemberN{Value: av.Value}
+		case *types.AttributeValueMemberB:
+			val["createdResource"] = &types.AttributeValueMemberB{Value: av.Value}
+		case *types.AttributeValueMemberBOOL:
+			val["createdResource"] = &types.AttributeValueMemberBOOL{Value: av.Value}
+		case *types.AttributeValueMemberNULL:
+			val["createdResource"] = &types.AttributeValueMemberNULL{Value: av.Value}
+		case *types.AttributeValueMemberM:
+			val["createdResource"] = &types.AttributeValueMemberM{Value: av.Value}
+		case *types.AttributeValueMemberL:
+			val["createdResource"] = &types.AttributeValueMemberL{Value: av.Value}
+		case *types.AttributeValueMemberSS:
+			val["createdResource"] = &types.AttributeValueMemberSS{Value: av.Value}
+		case *types.AttributeValueMemberNS:
+			val["createdResource"] = &types.AttributeValueMemberNS{Value: av.Value}
+		case *types.AttributeValueMemberBS:
+			val["createdResource"] = &types.AttributeValueMemberBS{Value: av.Value}
+		default:
+			val["createdResource"] = v
+		}
+		delete(val, "CreatedResource")
+	}
+
 	return val, err
 }
 
