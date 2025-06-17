@@ -602,6 +602,31 @@ func encodeThingWithMultiUseCompositeAttribute(m models.ThingWithMultiUseComposi
 	for k, v := range fourIndex {
 		val[k] = v
 	}
+
+	// Ensure all attribute names match DynamoDB expectations
+	if v, ok := val["One"]; ok {
+		val["one"] = v
+		delete(val, "One")
+	}
+
+	// Ensure all model fields are properly named
+	if v, ok := val["Four"]; ok {
+		val["four"] = v
+		delete(val, "Four")
+	}
+	if v, ok := val["One"]; ok {
+		val["one"] = v
+		delete(val, "One")
+	}
+	if v, ok := val["OneTwo"]; ok {
+		val["one_two"] = v
+		delete(val, "OneTwo")
+	}
+	if v, ok := val["Three"]; ok {
+		val["three"] = v
+		delete(val, "Three")
+	}
+
 	return val, err
 }
 

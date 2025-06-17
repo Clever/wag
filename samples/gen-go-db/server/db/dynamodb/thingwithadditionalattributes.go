@@ -1014,9 +1014,51 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByH
 
 // encodeThingWithAdditionalAttributes encodes a ThingWithAdditionalAttributes as a DynamoDB map of attribute values.
 func encodeThingWithAdditionalAttributes(m models.ThingWithAdditionalAttributes) (map[string]types.AttributeValue, error) {
-	return attributevalue.MarshalMap(ddbThingWithAdditionalAttributes{
+	// First marshal the model to get all fields
+	val, err := attributevalue.MarshalMap(ddbThingWithAdditionalAttributes{
 		ThingWithAdditionalAttributes: m,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Ensure primary key attributes are properly named
+	if v, ok := val["Name"]; ok {
+		val["name"] = v
+		delete(val, "Name")
+	}
+	if v, ok := val["Version"]; ok {
+		val["version"] = v
+		delete(val, "Version")
+	}
+
+	// Ensure all model fields are properly named
+	if v, ok := val["CreatedAt"]; ok {
+		val["createdAt"] = v
+		delete(val, "CreatedAt")
+	}
+	if v, ok := val["HashNullable"]; ok {
+		val["hashNullable"] = v
+		delete(val, "HashNullable")
+	}
+	if v, ok := val["ID"]; ok {
+		val["id"] = v
+		delete(val, "ID")
+	}
+	if v, ok := val["Name"]; ok {
+		val["name"] = v
+		delete(val, "Name")
+	}
+	if v, ok := val["RangeNullable"]; ok {
+		val["rangeNullable"] = v
+		delete(val, "RangeNullable")
+	}
+	if v, ok := val["Version"]; ok {
+		val["version"] = v
+		delete(val, "Version")
+	}
+
+	return val, nil
 }
 
 // decodeThingWithAdditionalAttributes translates a ThingWithAdditionalAttributes stored in DynamoDB to a ThingWithAdditionalAttributes struct.

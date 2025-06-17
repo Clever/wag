@@ -355,6 +355,27 @@ func encodeThingWithCompositeEnumAttributes(m models.ThingWithCompositeEnumAttri
 	for k, v := range primaryKey {
 		val[k] = v
 	}
+
+	// Ensure all attribute names match DynamoDB expectations
+	if v, ok := val["NameBranch"]; ok {
+		val["name_branch"] = v
+		delete(val, "NameBranch")
+	}
+	if v, ok := val["Date"]; ok {
+		val["date"] = v
+		delete(val, "Date")
+	}
+
+	// Ensure all model fields are properly named
+	if v, ok := val["Date"]; ok {
+		val["date"] = v
+		delete(val, "Date")
+	}
+	if v, ok := val["NameBranch"]; ok {
+		val["name_branch"] = v
+		delete(val, "NameBranch")
+	}
+
 	return val, err
 }
 

@@ -273,9 +273,27 @@ func (t ThingWithTransactionWithSimpleThingTable) transactSaveThingWithTransacti
 
 // encodeThingWithTransactionWithSimpleThing encodes a ThingWithTransactionWithSimpleThing as a DynamoDB map of attribute values.
 func encodeThingWithTransactionWithSimpleThing(m models.ThingWithTransactionWithSimpleThing) (map[string]types.AttributeValue, error) {
-	return attributevalue.MarshalMap(ddbThingWithTransactionWithSimpleThing{
+	// First marshal the model to get all fields
+	val, err := attributevalue.MarshalMap(ddbThingWithTransactionWithSimpleThing{
 		ThingWithTransactionWithSimpleThing: m,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Ensure primary key attributes are properly named
+	if v, ok := val["Name"]; ok {
+		val["name"] = v
+		delete(val, "Name")
+	}
+
+	// Ensure all model fields are properly named
+	if v, ok := val["Name"]; ok {
+		val["name"] = v
+		delete(val, "Name")
+	}
+
+	return val, nil
 }
 
 // decodeThingWithTransactionWithSimpleThing translates a ThingWithTransactionWithSimpleThing stored in DynamoDB to a ThingWithTransactionWithSimpleThing struct.

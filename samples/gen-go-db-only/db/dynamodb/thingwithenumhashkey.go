@@ -536,9 +536,39 @@ func (t ThingWithEnumHashKeyTable) scanThingWithEnumHashKeysByBranchAndDate2(ctx
 
 // encodeThingWithEnumHashKey encodes a ThingWithEnumHashKey as a DynamoDB map of attribute values.
 func encodeThingWithEnumHashKey(m models.ThingWithEnumHashKey) (map[string]types.AttributeValue, error) {
-	return attributevalue.MarshalMap(ddbThingWithEnumHashKey{
+	// First marshal the model to get all fields
+	val, err := attributevalue.MarshalMap(ddbThingWithEnumHashKey{
 		ThingWithEnumHashKey: m,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Ensure primary key attributes are properly named
+	if v, ok := val["Branch"]; ok {
+		val["branch"] = v
+		delete(val, "Branch")
+	}
+	if v, ok := val["Date"]; ok {
+		val["date"] = v
+		delete(val, "Date")
+	}
+
+	// Ensure all model fields are properly named
+	if v, ok := val["Branch"]; ok {
+		val["branch"] = v
+		delete(val, "Branch")
+	}
+	if v, ok := val["Date"]; ok {
+		val["date"] = v
+		delete(val, "Date")
+	}
+	if v, ok := val["Date2"]; ok {
+		val["date2"] = v
+		delete(val, "Date2")
+	}
+
+	return val, nil
 }
 
 // decodeThingWithEnumHashKey translates a ThingWithEnumHashKey stored in DynamoDB to a ThingWithEnumHashKey struct.

@@ -292,9 +292,35 @@ func (t ThingWithDateRangeTable) deleteThingWithDateRange(ctx context.Context, n
 
 // encodeThingWithDateRange encodes a ThingWithDateRange as a DynamoDB map of attribute values.
 func encodeThingWithDateRange(m models.ThingWithDateRange) (map[string]types.AttributeValue, error) {
-	return attributevalue.MarshalMap(ddbThingWithDateRange{
+	// First marshal the model to get all fields
+	val, err := attributevalue.MarshalMap(ddbThingWithDateRange{
 		ThingWithDateRange: m,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Ensure primary key attributes are properly named
+	if v, ok := val["Name"]; ok {
+		val["name"] = v
+		delete(val, "Name")
+	}
+	if v, ok := val["Date"]; ok {
+		val["date"] = v
+		delete(val, "Date")
+	}
+
+	// Ensure all model fields are properly named
+	if v, ok := val["Date"]; ok {
+		val["date"] = v
+		delete(val, "Date")
+	}
+	if v, ok := val["Name"]; ok {
+		val["name"] = v
+		delete(val, "Name")
+	}
+
+	return val, nil
 }
 
 // decodeThingWithDateRange translates a ThingWithDateRange stored in DynamoDB to a ThingWithDateRange struct.

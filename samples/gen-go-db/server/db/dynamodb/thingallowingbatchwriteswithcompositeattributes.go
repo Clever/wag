@@ -437,6 +437,27 @@ func encodeThingAllowingBatchWritesWithCompositeAttributes(m models.ThingAllowin
 	for k, v := range primaryKey {
 		val[k] = v
 	}
+
+	// Ensure all attribute names match DynamoDB expectations
+	if v, ok := val["NameID"]; ok {
+		val["name_id"] = v
+		delete(val, "NameID")
+	}
+	if v, ok := val["Date"]; ok {
+		val["date"] = v
+		delete(val, "Date")
+	}
+
+	// Ensure all model fields are properly named
+	if v, ok := val["Date"]; ok {
+		val["date"] = v
+		delete(val, "Date")
+	}
+	if v, ok := val["NameID"]; ok {
+		val["name_id"] = v
+		delete(val, "NameID")
+	}
+
 	return val, err
 }
 

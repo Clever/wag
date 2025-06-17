@@ -126,9 +126,27 @@ func (t ThingWithUnderscoresTable) deleteThingWithUnderscores(ctx context.Contex
 
 // encodeThingWithUnderscores encodes a ThingWithUnderscores as a DynamoDB map of attribute values.
 func encodeThingWithUnderscores(m models.ThingWithUnderscores) (map[string]types.AttributeValue, error) {
-	return attributevalue.MarshalMap(ddbThingWithUnderscores{
+	// First marshal the model to get all fields
+	val, err := attributevalue.MarshalMap(ddbThingWithUnderscores{
 		ThingWithUnderscores: m,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Ensure primary key attributes are properly named
+	if v, ok := val["IDApp"]; ok {
+		val["id_app"] = v
+		delete(val, "IDApp")
+	}
+
+	// Ensure all model fields are properly named
+	if v, ok := val["IDApp"]; ok {
+		val["id_app"] = v
+		delete(val, "IDApp")
+	}
+
+	return val, nil
 }
 
 // decodeThingWithUnderscores translates a ThingWithUnderscores stored in DynamoDB to a ThingWithUnderscores struct.

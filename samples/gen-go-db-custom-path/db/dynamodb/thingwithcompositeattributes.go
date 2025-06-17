@@ -584,6 +584,31 @@ func encodeThingWithCompositeAttributes(m models.ThingWithCompositeAttributes) (
 	for k, v := range nameVersion {
 		val[k] = v
 	}
+
+	// Ensure all attribute names match DynamoDB expectations
+	if v, ok := val["NameBranch"]; ok {
+		val["name_branch"] = v
+		delete(val, "NameBranch")
+	}
+	if v, ok := val["Date"]; ok {
+		val["date"] = v
+		delete(val, "Date")
+	}
+
+	// Ensure all model fields are properly named
+	if v, ok := val["Date"]; ok {
+		val["date"] = v
+		delete(val, "Date")
+	}
+	if v, ok := val["NameBranch"]; ok {
+		val["name_branch"] = v
+		delete(val, "NameBranch")
+	}
+	if v, ok := val["NameVersion"]; ok {
+		val["name_version"] = v
+		delete(val, "NameVersion")
+	}
+
 	return val, err
 }
 

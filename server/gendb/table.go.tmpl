@@ -1206,9 +1206,32 @@ func (t {{ $modelName }}Table) transactSave{{ $modelName }}And{{ $transactWithMo
 // encode{{ $modelName }} encodes a {{ $modelName }} as a DynamoDB map of attribute values.
 func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]types.AttributeValue, error) {
 {{- if not $hasCompositeAttrs }}
-  return attributevalue.MarshalMap(ddb{{ $modelName }}{
+  // First marshal the model to get all fields
+  val, err := attributevalue.MarshalMap(ddb{{ $modelName }}{
     {{ $modelName }}: m,
   })
+  if err != nil {
+    return nil, err
+  }
+
+  // Ensure primary key attributes are properly named
+  {{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+  if v, ok := val["{{ pascalize $pk.AttributeName }}"]; ok {
+    val["{{ $pk.AttributeName }}"] = v
+    delete(val, "{{ pascalize $pk.AttributeName }}")
+  }
+  {{- end }}
+
+  // Ensure all model fields are properly named
+  {{- $attrs := attributeNames $xdbConfig.DynamoDB }}
+  {{- range $_, $attr := $attrs }}
+  if v, ok := val["{{ pascalize $attr }}"]; ok {
+    val["{{ $attr }}"] = v
+    delete(val, "{{ pascalize $attr }}")
+  }
+  {{- end }}
+
+  return val, nil
 {{- else }}
   val, err := attributevalue.MarshalMap(ddb{{ $modelName }}{
     {{ $modelName }}: m,
@@ -1254,6 +1277,24 @@ func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]types.Attribu
   }
         {{- end }}
         {{- end }}
+
+  // Ensure all attribute names match DynamoDB expectations
+  {{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+  if v, ok := val["{{ pascalize $pk.AttributeName }}"]; ok {
+    val["{{ $pk.AttributeName }}"] = v
+    delete(val, "{{ pascalize $pk.AttributeName }}")
+  }
+  {{- end }}
+
+  // Ensure all model fields are properly named
+  {{- $attrs := attributeNames $xdbConfig.DynamoDB }}
+  {{- range $_, $attr := $attrs }}
+  if v, ok := val["{{ pascalize $attr }}"]; ok {
+    val["{{ $attr }}"] = v
+    delete(val, "{{ pascalize $attr }}")
+  }
+  {{- end }}
+
   return val, err
 {{- end }}
 }
@@ -1302,3 +1343,16 @@ func decode{{ $modelName }}s(ms []map[string]types.AttributeValue) ([]models.{{ 
   }
   return {{ camelize $modelName }}s, nil
 }
+
+{{- define "attributeNames" }}
+{{- $names := slice }}
+{{- range $_, $pk := .KeySchema }}
+{{- $names = slice $names $pk.AttributeName }}
+{{- end }}
+{{- range $_, $gsi := .GlobalSecondaryIndexes }}
+{{- range $_, $sk := $gsi.KeySchema }}
+{{- $names = slice $names $sk.AttributeName }}
+{{- end }}
+{{- end }}
+{{- $names }}
+{{- end }}

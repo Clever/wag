@@ -327,9 +327,35 @@ func (t ThingWithRequiredFields2Table) deleteThingWithRequiredFields2(ctx contex
 
 // encodeThingWithRequiredFields2 encodes a ThingWithRequiredFields2 as a DynamoDB map of attribute values.
 func encodeThingWithRequiredFields2(m models.ThingWithRequiredFields2) (map[string]types.AttributeValue, error) {
-	return attributevalue.MarshalMap(ddbThingWithRequiredFields2{
+	// First marshal the model to get all fields
+	val, err := attributevalue.MarshalMap(ddbThingWithRequiredFields2{
 		ThingWithRequiredFields2: m,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Ensure primary key attributes are properly named
+	if v, ok := val["Name"]; ok {
+		val["name"] = v
+		delete(val, "Name")
+	}
+	if v, ok := val["ID"]; ok {
+		val["id"] = v
+		delete(val, "ID")
+	}
+
+	// Ensure all model fields are properly named
+	if v, ok := val["ID"]; ok {
+		val["id"] = v
+		delete(val, "ID")
+	}
+	if v, ok := val["Name"]; ok {
+		val["name"] = v
+		delete(val, "Name")
+	}
+
+	return val, nil
 }
 
 // decodeThingWithRequiredFields2 translates a ThingWithRequiredFields2 stored in DynamoDB to a ThingWithRequiredFields2 struct.

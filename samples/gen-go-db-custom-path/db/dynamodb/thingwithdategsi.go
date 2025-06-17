@@ -472,9 +472,35 @@ func (t ThingWithDateGSITable) getThingWithDateGSIsByDateHAndID(ctx context.Cont
 
 // encodeThingWithDateGSI encodes a ThingWithDateGSI as a DynamoDB map of attribute values.
 func encodeThingWithDateGSI(m models.ThingWithDateGSI) (map[string]types.AttributeValue, error) {
-	return attributevalue.MarshalMap(ddbThingWithDateGSI{
+	// First marshal the model to get all fields
+	val, err := attributevalue.MarshalMap(ddbThingWithDateGSI{
 		ThingWithDateGSI: m,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Ensure primary key attributes are properly named
+	if v, ok := val["DateH"]; ok {
+		val["dateH"] = v
+		delete(val, "DateH")
+	}
+
+	// Ensure all model fields are properly named
+	if v, ok := val["DateH"]; ok {
+		val["dateH"] = v
+		delete(val, "DateH")
+	}
+	if v, ok := val["DateR"]; ok {
+		val["dateR"] = v
+		delete(val, "DateR")
+	}
+	if v, ok := val["ID"]; ok {
+		val["id"] = v
+		delete(val, "ID")
+	}
+
+	return val, nil
 }
 
 // decodeThingWithDateGSI translates a ThingWithDateGSI stored in DynamoDB to a ThingWithDateGSI struct.

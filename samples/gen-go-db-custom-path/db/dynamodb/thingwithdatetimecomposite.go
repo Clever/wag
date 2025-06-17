@@ -325,6 +325,27 @@ func encodeThingWithDateTimeComposite(m models.ThingWithDateTimeComposite) (map[
 	for k, v := range primaryKey {
 		val[k] = v
 	}
+
+	// Ensure all attribute names match DynamoDB expectations
+	if v, ok := val["TypeID"]; ok {
+		val["typeID"] = v
+		delete(val, "TypeID")
+	}
+	if v, ok := val["CreatedResource"]; ok {
+		val["createdResource"] = v
+		delete(val, "CreatedResource")
+	}
+
+	// Ensure all model fields are properly named
+	if v, ok := val["CreatedResource"]; ok {
+		val["createdResource"] = v
+		delete(val, "CreatedResource")
+	}
+	if v, ok := val["TypeID"]; ok {
+		val["typeID"] = v
+		delete(val, "TypeID")
+	}
+
 	return val, err
 }
 

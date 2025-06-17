@@ -554,6 +554,35 @@ func encodeTeacherSharingRule(m models.TeacherSharingRule) (map[string]types.Att
 	for k, v := range districtSchoolTeacherApp {
 		val[k] = v
 	}
+
+	// Ensure all attribute names match DynamoDB expectations
+	if v, ok := val["Teacher"]; ok {
+		val["teacher"] = v
+		delete(val, "Teacher")
+	}
+	if v, ok := val["SchoolApp"]; ok {
+		val["school_app"] = v
+		delete(val, "SchoolApp")
+	}
+
+	// Ensure all model fields are properly named
+	if v, ok := val["District"]; ok {
+		val["district"] = v
+		delete(val, "District")
+	}
+	if v, ok := val["SchoolApp"]; ok {
+		val["school_app"] = v
+		delete(val, "SchoolApp")
+	}
+	if v, ok := val["SchoolTeacherApp"]; ok {
+		val["school_teacher_app"] = v
+		delete(val, "SchoolTeacherApp")
+	}
+	if v, ok := val["Teacher"]; ok {
+		val["teacher"] = v
+		delete(val, "Teacher")
+	}
+
 	return val, err
 }
 

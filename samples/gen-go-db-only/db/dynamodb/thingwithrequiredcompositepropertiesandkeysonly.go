@@ -397,6 +397,23 @@ func encodeThingWithRequiredCompositePropertiesAndKeysOnly(m models.ThingWithReq
 	for k, v := range propertyOneAndTwoPropertyThree {
 		val[k] = v
 	}
+
+	// Ensure all attribute names match DynamoDB expectations
+	if v, ok := val["PropertyThree"]; ok {
+		val["propertyThree"] = v
+		delete(val, "PropertyThree")
+	}
+
+	// Ensure all model fields are properly named
+	if v, ok := val["PropertyOneAndTwo"]; ok {
+		val["propertyOneAndTwo"] = v
+		delete(val, "PropertyOneAndTwo")
+	}
+	if v, ok := val["PropertyThree"]; ok {
+		val["propertyThree"] = v
+		delete(val, "PropertyThree")
+	}
+
 	return val, err
 }
 

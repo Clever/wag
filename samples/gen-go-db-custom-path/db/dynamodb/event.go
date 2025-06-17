@@ -501,9 +501,39 @@ func (t EventTable) scanEventsBySkAndData(ctx context.Context, input db.ScanEven
 
 // encodeEvent encodes a Event as a DynamoDB map of attribute values.
 func encodeEvent(m models.Event) (map[string]types.AttributeValue, error) {
-	return attributevalue.MarshalMap(ddbEvent{
+	// First marshal the model to get all fields
+	val, err := attributevalue.MarshalMap(ddbEvent{
 		Event: m,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Ensure primary key attributes are properly named
+	if v, ok := val["Pk"]; ok {
+		val["pk"] = v
+		delete(val, "Pk")
+	}
+	if v, ok := val["Sk"]; ok {
+		val["sk"] = v
+		delete(val, "Sk")
+	}
+
+	// Ensure all model fields are properly named
+	if v, ok := val["Data"]; ok {
+		val["data"] = v
+		delete(val, "Data")
+	}
+	if v, ok := val["Pk"]; ok {
+		val["pk"] = v
+		delete(val, "Pk")
+	}
+	if v, ok := val["Sk"]; ok {
+		val["sk"] = v
+		delete(val, "Sk")
+	}
+
+	return val, nil
 }
 
 // decodeEvent translates a Event stored in DynamoDB to a Event struct.

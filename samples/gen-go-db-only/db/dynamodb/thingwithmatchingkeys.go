@@ -549,6 +549,31 @@ func encodeThingWithMatchingKeys(m models.ThingWithMatchingKeys) (map[string]typ
 	for k, v := range byAssoc {
 		val[k] = v
 	}
+
+	// Ensure all attribute names match DynamoDB expectations
+	if v, ok := val["Bear"]; ok {
+		val["bear"] = v
+		delete(val, "Bear")
+	}
+	if v, ok := val["AssocTypeID"]; ok {
+		val["assocTypeID"] = v
+		delete(val, "AssocTypeID")
+	}
+
+	// Ensure all model fields are properly named
+	if v, ok := val["AssocTypeID"]; ok {
+		val["assocTypeID"] = v
+		delete(val, "AssocTypeID")
+	}
+	if v, ok := val["Bear"]; ok {
+		val["bear"] = v
+		delete(val, "Bear")
+	}
+	if v, ok := val["CreatedBear"]; ok {
+		val["createdBear"] = v
+		delete(val, "CreatedBear")
+	}
+
 	return val, err
 }
 

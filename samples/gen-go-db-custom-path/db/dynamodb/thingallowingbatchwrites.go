@@ -406,9 +406,35 @@ func (t ThingAllowingBatchWritesTable) deleteThingAllowingBatchWrites(ctx contex
 
 // encodeThingAllowingBatchWrites encodes a ThingAllowingBatchWrites as a DynamoDB map of attribute values.
 func encodeThingAllowingBatchWrites(m models.ThingAllowingBatchWrites) (map[string]types.AttributeValue, error) {
-	return attributevalue.MarshalMap(ddbThingAllowingBatchWrites{
+	// First marshal the model to get all fields
+	val, err := attributevalue.MarshalMap(ddbThingAllowingBatchWrites{
 		ThingAllowingBatchWrites: m,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Ensure primary key attributes are properly named
+	if v, ok := val["Name"]; ok {
+		val["name"] = v
+		delete(val, "Name")
+	}
+	if v, ok := val["Version"]; ok {
+		val["version"] = v
+		delete(val, "Version")
+	}
+
+	// Ensure all model fields are properly named
+	if v, ok := val["Name"]; ok {
+		val["name"] = v
+		delete(val, "Name")
+	}
+	if v, ok := val["Version"]; ok {
+		val["version"] = v
+		delete(val, "Version")
+	}
+
+	return val, nil
 }
 
 // decodeThingAllowingBatchWrites translates a ThingAllowingBatchWrites stored in DynamoDB to a ThingAllowingBatchWrites struct.

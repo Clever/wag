@@ -993,9 +993,51 @@ func (t ThingTable) getThingsByHashNullableAndName(ctx context.Context, input db
 
 // encodeThing encodes a Thing as a DynamoDB map of attribute values.
 func encodeThing(m models.Thing) (map[string]types.AttributeValue, error) {
-	return attributevalue.MarshalMap(ddbThing{
+	// First marshal the model to get all fields
+	val, err := attributevalue.MarshalMap(ddbThing{
 		Thing: m,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Ensure primary key attributes are properly named
+	if v, ok := val["Name"]; ok {
+		val["name"] = v
+		delete(val, "Name")
+	}
+	if v, ok := val["Version"]; ok {
+		val["version"] = v
+		delete(val, "Version")
+	}
+
+	// Ensure all model fields are properly named
+	if v, ok := val["CreatedAt"]; ok {
+		val["createdAt"] = v
+		delete(val, "CreatedAt")
+	}
+	if v, ok := val["HashNullable"]; ok {
+		val["hashNullable"] = v
+		delete(val, "HashNullable")
+	}
+	if v, ok := val["ID"]; ok {
+		val["id"] = v
+		delete(val, "ID")
+	}
+	if v, ok := val["Name"]; ok {
+		val["name"] = v
+		delete(val, "Name")
+	}
+	if v, ok := val["RangeNullable"]; ok {
+		val["rangeNullable"] = v
+		delete(val, "RangeNullable")
+	}
+	if v, ok := val["Version"]; ok {
+		val["version"] = v
+		delete(val, "Version")
+	}
+
+	return val, nil
 }
 
 // decodeThing translates a Thing stored in DynamoDB to a Thing struct.

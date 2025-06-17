@@ -791,6 +791,35 @@ func encodeDeployment(m models.Deployment) (map[string]types.AttributeValue, err
 	for k, v := range byDate {
 		val[k] = v
 	}
+
+	// Ensure all attribute names match DynamoDB expectations
+	if v, ok := val["EnvApp"]; ok {
+		val["envApp"] = v
+		delete(val, "EnvApp")
+	}
+	if v, ok := val["Version"]; ok {
+		val["version"] = v
+		delete(val, "Version")
+	}
+
+	// Ensure all model fields are properly named
+	if v, ok := val["Date"]; ok {
+		val["date"] = v
+		delete(val, "Date")
+	}
+	if v, ok := val["EnvApp"]; ok {
+		val["envApp"] = v
+		delete(val, "EnvApp")
+	}
+	if v, ok := val["Environment"]; ok {
+		val["environment"] = v
+		delete(val, "Environment")
+	}
+	if v, ok := val["Version"]; ok {
+		val["version"] = v
+		delete(val, "Version")
+	}
+
 	return val, err
 }
 

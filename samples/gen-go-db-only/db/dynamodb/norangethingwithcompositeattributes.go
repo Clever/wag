@@ -525,6 +525,31 @@ func encodeNoRangeThingWithCompositeAttributes(m models.NoRangeThingWithComposit
 	for k, v := range nameBranchCommit {
 		val[k] = v
 	}
+
+	// Ensure all attribute names match DynamoDB expectations
+	if v, ok := val["NameBranch"]; ok {
+		val["name_branch"] = v
+		delete(val, "NameBranch")
+	}
+
+	// Ensure all model fields are properly named
+	if v, ok := val["Date"]; ok {
+		val["date"] = v
+		delete(val, "Date")
+	}
+	if v, ok := val["NameBranch"]; ok {
+		val["name_branch"] = v
+		delete(val, "NameBranch")
+	}
+	if v, ok := val["NameBranchCommit"]; ok {
+		val["name_branch_commit"] = v
+		delete(val, "NameBranchCommit")
+	}
+	if v, ok := val["NameVersion"]; ok {
+		val["name_version"] = v
+		delete(val, "NameVersion")
+	}
+
 	return val, err
 }
 
