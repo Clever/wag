@@ -1,5 +1,5 @@
-v9.9.0
-Pre-release: Upgrade to aws-sdk-go-v2 across all templates
+v9.8.9
+Pre-release: marshall model and then check attribs
 
 v9.8.1
 Update go version in go.mod files for clients and models to 1.24 from 1.24.0
