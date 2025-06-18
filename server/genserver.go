@@ -2,7 +2,10 @@ package server
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"log"
+	"reflect"
 	"strings"
 
 	"github.com/go-openapi/spec"
@@ -34,17 +37,30 @@ type routerFunction struct {
 	OpID        string
 }
 
+const SubrouterKey string = "x-routers"
+
+type subrouter struct {
+	Key  string `json:"key"`
+	Path string `json:"path"`
+}
+
 type routerTemplate struct {
 	ImportStatements string
 	Title            string
 	Functions        []routerFunction
-	Subrouter        bool
+	IsSubrouter      bool
+	Subrouters       []subrouter
 }
 
-func generateRouter(packageName, basePath, outputPath string, s spec.Swagger, paths *spec.Paths, subrouter bool) error {
+func generateRouter(
+	packageName, basePath, outputPath string,
+	s spec.Swagger,
+	paths *spec.Paths,
+	isSubrouter bool,
+) error {
 	var template routerTemplate
 	template.Title = s.Info.Title
-	template.Subrouter = subrouter
+	template.IsSubrouter = isSubrouter
 
 	for _, path := range swagger.SortedPathItemKeys(paths.Paths) {
 		pathItem := paths.Paths[path]
@@ -61,14 +77,24 @@ func generateRouter(packageName, basePath, outputPath string, s spec.Swagger, pa
 		}
 	}
 
-	if subrouter {
-		template.ImportStatements = swagger.ImportStatements([]string{
+	var subrouterImports []string
+	var err error
+	template.Subrouters, subrouterImports, err = buildSubrouters(packageName, s)
+	if err != nil {
+		return err
+	}
+
+	var imports []string
+	if isSubrouter {
+		imports = []string{
 			"net/http",
 			"github.com/gorilla/mux",
 			"github.com/Clever/kayvee-go/v7/logger",
-		})
+		}
+
+		imports = append(imports, subrouterImports...)
 	} else {
-		template.ImportStatements = swagger.ImportStatements([]string{
+		imports = []string{
 			"compress/gzip",
 			"context",
 			"log",
@@ -80,14 +106,21 @@ func generateRouter(packageName, basePath, outputPath string, s spec.Swagger, pa
 			"syscall",
 			"time",
 			"github.com/Clever/go-process-metrics/metrics",
-			packageName + "/servertracing",
+			"github.com/Clever/kayvee-go/v7/logger",
+			`kvMiddleware "github.com/Clever/kayvee-go/v7/middleware"`,
+		}
+
+		imports = append(imports, subrouterImports...)
+		imports = append(
+			imports,
+			packageName+"/servertracing",
 			"github.com/gorilla/handlers",
 			"github.com/gorilla/mux",
 			"github.com/kardianos/osext",
-			"github.com/Clever/kayvee-go/v7/logger",
-			`kvMiddleware "github.com/Clever/kayvee-go/v7/middleware"`,
-		})
+		)
 	}
+
+	template.ImportStatements = swagger.ImportStatements(imports)
 
 	routerCode, err := templates.WriteTemplate(routerTemplateStr, template)
 	if err != nil {
@@ -96,6 +129,41 @@ func generateRouter(packageName, basePath, outputPath string, s spec.Swagger, pa
 	g := swagger.Generator{BasePath: basePath}
 	g.Print(routerCode)
 	return g.WriteFile("server/router.go")
+}
+
+func buildSubrouters(packageName string, s spec.Swagger) ([]subrouter, []string, error) {
+	var subrouterConfig []subrouter
+	if routers, ok := s.Extensions[SubrouterKey]; ok {
+		fmt.Println("ROUTERS", routers, reflect.TypeOf(routers))
+		if subroutersM, ok := routers.([]interface{}); ok {
+			subroutersB, err := json.Marshal(subroutersM)
+			if err != nil {
+				return nil, nil, err
+			}
+
+			err = json.Unmarshal(subroutersB, &subrouterConfig)
+			if err != nil {
+				return nil, nil, err
+			}
+		} else {
+			log.Println("WARNING: x-routers subrouter config was not an array")
+		}
+	}
+
+	var imports []string
+	for _, r := range subrouterConfig {
+		imports = append(
+			imports,
+			fmt.Sprintf(
+				"%srouter \"%s/routers/%s/gen-go/server\"",
+				r.Key,
+				strings.TrimSuffix(packageName, "/gen-go"),
+				r.Key,
+			),
+		)
+	}
+
+	return subrouterConfig, imports, nil
 }
 
 type interfaceTemplate struct {

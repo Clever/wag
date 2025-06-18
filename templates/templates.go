@@ -9,7 +9,10 @@ import (
 // and returns a filled-out template.
 func WriteTemplate(templateStr string, templateStruct interface{}) (string, error) {
 
-	tmpl, err := template.New("test").Parse(templateStr)
+	tmpl, err := template.
+		New("test").
+		Funcs(template.FuncMap{"index1": func(i int) int { return i + 1 }}).
+		Parse(templateStr)
 	if err != nil {
 		return "", err
 	}
