@@ -14,8 +14,9 @@ import (
   "context"
   "errors"
   "fmt"
-  "reflect"
-  "strings"
+        {{- if or $hasProjectedIndexesWithCompositeAttributes $hasStringPropertiesInComposites }}
+        "strings"
+        {{- end }}
 
   "{{ .ModuleName }}{{.GoOutputPath}}/models{{.VersionSuffix}}"
   "{{ .PackageName }}/{{ .OutputPath }}"
@@ -32,8 +33,6 @@ import (
 var _ = strfmt.DateTime{}
 var _ = errors.New("")
 var _ = []types.AttributeValue{}
-var _ = reflect.TypeOf(int(0))
-var _ = strings.Split("", "")
 
 // {{ $modelName }}Table represents the user-configurable properties of the {{ $modelName }} table.
 type {{ $modelName }}Table struct {
@@ -1206,69 +1205,63 @@ func (t {{ $modelName }}Table) transactSave{{ $modelName }}And{{ $transactWithMo
 
 // encode{{ $modelName }} encodes a {{ $modelName }} as a DynamoDB map of attribute values.
 func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]types.AttributeValue, error) {
-  // First marshal the model to get all fields
-  rawVal, err := attributevalue.MarshalMap(m)
+{{- if not $hasCompositeAttrs }}
+  // no composite attributes, marshal the model with the json tag
+  val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+    o.TagKey = "json"
+  })
   if err != nil {
     return nil, err
   }
-
-  // Create a new map with the correct field names from json tags
-  val := make(map[string]types.AttributeValue)
-
-  // Get the type of the {{ $modelName }} struct
-  t := reflect.TypeOf(m)
-
-  // Create a map of struct field names to their json tags and types
-  fieldMap := make(map[string]struct {
-    jsonName string
-    isMap    bool
-  })
-  for i := 0; i < t.NumField(); i++ {
-    field := t.Field(i)
-    jsonTag := field.Tag.Get("json")
-    if jsonTag != "" && jsonTag != "-" {
-      // Handle omitempty in the tag
-      jsonTag = strings.Split(jsonTag, ",")[0]
-      fieldMap[field.Name] = struct {
-        jsonName string
-        isMap    bool
-      }{
-        jsonName: jsonTag,
-        isMap:    field.Type.Kind() == reflect.Map || field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Map,
-      }
-    }
-  }
-
-  for k, v := range rawVal {
-    // Skip null values
-    if _, ok := v.(*types.AttributeValueMemberNULL); ok {
-      continue
-    }
-
-    // Get the field info from the map
-    if fieldInfo, ok := fieldMap[k]; ok {
-      // Handle map fields
-      if fieldInfo.isMap {
-        if memberM, ok := v.(*types.AttributeValueMemberM); ok {
-          // Create a new map for the nested structure
-          nestedVal := make(map[string]types.AttributeValue)
-          for mk, mv := range memberM.Value {
-            // Skip null values in nested map
-            if _, ok := mv.(*types.AttributeValueMemberNULL); ok {
-              continue
-            }
-            nestedVal[mk] = mv
-          }
-          val[fieldInfo.jsonName] = &types.AttributeValueMemberM{Value: nestedVal}
-        }
-        continue
-      }
-
-      val[fieldInfo.jsonName] = v
-    }
-  }
-
   return val, nil
+{{- else }}
+  // with composite attributes, marshal the model
+  val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+    o.TagKey = "json"
+  })
+  if err != nil {
+    return nil, err
+  }
+        // make sure composite attributes don't contain separator characters
+        {{- $strPropertiesInComposites := stringPropertiesInComposites $xdbConfig }}
+        {{- range $_, $sep := sortedKeys $strPropertiesInComposites }}
+        {{- range $compositeProp := index $strPropertiesInComposites $sep }}
+  if strings.Contains({{ attributeToModelValue $xdbConfig $compositeProp "m." }}, "{{ $sep }}") {
+    return nil, fmt.Errorf("{{ $compositeProp }} cannot contain '{{ $sep }}': %s", {{ attributeToModelValue $xdbConfig $compositeProp "m." }})
+  }
+        {{- end }}
+        {{- end }}
+  // add in composite attributes
+        {{- if indexContainsCompositeAttribute $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
+  primaryKey, err := attributevalue.MarshalMap(ddb{{ $modelName }}PrimaryKey{
+    {{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+    {{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValue $xdbConfig $pk.AttributeName "m" }}{{ else }}{{ attributeToModelValue $xdbConfig $pk.AttributeName "m." }}{{ end }},
+                {{- end }}
+  })
+  if err != nil {
+    return nil, err
+  }
+  for k, v := range primaryKey {
+    val[k] = v
+  }
+        {{- end }}
+        {{- range $gsi := $xdbConfig.DynamoDB.GlobalSecondaryIndexes }}
+        {{- if indexContainsCompositeAttribute $xdbConfig $gsi.KeySchema }}
+  {{ camelize $gsi.IndexName }}, err := attributevalue.MarshalMap(ddb{{ $modelName }}GSI{{ pascalize $gsi.IndexName }}{
+    {{- range $_, $sk := $gsi.KeySchema }}
+    {{ pascalize $sk.AttributeName }}: {{ if isComposite $xdbConfig $sk.AttributeName }}{{ compositeValue $xdbConfig $sk.AttributeName "m" }}{{ else }}{{ attributeToModelValue $xdbConfig $sk.AttributeName "m." }}{{ end }},
+                {{- end }}
+  })
+  if err != nil {
+    return nil, err
+  }
+  for k, v := range {{ camelize $gsi.IndexName }} {
+    val[k] = v
+  }
+        {{- end }}
+        {{- end }}
+  return val, err
+{{- end }}
 }
 
 // decode{{ $modelName }} translates a {{ $modelName }} stored in DynamoDB to a {{ $modelName }} struct.
