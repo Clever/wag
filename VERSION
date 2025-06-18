@@ -1,5 +1,5 @@
 v9.8.9
-Pre-release: marshall model and then check attribs
+Pre-release: marshall model with json tagkey and then check attribs
 
 v9.8.1
 Update go version in go.mod files for clients and models to 1.24 from 1.24.0
