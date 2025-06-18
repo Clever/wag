@@ -7,6 +7,7 @@ package server
 
 {{.ImportStatements}}
 
+{{if not .Subrouter}}
 // Server defines a HTTP server that implements the Controller interface.
 type Server struct {
 	// Handler should generally not be changed. It exposed to make testing easier.
@@ -80,10 +81,12 @@ func (s *Server) Serve() error {
 	return nil
 }
 
+{{end}}
 type handler struct {
 	Controller
 }
 
+{{if not .Subrouter}}
 func startLoggingProcessMetrics() {
 	metrics.Log("{{.Title}}", 1*time.Minute)
 }
@@ -107,7 +110,6 @@ func withMiddleware(serviceName string, router http.Handler, m []func(http.Handl
 	return handler
 }
 
-
 // New returns a Server that implements the Controller interface. It will start when "Serve" is called.
 func New(c Controller, addr string, options ...func(*serverConfig)) *Server {
 	return NewWithMiddleware(c, addr, []func(http.Handler) http.Handler{}, options...)
@@ -127,6 +129,7 @@ func newRouter(c Controller) *mux.Router {
 	return router
 }
 
+{{end}}
 // Register registers a controller's behavior at the appropriate routes within a given router.
 //
 // Making this function public supports using a wag-defined router as a subrouter. This
@@ -145,6 +148,7 @@ func Register(router *mux.Router, c Controller) {
 	{{end}}
 }
 
+{{if not .Subrouter}}
 // NewWithMiddleware returns a Server that implemenets the Controller interface. It runs the
 // middleware after the built-in middleware (e.g. logging), but before the controller methods.
 // The middleware is executed in the order specified. The server will start when "Serve" is called.
@@ -174,4 +178,6 @@ func AttachMiddleware(router *mux.Router, addr string, m []func(http.Handler) ht
 
 	handler := withMiddleware("{{.Title}}", router, m, config)
 	return &Server{Handler: handler, addr: addr, l: l, config: config}
-}`
+}
+
+{{end}}`
