@@ -14,8 +14,8 @@ import (
 )
 
 // Generate server package for a swagger spec.
-func Generate(packageName, basePath, outputPath string, s spec.Swagger) error {
-	if err := generateRouter(packageName, basePath, outputPath, s, s.Paths); err != nil {
+func Generate(packageName, basePath, outputPath string, s spec.Swagger, subrouter bool) error {
+	if err := generateRouter(packageName, basePath, outputPath, s, s.Paths, subrouter); err != nil {
 		return err
 	}
 	if err := generateInterface(packageName, basePath, outputPath, &s, s.Info.InfoProps.Title, s.Paths); err != nil {
@@ -38,11 +38,14 @@ type routerTemplate struct {
 	ImportStatements string
 	Title            string
 	Functions        []routerFunction
+	Subrouter        bool
 }
 
-func generateRouter(packageName, basePath, outputPath string, s spec.Swagger, paths *spec.Paths) error {
+func generateRouter(packageName, basePath, outputPath string, s spec.Swagger, paths *spec.Paths, subrouter bool) error {
 	var template routerTemplate
 	template.Title = s.Info.Title
+	template.Subrouter = subrouter
+
 	for _, path := range swagger.SortedPathItemKeys(paths.Paths) {
 		pathItem := paths.Paths[path]
 		pathItemOps := swagger.PathItemOperations(pathItem)
@@ -57,25 +60,35 @@ func generateRouter(packageName, basePath, outputPath string, s spec.Swagger, pa
 			})
 		}
 	}
-	template.ImportStatements = swagger.ImportStatements([]string{
-		"compress/gzip",
-		"context",
-		"log",
-		"net/http",
-		`_ "net/http/pprof"`,
-		"os",
-		"os/signal",
-		"path",
-		"syscall",
-		"time",
-		"github.com/Clever/go-process-metrics/metrics",
-		packageName + "/servertracing",
-		"github.com/gorilla/handlers",
-		"github.com/gorilla/mux",
-		"github.com/kardianos/osext",
-		"github.com/Clever/kayvee-go/v7/logger",
-		`kvMiddleware "github.com/Clever/kayvee-go/v7/middleware"`,
-	})
+
+	if subrouter {
+		template.ImportStatements = swagger.ImportStatements([]string{
+			"net/http",
+			"github.com/gorilla/mux",
+			"github.com/Clever/kayvee-go/v7/logger",
+		})
+	} else {
+		template.ImportStatements = swagger.ImportStatements([]string{
+			"compress/gzip",
+			"context",
+			"log",
+			"net/http",
+			`_ "net/http/pprof"`,
+			"os",
+			"os/signal",
+			"path",
+			"syscall",
+			"time",
+			"github.com/Clever/go-process-metrics/metrics",
+			packageName + "/servertracing",
+			"github.com/gorilla/handlers",
+			"github.com/gorilla/mux",
+			"github.com/kardianos/osext",
+			"github.com/Clever/kayvee-go/v7/logger",
+			`kvMiddleware "github.com/Clever/kayvee-go/v7/middleware"`,
+		})
+	}
+
 	routerCode, err := templates.WriteTemplate(routerTemplateStr, template)
 	if err != nil {
 		return err
