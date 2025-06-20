@@ -1267,7 +1267,9 @@ func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]types.Attribu
 // decode{{ $modelName }} translates a {{ $modelName }} stored in DynamoDB to a {{ $modelName }} struct.
 func decode{{ $modelName }}(m map[string]types.AttributeValue, out *models.{{ $modelName }}) error {
   var ddb{{ $modelName }} ddb{{ $modelName }}
-  if err := attributevalue.UnmarshalMap(m, &ddb{{ $modelName }}); err != nil {
+  if err := attributevalue.UnmarshalMapWithOptions(m, &ddb{{ $modelName }}, func(o *attributevalue.DecoderOptions) {
+    o.TagKey = "json"
+  }); err != nil {
     return err
   }
   *out = ddb{{ $modelName }}.{{ $modelName }}
