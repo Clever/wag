@@ -444,7 +444,9 @@ func encodeThingAllowingBatchWritesWithCompositeAttributes(m models.ThingAllowin
 // decodeThingAllowingBatchWritesWithCompositeAttributes translates a ThingAllowingBatchWritesWithCompositeAttributes stored in DynamoDB to a ThingAllowingBatchWritesWithCompositeAttributes struct.
 func decodeThingAllowingBatchWritesWithCompositeAttributes(m map[string]types.AttributeValue, out *models.ThingAllowingBatchWritesWithCompositeAttributes) error {
 	var ddbThingAllowingBatchWritesWithCompositeAttributes ddbThingAllowingBatchWritesWithCompositeAttributes
-	if err := attributevalue.UnmarshalMap(m, &ddbThingAllowingBatchWritesWithCompositeAttributes); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingAllowingBatchWritesWithCompositeAttributes, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingAllowingBatchWritesWithCompositeAttributes.ThingAllowingBatchWritesWithCompositeAttributes

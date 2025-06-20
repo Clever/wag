@@ -332,7 +332,9 @@ func encodeThingWithDateTimeComposite(m models.ThingWithDateTimeComposite) (map[
 // decodeThingWithDateTimeComposite translates a ThingWithDateTimeComposite stored in DynamoDB to a ThingWithDateTimeComposite struct.
 func decodeThingWithDateTimeComposite(m map[string]types.AttributeValue, out *models.ThingWithDateTimeComposite) error {
 	var ddbThingWithDateTimeComposite ddbThingWithDateTimeComposite
-	if err := attributevalue.UnmarshalMap(m, &ddbThingWithDateTimeComposite); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithDateTimeComposite, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithDateTimeComposite.ThingWithDateTimeComposite

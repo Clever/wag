@@ -286,7 +286,9 @@ func encodeThingWithTransaction(m models.ThingWithTransaction) (map[string]types
 // decodeThingWithTransaction translates a ThingWithTransaction stored in DynamoDB to a ThingWithTransaction struct.
 func decodeThingWithTransaction(m map[string]types.AttributeValue, out *models.ThingWithTransaction) error {
 	var ddbThingWithTransaction ddbThingWithTransaction
-	if err := attributevalue.UnmarshalMap(m, &ddbThingWithTransaction); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithTransaction, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithTransaction.ThingWithTransaction

@@ -223,7 +223,9 @@ func encodeSimpleThing(m models.SimpleThing) (map[string]types.AttributeValue, e
 // decodeSimpleThing translates a SimpleThing stored in DynamoDB to a SimpleThing struct.
 func decodeSimpleThing(m map[string]types.AttributeValue, out *models.SimpleThing) error {
 	var ddbSimpleThing ddbSimpleThing
-	if err := attributevalue.UnmarshalMap(m, &ddbSimpleThing); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbSimpleThing, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbSimpleThing.SimpleThing

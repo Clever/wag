@@ -549,7 +549,9 @@ func encodeThingWithEnumHashKey(m models.ThingWithEnumHashKey) (map[string]types
 // decodeThingWithEnumHashKey translates a ThingWithEnumHashKey stored in DynamoDB to a ThingWithEnumHashKey struct.
 func decodeThingWithEnumHashKey(m map[string]types.AttributeValue, out *models.ThingWithEnumHashKey) error {
 	var ddbThingWithEnumHashKey ddbThingWithEnumHashKey
-	if err := attributevalue.UnmarshalMap(m, &ddbThingWithEnumHashKey); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithEnumHashKey, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithEnumHashKey.ThingWithEnumHashKey

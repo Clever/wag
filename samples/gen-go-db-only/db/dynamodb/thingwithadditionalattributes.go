@@ -1027,7 +1027,9 @@ func encodeThingWithAdditionalAttributes(m models.ThingWithAdditionalAttributes)
 // decodeThingWithAdditionalAttributes translates a ThingWithAdditionalAttributes stored in DynamoDB to a ThingWithAdditionalAttributes struct.
 func decodeThingWithAdditionalAttributes(m map[string]types.AttributeValue, out *models.ThingWithAdditionalAttributes) error {
 	var ddbThingWithAdditionalAttributes ddbThingWithAdditionalAttributes
-	if err := attributevalue.UnmarshalMap(m, &ddbThingWithAdditionalAttributes); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithAdditionalAttributes, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithAdditionalAttributes.ThingWithAdditionalAttributes

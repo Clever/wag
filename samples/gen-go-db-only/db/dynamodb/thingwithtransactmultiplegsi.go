@@ -547,7 +547,9 @@ func encodeThingWithTransactMultipleGSI(m models.ThingWithTransactMultipleGSI) (
 // decodeThingWithTransactMultipleGSI translates a ThingWithTransactMultipleGSI stored in DynamoDB to a ThingWithTransactMultipleGSI struct.
 func decodeThingWithTransactMultipleGSI(m map[string]types.AttributeValue, out *models.ThingWithTransactMultipleGSI) error {
 	var ddbThingWithTransactMultipleGSI ddbThingWithTransactMultipleGSI
-	if err := attributevalue.UnmarshalMap(m, &ddbThingWithTransactMultipleGSI); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithTransactMultipleGSI, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithTransactMultipleGSI.ThingWithTransactMultipleGSI

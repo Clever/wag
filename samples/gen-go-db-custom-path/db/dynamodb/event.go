@@ -514,7 +514,9 @@ func encodeEvent(m models.Event) (map[string]types.AttributeValue, error) {
 // decodeEvent translates a Event stored in DynamoDB to a Event struct.
 func decodeEvent(m map[string]types.AttributeValue, out *models.Event) error {
 	var ddbEvent ddbEvent
-	if err := attributevalue.UnmarshalMap(m, &ddbEvent); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbEvent, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbEvent.Event

@@ -139,7 +139,9 @@ func encodeThingWithUnderscores(m models.ThingWithUnderscores) (map[string]types
 // decodeThingWithUnderscores translates a ThingWithUnderscores stored in DynamoDB to a ThingWithUnderscores struct.
 func decodeThingWithUnderscores(m map[string]types.AttributeValue, out *models.ThingWithUnderscores) error {
 	var ddbThingWithUnderscores ddbThingWithUnderscores
-	if err := attributevalue.UnmarshalMap(m, &ddbThingWithUnderscores); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithUnderscores, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithUnderscores.ThingWithUnderscores

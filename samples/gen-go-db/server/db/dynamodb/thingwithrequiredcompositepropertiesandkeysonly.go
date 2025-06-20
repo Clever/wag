@@ -404,7 +404,9 @@ func encodeThingWithRequiredCompositePropertiesAndKeysOnly(m models.ThingWithReq
 // decodeThingWithRequiredCompositePropertiesAndKeysOnly translates a ThingWithRequiredCompositePropertiesAndKeysOnly stored in DynamoDB to a ThingWithRequiredCompositePropertiesAndKeysOnly struct.
 func decodeThingWithRequiredCompositePropertiesAndKeysOnly(m map[string]types.AttributeValue, out *models.ThingWithRequiredCompositePropertiesAndKeysOnly) error {
 	var ddbThingWithRequiredCompositePropertiesAndKeysOnly ddbThingWithRequiredCompositePropertiesAndKeysOnly
-	if err := attributevalue.UnmarshalMap(m, &ddbThingWithRequiredCompositePropertiesAndKeysOnly); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithRequiredCompositePropertiesAndKeysOnly, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithRequiredCompositePropertiesAndKeysOnly.ThingWithRequiredCompositePropertiesAndKeysOnly

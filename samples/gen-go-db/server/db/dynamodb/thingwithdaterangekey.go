@@ -340,7 +340,9 @@ func encodeThingWithDateRangeKey(m models.ThingWithDateRangeKey) (map[string]typ
 // decodeThingWithDateRangeKey translates a ThingWithDateRangeKey stored in DynamoDB to a ThingWithDateRangeKey struct.
 func decodeThingWithDateRangeKey(m map[string]types.AttributeValue, out *models.ThingWithDateRangeKey) error {
 	var ddbThingWithDateRangeKey ddbThingWithDateRangeKey
-	if err := attributevalue.UnmarshalMap(m, &ddbThingWithDateRangeKey); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithDateRangeKey, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithDateRangeKey.ThingWithDateRangeKey

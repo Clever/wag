@@ -561,7 +561,9 @@ func encodeTeacherSharingRule(m models.TeacherSharingRule) (map[string]types.Att
 // decodeTeacherSharingRule translates a TeacherSharingRule stored in DynamoDB to a TeacherSharingRule struct.
 func decodeTeacherSharingRule(m map[string]types.AttributeValue, out *models.TeacherSharingRule) error {
 	var ddbTeacherSharingRule ddbTeacherSharingRule
-	if err := attributevalue.UnmarshalMap(m, &ddbTeacherSharingRule); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbTeacherSharingRule, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbTeacherSharingRule.TeacherSharingRule

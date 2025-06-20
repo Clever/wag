@@ -609,7 +609,9 @@ func encodeThingWithMultiUseCompositeAttribute(m models.ThingWithMultiUseComposi
 // decodeThingWithMultiUseCompositeAttribute translates a ThingWithMultiUseCompositeAttribute stored in DynamoDB to a ThingWithMultiUseCompositeAttribute struct.
 func decodeThingWithMultiUseCompositeAttribute(m map[string]types.AttributeValue, out *models.ThingWithMultiUseCompositeAttribute) error {
 	var ddbThingWithMultiUseCompositeAttribute ddbThingWithMultiUseCompositeAttribute
-	if err := attributevalue.UnmarshalMap(m, &ddbThingWithMultiUseCompositeAttribute); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithMultiUseCompositeAttribute, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithMultiUseCompositeAttribute.ThingWithMultiUseCompositeAttribute

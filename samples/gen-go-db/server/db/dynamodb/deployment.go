@@ -798,7 +798,9 @@ func encodeDeployment(m models.Deployment) (map[string]types.AttributeValue, err
 // decodeDeployment translates a Deployment stored in DynamoDB to a Deployment struct.
 func decodeDeployment(m map[string]types.AttributeValue, out *models.Deployment) error {
 	var ddbDeployment ddbDeployment
-	if err := attributevalue.UnmarshalMap(m, &ddbDeployment); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbDeployment, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbDeployment.Deployment

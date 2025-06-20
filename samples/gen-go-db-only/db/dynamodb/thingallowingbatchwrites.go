@@ -419,7 +419,9 @@ func encodeThingAllowingBatchWrites(m models.ThingAllowingBatchWrites) (map[stri
 // decodeThingAllowingBatchWrites translates a ThingAllowingBatchWrites stored in DynamoDB to a ThingAllowingBatchWrites struct.
 func decodeThingAllowingBatchWrites(m map[string]types.AttributeValue, out *models.ThingAllowingBatchWrites) error {
 	var ddbThingAllowingBatchWrites ddbThingAllowingBatchWrites
-	if err := attributevalue.UnmarshalMap(m, &ddbThingAllowingBatchWrites); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingAllowingBatchWrites, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingAllowingBatchWrites.ThingAllowingBatchWrites

@@ -362,7 +362,9 @@ func encodeThingWithCompositeEnumAttributes(m models.ThingWithCompositeEnumAttri
 // decodeThingWithCompositeEnumAttributes translates a ThingWithCompositeEnumAttributes stored in DynamoDB to a ThingWithCompositeEnumAttributes struct.
 func decodeThingWithCompositeEnumAttributes(m map[string]types.AttributeValue, out *models.ThingWithCompositeEnumAttributes) error {
 	var ddbThingWithCompositeEnumAttributes ddbThingWithCompositeEnumAttributes
-	if err := attributevalue.UnmarshalMap(m, &ddbThingWithCompositeEnumAttributes); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithCompositeEnumAttributes, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithCompositeEnumAttributes.ThingWithCompositeEnumAttributes

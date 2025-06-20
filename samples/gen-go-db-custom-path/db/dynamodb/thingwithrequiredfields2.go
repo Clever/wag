@@ -340,7 +340,9 @@ func encodeThingWithRequiredFields2(m models.ThingWithRequiredFields2) (map[stri
 // decodeThingWithRequiredFields2 translates a ThingWithRequiredFields2 stored in DynamoDB to a ThingWithRequiredFields2 struct.
 func decodeThingWithRequiredFields2(m map[string]types.AttributeValue, out *models.ThingWithRequiredFields2) error {
 	var ddbThingWithRequiredFields2 ddbThingWithRequiredFields2
-	if err := attributevalue.UnmarshalMap(m, &ddbThingWithRequiredFields2); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithRequiredFields2, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithRequiredFields2.ThingWithRequiredFields2

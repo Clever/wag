@@ -410,7 +410,9 @@ func encodeThingWithDatetimeGSI(m models.ThingWithDatetimeGSI) (map[string]types
 // decodeThingWithDatetimeGSI translates a ThingWithDatetimeGSI stored in DynamoDB to a ThingWithDatetimeGSI struct.
 func decodeThingWithDatetimeGSI(m map[string]types.AttributeValue, out *models.ThingWithDatetimeGSI) error {
 	var ddbThingWithDatetimeGSI ddbThingWithDatetimeGSI
-	if err := attributevalue.UnmarshalMap(m, &ddbThingWithDatetimeGSI); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithDatetimeGSI, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithDatetimeGSI.ThingWithDatetimeGSI
