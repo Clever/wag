@@ -86,11 +86,22 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error loading swagger file: %s", err)
 	}
-	swaggerSpec := *doc.Spec()
 
+	var parentDoc *loads.Document
+	if *conf.subrouter {
+		parentDoc, err = loads.Spec(
+			filepath.Join(filepath.Dir(*conf.swaggerFile), "..", "..", "swagger.yml"),
+		)
+
+		if err != nil {
+			log.Fatalf("Error loading parent swagger file: %s", err)
+		}
+	}
+
+	swaggerSpec := *doc.Spec()
 	injectDefaultDefinitions(&swaggerSpec)
 
-	if err := validation.Validate(*doc, conf.generateJSClient); err != nil {
+	if err := validation.Validate(doc, parentDoc, conf.generateJSClient); err != nil {
 		log.Fatalf("Swagger file not valid: %s", err)
 	}
 
