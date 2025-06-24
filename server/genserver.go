@@ -65,12 +65,18 @@ func generateRouter(
 	for _, path := range swagger.SortedPathItemKeys(paths.Paths) {
 		pathItem := paths.Paths[path]
 		pathItemOps := swagger.PathItemOperations(pathItem)
+
+		// If this router is a subrouter, then the basePath routing is applied
+		if !isSubrouter {
+			path = s.BasePath + path
+		}
+
 		for _, method := range swagger.SortedOperationsKeys(pathItemOps) {
 			op := pathItemOps[method]
 
 			template.Functions = append(template.Functions, routerFunction{
 				Method:      method,
-				Path:        s.BasePath + path,
+				Path:        path,
 				HandlerName: swagger.Capitalize(op.ID),
 				OpID:        op.ID,
 			})

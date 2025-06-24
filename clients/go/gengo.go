@@ -15,8 +15,8 @@ import (
 )
 
 // Generate generates a client
-func Generate(packageName, basePath, outputPath string, s spec.Swagger) error {
-	if err := generateClient(packageName, basePath, outputPath, s); err != nil {
+func Generate(packageName, basePath, outputPath string, s spec.Swagger, isSubrouter bool) error {
+	if err := generateClient(packageName, basePath, outputPath, s, isSubrouter); err != nil {
 		return err
 	}
 	return generateInterface(packageName, basePath, outputPath, &s, s.Info.InfoProps.Title, s.Paths)
@@ -53,7 +53,7 @@ import (
 
 		discovery "github.com/Clever/discovery-go"
 		wcl "github.com/Clever/wag/logging/wagclientlogger"
-		
+
 )
 
 var _ = json.Marshal
@@ -93,7 +93,7 @@ func New(basePath string, logger wcl.WagClientLogger, transport *http.RoundTripp
 
 	basePath = strings.TrimSuffix(basePath, "/")
 	base := baseDoer{}
-	
+
 	// Don't use the default retry policy since its 5 retries can 5X the traffic
 	retry := retryDoer{d: base, retryPolicy: SingleRetryPolicy{}}
 
@@ -151,7 +151,7 @@ func shortHash(s string) string {
 }
 `
 
-func generateClient(packageName, basePath, outputPath string, s spec.Swagger) error {
+func generateClient(packageName, basePath, outputPath string, s spec.Swagger, isSubrouter bool) error {
 	outputPath = strings.TrimPrefix(outputPath, ".")
 	moduleName, versionSuffix := utils.ExtractModuleNameAndVersionSuffix(packageName, outputPath)
 	codeTemplate := clientCodeTemplate{
@@ -430,11 +430,11 @@ func (c *WagClient) do%sRequest(ctx context.Context, req *http.Request, headers 
 		"status_code": retCode,
 	}
 	if err == nil && retCode > 399 && retCode < 500{
-		logData["message"] = resp.Status 
+		logData["message"] = resp.Status
 		c.logger.Log(wcl.Warning, "client-request-finished", logData)
 	}
 	if err == nil && retCode > 499{
-		logData["message"] = resp.Status 
+		logData["message"] = resp.Status
 		c.logger.Log(wcl.Error, "client-request-finished", logData)
 	}
 	if err != nil {
