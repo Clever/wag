@@ -2,10 +2,7 @@ package server
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
-	"log"
-	"reflect"
 	"strings"
 
 	"github.com/go-openapi/spec"
@@ -37,19 +34,12 @@ type routerFunction struct {
 	OpID        string
 }
 
-const SubrouterKey string = "x-routers"
-
-type subrouter struct {
-	Key  string `json:"key"`
-	Path string `json:"path"`
-}
-
 type routerTemplate struct {
 	ImportStatements string
 	Title            string
 	Functions        []routerFunction
 	IsSubrouter      bool
-	Subrouters       []subrouter
+	Subrouters       []swagger.Subrouter
 }
 
 func generateRouter(
@@ -137,23 +127,10 @@ func generateRouter(
 	return g.WriteFile("server/router.go")
 }
 
-func buildSubrouters(packageName string, s spec.Swagger) ([]subrouter, []string, error) {
-	var subrouterConfig []subrouter
-	if routers, ok := s.Extensions[SubrouterKey]; ok {
-		fmt.Println("ROUTERS", routers, reflect.TypeOf(routers))
-		if subroutersM, ok := routers.([]interface{}); ok {
-			subroutersB, err := json.Marshal(subroutersM)
-			if err != nil {
-				return nil, nil, err
-			}
-
-			err = json.Unmarshal(subroutersB, &subrouterConfig)
-			if err != nil {
-				return nil, nil, err
-			}
-		} else {
-			log.Println("WARNING: x-routers subrouter config was not an array")
-		}
+func buildSubrouters(packageName string, s spec.Swagger) ([]swagger.Subrouter, []string, error) {
+	subrouterConfig, err := swagger.ParseSubrouters(s)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	var imports []string
