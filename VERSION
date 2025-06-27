@@ -1,3 +1,6 @@
+v9.9.2
+Update only the version to skip over used pre-release version numbers (v9.9.0, v9.9.1)
+
 v9.8.1
 Update go version in go.mod files for clients and models to 1.24 from 1.24.0
 
