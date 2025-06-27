@@ -1206,12 +1206,18 @@ func (t {{ $modelName }}Table) transactSave{{ $modelName }}And{{ $transactWithMo
 // encode{{ $modelName }} encodes a {{ $modelName }} as a DynamoDB map of attribute values.
 func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]types.AttributeValue, error) {
 {{- if not $hasCompositeAttrs }}
-  return attributevalue.MarshalMap(ddb{{ $modelName }}{
-    {{ $modelName }}: m,
+  // no composite attributes, marshal the model with the json tag
+  val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+    o.TagKey = "json"
   })
+  if err != nil {
+    return nil, err
+  }
+  return val, nil
 {{- else }}
-  val, err := attributevalue.MarshalMap(ddb{{ $modelName }}{
-    {{ $modelName }}: m,
+  // with composite attributes, marshal the model
+  val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+    o.TagKey = "json"
   })
   if err != nil {
     return nil, err
@@ -1261,7 +1267,9 @@ func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]types.Attribu
 // decode{{ $modelName }} translates a {{ $modelName }} stored in DynamoDB to a {{ $modelName }} struct.
 func decode{{ $modelName }}(m map[string]types.AttributeValue, out *models.{{ $modelName }}) error {
   var ddb{{ $modelName }} ddb{{ $modelName }}
-  if err := attributevalue.UnmarshalMap(m, &ddb{{ $modelName }}); err != nil {
+  if err := attributevalue.UnmarshalMapWithOptions(m, &ddb{{ $modelName }}, func(o *attributevalue.DecoderOptions) {
+    o.TagKey = "json"
+  }); err != nil {
     return err
   }
   *out = ddb{{ $modelName }}.{{ $modelName }}
