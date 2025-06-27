@@ -292,15 +292,22 @@ func (t ThingWithDateRangeTable) deleteThingWithDateRange(ctx context.Context, n
 
 // encodeThingWithDateRange encodes a ThingWithDateRange as a DynamoDB map of attribute values.
 func encodeThingWithDateRange(m models.ThingWithDateRange) (map[string]types.AttributeValue, error) {
-	return attributevalue.MarshalMap(ddbThingWithDateRange{
-		ThingWithDateRange: m,
+	// no composite attributes, marshal the model with the json tag
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
+	if err != nil {
+		return nil, err
+	}
+	return val, nil
 }
 
 // decodeThingWithDateRange translates a ThingWithDateRange stored in DynamoDB to a ThingWithDateRange struct.
 func decodeThingWithDateRange(m map[string]types.AttributeValue, out *models.ThingWithDateRange) error {
 	var ddbThingWithDateRange ddbThingWithDateRange
-	if err := attributevalue.UnmarshalMap(m, &ddbThingWithDateRange); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithDateRange, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithDateRange.ThingWithDateRange

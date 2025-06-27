@@ -327,15 +327,22 @@ func (t ThingWithRequiredFields2Table) deleteThingWithRequiredFields2(ctx contex
 
 // encodeThingWithRequiredFields2 encodes a ThingWithRequiredFields2 as a DynamoDB map of attribute values.
 func encodeThingWithRequiredFields2(m models.ThingWithRequiredFields2) (map[string]types.AttributeValue, error) {
-	return attributevalue.MarshalMap(ddbThingWithRequiredFields2{
-		ThingWithRequiredFields2: m,
+	// no composite attributes, marshal the model with the json tag
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
+	if err != nil {
+		return nil, err
+	}
+	return val, nil
 }
 
 // decodeThingWithRequiredFields2 translates a ThingWithRequiredFields2 stored in DynamoDB to a ThingWithRequiredFields2 struct.
 func decodeThingWithRequiredFields2(m map[string]types.AttributeValue, out *models.ThingWithRequiredFields2) error {
 	var ddbThingWithRequiredFields2 ddbThingWithRequiredFields2
-	if err := attributevalue.UnmarshalMap(m, &ddbThingWithRequiredFields2); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithRequiredFields2, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithRequiredFields2.ThingWithRequiredFields2

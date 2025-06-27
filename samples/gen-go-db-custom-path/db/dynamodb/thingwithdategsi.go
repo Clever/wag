@@ -472,15 +472,22 @@ func (t ThingWithDateGSITable) getThingWithDateGSIsByDateHAndID(ctx context.Cont
 
 // encodeThingWithDateGSI encodes a ThingWithDateGSI as a DynamoDB map of attribute values.
 func encodeThingWithDateGSI(m models.ThingWithDateGSI) (map[string]types.AttributeValue, error) {
-	return attributevalue.MarshalMap(ddbThingWithDateGSI{
-		ThingWithDateGSI: m,
+	// no composite attributes, marshal the model with the json tag
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
+	if err != nil {
+		return nil, err
+	}
+	return val, nil
 }
 
 // decodeThingWithDateGSI translates a ThingWithDateGSI stored in DynamoDB to a ThingWithDateGSI struct.
 func decodeThingWithDateGSI(m map[string]types.AttributeValue, out *models.ThingWithDateGSI) error {
 	var ddbThingWithDateGSI ddbThingWithDateGSI
-	if err := attributevalue.UnmarshalMap(m, &ddbThingWithDateGSI); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithDateGSI, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithDateGSI.ThingWithDateGSI

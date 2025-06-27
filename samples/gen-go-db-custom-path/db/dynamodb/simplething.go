@@ -210,15 +210,22 @@ func (t SimpleThingTable) deleteSimpleThing(ctx context.Context, name string) er
 
 // encodeSimpleThing encodes a SimpleThing as a DynamoDB map of attribute values.
 func encodeSimpleThing(m models.SimpleThing) (map[string]types.AttributeValue, error) {
-	return attributevalue.MarshalMap(ddbSimpleThing{
-		SimpleThing: m,
+	// no composite attributes, marshal the model with the json tag
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
+	if err != nil {
+		return nil, err
+	}
+	return val, nil
 }
 
 // decodeSimpleThing translates a SimpleThing stored in DynamoDB to a SimpleThing struct.
 func decodeSimpleThing(m map[string]types.AttributeValue, out *models.SimpleThing) error {
 	var ddbSimpleThing ddbSimpleThing
-	if err := attributevalue.UnmarshalMap(m, &ddbSimpleThing); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbSimpleThing, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbSimpleThing.SimpleThing

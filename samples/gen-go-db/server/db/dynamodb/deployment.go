@@ -757,8 +757,9 @@ func (t DeploymentTable) scanDeploymentsByVersion(ctx context.Context, input db.
 
 // encodeDeployment encodes a Deployment as a DynamoDB map of attribute values.
 func encodeDeployment(m models.Deployment) (map[string]types.AttributeValue, error) {
-	val, err := attributevalue.MarshalMap(ddbDeployment{
-		Deployment: m,
+	// with composite attributes, marshal the model
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -797,7 +798,9 @@ func encodeDeployment(m models.Deployment) (map[string]types.AttributeValue, err
 // decodeDeployment translates a Deployment stored in DynamoDB to a Deployment struct.
 func decodeDeployment(m map[string]types.AttributeValue, out *models.Deployment) error {
 	var ddbDeployment ddbDeployment
-	if err := attributevalue.UnmarshalMap(m, &ddbDeployment); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbDeployment, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbDeployment.Deployment

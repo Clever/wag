@@ -273,15 +273,22 @@ func (t ThingWithTransactionTable) transactSaveThingWithTransactionAndThing(ctx 
 
 // encodeThingWithTransaction encodes a ThingWithTransaction as a DynamoDB map of attribute values.
 func encodeThingWithTransaction(m models.ThingWithTransaction) (map[string]types.AttributeValue, error) {
-	return attributevalue.MarshalMap(ddbThingWithTransaction{
-		ThingWithTransaction: m,
+	// no composite attributes, marshal the model with the json tag
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
+	if err != nil {
+		return nil, err
+	}
+	return val, nil
 }
 
 // decodeThingWithTransaction translates a ThingWithTransaction stored in DynamoDB to a ThingWithTransaction struct.
 func decodeThingWithTransaction(m map[string]types.AttributeValue, out *models.ThingWithTransaction) error {
 	var ddbThingWithTransaction ddbThingWithTransaction
-	if err := attributevalue.UnmarshalMap(m, &ddbThingWithTransaction); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithTransaction, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithTransaction.ThingWithTransaction

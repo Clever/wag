@@ -334,8 +334,9 @@ func (t ThingWithCompositeEnumAttributesTable) deleteThingWithCompositeEnumAttri
 
 // encodeThingWithCompositeEnumAttributes encodes a ThingWithCompositeEnumAttributes as a DynamoDB map of attribute values.
 func encodeThingWithCompositeEnumAttributes(m models.ThingWithCompositeEnumAttributes) (map[string]types.AttributeValue, error) {
-	val, err := attributevalue.MarshalMap(ddbThingWithCompositeEnumAttributes{
-		ThingWithCompositeEnumAttributes: m,
+	// with composite attributes, marshal the model
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -361,7 +362,9 @@ func encodeThingWithCompositeEnumAttributes(m models.ThingWithCompositeEnumAttri
 // decodeThingWithCompositeEnumAttributes translates a ThingWithCompositeEnumAttributes stored in DynamoDB to a ThingWithCompositeEnumAttributes struct.
 func decodeThingWithCompositeEnumAttributes(m map[string]types.AttributeValue, out *models.ThingWithCompositeEnumAttributes) error {
 	var ddbThingWithCompositeEnumAttributes ddbThingWithCompositeEnumAttributes
-	if err := attributevalue.UnmarshalMap(m, &ddbThingWithCompositeEnumAttributes); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithCompositeEnumAttributes, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithCompositeEnumAttributes.ThingWithCompositeEnumAttributes

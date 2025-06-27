@@ -534,15 +534,22 @@ func (t ThingWithTransactMultipleGSITable) transactSaveThingWithTransactMultiple
 
 // encodeThingWithTransactMultipleGSI encodes a ThingWithTransactMultipleGSI as a DynamoDB map of attribute values.
 func encodeThingWithTransactMultipleGSI(m models.ThingWithTransactMultipleGSI) (map[string]types.AttributeValue, error) {
-	return attributevalue.MarshalMap(ddbThingWithTransactMultipleGSI{
-		ThingWithTransactMultipleGSI: m,
+	// no composite attributes, marshal the model with the json tag
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
+	if err != nil {
+		return nil, err
+	}
+	return val, nil
 }
 
 // decodeThingWithTransactMultipleGSI translates a ThingWithTransactMultipleGSI stored in DynamoDB to a ThingWithTransactMultipleGSI struct.
 func decodeThingWithTransactMultipleGSI(m map[string]types.AttributeValue, out *models.ThingWithTransactMultipleGSI) error {
 	var ddbThingWithTransactMultipleGSI ddbThingWithTransactMultipleGSI
-	if err := attributevalue.UnmarshalMap(m, &ddbThingWithTransactMultipleGSI); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithTransactMultipleGSI, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithTransactMultipleGSI.ThingWithTransactMultipleGSI

@@ -1014,15 +1014,22 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByH
 
 // encodeThingWithAdditionalAttributes encodes a ThingWithAdditionalAttributes as a DynamoDB map of attribute values.
 func encodeThingWithAdditionalAttributes(m models.ThingWithAdditionalAttributes) (map[string]types.AttributeValue, error) {
-	return attributevalue.MarshalMap(ddbThingWithAdditionalAttributes{
-		ThingWithAdditionalAttributes: m,
+	// no composite attributes, marshal the model with the json tag
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
+	if err != nil {
+		return nil, err
+	}
+	return val, nil
 }
 
 // decodeThingWithAdditionalAttributes translates a ThingWithAdditionalAttributes stored in DynamoDB to a ThingWithAdditionalAttributes struct.
 func decodeThingWithAdditionalAttributes(m map[string]types.AttributeValue, out *models.ThingWithAdditionalAttributes) error {
 	var ddbThingWithAdditionalAttributes ddbThingWithAdditionalAttributes
-	if err := attributevalue.UnmarshalMap(m, &ddbThingWithAdditionalAttributes); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithAdditionalAttributes, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithAdditionalAttributes.ThingWithAdditionalAttributes

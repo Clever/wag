@@ -471,8 +471,9 @@ func (t NoRangeThingWithCompositeAttributesTable) getNoRangeThingWithCompositeAt
 
 // encodeNoRangeThingWithCompositeAttributes encodes a NoRangeThingWithCompositeAttributes as a DynamoDB map of attribute values.
 func encodeNoRangeThingWithCompositeAttributes(m models.NoRangeThingWithCompositeAttributes) (map[string]types.AttributeValue, error) {
-	val, err := attributevalue.MarshalMap(ddbNoRangeThingWithCompositeAttributes{
-		NoRangeThingWithCompositeAttributes: m,
+	// with composite attributes, marshal the model
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -531,7 +532,9 @@ func encodeNoRangeThingWithCompositeAttributes(m models.NoRangeThingWithComposit
 // decodeNoRangeThingWithCompositeAttributes translates a NoRangeThingWithCompositeAttributes stored in DynamoDB to a NoRangeThingWithCompositeAttributes struct.
 func decodeNoRangeThingWithCompositeAttributes(m map[string]types.AttributeValue, out *models.NoRangeThingWithCompositeAttributes) error {
 	var ddbNoRangeThingWithCompositeAttributes ddbNoRangeThingWithCompositeAttributes
-	if err := attributevalue.UnmarshalMap(m, &ddbNoRangeThingWithCompositeAttributes); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbNoRangeThingWithCompositeAttributes, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbNoRangeThingWithCompositeAttributes.NoRangeThingWithCompositeAttributes

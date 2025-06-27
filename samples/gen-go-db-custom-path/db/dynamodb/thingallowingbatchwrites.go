@@ -406,15 +406,22 @@ func (t ThingAllowingBatchWritesTable) deleteThingAllowingBatchWrites(ctx contex
 
 // encodeThingAllowingBatchWrites encodes a ThingAllowingBatchWrites as a DynamoDB map of attribute values.
 func encodeThingAllowingBatchWrites(m models.ThingAllowingBatchWrites) (map[string]types.AttributeValue, error) {
-	return attributevalue.MarshalMap(ddbThingAllowingBatchWrites{
-		ThingAllowingBatchWrites: m,
+	// no composite attributes, marshal the model with the json tag
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
+	if err != nil {
+		return nil, err
+	}
+	return val, nil
 }
 
 // decodeThingAllowingBatchWrites translates a ThingAllowingBatchWrites stored in DynamoDB to a ThingAllowingBatchWrites struct.
 func decodeThingAllowingBatchWrites(m map[string]types.AttributeValue, out *models.ThingAllowingBatchWrites) error {
 	var ddbThingAllowingBatchWrites ddbThingAllowingBatchWrites
-	if err := attributevalue.UnmarshalMap(m, &ddbThingAllowingBatchWrites); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingAllowingBatchWrites, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingAllowingBatchWrites.ThingAllowingBatchWrites

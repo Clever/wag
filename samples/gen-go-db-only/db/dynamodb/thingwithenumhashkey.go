@@ -536,15 +536,22 @@ func (t ThingWithEnumHashKeyTable) scanThingWithEnumHashKeysByBranchAndDate2(ctx
 
 // encodeThingWithEnumHashKey encodes a ThingWithEnumHashKey as a DynamoDB map of attribute values.
 func encodeThingWithEnumHashKey(m models.ThingWithEnumHashKey) (map[string]types.AttributeValue, error) {
-	return attributevalue.MarshalMap(ddbThingWithEnumHashKey{
-		ThingWithEnumHashKey: m,
+	// no composite attributes, marshal the model with the json tag
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
+	if err != nil {
+		return nil, err
+	}
+	return val, nil
 }
 
 // decodeThingWithEnumHashKey translates a ThingWithEnumHashKey stored in DynamoDB to a ThingWithEnumHashKey struct.
 func decodeThingWithEnumHashKey(m map[string]types.AttributeValue, out *models.ThingWithEnumHashKey) error {
 	var ddbThingWithEnumHashKey ddbThingWithEnumHashKey
-	if err := attributevalue.UnmarshalMap(m, &ddbThingWithEnumHashKey); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithEnumHashKey, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithEnumHashKey.ThingWithEnumHashKey

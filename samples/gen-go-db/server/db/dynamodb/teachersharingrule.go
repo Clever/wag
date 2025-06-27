@@ -517,8 +517,9 @@ func (t TeacherSharingRuleTable) scanTeacherSharingRulesByDistrictAndSchoolTeach
 
 // encodeTeacherSharingRule encodes a TeacherSharingRule as a DynamoDB map of attribute values.
 func encodeTeacherSharingRule(m models.TeacherSharingRule) (map[string]types.AttributeValue, error) {
-	val, err := attributevalue.MarshalMap(ddbTeacherSharingRule{
-		TeacherSharingRule: m,
+	// with composite attributes, marshal the model
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -560,7 +561,9 @@ func encodeTeacherSharingRule(m models.TeacherSharingRule) (map[string]types.Att
 // decodeTeacherSharingRule translates a TeacherSharingRule stored in DynamoDB to a TeacherSharingRule struct.
 func decodeTeacherSharingRule(m map[string]types.AttributeValue, out *models.TeacherSharingRule) error {
 	var ddbTeacherSharingRule ddbTeacherSharingRule
-	if err := attributevalue.UnmarshalMap(m, &ddbTeacherSharingRule); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbTeacherSharingRule, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbTeacherSharingRule.TeacherSharingRule

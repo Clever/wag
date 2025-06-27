@@ -397,15 +397,22 @@ func (t ThingWithDatetimeGSITable) scanThingWithDatetimeGSIsByDatetimeAndID(ctx 
 
 // encodeThingWithDatetimeGSI encodes a ThingWithDatetimeGSI as a DynamoDB map of attribute values.
 func encodeThingWithDatetimeGSI(m models.ThingWithDatetimeGSI) (map[string]types.AttributeValue, error) {
-	return attributevalue.MarshalMap(ddbThingWithDatetimeGSI{
-		ThingWithDatetimeGSI: m,
+	// no composite attributes, marshal the model with the json tag
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
+	if err != nil {
+		return nil, err
+	}
+	return val, nil
 }
 
 // decodeThingWithDatetimeGSI translates a ThingWithDatetimeGSI stored in DynamoDB to a ThingWithDatetimeGSI struct.
 func decodeThingWithDatetimeGSI(m map[string]types.AttributeValue, out *models.ThingWithDatetimeGSI) error {
 	var ddbThingWithDatetimeGSI ddbThingWithDatetimeGSI
-	if err := attributevalue.UnmarshalMap(m, &ddbThingWithDatetimeGSI); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithDatetimeGSI, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithDatetimeGSI.ThingWithDatetimeGSI

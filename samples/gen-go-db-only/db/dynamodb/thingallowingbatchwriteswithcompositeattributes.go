@@ -413,8 +413,9 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) deleteThingAllowin
 
 // encodeThingAllowingBatchWritesWithCompositeAttributes encodes a ThingAllowingBatchWritesWithCompositeAttributes as a DynamoDB map of attribute values.
 func encodeThingAllowingBatchWritesWithCompositeAttributes(m models.ThingAllowingBatchWritesWithCompositeAttributes) (map[string]types.AttributeValue, error) {
-	val, err := attributevalue.MarshalMap(ddbThingAllowingBatchWritesWithCompositeAttributes{
-		ThingAllowingBatchWritesWithCompositeAttributes: m,
+	// with composite attributes, marshal the model
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -443,7 +444,9 @@ func encodeThingAllowingBatchWritesWithCompositeAttributes(m models.ThingAllowin
 // decodeThingAllowingBatchWritesWithCompositeAttributes translates a ThingAllowingBatchWritesWithCompositeAttributes stored in DynamoDB to a ThingAllowingBatchWritesWithCompositeAttributes struct.
 func decodeThingAllowingBatchWritesWithCompositeAttributes(m map[string]types.AttributeValue, out *models.ThingAllowingBatchWritesWithCompositeAttributes) error {
 	var ddbThingAllowingBatchWritesWithCompositeAttributes ddbThingAllowingBatchWritesWithCompositeAttributes
-	if err := attributevalue.UnmarshalMap(m, &ddbThingAllowingBatchWritesWithCompositeAttributes); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingAllowingBatchWritesWithCompositeAttributes, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingAllowingBatchWritesWithCompositeAttributes.ThingAllowingBatchWritesWithCompositeAttributes

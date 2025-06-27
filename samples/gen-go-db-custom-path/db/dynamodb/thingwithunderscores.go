@@ -126,15 +126,22 @@ func (t ThingWithUnderscoresTable) deleteThingWithUnderscores(ctx context.Contex
 
 // encodeThingWithUnderscores encodes a ThingWithUnderscores as a DynamoDB map of attribute values.
 func encodeThingWithUnderscores(m models.ThingWithUnderscores) (map[string]types.AttributeValue, error) {
-	return attributevalue.MarshalMap(ddbThingWithUnderscores{
-		ThingWithUnderscores: m,
+	// no composite attributes, marshal the model with the json tag
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
+	if err != nil {
+		return nil, err
+	}
+	return val, nil
 }
 
 // decodeThingWithUnderscores translates a ThingWithUnderscores stored in DynamoDB to a ThingWithUnderscores struct.
 func decodeThingWithUnderscores(m map[string]types.AttributeValue, out *models.ThingWithUnderscores) error {
 	var ddbThingWithUnderscores ddbThingWithUnderscores
-	if err := attributevalue.UnmarshalMap(m, &ddbThingWithUnderscores); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithUnderscores, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithUnderscores.ThingWithUnderscores

@@ -512,8 +512,9 @@ func (t ThingWithMatchingKeysTable) scanThingWithMatchingKeyssByAssocTypeIDAndCr
 
 // encodeThingWithMatchingKeys encodes a ThingWithMatchingKeys as a DynamoDB map of attribute values.
 func encodeThingWithMatchingKeys(m models.ThingWithMatchingKeys) (map[string]types.AttributeValue, error) {
-	val, err := attributevalue.MarshalMap(ddbThingWithMatchingKeys{
-		ThingWithMatchingKeys: m,
+	// with composite attributes, marshal the model
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -555,7 +556,9 @@ func encodeThingWithMatchingKeys(m models.ThingWithMatchingKeys) (map[string]typ
 // decodeThingWithMatchingKeys translates a ThingWithMatchingKeys stored in DynamoDB to a ThingWithMatchingKeys struct.
 func decodeThingWithMatchingKeys(m map[string]types.AttributeValue, out *models.ThingWithMatchingKeys) error {
 	var ddbThingWithMatchingKeys ddbThingWithMatchingKeys
-	if err := attributevalue.UnmarshalMap(m, &ddbThingWithMatchingKeys); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithMatchingKeys, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithMatchingKeys.ThingWithMatchingKeys

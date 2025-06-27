@@ -273,15 +273,22 @@ func (t ThingWithTransactionWithSimpleThingTable) transactSaveThingWithTransacti
 
 // encodeThingWithTransactionWithSimpleThing encodes a ThingWithTransactionWithSimpleThing as a DynamoDB map of attribute values.
 func encodeThingWithTransactionWithSimpleThing(m models.ThingWithTransactionWithSimpleThing) (map[string]types.AttributeValue, error) {
-	return attributevalue.MarshalMap(ddbThingWithTransactionWithSimpleThing{
-		ThingWithTransactionWithSimpleThing: m,
+	// no composite attributes, marshal the model with the json tag
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
+	if err != nil {
+		return nil, err
+	}
+	return val, nil
 }
 
 // decodeThingWithTransactionWithSimpleThing translates a ThingWithTransactionWithSimpleThing stored in DynamoDB to a ThingWithTransactionWithSimpleThing struct.
 func decodeThingWithTransactionWithSimpleThing(m map[string]types.AttributeValue, out *models.ThingWithTransactionWithSimpleThing) error {
 	var ddbThingWithTransactionWithSimpleThing ddbThingWithTransactionWithSimpleThing
-	if err := attributevalue.UnmarshalMap(m, &ddbThingWithTransactionWithSimpleThing); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithTransactionWithSimpleThing, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithTransactionWithSimpleThing.ThingWithTransactionWithSimpleThing

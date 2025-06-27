@@ -547,8 +547,9 @@ func (t ThingWithCompositeAttributesTable) scanThingWithCompositeAttributessByNa
 
 // encodeThingWithCompositeAttributes encodes a ThingWithCompositeAttributes as a DynamoDB map of attribute values.
 func encodeThingWithCompositeAttributes(m models.ThingWithCompositeAttributes) (map[string]types.AttributeValue, error) {
-	val, err := attributevalue.MarshalMap(ddbThingWithCompositeAttributes{
-		ThingWithCompositeAttributes: m,
+	// with composite attributes, marshal the model
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -590,7 +591,9 @@ func encodeThingWithCompositeAttributes(m models.ThingWithCompositeAttributes) (
 // decodeThingWithCompositeAttributes translates a ThingWithCompositeAttributes stored in DynamoDB to a ThingWithCompositeAttributes struct.
 func decodeThingWithCompositeAttributes(m map[string]types.AttributeValue, out *models.ThingWithCompositeAttributes) error {
 	var ddbThingWithCompositeAttributes ddbThingWithCompositeAttributes
-	if err := attributevalue.UnmarshalMap(m, &ddbThingWithCompositeAttributes); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithCompositeAttributes, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithCompositeAttributes.ThingWithCompositeAttributes
