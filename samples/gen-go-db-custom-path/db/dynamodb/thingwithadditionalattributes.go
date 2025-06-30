@@ -2,23 +2,25 @@ package dynamodb
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/Clever/wag/samples/gen-go-db-custom-path/models/v9"
 	"github.com/Clever/wag/samples/v9/gen-go-db-custom-path/db"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/go-openapi/strfmt"
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // ThingWithAdditionalAttributesTable represents the user-configurable properties of the ThingWithAdditionalAttributes table.
 type ThingWithAdditionalAttributesTable struct {
-	DynamoDBAPI        dynamodbiface.DynamoDBAPI
+	DynamoDBAPI        *dynamodb.Client
 	Prefix             string
 	TableName          string
 	ReadCapacityUnits  int64
@@ -60,122 +62,122 @@ type ddbThingWithAdditionalAttributes struct {
 }
 
 func (t ThingWithAdditionalAttributesTable) create(ctx context.Context) error {
-	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
-		AttributeDefinitions: []*dynamodb.AttributeDefinition{
+	if _, err := t.DynamoDBAPI.CreateTable(ctx, &dynamodb.CreateTableInput{
+		AttributeDefinitions: []types.AttributeDefinition{
 			{
 				AttributeName: aws.String("createdAt"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 			{
 				AttributeName: aws.String("hashNullable"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 			{
 				AttributeName: aws.String("id"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 			{
 				AttributeName: aws.String("name"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 			{
 				AttributeName: aws.String("rangeNullable"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 			{
 				AttributeName: aws.String("version"),
-				AttributeType: aws.String("N"),
+				AttributeType: types.ScalarAttributeType("N"),
 			},
 		},
-		KeySchema: []*dynamodb.KeySchemaElement{
+		KeySchema: []types.KeySchemaElement{
 			{
 				AttributeName: aws.String("name"),
-				KeyType:       aws.String(dynamodb.KeyTypeHash),
+				KeyType:       types.KeyTypeHash,
 			},
 			{
 				AttributeName: aws.String("version"),
-				KeyType:       aws.String(dynamodb.KeyTypeRange),
+				KeyType:       types.KeyTypeRange,
 			},
 		},
-		GlobalSecondaryIndexes: []*dynamodb.GlobalSecondaryIndex{
+		GlobalSecondaryIndexes: []types.GlobalSecondaryIndex{
 			{
 				IndexName: aws.String("thingID"),
-				Projection: &dynamodb.Projection{
-					ProjectionType: aws.String("ALL"),
+				Projection: &types.Projection{
+					ProjectionType: types.ProjectionType("ALL"),
 				},
-				KeySchema: []*dynamodb.KeySchemaElement{
+				KeySchema: []types.KeySchemaElement{
 					{
 						AttributeName: aws.String("id"),
-						KeyType:       aws.String(dynamodb.KeyTypeHash),
+						KeyType:       types.KeyTypeHash,
 					},
 				},
-				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+				ProvisionedThroughput: &types.ProvisionedThroughput{
 					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 				},
 			},
 			{
 				IndexName: aws.String("name-createdAt"),
-				Projection: &dynamodb.Projection{
-					ProjectionType: aws.String("ALL"),
+				Projection: &types.Projection{
+					ProjectionType: types.ProjectionType("ALL"),
 				},
-				KeySchema: []*dynamodb.KeySchemaElement{
+				KeySchema: []types.KeySchemaElement{
 					{
 						AttributeName: aws.String("name"),
-						KeyType:       aws.String(dynamodb.KeyTypeHash),
+						KeyType:       types.KeyTypeHash,
 					},
 					{
 						AttributeName: aws.String("createdAt"),
-						KeyType:       aws.String(dynamodb.KeyTypeRange),
+						KeyType:       types.KeyTypeRange,
 					},
 				},
-				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+				ProvisionedThroughput: &types.ProvisionedThroughput{
 					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 				},
 			},
 			{
 				IndexName: aws.String("name-rangeNullable"),
-				Projection: &dynamodb.Projection{
-					ProjectionType: aws.String("ALL"),
+				Projection: &types.Projection{
+					ProjectionType: types.ProjectionType("ALL"),
 				},
-				KeySchema: []*dynamodb.KeySchemaElement{
+				KeySchema: []types.KeySchemaElement{
 					{
 						AttributeName: aws.String("name"),
-						KeyType:       aws.String(dynamodb.KeyTypeHash),
+						KeyType:       types.KeyTypeHash,
 					},
 					{
 						AttributeName: aws.String("rangeNullable"),
-						KeyType:       aws.String(dynamodb.KeyTypeRange),
+						KeyType:       types.KeyTypeRange,
 					},
 				},
-				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+				ProvisionedThroughput: &types.ProvisionedThroughput{
 					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 				},
 			},
 			{
 				IndexName: aws.String("name-hashNullable"),
-				Projection: &dynamodb.Projection{
-					ProjectionType: aws.String("ALL"),
+				Projection: &types.Projection{
+					ProjectionType: types.ProjectionType("ALL"),
 				},
-				KeySchema: []*dynamodb.KeySchemaElement{
+				KeySchema: []types.KeySchemaElement{
 					{
 						AttributeName: aws.String("hashNullable"),
-						KeyType:       aws.String(dynamodb.KeyTypeHash),
+						KeyType:       types.KeyTypeHash,
 					},
 					{
 						AttributeName: aws.String("name"),
-						KeyType:       aws.String(dynamodb.KeyTypeRange),
+						KeyType:       types.KeyTypeRange,
 					},
 				},
-				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+				ProvisionedThroughput: &types.ProvisionedThroughput{
 					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 				},
 			},
 		},
-		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+		ProvisionedThroughput: &types.ProvisionedThroughput{
 			ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 			WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 		},
@@ -191,25 +193,34 @@ func (t ThingWithAdditionalAttributesTable) saveThingWithAdditionalAttributes(ct
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
+
+	_, err = t.DynamoDBAPI.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(t.TableName),
 		Item:      data,
-		ExpressionAttributeNames: map[string]*string{
-			"#NAME":    aws.String("name"),
-			"#VERSION": aws.String("version"),
+		ExpressionAttributeNames: map[string]string{
+			"#NAME":    "name",
+			"#VERSION": "version",
 		},
-		ConditionExpression: aws.String("attribute_not_exists(#NAME) AND attribute_not_exists(#VERSION)"),
+		ConditionExpression: aws.String(
+			"" +
+				"" +
+				"attribute_not_exists(#NAME)" +
+				"" +
+				" AND " +
+				"attribute_not_exists(#VERSION)" +
+				"",
+		),
 	})
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeConditionalCheckFailedException:
-				return db.ErrThingWithAdditionalAttributesAlreadyExists{
-					Name:    m.Name,
-					Version: m.Version,
-				}
-			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.TableName)
+		var resourceNotFoundErr *types.ResourceNotFoundException
+		var conditionalCheckFailedErr *types.ConditionalCheckFailedException
+		if errors.As(err, &resourceNotFoundErr) {
+			return fmt.Errorf("table or index not found: %s", t.TableName)
+		}
+		if errors.As(err, &conditionalCheckFailedErr) {
+			return db.ErrThingWithAdditionalAttributesAlreadyExists{
+				Name:    m.Name,
+				Version: m.Version,
 			}
 		}
 		return err
@@ -218,24 +229,22 @@ func (t ThingWithAdditionalAttributesTable) saveThingWithAdditionalAttributes(ct
 }
 
 func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributes(ctx context.Context, name string, version int64) (*models.ThingWithAdditionalAttributes, error) {
-	key, err := dynamodbattribute.MarshalMap(ddbThingWithAdditionalAttributesPrimaryKey{
+	key, err := attributevalue.MarshalMap(ddbThingWithAdditionalAttributesPrimaryKey{
 		Name:    name,
 		Version: version,
 	})
 	if err != nil {
 		return nil, err
 	}
-	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
+	res, err := t.DynamoDBAPI.GetItem(ctx, &dynamodb.GetItemInput{
 		Key:            key,
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(true),
 	})
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeResourceNotFoundException:
-				return nil, fmt.Errorf("table or index not found: %s", t.TableName)
-			}
+		var resourceNotFoundErr *types.ResourceNotFoundException
+		if errors.As(err, &resourceNotFoundErr) {
+			return nil, fmt.Errorf("table or index not found: %s", t.TableName)
 		}
 		return nil, err
 	}
@@ -259,102 +268,107 @@ func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributess(c
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
 		// must provide only the fields constituting the index
-		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+		scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"name":    exclusiveStartKey["name"],
 			"version": exclusiveStartKey["version"],
 		}
 	}
 	totalRecordsProcessed := int64(0)
-	var innerErr error
-	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+
+	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+	for paginator.HasMorePages() {
+		out, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting next page: %s", err.Error())
+		}
+
 		items, err := decodeThingWithAdditionalAttributess(out.Items)
 		if err != nil {
-			innerErr = fmt.Errorf("error decoding %s", err.Error())
-			return false
+			return fmt.Errorf("error decoding items: %s", err.Error())
 		}
+
 		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
-					innerErr = err
-					return false
+					return err
 				}
 			}
-			isLastModel := lastPage && i == len(items)-1
+
+			isLastModel := !paginator.HasMorePages() && i == len(items)-1
 			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-				return false
+				return nil
 			}
+
 			totalRecordsProcessed++
-			// if the Limit of records have been passed to fn, don't pass anymore records.
 			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-				return false
+				return nil
 			}
 		}
-		return true
-	})
-	if innerErr != nil {
-		return innerErr
 	}
-	return err
+
+	return nil
 }
 
 func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByNameAndVersionParseFilters(queryInput *dynamodb.QueryInput, input db.GetThingWithAdditionalAttributessByNameAndVersionInput) {
 	for _, filterValue := range input.FilterValues {
 		switch filterValue.AttributeName {
 		case db.ThingWithAdditionalAttributesAdditionalBAttribute:
-			queryInput.ExpressionAttributeNames["#ADDITIONALBATTRIBUTE"] = aws.String(string(db.ThingWithAdditionalAttributesAdditionalBAttribute))
+			queryInput.ExpressionAttributeNames["#ADDITIONALBATTRIBUTE"] = string(db.ThingWithAdditionalAttributesAdditionalBAttribute)
 			for i, attributeValue := range filterValue.AttributeValues {
-				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesAdditionalBAttribute), i)] = &dynamodb.AttributeValue{
-					B: attributeValue.([]byte),
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesAdditionalBAttribute), i)] = &types.AttributeValueMemberB{
+					Value: attributeValue.([]byte),
 				}
 			}
 		case db.ThingWithAdditionalAttributesAdditionalNAttribute:
-			queryInput.ExpressionAttributeNames["#ADDITIONALNATTRIBUTE"] = aws.String(string(db.ThingWithAdditionalAttributesAdditionalNAttribute))
+			queryInput.ExpressionAttributeNames["#ADDITIONALNATTRIBUTE"] = string(db.ThingWithAdditionalAttributesAdditionalNAttribute)
 			for i, attributeValue := range filterValue.AttributeValues {
-				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesAdditionalNAttribute), i)] = &dynamodb.AttributeValue{
-					N: aws.String(fmt.Sprint(attributeValue.(int64))),
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesAdditionalNAttribute), i)] = &types.AttributeValueMemberN{
+					Value: fmt.Sprint(attributeValue.(int64)),
 				}
 			}
 		case db.ThingWithAdditionalAttributesAdditionalSAttribute:
-			queryInput.ExpressionAttributeNames["#ADDITIONALSATTRIBUTE"] = aws.String(string(db.ThingWithAdditionalAttributesAdditionalSAttribute))
+			queryInput.ExpressionAttributeNames["#ADDITIONALSATTRIBUTE"] = string(db.ThingWithAdditionalAttributesAdditionalSAttribute)
 			for i, attributeValue := range filterValue.AttributeValues {
-				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesAdditionalSAttribute), i)] = &dynamodb.AttributeValue{
-					S: aws.String(attributeValue.(string)),
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesAdditionalSAttribute), i)] = &types.AttributeValueMemberS{
+					Value: attributeValue.(string),
 				}
 			}
 		case db.ThingWithAdditionalAttributesCreatedAt:
-			queryInput.ExpressionAttributeNames["#CREATEDAT"] = aws.String(string(db.ThingWithAdditionalAttributesCreatedAt))
+			queryInput.ExpressionAttributeNames["#CREATEDAT"] = string(db.ThingWithAdditionalAttributesCreatedAt)
 			for i, attributeValue := range filterValue.AttributeValues {
-				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesCreatedAt), i)] = &dynamodb.AttributeValue{
-					S: aws.String(datetimeToDynamoTimeString(attributeValue.(strfmt.DateTime))),
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesCreatedAt), i)] = &types.AttributeValueMemberS{
+					Value: datetimeToDynamoTimeString(attributeValue.(strfmt.DateTime)),
 				}
 			}
 		case db.ThingWithAdditionalAttributesHashNullable:
-			queryInput.ExpressionAttributeNames["#HASHNULLABLE"] = aws.String(string(db.ThingWithAdditionalAttributesHashNullable))
+			queryInput.ExpressionAttributeNames["#HASHNULLABLE"] = string(db.ThingWithAdditionalAttributesHashNullable)
 			for i, attributeValue := range filterValue.AttributeValues {
-				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesHashNullable), i)] = &dynamodb.AttributeValue{
-					S: aws.String(attributeValue.(string)),
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesHashNullable), i)] = &types.AttributeValueMemberS{
+					Value: attributeValue.(string),
 				}
 			}
 		case db.ThingWithAdditionalAttributesID:
-			queryInput.ExpressionAttributeNames["#ID"] = aws.String(string(db.ThingWithAdditionalAttributesID))
+			queryInput.ExpressionAttributeNames["#ID"] = string(db.ThingWithAdditionalAttributesID)
 			for i, attributeValue := range filterValue.AttributeValues {
-				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesID), i)] = &dynamodb.AttributeValue{
-					S: aws.String(attributeValue.(string)),
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesID), i)] = &types.AttributeValueMemberS{
+					Value: attributeValue.(string),
 				}
 			}
 		case db.ThingWithAdditionalAttributesRangeNullable:
-			queryInput.ExpressionAttributeNames["#RANGENULLABLE"] = aws.String(string(db.ThingWithAdditionalAttributesRangeNullable))
+			queryInput.ExpressionAttributeNames["#RANGENULLABLE"] = string(db.ThingWithAdditionalAttributesRangeNullable)
 			for i, attributeValue := range filterValue.AttributeValues {
-				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesRangeNullable), i)] = &dynamodb.AttributeValue{
-					S: aws.String(datetimeToDynamoTimeString(attributeValue.(strfmt.DateTime))),
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithAdditionalAttributesRangeNullable), i)] = &types.AttributeValueMemberS{
+					Value: datetimeToDynamoTimeString(attributeValue.(strfmt.DateTime)),
 				}
 			}
 		}
@@ -370,27 +384,28 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
-		ExpressionAttributeNames: map[string]*string{
-			"#NAME": aws.String("name"),
+		ExpressionAttributeNames: map[string]string{
+			"#NAME": "name",
 		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":name": &dynamodb.AttributeValue{
-				S: aws.String(input.Name),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":name": &types.AttributeValueMemberS{
+				Value: input.Name,
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.VersionStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
 	} else {
-		queryInput.ExpressionAttributeNames["#VERSION"] = aws.String("version")
-		queryInput.ExpressionAttributeValues[":version"] = &dynamodb.AttributeValue{
-			N: aws.String(fmt.Sprintf("%d", *input.VersionStartingAt)),
+		queryInput.ExpressionAttributeNames["#VERSION"] = "version"
+		queryInput.ExpressionAttributeValues[":version"] = &types.AttributeValueMemberN{
+			Value: fmt.Sprintf("%d", *input.VersionStartingAt),
 		}
+
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #VERSION <= :version")
 		} else {
@@ -398,12 +413,13 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"version": &dynamodb.AttributeValue{
-				N: aws.String(fmt.Sprintf("%d", input.StartingAfter.Version)),
+		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
+			"version": &types.AttributeValueMemberN{
+				Value: fmt.Sprintf("%d", input.StartingAfter.Version),
 			},
-			"name": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.Name),
+
+			"name": &types.AttributeValueMemberS{
+				Value: input.StartingAfter.Name,
 			},
 		}
 	}
@@ -415,8 +431,7 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
-		// Only assume an empty page means no more results if there are no filters applied
-		if (len(input.FilterValues) == 0 || input.FilterExpression == "") && len(queryOutput.Items) == 0 {
+		if len(queryOutput.Items) == 0 {
 			return false
 		}
 		items, err := decodeThingWithAdditionalAttributess(queryOutput.Items)
@@ -441,16 +456,21 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 		return true
 	}
 
-	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeResourceNotFoundException:
+	paginator := dynamodb.NewQueryPaginator(t.DynamoDBAPI, queryInput)
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(ctx)
+		if err != nil {
+			var resourceNotFoundErr *types.ResourceNotFoundException
+			if errors.As(err, &resourceNotFoundErr) {
 				return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
+			return err
 		}
-		return err
+		if !pageFn(output, !paginator.HasMorePages()) {
+			break
+		}
 	}
+
 	if pageFnErr != nil {
 		return pageFnErr
 	}
@@ -459,23 +479,22 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 }
 
 func (t ThingWithAdditionalAttributesTable) deleteThingWithAdditionalAttributes(ctx context.Context, name string, version int64) error {
-	key, err := dynamodbattribute.MarshalMap(ddbThingWithAdditionalAttributesPrimaryKey{
+
+	key, err := attributevalue.MarshalMap(ddbThingWithAdditionalAttributesPrimaryKey{
 		Name:    name,
 		Version: version,
 	})
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
+	_, err = t.DynamoDBAPI.DeleteItem(ctx, &dynamodb.DeleteItemInput{
 		Key:       key,
 		TableName: aws.String(t.TableName),
 	})
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.TableName)
-			}
+		var resourceNotFoundErr *types.ResourceNotFoundException
+		if errors.As(err, &resourceNotFoundErr) {
+			return fmt.Errorf("table or index not found: %s", t.TableName)
 		}
 		return err
 	}
@@ -487,24 +506,22 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributesByID
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("thingID"),
-		ExpressionAttributeNames: map[string]*string{
-			"#ID": aws.String("id"),
+		ExpressionAttributeNames: map[string]string{
+			"#ID": "id",
 		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":id": &dynamodb.AttributeValue{
-				S: aws.String(id),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":id": &types.AttributeValueMemberS{
+				Value: id,
 			},
 		},
 		KeyConditionExpression: aws.String("#ID = :id"),
 	}
 
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	queryOutput, err := t.DynamoDBAPI.Query(ctx, queryInput)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeResourceNotFoundException:
-				return nil, fmt.Errorf("table or index not found: %s", t.TableName)
-			}
+		var resourceNotFoundErr *types.ResourceNotFoundException
+		if errors.As(err, &resourceNotFoundErr) {
+			return nil, fmt.Errorf("table or index not found: %s", t.TableName)
 		}
 		return nil, err
 	}
@@ -524,53 +541,58 @@ func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributessBy
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
-		IndexName:      aws.String("thingID"),
 	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
+	}
+	scanInput.IndexName = aws.String("thingID")
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
 		// must provide the fields constituting the index and the primary key
 		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
-		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+		scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"name":    exclusiveStartKey["name"],
 			"version": exclusiveStartKey["version"],
 			"id":      exclusiveStartKey["id"],
 		}
 	}
 	totalRecordsProcessed := int64(0)
-	var innerErr error
-	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+
+	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+	for paginator.HasMorePages() {
+		out, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting next page: %s", err.Error())
+		}
+
 		items, err := decodeThingWithAdditionalAttributess(out.Items)
 		if err != nil {
-			innerErr = fmt.Errorf("error decoding %s", err.Error())
-			return false
+			return fmt.Errorf("error decoding items: %s", err.Error())
 		}
+
 		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
-					innerErr = err
-					return false
+					return err
 				}
 			}
-			isLastModel := lastPage && i == len(items)-1
+
+			isLastModel := !paginator.HasMorePages() && i == len(items)-1
 			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-				return false
+				return nil
 			}
+
 			totalRecordsProcessed++
-			// if the Limit of records have been passed to fn, don't pass anymore records.
 			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-				return false
+				return nil
 			}
 		}
-		return true
-	})
-	if innerErr != nil {
-		return innerErr
 	}
-	return err
+
+	return nil
 }
 func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByNameAndCreatedAt(ctx context.Context, input db.GetThingWithAdditionalAttributessByNameAndCreatedAtInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
 	if input.CreatedAtStartingAt != nil && input.StartingAfter != nil {
@@ -582,27 +604,28 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("name-createdAt"),
-		ExpressionAttributeNames: map[string]*string{
-			"#NAME": aws.String("name"),
+		ExpressionAttributeNames: map[string]string{
+			"#NAME": "name",
 		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":name": &dynamodb.AttributeValue{
-				S: aws.String(input.Name),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":name": &types.AttributeValueMemberS{
+				Value: input.Name,
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.CreatedAtStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
 	} else {
-		queryInput.ExpressionAttributeNames["#CREATEDAT"] = aws.String("createdAt")
-		queryInput.ExpressionAttributeValues[":createdAt"] = &dynamodb.AttributeValue{
-			S: aws.String(datetimeToDynamoTimeString(*input.CreatedAtStartingAt)),
+		queryInput.ExpressionAttributeNames["#CREATEDAT"] = "createdAt"
+		queryInput.ExpressionAttributeValues[":createdAt"] = &types.AttributeValueMemberS{
+			Value: datetimeToDynamoTimeString(*input.CreatedAtStartingAt),
 		}
+
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #CREATEDAT <= :createdAt")
 		} else {
@@ -610,15 +633,15 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"createdAt": &dynamodb.AttributeValue{
-				S: aws.String(datetimeToDynamoTimeString(input.StartingAfter.CreatedAt)),
+		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
+			"createdAt": &types.AttributeValueMemberS{
+				Value: datetimeToDynamoTimeString(input.StartingAfter.CreatedAt),
 			},
-			"name": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.Name),
+			"name": &types.AttributeValueMemberS{
+				Value: input.StartingAfter.Name,
 			},
-			"version": &dynamodb.AttributeValue{
-				N: aws.String(fmt.Sprintf("%d", input.StartingAfter.Version)),
+			"version": &types.AttributeValueMemberN{
+				Value: fmt.Sprintf("%d", input.StartingAfter.Version),
 			},
 		}
 	}
@@ -651,16 +674,21 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 		return true
 	}
 
-	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeResourceNotFoundException:
+	paginator := dynamodb.NewQueryPaginator(t.DynamoDBAPI, queryInput)
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(ctx)
+		if err != nil {
+			var resourceNotFoundErr *types.ResourceNotFoundException
+			if errors.As(err, &resourceNotFoundErr) {
 				return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
+			return err
 		}
-		return err
+		if !pageFn(output, !paginator.HasMorePages()) {
+			break
+		}
 	}
+
 	if pageFnErr != nil {
 		return pageFnErr
 	}
@@ -671,53 +699,58 @@ func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributessBy
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
-		IndexName:      aws.String("name-createdAt"),
 	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
+	}
+	scanInput.IndexName = aws.String("name-createdAt")
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
 		// must provide the fields constituting the index and the primary key
 		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
-		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+		scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"name":      exclusiveStartKey["name"],
 			"version":   exclusiveStartKey["version"],
 			"createdAt": exclusiveStartKey["createdAt"],
 		}
 	}
 	totalRecordsProcessed := int64(0)
-	var innerErr error
-	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+
+	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+	for paginator.HasMorePages() {
+		out, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting next page: %s", err.Error())
+		}
+
 		items, err := decodeThingWithAdditionalAttributess(out.Items)
 		if err != nil {
-			innerErr = fmt.Errorf("error decoding %s", err.Error())
-			return false
+			return fmt.Errorf("error decoding items: %s", err.Error())
 		}
+
 		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
-					innerErr = err
-					return false
+					return err
 				}
 			}
-			isLastModel := lastPage && i == len(items)-1
+
+			isLastModel := !paginator.HasMorePages() && i == len(items)-1
 			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-				return false
+				return nil
 			}
+
 			totalRecordsProcessed++
-			// if the Limit of records have been passed to fn, don't pass anymore records.
 			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-				return false
+				return nil
 			}
 		}
-		return true
-	})
-	if innerErr != nil {
-		return innerErr
 	}
-	return err
+
+	return nil
 }
 func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByNameAndRangeNullable(ctx context.Context, input db.GetThingWithAdditionalAttributessByNameAndRangeNullableInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
 	if input.RangeNullableStartingAt != nil && input.StartingAfter != nil {
@@ -729,27 +762,28 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("name-rangeNullable"),
-		ExpressionAttributeNames: map[string]*string{
-			"#NAME": aws.String("name"),
+		ExpressionAttributeNames: map[string]string{
+			"#NAME": "name",
 		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":name": &dynamodb.AttributeValue{
-				S: aws.String(input.Name),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":name": &types.AttributeValueMemberS{
+				Value: input.Name,
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.RangeNullableStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
 	} else {
-		queryInput.ExpressionAttributeNames["#RANGENULLABLE"] = aws.String("rangeNullable")
-		queryInput.ExpressionAttributeValues[":rangeNullable"] = &dynamodb.AttributeValue{
-			S: aws.String(datetimeToDynamoTimeString(*input.RangeNullableStartingAt)),
+		queryInput.ExpressionAttributeNames["#RANGENULLABLE"] = "rangeNullable"
+		queryInput.ExpressionAttributeValues[":rangeNullable"] = &types.AttributeValueMemberS{
+			Value: datetimeToDynamoTimeString(*input.RangeNullableStartingAt),
 		}
+
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #RANGENULLABLE <= :rangeNullable")
 		} else {
@@ -757,15 +791,15 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"rangeNullable": &dynamodb.AttributeValue{
-				S: aws.String(datetimePtrToDynamoTimeString(input.StartingAfter.RangeNullable)),
+		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
+			"rangeNullable": &types.AttributeValueMemberS{
+				Value: datetimePtrToDynamoTimeString(input.StartingAfter.RangeNullable),
 			},
-			"name": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.Name),
+			"name": &types.AttributeValueMemberS{
+				Value: input.StartingAfter.Name,
 			},
-			"version": &dynamodb.AttributeValue{
-				N: aws.String(fmt.Sprintf("%d", input.StartingAfter.Version)),
+			"version": &types.AttributeValueMemberN{
+				Value: fmt.Sprintf("%d", input.StartingAfter.Version),
 			},
 		}
 	}
@@ -798,16 +832,21 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByN
 		return true
 	}
 
-	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeResourceNotFoundException:
+	paginator := dynamodb.NewQueryPaginator(t.DynamoDBAPI, queryInput)
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(ctx)
+		if err != nil {
+			var resourceNotFoundErr *types.ResourceNotFoundException
+			if errors.As(err, &resourceNotFoundErr) {
 				return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
+			return err
 		}
-		return err
+		if !pageFn(output, !paginator.HasMorePages()) {
+			break
+		}
 	}
+
 	if pageFnErr != nil {
 		return pageFnErr
 	}
@@ -818,53 +857,58 @@ func (t ThingWithAdditionalAttributesTable) scanThingWithAdditionalAttributessBy
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
-		IndexName:      aws.String("name-rangeNullable"),
 	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
+	}
+	scanInput.IndexName = aws.String("name-rangeNullable")
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
 		// must provide the fields constituting the index and the primary key
 		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
-		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+		scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"name":          exclusiveStartKey["name"],
 			"version":       exclusiveStartKey["version"],
 			"rangeNullable": exclusiveStartKey["rangeNullable"],
 		}
 	}
 	totalRecordsProcessed := int64(0)
-	var innerErr error
-	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+
+	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+	for paginator.HasMorePages() {
+		out, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting next page: %s", err.Error())
+		}
+
 		items, err := decodeThingWithAdditionalAttributess(out.Items)
 		if err != nil {
-			innerErr = fmt.Errorf("error decoding %s", err.Error())
-			return false
+			return fmt.Errorf("error decoding items: %s", err.Error())
 		}
+
 		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
-					innerErr = err
-					return false
+					return err
 				}
 			}
-			isLastModel := lastPage && i == len(items)-1
+
+			isLastModel := !paginator.HasMorePages() && i == len(items)-1
 			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-				return false
+				return nil
 			}
+
 			totalRecordsProcessed++
-			// if the Limit of records have been passed to fn, don't pass anymore records.
 			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-				return false
+				return nil
 			}
 		}
-		return true
-	})
-	if innerErr != nil {
-		return innerErr
 	}
-	return err
+
+	return nil
 }
 func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByHashNullableAndName(ctx context.Context, input db.GetThingWithAdditionalAttributessByHashNullableAndNameInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error {
 	if input.NameStartingAt != nil && input.StartingAfter != nil {
@@ -876,27 +920,28 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByH
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("name-hashNullable"),
-		ExpressionAttributeNames: map[string]*string{
-			"#HASHNULLABLE": aws.String("hashNullable"),
+		ExpressionAttributeNames: map[string]string{
+			"#HASHNULLABLE": "hashNullable",
 		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":hashNullable": &dynamodb.AttributeValue{
-				S: aws.String(input.HashNullable),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":hashNullable": &types.AttributeValueMemberS{
+				Value: input.HashNullable,
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.NameStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#HASHNULLABLE = :hashNullable")
 	} else {
-		queryInput.ExpressionAttributeNames["#NAME"] = aws.String("name")
-		queryInput.ExpressionAttributeValues[":name"] = &dynamodb.AttributeValue{
-			S: aws.String(string(*input.NameStartingAt)),
+		queryInput.ExpressionAttributeNames["#NAME"] = "name"
+		queryInput.ExpressionAttributeValues[":name"] = &types.AttributeValueMemberS{
+			Value: string(*input.NameStartingAt),
 		}
+
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#HASHNULLABLE = :hashNullable AND #NAME <= :name")
 		} else {
@@ -904,15 +949,15 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByH
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"name": &dynamodb.AttributeValue{
-				S: aws.String(string(input.StartingAfter.Name)),
+		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
+			"name": &types.AttributeValueMemberS{
+				Value: string(input.StartingAfter.Name),
 			},
-			"hashNullable": &dynamodb.AttributeValue{
-				S: aws.String(*input.StartingAfter.HashNullable),
+			"hashNullable": &types.AttributeValueMemberS{
+				Value: *input.StartingAfter.HashNullable,
 			},
-			"version": &dynamodb.AttributeValue{
-				N: aws.String(fmt.Sprintf("%d", input.StartingAfter.Version)),
+			"version": &types.AttributeValueMemberN{
+				Value: fmt.Sprintf("%d", input.StartingAfter.Version),
 			},
 		}
 	}
@@ -945,16 +990,21 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByH
 		return true
 	}
 
-	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeResourceNotFoundException:
+	paginator := dynamodb.NewQueryPaginator(t.DynamoDBAPI, queryInput)
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(ctx)
+		if err != nil {
+			var resourceNotFoundErr *types.ResourceNotFoundException
+			if errors.As(err, &resourceNotFoundErr) {
 				return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
+			return err
 		}
-		return err
+		if !pageFn(output, !paginator.HasMorePages()) {
+			break
+		}
 	}
+
 	if pageFnErr != nil {
 		return pageFnErr
 	}
@@ -963,16 +1013,23 @@ func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributessByH
 }
 
 // encodeThingWithAdditionalAttributes encodes a ThingWithAdditionalAttributes as a DynamoDB map of attribute values.
-func encodeThingWithAdditionalAttributes(m models.ThingWithAdditionalAttributes) (map[string]*dynamodb.AttributeValue, error) {
-	return dynamodbattribute.MarshalMap(ddbThingWithAdditionalAttributes{
-		ThingWithAdditionalAttributes: m,
+func encodeThingWithAdditionalAttributes(m models.ThingWithAdditionalAttributes) (map[string]types.AttributeValue, error) {
+	// no composite attributes, marshal the model with the json tag
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
+	if err != nil {
+		return nil, err
+	}
+	return val, nil
 }
 
 // decodeThingWithAdditionalAttributes translates a ThingWithAdditionalAttributes stored in DynamoDB to a ThingWithAdditionalAttributes struct.
-func decodeThingWithAdditionalAttributes(m map[string]*dynamodb.AttributeValue, out *models.ThingWithAdditionalAttributes) error {
+func decodeThingWithAdditionalAttributes(m map[string]types.AttributeValue, out *models.ThingWithAdditionalAttributes) error {
 	var ddbThingWithAdditionalAttributes ddbThingWithAdditionalAttributes
-	if err := dynamodbattribute.UnmarshalMap(m, &ddbThingWithAdditionalAttributes); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithAdditionalAttributes, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithAdditionalAttributes.ThingWithAdditionalAttributes
@@ -980,7 +1037,7 @@ func decodeThingWithAdditionalAttributes(m map[string]*dynamodb.AttributeValue, 
 }
 
 // decodeThingWithAdditionalAttributess translates a list of ThingWithAdditionalAttributess stored in DynamoDB to a slice of ThingWithAdditionalAttributes structs.
-func decodeThingWithAdditionalAttributess(ms []map[string]*dynamodb.AttributeValue) ([]models.ThingWithAdditionalAttributes, error) {
+func decodeThingWithAdditionalAttributess(ms []map[string]types.AttributeValue) ([]models.ThingWithAdditionalAttributes, error) {
 	thingWithAdditionalAttributess := make([]models.ThingWithAdditionalAttributes, len(ms))
 	for i, m := range ms {
 		var thingWithAdditionalAttributes models.ThingWithAdditionalAttributes

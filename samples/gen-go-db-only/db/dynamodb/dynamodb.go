@@ -7,17 +7,19 @@ import (
 
 	"github.com/Clever/wag/samples/gen-go-db-only/models/v9"
 	"github.com/Clever/wag/samples/v9/gen-go-db-only/db"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
-	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/go-openapi/strfmt"
 )
+
+var _ types.AttributeValue = &types.AttributeValueMemberS{}
 
 // Config is used to create a new DB struct.
 type Config struct {
 	// DynamoDBAPI is used to communicate with DynamoDB. It is required.
 	// It can be overriden on a table-by-table basis.
-	DynamoDBAPI dynamodbiface.DynamoDBAPI
+	DynamoDBAPI *dynamodb.Client
 
 	// DefaultPrefix configures a prefix on all table names. It is required.
 	// It can be overriden on a table-by-table basis.
@@ -1551,9 +1553,9 @@ func datetimeToDynamoTimeString(d strfmt.DateTime) string {
 func datetimePtrToDynamoTimeString(d *strfmt.DateTime) string {
 	return time.Time(*d).Format(time.RFC3339) // dynamodb attributevalue only supports RFC3339 resolution
 }
-func buildCondExpr(conditions *expression.ConditionBuilder) (*string, map[string]*dynamodb.AttributeValue, map[string]*string, error) {
+func buildCondExpr(conditions *expression.ConditionBuilder) (*string, map[string]types.AttributeValue, map[string]*string, error) {
 	var condExpr *string
-	var exprVals map[string]*dynamodb.AttributeValue
+	var exprVals map[string]types.AttributeValue
 	var exprNames map[string]*string
 	if conditions != nil {
 		exprBuilder, err := expression.NewBuilder().WithCondition(*conditions).Build()
@@ -1562,7 +1564,11 @@ func buildCondExpr(conditions *expression.ConditionBuilder) (*string, map[string
 		}
 		condExpr = exprBuilder.Condition()
 		exprVals = exprBuilder.Values()
-		exprNames = exprBuilder.Names()
+		names := exprBuilder.Names()
+		exprNames = make(map[string]*string, len(names))
+		for k, v := range names {
+			exprNames[k] = &v
+		}
 	}
 	return condExpr, exprVals, exprNames, nil
 }

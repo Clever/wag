@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/Clever/wag/samples/gen-go-db-only/models/v9"
-	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/go-openapi/strfmt"
 	"golang.org/x/time/rate"
 )
@@ -383,6 +383,9 @@ type Interface interface {
 
 // Int64 returns a pointer to the int64 value passed in.
 func Int64(i int64) *int64 { return &i }
+
+// Int32 returns a pointer to the int32 value passed in.
+func Int32(i int32) *int32 { return &i }
 
 // String returns a pointer to the string value passed in.
 func String(s string) *string { return &s }

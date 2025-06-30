@@ -2,24 +2,26 @@ package dynamodb
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/Clever/wag/samples/gen-go-db/models/v9"
 	"github.com/Clever/wag/samples/v9/gen-go-db/server/db"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/go-openapi/strfmt"
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // NoRangeThingWithCompositeAttributesTable represents the user-configurable properties of the NoRangeThingWithCompositeAttributes table.
 type NoRangeThingWithCompositeAttributesTable struct {
-	DynamoDBAPI        dynamodbiface.DynamoDBAPI
+	DynamoDBAPI        *dynamodb.Client
 	Prefix             string
 	TableName          string
 	ReadCapacityUnits  int64
@@ -48,70 +50,70 @@ type ddbNoRangeThingWithCompositeAttributes struct {
 }
 
 func (t NoRangeThingWithCompositeAttributesTable) create(ctx context.Context) error {
-	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
-		AttributeDefinitions: []*dynamodb.AttributeDefinition{
+	if _, err := t.DynamoDBAPI.CreateTable(ctx, &dynamodb.CreateTableInput{
+		AttributeDefinitions: []types.AttributeDefinition{
 			{
 				AttributeName: aws.String("date"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 			{
 				AttributeName: aws.String("name_branch"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 			{
 				AttributeName: aws.String("name_branch_commit"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 			{
 				AttributeName: aws.String("name_version"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 		},
-		KeySchema: []*dynamodb.KeySchemaElement{
+		KeySchema: []types.KeySchemaElement{
 			{
 				AttributeName: aws.String("name_branch"),
-				KeyType:       aws.String(dynamodb.KeyTypeHash),
+				KeyType:       types.KeyTypeHash,
 			},
 		},
-		GlobalSecondaryIndexes: []*dynamodb.GlobalSecondaryIndex{
+		GlobalSecondaryIndexes: []types.GlobalSecondaryIndex{
 			{
 				IndexName: aws.String("nameVersion"),
-				Projection: &dynamodb.Projection{
-					ProjectionType: aws.String("ALL"),
+				Projection: &types.Projection{
+					ProjectionType: types.ProjectionType("ALL"),
 				},
-				KeySchema: []*dynamodb.KeySchemaElement{
+				KeySchema: []types.KeySchemaElement{
 					{
 						AttributeName: aws.String("name_version"),
-						KeyType:       aws.String(dynamodb.KeyTypeHash),
+						KeyType:       types.KeyTypeHash,
 					},
 					{
 						AttributeName: aws.String("date"),
-						KeyType:       aws.String(dynamodb.KeyTypeRange),
+						KeyType:       types.KeyTypeRange,
 					},
 				},
-				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+				ProvisionedThroughput: &types.ProvisionedThroughput{
 					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 				},
 			},
 			{
 				IndexName: aws.String("nameBranchCommit"),
-				Projection: &dynamodb.Projection{
-					ProjectionType: aws.String("ALL"),
+				Projection: &types.Projection{
+					ProjectionType: types.ProjectionType("ALL"),
 				},
-				KeySchema: []*dynamodb.KeySchemaElement{
+				KeySchema: []types.KeySchemaElement{
 					{
 						AttributeName: aws.String("name_branch_commit"),
-						KeyType:       aws.String(dynamodb.KeyTypeHash),
+						KeyType:       types.KeyTypeHash,
 					},
 				},
-				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+				ProvisionedThroughput: &types.ProvisionedThroughput{
 					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 				},
 			},
 		},
-		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+		ProvisionedThroughput: &types.ProvisionedThroughput{
 			ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 			WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 		},
@@ -127,23 +129,29 @@ func (t NoRangeThingWithCompositeAttributesTable) saveNoRangeThingWithCompositeA
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
+
+	_, err = t.DynamoDBAPI.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(t.TableName),
 		Item:      data,
-		ExpressionAttributeNames: map[string]*string{
-			"#NAME_BRANCH": aws.String("name_branch"),
+		ExpressionAttributeNames: map[string]string{
+			"#NAME_BRANCH": "name_branch",
 		},
-		ConditionExpression: aws.String("attribute_not_exists(#NAME_BRANCH)"),
+		ConditionExpression: aws.String(
+			"" +
+				"" +
+				"attribute_not_exists(#NAME_BRANCH)" +
+				"",
+		),
 	})
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeConditionalCheckFailedException:
-				return db.ErrNoRangeThingWithCompositeAttributesAlreadyExists{
-					NameBranch: fmt.Sprintf("%s@%s", *m.Name, *m.Branch),
-				}
-			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.TableName)
+		var resourceNotFoundErr *types.ResourceNotFoundException
+		var conditionalCheckFailedErr *types.ConditionalCheckFailedException
+		if errors.As(err, &resourceNotFoundErr) {
+			return fmt.Errorf("table or index not found: %s", t.TableName)
+		}
+		if errors.As(err, &conditionalCheckFailedErr) {
+			return db.ErrNoRangeThingWithCompositeAttributesAlreadyExists{
+				NameBranch: fmt.Sprintf("%s@%s", *m.Name, *m.Branch),
 			}
 		}
 		return err
@@ -152,23 +160,21 @@ func (t NoRangeThingWithCompositeAttributesTable) saveNoRangeThingWithCompositeA
 }
 
 func (t NoRangeThingWithCompositeAttributesTable) getNoRangeThingWithCompositeAttributes(ctx context.Context, name string, branch string) (*models.NoRangeThingWithCompositeAttributes, error) {
-	key, err := dynamodbattribute.MarshalMap(ddbNoRangeThingWithCompositeAttributesPrimaryKey{
+	key, err := attributevalue.MarshalMap(ddbNoRangeThingWithCompositeAttributesPrimaryKey{
 		NameBranch: fmt.Sprintf("%s@%s", name, branch),
 	})
 	if err != nil {
 		return nil, err
 	}
-	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
+	res, err := t.DynamoDBAPI.GetItem(ctx, &dynamodb.GetItemInput{
 		Key:            key,
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(true),
 	})
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeResourceNotFoundException:
-				return nil, fmt.Errorf("table or index not found: %s", t.TableName)
-			}
+		var resourceNotFoundErr *types.ResourceNotFoundException
+		if errors.As(err, &resourceNotFoundErr) {
+			return nil, fmt.Errorf("table or index not found: %s", t.TableName)
 		}
 		return nil, err
 	}
@@ -192,66 +198,70 @@ func (t NoRangeThingWithCompositeAttributesTable) scanNoRangeThingWithCompositeA
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
 		// must provide only the fields constituting the index
-		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"name_branch": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
+		scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
+			"name_branch": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch),
 			},
 		}
 	}
 	totalRecordsProcessed := int64(0)
-	var innerErr error
-	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+
+	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+	for paginator.HasMorePages() {
+		out, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting next page: %s", err.Error())
+		}
+
 		items, err := decodeNoRangeThingWithCompositeAttributess(out.Items)
 		if err != nil {
-			innerErr = fmt.Errorf("error decoding %s", err.Error())
-			return false
+			return fmt.Errorf("error decoding items: %s", err.Error())
 		}
+
 		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
-					innerErr = err
-					return false
+					return err
 				}
 			}
-			isLastModel := lastPage && i == len(items)-1
+
+			isLastModel := !paginator.HasMorePages() && i == len(items)-1
 			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-				return false
+				return nil
 			}
+
 			totalRecordsProcessed++
-			// if the Limit of records have been passed to fn, don't pass anymore records.
 			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-				return false
+				return nil
 			}
 		}
-		return true
-	})
-	if innerErr != nil {
-		return innerErr
 	}
-	return err
+
+	return nil
 }
 
 func (t NoRangeThingWithCompositeAttributesTable) deleteNoRangeThingWithCompositeAttributes(ctx context.Context, name string, branch string) error {
-	key, err := dynamodbattribute.MarshalMap(ddbNoRangeThingWithCompositeAttributesPrimaryKey{
+
+	key, err := attributevalue.MarshalMap(ddbNoRangeThingWithCompositeAttributesPrimaryKey{
 		NameBranch: fmt.Sprintf("%s@%s", name, branch),
 	})
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
+	_, err = t.DynamoDBAPI.DeleteItem(ctx, &dynamodb.DeleteItemInput{
 		Key:       key,
 		TableName: aws.String(t.TableName),
 	})
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.TableName)
-			}
+		var resourceNotFoundErr *types.ResourceNotFoundException
+		if errors.As(err, &resourceNotFoundErr) {
+			return fmt.Errorf("table or index not found: %s", t.TableName)
 		}
 		return err
 	}
@@ -269,27 +279,28 @@ func (t NoRangeThingWithCompositeAttributesTable) getNoRangeThingWithCompositeAt
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("nameVersion"),
-		ExpressionAttributeNames: map[string]*string{
-			"#NAME_VERSION": aws.String("name_version"),
+		ExpressionAttributeNames: map[string]string{
+			"#NAME_VERSION": "name_version",
 		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":nameVersion": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s:%d", input.Name, input.Version)),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":nameVersion": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s:%d", input.Name, input.Version),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.DateStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion")
 	} else {
-		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
-		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
-			S: aws.String(datetimeToDynamoTimeString(*input.DateStartingAt)),
+		queryInput.ExpressionAttributeNames["#DATE"] = "date"
+		queryInput.ExpressionAttributeValues[":date"] = &types.AttributeValueMemberS{
+			Value: datetimeToDynamoTimeString(*input.DateStartingAt),
 		}
+
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#NAME_VERSION = :nameVersion AND #DATE <= :date")
 		} else {
@@ -297,15 +308,15 @@ func (t NoRangeThingWithCompositeAttributesTable) getNoRangeThingWithCompositeAt
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"date": &dynamodb.AttributeValue{
-				S: aws.String(datetimePtrToDynamoTimeString(input.StartingAfter.Date)),
+		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
+			"date": &types.AttributeValueMemberS{
+				Value: datetimePtrToDynamoTimeString(input.StartingAfter.Date),
 			},
-			"name_version": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s:%d", *input.StartingAfter.Name, input.StartingAfter.Version)),
+			"name_version": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s:%d", *input.StartingAfter.Name, input.StartingAfter.Version),
 			},
-			"name_branch": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
+			"name_branch": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch),
 			},
 		}
 	}
@@ -338,16 +349,21 @@ func (t NoRangeThingWithCompositeAttributesTable) getNoRangeThingWithCompositeAt
 		return true
 	}
 
-	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeResourceNotFoundException:
+	paginator := dynamodb.NewQueryPaginator(t.DynamoDBAPI, queryInput)
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(ctx)
+		if err != nil {
+			var resourceNotFoundErr *types.ResourceNotFoundException
+			if errors.As(err, &resourceNotFoundErr) {
 				return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
+			return err
 		}
-		return err
+		if !pageFn(output, !paginator.HasMorePages()) {
+			break
+		}
 	}
+
 	if pageFnErr != nil {
 		return pageFnErr
 	}
@@ -358,80 +374,83 @@ func (t NoRangeThingWithCompositeAttributesTable) scanNoRangeThingWithCompositeA
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
-		IndexName:      aws.String("nameVersion"),
 	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
+	}
+	scanInput.IndexName = aws.String("nameVersion")
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
 		// must provide the fields constituting the index and the primary key
 		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
-		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"name_branch": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch)),
+		scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
+			"name_branch": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s@%s", *input.StartingAfter.Name, *input.StartingAfter.Branch),
 			},
-			"name_version": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s:%d", *input.StartingAfter.Name, input.StartingAfter.Version)),
+			"name_version": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s:%d", *input.StartingAfter.Name, input.StartingAfter.Version),
 			},
 			"date": exclusiveStartKey["date"],
 		}
 	}
 	totalRecordsProcessed := int64(0)
-	var innerErr error
-	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+
+	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+	for paginator.HasMorePages() {
+		out, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting next page: %s", err.Error())
+		}
+
 		items, err := decodeNoRangeThingWithCompositeAttributess(out.Items)
 		if err != nil {
-			innerErr = fmt.Errorf("error decoding %s", err.Error())
-			return false
+			return fmt.Errorf("error decoding items: %s", err.Error())
 		}
+
 		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
-					innerErr = err
-					return false
+					return err
 				}
 			}
-			isLastModel := lastPage && i == len(items)-1
+
+			isLastModel := !paginator.HasMorePages() && i == len(items)-1
 			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-				return false
+				return nil
 			}
+
 			totalRecordsProcessed++
-			// if the Limit of records have been passed to fn, don't pass anymore records.
 			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-				return false
+				return nil
 			}
 		}
-		return true
-	})
-	if innerErr != nil {
-		return innerErr
 	}
-	return err
+
+	return nil
 }
 func (t NoRangeThingWithCompositeAttributesTable) getNoRangeThingWithCompositeAttributesByNameBranchCommit(ctx context.Context, name string, branch string, commit string) (*models.NoRangeThingWithCompositeAttributes, error) {
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("nameBranchCommit"),
-		ExpressionAttributeNames: map[string]*string{
-			"#NAME_BRANCH_COMMIT": aws.String("name_branch_commit"),
+		ExpressionAttributeNames: map[string]string{
+			"#NAME_BRANCH_COMMIT": "name_branch_commit",
 		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":nameBranchCommit": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s--%s--%s", name, branch, commit)),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":nameBranchCommit": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s--%s--%s", name, branch, commit),
 			},
 		},
 		KeyConditionExpression: aws.String("#NAME_BRANCH_COMMIT = :nameBranchCommit"),
 	}
 
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	queryOutput, err := t.DynamoDBAPI.Query(ctx, queryInput)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeResourceNotFoundException:
-				return nil, fmt.Errorf("table or index not found: %s", t.TableName)
-			}
+		var resourceNotFoundErr *types.ResourceNotFoundException
+		if errors.As(err, &resourceNotFoundErr) {
+			return nil, fmt.Errorf("table or index not found: %s", t.TableName)
 		}
 		return nil, err
 	}
@@ -451,9 +470,10 @@ func (t NoRangeThingWithCompositeAttributesTable) getNoRangeThingWithCompositeAt
 }
 
 // encodeNoRangeThingWithCompositeAttributes encodes a NoRangeThingWithCompositeAttributes as a DynamoDB map of attribute values.
-func encodeNoRangeThingWithCompositeAttributes(m models.NoRangeThingWithCompositeAttributes) (map[string]*dynamodb.AttributeValue, error) {
-	val, err := dynamodbattribute.MarshalMap(ddbNoRangeThingWithCompositeAttributes{
-		NoRangeThingWithCompositeAttributes: m,
+func encodeNoRangeThingWithCompositeAttributes(m models.NoRangeThingWithCompositeAttributes) (map[string]types.AttributeValue, error) {
+	// with composite attributes, marshal the model
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -478,7 +498,7 @@ func encodeNoRangeThingWithCompositeAttributes(m models.NoRangeThingWithComposit
 		return nil, fmt.Errorf("name cannot contain '@': %s", *m.Name)
 	}
 	// add in composite attributes
-	primaryKey, err := dynamodbattribute.MarshalMap(ddbNoRangeThingWithCompositeAttributesPrimaryKey{
+	primaryKey, err := attributevalue.MarshalMap(ddbNoRangeThingWithCompositeAttributesPrimaryKey{
 		NameBranch: fmt.Sprintf("%s@%s", *m.Name, *m.Branch),
 	})
 	if err != nil {
@@ -487,7 +507,7 @@ func encodeNoRangeThingWithCompositeAttributes(m models.NoRangeThingWithComposit
 	for k, v := range primaryKey {
 		val[k] = v
 	}
-	nameVersion, err := dynamodbattribute.MarshalMap(ddbNoRangeThingWithCompositeAttributesGSINameVersion{
+	nameVersion, err := attributevalue.MarshalMap(ddbNoRangeThingWithCompositeAttributesGSINameVersion{
 		NameVersion: fmt.Sprintf("%s:%d", *m.Name, m.Version),
 		Date:        *m.Date,
 	})
@@ -497,7 +517,7 @@ func encodeNoRangeThingWithCompositeAttributes(m models.NoRangeThingWithComposit
 	for k, v := range nameVersion {
 		val[k] = v
 	}
-	nameBranchCommit, err := dynamodbattribute.MarshalMap(ddbNoRangeThingWithCompositeAttributesGSINameBranchCommit{
+	nameBranchCommit, err := attributevalue.MarshalMap(ddbNoRangeThingWithCompositeAttributesGSINameBranchCommit{
 		NameBranchCommit: fmt.Sprintf("%s--%s--%s", *m.Name, *m.Branch, *m.Commit),
 	})
 	if err != nil {
@@ -510,9 +530,11 @@ func encodeNoRangeThingWithCompositeAttributes(m models.NoRangeThingWithComposit
 }
 
 // decodeNoRangeThingWithCompositeAttributes translates a NoRangeThingWithCompositeAttributes stored in DynamoDB to a NoRangeThingWithCompositeAttributes struct.
-func decodeNoRangeThingWithCompositeAttributes(m map[string]*dynamodb.AttributeValue, out *models.NoRangeThingWithCompositeAttributes) error {
+func decodeNoRangeThingWithCompositeAttributes(m map[string]types.AttributeValue, out *models.NoRangeThingWithCompositeAttributes) error {
 	var ddbNoRangeThingWithCompositeAttributes ddbNoRangeThingWithCompositeAttributes
-	if err := dynamodbattribute.UnmarshalMap(m, &ddbNoRangeThingWithCompositeAttributes); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbNoRangeThingWithCompositeAttributes, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbNoRangeThingWithCompositeAttributes.NoRangeThingWithCompositeAttributes
@@ -520,7 +542,7 @@ func decodeNoRangeThingWithCompositeAttributes(m map[string]*dynamodb.AttributeV
 }
 
 // decodeNoRangeThingWithCompositeAttributess translates a list of NoRangeThingWithCompositeAttributess stored in DynamoDB to a slice of NoRangeThingWithCompositeAttributes structs.
-func decodeNoRangeThingWithCompositeAttributess(ms []map[string]*dynamodb.AttributeValue) ([]models.NoRangeThingWithCompositeAttributes, error) {
+func decodeNoRangeThingWithCompositeAttributess(ms []map[string]types.AttributeValue) ([]models.NoRangeThingWithCompositeAttributes, error) {
 	noRangeThingWithCompositeAttributess := make([]models.NoRangeThingWithCompositeAttributes, len(ms))
 	for i, m := range ms {
 		var noRangeThingWithCompositeAttributes models.NoRangeThingWithCompositeAttributes

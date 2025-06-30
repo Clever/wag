@@ -2,23 +2,26 @@ package dynamodb
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/Clever/wag/samples/gen-go-db-custom-path/models/v9"
 	"github.com/Clever/wag/samples/v9/gen-go-db-custom-path/db"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/go-openapi/strfmt"
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // DeploymentTable represents the user-configurable properties of the Deployment table.
 type DeploymentTable struct {
-	DynamoDBAPI        dynamodbiface.DynamoDBAPI
+	DynamoDBAPI        *dynamodb.Client
 	Prefix             string
 	TableName          string
 	ReadCapacityUnits  int64
@@ -54,94 +57,94 @@ type ddbDeployment struct {
 }
 
 func (t DeploymentTable) create(ctx context.Context) error {
-	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
-		AttributeDefinitions: []*dynamodb.AttributeDefinition{
+	if _, err := t.DynamoDBAPI.CreateTable(ctx, &dynamodb.CreateTableInput{
+		AttributeDefinitions: []types.AttributeDefinition{
 			{
 				AttributeName: aws.String("date"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 			{
 				AttributeName: aws.String("envApp"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 			{
 				AttributeName: aws.String("environment"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 			{
 				AttributeName: aws.String("version"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 		},
-		KeySchema: []*dynamodb.KeySchemaElement{
+		KeySchema: []types.KeySchemaElement{
 			{
 				AttributeName: aws.String("envApp"),
-				KeyType:       aws.String(dynamodb.KeyTypeHash),
+				KeyType:       types.KeyTypeHash,
 			},
 			{
 				AttributeName: aws.String("version"),
-				KeyType:       aws.String(dynamodb.KeyTypeRange),
+				KeyType:       types.KeyTypeRange,
 			},
 		},
-		GlobalSecondaryIndexes: []*dynamodb.GlobalSecondaryIndex{
+		GlobalSecondaryIndexes: []types.GlobalSecondaryIndex{
 			{
 				IndexName: aws.String("byDate"),
-				Projection: &dynamodb.Projection{
-					ProjectionType: aws.String("ALL"),
+				Projection: &types.Projection{
+					ProjectionType: types.ProjectionType("ALL"),
 				},
-				KeySchema: []*dynamodb.KeySchemaElement{
+				KeySchema: []types.KeySchemaElement{
 					{
 						AttributeName: aws.String("envApp"),
-						KeyType:       aws.String(dynamodb.KeyTypeHash),
+						KeyType:       types.KeyTypeHash,
 					},
 					{
 						AttributeName: aws.String("date"),
-						KeyType:       aws.String(dynamodb.KeyTypeRange),
+						KeyType:       types.KeyTypeRange,
 					},
 				},
-				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+				ProvisionedThroughput: &types.ProvisionedThroughput{
 					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 				},
 			},
 			{
 				IndexName: aws.String("byEnvironment"),
-				Projection: &dynamodb.Projection{
-					ProjectionType: aws.String("ALL"),
+				Projection: &types.Projection{
+					ProjectionType: types.ProjectionType("ALL"),
 				},
-				KeySchema: []*dynamodb.KeySchemaElement{
+				KeySchema: []types.KeySchemaElement{
 					{
 						AttributeName: aws.String("environment"),
-						KeyType:       aws.String(dynamodb.KeyTypeHash),
+						KeyType:       types.KeyTypeHash,
 					},
 					{
 						AttributeName: aws.String("date"),
-						KeyType:       aws.String(dynamodb.KeyTypeRange),
+						KeyType:       types.KeyTypeRange,
 					},
 				},
-				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+				ProvisionedThroughput: &types.ProvisionedThroughput{
 					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 				},
 			},
 			{
 				IndexName: aws.String("byVersion"),
-				Projection: &dynamodb.Projection{
-					ProjectionType: aws.String("ALL"),
+				Projection: &types.Projection{
+					ProjectionType: types.ProjectionType("ALL"),
 				},
-				KeySchema: []*dynamodb.KeySchemaElement{
+				KeySchema: []types.KeySchemaElement{
 					{
 						AttributeName: aws.String("version"),
-						KeyType:       aws.String(dynamodb.KeyTypeHash),
+						KeyType:       types.KeyTypeHash,
 					},
 				},
-				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+				ProvisionedThroughput: &types.ProvisionedThroughput{
 					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 				},
 			},
 		},
-		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+		ProvisionedThroughput: &types.ProvisionedThroughput{
 			ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 			WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 		},
@@ -157,7 +160,8 @@ func (t DeploymentTable) saveDeployment(ctx context.Context, m models.Deployment
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
+
+	_, err = t.DynamoDBAPI.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(t.TableName),
 		Item:      data,
 	})
@@ -165,14 +169,14 @@ func (t DeploymentTable) saveDeployment(ctx context.Context, m models.Deployment
 }
 
 func (t DeploymentTable) getDeployment(ctx context.Context, environment string, application string, version string) (*models.Deployment, error) {
-	key, err := dynamodbattribute.MarshalMap(ddbDeploymentPrimaryKey{
+	key, err := attributevalue.MarshalMap(ddbDeploymentPrimaryKey{
 		EnvApp:  fmt.Sprintf("%s--%s", environment, application),
 		Version: version,
 	})
 	if err != nil {
 		return nil, err
 	}
-	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
+	res, err := t.DynamoDBAPI.GetItem(ctx, &dynamodb.GetItemInput{
 		Key:            key,
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(true),
@@ -201,62 +205,67 @@ func (t DeploymentTable) scanDeployments(ctx context.Context, input db.ScanDeplo
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
 		// must provide only the fields constituting the index
-		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"envApp": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application)),
+		scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
+			"envApp": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application),
 			},
 			"version": exclusiveStartKey["version"],
 		}
 	}
 	totalRecordsProcessed := int64(0)
-	var innerErr error
-	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+
+	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+	for paginator.HasMorePages() {
+		out, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting next page: %s", err.Error())
+		}
+
 		items, err := decodeDeployments(out.Items)
 		if err != nil {
-			innerErr = fmt.Errorf("error decoding %s", err.Error())
-			return false
+			return fmt.Errorf("error decoding items: %s", err.Error())
 		}
+
 		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
-					innerErr = err
-					return false
+					return err
 				}
 			}
-			isLastModel := lastPage && i == len(items)-1
+
+			isLastModel := !paginator.HasMorePages() && i == len(items)-1
 			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-				return false
+				return nil
 			}
+
 			totalRecordsProcessed++
-			// if the Limit of records have been passed to fn, don't pass anymore records.
 			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-				return false
+				return nil
 			}
 		}
-		return true
-	})
-	if innerErr != nil {
-		return innerErr
 	}
-	return err
+
+	return nil
 }
 
 func (t DeploymentTable) getDeploymentsByEnvAppAndVersionParseFilters(queryInput *dynamodb.QueryInput, input db.GetDeploymentsByEnvAppAndVersionInput) {
 	for _, filterValue := range input.FilterValues {
 		switch filterValue.AttributeName {
 		case db.DeploymentDate:
-			queryInput.ExpressionAttributeNames["#DATE"] = aws.String(string(db.DeploymentDate))
+			queryInput.ExpressionAttributeNames["#DATE"] = string(db.DeploymentDate)
 			for i, attributeValue := range filterValue.AttributeValues {
-				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.DeploymentDate), i)] = &dynamodb.AttributeValue{
-					S: aws.String(datetimeToDynamoTimeString(attributeValue.(strfmt.DateTime))),
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.DeploymentDate), i)] = &types.AttributeValueMemberS{
+					Value: datetimeToDynamoTimeString(attributeValue.(strfmt.DateTime)),
 				}
 			}
 		}
@@ -275,27 +284,28 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, i
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
-		ExpressionAttributeNames: map[string]*string{
-			"#ENVAPP": aws.String("envApp"),
+		ExpressionAttributeNames: map[string]string{
+			"#ENVAPP": "envApp",
 		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":envApp": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s--%s", input.Environment, input.Application)),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":envApp": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s--%s", input.Environment, input.Application),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.VersionStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#ENVAPP = :envApp")
 	} else {
-		queryInput.ExpressionAttributeNames["#VERSION"] = aws.String("version")
-		queryInput.ExpressionAttributeValues[":version"] = &dynamodb.AttributeValue{
-			S: aws.String(string(*input.VersionStartingAt)),
+		queryInput.ExpressionAttributeNames["#VERSION"] = "version"
+		queryInput.ExpressionAttributeValues[":version"] = &types.AttributeValueMemberS{
+			Value: string(*input.VersionStartingAt),
 		}
+
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#ENVAPP = :envApp AND #VERSION <= :version")
 		} else {
@@ -303,12 +313,13 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, i
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"version": &dynamodb.AttributeValue{
-				S: aws.String(string(input.StartingAfter.Version)),
+		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
+			"version": &types.AttributeValueMemberS{
+				Value: string(input.StartingAfter.Version),
 			},
-			"envApp": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application)),
+
+			"envApp": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application),
 			},
 		}
 	}
@@ -320,8 +331,7 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, i
 	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
-		// Only assume an empty page means no more results if there are no filters applied
-		if (len(input.FilterValues) == 0 || input.FilterExpression == "") && len(queryOutput.Items) == 0 {
+		if len(queryOutput.Items) == 0 {
 			return false
 		}
 		items, err := decodeDeployments(queryOutput.Items)
@@ -346,10 +356,21 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, i
 		return true
 	}
 
-	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
-	if err != nil {
-		return err
+	paginator := dynamodb.NewQueryPaginator(t.DynamoDBAPI, queryInput)
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(ctx)
+		if err != nil {
+			var resourceNotFoundErr *types.ResourceNotFoundException
+			if errors.As(err, &resourceNotFoundErr) {
+				return fmt.Errorf("table or index not found: %s", t.TableName)
+			}
+			return err
+		}
+		if !pageFn(output, !paginator.HasMorePages()) {
+			break
+		}
 	}
+
 	if pageFnErr != nil {
 		return pageFnErr
 	}
@@ -358,14 +379,15 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, i
 }
 
 func (t DeploymentTable) deleteDeployment(ctx context.Context, environment string, application string, version string) error {
-	key, err := dynamodbattribute.MarshalMap(ddbDeploymentPrimaryKey{
+
+	key, err := attributevalue.MarshalMap(ddbDeploymentPrimaryKey{
 		EnvApp:  fmt.Sprintf("%s--%s", environment, application),
 		Version: version,
 	})
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
+	_, err = t.DynamoDBAPI.DeleteItem(ctx, &dynamodb.DeleteItemInput{
 		Key:       key,
 		TableName: aws.String(t.TableName),
 	})
@@ -389,27 +411,28 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndDate(ctx context.Context, inpu
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("byDate"),
-		ExpressionAttributeNames: map[string]*string{
-			"#ENVAPP": aws.String("envApp"),
+		ExpressionAttributeNames: map[string]string{
+			"#ENVAPP": "envApp",
 		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":envApp": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s--%s", input.Environment, input.Application)),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":envApp": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s--%s", input.Environment, input.Application),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.DateStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#ENVAPP = :envApp")
 	} else {
-		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
-		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
-			S: aws.String(datetimeToDynamoTimeString(*input.DateStartingAt)),
+		queryInput.ExpressionAttributeNames["#DATE"] = "date"
+		queryInput.ExpressionAttributeValues[":date"] = &types.AttributeValueMemberS{
+			Value: datetimeToDynamoTimeString(*input.DateStartingAt),
 		}
+
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#ENVAPP = :envApp AND #DATE <= :date")
 		} else {
@@ -417,15 +440,15 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndDate(ctx context.Context, inpu
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"date": &dynamodb.AttributeValue{
-				S: aws.String(datetimeToDynamoTimeString(input.StartingAfter.Date)),
+		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
+			"date": &types.AttributeValueMemberS{
+				Value: datetimeToDynamoTimeString(input.StartingAfter.Date),
 			},
-			"envApp": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application)),
+			"envApp": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application),
 			},
-			"version": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.Version),
+			"version": &types.AttributeValueMemberS{
+				Value: input.StartingAfter.Version,
 			},
 		}
 	}
@@ -458,10 +481,21 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndDate(ctx context.Context, inpu
 		return true
 	}
 
-	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
-	if err != nil {
-		return err
+	paginator := dynamodb.NewQueryPaginator(t.DynamoDBAPI, queryInput)
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(ctx)
+		if err != nil {
+			var resourceNotFoundErr *types.ResourceNotFoundException
+			if errors.As(err, &resourceNotFoundErr) {
+				return fmt.Errorf("table or index not found: %s", t.TableName)
+			}
+			return err
+		}
+		if !pageFn(output, !paginator.HasMorePages()) {
+			break
+		}
 	}
+
 	if pageFnErr != nil {
 		return pageFnErr
 	}
@@ -472,55 +506,60 @@ func (t DeploymentTable) scanDeploymentsByEnvAppAndDate(ctx context.Context, inp
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
-		IndexName:      aws.String("byDate"),
 	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
+	}
+	scanInput.IndexName = aws.String("byDate")
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
 		// must provide the fields constituting the index and the primary key
 		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
-		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"envApp": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application)),
+		scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
+			"envApp": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application),
 			},
 			"version": exclusiveStartKey["version"],
 			"date":    exclusiveStartKey["date"],
 		}
 	}
 	totalRecordsProcessed := int64(0)
-	var innerErr error
-	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+
+	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+	for paginator.HasMorePages() {
+		out, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting next page: %s", err.Error())
+		}
+
 		items, err := decodeDeployments(out.Items)
 		if err != nil {
-			innerErr = fmt.Errorf("error decoding %s", err.Error())
-			return false
+			return fmt.Errorf("error decoding items: %s", err.Error())
 		}
+
 		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
-					innerErr = err
-					return false
+					return err
 				}
 			}
-			isLastModel := lastPage && i == len(items)-1
+
+			isLastModel := !paginator.HasMorePages() && i == len(items)-1
 			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-				return false
+				return nil
 			}
+
 			totalRecordsProcessed++
-			// if the Limit of records have been passed to fn, don't pass anymore records.
 			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-				return false
+				return nil
 			}
 		}
-		return true
-	})
-	if innerErr != nil {
-		return innerErr
 	}
-	return err
+
+	return nil
 }
 func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context, input db.GetDeploymentsByEnvironmentAndDateInput, fn func(m *models.Deployment, lastDeployment bool) bool) error {
 	if input.DateStartingAt != nil && input.StartingAfter != nil {
@@ -532,27 +571,28 @@ func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context,
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("byEnvironment"),
-		ExpressionAttributeNames: map[string]*string{
-			"#ENVIRONMENT": aws.String("environment"),
+		ExpressionAttributeNames: map[string]string{
+			"#ENVIRONMENT": "environment",
 		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":environment": &dynamodb.AttributeValue{
-				S: aws.String(input.Environment),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":environment": &types.AttributeValueMemberS{
+				Value: input.Environment,
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.DateStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#ENVIRONMENT = :environment")
 	} else {
-		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
-		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
-			S: aws.String(datetimeToDynamoTimeString(*input.DateStartingAt)),
+		queryInput.ExpressionAttributeNames["#DATE"] = "date"
+		queryInput.ExpressionAttributeValues[":date"] = &types.AttributeValueMemberS{
+			Value: datetimeToDynamoTimeString(*input.DateStartingAt),
 		}
+
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#ENVIRONMENT = :environment AND #DATE <= :date")
 		} else {
@@ -560,18 +600,18 @@ func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context,
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"date": &dynamodb.AttributeValue{
-				S: aws.String(datetimeToDynamoTimeString(input.StartingAfter.Date)),
+		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
+			"date": &types.AttributeValueMemberS{
+				Value: datetimeToDynamoTimeString(input.StartingAfter.Date),
 			},
-			"environment": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.Environment),
+			"environment": &types.AttributeValueMemberS{
+				Value: input.StartingAfter.Environment,
 			},
-			"version": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.Version),
+			"version": &types.AttributeValueMemberS{
+				Value: input.StartingAfter.Version,
 			},
-			"envApp": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application)),
+			"envApp": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application),
 			},
 		}
 	}
@@ -604,10 +644,21 @@ func (t DeploymentTable) getDeploymentsByEnvironmentAndDate(ctx context.Context,
 		return true
 	}
 
-	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
-	if err != nil {
-		return err
+	paginator := dynamodb.NewQueryPaginator(t.DynamoDBAPI, queryInput)
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(ctx)
+		if err != nil {
+			var resourceNotFoundErr *types.ResourceNotFoundException
+			if errors.As(err, &resourceNotFoundErr) {
+				return fmt.Errorf("table or index not found: %s", t.TableName)
+			}
+			return err
+		}
+		if !pageFn(output, !paginator.HasMorePages()) {
+			break
+		}
 	}
+
 	if pageFnErr != nil {
 		return pageFnErr
 	}
@@ -618,18 +669,18 @@ func (t DeploymentTable) getDeploymentByVersion(ctx context.Context, version str
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("byVersion"),
-		ExpressionAttributeNames: map[string]*string{
-			"#VERSION": aws.String("version"),
+		ExpressionAttributeNames: map[string]string{
+			"#VERSION": "version",
 		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":version": &dynamodb.AttributeValue{
-				S: aws.String(version),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":version": &types.AttributeValueMemberS{
+				Value: version,
 			},
 		},
 		KeyConditionExpression: aws.String("#VERSION = :version"),
 	}
 
-	queryOutput, err := t.DynamoDBAPI.QueryWithContext(ctx, queryInput)
+	queryOutput, err := t.DynamoDBAPI.Query(ctx, queryInput)
 	if err != nil {
 		return nil, err
 	}
@@ -649,60 +700,66 @@ func (t DeploymentTable) scanDeploymentsByVersion(ctx context.Context, input db.
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
-		IndexName:      aws.String("byVersion"),
 	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
+	}
+	scanInput.IndexName = aws.String("byVersion")
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
 		// must provide the fields constituting the index and the primary key
 		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
-		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"envApp": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application)),
+		scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
+			"envApp": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s--%s", input.StartingAfter.Environment, input.StartingAfter.Application),
 			},
 			"version": exclusiveStartKey["version"],
 		}
 	}
 	totalRecordsProcessed := int64(0)
-	var innerErr error
-	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+
+	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+	for paginator.HasMorePages() {
+		out, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting next page: %s", err.Error())
+		}
+
 		items, err := decodeDeployments(out.Items)
 		if err != nil {
-			innerErr = fmt.Errorf("error decoding %s", err.Error())
-			return false
+			return fmt.Errorf("error decoding items: %s", err.Error())
 		}
+
 		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
-					innerErr = err
-					return false
+					return err
 				}
 			}
-			isLastModel := lastPage && i == len(items)-1
+
+			isLastModel := !paginator.HasMorePages() && i == len(items)-1
 			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-				return false
+				return nil
 			}
+
 			totalRecordsProcessed++
-			// if the Limit of records have been passed to fn, don't pass anymore records.
 			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-				return false
+				return nil
 			}
 		}
-		return true
-	})
-	if innerErr != nil {
-		return innerErr
 	}
-	return err
+
+	return nil
 }
 
 // encodeDeployment encodes a Deployment as a DynamoDB map of attribute values.
-func encodeDeployment(m models.Deployment) (map[string]*dynamodb.AttributeValue, error) {
-	val, err := dynamodbattribute.MarshalMap(ddbDeployment{
-		Deployment: m,
+func encodeDeployment(m models.Deployment) (map[string]types.AttributeValue, error) {
+	// with composite attributes, marshal the model
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -715,7 +772,7 @@ func encodeDeployment(m models.Deployment) (map[string]*dynamodb.AttributeValue,
 		return nil, fmt.Errorf("environment cannot contain '--': %s", m.Environment)
 	}
 	// add in composite attributes
-	primaryKey, err := dynamodbattribute.MarshalMap(ddbDeploymentPrimaryKey{
+	primaryKey, err := attributevalue.MarshalMap(ddbDeploymentPrimaryKey{
 		EnvApp:  fmt.Sprintf("%s--%s", m.Environment, m.Application),
 		Version: m.Version,
 	})
@@ -725,7 +782,7 @@ func encodeDeployment(m models.Deployment) (map[string]*dynamodb.AttributeValue,
 	for k, v := range primaryKey {
 		val[k] = v
 	}
-	byDate, err := dynamodbattribute.MarshalMap(ddbDeploymentGSIByDate{
+	byDate, err := attributevalue.MarshalMap(ddbDeploymentGSIByDate{
 		EnvApp: fmt.Sprintf("%s--%s", m.Environment, m.Application),
 		Date:   m.Date,
 	})
@@ -739,9 +796,11 @@ func encodeDeployment(m models.Deployment) (map[string]*dynamodb.AttributeValue,
 }
 
 // decodeDeployment translates a Deployment stored in DynamoDB to a Deployment struct.
-func decodeDeployment(m map[string]*dynamodb.AttributeValue, out *models.Deployment) error {
+func decodeDeployment(m map[string]types.AttributeValue, out *models.Deployment) error {
 	var ddbDeployment ddbDeployment
-	if err := dynamodbattribute.UnmarshalMap(m, &ddbDeployment); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbDeployment, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbDeployment.Deployment
@@ -749,7 +808,7 @@ func decodeDeployment(m map[string]*dynamodb.AttributeValue, out *models.Deploym
 }
 
 // decodeDeployments translates a list of Deployments stored in DynamoDB to a slice of Deployment structs.
-func decodeDeployments(ms []map[string]*dynamodb.AttributeValue) ([]models.Deployment, error) {
+func decodeDeployments(ms []map[string]types.AttributeValue) ([]models.Deployment, error) {
 	deployments := make([]models.Deployment, len(ms))
 	for i, m := range ms {
 		var deployment models.Deployment

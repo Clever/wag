@@ -2,22 +2,25 @@ package dynamodb
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/Clever/wag/samples/gen-go-db-only/models/v9"
 	"github.com/Clever/wag/samples/v9/gen-go-db-only/db"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/go-openapi/strfmt"
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // EventTable represents the user-configurable properties of the Event table.
 type EventTable struct {
-	DynamoDBAPI        dynamodbiface.DynamoDBAPI
+	DynamoDBAPI        *dynamodb.Client
 	Prefix             string
 	TableName          string
 	ReadCapacityUnits  int64
@@ -42,54 +45,54 @@ type ddbEvent struct {
 }
 
 func (t EventTable) create(ctx context.Context) error {
-	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
-		AttributeDefinitions: []*dynamodb.AttributeDefinition{
+	if _, err := t.DynamoDBAPI.CreateTable(ctx, &dynamodb.CreateTableInput{
+		AttributeDefinitions: []types.AttributeDefinition{
 			{
 				AttributeName: aws.String("data"),
-				AttributeType: aws.String("B"),
+				AttributeType: types.ScalarAttributeType("B"),
 			},
 			{
 				AttributeName: aws.String("pk"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 			{
 				AttributeName: aws.String("sk"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 		},
-		KeySchema: []*dynamodb.KeySchemaElement{
+		KeySchema: []types.KeySchemaElement{
 			{
 				AttributeName: aws.String("pk"),
-				KeyType:       aws.String(dynamodb.KeyTypeHash),
+				KeyType:       types.KeyTypeHash,
 			},
 			{
 				AttributeName: aws.String("sk"),
-				KeyType:       aws.String(dynamodb.KeyTypeRange),
+				KeyType:       types.KeyTypeRange,
 			},
 		},
-		GlobalSecondaryIndexes: []*dynamodb.GlobalSecondaryIndex{
+		GlobalSecondaryIndexes: []types.GlobalSecondaryIndex{
 			{
 				IndexName: aws.String("bySK"),
-				Projection: &dynamodb.Projection{
-					ProjectionType: aws.String("ALL"),
+				Projection: &types.Projection{
+					ProjectionType: types.ProjectionType("ALL"),
 				},
-				KeySchema: []*dynamodb.KeySchemaElement{
+				KeySchema: []types.KeySchemaElement{
 					{
 						AttributeName: aws.String("sk"),
-						KeyType:       aws.String(dynamodb.KeyTypeHash),
+						KeyType:       types.KeyTypeHash,
 					},
 					{
 						AttributeName: aws.String("data"),
-						KeyType:       aws.String(dynamodb.KeyTypeRange),
+						KeyType:       types.KeyTypeRange,
 					},
 				},
-				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+				ProvisionedThroughput: &types.ProvisionedThroughput{
 					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 				},
 			},
 		},
-		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+		ProvisionedThroughput: &types.ProvisionedThroughput{
 			ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 			WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 		},
@@ -105,7 +108,8 @@ func (t EventTable) saveEvent(ctx context.Context, m models.Event) error {
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
+
+	_, err = t.DynamoDBAPI.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(t.TableName),
 		Item:      data,
 	})
@@ -113,14 +117,14 @@ func (t EventTable) saveEvent(ctx context.Context, m models.Event) error {
 }
 
 func (t EventTable) getEvent(ctx context.Context, pk string, sk string) (*models.Event, error) {
-	key, err := dynamodbattribute.MarshalMap(ddbEventPrimaryKey{
+	key, err := attributevalue.MarshalMap(ddbEventPrimaryKey{
 		Pk: pk,
 		Sk: sk,
 	})
 	if err != nil {
 		return nil, err
 	}
-	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
+	res, err := t.DynamoDBAPI.GetItem(ctx, &dynamodb.GetItemInput{
 		Key:            key,
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(true),
@@ -148,60 +152,65 @@ func (t EventTable) scanEvents(ctx context.Context, input db.ScanEventsInput, fn
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
 		// must provide only the fields constituting the index
-		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+		scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"pk": exclusiveStartKey["pk"],
 			"sk": exclusiveStartKey["sk"],
 		}
 	}
 	totalRecordsProcessed := int64(0)
-	var innerErr error
-	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+
+	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+	for paginator.HasMorePages() {
+		out, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting next page: %s", err.Error())
+		}
+
 		items, err := decodeEvents(out.Items)
 		if err != nil {
-			innerErr = fmt.Errorf("error decoding %s", err.Error())
-			return false
+			return fmt.Errorf("error decoding items: %s", err.Error())
 		}
+
 		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
-					innerErr = err
-					return false
+					return err
 				}
 			}
-			isLastModel := lastPage && i == len(items)-1
+
+			isLastModel := !paginator.HasMorePages() && i == len(items)-1
 			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-				return false
+				return nil
 			}
+
 			totalRecordsProcessed++
-			// if the Limit of records have been passed to fn, don't pass anymore records.
 			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-				return false
+				return nil
 			}
 		}
-		return true
-	})
-	if innerErr != nil {
-		return innerErr
 	}
-	return err
+
+	return nil
 }
 
 func (t EventTable) getEventsByPkAndSkParseFilters(queryInput *dynamodb.QueryInput, input db.GetEventsByPkAndSkInput) {
 	for _, filterValue := range input.FilterValues {
 		switch filterValue.AttributeName {
 		case db.EventData:
-			queryInput.ExpressionAttributeNames["#DATA"] = aws.String(string(db.EventData))
+			queryInput.ExpressionAttributeNames["#DATA"] = string(db.EventData)
 			for i, attributeValue := range filterValue.AttributeValues {
-				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.EventData), i)] = &dynamodb.AttributeValue{
-					B: attributeValue.([]byte),
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.EventData), i)] = &types.AttributeValueMemberB{
+					Value: attributeValue.([]byte),
 				}
 			}
 		}
@@ -217,27 +226,28 @@ func (t EventTable) getEventsByPkAndSk(ctx context.Context, input db.GetEventsBy
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
-		ExpressionAttributeNames: map[string]*string{
-			"#PK": aws.String("pk"),
+		ExpressionAttributeNames: map[string]string{
+			"#PK": "pk",
 		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":pk": &dynamodb.AttributeValue{
-				S: aws.String(input.Pk),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":pk": &types.AttributeValueMemberS{
+				Value: input.Pk,
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.SkStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#PK = :pk")
 	} else {
-		queryInput.ExpressionAttributeNames["#SK"] = aws.String("sk")
-		queryInput.ExpressionAttributeValues[":sk"] = &dynamodb.AttributeValue{
-			S: aws.String(string(*input.SkStartingAt)),
+		queryInput.ExpressionAttributeNames["#SK"] = "sk"
+		queryInput.ExpressionAttributeValues[":sk"] = &types.AttributeValueMemberS{
+			Value: string(*input.SkStartingAt),
 		}
+
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#PK = :pk AND #SK <= :sk")
 		} else {
@@ -245,12 +255,13 @@ func (t EventTable) getEventsByPkAndSk(ctx context.Context, input db.GetEventsBy
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"sk": &dynamodb.AttributeValue{
-				S: aws.String(string(input.StartingAfter.Sk)),
+		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
+			"sk": &types.AttributeValueMemberS{
+				Value: string(input.StartingAfter.Sk),
 			},
-			"pk": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.Pk),
+
+			"pk": &types.AttributeValueMemberS{
+				Value: input.StartingAfter.Pk,
 			},
 		}
 	}
@@ -262,8 +273,7 @@ func (t EventTable) getEventsByPkAndSk(ctx context.Context, input db.GetEventsBy
 	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
-		// Only assume an empty page means no more results if there are no filters applied
-		if (len(input.FilterValues) == 0 || input.FilterExpression == "") && len(queryOutput.Items) == 0 {
+		if len(queryOutput.Items) == 0 {
 			return false
 		}
 		items, err := decodeEvents(queryOutput.Items)
@@ -288,10 +298,21 @@ func (t EventTable) getEventsByPkAndSk(ctx context.Context, input db.GetEventsBy
 		return true
 	}
 
-	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
-	if err != nil {
-		return err
+	paginator := dynamodb.NewQueryPaginator(t.DynamoDBAPI, queryInput)
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(ctx)
+		if err != nil {
+			var resourceNotFoundErr *types.ResourceNotFoundException
+			if errors.As(err, &resourceNotFoundErr) {
+				return fmt.Errorf("table or index not found: %s", t.TableName)
+			}
+			return err
+		}
+		if !pageFn(output, !paginator.HasMorePages()) {
+			break
+		}
 	}
+
 	if pageFnErr != nil {
 		return pageFnErr
 	}
@@ -300,14 +321,15 @@ func (t EventTable) getEventsByPkAndSk(ctx context.Context, input db.GetEventsBy
 }
 
 func (t EventTable) deleteEvent(ctx context.Context, pk string, sk string) error {
-	key, err := dynamodbattribute.MarshalMap(ddbEventPrimaryKey{
+
+	key, err := attributevalue.MarshalMap(ddbEventPrimaryKey{
 		Pk: pk,
 		Sk: sk,
 	})
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
+	_, err = t.DynamoDBAPI.DeleteItem(ctx, &dynamodb.DeleteItemInput{
 		Key:       key,
 		TableName: aws.String(t.TableName),
 	})
@@ -328,27 +350,28 @@ func (t EventTable) getEventsBySkAndData(ctx context.Context, input db.GetEvents
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("bySK"),
-		ExpressionAttributeNames: map[string]*string{
-			"#SK": aws.String("sk"),
+		ExpressionAttributeNames: map[string]string{
+			"#SK": "sk",
 		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":sk": &dynamodb.AttributeValue{
-				S: aws.String(input.Sk),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":sk": &types.AttributeValueMemberS{
+				Value: input.Sk,
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.DataStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#SK = :sk")
 	} else {
-		queryInput.ExpressionAttributeNames["#DATA"] = aws.String("data")
-		queryInput.ExpressionAttributeValues[":data"] = &dynamodb.AttributeValue{
-			B: input.DataStartingAt,
+		queryInput.ExpressionAttributeNames["#DATA"] = "data"
+		queryInput.ExpressionAttributeValues[":data"] = &types.AttributeValueMemberB{
+			Value: input.DataStartingAt,
 		}
+
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#SK = :sk AND #DATA <= :data")
 		} else {
@@ -356,15 +379,15 @@ func (t EventTable) getEventsBySkAndData(ctx context.Context, input db.GetEvents
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"data": &dynamodb.AttributeValue{
-				B: input.StartingAfter.Data,
+		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
+			"data": &types.AttributeValueMemberB{
+				Value: input.StartingAfter.Data,
 			},
-			"sk": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.Sk),
+			"sk": &types.AttributeValueMemberS{
+				Value: input.StartingAfter.Sk,
 			},
-			"pk": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.Pk),
+			"pk": &types.AttributeValueMemberS{
+				Value: input.StartingAfter.Pk,
 			},
 		}
 	}
@@ -397,10 +420,21 @@ func (t EventTable) getEventsBySkAndData(ctx context.Context, input db.GetEvents
 		return true
 	}
 
-	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
-	if err != nil {
-		return err
+	paginator := dynamodb.NewQueryPaginator(t.DynamoDBAPI, queryInput)
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(ctx)
+		if err != nil {
+			var resourceNotFoundErr *types.ResourceNotFoundException
+			if errors.As(err, &resourceNotFoundErr) {
+				return fmt.Errorf("table or index not found: %s", t.TableName)
+			}
+			return err
+		}
+		if !pageFn(output, !paginator.HasMorePages()) {
+			break
+		}
 	}
+
 	if pageFnErr != nil {
 		return pageFnErr
 	}
@@ -411,66 +445,78 @@ func (t EventTable) scanEventsBySkAndData(ctx context.Context, input db.ScanEven
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
-		IndexName:      aws.String("bySK"),
 	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
+	}
+	scanInput.IndexName = aws.String("bySK")
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
 		// must provide the fields constituting the index and the primary key
 		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
-		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+		scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"pk":   exclusiveStartKey["pk"],
 			"sk":   exclusiveStartKey["sk"],
 			"data": exclusiveStartKey["data"],
 		}
 	}
 	totalRecordsProcessed := int64(0)
-	var innerErr error
-	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+
+	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+	for paginator.HasMorePages() {
+		out, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting next page: %s", err.Error())
+		}
+
 		items, err := decodeEvents(out.Items)
 		if err != nil {
-			innerErr = fmt.Errorf("error decoding %s", err.Error())
-			return false
+			return fmt.Errorf("error decoding items: %s", err.Error())
 		}
+
 		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
-					innerErr = err
-					return false
+					return err
 				}
 			}
-			isLastModel := lastPage && i == len(items)-1
+
+			isLastModel := !paginator.HasMorePages() && i == len(items)-1
 			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-				return false
+				return nil
 			}
+
 			totalRecordsProcessed++
-			// if the Limit of records have been passed to fn, don't pass anymore records.
 			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-				return false
+				return nil
 			}
 		}
-		return true
-	})
-	if innerErr != nil {
-		return innerErr
 	}
-	return err
+
+	return nil
 }
 
 // encodeEvent encodes a Event as a DynamoDB map of attribute values.
-func encodeEvent(m models.Event) (map[string]*dynamodb.AttributeValue, error) {
-	return dynamodbattribute.MarshalMap(ddbEvent{
-		Event: m,
+func encodeEvent(m models.Event) (map[string]types.AttributeValue, error) {
+	// no composite attributes, marshal the model with the json tag
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
+	if err != nil {
+		return nil, err
+	}
+	return val, nil
 }
 
 // decodeEvent translates a Event stored in DynamoDB to a Event struct.
-func decodeEvent(m map[string]*dynamodb.AttributeValue, out *models.Event) error {
+func decodeEvent(m map[string]types.AttributeValue, out *models.Event) error {
 	var ddbEvent ddbEvent
-	if err := dynamodbattribute.UnmarshalMap(m, &ddbEvent); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbEvent, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbEvent.Event
@@ -478,7 +524,7 @@ func decodeEvent(m map[string]*dynamodb.AttributeValue, out *models.Event) error
 }
 
 // decodeEvents translates a list of Events stored in DynamoDB to a slice of Event structs.
-func decodeEvents(ms []map[string]*dynamodb.AttributeValue) ([]models.Event, error) {
+func decodeEvents(ms []map[string]types.AttributeValue) ([]models.Event, error) {
 	events := make([]models.Event, len(ms))
 	for i, m := range ms {
 		var event models.Event

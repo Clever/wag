@@ -2,23 +2,26 @@ package dynamodb
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/Clever/wag/samples/gen-go-db-only/models/v9"
 	"github.com/Clever/wag/samples/v9/gen-go-db-only/db"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/go-openapi/strfmt"
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // ThingWithDateTimeCompositeTable represents the user-configurable properties of the ThingWithDateTimeComposite table.
 type ThingWithDateTimeCompositeTable struct {
-	DynamoDBAPI        dynamodbiface.DynamoDBAPI
+	DynamoDBAPI        *dynamodb.Client
 	Prefix             string
 	TableName          string
 	ReadCapacityUnits  int64
@@ -37,28 +40,28 @@ type ddbThingWithDateTimeComposite struct {
 }
 
 func (t ThingWithDateTimeCompositeTable) create(ctx context.Context) error {
-	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
-		AttributeDefinitions: []*dynamodb.AttributeDefinition{
+	if _, err := t.DynamoDBAPI.CreateTable(ctx, &dynamodb.CreateTableInput{
+		AttributeDefinitions: []types.AttributeDefinition{
 			{
 				AttributeName: aws.String("createdResource"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 			{
 				AttributeName: aws.String("typeID"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 		},
-		KeySchema: []*dynamodb.KeySchemaElement{
+		KeySchema: []types.KeySchemaElement{
 			{
 				AttributeName: aws.String("typeID"),
-				KeyType:       aws.String(dynamodb.KeyTypeHash),
+				KeyType:       types.KeyTypeHash,
 			},
 			{
 				AttributeName: aws.String("createdResource"),
-				KeyType:       aws.String(dynamodb.KeyTypeRange),
+				KeyType:       types.KeyTypeRange,
 			},
 		},
-		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+		ProvisionedThroughput: &types.ProvisionedThroughput{
 			ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 			WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 		},
@@ -74,7 +77,8 @@ func (t ThingWithDateTimeCompositeTable) saveThingWithDateTimeComposite(ctx cont
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
+
+	_, err = t.DynamoDBAPI.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(t.TableName),
 		Item:      data,
 	})
@@ -82,14 +86,14 @@ func (t ThingWithDateTimeCompositeTable) saveThingWithDateTimeComposite(ctx cont
 }
 
 func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeComposite(ctx context.Context, typeVar string, id string, created strfmt.DateTime, resource string) (*models.ThingWithDateTimeComposite, error) {
-	key, err := dynamodbattribute.MarshalMap(ddbThingWithDateTimeCompositePrimaryKey{
+	key, err := attributevalue.MarshalMap(ddbThingWithDateTimeCompositePrimaryKey{
 		TypeID:          fmt.Sprintf("%s|%s", typeVar, id),
 		CreatedResource: fmt.Sprintf("%s|%s", created, resource),
 	})
 	if err != nil {
 		return nil, err
 	}
-	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
+	res, err := t.DynamoDBAPI.GetItem(ctx, &dynamodb.GetItemInput{
 		Key:            key,
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(true),
@@ -119,50 +123,55 @@ func (t ThingWithDateTimeCompositeTable) scanThingWithDateTimeComposites(ctx con
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
 		// must provide only the fields constituting the index
-		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"typeID": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAfter.Type, input.StartingAfter.ID)),
+		scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
+			"typeID": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s|%s", input.StartingAfter.Type, input.StartingAfter.ID),
 			},
-			"createdResource": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAfter.Created, input.StartingAfter.Resource)),
+			"createdResource": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s|%s", input.StartingAfter.Created, input.StartingAfter.Resource),
 			},
 		}
 	}
 	totalRecordsProcessed := int64(0)
-	var innerErr error
-	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+
+	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+	for paginator.HasMorePages() {
+		out, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting next page: %s", err.Error())
+		}
+
 		items, err := decodeThingWithDateTimeComposites(out.Items)
 		if err != nil {
-			innerErr = fmt.Errorf("error decoding %s", err.Error())
-			return false
+			return fmt.Errorf("error decoding items: %s", err.Error())
 		}
+
 		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
-					innerErr = err
-					return false
+					return err
 				}
 			}
-			isLastModel := lastPage && i == len(items)-1
+
+			isLastModel := !paginator.HasMorePages() && i == len(items)-1
 			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-				return false
+				return nil
 			}
+
 			totalRecordsProcessed++
-			// if the Limit of records have been passed to fn, don't pass anymore records.
 			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-				return false
+				return nil
 			}
 		}
-		return true
-	})
-	if innerErr != nil {
-		return innerErr
 	}
-	return err
+
+	return nil
 }
 
 func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx context.Context, input db.GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput, fn func(m *models.ThingWithDateTimeComposite, lastThingWithDateTimeComposite bool) bool) error {
@@ -177,27 +186,28 @@ func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDA
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
-		ExpressionAttributeNames: map[string]*string{
-			"#TYPEID": aws.String("typeID"),
+		ExpressionAttributeNames: map[string]string{
+			"#TYPEID": "typeID",
 		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":typeId": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s|%s", input.Type, input.ID)),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":typeId": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s|%s", input.Type, input.ID),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#TYPEID = :typeId")
 	} else {
-		queryInput.ExpressionAttributeNames["#CREATEDRESOURCE"] = aws.String("createdResource")
-		queryInput.ExpressionAttributeValues[":createdResource"] = &dynamodb.AttributeValue{
-			S: aws.String(fmt.Sprintf("%s|%s", input.StartingAt.Created, input.StartingAt.Resource)),
+		queryInput.ExpressionAttributeNames["#CREATEDRESOURCE"] = "createdResource"
+		queryInput.ExpressionAttributeValues[":createdResource"] = &types.AttributeValueMemberS{
+			Value: fmt.Sprintf("%s|%s", input.StartingAt.Created, input.StartingAt.Resource),
 		}
+
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#TYPEID = :typeId AND #CREATEDRESOURCE <= :createdResource")
 		} else {
@@ -205,12 +215,13 @@ func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDA
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"createdResource": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAfter.Created, input.StartingAfter.Resource)),
+		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
+			"createdResource": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s|%s", input.StartingAfter.Created, input.StartingAfter.Resource),
 			},
-			"typeID": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s|%s", input.StartingAfter.Type, input.StartingAfter.ID)),
+
+			"typeID": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s|%s", input.StartingAfter.Type, input.StartingAfter.ID),
 			},
 		}
 	}
@@ -243,10 +254,21 @@ func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDA
 		return true
 	}
 
-	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
-	if err != nil {
-		return err
+	paginator := dynamodb.NewQueryPaginator(t.DynamoDBAPI, queryInput)
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(ctx)
+		if err != nil {
+			var resourceNotFoundErr *types.ResourceNotFoundException
+			if errors.As(err, &resourceNotFoundErr) {
+				return fmt.Errorf("table or index not found: %s", t.TableName)
+			}
+			return err
+		}
+		if !pageFn(output, !paginator.HasMorePages()) {
+			break
+		}
 	}
+
 	if pageFnErr != nil {
 		return pageFnErr
 	}
@@ -255,14 +277,15 @@ func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDA
 }
 
 func (t ThingWithDateTimeCompositeTable) deleteThingWithDateTimeComposite(ctx context.Context, typeVar string, id string, created strfmt.DateTime, resource string) error {
-	key, err := dynamodbattribute.MarshalMap(ddbThingWithDateTimeCompositePrimaryKey{
+
+	key, err := attributevalue.MarshalMap(ddbThingWithDateTimeCompositePrimaryKey{
 		TypeID:          fmt.Sprintf("%s|%s", typeVar, id),
 		CreatedResource: fmt.Sprintf("%s|%s", created, resource),
 	})
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
+	_, err = t.DynamoDBAPI.DeleteItem(ctx, &dynamodb.DeleteItemInput{
 		Key:       key,
 		TableName: aws.String(t.TableName),
 	})
@@ -274,9 +297,10 @@ func (t ThingWithDateTimeCompositeTable) deleteThingWithDateTimeComposite(ctx co
 }
 
 // encodeThingWithDateTimeComposite encodes a ThingWithDateTimeComposite as a DynamoDB map of attribute values.
-func encodeThingWithDateTimeComposite(m models.ThingWithDateTimeComposite) (map[string]*dynamodb.AttributeValue, error) {
-	val, err := dynamodbattribute.MarshalMap(ddbThingWithDateTimeComposite{
-		ThingWithDateTimeComposite: m,
+func encodeThingWithDateTimeComposite(m models.ThingWithDateTimeComposite) (map[string]types.AttributeValue, error) {
+	// with composite attributes, marshal the model
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -292,7 +316,7 @@ func encodeThingWithDateTimeComposite(m models.ThingWithDateTimeComposite) (map[
 		return nil, fmt.Errorf("type cannot contain '|': %s", m.Type)
 	}
 	// add in composite attributes
-	primaryKey, err := dynamodbattribute.MarshalMap(ddbThingWithDateTimeCompositePrimaryKey{
+	primaryKey, err := attributevalue.MarshalMap(ddbThingWithDateTimeCompositePrimaryKey{
 		TypeID:          fmt.Sprintf("%s|%s", m.Type, m.ID),
 		CreatedResource: fmt.Sprintf("%s|%s", m.Created, m.Resource),
 	})
@@ -306,9 +330,11 @@ func encodeThingWithDateTimeComposite(m models.ThingWithDateTimeComposite) (map[
 }
 
 // decodeThingWithDateTimeComposite translates a ThingWithDateTimeComposite stored in DynamoDB to a ThingWithDateTimeComposite struct.
-func decodeThingWithDateTimeComposite(m map[string]*dynamodb.AttributeValue, out *models.ThingWithDateTimeComposite) error {
+func decodeThingWithDateTimeComposite(m map[string]types.AttributeValue, out *models.ThingWithDateTimeComposite) error {
 	var ddbThingWithDateTimeComposite ddbThingWithDateTimeComposite
-	if err := dynamodbattribute.UnmarshalMap(m, &ddbThingWithDateTimeComposite); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithDateTimeComposite, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithDateTimeComposite.ThingWithDateTimeComposite
@@ -316,7 +342,7 @@ func decodeThingWithDateTimeComposite(m map[string]*dynamodb.AttributeValue, out
 }
 
 // decodeThingWithDateTimeComposites translates a list of ThingWithDateTimeComposites stored in DynamoDB to a slice of ThingWithDateTimeComposite structs.
-func decodeThingWithDateTimeComposites(ms []map[string]*dynamodb.AttributeValue) ([]models.ThingWithDateTimeComposite, error) {
+func decodeThingWithDateTimeComposites(ms []map[string]types.AttributeValue) ([]models.ThingWithDateTimeComposite, error) {
 	thingWithDateTimeComposites := make([]models.ThingWithDateTimeComposite, len(ms))
 	for i, m := range ms {
 		var thingWithDateTimeComposite models.ThingWithDateTimeComposite

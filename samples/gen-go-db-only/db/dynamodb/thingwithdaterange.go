@@ -2,22 +2,25 @@ package dynamodb
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/Clever/wag/samples/gen-go-db-only/models/v9"
 	"github.com/Clever/wag/samples/v9/gen-go-db-only/db"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/go-openapi/strfmt"
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // ThingWithDateRangeTable represents the user-configurable properties of the ThingWithDateRange table.
 type ThingWithDateRangeTable struct {
-	DynamoDBAPI        dynamodbiface.DynamoDBAPI
+	DynamoDBAPI        *dynamodb.Client
 	Prefix             string
 	TableName          string
 	ReadCapacityUnits  int64
@@ -36,28 +39,28 @@ type ddbThingWithDateRange struct {
 }
 
 func (t ThingWithDateRangeTable) create(ctx context.Context) error {
-	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
-		AttributeDefinitions: []*dynamodb.AttributeDefinition{
+	if _, err := t.DynamoDBAPI.CreateTable(ctx, &dynamodb.CreateTableInput{
+		AttributeDefinitions: []types.AttributeDefinition{
 			{
 				AttributeName: aws.String("date"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 			{
 				AttributeName: aws.String("name"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 		},
-		KeySchema: []*dynamodb.KeySchemaElement{
+		KeySchema: []types.KeySchemaElement{
 			{
 				AttributeName: aws.String("name"),
-				KeyType:       aws.String(dynamodb.KeyTypeHash),
+				KeyType:       types.KeyTypeHash,
 			},
 			{
 				AttributeName: aws.String("date"),
-				KeyType:       aws.String(dynamodb.KeyTypeRange),
+				KeyType:       types.KeyTypeRange,
 			},
 		},
-		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+		ProvisionedThroughput: &types.ProvisionedThroughput{
 			ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 			WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 		},
@@ -73,7 +76,8 @@ func (t ThingWithDateRangeTable) saveThingWithDateRange(ctx context.Context, m m
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
+
+	_, err = t.DynamoDBAPI.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(t.TableName),
 		Item:      data,
 	})
@@ -81,14 +85,14 @@ func (t ThingWithDateRangeTable) saveThingWithDateRange(ctx context.Context, m m
 }
 
 func (t ThingWithDateRangeTable) getThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) (*models.ThingWithDateRange, error) {
-	key, err := dynamodbattribute.MarshalMap(ddbThingWithDateRangePrimaryKey{
+	key, err := attributevalue.MarshalMap(ddbThingWithDateRangePrimaryKey{
 		Name: name,
 		Date: date,
 	})
 	if err != nil {
 		return nil, err
 	}
-	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
+	res, err := t.DynamoDBAPI.GetItem(ctx, &dynamodb.GetItemInput{
 		Key:            key,
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(true),
@@ -116,50 +120,55 @@ func (t ThingWithDateRangeTable) scanThingWithDateRanges(ctx context.Context, in
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
 		// must provide only the fields constituting the index
-		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+		scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"name": exclusiveStartKey["name"],
 			"date": exclusiveStartKey["date"],
 		}
 	}
 	totalRecordsProcessed := int64(0)
-	var innerErr error
-	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+
+	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+	for paginator.HasMorePages() {
+		out, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting next page: %s", err.Error())
+		}
+
 		items, err := decodeThingWithDateRanges(out.Items)
 		if err != nil {
-			innerErr = fmt.Errorf("error decoding %s", err.Error())
-			return false
+			return fmt.Errorf("error decoding items: %s", err.Error())
 		}
+
 		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
-					innerErr = err
-					return false
+					return err
 				}
 			}
-			isLastModel := lastPage && i == len(items)-1
+
+			isLastModel := !paginator.HasMorePages() && i == len(items)-1
 			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-				return false
+				return nil
 			}
+
 			totalRecordsProcessed++
-			// if the Limit of records have been passed to fn, don't pass anymore records.
 			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-				return false
+				return nil
 			}
 		}
-		return true
-	})
-	if innerErr != nil {
-		return innerErr
 	}
-	return err
+
+	return nil
 }
 
 func (t ThingWithDateRangeTable) getThingWithDateRangesByNameAndDate(ctx context.Context, input db.GetThingWithDateRangesByNameAndDateInput, fn func(m *models.ThingWithDateRange, lastThingWithDateRange bool) bool) error {
@@ -171,27 +180,28 @@ func (t ThingWithDateRangeTable) getThingWithDateRangesByNameAndDate(ctx context
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
-		ExpressionAttributeNames: map[string]*string{
-			"#NAME": aws.String("name"),
+		ExpressionAttributeNames: map[string]string{
+			"#NAME": "name",
 		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":name": &dynamodb.AttributeValue{
-				S: aws.String(input.Name),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":name": &types.AttributeValueMemberS{
+				Value: input.Name,
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.DateStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
 	} else {
-		queryInput.ExpressionAttributeNames["#DATE"] = aws.String("date")
-		queryInput.ExpressionAttributeValues[":date"] = &dynamodb.AttributeValue{
-			S: aws.String(datetimeToDynamoTimeString(*input.DateStartingAt)),
+		queryInput.ExpressionAttributeNames["#DATE"] = "date"
+		queryInput.ExpressionAttributeValues[":date"] = &types.AttributeValueMemberS{
+			Value: datetimeToDynamoTimeString(*input.DateStartingAt),
 		}
+
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #DATE <= :date")
 		} else {
@@ -199,12 +209,13 @@ func (t ThingWithDateRangeTable) getThingWithDateRangesByNameAndDate(ctx context
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"date": &dynamodb.AttributeValue{
-				S: aws.String(datetimeToDynamoTimeString(input.StartingAfter.Date)),
+		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
+			"date": &types.AttributeValueMemberS{
+				Value: datetimeToDynamoTimeString(input.StartingAfter.Date),
 			},
-			"name": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.Name),
+
+			"name": &types.AttributeValueMemberS{
+				Value: input.StartingAfter.Name,
 			},
 		}
 	}
@@ -237,10 +248,21 @@ func (t ThingWithDateRangeTable) getThingWithDateRangesByNameAndDate(ctx context
 		return true
 	}
 
-	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
-	if err != nil {
-		return err
+	paginator := dynamodb.NewQueryPaginator(t.DynamoDBAPI, queryInput)
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(ctx)
+		if err != nil {
+			var resourceNotFoundErr *types.ResourceNotFoundException
+			if errors.As(err, &resourceNotFoundErr) {
+				return fmt.Errorf("table or index not found: %s", t.TableName)
+			}
+			return err
+		}
+		if !pageFn(output, !paginator.HasMorePages()) {
+			break
+		}
 	}
+
 	if pageFnErr != nil {
 		return pageFnErr
 	}
@@ -249,14 +271,15 @@ func (t ThingWithDateRangeTable) getThingWithDateRangesByNameAndDate(ctx context
 }
 
 func (t ThingWithDateRangeTable) deleteThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) error {
-	key, err := dynamodbattribute.MarshalMap(ddbThingWithDateRangePrimaryKey{
+
+	key, err := attributevalue.MarshalMap(ddbThingWithDateRangePrimaryKey{
 		Name: name,
 		Date: date,
 	})
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
+	_, err = t.DynamoDBAPI.DeleteItem(ctx, &dynamodb.DeleteItemInput{
 		Key:       key,
 		TableName: aws.String(t.TableName),
 	})
@@ -268,16 +291,23 @@ func (t ThingWithDateRangeTable) deleteThingWithDateRange(ctx context.Context, n
 }
 
 // encodeThingWithDateRange encodes a ThingWithDateRange as a DynamoDB map of attribute values.
-func encodeThingWithDateRange(m models.ThingWithDateRange) (map[string]*dynamodb.AttributeValue, error) {
-	return dynamodbattribute.MarshalMap(ddbThingWithDateRange{
-		ThingWithDateRange: m,
+func encodeThingWithDateRange(m models.ThingWithDateRange) (map[string]types.AttributeValue, error) {
+	// no composite attributes, marshal the model with the json tag
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
+	if err != nil {
+		return nil, err
+	}
+	return val, nil
 }
 
 // decodeThingWithDateRange translates a ThingWithDateRange stored in DynamoDB to a ThingWithDateRange struct.
-func decodeThingWithDateRange(m map[string]*dynamodb.AttributeValue, out *models.ThingWithDateRange) error {
+func decodeThingWithDateRange(m map[string]types.AttributeValue, out *models.ThingWithDateRange) error {
 	var ddbThingWithDateRange ddbThingWithDateRange
-	if err := dynamodbattribute.UnmarshalMap(m, &ddbThingWithDateRange); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithDateRange, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithDateRange.ThingWithDateRange
@@ -285,7 +315,7 @@ func decodeThingWithDateRange(m map[string]*dynamodb.AttributeValue, out *models
 }
 
 // decodeThingWithDateRanges translates a list of ThingWithDateRanges stored in DynamoDB to a slice of ThingWithDateRange structs.
-func decodeThingWithDateRanges(ms []map[string]*dynamodb.AttributeValue) ([]models.ThingWithDateRange, error) {
+func decodeThingWithDateRanges(ms []map[string]types.AttributeValue) ([]models.ThingWithDateRange, error) {
 	thingWithDateRanges := make([]models.ThingWithDateRange, len(ms))
 	for i, m := range ms {
 		var thingWithDateRange models.ThingWithDateRange

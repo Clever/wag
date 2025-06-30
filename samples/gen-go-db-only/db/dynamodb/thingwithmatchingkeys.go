@@ -2,23 +2,26 @@ package dynamodb
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/Clever/wag/samples/gen-go-db-only/models/v9"
 	"github.com/Clever/wag/samples/v9/gen-go-db-only/db"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/go-openapi/strfmt"
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // ThingWithMatchingKeysTable represents the user-configurable properties of the ThingWithMatchingKeys table.
 type ThingWithMatchingKeysTable struct {
-	DynamoDBAPI        dynamodbiface.DynamoDBAPI
+	DynamoDBAPI        *dynamodb.Client
 	Prefix             string
 	TableName          string
 	ReadCapacityUnits  int64
@@ -43,54 +46,54 @@ type ddbThingWithMatchingKeys struct {
 }
 
 func (t ThingWithMatchingKeysTable) create(ctx context.Context) error {
-	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
-		AttributeDefinitions: []*dynamodb.AttributeDefinition{
+	if _, err := t.DynamoDBAPI.CreateTable(ctx, &dynamodb.CreateTableInput{
+		AttributeDefinitions: []types.AttributeDefinition{
 			{
 				AttributeName: aws.String("assocTypeID"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 			{
 				AttributeName: aws.String("bear"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 			{
 				AttributeName: aws.String("createdBear"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 		},
-		KeySchema: []*dynamodb.KeySchemaElement{
+		KeySchema: []types.KeySchemaElement{
 			{
 				AttributeName: aws.String("bear"),
-				KeyType:       aws.String(dynamodb.KeyTypeHash),
+				KeyType:       types.KeyTypeHash,
 			},
 			{
 				AttributeName: aws.String("assocTypeID"),
-				KeyType:       aws.String(dynamodb.KeyTypeRange),
+				KeyType:       types.KeyTypeRange,
 			},
 		},
-		GlobalSecondaryIndexes: []*dynamodb.GlobalSecondaryIndex{
+		GlobalSecondaryIndexes: []types.GlobalSecondaryIndex{
 			{
 				IndexName: aws.String("byAssoc"),
-				Projection: &dynamodb.Projection{
-					ProjectionType: aws.String("ALL"),
+				Projection: &types.Projection{
+					ProjectionType: types.ProjectionType("ALL"),
 				},
-				KeySchema: []*dynamodb.KeySchemaElement{
+				KeySchema: []types.KeySchemaElement{
 					{
 						AttributeName: aws.String("assocTypeID"),
-						KeyType:       aws.String(dynamodb.KeyTypeHash),
+						KeyType:       types.KeyTypeHash,
 					},
 					{
 						AttributeName: aws.String("createdBear"),
-						KeyType:       aws.String(dynamodb.KeyTypeRange),
+						KeyType:       types.KeyTypeRange,
 					},
 				},
-				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+				ProvisionedThroughput: &types.ProvisionedThroughput{
 					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 				},
 			},
 		},
-		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+		ProvisionedThroughput: &types.ProvisionedThroughput{
 			ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 			WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 		},
@@ -106,7 +109,8 @@ func (t ThingWithMatchingKeysTable) saveThingWithMatchingKeys(ctx context.Contex
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
+
+	_, err = t.DynamoDBAPI.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(t.TableName),
 		Item:      data,
 	})
@@ -114,14 +118,14 @@ func (t ThingWithMatchingKeysTable) saveThingWithMatchingKeys(ctx context.Contex
 }
 
 func (t ThingWithMatchingKeysTable) getThingWithMatchingKeys(ctx context.Context, bear string, assocType string, assocID string) (*models.ThingWithMatchingKeys, error) {
-	key, err := dynamodbattribute.MarshalMap(ddbThingWithMatchingKeysPrimaryKey{
+	key, err := attributevalue.MarshalMap(ddbThingWithMatchingKeysPrimaryKey{
 		Bear:        bear,
 		AssocTypeID: fmt.Sprintf("%s^%s", assocType, assocID),
 	})
 	if err != nil {
 		return nil, err
 	}
-	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
+	res, err := t.DynamoDBAPI.GetItem(ctx, &dynamodb.GetItemInput{
 		Key:            key,
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(true),
@@ -150,62 +154,67 @@ func (t ThingWithMatchingKeysTable) scanThingWithMatchingKeyss(ctx context.Conte
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
 		// must provide only the fields constituting the index
-		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+		scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"bear": exclusiveStartKey["bear"],
-			"assocTypeID": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAfter.AssocType, input.StartingAfter.AssocID)),
+			"assocTypeID": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s^%s", input.StartingAfter.AssocType, input.StartingAfter.AssocID),
 			},
 		}
 	}
 	totalRecordsProcessed := int64(0)
-	var innerErr error
-	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+
+	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+	for paginator.HasMorePages() {
+		out, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting next page: %s", err.Error())
+		}
+
 		items, err := decodeThingWithMatchingKeyss(out.Items)
 		if err != nil {
-			innerErr = fmt.Errorf("error decoding %s", err.Error())
-			return false
+			return fmt.Errorf("error decoding items: %s", err.Error())
 		}
+
 		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
-					innerErr = err
-					return false
+					return err
 				}
 			}
-			isLastModel := lastPage && i == len(items)-1
+
+			isLastModel := !paginator.HasMorePages() && i == len(items)-1
 			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-				return false
+				return nil
 			}
+
 			totalRecordsProcessed++
-			// if the Limit of records have been passed to fn, don't pass anymore records.
 			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-				return false
+				return nil
 			}
 		}
-		return true
-	})
-	if innerErr != nil {
-		return innerErr
 	}
-	return err
+
+	return nil
 }
 
 func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByBearAndAssocTypeIDParseFilters(queryInput *dynamodb.QueryInput, input db.GetThingWithMatchingKeyssByBearAndAssocTypeIDInput) {
 	for _, filterValue := range input.FilterValues {
 		switch filterValue.AttributeName {
 		case db.ThingWithMatchingKeysCreated:
-			queryInput.ExpressionAttributeNames["#CREATED"] = aws.String(string(db.ThingWithMatchingKeysCreated))
+			queryInput.ExpressionAttributeNames["#CREATED"] = string(db.ThingWithMatchingKeysCreated)
 			for i, attributeValue := range filterValue.AttributeValues {
-				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithMatchingKeysCreated), i)] = &dynamodb.AttributeValue{
-					S: aws.String(datetimeToDynamoTimeString(attributeValue.(strfmt.DateTime))),
+				queryInput.ExpressionAttributeValues[fmt.Sprintf(":%s_value%d", string(db.ThingWithMatchingKeysCreated), i)] = &types.AttributeValueMemberS{
+					Value: datetimeToDynamoTimeString(attributeValue.(strfmt.DateTime)),
 				}
 			}
 		}
@@ -221,27 +230,28 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByBearAndAssocTypeI
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
-		ExpressionAttributeNames: map[string]*string{
-			"#BEAR": aws.String("bear"),
+		ExpressionAttributeNames: map[string]string{
+			"#BEAR": "bear",
 		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":bear": &dynamodb.AttributeValue{
-				S: aws.String(input.Bear),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":bear": &types.AttributeValueMemberS{
+				Value: input.Bear,
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#BEAR = :bear")
 	} else {
-		queryInput.ExpressionAttributeNames["#ASSOCTYPEID"] = aws.String("assocTypeID")
-		queryInput.ExpressionAttributeValues[":assocTypeId"] = &dynamodb.AttributeValue{
-			S: aws.String(fmt.Sprintf("%s^%s", input.StartingAt.AssocType, input.StartingAt.AssocID)),
+		queryInput.ExpressionAttributeNames["#ASSOCTYPEID"] = "assocTypeID"
+		queryInput.ExpressionAttributeValues[":assocTypeId"] = &types.AttributeValueMemberS{
+			Value: fmt.Sprintf("%s^%s", input.StartingAt.AssocType, input.StartingAt.AssocID),
 		}
+
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#BEAR = :bear AND #ASSOCTYPEID <= :assocTypeId")
 		} else {
@@ -249,12 +259,13 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByBearAndAssocTypeI
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"assocTypeID": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAfter.AssocType, input.StartingAfter.AssocID)),
+		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
+			"assocTypeID": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s^%s", input.StartingAfter.AssocType, input.StartingAfter.AssocID),
 			},
-			"bear": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.Bear),
+
+			"bear": &types.AttributeValueMemberS{
+				Value: input.StartingAfter.Bear,
 			},
 		}
 	}
@@ -266,8 +277,7 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByBearAndAssocTypeI
 	totalRecordsProcessed := int64(0)
 	var pageFnErr error
 	pageFn := func(queryOutput *dynamodb.QueryOutput, lastPage bool) bool {
-		// Only assume an empty page means no more results if there are no filters applied
-		if (len(input.FilterValues) == 0 || input.FilterExpression == "") && len(queryOutput.Items) == 0 {
+		if len(queryOutput.Items) == 0 {
 			return false
 		}
 		items, err := decodeThingWithMatchingKeyss(queryOutput.Items)
@@ -292,10 +302,21 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByBearAndAssocTypeI
 		return true
 	}
 
-	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
-	if err != nil {
-		return err
+	paginator := dynamodb.NewQueryPaginator(t.DynamoDBAPI, queryInput)
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(ctx)
+		if err != nil {
+			var resourceNotFoundErr *types.ResourceNotFoundException
+			if errors.As(err, &resourceNotFoundErr) {
+				return fmt.Errorf("table or index not found: %s", t.TableName)
+			}
+			return err
+		}
+		if !pageFn(output, !paginator.HasMorePages()) {
+			break
+		}
 	}
+
 	if pageFnErr != nil {
 		return pageFnErr
 	}
@@ -304,14 +325,15 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByBearAndAssocTypeI
 }
 
 func (t ThingWithMatchingKeysTable) deleteThingWithMatchingKeys(ctx context.Context, bear string, assocType string, assocID string) error {
-	key, err := dynamodbattribute.MarshalMap(ddbThingWithMatchingKeysPrimaryKey{
+
+	key, err := attributevalue.MarshalMap(ddbThingWithMatchingKeysPrimaryKey{
 		Bear:        bear,
 		AssocTypeID: fmt.Sprintf("%s^%s", assocType, assocID),
 	})
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
+	_, err = t.DynamoDBAPI.DeleteItem(ctx, &dynamodb.DeleteItemInput{
 		Key:       key,
 		TableName: aws.String(t.TableName),
 	})
@@ -335,27 +357,28 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByAssocTypeIDAndCre
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("byAssoc"),
-		ExpressionAttributeNames: map[string]*string{
-			"#ASSOCTYPEID": aws.String("assocTypeID"),
+		ExpressionAttributeNames: map[string]string{
+			"#ASSOCTYPEID": "assocTypeID",
 		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":assocTypeId": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s^%s", input.AssocType, input.AssocID)),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":assocTypeId": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s^%s", input.AssocType, input.AssocID),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#ASSOCTYPEID = :assocTypeId")
 	} else {
-		queryInput.ExpressionAttributeNames["#CREATEDBEAR"] = aws.String("createdBear")
-		queryInput.ExpressionAttributeValues[":createdBear"] = &dynamodb.AttributeValue{
-			S: aws.String(fmt.Sprintf("%s^%s", input.StartingAt.Created, input.StartingAt.Bear)),
+		queryInput.ExpressionAttributeNames["#CREATEDBEAR"] = "createdBear"
+		queryInput.ExpressionAttributeValues[":createdBear"] = &types.AttributeValueMemberS{
+			Value: fmt.Sprintf("%s^%s", input.StartingAt.Created, input.StartingAt.Bear),
 		}
+
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#ASSOCTYPEID = :assocTypeId AND #CREATEDBEAR <= :createdBear")
 		} else {
@@ -363,15 +386,15 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByAssocTypeIDAndCre
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"createdBear": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAfter.Created, input.StartingAfter.Bear)),
+		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
+			"createdBear": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s^%s", input.StartingAfter.Created, input.StartingAfter.Bear),
 			},
-			"assocTypeID": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAfter.AssocType, input.StartingAfter.AssocID)),
+			"assocTypeID": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s^%s", input.StartingAfter.AssocType, input.StartingAfter.AssocID),
 			},
-			"bear": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.Bear),
+			"bear": &types.AttributeValueMemberS{
+				Value: input.StartingAfter.Bear,
 			},
 		}
 	}
@@ -404,10 +427,21 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByAssocTypeIDAndCre
 		return true
 	}
 
-	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
-	if err != nil {
-		return err
+	paginator := dynamodb.NewQueryPaginator(t.DynamoDBAPI, queryInput)
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(ctx)
+		if err != nil {
+			var resourceNotFoundErr *types.ResourceNotFoundException
+			if errors.As(err, &resourceNotFoundErr) {
+				return fmt.Errorf("table or index not found: %s", t.TableName)
+			}
+			return err
+		}
+		if !pageFn(output, !paginator.HasMorePages()) {
+			break
+		}
 	}
+
 	if pageFnErr != nil {
 		return pageFnErr
 	}
@@ -418,63 +452,69 @@ func (t ThingWithMatchingKeysTable) scanThingWithMatchingKeyssByAssocTypeIDAndCr
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
-		IndexName:      aws.String("byAssoc"),
 	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
+	}
+	scanInput.IndexName = aws.String("byAssoc")
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
 		// must provide the fields constituting the index and the primary key
 		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
-		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+		scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"bear": exclusiveStartKey["bear"],
-			"assocTypeID": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAfter.AssocType, input.StartingAfter.AssocID)),
+			"assocTypeID": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s^%s", input.StartingAfter.AssocType, input.StartingAfter.AssocID),
 			},
-			"createdBear": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s^%s", input.StartingAfter.Created, input.StartingAfter.Bear)),
+			"createdBear": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s^%s", input.StartingAfter.Created, input.StartingAfter.Bear),
 			},
 		}
 	}
 	totalRecordsProcessed := int64(0)
-	var innerErr error
-	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+
+	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+	for paginator.HasMorePages() {
+		out, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting next page: %s", err.Error())
+		}
+
 		items, err := decodeThingWithMatchingKeyss(out.Items)
 		if err != nil {
-			innerErr = fmt.Errorf("error decoding %s", err.Error())
-			return false
+			return fmt.Errorf("error decoding items: %s", err.Error())
 		}
+
 		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
-					innerErr = err
-					return false
+					return err
 				}
 			}
-			isLastModel := lastPage && i == len(items)-1
+
+			isLastModel := !paginator.HasMorePages() && i == len(items)-1
 			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-				return false
+				return nil
 			}
+
 			totalRecordsProcessed++
-			// if the Limit of records have been passed to fn, don't pass anymore records.
 			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-				return false
+				return nil
 			}
 		}
-		return true
-	})
-	if innerErr != nil {
-		return innerErr
 	}
-	return err
+
+	return nil
 }
 
 // encodeThingWithMatchingKeys encodes a ThingWithMatchingKeys as a DynamoDB map of attribute values.
-func encodeThingWithMatchingKeys(m models.ThingWithMatchingKeys) (map[string]*dynamodb.AttributeValue, error) {
-	val, err := dynamodbattribute.MarshalMap(ddbThingWithMatchingKeys{
-		ThingWithMatchingKeys: m,
+func encodeThingWithMatchingKeys(m models.ThingWithMatchingKeys) (map[string]types.AttributeValue, error) {
+	// with composite attributes, marshal the model
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -490,7 +530,7 @@ func encodeThingWithMatchingKeys(m models.ThingWithMatchingKeys) (map[string]*dy
 		return nil, fmt.Errorf("bear cannot contain '^': %s", m.Bear)
 	}
 	// add in composite attributes
-	primaryKey, err := dynamodbattribute.MarshalMap(ddbThingWithMatchingKeysPrimaryKey{
+	primaryKey, err := attributevalue.MarshalMap(ddbThingWithMatchingKeysPrimaryKey{
 		Bear:        m.Bear,
 		AssocTypeID: fmt.Sprintf("%s^%s", m.AssocType, m.AssocID),
 	})
@@ -500,7 +540,7 @@ func encodeThingWithMatchingKeys(m models.ThingWithMatchingKeys) (map[string]*dy
 	for k, v := range primaryKey {
 		val[k] = v
 	}
-	byAssoc, err := dynamodbattribute.MarshalMap(ddbThingWithMatchingKeysGSIByAssoc{
+	byAssoc, err := attributevalue.MarshalMap(ddbThingWithMatchingKeysGSIByAssoc{
 		AssocTypeID: fmt.Sprintf("%s^%s", m.AssocType, m.AssocID),
 		CreatedBear: fmt.Sprintf("%s^%s", m.Created, m.Bear),
 	})
@@ -514,9 +554,11 @@ func encodeThingWithMatchingKeys(m models.ThingWithMatchingKeys) (map[string]*dy
 }
 
 // decodeThingWithMatchingKeys translates a ThingWithMatchingKeys stored in DynamoDB to a ThingWithMatchingKeys struct.
-func decodeThingWithMatchingKeys(m map[string]*dynamodb.AttributeValue, out *models.ThingWithMatchingKeys) error {
+func decodeThingWithMatchingKeys(m map[string]types.AttributeValue, out *models.ThingWithMatchingKeys) error {
 	var ddbThingWithMatchingKeys ddbThingWithMatchingKeys
-	if err := dynamodbattribute.UnmarshalMap(m, &ddbThingWithMatchingKeys); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithMatchingKeys, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithMatchingKeys.ThingWithMatchingKeys
@@ -524,7 +566,7 @@ func decodeThingWithMatchingKeys(m map[string]*dynamodb.AttributeValue, out *mod
 }
 
 // decodeThingWithMatchingKeyss translates a list of ThingWithMatchingKeyss stored in DynamoDB to a slice of ThingWithMatchingKeys structs.
-func decodeThingWithMatchingKeyss(ms []map[string]*dynamodb.AttributeValue) ([]models.ThingWithMatchingKeys, error) {
+func decodeThingWithMatchingKeyss(ms []map[string]types.AttributeValue) ([]models.ThingWithMatchingKeys, error) {
 	thingWithMatchingKeyss := make([]models.ThingWithMatchingKeys, len(ms))
 	for i, m := range ms {
 		var thingWithMatchingKeys models.ThingWithMatchingKeys

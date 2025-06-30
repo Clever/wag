@@ -2,23 +2,26 @@ package dynamodb
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/Clever/wag/samples/gen-go-db/models/v9"
 	"github.com/Clever/wag/samples/v9/gen-go-db/server/db"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/go-openapi/strfmt"
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // ThingWithRequiredCompositePropertiesAndKeysOnlyTable represents the user-configurable properties of the ThingWithRequiredCompositePropertiesAndKeysOnly table.
 type ThingWithRequiredCompositePropertiesAndKeysOnlyTable struct {
-	DynamoDBAPI        dynamodbiface.DynamoDBAPI
+	DynamoDBAPI        *dynamodb.Client
 	Prefix             string
 	TableName          string
 	ReadCapacityUnits  int64
@@ -42,46 +45,46 @@ type ddbThingWithRequiredCompositePropertiesAndKeysOnly struct {
 }
 
 func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) create(ctx context.Context) error {
-	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
-		AttributeDefinitions: []*dynamodb.AttributeDefinition{
+	if _, err := t.DynamoDBAPI.CreateTable(ctx, &dynamodb.CreateTableInput{
+		AttributeDefinitions: []types.AttributeDefinition{
 			{
 				AttributeName: aws.String("propertyOneAndTwo"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 			{
 				AttributeName: aws.String("propertyThree"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 		},
-		KeySchema: []*dynamodb.KeySchemaElement{
+		KeySchema: []types.KeySchemaElement{
 			{
 				AttributeName: aws.String("propertyThree"),
-				KeyType:       aws.String(dynamodb.KeyTypeHash),
+				KeyType:       types.KeyTypeHash,
 			},
 		},
-		GlobalSecondaryIndexes: []*dynamodb.GlobalSecondaryIndex{
+		GlobalSecondaryIndexes: []types.GlobalSecondaryIndex{
 			{
 				IndexName: aws.String("propertyOneAndTwo_PropertyThree"),
-				Projection: &dynamodb.Projection{
-					ProjectionType: aws.String("KEYS_ONLY"),
+				Projection: &types.Projection{
+					ProjectionType: types.ProjectionType("KEYS_ONLY"),
 				},
-				KeySchema: []*dynamodb.KeySchemaElement{
+				KeySchema: []types.KeySchemaElement{
 					{
 						AttributeName: aws.String("propertyOneAndTwo"),
-						KeyType:       aws.String(dynamodb.KeyTypeHash),
+						KeyType:       types.KeyTypeHash,
 					},
 					{
 						AttributeName: aws.String("propertyThree"),
-						KeyType:       aws.String(dynamodb.KeyTypeRange),
+						KeyType:       types.KeyTypeRange,
 					},
 				},
-				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+				ProvisionedThroughput: &types.ProvisionedThroughput{
 					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 				},
 			},
 		},
-		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+		ProvisionedThroughput: &types.ProvisionedThroughput{
 			ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 			WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 		},
@@ -97,7 +100,8 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) saveThingWithRequi
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
+
+	_, err = t.DynamoDBAPI.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(t.TableName),
 		Item:      data,
 	})
@@ -105,13 +109,13 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) saveThingWithRequi
 }
 
 func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) getThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, propertyThree string) (*models.ThingWithRequiredCompositePropertiesAndKeysOnly, error) {
-	key, err := dynamodbattribute.MarshalMap(ddbThingWithRequiredCompositePropertiesAndKeysOnlyPrimaryKey{
+	key, err := attributevalue.MarshalMap(ddbThingWithRequiredCompositePropertiesAndKeysOnlyPrimaryKey{
 		PropertyThree: propertyThree,
 	})
 	if err != nil {
 		return nil, err
 	}
-	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
+	res, err := t.DynamoDBAPI.GetItem(ctx, &dynamodb.GetItemInput{
 		Key:            key,
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(true),
@@ -138,59 +142,65 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) scanThingWithRequi
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
 		// must provide only the fields constituting the index
-		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+		scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"propertyThree": exclusiveStartKey["propertyThree"],
 		}
 	}
 	totalRecordsProcessed := int64(0)
-	var innerErr error
-	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+
+	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+	for paginator.HasMorePages() {
+		out, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting next page: %s", err.Error())
+		}
+
 		items, err := decodeThingWithRequiredCompositePropertiesAndKeysOnlys(out.Items)
 		if err != nil {
-			innerErr = fmt.Errorf("error decoding %s", err.Error())
-			return false
+			return fmt.Errorf("error decoding items: %s", err.Error())
 		}
+
 		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
-					innerErr = err
-					return false
+					return err
 				}
 			}
-			isLastModel := lastPage && i == len(items)-1
+
+			isLastModel := !paginator.HasMorePages() && i == len(items)-1
 			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-				return false
+				return nil
 			}
+
 			totalRecordsProcessed++
-			// if the Limit of records have been passed to fn, don't pass anymore records.
 			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-				return false
+				return nil
 			}
 		}
-		return true
-	})
-	if innerErr != nil {
-		return innerErr
 	}
-	return err
+
+	return nil
 }
 
 func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) deleteThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, propertyThree string) error {
-	key, err := dynamodbattribute.MarshalMap(ddbThingWithRequiredCompositePropertiesAndKeysOnlyPrimaryKey{
+
+	key, err := attributevalue.MarshalMap(ddbThingWithRequiredCompositePropertiesAndKeysOnlyPrimaryKey{
 		PropertyThree: propertyThree,
 	})
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
+	_, err = t.DynamoDBAPI.DeleteItem(ctx, &dynamodb.DeleteItemInput{
 		Key:       key,
 		TableName: aws.String(t.TableName),
 	})
@@ -214,27 +224,28 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) getThingWithRequir
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("propertyOneAndTwo_PropertyThree"),
-		ExpressionAttributeNames: map[string]*string{
-			"#PROPERTYONEANDTWO": aws.String("propertyOneAndTwo"),
+		ExpressionAttributeNames: map[string]string{
+			"#PROPERTYONEANDTWO": "propertyOneAndTwo",
 		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":propertyOneAndTwo": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s_%s", input.PropertyOne, input.PropertyTwo)),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":propertyOneAndTwo": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s_%s", input.PropertyOne, input.PropertyTwo),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.PropertyThreeStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#PROPERTYONEANDTWO = :propertyOneAndTwo")
 	} else {
-		queryInput.ExpressionAttributeNames["#PROPERTYTHREE"] = aws.String("propertyThree")
-		queryInput.ExpressionAttributeValues[":propertyThree"] = &dynamodb.AttributeValue{
-			S: aws.String(string(*input.PropertyThreeStartingAt)),
+		queryInput.ExpressionAttributeNames["#PROPERTYTHREE"] = "propertyThree"
+		queryInput.ExpressionAttributeValues[":propertyThree"] = &types.AttributeValueMemberS{
+			Value: string(*input.PropertyThreeStartingAt),
 		}
+
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#PROPERTYONEANDTWO = :propertyOneAndTwo AND #PROPERTYTHREE <= :propertyThree")
 		} else {
@@ -242,12 +253,12 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) getThingWithRequir
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"propertyThree": &dynamodb.AttributeValue{
-				S: aws.String(string(*input.StartingAfter.PropertyThree)),
+		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
+			"propertyThree": &types.AttributeValueMemberS{
+				Value: string(*input.StartingAfter.PropertyThree),
 			},
-			"propertyOneAndTwo": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s_%s", *input.StartingAfter.PropertyOne, *input.StartingAfter.PropertyTwo)),
+			"propertyOneAndTwo": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s_%s", *input.StartingAfter.PropertyOne, *input.StartingAfter.PropertyTwo),
 			},
 		}
 	}
@@ -280,10 +291,21 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) getThingWithRequir
 		return true
 	}
 
-	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
-	if err != nil {
-		return err
+	paginator := dynamodb.NewQueryPaginator(t.DynamoDBAPI, queryInput)
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(ctx)
+		if err != nil {
+			var resourceNotFoundErr *types.ResourceNotFoundException
+			if errors.As(err, &resourceNotFoundErr) {
+				return fmt.Errorf("table or index not found: %s", t.TableName)
+			}
+			return err
+		}
+		if !pageFn(output, !paginator.HasMorePages()) {
+			break
+		}
 	}
+
 	if pageFnErr != nil {
 		return pageFnErr
 	}
@@ -294,60 +316,66 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) scanThingWithRequi
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
-		IndexName:      aws.String("propertyOneAndTwo_PropertyThree"),
 	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
+	}
+	scanInput.IndexName = aws.String("propertyOneAndTwo_PropertyThree")
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
 		// must provide the fields constituting the index and the primary key
 		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
-		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+		scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"propertyThree": exclusiveStartKey["propertyThree"],
-			"propertyOneAndTwo": &dynamodb.AttributeValue{
-				S: aws.String(fmt.Sprintf("%s_%s", *input.StartingAfter.PropertyOne, *input.StartingAfter.PropertyTwo)),
+			"propertyOneAndTwo": &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("%s_%s", *input.StartingAfter.PropertyOne, *input.StartingAfter.PropertyTwo),
 			},
 		}
 	}
 	totalRecordsProcessed := int64(0)
-	var innerErr error
-	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+
+	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+	for paginator.HasMorePages() {
+		out, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting next page: %s", err.Error())
+		}
+
 		items, err := decodeThingWithRequiredCompositePropertiesAndKeysOnlys(out.Items)
 		if err != nil {
-			innerErr = fmt.Errorf("error decoding %s", err.Error())
-			return false
+			return fmt.Errorf("error decoding items: %s", err.Error())
 		}
+
 		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
-					innerErr = err
-					return false
+					return err
 				}
 			}
-			isLastModel := lastPage && i == len(items)-1
+
+			isLastModel := !paginator.HasMorePages() && i == len(items)-1
 			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-				return false
+				return nil
 			}
+
 			totalRecordsProcessed++
-			// if the Limit of records have been passed to fn, don't pass anymore records.
 			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-				return false
+				return nil
 			}
 		}
-		return true
-	})
-	if innerErr != nil {
-		return innerErr
 	}
-	return err
+
+	return nil
 }
 
 // encodeThingWithRequiredCompositePropertiesAndKeysOnly encodes a ThingWithRequiredCompositePropertiesAndKeysOnly as a DynamoDB map of attribute values.
-func encodeThingWithRequiredCompositePropertiesAndKeysOnly(m models.ThingWithRequiredCompositePropertiesAndKeysOnly) (map[string]*dynamodb.AttributeValue, error) {
-	val, err := dynamodbattribute.MarshalMap(ddbThingWithRequiredCompositePropertiesAndKeysOnly{
-		ThingWithRequiredCompositePropertiesAndKeysOnly: m,
+func encodeThingWithRequiredCompositePropertiesAndKeysOnly(m models.ThingWithRequiredCompositePropertiesAndKeysOnly) (map[string]types.AttributeValue, error) {
+	// with composite attributes, marshal the model
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -360,7 +388,7 @@ func encodeThingWithRequiredCompositePropertiesAndKeysOnly(m models.ThingWithReq
 		return nil, fmt.Errorf("propertyTwo cannot contain '_': %s", *m.PropertyTwo)
 	}
 	// add in composite attributes
-	propertyOneAndTwoPropertyThree, err := dynamodbattribute.MarshalMap(ddbThingWithRequiredCompositePropertiesAndKeysOnlyGSIPropertyOneAndTwoPropertyThree{
+	propertyOneAndTwoPropertyThree, err := attributevalue.MarshalMap(ddbThingWithRequiredCompositePropertiesAndKeysOnlyGSIPropertyOneAndTwoPropertyThree{
 		PropertyOneAndTwo: fmt.Sprintf("%s_%s", *m.PropertyOne, *m.PropertyTwo),
 		PropertyThree:     *m.PropertyThree,
 	})
@@ -374,27 +402,31 @@ func encodeThingWithRequiredCompositePropertiesAndKeysOnly(m models.ThingWithReq
 }
 
 // decodeThingWithRequiredCompositePropertiesAndKeysOnly translates a ThingWithRequiredCompositePropertiesAndKeysOnly stored in DynamoDB to a ThingWithRequiredCompositePropertiesAndKeysOnly struct.
-func decodeThingWithRequiredCompositePropertiesAndKeysOnly(m map[string]*dynamodb.AttributeValue, out *models.ThingWithRequiredCompositePropertiesAndKeysOnly) error {
+func decodeThingWithRequiredCompositePropertiesAndKeysOnly(m map[string]types.AttributeValue, out *models.ThingWithRequiredCompositePropertiesAndKeysOnly) error {
 	var ddbThingWithRequiredCompositePropertiesAndKeysOnly ddbThingWithRequiredCompositePropertiesAndKeysOnly
-	if err := dynamodbattribute.UnmarshalMap(m, &ddbThingWithRequiredCompositePropertiesAndKeysOnly); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithRequiredCompositePropertiesAndKeysOnly, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithRequiredCompositePropertiesAndKeysOnly.ThingWithRequiredCompositePropertiesAndKeysOnly
 	// parse composite attributes from projected secondary indexes and fill
 	// in model properties
-	if v, ok := m["propertyOneAndTwo"]; ok && v.S != nil {
-		parts := strings.Split(*v.S, "_")
-		if len(parts) != 2 {
-			return fmt.Errorf("expected 2 parts: '%s'", *v.S)
+	if v, ok := m["propertyOneAndTwo"]; ok {
+		if s, ok := v.(*types.AttributeValueMemberS); ok {
+			parts := strings.Split(s.Value, "_")
+			if len(parts) != 2 {
+				return fmt.Errorf("expected 2 parts: '%s'", s.Value)
+			}
+			out.PropertyOne = &parts[0]
+			out.PropertyTwo = &parts[1]
 		}
-		out.PropertyOne = &parts[0]
-		out.PropertyTwo = &parts[1]
 	}
 	return nil
 }
 
 // decodeThingWithRequiredCompositePropertiesAndKeysOnlys translates a list of ThingWithRequiredCompositePropertiesAndKeysOnlys stored in DynamoDB to a slice of ThingWithRequiredCompositePropertiesAndKeysOnly structs.
-func decodeThingWithRequiredCompositePropertiesAndKeysOnlys(ms []map[string]*dynamodb.AttributeValue) ([]models.ThingWithRequiredCompositePropertiesAndKeysOnly, error) {
+func decodeThingWithRequiredCompositePropertiesAndKeysOnlys(ms []map[string]types.AttributeValue) ([]models.ThingWithRequiredCompositePropertiesAndKeysOnly, error) {
 	thingWithRequiredCompositePropertiesAndKeysOnlys := make([]models.ThingWithRequiredCompositePropertiesAndKeysOnly, len(ms))
 	for i, m := range ms {
 		var thingWithRequiredCompositePropertiesAndKeysOnly models.ThingWithRequiredCompositePropertiesAndKeysOnly

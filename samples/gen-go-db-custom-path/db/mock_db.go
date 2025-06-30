@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	v9 "github.com/Clever/wag/samples/gen-go-db-custom-path/models/v9"
-	expression "github.com/aws/aws-sdk-go/service/dynamodb/expression"
+	expression "github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	strfmt "github.com/go-openapi/strfmt"
 	gomock "github.com/golang/mock/gomock"
 )

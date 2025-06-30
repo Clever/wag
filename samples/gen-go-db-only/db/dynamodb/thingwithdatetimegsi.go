@@ -2,23 +2,25 @@ package dynamodb
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/Clever/wag/samples/gen-go-db-only/models/v9"
 	"github.com/Clever/wag/samples/v9/gen-go-db-only/db"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/go-openapi/strfmt"
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // ThingWithDatetimeGSITable represents the user-configurable properties of the ThingWithDatetimeGSI table.
 type ThingWithDatetimeGSITable struct {
-	DynamoDBAPI        dynamodbiface.DynamoDBAPI
+	DynamoDBAPI        *dynamodb.Client
 	Prefix             string
 	TableName          string
 	ReadCapacityUnits  int64
@@ -42,46 +44,46 @@ type ddbThingWithDatetimeGSI struct {
 }
 
 func (t ThingWithDatetimeGSITable) create(ctx context.Context) error {
-	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
-		AttributeDefinitions: []*dynamodb.AttributeDefinition{
+	if _, err := t.DynamoDBAPI.CreateTable(ctx, &dynamodb.CreateTableInput{
+		AttributeDefinitions: []types.AttributeDefinition{
 			{
 				AttributeName: aws.String("datetime"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 			{
 				AttributeName: aws.String("id"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 		},
-		KeySchema: []*dynamodb.KeySchemaElement{
+		KeySchema: []types.KeySchemaElement{
 			{
 				AttributeName: aws.String("id"),
-				KeyType:       aws.String(dynamodb.KeyTypeHash),
+				KeyType:       types.KeyTypeHash,
 			},
 		},
-		GlobalSecondaryIndexes: []*dynamodb.GlobalSecondaryIndex{
+		GlobalSecondaryIndexes: []types.GlobalSecondaryIndex{
 			{
 				IndexName: aws.String("byDateTime"),
-				Projection: &dynamodb.Projection{
-					ProjectionType: aws.String("ALL"),
+				Projection: &types.Projection{
+					ProjectionType: types.ProjectionType("ALL"),
 				},
-				KeySchema: []*dynamodb.KeySchemaElement{
+				KeySchema: []types.KeySchemaElement{
 					{
 						AttributeName: aws.String("datetime"),
-						KeyType:       aws.String(dynamodb.KeyTypeHash),
+						KeyType:       types.KeyTypeHash,
 					},
 					{
 						AttributeName: aws.String("id"),
-						KeyType:       aws.String(dynamodb.KeyTypeRange),
+						KeyType:       types.KeyTypeRange,
 					},
 				},
-				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+				ProvisionedThroughput: &types.ProvisionedThroughput{
 					ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 					WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 				},
 			},
 		},
-		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+		ProvisionedThroughput: &types.ProvisionedThroughput{
 			ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 			WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 		},
@@ -97,23 +99,29 @@ func (t ThingWithDatetimeGSITable) saveThingWithDatetimeGSI(ctx context.Context,
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
+
+	_, err = t.DynamoDBAPI.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(t.TableName),
 		Item:      data,
-		ExpressionAttributeNames: map[string]*string{
-			"#ID": aws.String("id"),
+		ExpressionAttributeNames: map[string]string{
+			"#ID": "id",
 		},
-		ConditionExpression: aws.String("attribute_not_exists(#ID)"),
+		ConditionExpression: aws.String(
+			"" +
+				"" +
+				"attribute_not_exists(#ID)" +
+				"",
+		),
 	})
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeConditionalCheckFailedException:
-				return db.ErrThingWithDatetimeGSIAlreadyExists{
-					ID: m.ID,
-				}
-			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.TableName)
+		var resourceNotFoundErr *types.ResourceNotFoundException
+		var conditionalCheckFailedErr *types.ConditionalCheckFailedException
+		if errors.As(err, &resourceNotFoundErr) {
+			return fmt.Errorf("table or index not found: %s", t.TableName)
+		}
+		if errors.As(err, &conditionalCheckFailedErr) {
+			return db.ErrThingWithDatetimeGSIAlreadyExists{
+				ID: m.ID,
 			}
 		}
 		return err
@@ -122,23 +130,21 @@ func (t ThingWithDatetimeGSITable) saveThingWithDatetimeGSI(ctx context.Context,
 }
 
 func (t ThingWithDatetimeGSITable) getThingWithDatetimeGSI(ctx context.Context, id string) (*models.ThingWithDatetimeGSI, error) {
-	key, err := dynamodbattribute.MarshalMap(ddbThingWithDatetimeGSIPrimaryKey{
+	key, err := attributevalue.MarshalMap(ddbThingWithDatetimeGSIPrimaryKey{
 		ID: id,
 	})
 	if err != nil {
 		return nil, err
 	}
-	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
+	res, err := t.DynamoDBAPI.GetItem(ctx, &dynamodb.GetItemInput{
 		Key:            key,
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(true),
 	})
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeResourceNotFoundException:
-				return nil, fmt.Errorf("table or index not found: %s", t.TableName)
-			}
+		var resourceNotFoundErr *types.ResourceNotFoundException
+		if errors.As(err, &resourceNotFoundErr) {
+			return nil, fmt.Errorf("table or index not found: %s", t.TableName)
 		}
 		return nil, err
 	}
@@ -161,68 +167,72 @@ func (t ThingWithDatetimeGSITable) scanThingWithDatetimeGSIs(ctx context.Context
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
 		// must provide only the fields constituting the index
-		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+		scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"id": exclusiveStartKey["id"],
 		}
 	}
 	totalRecordsProcessed := int64(0)
-	var innerErr error
-	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+
+	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+	for paginator.HasMorePages() {
+		out, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting next page: %s", err.Error())
+		}
+
 		items, err := decodeThingWithDatetimeGSIs(out.Items)
 		if err != nil {
-			innerErr = fmt.Errorf("error decoding %s", err.Error())
-			return false
+			return fmt.Errorf("error decoding items: %s", err.Error())
 		}
+
 		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
-					innerErr = err
-					return false
+					return err
 				}
 			}
-			isLastModel := lastPage && i == len(items)-1
+
+			isLastModel := !paginator.HasMorePages() && i == len(items)-1
 			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-				return false
+				return nil
 			}
+
 			totalRecordsProcessed++
-			// if the Limit of records have been passed to fn, don't pass anymore records.
 			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-				return false
+				return nil
 			}
 		}
-		return true
-	})
-	if innerErr != nil {
-		return innerErr
 	}
-	return err
+
+	return nil
 }
 
 func (t ThingWithDatetimeGSITable) deleteThingWithDatetimeGSI(ctx context.Context, id string) error {
-	key, err := dynamodbattribute.MarshalMap(ddbThingWithDatetimeGSIPrimaryKey{
+
+	key, err := attributevalue.MarshalMap(ddbThingWithDatetimeGSIPrimaryKey{
 		ID: id,
 	})
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
+	_, err = t.DynamoDBAPI.DeleteItem(ctx, &dynamodb.DeleteItemInput{
 		Key:       key,
 		TableName: aws.String(t.TableName),
 	})
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.TableName)
-			}
+		var resourceNotFoundErr *types.ResourceNotFoundException
+		if errors.As(err, &resourceNotFoundErr) {
+			return fmt.Errorf("table or index not found: %s", t.TableName)
 		}
 		return err
 	}
@@ -240,27 +250,28 @@ func (t ThingWithDatetimeGSITable) getThingWithDatetimeGSIsByDatetimeAndID(ctx c
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
 		IndexName: aws.String("byDateTime"),
-		ExpressionAttributeNames: map[string]*string{
-			"#DATETIME": aws.String("datetime"),
+		ExpressionAttributeNames: map[string]string{
+			"#DATETIME": "datetime",
 		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":datetime": &dynamodb.AttributeValue{
-				S: aws.String(datetimeToDynamoTimeString(input.Datetime)),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":datetime": &types.AttributeValueMemberS{
+				Value: datetimeToDynamoTimeString(input.Datetime),
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(false),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.IDStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#DATETIME = :datetime")
 	} else {
-		queryInput.ExpressionAttributeNames["#ID"] = aws.String("id")
-		queryInput.ExpressionAttributeValues[":id"] = &dynamodb.AttributeValue{
-			S: aws.String(string(*input.IDStartingAt)),
+		queryInput.ExpressionAttributeNames["#ID"] = "id"
+		queryInput.ExpressionAttributeValues[":id"] = &types.AttributeValueMemberS{
+			Value: string(*input.IDStartingAt),
 		}
+
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#DATETIME = :datetime AND #ID <= :id")
 		} else {
@@ -268,12 +279,12 @@ func (t ThingWithDatetimeGSITable) getThingWithDatetimeGSIsByDatetimeAndID(ctx c
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"id": &dynamodb.AttributeValue{
-				S: aws.String(string(input.StartingAfter.ID)),
+		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
+			"id": &types.AttributeValueMemberS{
+				Value: string(input.StartingAfter.ID),
 			},
-			"datetime": &dynamodb.AttributeValue{
-				S: aws.String(datetimeToDynamoTimeString(input.StartingAfter.Datetime)),
+			"datetime": &types.AttributeValueMemberS{
+				Value: datetimeToDynamoTimeString(input.StartingAfter.Datetime),
 			},
 		}
 	}
@@ -306,16 +317,21 @@ func (t ThingWithDatetimeGSITable) getThingWithDatetimeGSIsByDatetimeAndID(ctx c
 		return true
 	}
 
-	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeResourceNotFoundException:
+	paginator := dynamodb.NewQueryPaginator(t.DynamoDBAPI, queryInput)
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(ctx)
+		if err != nil {
+			var resourceNotFoundErr *types.ResourceNotFoundException
+			if errors.As(err, &resourceNotFoundErr) {
 				return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
+			return err
 		}
-		return err
+		if !pageFn(output, !paginator.HasMorePages()) {
+			break
+		}
 	}
+
 	if pageFnErr != nil {
 		return pageFnErr
 	}
@@ -326,65 +342,77 @@ func (t ThingWithDatetimeGSITable) scanThingWithDatetimeGSIsByDatetimeAndID(ctx 
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
-		IndexName:      aws.String("byDateTime"),
 	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
+	}
+	scanInput.IndexName = aws.String("byDateTime")
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
 		// must provide the fields constituting the index and the primary key
 		// https://stackoverflow.com/questions/40988397/dynamodb-pagination-with-withexclusivestartkey-on-a-global-secondary-index
-		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+		scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"id":       exclusiveStartKey["id"],
 			"datetime": exclusiveStartKey["datetime"],
 		}
 	}
 	totalRecordsProcessed := int64(0)
-	var innerErr error
-	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+
+	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+	for paginator.HasMorePages() {
+		out, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting next page: %s", err.Error())
+		}
+
 		items, err := decodeThingWithDatetimeGSIs(out.Items)
 		if err != nil {
-			innerErr = fmt.Errorf("error decoding %s", err.Error())
-			return false
+			return fmt.Errorf("error decoding items: %s", err.Error())
 		}
+
 		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
-					innerErr = err
-					return false
+					return err
 				}
 			}
-			isLastModel := lastPage && i == len(items)-1
+
+			isLastModel := !paginator.HasMorePages() && i == len(items)-1
 			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-				return false
+				return nil
 			}
+
 			totalRecordsProcessed++
-			// if the Limit of records have been passed to fn, don't pass anymore records.
 			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-				return false
+				return nil
 			}
 		}
-		return true
-	})
-	if innerErr != nil {
-		return innerErr
 	}
-	return err
+
+	return nil
 }
 
 // encodeThingWithDatetimeGSI encodes a ThingWithDatetimeGSI as a DynamoDB map of attribute values.
-func encodeThingWithDatetimeGSI(m models.ThingWithDatetimeGSI) (map[string]*dynamodb.AttributeValue, error) {
-	return dynamodbattribute.MarshalMap(ddbThingWithDatetimeGSI{
-		ThingWithDatetimeGSI: m,
+func encodeThingWithDatetimeGSI(m models.ThingWithDatetimeGSI) (map[string]types.AttributeValue, error) {
+	// no composite attributes, marshal the model with the json tag
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
+	if err != nil {
+		return nil, err
+	}
+	return val, nil
 }
 
 // decodeThingWithDatetimeGSI translates a ThingWithDatetimeGSI stored in DynamoDB to a ThingWithDatetimeGSI struct.
-func decodeThingWithDatetimeGSI(m map[string]*dynamodb.AttributeValue, out *models.ThingWithDatetimeGSI) error {
+func decodeThingWithDatetimeGSI(m map[string]types.AttributeValue, out *models.ThingWithDatetimeGSI) error {
 	var ddbThingWithDatetimeGSI ddbThingWithDatetimeGSI
-	if err := dynamodbattribute.UnmarshalMap(m, &ddbThingWithDatetimeGSI); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingWithDatetimeGSI, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingWithDatetimeGSI.ThingWithDatetimeGSI
@@ -392,7 +420,7 @@ func decodeThingWithDatetimeGSI(m map[string]*dynamodb.AttributeValue, out *mode
 }
 
 // decodeThingWithDatetimeGSIs translates a list of ThingWithDatetimeGSIs stored in DynamoDB to a slice of ThingWithDatetimeGSI structs.
-func decodeThingWithDatetimeGSIs(ms []map[string]*dynamodb.AttributeValue) ([]models.ThingWithDatetimeGSI, error) {
+func decodeThingWithDatetimeGSIs(ms []map[string]types.AttributeValue) ([]models.ThingWithDatetimeGSI, error) {
 	thingWithDatetimeGSIs := make([]models.ThingWithDatetimeGSI, len(ms))
 	for i, m := range ms {
 		var thingWithDatetimeGSI models.ThingWithDatetimeGSI

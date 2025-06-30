@@ -2,23 +2,25 @@ package dynamodb
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/Clever/wag/samples/gen-go-db/models/v9"
 	"github.com/Clever/wag/samples/v9/gen-go-db/server/db"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/go-openapi/strfmt"
 )
 
 var _ = strfmt.DateTime{}
+var _ = errors.New("")
+var _ = []types.AttributeValue{}
 
 // ThingAllowingBatchWritesTable represents the user-configurable properties of the ThingAllowingBatchWrites table.
 type ThingAllowingBatchWritesTable struct {
-	DynamoDBAPI        dynamodbiface.DynamoDBAPI
+	DynamoDBAPI        *dynamodb.Client
 	Prefix             string
 	TableName          string
 	ReadCapacityUnits  int64
@@ -37,28 +39,28 @@ type ddbThingAllowingBatchWrites struct {
 }
 
 func (t ThingAllowingBatchWritesTable) create(ctx context.Context) error {
-	if _, err := t.DynamoDBAPI.CreateTableWithContext(ctx, &dynamodb.CreateTableInput{
-		AttributeDefinitions: []*dynamodb.AttributeDefinition{
+	if _, err := t.DynamoDBAPI.CreateTable(ctx, &dynamodb.CreateTableInput{
+		AttributeDefinitions: []types.AttributeDefinition{
 			{
 				AttributeName: aws.String("name"),
-				AttributeType: aws.String("S"),
+				AttributeType: types.ScalarAttributeType("S"),
 			},
 			{
 				AttributeName: aws.String("version"),
-				AttributeType: aws.String("N"),
+				AttributeType: types.ScalarAttributeType("N"),
 			},
 		},
-		KeySchema: []*dynamodb.KeySchemaElement{
+		KeySchema: []types.KeySchemaElement{
 			{
 				AttributeName: aws.String("name"),
-				KeyType:       aws.String(dynamodb.KeyTypeHash),
+				KeyType:       types.KeyTypeHash,
 			},
 			{
 				AttributeName: aws.String("version"),
-				KeyType:       aws.String(dynamodb.KeyTypeRange),
+				KeyType:       types.KeyTypeRange,
 			},
 		},
-		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+		ProvisionedThroughput: &types.ProvisionedThroughput{
 			ReadCapacityUnits:  aws.Int64(t.ReadCapacityUnits),
 			WriteCapacityUnits: aws.Int64(t.WriteCapacityUnits),
 		},
@@ -74,25 +76,34 @@ func (t ThingAllowingBatchWritesTable) saveThingAllowingBatchWrites(ctx context.
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.PutItemWithContext(ctx, &dynamodb.PutItemInput{
+
+	_, err = t.DynamoDBAPI.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(t.TableName),
 		Item:      data,
-		ExpressionAttributeNames: map[string]*string{
-			"#NAME":    aws.String("name"),
-			"#VERSION": aws.String("version"),
+		ExpressionAttributeNames: map[string]string{
+			"#NAME":    "name",
+			"#VERSION": "version",
 		},
-		ConditionExpression: aws.String("attribute_not_exists(#NAME) AND attribute_not_exists(#VERSION)"),
+		ConditionExpression: aws.String(
+			"" +
+				"" +
+				"attribute_not_exists(#NAME)" +
+				"" +
+				" AND " +
+				"attribute_not_exists(#VERSION)" +
+				"",
+		),
 	})
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeConditionalCheckFailedException:
-				return db.ErrThingAllowingBatchWritesAlreadyExists{
-					Name:    m.Name,
-					Version: m.Version,
-				}
-			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.TableName)
+		var resourceNotFoundErr *types.ResourceNotFoundException
+		var conditionalCheckFailedErr *types.ConditionalCheckFailedException
+		if errors.As(err, &resourceNotFoundErr) {
+			return fmt.Errorf("table or index not found: %s", t.TableName)
+		}
+		if errors.As(err, &conditionalCheckFailedErr) {
+			return db.ErrThingAllowingBatchWritesAlreadyExists{
+				Name:    m.Name,
+				Version: m.Version,
 			}
 		}
 		return err
@@ -108,22 +119,22 @@ func (t ThingAllowingBatchWritesTable) saveArrayOfThingAllowingBatchWrites(ctx c
 		return nil
 	}
 
-	batch := make([]*dynamodb.WriteRequest, len(ms))
+	batch := make([]types.WriteRequest, len(ms))
 	for i := range ms {
 		data, err := encodeThingAllowingBatchWrites(ms[i])
 		if err != nil {
 			return err
 		}
-		batch[i] = &dynamodb.WriteRequest{
-			PutRequest: &dynamodb.PutRequest{
+		batch[i] = types.WriteRequest{
+			PutRequest: &types.PutRequest{
 				Item: data,
 			},
 		}
 	}
 	tname := t.TableName
 	for {
-		if out, err := t.DynamoDBAPI.BatchWriteItemWithContext(ctx, &dynamodb.BatchWriteItemInput{
-			RequestItems: map[string][]*dynamodb.WriteRequest{
+		if out, err := t.DynamoDBAPI.BatchWriteItem(ctx, &dynamodb.BatchWriteItemInput{
+			RequestItems: map[string][]types.WriteRequest{
 				tname: batch,
 			},
 		}); err != nil {
@@ -146,9 +157,9 @@ func (t ThingAllowingBatchWritesTable) deleteArrayOfThingAllowingBatchWrites(ctx
 		return nil
 	}
 
-	batch := make([]*dynamodb.WriteRequest, len(ms))
+	batch := make([]types.WriteRequest, len(ms))
 	for i := range ms {
-		key, err := dynamodbattribute.MarshalMap(ddbThingAllowingBatchWritesPrimaryKey{
+		key, err := attributevalue.MarshalMap(ddbThingAllowingBatchWritesPrimaryKey{
 			Name:    ms[i].Name,
 			Version: ms[i].Version,
 		})
@@ -156,16 +167,16 @@ func (t ThingAllowingBatchWritesTable) deleteArrayOfThingAllowingBatchWrites(ctx
 			return err
 		}
 
-		batch[i] = &dynamodb.WriteRequest{
-			DeleteRequest: &dynamodb.DeleteRequest{
+		batch[i] = types.WriteRequest{
+			DeleteRequest: &types.DeleteRequest{
 				Key: key,
 			},
 		}
 	}
 	tname := t.TableName
 	for {
-		if out, err := t.DynamoDBAPI.BatchWriteItemWithContext(ctx, &dynamodb.BatchWriteItemInput{
-			RequestItems: map[string][]*dynamodb.WriteRequest{
+		if out, err := t.DynamoDBAPI.BatchWriteItem(ctx, &dynamodb.BatchWriteItemInput{
+			RequestItems: map[string][]types.WriteRequest{
 				tname: batch,
 			},
 		}); err != nil {
@@ -180,24 +191,22 @@ func (t ThingAllowingBatchWritesTable) deleteArrayOfThingAllowingBatchWrites(ctx
 }
 
 func (t ThingAllowingBatchWritesTable) getThingAllowingBatchWrites(ctx context.Context, name string, version int64) (*models.ThingAllowingBatchWrites, error) {
-	key, err := dynamodbattribute.MarshalMap(ddbThingAllowingBatchWritesPrimaryKey{
+	key, err := attributevalue.MarshalMap(ddbThingAllowingBatchWritesPrimaryKey{
 		Name:    name,
 		Version: version,
 	})
 	if err != nil {
 		return nil, err
 	}
-	res, err := t.DynamoDBAPI.GetItemWithContext(ctx, &dynamodb.GetItemInput{
+	res, err := t.DynamoDBAPI.GetItem(ctx, &dynamodb.GetItemInput{
 		Key:            key,
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(true),
 	})
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeResourceNotFoundException:
-				return nil, fmt.Errorf("table or index not found: %s", t.TableName)
-			}
+		var resourceNotFoundErr *types.ResourceNotFoundException
+		if errors.As(err, &resourceNotFoundErr) {
+			return nil, fmt.Errorf("table or index not found: %s", t.TableName)
 		}
 		return nil, err
 	}
@@ -221,50 +230,55 @@ func (t ThingAllowingBatchWritesTable) scanThingAllowingBatchWritess(ctx context
 	scanInput := &dynamodb.ScanInput{
 		TableName:      aws.String(t.TableName),
 		ConsistentRead: aws.Bool(!input.DisableConsistentRead),
-		Limit:          input.Limit,
+	}
+	if input.Limit != nil {
+		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := dynamodbattribute.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
 		// must provide only the fields constituting the index
-		scanInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+		scanInput.ExclusiveStartKey = map[string]types.AttributeValue{
 			"name":    exclusiveStartKey["name"],
 			"version": exclusiveStartKey["version"],
 		}
 	}
 	totalRecordsProcessed := int64(0)
-	var innerErr error
-	err := t.DynamoDBAPI.ScanPagesWithContext(ctx, scanInput, func(out *dynamodb.ScanOutput, lastPage bool) bool {
+
+	paginator := dynamodb.NewScanPaginator(t.DynamoDBAPI, scanInput)
+	for paginator.HasMorePages() {
+		out, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting next page: %s", err.Error())
+		}
+
 		items, err := decodeThingAllowingBatchWritess(out.Items)
 		if err != nil {
-			innerErr = fmt.Errorf("error decoding %s", err.Error())
-			return false
+			return fmt.Errorf("error decoding items: %s", err.Error())
 		}
+
 		for i := range items {
 			if input.Limiter != nil {
 				if err := input.Limiter.Wait(ctx); err != nil {
-					innerErr = err
-					return false
+					return err
 				}
 			}
-			isLastModel := lastPage && i == len(items)-1
+
+			isLastModel := !paginator.HasMorePages() && i == len(items)-1
 			if shouldContinue := fn(&items[i], isLastModel); !shouldContinue {
-				return false
+				return nil
 			}
+
 			totalRecordsProcessed++
-			// if the Limit of records have been passed to fn, don't pass anymore records.
 			if input.Limit != nil && totalRecordsProcessed == *input.Limit {
-				return false
+				return nil
 			}
 		}
-		return true
-	})
-	if innerErr != nil {
-		return innerErr
 	}
-	return err
+
+	return nil
 }
 
 func (t ThingAllowingBatchWritesTable) getThingAllowingBatchWritessByNameAndVersion(ctx context.Context, input db.GetThingAllowingBatchWritessByNameAndVersionInput, fn func(m *models.ThingAllowingBatchWrites, lastThingAllowingBatchWrites bool) bool) error {
@@ -276,27 +290,28 @@ func (t ThingAllowingBatchWritesTable) getThingAllowingBatchWritessByNameAndVers
 	}
 	queryInput := &dynamodb.QueryInput{
 		TableName: aws.String(t.TableName),
-		ExpressionAttributeNames: map[string]*string{
-			"#NAME": aws.String("name"),
+		ExpressionAttributeNames: map[string]string{
+			"#NAME": "name",
 		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":name": &dynamodb.AttributeValue{
-				S: aws.String(input.Name),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":name": &types.AttributeValueMemberS{
+				Value: input.Name,
 			},
 		},
 		ScanIndexForward: aws.Bool(!input.Descending),
 		ConsistentRead:   aws.Bool(!input.DisableConsistentRead),
 	}
 	if input.Limit != nil {
-		queryInput.Limit = input.Limit
+		queryInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.VersionStartingAt == nil {
 		queryInput.KeyConditionExpression = aws.String("#NAME = :name")
 	} else {
-		queryInput.ExpressionAttributeNames["#VERSION"] = aws.String("version")
-		queryInput.ExpressionAttributeValues[":version"] = &dynamodb.AttributeValue{
-			N: aws.String(fmt.Sprintf("%d", *input.VersionStartingAt)),
+		queryInput.ExpressionAttributeNames["#VERSION"] = "version"
+		queryInput.ExpressionAttributeValues[":version"] = &types.AttributeValueMemberN{
+			Value: fmt.Sprintf("%d", *input.VersionStartingAt),
 		}
+
 		if input.Descending {
 			queryInput.KeyConditionExpression = aws.String("#NAME = :name AND #VERSION <= :version")
 		} else {
@@ -304,12 +319,13 @@ func (t ThingAllowingBatchWritesTable) getThingAllowingBatchWritessByNameAndVers
 		}
 	}
 	if input.StartingAfter != nil {
-		queryInput.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
-			"version": &dynamodb.AttributeValue{
-				N: aws.String(fmt.Sprintf("%d", input.StartingAfter.Version)),
+		queryInput.ExclusiveStartKey = map[string]types.AttributeValue{
+			"version": &types.AttributeValueMemberN{
+				Value: fmt.Sprintf("%d", input.StartingAfter.Version),
 			},
-			"name": &dynamodb.AttributeValue{
-				S: aws.String(input.StartingAfter.Name),
+
+			"name": &types.AttributeValueMemberS{
+				Value: input.StartingAfter.Name,
 			},
 		}
 	}
@@ -342,16 +358,21 @@ func (t ThingAllowingBatchWritesTable) getThingAllowingBatchWritessByNameAndVers
 		return true
 	}
 
-	err := t.DynamoDBAPI.QueryPagesWithContext(ctx, queryInput, pageFn)
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeResourceNotFoundException:
+	paginator := dynamodb.NewQueryPaginator(t.DynamoDBAPI, queryInput)
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(ctx)
+		if err != nil {
+			var resourceNotFoundErr *types.ResourceNotFoundException
+			if errors.As(err, &resourceNotFoundErr) {
 				return fmt.Errorf("table or index not found: %s", t.TableName)
 			}
+			return err
 		}
-		return err
+		if !pageFn(output, !paginator.HasMorePages()) {
+			break
+		}
 	}
+
 	if pageFnErr != nil {
 		return pageFnErr
 	}
@@ -360,23 +381,22 @@ func (t ThingAllowingBatchWritesTable) getThingAllowingBatchWritessByNameAndVers
 }
 
 func (t ThingAllowingBatchWritesTable) deleteThingAllowingBatchWrites(ctx context.Context, name string, version int64) error {
-	key, err := dynamodbattribute.MarshalMap(ddbThingAllowingBatchWritesPrimaryKey{
+
+	key, err := attributevalue.MarshalMap(ddbThingAllowingBatchWritesPrimaryKey{
 		Name:    name,
 		Version: version,
 	})
 	if err != nil {
 		return err
 	}
-	_, err = t.DynamoDBAPI.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
+	_, err = t.DynamoDBAPI.DeleteItem(ctx, &dynamodb.DeleteItemInput{
 		Key:       key,
 		TableName: aws.String(t.TableName),
 	})
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("table or index not found: %s", t.TableName)
-			}
+		var resourceNotFoundErr *types.ResourceNotFoundException
+		if errors.As(err, &resourceNotFoundErr) {
+			return fmt.Errorf("table or index not found: %s", t.TableName)
 		}
 		return err
 	}
@@ -385,16 +405,23 @@ func (t ThingAllowingBatchWritesTable) deleteThingAllowingBatchWrites(ctx contex
 }
 
 // encodeThingAllowingBatchWrites encodes a ThingAllowingBatchWrites as a DynamoDB map of attribute values.
-func encodeThingAllowingBatchWrites(m models.ThingAllowingBatchWrites) (map[string]*dynamodb.AttributeValue, error) {
-	return dynamodbattribute.MarshalMap(ddbThingAllowingBatchWrites{
-		ThingAllowingBatchWrites: m,
+func encodeThingAllowingBatchWrites(m models.ThingAllowingBatchWrites) (map[string]types.AttributeValue, error) {
+	// no composite attributes, marshal the model with the json tag
+	val, err := attributevalue.MarshalMapWithOptions(m, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
+	if err != nil {
+		return nil, err
+	}
+	return val, nil
 }
 
 // decodeThingAllowingBatchWrites translates a ThingAllowingBatchWrites stored in DynamoDB to a ThingAllowingBatchWrites struct.
-func decodeThingAllowingBatchWrites(m map[string]*dynamodb.AttributeValue, out *models.ThingAllowingBatchWrites) error {
+func decodeThingAllowingBatchWrites(m map[string]types.AttributeValue, out *models.ThingAllowingBatchWrites) error {
 	var ddbThingAllowingBatchWrites ddbThingAllowingBatchWrites
-	if err := dynamodbattribute.UnmarshalMap(m, &ddbThingAllowingBatchWrites); err != nil {
+	if err := attributevalue.UnmarshalMapWithOptions(m, &ddbThingAllowingBatchWrites, func(o *attributevalue.DecoderOptions) {
+		o.TagKey = "json"
+	}); err != nil {
 		return err
 	}
 	*out = ddbThingAllowingBatchWrites.ThingAllowingBatchWrites
@@ -402,7 +429,7 @@ func decodeThingAllowingBatchWrites(m map[string]*dynamodb.AttributeValue, out *
 }
 
 // decodeThingAllowingBatchWritess translates a list of ThingAllowingBatchWritess stored in DynamoDB to a slice of ThingAllowingBatchWrites structs.
-func decodeThingAllowingBatchWritess(ms []map[string]*dynamodb.AttributeValue) ([]models.ThingAllowingBatchWrites, error) {
+func decodeThingAllowingBatchWritess(ms []map[string]types.AttributeValue) ([]models.ThingAllowingBatchWrites, error) {
 	thingAllowingBatchWritess := make([]models.ThingAllowingBatchWrites, len(ms))
 	for i, m := range ms {
 		var thingAllowingBatchWrites models.ThingAllowingBatchWrites
