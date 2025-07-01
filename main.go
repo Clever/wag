@@ -145,7 +145,6 @@ func main() {
 			conf.goAbsolutePackagePath,
 			*conf.outputPath,
 			swaggerSpec,
-			*conf.subrouter,
 		); err != nil {
 			log.Fatal(err.Error())
 		}
@@ -214,12 +213,11 @@ func generateDynamo(dynamoPath, goPackageName, basePath, relativeDynamoPath, Out
 func generateGoClient(
 	goPackageName, basePath, outputPath string,
 	swaggerSpec spec.Swagger,
-	subrouter bool,
 ) error {
 	if err := prepareDir(filepath.Join(basePath, "client")); err != nil {
 		return err
 	}
-	if err := goclient.Generate(goPackageName, basePath, outputPath, swaggerSpec, subrouter); err != nil {
+	if err := goclient.Generate(goPackageName, basePath, outputPath, swaggerSpec); err != nil {
 		return fmt.Errorf("Failed generating go client %s", err)
 	}
 	doerGenerator := swagger.Generator{BasePath: basePath}

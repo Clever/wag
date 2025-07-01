@@ -15,8 +15,8 @@ import (
 )
 
 // Generate generates a client
-func Generate(packageName, basePath, outputPath string, s spec.Swagger, isSubrouter bool) error {
-	if err := generateClient(packageName, basePath, outputPath, s, isSubrouter); err != nil {
+func Generate(packageName, basePath, outputPath string, s spec.Swagger) error {
+	if err := generateClient(packageName, basePath, outputPath, s); err != nil {
 		return err
 	}
 	return generateInterface(packageName, basePath, outputPath, &s, s.Info.InfoProps.Title, s.Paths)
@@ -31,29 +31,34 @@ type clientCodeTemplate struct {
 	Operations           []string
 	Version              string
 	VersionSuffix        string
+	Subrouters           []swagger.Subrouter
 }
 
 var clientCodeTemplateStr = `
 package client
 
 import (
-		"context"
-		"strings"
-		"bytes"
-		"net/http"
-		"strconv"
-		"encoding/json"
-		"strconv"
-		"time"
-		"fmt"
-		"io/ioutil"
-		"crypto/md5"
+	"context"
+	"strings"
+	"bytes"
+	"net/http"
+	"strconv"
+	"encoding/json"
+	"strconv"
+	"time"
+	"fmt"
+	"io/ioutil"
+	"crypto/md5"
 
-		"{{.ModuleName}}{{.OutputPath}}/models{{.VersionSuffix}}"
-
-		discovery "github.com/Clever/discovery-go"
-		wcl "github.com/Clever/wag/logging/wagclientlogger"
-
+	"{{.ModuleName}}{{.OutputPath}}/models{{.VersionSuffix}}"
+{{- if .Subrouters }}
+{{ range $i, $val := .Subrouters -}}
+	{{$val.Key}}client "{{$.ModuleName}}/routers/{{$val.Key}}/gen-go/client{{$.VersionSuffix}}"
+	{{$val.Key}}models "{{$.ModuleName}}/routers/{{$val.Key}}/gen-go/models{{$.VersionSuffix}}"
+{{ end }}
+{{ end }}
+	discovery "github.com/Clever/discovery-go"
+	wcl "github.com/Clever/wag/logging/wagclientlogger"
 )
 
 var _ = json.Marshal
@@ -76,6 +81,13 @@ type WagClient struct {
 	retryDoer *retryDoer
 	defaultTimeout time.Duration
 	logger      wcl.WagClientLogger
+{{- if .Subrouters }}
+
+	// Subrouters
+{{ range $i, $val := .Subrouters -}}
+	{{camelcase $val.Key}}Client {{$val.Key}}client.Client
+{{ end }}
+{{ end -}}
 }
 
 var _ Client = (*WagClient)(nil)
@@ -85,7 +97,6 @@ var _ Client = (*WagClient)(nil)
 // provide an instrumented transport using the wag clientconfig module. If no tracing is required, pass nil to use
 // the default transport.
 func New(basePath string, logger wcl.WagClientLogger, transport *http.RoundTripper) *WagClient {
-
 	t := http.DefaultTransport
 	if transport != nil {
 		t = *transport
@@ -106,6 +117,9 @@ func New(basePath string, logger wcl.WagClientLogger, transport *http.RoundTripp
 		retryDoer: &retry,
 		defaultTimeout: 5 * time.Second,
 		logger: logger,
+{{ range $i, $val := .Subrouters -}}
+		{{camelcase $val.Key}}Client: {{$val.Key}}client.New(basePath, logger, transport),
+{{ end }}
 	}
 	return client
 }
@@ -151,9 +165,14 @@ func shortHash(s string) string {
 }
 `
 
-func generateClient(packageName, basePath, outputPath string, s spec.Swagger, isSubrouter bool) error {
+func generateClient(packageName, basePath, outputPath string, s spec.Swagger) error {
 	outputPath = strings.TrimPrefix(outputPath, ".")
 	moduleName, versionSuffix := utils.ExtractModuleNameAndVersionSuffix(packageName, outputPath)
+	subrouters, err := swagger.ParseSubrouters(s)
+	if err != nil {
+		return err
+	}
+
 	codeTemplate := clientCodeTemplate{
 		PackageName:          packageName,
 		OutputPath:           outputPath,
@@ -162,6 +181,7 @@ func generateClient(packageName, basePath, outputPath string, s spec.Swagger, is
 		FormattedServiceName: strings.ToUpper(strings.Replace(s.Info.InfoProps.Title, "-", "_", -1)),
 		Version:              s.Info.InfoProps.Version,
 		VersionSuffix:        versionSuffix,
+		Subrouters:           subrouters,
 	}
 
 	for _, path := range swagger.SortedPathItemKeys(s.Paths.Paths) {
@@ -180,6 +200,29 @@ func generateClient(packageName, basePath, outputPath string, s spec.Swagger, is
 		}
 	}
 
+	for _, router := range subrouters {
+		routerSpec, err := swagger.LoadSubrouterSpec(router)
+		if err != nil {
+			return err
+		}
+
+		for _, path := range swagger.SortedPathItemKeys(routerSpec.Paths.Paths) {
+			pathItem := routerSpec.Paths.Paths[path]
+			pathItemOps := swagger.PathItemOperations(pathItem)
+			for _, method := range swagger.SortedOperationsKeys(pathItemOps) {
+				op := pathItemOps[method]
+				if op.Deprecated {
+					continue
+				}
+				code, err := subrouterOperationCode(routerSpec, op, router)
+				if err != nil {
+					return err
+				}
+				codeTemplate.Operations = append(codeTemplate.Operations, code)
+			}
+		}
+	}
+
 	clientCode, err := templates.WriteTemplate(clientCodeTemplateStr, codeTemplate)
 	if err != nil {
 		return err
@@ -192,11 +235,20 @@ func generateClient(packageName, basePath, outputPath string, s spec.Swagger, is
 		return err
 	}
 
-	return CreateModFile("client/go.mod", basePath, codeTemplate)
+	return CreateModFile("client/go.mod", basePath, codeTemplate, s)
 }
 
 // CreateModFile creates a go.mod file for the client module.
-func CreateModFile(path string, basePath string, codeTemplate clientCodeTemplate) error {
+func CreateModFile(
+	path, basePath string,
+	codeTemplate clientCodeTemplate,
+	s spec.Swagger,
+) error {
+	subrouters, err := swagger.ParseSubrouters(s)
+	if err != nil {
+		return err
+	}
+
 	absPath := basePath + "/" + path
 	f, err := os.Create(absPath)
 	if err != nil {
@@ -214,8 +266,35 @@ require (
 	github.com/Clever/wag/logging/wagclientlogger v0.0.0-20221024182247-2bf828ef51be
 	github.com/donovanhide/eventsource v0.0.0-20171031113327-3ed64d21fb0b
 )
+
 //Replace directives will work locally but mess up imports.
-replace ` + codeTemplate.ModuleName + codeTemplate.OutputPath + `/models` + codeTemplate.VersionSuffix + ` => ../models `
+`
+
+	if subrouters != nil {
+		replaceString := fmt.Sprintf(
+			`replace (
+	%s%s/models%s => ../models
+`,
+			codeTemplate.ModuleName,
+			codeTemplate.OutputPath,
+			codeTemplate.VersionSuffix,
+		)
+
+		for _, router := range subrouters {
+			replaceString += fmt.Sprintf(
+				"\t%s/routers/%s/gen-go/client => ../../routers/%s/gen-go/client\n",
+				codeTemplate.ModuleName,
+				router.Key,
+				router.Key,
+			)
+		}
+
+		replaceString += ")\n"
+		modFileString += replaceString
+	} else {
+		modFileString += `replace ` + codeTemplate.ModuleName + codeTemplate.OutputPath + `/models` + codeTemplate.VersionSuffix + ` => ../models
+`
+	}
 
 	_, err = f.WriteString(modFileString)
 	if err != nil {
@@ -241,12 +320,36 @@ func IsBinaryParam(param spec.Parameter, definitions map[string]spec.Schema) boo
 	return definitions[definitionName].Format == "binary"
 }
 
-func generateInterface(packageName, basePath, outputPath string, s *spec.Swagger, serviceName string, paths *spec.Paths) error {
+func generateInterface(
+	packageName, basePath, outputPath string,
+	s *spec.Swagger,
+	serviceName string,
+	paths *spec.Paths,
+) error {
 	outputPath = strings.TrimPrefix(outputPath, ".")
 	g := swagger.Generator{BasePath: basePath}
-	g.Print("package client\n\n")
+	subrouters, err := swagger.ParseSubrouters(*s)
+	if err != nil {
+		return err
+	}
+
 	moduleName, versionSuffix := utils.ExtractModuleNameAndVersionSuffix(packageName, outputPath)
-	g.Print(swagger.ImportStatements([]string{"context", moduleName + outputPath + "/models" + versionSuffix}))
+	imports := []string{"context", moduleName + outputPath + "/models" + versionSuffix}
+	for _, router := range subrouters {
+		imports = append(
+			imports,
+			fmt.Sprintf(
+				"%sclient \"%s/routers/%s/gen-go/client%s\"",
+				router.Key,
+				moduleName,
+				router.Key,
+				versionSuffix,
+			),
+		)
+	}
+
+	g.Print("package client\n\n")
+	g.Print(swagger.ImportStatements(imports))
 	g.Print("//go:generate mockgen -source=$GOFILE -destination=mock_client.go -package client --build_flags=--mod=mod -imports=models=" + moduleName + outputPath + "/models" + versionSuffix + "\n\n")
 
 	if err := generateClientInterface(s, &g, serviceName, paths); err != nil {
@@ -259,9 +362,23 @@ func generateInterface(packageName, basePath, outputPath string, s *spec.Swagger
 	return g.WriteFile("client/interface.go")
 }
 
-func generateClientInterface(s *spec.Swagger, g *swagger.Generator, serviceName string, paths *spec.Paths) error {
+func generateClientInterface(
+	s *spec.Swagger,
+	g *swagger.Generator,
+	serviceName string,
+	paths *spec.Paths,
+) error {
 	g.Printf("// Client defines the methods available to clients of the %s service.\n", serviceName)
 	g.Print("type Client interface {\n\n")
+
+	subrouters, err := swagger.ParseSubrouters(*s)
+	if err != nil {
+		return err
+	}
+
+	for _, router := range subrouters {
+		g.Printf("\t%sclient.Client\n", router.Key)
+	}
 
 	for _, pathKey := range swagger.SortedPathItemKeys(paths.Paths) {
 		path := paths.Paths[pathKey]
@@ -736,12 +853,13 @@ func iterCode(s *spec.Swagger, op *spec.Operation, basePath, methodPath, method 
 		resourceAccessString = resourceAccessString + "." + utils.CamelCase(pathComponent, true)
 	}
 
+	operationInput, _ := swagger.OperationInput(op)
 	return templates.WriteTemplate(
 		iterTmplStr,
 		iterTmpl{
 			OpID:                 op.ID,
 			CapOpID:              capOpID,
-			Input:                swagger.OperationInput(op),
+			Input:                operationInput,
 			BuildPathCode:        buildPathCode(s, op, basePath, methodPath),
 			BuildHeadersCode:     buildHeadersCode(s, op),
 			BuildBodyCode:        buildBodyCode(s, op, method),
