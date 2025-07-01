@@ -3,7 +3,9 @@ package swagger
 import (
 	"encoding/json"
 	"log"
+	"path/filepath"
 
+	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 )
 
@@ -33,4 +35,13 @@ func ParseSubrouters(s spec.Swagger) ([]Subrouter, error) {
 	}
 
 	return subrouterConfig, nil
+}
+
+func LoadSubrouterSpec(router Subrouter) (*spec.Swagger, error) {
+	doc, err := loads.Spec(filepath.Join("routers", router.Key, "swagger.yml"))
+	if err != nil {
+		return nil, err
+	}
+
+	return doc.Spec(), nil
 }
