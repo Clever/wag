@@ -25,6 +25,11 @@ func Generate(modulePath string, s spec.Swagger) error {
 		return errors.New("must provide 'x-npm-package' in the 'info' section of the swagger.yml")
 	}
 
+	subrouters, err := swagger.ParseSubrouters(s)
+	if err != nil {
+		return err
+	}
+
 	tmplInfo := clientCodeTemplate{
 		ClassName:   utils.CamelCase(s.Info.InfoProps.Title, true),
 		PackageName: pkgName,
@@ -41,11 +46,34 @@ func Generate(modulePath string, s spec.Swagger) error {
 			if op.Deprecated {
 				continue
 			}
-			methodCode, err := methodCode(s, op, method, path)
+			code, err := methodCode(s, op, method, path)
 			if err != nil {
 				return err
 			}
-			tmplInfo.Methods = append(tmplInfo.Methods, methodCode)
+			tmplInfo.Methods = append(tmplInfo.Methods, code)
+		}
+	}
+
+	for _, router := range subrouters {
+		routerSpec, err := swagger.LoadSubrouterSpec(router)
+		if err != nil {
+			return err
+		}
+
+		for _, path := range swagger.SortedPathItemKeys(routerSpec.Paths.Paths) {
+			pathItem := routerSpec.Paths.Paths[path]
+			pathItemOps := swagger.PathItemOperations(pathItem)
+			for _, method := range swagger.SortedOperationsKeys(pathItemOps) {
+				op := pathItemOps[method]
+				if op.Deprecated {
+					continue
+				}
+				code, err := methodCode(s, op, method, routerSpec.BasePath+path)
+				if err != nil {
+					return err
+				}
+				tmplInfo.Methods = append(tmplInfo.Methods, code)
+			}
 		}
 	}
 
@@ -193,7 +221,7 @@ function responseLog(logger, req, res, err) {
     "message": err || (res.statusMessage || ""),
     "status_code": res.statusCode || 0,
   };
-  
+
   if (err) {
 	if (logData.status_code <= 499){
 		logger.warnD("client-request-finished", logData);
@@ -273,7 +301,7 @@ class {{.ClassName}} {
    * @param {number} [options.circuit.errorPercentThreshold] - the threshold to place on the rolling error
    * rate. Once the error rate exceeds this percentage, the circuit opens.
    * Default: 90.
-   * @param {object} [options.asynclocalstore] a request scoped async store 
+   * @param {object} [options.asynclocalstore] a request scoped async store
    */
   constructor(options) {
     options = options || {};
@@ -314,7 +342,7 @@ class {{.ClassName}} {
 
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
     // hystrix implements a caching mechanism, we don't want this or we can't trust that clients
-    // are initialized with the values passed in. 
+    // are initialized with the values passed in.
     commandFactory.resetCache();
     circuitFactory.resetCache();
     metricsFactory.resetCache();
@@ -433,7 +461,7 @@ const methodTmplStr = `
       if (!options) {
         options = {};
       }
-  
+
       const optionsBaggage = options.baggage || new Map();
 
       const storeContext = this.asynclocalstore?.get("context") || new Map();
@@ -443,10 +471,10 @@ const methodTmplStr = `
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
-      
+
       // Convert combinedContext into a string using parseForBaggage
       headers["baggage"] = parseForBaggage(combinedContext);
-      
+
       headers["Canonical-Resource"] = "{{.Operation}}";
       headers[versionHeader] = version;
       {{- range $param := .PathParams}}
@@ -1013,6 +1041,40 @@ func generateTypescriptTypes(s spec.Swagger) (string, error) {
 			err = addInputType(&includedTypeMap, op)
 			if err != nil {
 				return "", err
+			}
+		}
+	}
+
+	subrouters, err := swagger.ParseSubrouters(s)
+	if err != nil {
+		return "", err
+	}
+
+	for _, router := range subrouters {
+		routerSpec, err := swagger.LoadSubrouterSpec(router)
+		if err != nil {
+			return "", err
+		}
+
+		for _, path := range swagger.SortedPathItemKeys(routerSpec.Paths.Paths) {
+			pathItem := routerSpec.Paths.Paths[path]
+			pathItemOps := swagger.PathItemOperations(pathItem)
+			for _, method := range swagger.SortedOperationsKeys(pathItemOps) {
+				op := pathItemOps[method]
+				if op.Deprecated {
+					continue
+				}
+
+				code, err := methodDecl(s, op, method, routerSpec.BasePath+path)
+				if err != nil {
+					return "", err
+				}
+				tt.MethodDecls = append(tt.MethodDecls, code)
+
+				err = addInputType(&includedTypeMap, op)
+				if err != nil {
+					return "", err
+				}
 			}
 		}
 	}
