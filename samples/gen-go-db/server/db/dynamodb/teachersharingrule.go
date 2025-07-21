@@ -122,9 +122,11 @@ func (t TeacherSharingRuleTable) saveTeacherSharingRule(ctx context.Context, m m
 }
 
 func (t TeacherSharingRuleTable) getTeacherSharingRule(ctx context.Context, teacher string, school string, app string) (*models.TeacherSharingRule, error) {
-	key, err := attributevalue.MarshalMap(ddbTeacherSharingRulePrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbTeacherSharingRulePrimaryKey{
 		Teacher:   teacher,
 		SchoolApp: fmt.Sprintf("%s_%s", school, app),
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -163,7 +165,9 @@ func (t TeacherSharingRuleTable) scanTeacherSharingRules(ctx context.Context, in
 		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -330,9 +334,11 @@ func (t TeacherSharingRuleTable) getTeacherSharingRulesByTeacherAndSchoolApp(ctx
 
 func (t TeacherSharingRuleTable) deleteTeacherSharingRule(ctx context.Context, teacher string, school string, app string) error {
 
-	key, err := attributevalue.MarshalMap(ddbTeacherSharingRulePrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbTeacherSharingRulePrimaryKey{
 		Teacher:   teacher,
 		SchoolApp: fmt.Sprintf("%s_%s", school, app),
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return err
@@ -462,7 +468,9 @@ func (t TeacherSharingRuleTable) scanTeacherSharingRulesByDistrictAndSchoolTeach
 	}
 	scanInput.IndexName = aws.String("district_school_teacher_app")
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -535,9 +543,11 @@ func encodeTeacherSharingRule(m models.TeacherSharingRule) (map[string]types.Att
 		return nil, fmt.Errorf("teacher cannot contain '_': %s", m.Teacher)
 	}
 	// add in composite attributes
-	primaryKey, err := attributevalue.MarshalMap(ddbTeacherSharingRulePrimaryKey{
+	primaryKey, err := attributevalue.MarshalMapWithOptions(ddbTeacherSharingRulePrimaryKey{
 		Teacher:   m.Teacher,
 		SchoolApp: fmt.Sprintf("%s_%s", m.School, m.App),
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -545,9 +555,11 @@ func encodeTeacherSharingRule(m models.TeacherSharingRule) (map[string]types.Att
 	for k, v := range primaryKey {
 		val[k] = v
 	}
-	districtSchoolTeacherApp, err := attributevalue.MarshalMap(ddbTeacherSharingRuleGSIDistrictSchoolTeacherApp{
+	districtSchoolTeacherApp, err := attributevalue.MarshalMapWithOptions(ddbTeacherSharingRuleGSIDistrictSchoolTeacherApp{
 		District:         m.District,
 		SchoolTeacherApp: fmt.Sprintf("%s_%s_%s", m.School, m.Teacher, m.App),
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err

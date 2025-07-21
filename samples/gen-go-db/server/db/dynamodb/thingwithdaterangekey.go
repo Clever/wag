@@ -112,9 +112,11 @@ func (t ThingWithDateRangeKeyTable) saveThingWithDateRangeKey(ctx context.Contex
 }
 
 func (t ThingWithDateRangeKeyTable) getThingWithDateRangeKey(ctx context.Context, id string, date strfmt.Date) (*models.ThingWithDateRangeKey, error) {
-	key, err := attributevalue.MarshalMap(ddbThingWithDateRangeKeyPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingWithDateRangeKeyPrimaryKey{
 		ID:   id,
 		Date: date,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -156,7 +158,9 @@ func (t ThingWithDateRangeKeyTable) scanThingWithDateRangeKeys(ctx context.Conte
 		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -303,9 +307,11 @@ func (t ThingWithDateRangeKeyTable) getThingWithDateRangeKeysByIDAndDate(ctx con
 
 func (t ThingWithDateRangeKeyTable) deleteThingWithDateRangeKey(ctx context.Context, id string, date strfmt.Date) error {
 
-	key, err := attributevalue.MarshalMap(ddbThingWithDateRangeKeyPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingWithDateRangeKeyPrimaryKey{
 		ID:   id,
 		Date: date,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return err

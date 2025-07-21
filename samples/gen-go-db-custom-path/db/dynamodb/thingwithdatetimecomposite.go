@@ -86,9 +86,11 @@ func (t ThingWithDateTimeCompositeTable) saveThingWithDateTimeComposite(ctx cont
 }
 
 func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeComposite(ctx context.Context, typeVar string, id string, created strfmt.DateTime, resource string) (*models.ThingWithDateTimeComposite, error) {
-	key, err := attributevalue.MarshalMap(ddbThingWithDateTimeCompositePrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingWithDateTimeCompositePrimaryKey{
 		TypeID:          fmt.Sprintf("%s|%s", typeVar, id),
 		CreatedResource: fmt.Sprintf("%s|%s", created, resource),
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -278,9 +280,11 @@ func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeCompositesByTypeIDA
 
 func (t ThingWithDateTimeCompositeTable) deleteThingWithDateTimeComposite(ctx context.Context, typeVar string, id string, created strfmt.DateTime, resource string) error {
 
-	key, err := attributevalue.MarshalMap(ddbThingWithDateTimeCompositePrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingWithDateTimeCompositePrimaryKey{
 		TypeID:          fmt.Sprintf("%s|%s", typeVar, id),
 		CreatedResource: fmt.Sprintf("%s|%s", created, resource),
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return err
@@ -316,9 +320,11 @@ func encodeThingWithDateTimeComposite(m models.ThingWithDateTimeComposite) (map[
 		return nil, fmt.Errorf("type cannot contain '|': %s", m.Type)
 	}
 	// add in composite attributes
-	primaryKey, err := attributevalue.MarshalMap(ddbThingWithDateTimeCompositePrimaryKey{
+	primaryKey, err := attributevalue.MarshalMapWithOptions(ddbThingWithDateTimeCompositePrimaryKey{
 		TypeID:          fmt.Sprintf("%s|%s", m.Type, m.ID),
 		CreatedResource: fmt.Sprintf("%s|%s", m.Created, m.Resource),
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err

@@ -160,9 +160,11 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) deleteArrayOfThing
 
 	batch := make([]types.WriteRequest, len(ms))
 	for i := range ms {
-		key, err := attributevalue.MarshalMap(ddbThingAllowingBatchWritesWithCompositeAttributesPrimaryKey{
+		key, err := attributevalue.MarshalMapWithOptions(ddbThingAllowingBatchWritesWithCompositeAttributesPrimaryKey{
 			NameID: fmt.Sprintf("%s@%s", *ms[i].Name, *ms[i].ID),
 			Date:   *ms[i].Date,
+		}, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
 		})
 		if err != nil {
 			return err
@@ -192,9 +194,11 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) deleteArrayOfThing
 }
 
 func (t ThingAllowingBatchWritesWithCompositeAttributesTable) getThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name string, id string, date strfmt.DateTime) (*models.ThingAllowingBatchWritesWithCompositeAttributes, error) {
-	key, err := attributevalue.MarshalMap(ddbThingAllowingBatchWritesWithCompositeAttributesPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingAllowingBatchWritesWithCompositeAttributesPrimaryKey{
 		NameID: fmt.Sprintf("%s@%s", name, id),
 		Date:   date,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -237,7 +241,9 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) scanThingAllowingB
 		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -389,9 +395,11 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) getThingAllowingBa
 
 func (t ThingAllowingBatchWritesWithCompositeAttributesTable) deleteThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name string, id string, date strfmt.DateTime) error {
 
-	key, err := attributevalue.MarshalMap(ddbThingAllowingBatchWritesWithCompositeAttributesPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingAllowingBatchWritesWithCompositeAttributesPrimaryKey{
 		NameID: fmt.Sprintf("%s@%s", name, id),
 		Date:   date,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return err
@@ -428,9 +436,11 @@ func encodeThingAllowingBatchWritesWithCompositeAttributes(m models.ThingAllowin
 		return nil, fmt.Errorf("name cannot contain '@': %s", *m.Name)
 	}
 	// add in composite attributes
-	primaryKey, err := attributevalue.MarshalMap(ddbThingAllowingBatchWritesWithCompositeAttributesPrimaryKey{
+	primaryKey, err := attributevalue.MarshalMapWithOptions(ddbThingAllowingBatchWritesWithCompositeAttributesPrimaryKey{
 		NameID: fmt.Sprintf("%s@%s", *m.Name, *m.ID),
 		Date:   *m.Date,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err

@@ -118,9 +118,11 @@ func (t ThingWithMatchingKeysTable) saveThingWithMatchingKeys(ctx context.Contex
 }
 
 func (t ThingWithMatchingKeysTable) getThingWithMatchingKeys(ctx context.Context, bear string, assocType string, assocID string) (*models.ThingWithMatchingKeys, error) {
-	key, err := attributevalue.MarshalMap(ddbThingWithMatchingKeysPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingWithMatchingKeysPrimaryKey{
 		Bear:        bear,
 		AssocTypeID: fmt.Sprintf("%s^%s", assocType, assocID),
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -159,7 +161,9 @@ func (t ThingWithMatchingKeysTable) scanThingWithMatchingKeyss(ctx context.Conte
 		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -326,9 +330,11 @@ func (t ThingWithMatchingKeysTable) getThingWithMatchingKeyssByBearAndAssocTypeI
 
 func (t ThingWithMatchingKeysTable) deleteThingWithMatchingKeys(ctx context.Context, bear string, assocType string, assocID string) error {
 
-	key, err := attributevalue.MarshalMap(ddbThingWithMatchingKeysPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingWithMatchingKeysPrimaryKey{
 		Bear:        bear,
 		AssocTypeID: fmt.Sprintf("%s^%s", assocType, assocID),
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return err
@@ -458,7 +464,9 @@ func (t ThingWithMatchingKeysTable) scanThingWithMatchingKeyssByAssocTypeIDAndCr
 	}
 	scanInput.IndexName = aws.String("byAssoc")
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -530,9 +538,11 @@ func encodeThingWithMatchingKeys(m models.ThingWithMatchingKeys) (map[string]typ
 		return nil, fmt.Errorf("bear cannot contain '^': %s", m.Bear)
 	}
 	// add in composite attributes
-	primaryKey, err := attributevalue.MarshalMap(ddbThingWithMatchingKeysPrimaryKey{
+	primaryKey, err := attributevalue.MarshalMapWithOptions(ddbThingWithMatchingKeysPrimaryKey{
 		Bear:        m.Bear,
 		AssocTypeID: fmt.Sprintf("%s^%s", m.AssocType, m.AssocID),
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -540,9 +550,11 @@ func encodeThingWithMatchingKeys(m models.ThingWithMatchingKeys) (map[string]typ
 	for k, v := range primaryKey {
 		val[k] = v
 	}
-	byAssoc, err := attributevalue.MarshalMap(ddbThingWithMatchingKeysGSIByAssoc{
+	byAssoc, err := attributevalue.MarshalMapWithOptions(ddbThingWithMatchingKeysGSIByAssoc{
 		AssocTypeID: fmt.Sprintf("%s^%s", m.AssocType, m.AssocID),
 		CreatedBear: fmt.Sprintf("%s^%s", m.Created, m.Bear),
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err

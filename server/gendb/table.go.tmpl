@@ -229,10 +229,12 @@ func (t {{ $modelName }}Table) deleteArrayOf{{ $modelName }}(ctx context.Context
 
 	batch := make([]types.WriteRequest, len(ms))
 	for i := range ms {
-		key, err := attributevalue.MarshalMap(ddb{{ $modelName }}PrimaryKey{
+		key, err := attributevalue.MarshalMapWithOptions(ddb{{ $modelName }}PrimaryKey{
 		{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
 			{{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValueFromArray $xdbConfig $pk.AttributeName "ms[i]"}}{{ else }}{{ if attributeIsPointer $xdbConfig $pk.AttributeName }}*{{ end }}ms[i].{{ pascalize $pk.AttributeName }}{{ end }},
 		{{- end }}
+		}, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
 		})
 		if err != nil {
 			return err
@@ -268,10 +270,12 @@ func (t {{ $modelName }}Table) get{{ $modelName }}(ctx context.Context,
   {{- varname $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
   {{- end -}}
 ) (*models.{{ $modelName }}, error) {
-	key, err := attributevalue.MarshalMap(ddb{{ $modelName }}PrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddb{{ $modelName }}PrimaryKey{
 		{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
 		{{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValue $xdbConfig $pk.AttributeName "" }}{{ else }}{{ varname $pk.AttributeName }}{{ end }},
 		{{- end }}
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -322,7 +326,9 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
   }
   if input.StartingAfter != nil {
   {{- if indexContainsNonCompositeAttribute $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
-    exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+    exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+      o.TagKey = "json"
+    })
     if err != nil {
       return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
     }
@@ -671,10 +677,12 @@ func (t {{ $modelName }}Table) delete{{ $modelName }}(ctx context.Context,
   {{- end -}}
 ) error {
   
-	key, err := attributevalue.MarshalMap(ddb{{ $modelName }}PrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddb{{ $modelName }}PrimaryKey{
 		{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
 		{{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValue $xdbConfig $pk.AttributeName "" }}{{ else }}{{ varname $pk.AttributeName }}{{ end }},
 		{{- end }}
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return err
@@ -1079,7 +1087,9 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}sBy{{ $computedIndexName }}(c
   if input.StartingAfter != nil {
   {{- $primaryAndSecondaryKeySchemas := unionKeySchemas $xdbConfig.DynamoDB.KeySchema $gsi.KeySchema }}
   {{- if indexContainsNonCompositeAttribute $xdbConfig $primaryAndSecondaryKeySchemas }}
-    exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+    exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+      o.TagKey = "json"
+    })
     if err != nil {
       return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
     }
@@ -1233,10 +1243,12 @@ func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]types.Attribu
         {{- end }}
   // add in composite attributes
         {{- if indexContainsCompositeAttribute $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
-  primaryKey, err := attributevalue.MarshalMap(ddb{{ $modelName }}PrimaryKey{
+  primaryKey, err := attributevalue.MarshalMapWithOptions(ddb{{ $modelName }}PrimaryKey{
     {{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
     {{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValue $xdbConfig $pk.AttributeName "m" }}{{ else }}{{ attributeToModelValue $xdbConfig $pk.AttributeName "m." }}{{ end }},
                 {{- end }}
+  }, func(o *attributevalue.EncoderOptions) {
+    o.TagKey = "json"
   })
   if err != nil {
     return nil, err
@@ -1247,10 +1259,12 @@ func encode{{ $modelName }}(m models.{{ $modelName }}) (map[string]types.Attribu
         {{- end }}
         {{- range $gsi := $xdbConfig.DynamoDB.GlobalSecondaryIndexes }}
         {{- if indexContainsCompositeAttribute $xdbConfig $gsi.KeySchema }}
-  {{ camelize $gsi.IndexName }}, err := attributevalue.MarshalMap(ddb{{ $modelName }}GSI{{ pascalize $gsi.IndexName }}{
+  {{ camelize $gsi.IndexName }}, err := attributevalue.MarshalMapWithOptions(ddb{{ $modelName }}GSI{{ pascalize $gsi.IndexName }}{
     {{- range $_, $sk := $gsi.KeySchema }}
     {{ pascalize $sk.AttributeName }}: {{ if isComposite $xdbConfig $sk.AttributeName }}{{ compositeValue $xdbConfig $sk.AttributeName "m" }}{{ else }}{{ attributeToModelValue $xdbConfig $sk.AttributeName "m." }}{{ end }},
                 {{- end }}
+  }, func(o *attributevalue.EncoderOptions) {
+    o.TagKey = "json"
   })
   if err != nil {
     return nil, err

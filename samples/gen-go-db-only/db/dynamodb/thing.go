@@ -229,9 +229,11 @@ func (t ThingTable) saveThing(ctx context.Context, m models.Thing) error {
 }
 
 func (t ThingTable) getThing(ctx context.Context, name string, version int64) (*models.Thing, error) {
-	key, err := attributevalue.MarshalMap(ddbThingPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingPrimaryKey{
 		Name:    name,
 		Version: version,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -273,7 +275,9 @@ func (t ThingTable) scanThings(ctx context.Context, input db.ScanThingsInput, fn
 		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -459,9 +463,11 @@ func (t ThingTable) getThingsByNameAndVersion(ctx context.Context, input db.GetT
 
 func (t ThingTable) deleteThing(ctx context.Context, name string, version int64) error {
 
-	key, err := attributevalue.MarshalMap(ddbThingPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingPrimaryKey{
 		Name:    name,
 		Version: version,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return err
@@ -526,7 +532,9 @@ func (t ThingTable) scanThingsByID(ctx context.Context, input db.ScanThingsByIDI
 	}
 	scanInput.IndexName = aws.String("thingID")
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -684,7 +692,9 @@ func (t ThingTable) scanThingsByNameAndCreatedAt(ctx context.Context, input db.S
 	}
 	scanInput.IndexName = aws.String("name-createdAt")
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -842,7 +852,9 @@ func (t ThingTable) scanThingsByNameAndRangeNullable(ctx context.Context, input 
 	}
 	scanInput.IndexName = aws.String("name-rangeNullable")
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}

@@ -112,9 +112,11 @@ func (t ThingWithRequiredFields2Table) saveThingWithRequiredFields2(ctx context.
 }
 
 func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2(ctx context.Context, name string, id string) (*models.ThingWithRequiredFields2, error) {
-	key, err := attributevalue.MarshalMap(ddbThingWithRequiredFields2PrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingWithRequiredFields2PrimaryKey{
 		Name: name,
 		ID:   id,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -156,7 +158,9 @@ func (t ThingWithRequiredFields2Table) scanThingWithRequiredFields2s(ctx context
 		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -303,9 +307,11 @@ func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2sByNameAndID(c
 
 func (t ThingWithRequiredFields2Table) deleteThingWithRequiredFields2(ctx context.Context, name string, id string) error {
 
-	key, err := attributevalue.MarshalMap(ddbThingWithRequiredFields2PrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingWithRequiredFields2PrimaryKey{
 		Name: name,
 		ID:   id,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return err

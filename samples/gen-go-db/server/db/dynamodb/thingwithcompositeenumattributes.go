@@ -113,9 +113,11 @@ func (t ThingWithCompositeEnumAttributesTable) saveThingWithCompositeEnumAttribu
 }
 
 func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttributes(ctx context.Context, name string, branchID models.Branch, date strfmt.DateTime) (*models.ThingWithCompositeEnumAttributes, error) {
-	key, err := attributevalue.MarshalMap(ddbThingWithCompositeEnumAttributesPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingWithCompositeEnumAttributesPrimaryKey{
 		NameBranch: fmt.Sprintf("%s@%s", name, branchID),
 		Date:       date,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -158,7 +160,9 @@ func (t ThingWithCompositeEnumAttributesTable) scanThingWithCompositeEnumAttribu
 		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -310,9 +314,11 @@ func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttribut
 
 func (t ThingWithCompositeEnumAttributesTable) deleteThingWithCompositeEnumAttributes(ctx context.Context, name string, branchID models.Branch, date strfmt.DateTime) error {
 
-	key, err := attributevalue.MarshalMap(ddbThingWithCompositeEnumAttributesPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingWithCompositeEnumAttributesPrimaryKey{
 		NameBranch: fmt.Sprintf("%s@%s", name, branchID),
 		Date:       date,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return err
@@ -346,9 +352,11 @@ func encodeThingWithCompositeEnumAttributes(m models.ThingWithCompositeEnumAttri
 		return nil, fmt.Errorf("name cannot contain '@': %s", *m.Name)
 	}
 	// add in composite attributes
-	primaryKey, err := attributevalue.MarshalMap(ddbThingWithCompositeEnumAttributesPrimaryKey{
+	primaryKey, err := attributevalue.MarshalMapWithOptions(ddbThingWithCompositeEnumAttributesPrimaryKey{
 		NameBranch: fmt.Sprintf("%s@%s", *m.Name, m.BranchID),
 		Date:       *m.Date,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err

@@ -143,8 +143,10 @@ func (t ThingWithMultiUseCompositeAttributeTable) saveThingWithMultiUseComposite
 }
 
 func (t ThingWithMultiUseCompositeAttributeTable) getThingWithMultiUseCompositeAttribute(ctx context.Context, one string) (*models.ThingWithMultiUseCompositeAttribute, error) {
-	key, err := attributevalue.MarshalMap(ddbThingWithMultiUseCompositeAttributePrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingWithMultiUseCompositeAttributePrimaryKey{
 		One: one,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -181,7 +183,9 @@ func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseComposite
 		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -228,8 +232,10 @@ func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseComposite
 
 func (t ThingWithMultiUseCompositeAttributeTable) deleteThingWithMultiUseCompositeAttribute(ctx context.Context, one string) error {
 
-	key, err := attributevalue.MarshalMap(ddbThingWithMultiUseCompositeAttributePrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingWithMultiUseCompositeAttributePrimaryKey{
 		One: one,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return err
@@ -356,7 +362,9 @@ func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseComposite
 	}
 	scanInput.IndexName = aws.String("threeIndex")
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -516,7 +524,9 @@ func (t ThingWithMultiUseCompositeAttributeTable) scanThingWithMultiUseComposite
 	}
 	scanInput.IndexName = aws.String("fourIndex")
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -583,9 +593,11 @@ func encodeThingWithMultiUseCompositeAttribute(m models.ThingWithMultiUseComposi
 		return nil, fmt.Errorf("two cannot contain '_': %s", *m.Two)
 	}
 	// add in composite attributes
-	threeIndex, err := attributevalue.MarshalMap(ddbThingWithMultiUseCompositeAttributeGSIThreeIndex{
+	threeIndex, err := attributevalue.MarshalMapWithOptions(ddbThingWithMultiUseCompositeAttributeGSIThreeIndex{
 		Three:  *m.Three,
 		OneTwo: fmt.Sprintf("%s_%s", *m.One, *m.Two),
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -593,9 +605,11 @@ func encodeThingWithMultiUseCompositeAttribute(m models.ThingWithMultiUseComposi
 	for k, v := range threeIndex {
 		val[k] = v
 	}
-	fourIndex, err := attributevalue.MarshalMap(ddbThingWithMultiUseCompositeAttributeGSIFourIndex{
+	fourIndex, err := attributevalue.MarshalMapWithOptions(ddbThingWithMultiUseCompositeAttributeGSIFourIndex{
 		Four:   *m.Four,
 		OneTwo: fmt.Sprintf("%s_%s", *m.One, *m.Two),
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err

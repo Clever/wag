@@ -144,9 +144,11 @@ func (t ThingWithEnumHashKeyTable) saveThingWithEnumHashKey(ctx context.Context,
 }
 
 func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKey(ctx context.Context, branch models.Branch, date strfmt.DateTime) (*models.ThingWithEnumHashKey, error) {
-	key, err := attributevalue.MarshalMap(ddbThingWithEnumHashKeyPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingWithEnumHashKeyPrimaryKey{
 		Branch: branch,
 		Date:   date,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -188,7 +190,9 @@ func (t ThingWithEnumHashKeyTable) scanThingWithEnumHashKeys(ctx context.Context
 		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -353,9 +357,11 @@ func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKeysByBranchAndDate(ctx c
 
 func (t ThingWithEnumHashKeyTable) deleteThingWithEnumHashKey(ctx context.Context, branch models.Branch, date strfmt.DateTime) error {
 
-	key, err := attributevalue.MarshalMap(ddbThingWithEnumHashKeyPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingWithEnumHashKeyPrimaryKey{
 		Branch: branch,
 		Date:   date,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return err
@@ -486,7 +492,9 @@ func (t ThingWithEnumHashKeyTable) scanThingWithEnumHashKeysByBranchAndDate2(ctx
 	}
 	scanInput.IndexName = aws.String("byBranch")
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}

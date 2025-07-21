@@ -117,9 +117,11 @@ func (t EventTable) saveEvent(ctx context.Context, m models.Event) error {
 }
 
 func (t EventTable) getEvent(ctx context.Context, pk string, sk string) (*models.Event, error) {
-	key, err := attributevalue.MarshalMap(ddbEventPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbEventPrimaryKey{
 		Pk: pk,
 		Sk: sk,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -157,7 +159,9 @@ func (t EventTable) scanEvents(ctx context.Context, input db.ScanEventsInput, fn
 		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -322,9 +326,11 @@ func (t EventTable) getEventsByPkAndSk(ctx context.Context, input db.GetEventsBy
 
 func (t EventTable) deleteEvent(ctx context.Context, pk string, sk string) error {
 
-	key, err := attributevalue.MarshalMap(ddbEventPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbEventPrimaryKey{
 		Pk: pk,
 		Sk: sk,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return err
@@ -451,7 +457,9 @@ func (t EventTable) scanEventsBySkAndData(ctx context.Context, input db.ScanEven
 	}
 	scanInput.IndexName = aws.String("bySK")
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}

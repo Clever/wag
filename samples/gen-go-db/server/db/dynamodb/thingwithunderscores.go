@@ -76,8 +76,10 @@ func (t ThingWithUnderscoresTable) saveThingWithUnderscores(ctx context.Context,
 }
 
 func (t ThingWithUnderscoresTable) getThingWithUnderscores(ctx context.Context, iDApp string) (*models.ThingWithUnderscores, error) {
-	key, err := attributevalue.MarshalMap(ddbThingWithUnderscoresPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingWithUnderscoresPrimaryKey{
 		IDApp: iDApp,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -107,8 +109,10 @@ func (t ThingWithUnderscoresTable) getThingWithUnderscores(ctx context.Context, 
 
 func (t ThingWithUnderscoresTable) deleteThingWithUnderscores(ctx context.Context, iDApp string) error {
 
-	key, err := attributevalue.MarshalMap(ddbThingWithUnderscoresPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingWithUnderscoresPrimaryKey{
 		IDApp: iDApp,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return err

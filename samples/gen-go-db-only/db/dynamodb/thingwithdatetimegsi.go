@@ -130,8 +130,10 @@ func (t ThingWithDatetimeGSITable) saveThingWithDatetimeGSI(ctx context.Context,
 }
 
 func (t ThingWithDatetimeGSITable) getThingWithDatetimeGSI(ctx context.Context, id string) (*models.ThingWithDatetimeGSI, error) {
-	key, err := attributevalue.MarshalMap(ddbThingWithDatetimeGSIPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingWithDatetimeGSIPrimaryKey{
 		ID: id,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -172,7 +174,9 @@ func (t ThingWithDatetimeGSITable) scanThingWithDatetimeGSIs(ctx context.Context
 		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -219,8 +223,10 @@ func (t ThingWithDatetimeGSITable) scanThingWithDatetimeGSIs(ctx context.Context
 
 func (t ThingWithDatetimeGSITable) deleteThingWithDatetimeGSI(ctx context.Context, id string) error {
 
-	key, err := attributevalue.MarshalMap(ddbThingWithDatetimeGSIPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingWithDatetimeGSIPrimaryKey{
 		ID: id,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return err
@@ -348,7 +354,9 @@ func (t ThingWithDatetimeGSITable) scanThingWithDatetimeGSIsByDatetimeAndID(ctx 
 	}
 	scanInput.IndexName = aws.String("byDateTime")
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}

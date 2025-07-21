@@ -160,8 +160,10 @@ func (t ThingWithDateGSITable) saveThingWithDateGSI(ctx context.Context, m model
 }
 
 func (t ThingWithDateGSITable) getThingWithDateGSI(ctx context.Context, dateH strfmt.Date) (*models.ThingWithDateGSI, error) {
-	key, err := attributevalue.MarshalMap(ddbThingWithDateGSIPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingWithDateGSIPrimaryKey{
 		DateH: dateH,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -202,7 +204,9 @@ func (t ThingWithDateGSITable) scanThingWithDateGSIs(ctx context.Context, input 
 		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -249,8 +253,10 @@ func (t ThingWithDateGSITable) scanThingWithDateGSIs(ctx context.Context, input 
 
 func (t ThingWithDateGSITable) deleteThingWithDateGSI(ctx context.Context, dateH strfmt.Date) error {
 
-	key, err := attributevalue.MarshalMap(ddbThingWithDateGSIPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingWithDateGSIPrimaryKey{
 		DateH: dateH,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return err

@@ -159,9 +159,11 @@ func (t ThingAllowingBatchWritesTable) deleteArrayOfThingAllowingBatchWrites(ctx
 
 	batch := make([]types.WriteRequest, len(ms))
 	for i := range ms {
-		key, err := attributevalue.MarshalMap(ddbThingAllowingBatchWritesPrimaryKey{
+		key, err := attributevalue.MarshalMapWithOptions(ddbThingAllowingBatchWritesPrimaryKey{
 			Name:    ms[i].Name,
 			Version: ms[i].Version,
+		}, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
 		})
 		if err != nil {
 			return err
@@ -191,9 +193,11 @@ func (t ThingAllowingBatchWritesTable) deleteArrayOfThingAllowingBatchWrites(ctx
 }
 
 func (t ThingAllowingBatchWritesTable) getThingAllowingBatchWrites(ctx context.Context, name string, version int64) (*models.ThingAllowingBatchWrites, error) {
-	key, err := attributevalue.MarshalMap(ddbThingAllowingBatchWritesPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingAllowingBatchWritesPrimaryKey{
 		Name:    name,
 		Version: version,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -235,7 +239,9 @@ func (t ThingAllowingBatchWritesTable) scanThingAllowingBatchWritess(ctx context
 		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -382,9 +388,11 @@ func (t ThingAllowingBatchWritesTable) getThingAllowingBatchWritessByNameAndVers
 
 func (t ThingAllowingBatchWritesTable) deleteThingAllowingBatchWrites(ctx context.Context, name string, version int64) error {
 
-	key, err := attributevalue.MarshalMap(ddbThingAllowingBatchWritesPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingAllowingBatchWritesPrimaryKey{
 		Name:    name,
 		Version: version,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return err

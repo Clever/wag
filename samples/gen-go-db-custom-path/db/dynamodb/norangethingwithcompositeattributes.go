@@ -160,8 +160,10 @@ func (t NoRangeThingWithCompositeAttributesTable) saveNoRangeThingWithCompositeA
 }
 
 func (t NoRangeThingWithCompositeAttributesTable) getNoRangeThingWithCompositeAttributes(ctx context.Context, name string, branch string) (*models.NoRangeThingWithCompositeAttributes, error) {
-	key, err := attributevalue.MarshalMap(ddbNoRangeThingWithCompositeAttributesPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbNoRangeThingWithCompositeAttributesPrimaryKey{
 		NameBranch: fmt.Sprintf("%s@%s", name, branch),
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -248,8 +250,10 @@ func (t NoRangeThingWithCompositeAttributesTable) scanNoRangeThingWithCompositeA
 
 func (t NoRangeThingWithCompositeAttributesTable) deleteNoRangeThingWithCompositeAttributes(ctx context.Context, name string, branch string) error {
 
-	key, err := attributevalue.MarshalMap(ddbNoRangeThingWithCompositeAttributesPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbNoRangeThingWithCompositeAttributesPrimaryKey{
 		NameBranch: fmt.Sprintf("%s@%s", name, branch),
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return err
@@ -380,7 +384,9 @@ func (t NoRangeThingWithCompositeAttributesTable) scanNoRangeThingWithCompositeA
 	}
 	scanInput.IndexName = aws.String("nameVersion")
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -498,8 +504,10 @@ func encodeNoRangeThingWithCompositeAttributes(m models.NoRangeThingWithComposit
 		return nil, fmt.Errorf("name cannot contain '@': %s", *m.Name)
 	}
 	// add in composite attributes
-	primaryKey, err := attributevalue.MarshalMap(ddbNoRangeThingWithCompositeAttributesPrimaryKey{
+	primaryKey, err := attributevalue.MarshalMapWithOptions(ddbNoRangeThingWithCompositeAttributesPrimaryKey{
 		NameBranch: fmt.Sprintf("%s@%s", *m.Name, *m.Branch),
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -507,9 +515,11 @@ func encodeNoRangeThingWithCompositeAttributes(m models.NoRangeThingWithComposit
 	for k, v := range primaryKey {
 		val[k] = v
 	}
-	nameVersion, err := attributevalue.MarshalMap(ddbNoRangeThingWithCompositeAttributesGSINameVersion{
+	nameVersion, err := attributevalue.MarshalMapWithOptions(ddbNoRangeThingWithCompositeAttributesGSINameVersion{
 		NameVersion: fmt.Sprintf("%s:%d", *m.Name, m.Version),
 		Date:        *m.Date,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -517,8 +527,10 @@ func encodeNoRangeThingWithCompositeAttributes(m models.NoRangeThingWithComposit
 	for k, v := range nameVersion {
 		val[k] = v
 	}
-	nameBranchCommit, err := attributevalue.MarshalMap(ddbNoRangeThingWithCompositeAttributesGSINameBranchCommit{
+	nameBranchCommit, err := attributevalue.MarshalMapWithOptions(ddbNoRangeThingWithCompositeAttributesGSINameBranchCommit{
 		NameBranchCommit: fmt.Sprintf("%s--%s--%s", *m.Name, *m.Branch, *m.Commit),
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err

@@ -98,8 +98,10 @@ func (t SimpleThingTable) saveSimpleThing(ctx context.Context, m models.SimpleTh
 }
 
 func (t SimpleThingTable) getSimpleThing(ctx context.Context, name string) (*models.SimpleThing, error) {
-	key, err := attributevalue.MarshalMap(ddbSimpleThingPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbSimpleThingPrimaryKey{
 		Name: name,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -140,7 +142,9 @@ func (t SimpleThingTable) scanSimpleThings(ctx context.Context, input db.ScanSim
 		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -187,8 +191,10 @@ func (t SimpleThingTable) scanSimpleThings(ctx context.Context, input db.ScanSim
 
 func (t SimpleThingTable) deleteSimpleThing(ctx context.Context, name string) error {
 
-	key, err := attributevalue.MarshalMap(ddbSimpleThingPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbSimpleThingPrimaryKey{
 		Name: name,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return err

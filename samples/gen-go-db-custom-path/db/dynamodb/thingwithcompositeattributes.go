@@ -145,9 +145,11 @@ func (t ThingWithCompositeAttributesTable) saveThingWithCompositeAttributes(ctx 
 }
 
 func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) (*models.ThingWithCompositeAttributes, error) {
-	key, err := attributevalue.MarshalMap(ddbThingWithCompositeAttributesPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingWithCompositeAttributesPrimaryKey{
 		NameBranch: fmt.Sprintf("%s@%s", name, branch),
 		Date:       date,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -190,7 +192,9 @@ func (t ThingWithCompositeAttributesTable) scanThingWithCompositeAttributess(ctx
 		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -360,9 +364,11 @@ func (t ThingWithCompositeAttributesTable) getThingWithCompositeAttributessByNam
 
 func (t ThingWithCompositeAttributesTable) deleteThingWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) error {
 
-	key, err := attributevalue.MarshalMap(ddbThingWithCompositeAttributesPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingWithCompositeAttributesPrimaryKey{
 		NameBranch: fmt.Sprintf("%s@%s", name, branch),
 		Date:       date,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return err
@@ -493,7 +499,9 @@ func (t ThingWithCompositeAttributesTable) scanThingWithCompositeAttributessByNa
 	}
 	scanInput.IndexName = aws.String("nameVersion")
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -565,9 +573,11 @@ func encodeThingWithCompositeAttributes(m models.ThingWithCompositeAttributes) (
 		return nil, fmt.Errorf("name cannot contain '@': %s", *m.Name)
 	}
 	// add in composite attributes
-	primaryKey, err := attributevalue.MarshalMap(ddbThingWithCompositeAttributesPrimaryKey{
+	primaryKey, err := attributevalue.MarshalMapWithOptions(ddbThingWithCompositeAttributesPrimaryKey{
 		NameBranch: fmt.Sprintf("%s@%s", *m.Name, *m.Branch),
 		Date:       *m.Date,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -575,9 +585,11 @@ func encodeThingWithCompositeAttributes(m models.ThingWithCompositeAttributes) (
 	for k, v := range primaryKey {
 		val[k] = v
 	}
-	nameVersion, err := attributevalue.MarshalMap(ddbThingWithCompositeAttributesGSINameVersion{
+	nameVersion, err := attributevalue.MarshalMapWithOptions(ddbThingWithCompositeAttributesGSINameVersion{
 		NameVersion: fmt.Sprintf("%s:%d", *m.Name, m.Version),
 		Date:        *m.Date,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err

@@ -169,9 +169,11 @@ func (t DeploymentTable) saveDeployment(ctx context.Context, m models.Deployment
 }
 
 func (t DeploymentTable) getDeployment(ctx context.Context, environment string, application string, version string) (*models.Deployment, error) {
-	key, err := attributevalue.MarshalMap(ddbDeploymentPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbDeploymentPrimaryKey{
 		EnvApp:  fmt.Sprintf("%s--%s", environment, application),
 		Version: version,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -210,7 +212,9 @@ func (t DeploymentTable) scanDeployments(ctx context.Context, input db.ScanDeplo
 		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -380,9 +384,11 @@ func (t DeploymentTable) getDeploymentsByEnvAppAndVersion(ctx context.Context, i
 
 func (t DeploymentTable) deleteDeployment(ctx context.Context, environment string, application string, version string) error {
 
-	key, err := attributevalue.MarshalMap(ddbDeploymentPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbDeploymentPrimaryKey{
 		EnvApp:  fmt.Sprintf("%s--%s", environment, application),
 		Version: version,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return err
@@ -512,7 +518,9 @@ func (t DeploymentTable) scanDeploymentsByEnvAppAndDate(ctx context.Context, inp
 	}
 	scanInput.IndexName = aws.String("byDate")
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -706,7 +714,9 @@ func (t DeploymentTable) scanDeploymentsByVersion(ctx context.Context, input db.
 	}
 	scanInput.IndexName = aws.String("byVersion")
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -772,9 +782,11 @@ func encodeDeployment(m models.Deployment) (map[string]types.AttributeValue, err
 		return nil, fmt.Errorf("environment cannot contain '--': %s", m.Environment)
 	}
 	// add in composite attributes
-	primaryKey, err := attributevalue.MarshalMap(ddbDeploymentPrimaryKey{
+	primaryKey, err := attributevalue.MarshalMapWithOptions(ddbDeploymentPrimaryKey{
 		EnvApp:  fmt.Sprintf("%s--%s", m.Environment, m.Application),
 		Version: m.Version,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -782,9 +794,11 @@ func encodeDeployment(m models.Deployment) (map[string]types.AttributeValue, err
 	for k, v := range primaryKey {
 		val[k] = v
 	}
-	byDate, err := attributevalue.MarshalMap(ddbDeploymentGSIByDate{
+	byDate, err := attributevalue.MarshalMapWithOptions(ddbDeploymentGSIByDate{
 		EnvApp: fmt.Sprintf("%s--%s", m.Environment, m.Application),
 		Date:   m.Date,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err

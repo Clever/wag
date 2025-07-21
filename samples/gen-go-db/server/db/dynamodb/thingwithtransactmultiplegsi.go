@@ -161,8 +161,10 @@ func (t ThingWithTransactMultipleGSITable) saveThingWithTransactMultipleGSI(ctx 
 }
 
 func (t ThingWithTransactMultipleGSITable) getThingWithTransactMultipleGSI(ctx context.Context, dateH strfmt.Date) (*models.ThingWithTransactMultipleGSI, error) {
-	key, err := attributevalue.MarshalMap(ddbThingWithTransactMultipleGSIPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingWithTransactMultipleGSIPrimaryKey{
 		DateH: dateH,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return nil, err
@@ -203,7 +205,9 @@ func (t ThingWithTransactMultipleGSITable) scanThingWithTransactMultipleGSIs(ctx
 		scanInput.Limit = aws.Int32(int32(*input.Limit))
 	}
 	if input.StartingAfter != nil {
-		exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+		exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+			o.TagKey = "json"
+		})
 		if err != nil {
 			return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
 		}
@@ -250,8 +254,10 @@ func (t ThingWithTransactMultipleGSITable) scanThingWithTransactMultipleGSIs(ctx
 
 func (t ThingWithTransactMultipleGSITable) deleteThingWithTransactMultipleGSI(ctx context.Context, dateH strfmt.Date) error {
 
-	key, err := attributevalue.MarshalMap(ddbThingWithTransactMultipleGSIPrimaryKey{
+	key, err := attributevalue.MarshalMapWithOptions(ddbThingWithTransactMultipleGSIPrimaryKey{
 		DateH: dateH,
+	}, func(o *attributevalue.EncoderOptions) {
+		o.TagKey = "json"
 	})
 	if err != nil {
 		return err
