@@ -30,6 +30,6 @@ jobs:
           name: vet
           command: go vet -mod=readonly $(go list ./...)
       - run: make test
-      - run: if [ "${CIRCLE_BRANCH}" == "master" ]; then make release && $HOME/ci-scripts/circleci/submodule-github-release $GH_RELEASE_TOKEN clientconfig; fi;
-      - run: if [ "${CIRCLE_BRANCH}" == "master" ]; then make release && $HOME/ci-scripts/circleci/submodule-github-release $GH_RELEASE_TOKEN logging/wagclientlogger; fi;
-      - run: if [ "${CIRCLE_BRANCH}" == "master" ]; then make release && $HOME/ci-scripts/circleci/github-release $GH_RELEASE_TOKEN release; fi;
+      - run: if [ "${CIRCLE_BRANCH}" == "fix-scan-marshalling" ]; then make release && $HOME/ci-scripts/circleci/submodule-github-release --pre-release $GH_RELEASE_TOKEN clientconfig; fi;
+      - run: if [ "${CIRCLE_BRANCH}" == "fix-scan-marshalling" ]; then make release && $HOME/ci-scripts/circleci/submodule-github-release --pre-release $GH_RELEASE_TOKEN logging/wagclientlogger; fi;
+      - run: if [ "${CIRCLE_BRANCH}" == "fix-scan-marshalling" ]; then make release && $HOME/ci-scripts/circleci/github-release --pre-release $GH_RELEASE_TOKEN release; fi;
