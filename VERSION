@@ -1,4 +1,4 @@
-v9.9.4
+v9.9.5
 Fix dynamodb codegen for paging in scan functions
 
 v9.9.3
