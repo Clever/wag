@@ -1,3 +1,6 @@
+v9.9.5
+Fix dynamodb codegen for paging in scan functions
+
 v9.9.3
 Upgrade from using aws-sdk-go to aws-sdk-go-v2 
 

@@ -322,7 +322,9 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}s(ctx context.Context, input 
   }
   if input.StartingAfter != nil {
   {{- if indexContainsNonCompositeAttribute $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
-    exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+    exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+      o.TagKey = "json"
+    })
     if err != nil {
       return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
     }
@@ -1079,7 +1081,9 @@ func (t {{ $modelName }}Table) scan{{ $modelName }}sBy{{ $computedIndexName }}(c
   if input.StartingAfter != nil {
   {{- $primaryAndSecondaryKeySchemas := unionKeySchemas $xdbConfig.DynamoDB.KeySchema $gsi.KeySchema }}
   {{- if indexContainsNonCompositeAttribute $xdbConfig $primaryAndSecondaryKeySchemas }}
-    exclusiveStartKey, err := attributevalue.MarshalMap(input.StartingAfter)
+    exclusiveStartKey, err := attributevalue.MarshalMapWithOptions(input.StartingAfter, func(o *attributevalue.EncoderOptions) {
+      o.TagKey = "json"
+    })
     if err != nil {
       return fmt.Errorf("error encoding exclusive start key for scan: %s", err.Error())
     }
