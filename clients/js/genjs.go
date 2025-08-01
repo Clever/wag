@@ -1045,6 +1045,16 @@ func generateTypescriptTypes(s spec.Swagger) (string, error) {
 		}
 	}
 
+	for name, schema := range s.Definitions {
+		if !isDefaultIncludedType[name] {
+			theType, err := asJSType(&schema, "")
+			if err != nil {
+				return "", err
+			}
+			includedTypeMap[name] = theType
+		}
+	}
+
 	subrouters, err := swagger.ParseSubrouters(s)
 	if err != nil {
 		return "", err
@@ -1077,15 +1087,15 @@ func generateTypescriptTypes(s spec.Swagger) (string, error) {
 				}
 			}
 		}
-	}
 
-	for name, schema := range s.Definitions {
-		if !isDefaultIncludedType[name] {
-			theType, err := asJSType(&schema, "")
-			if err != nil {
-				return "", err
+		for name, schema := range routerSpec.Definitions {
+			if !isDefaultIncludedType[name] {
+				theType, err := asJSType(&schema, "")
+				if err != nil {
+					return "", err
+				}
+				includedTypeMap[name] = theType
 			}
-			includedTypeMap[name] = theType
 		}
 	}
 
@@ -1502,13 +1512,13 @@ declare namespace {{.ServiceName}} {
 
     {{range .ErrorTypes}}
     {{.}}
-    {{end}}
+{{end}}
   }
 
   namespace Models {
     {{range .IncludedTypes}}
     {{.}}
-    {{end}}
+{{end}}
   }
 }
 
