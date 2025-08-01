@@ -96,6 +96,8 @@ func main() {
 		if err != nil {
 			log.Fatalf("Error loading parent swagger file: %s", err)
 		}
+
+		conf.generateJSClient = false
 	}
 
 	swaggerSpec := *doc.Spec()
