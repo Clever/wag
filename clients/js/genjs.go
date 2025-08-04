@@ -988,6 +988,60 @@ func generateErrorsFile(s spec.Swagger) (string, error) {
 		}
 	}
 
+	subrouters, err := swagger.ParseSubrouters(s)
+	if err != nil {
+		return "", err
+	}
+
+	for _, router := range subrouters {
+		subspec, err := swagger.LoadSubrouterSpec(router)
+		if err != nil {
+			return "", err
+		}
+
+		for _, pathKey := range swagger.SortedPathItemKeys(subspec.Paths.Paths) {
+			path := subspec.Paths.Paths[pathKey]
+			pathItemOps := swagger.PathItemOperations(path)
+			for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
+				op := pathItemOps[opKey]
+				for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
+					if statusCode < 400 {
+						continue
+					}
+					typeName, _ := swagger.OutputType(&s, op, statusCode)
+					if strings.HasPrefix(typeName, "models.") {
+						typeName = typeName[7:]
+					}
+					if typeNames.Contains(typeName) {
+						log.Printf(
+							"Duplicate type name %s declared in %s subrouter spec\n",
+							typeName,
+							router.Key,
+						)
+						continue
+					}
+					typeNames.Add(typeName)
+
+					etype := errorType{
+						StatusCode: statusCode,
+						Name:       typeName,
+					}
+
+					if schema, ok := subspec.Definitions[typeName]; !ok {
+						log.Printf("TODO: could not find schema for %s, JS documentation will be incomplete", typeName)
+					} else if len(schema.Properties) > 0 {
+						for _, name := range swagger.SortedSchemaProperties(schema) {
+							propertySchema := schema.Properties[name]
+							etype.JSDocProperties = append(etype.JSDocProperties, jsDocPropertyFromSchema(name, &propertySchema))
+						}
+					}
+
+					typesTmpl.ErrorTypes = append(typesTmpl.ErrorTypes, etype)
+				}
+			}
+		}
+	}
+
 	return templates.WriteTemplate(typeTmplString, typesTmpl)
 }
 
@@ -1160,6 +1214,51 @@ func getErrorTypes(s spec.Swagger) ([]string, error) {
 			}
 		}
 	}
+
+	subrouters, err := swagger.ParseSubrouters(s)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, router := range subrouters {
+		routerSpec, err := swagger.LoadSubrouterSpec(router)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, pathKey := range swagger.SortedPathItemKeys(routerSpec.Paths.Paths) {
+			path := routerSpec.Paths.Paths[pathKey]
+			pathItemOps := swagger.PathItemOperations(path)
+			for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
+				op := pathItemOps[opKey]
+				for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
+					if statusCode < 400 {
+						continue
+					}
+					typeName, _ := swagger.OutputType(routerSpec, op, statusCode)
+					if strings.HasPrefix(typeName, "models.") {
+						typeName = typeName[7:]
+					}
+
+					if _, exists := typeNames[typeName]; exists {
+						continue
+					}
+					typeNames[typeName] = struct{}{}
+
+					if schema, ok := routerSpec.Definitions[typeName]; !ok {
+						errorTypes = append(errorTypes, fmt.Sprintf("class %s {}", typeName))
+					} else if len(schema.Properties) > 0 {
+						declaration, err := generateErrorDeclaration(&schema, typeName, "models.")
+						if err != nil {
+							return errorTypes, err
+						}
+						errorTypes = append(errorTypes, declaration)
+					}
+				}
+			}
+		}
+	}
+
 	return errorTypes, nil
 }
 
