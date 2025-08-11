@@ -26,11 +26,11 @@ func Generate(modulePath string, s spec.Swagger) error {
 	}
 
 	tmplInfo := clientCodeTemplate{
-		ClassName:   utils.CamelCase(s.Info.InfoProps.Title, true),
-		PackageName: pkgName,
-		ServiceName: s.Info.InfoProps.Title,
-		Version:     s.Info.InfoProps.Version,
-		Description: s.Info.InfoProps.Description,
+		ClassName:      utils.CamelCase(s.Info.InfoProps.Title, true),
+		PackageName:    pkgName,
+		ServiceName:    s.Info.InfoProps.Title,
+		Version:        s.Info.InfoProps.Version,
+		Description:    s.Info.InfoProps.Description,
 		DefaultTimeout: getDefaultTimeout(s),
 	}
 
