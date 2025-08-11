@@ -31,6 +31,7 @@ func Generate(modulePath string, s spec.Swagger) error {
 		ServiceName: s.Info.InfoProps.Title,
 		Version:     s.Info.InfoProps.Version,
 		Description: s.Info.InfoProps.Description,
+		DefaultTimeout: getDefaultTimeout(s),
 	}
 
 	for _, path := range swagger.SortedPathItemKeys(s.Paths.Paths) {
@@ -84,13 +85,30 @@ func Generate(modulePath string, s spec.Swagger) error {
 	return ioutil.WriteFile(filepath.Join(modulePath, "index.d.ts"), []byte(indexDTS), 0644)
 }
 
+// getDefaultTimeout extracts the default timeout from Swagger extensions
+func getDefaultTimeout(s spec.Swagger) int {
+	if v, ok := s.Info.Extensions["x-client-timeout"]; ok {
+		if timeout, ok := v.(float64); ok && timeout > 0 {
+			return int(timeout)
+		}
+		if timeout, ok := v.(int64); ok && timeout > 0 {
+			return int(timeout)
+		}
+		if timeout, ok := v.(int); ok && timeout > 0 {
+			return timeout
+		}
+	}
+	return 5000 // default fallback
+}
+
 type clientCodeTemplate struct {
-	PackageName string
-	ClassName   string
-	ServiceName string
-	Version     string
-	Description string
-	Methods     []string
+	PackageName    string
+	ClassName      string
+	ServiceName    string
+	Version        string
+	Description    string
+	DefaultTimeout int
+	Methods        []string
 }
 
 var indexJSTmplStr = `const async = require("async");
@@ -255,7 +273,7 @@ class {{.ClassName}} {
    * @param {bool} [options.discovery] - Use clever-discovery to locate the server. Must provide
    * this or the address argument
    * @param {number} [options.timeout] - The timeout to use for all client requests,
-   * in milliseconds. This can be overridden on a per-request basis. Default is 5000ms.
+   * in milliseconds. This can be overridden on a per-request basis. Default is {{.DefaultTimeout}}ms.
    * @param {bool} [options.keepalive] - Set keepalive to true for client requests. This sets the
    * forever: true attribute in request. Defaults to true.
    * @param {module:{{.ServiceName}}.RetryPolicies} [options.retryPolicy=RetryPolicies.Single] - The logic to
@@ -297,7 +315,7 @@ class {{.ClassName}} {
     if (options.timeout) {
       this.timeout = options.timeout;
     } else {
-      this.timeout = 5000;
+      this.timeout = {{.DefaultTimeout}};
     }
     if (options.retryPolicy) {
       this.retryPolicy = options.retryPolicy;

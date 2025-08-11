@@ -1,3 +1,6 @@
+v9.9.6
+Add support for configurable client timeouts via x-client-timeout Swagger extension (JavaScript clients only)
+
 v9.9.5
 Fix dynamodb codegen for paging in scan functions
 
