@@ -25,6 +25,11 @@ func Generate(modulePath string, s spec.Swagger) error {
 		return errors.New("must provide 'x-npm-package' in the 'info' section of the swagger.yml")
 	}
 
+	subrouters, err := swagger.ParseSubrouters(s)
+	if err != nil {
+		return err
+	}
+
 	tmplInfo := clientCodeTemplate{
 		ClassName:   utils.CamelCase(s.Info.InfoProps.Title, true),
 		PackageName: pkgName,
@@ -41,11 +46,34 @@ func Generate(modulePath string, s spec.Swagger) error {
 			if op.Deprecated {
 				continue
 			}
-			methodCode, err := methodCode(s, op, method, path)
+			code, err := methodCode(s, op, method, path)
 			if err != nil {
 				return err
 			}
-			tmplInfo.Methods = append(tmplInfo.Methods, methodCode)
+			tmplInfo.Methods = append(tmplInfo.Methods, code)
+		}
+	}
+
+	for _, router := range subrouters {
+		routerSpec, err := swagger.LoadSubrouterSpec(router)
+		if err != nil {
+			return err
+		}
+
+		for _, path := range swagger.SortedPathItemKeys(routerSpec.Paths.Paths) {
+			pathItem := routerSpec.Paths.Paths[path]
+			pathItemOps := swagger.PathItemOperations(pathItem)
+			for _, method := range swagger.SortedOperationsKeys(pathItemOps) {
+				op := pathItemOps[method]
+				if op.Deprecated {
+					continue
+				}
+				code, err := methodCode(s, op, method, routerSpec.BasePath+path)
+				if err != nil {
+					return err
+				}
+				tmplInfo.Methods = append(tmplInfo.Methods, code)
+			}
 		}
 	}
 
@@ -193,7 +221,7 @@ function responseLog(logger, req, res, err) {
     "message": err || (res.statusMessage || ""),
     "status_code": res.statusCode || 0,
   };
-  
+
   if (err) {
 	if (logData.status_code <= 499){
 		logger.warnD("client-request-finished", logData);
@@ -273,7 +301,7 @@ class {{.ClassName}} {
    * @param {number} [options.circuit.errorPercentThreshold] - the threshold to place on the rolling error
    * rate. Once the error rate exceeds this percentage, the circuit opens.
    * Default: 90.
-   * @param {object} [options.asynclocalstore] a request scoped async store 
+   * @param {object} [options.asynclocalstore] a request scoped async store
    */
   constructor(options) {
     options = options || {};
@@ -314,7 +342,7 @@ class {{.ClassName}} {
 
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
     // hystrix implements a caching mechanism, we don't want this or we can't trust that clients
-    // are initialized with the values passed in. 
+    // are initialized with the values passed in.
     commandFactory.resetCache();
     circuitFactory.resetCache();
     metricsFactory.resetCache();
@@ -433,7 +461,7 @@ const methodTmplStr = `
       if (!options) {
         options = {};
       }
-  
+
       const optionsBaggage = options.baggage || new Map();
 
       const storeContext = this.asynclocalstore?.get("context") || new Map();
@@ -443,10 +471,10 @@ const methodTmplStr = `
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
-      
+
       // Convert combinedContext into a string using parseForBaggage
       headers["baggage"] = parseForBaggage(combinedContext);
-      
+
       headers["Canonical-Resource"] = "{{.Operation}}";
       headers[versionHeader] = version;
       {{- range $param := .PathParams}}
@@ -960,6 +988,60 @@ func generateErrorsFile(s spec.Swagger) (string, error) {
 		}
 	}
 
+	subrouters, err := swagger.ParseSubrouters(s)
+	if err != nil {
+		return "", err
+	}
+
+	for _, router := range subrouters {
+		subspec, err := swagger.LoadSubrouterSpec(router)
+		if err != nil {
+			return "", err
+		}
+
+		for _, pathKey := range swagger.SortedPathItemKeys(subspec.Paths.Paths) {
+			path := subspec.Paths.Paths[pathKey]
+			pathItemOps := swagger.PathItemOperations(path)
+			for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
+				op := pathItemOps[opKey]
+				for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
+					if statusCode < 400 {
+						continue
+					}
+					typeName, _ := swagger.OutputType(&s, op, statusCode)
+					if strings.HasPrefix(typeName, "models.") {
+						typeName = typeName[7:]
+					}
+					if typeNames.Contains(typeName) {
+						log.Printf(
+							"Duplicate type name %s declared in %s subrouter spec\n",
+							typeName,
+							router.Key,
+						)
+						continue
+					}
+					typeNames.Add(typeName)
+
+					etype := errorType{
+						StatusCode: statusCode,
+						Name:       typeName,
+					}
+
+					if schema, ok := subspec.Definitions[typeName]; !ok {
+						log.Printf("TODO: could not find schema for %s, JS documentation will be incomplete", typeName)
+					} else if len(schema.Properties) > 0 {
+						for _, name := range swagger.SortedSchemaProperties(schema) {
+							propertySchema := schema.Properties[name]
+							etype.JSDocProperties = append(etype.JSDocProperties, jsDocPropertyFromSchema(name, &propertySchema))
+						}
+					}
+
+					typesTmpl.ErrorTypes = append(typesTmpl.ErrorTypes, etype)
+				}
+			}
+		}
+	}
+
 	return templates.WriteTemplate(typeTmplString, typesTmpl)
 }
 
@@ -1027,6 +1109,50 @@ func generateTypescriptTypes(s spec.Swagger) (string, error) {
 		}
 	}
 
+	subrouters, err := swagger.ParseSubrouters(s)
+	if err != nil {
+		return "", err
+	}
+
+	for _, router := range subrouters {
+		routerSpec, err := swagger.LoadSubrouterSpec(router)
+		if err != nil {
+			return "", err
+		}
+
+		for _, path := range swagger.SortedPathItemKeys(routerSpec.Paths.Paths) {
+			pathItem := routerSpec.Paths.Paths[path]
+			pathItemOps := swagger.PathItemOperations(pathItem)
+			for _, method := range swagger.SortedOperationsKeys(pathItemOps) {
+				op := pathItemOps[method]
+				if op.Deprecated {
+					continue
+				}
+
+				code, err := methodDecl(s, op, method, routerSpec.BasePath+path)
+				if err != nil {
+					return "", err
+				}
+				tt.MethodDecls = append(tt.MethodDecls, code)
+
+				err = addInputType(&includedTypeMap, op)
+				if err != nil {
+					return "", err
+				}
+			}
+		}
+
+		for name, schema := range routerSpec.Definitions {
+			if !isDefaultIncludedType[name] {
+				theType, err := asJSType(&schema, "")
+				if err != nil {
+					return "", err
+				}
+				includedTypeMap[name] = theType
+			}
+		}
+	}
+
 	var keys []string
 	for k := range includedTypeMap {
 		keys = append(keys, k)
@@ -1088,6 +1214,51 @@ func getErrorTypes(s spec.Swagger) ([]string, error) {
 			}
 		}
 	}
+
+	subrouters, err := swagger.ParseSubrouters(s)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, router := range subrouters {
+		routerSpec, err := swagger.LoadSubrouterSpec(router)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, pathKey := range swagger.SortedPathItemKeys(routerSpec.Paths.Paths) {
+			path := routerSpec.Paths.Paths[pathKey]
+			pathItemOps := swagger.PathItemOperations(path)
+			for _, opKey := range swagger.SortedOperationsKeys(pathItemOps) {
+				op := pathItemOps[opKey]
+				for _, statusCode := range swagger.SortedStatusCodeKeys(op.Responses.StatusCodeResponses) {
+					if statusCode < 400 {
+						continue
+					}
+					typeName, _ := swagger.OutputType(routerSpec, op, statusCode)
+					if strings.HasPrefix(typeName, "models.") {
+						typeName = typeName[7:]
+					}
+
+					if _, exists := typeNames[typeName]; exists {
+						continue
+					}
+					typeNames[typeName] = struct{}{}
+
+					if schema, ok := routerSpec.Definitions[typeName]; !ok {
+						errorTypes = append(errorTypes, fmt.Sprintf("class %s {}", typeName))
+					} else if len(schema.Properties) > 0 {
+						declaration, err := generateErrorDeclaration(&schema, typeName, "models.")
+						if err != nil {
+							return errorTypes, err
+						}
+						errorTypes = append(errorTypes, declaration)
+					}
+				}
+			}
+		}
+	}
+
 	return errorTypes, nil
 }
 
@@ -1440,13 +1611,13 @@ declare namespace {{.ServiceName}} {
 
     {{range .ErrorTypes}}
     {{.}}
-    {{end}}
+{{end}}
   }
 
   namespace Models {
     {{range .IncludedTypes}}
     {{.}}
-    {{end}}
+{{end}}
   }
 }
 

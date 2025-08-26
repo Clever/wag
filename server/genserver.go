@@ -14,8 +14,8 @@ import (
 )
 
 // Generate server package for a swagger spec.
-func Generate(packageName, basePath, outputPath string, s spec.Swagger) error {
-	if err := generateRouter(packageName, basePath, outputPath, s, s.Paths); err != nil {
+func Generate(packageName, basePath, outputPath string, s spec.Swagger, subrouter bool) error {
+	if err := generateRouter(packageName, basePath, outputPath, s, s.Paths, subrouter); err != nil {
 		return err
 	}
 	if err := generateInterface(packageName, basePath, outputPath, &s, s.Info.InfoProps.Title, s.Paths); err != nil {
@@ -38,44 +38,86 @@ type routerTemplate struct {
 	ImportStatements string
 	Title            string
 	Functions        []routerFunction
+	IsSubrouter      bool
+	Subrouters       []swagger.Subrouter
 }
 
-func generateRouter(packageName, basePath, outputPath string, s spec.Swagger, paths *spec.Paths) error {
+func generateRouter(
+	packageName, basePath, outputPath string,
+	s spec.Swagger,
+	paths *spec.Paths,
+	isSubrouter bool,
+) error {
 	var template routerTemplate
 	template.Title = s.Info.Title
+	template.IsSubrouter = isSubrouter
+
 	for _, path := range swagger.SortedPathItemKeys(paths.Paths) {
 		pathItem := paths.Paths[path]
 		pathItemOps := swagger.PathItemOperations(pathItem)
+
+		// If this router is a subrouter, then the basePath routing is applied
+		if !isSubrouter {
+			path = s.BasePath + path
+		}
+
 		for _, method := range swagger.SortedOperationsKeys(pathItemOps) {
 			op := pathItemOps[method]
 
 			template.Functions = append(template.Functions, routerFunction{
 				Method:      method,
-				Path:        s.BasePath + path,
+				Path:        path,
 				HandlerName: swagger.Capitalize(op.ID),
 				OpID:        op.ID,
 			})
 		}
 	}
-	template.ImportStatements = swagger.ImportStatements([]string{
-		"compress/gzip",
-		"context",
-		"log",
-		"net/http",
-		`_ "net/http/pprof"`,
-		"os",
-		"os/signal",
-		"path",
-		"syscall",
-		"time",
-		"github.com/Clever/go-process-metrics/metrics",
-		packageName + "/servertracing",
-		"github.com/gorilla/handlers",
-		"github.com/gorilla/mux",
-		"github.com/kardianos/osext",
-		"github.com/Clever/kayvee-go/v7/logger",
-		`kvMiddleware "github.com/Clever/kayvee-go/v7/middleware"`,
-	})
+
+	var subrouterImports []string
+	var err error
+	template.Subrouters, subrouterImports, err = buildSubrouters(packageName, s)
+	if err != nil {
+		return err
+	}
+
+	var imports []string
+	if isSubrouter {
+		imports = []string{
+			"net/http",
+			"github.com/gorilla/mux",
+			"github.com/Clever/kayvee-go/v7/logger",
+		}
+
+		imports = append(imports, subrouterImports...)
+	} else {
+		imports = []string{
+			"compress/gzip",
+			"context",
+			"log",
+			"net/http",
+			`_ "net/http/pprof"`,
+			"os",
+			"os/signal",
+			"path",
+			"syscall",
+			"time",
+			"github.com/Clever/go-process-metrics/metrics",
+			"github.com/Clever/kayvee-go/v7/logger",
+			`kvMiddleware "github.com/Clever/kayvee-go/v7/middleware"`,
+		}
+
+		imports = append(imports, subrouterImports...)
+		imports = append(
+			imports,
+			packageName+"/servertracing",
+			"github.com/gorilla/handlers",
+			"github.com/gorilla/mux",
+			"github.com/kardianos/osext",
+		)
+	}
+
+	template.ImportStatements = swagger.ImportStatements(imports)
+
 	routerCode, err := templates.WriteTemplate(routerTemplateStr, template)
 	if err != nil {
 		return err
@@ -83,6 +125,28 @@ func generateRouter(packageName, basePath, outputPath string, s spec.Swagger, pa
 	g := swagger.Generator{BasePath: basePath}
 	g.Print(routerCode)
 	return g.WriteFile("server/router.go")
+}
+
+func buildSubrouters(packageName string, s spec.Swagger) ([]swagger.Subrouter, []string, error) {
+	subrouterConfig, err := swagger.ParseSubrouters(s)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var imports []string
+	for _, r := range subrouterConfig {
+		imports = append(
+			imports,
+			fmt.Sprintf(
+				"%srouter \"%s/routers/%s/gen-go/server\"",
+				r.Key,
+				strings.TrimSuffix(packageName, "/gen-go"),
+				r.Key,
+			),
+		)
+	}
+
+	return subrouterConfig, imports, nil
 }
 
 type interfaceTemplate struct {
