@@ -57,25 +57,27 @@ func (s *Server) Serve() error {
 	server.SetKeepAlivesEnabled(true)
 
 	// Give the server 30 seconds to shut down gracefully after it receives a signal
-	shutdown := make(chan struct{})
+	sigs := make(chan os.Signal, 1)
+	done := make(chan bool, 1)
+	signal.Notify(sigs, syscall.SIGTERM, syscall.SIGINT)
+
 	go func() {
-		c := make(chan os.Signal, 1)
-		signal.Notify(c, os.Interrupt, os.Signal(syscall.SIGTERM))
-		sig := <-c
+		sig := <-sigs
 		s.l.InfoD("shutdown-initiated", logger.M{"signal": sig.String()})
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
-		defer close(shutdown)
+		defer close(done)
 		if err := server.Shutdown(ctx); err != nil {
 			s.l.CriticalD("error-during-shutdown", logger.M{"error": err.Error()})
 		}
+		done <- true
 	}()
 
 	if err := server.ListenAndServe(); err != http.ErrServerClosed {
 		return err
 	}
 	// ensure we wait for graceful shutdown
-	<-shutdown
+	<-done
 
 	return nil
 }
