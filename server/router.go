@@ -63,6 +63,7 @@ func (s *Server) Serve() error {
 		signal.Notify(c, os.Interrupt, os.Signal(syscall.SIGTERM))
 		sig := <-c
 		s.l.InfoD("shutdown-initiated", logger.M{"signal": sig.String()})
+		time.Sleep( 65 * time.Second)
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 		defer close(shutdown)
