@@ -33,3 +33,4 @@ jobs:
       - run: if [ "${CIRCLE_BRANCH}" == "master" ]; then make release && $HOME/ci-scripts/circleci/submodule-github-release $GH_RELEASE_TOKEN clientconfig; fi;
       - run: if [ "${CIRCLE_BRANCH}" == "master" ]; then make release && $HOME/ci-scripts/circleci/submodule-github-release $GH_RELEASE_TOKEN logging/wagclientlogger; fi;
       - run: if [ "${CIRCLE_BRANCH}" == "master" ]; then make release && $HOME/ci-scripts/circleci/github-release $GH_RELEASE_TOKEN release; fi;
+      - run: $HOME/ci-scripts/circleci/catalog-sync $CATAPULT_URL $CATAPULT_USER $CATAPULT_PASS wag utility

@@ -1,0 +1,11 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: wag
+  description: sWAGger - Web API Generator
+  owner: unknown
+spec:
+  type: unknown
+  lifecycle: production
+  owner: unknown
+  system: Clever
