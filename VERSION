@@ -1,3 +1,6 @@
+v9.9.6
+Bump node version to 24
+
 v9.9.5
 Fix dynamodb codegen for paging in scan functions
 

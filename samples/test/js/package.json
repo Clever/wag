@@ -7,7 +7,7 @@
   },
   "devDependencies": {
     "@types/mocha": "^10.0.6",
-    "@types/node": "^18.19.31",
+    "@types/node": "^24.0.0",
     "hystrixjs": "^0.2.0",
     "assert": "^2.1.0",
     "express": "^4.19.2",

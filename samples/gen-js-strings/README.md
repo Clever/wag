@@ -73,7 +73,7 @@ Releases handles used in client
 | [params.pageSize] | <code>number</code> | <code>1000</code> |  |
 | [options] | <code>object</code> |  |  |
 | [options.timeout] | <code>number</code> |  | A request specific timeout |
-| [options.baggage] | <code>[ &#x27;Map&#x27; ].&lt;string, (string\|number)&gt;</code> |  | A request-specific baggage to be propagated |
+| [options.baggage] | <code>Map.&lt;string, (string\|number)&gt;</code> |  | A request-specific baggage to be propagated |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_nil-test--NilTest.RetryPolicies) |  | A request specific retryPolicy |
 | [cb] | <code>function</code> |  |  |
 

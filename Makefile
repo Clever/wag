@@ -1,14 +1,15 @@
 include golang.mk
 include node.mk
 .DEFAULT_GOAL := test # override default goal set in library makefile
-NODE_VERSION := "v18"
+NODE_VERSION := "v24"
 $(eval $(call node-version-check,$(NODE_VERSION)))
 
 export PATH := $(PWD)/bin:$(PATH)
 MAJOR_VERSION := $(shell head -n 1 VERSION | sed 's/[[:alpha:]|[:space:]]//g' | cut -d. -f1)
 PKG := github.com/Clever/wag/v$(MAJOR_VERSION)
 PKGS := $(shell go list ./... | grep -v /hardcoded | grep -v /tools | grep -v /gendb)
-VERSION := $(shell head -n 1 VERSION)
+RAWVERSION :=$(shell head -n 1 VERSION)
+VERSION := $(RAWVERSION)$(shell if [[ -z "$(CI)" ]]; then echo "-dev"; fi)
 EXECUTABLE := wag
 
 $(eval $(call golang-version-check,1.24))
@@ -16,7 +17,7 @@ $(eval $(call golang-version-check,1.24))
 .PHONY: test build release js-tests jsdoc2md go-generate generate $(PKGS) install_deps
 
 build: go-generate
-	go build -o bin/wag
+	go build -ldflags="-X main.version=$(VERSION)" -o bin/wag
 
 test: build generate $(PKGS) js-tests
 	$(MAKE) -C samples test
@@ -30,7 +31,15 @@ js-tests:
 
 jsdoc2md:
 	hash npm 2>/dev/null || (echo "Could not run npm, please install node" && false)
-	hash jsdoc2md 2>/dev/null || npm install -g jsdoc-to-markdown@^4.0.0
+	@if [ ! -f ./node_modules/.bin/jsdoc2md ]; then \
+		npm install jsdoc-to-markdown@9.0.0; \
+	elif [ -f ./node_modules/jsdoc-to-markdown/package.json ]; then \
+		INSTALLED_VERSION=$$(node -p "require('./node_modules/jsdoc-to-markdown/package.json').version" 2>/dev/null || echo ""); \
+		if [ "$$INSTALLED_VERSION" != "9.0.0" ]; then \
+			echo "jsdoc-to-markdown version $$INSTALLED_VERSION detected, updating to 9.0.0..."; \
+			npm install jsdoc-to-markdown@9.0.0; \
+		fi; \
+	fi
 
 go-generate:
 	go generate ./hardcoded/
@@ -55,4 +64,5 @@ install_deps:
 	go mod vendor
 	go build -o bin/go-bindata ./vendor/github.com/kevinburke/go-bindata/go-bindata
 	go build -o bin/mockgen    ./vendor/github.com/golang/mock/mockgen
+	npm install
 

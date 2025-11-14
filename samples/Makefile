@@ -8,7 +8,7 @@ TEST_DB_PKG := "./gen-go-db/server/db/dynamodb"
 # Function to generate code, run jsdoc2md, and tidy go modules
 define generate_code
 	../bin/wag -with-tests -file $(1) -output-path $(2) -js-path $(3) $(4)
-	cd $(3) && jsdoc2md index.js types.js > ./README.md
+	cd $(3) && ../../node_modules/.bin/jsdoc2md index.js types.js > ./README.md
 	cd $(2)/client && go mod tidy
 	cd $(2)/models && go mod tidy
 	go generate -mod=mod $(2)...
