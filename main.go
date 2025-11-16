@@ -374,4 +374,5 @@ func injectDefaultDefinitions(swaggerSpec *spec.Swagger) {
 			},
 		},
 	}
+
 }

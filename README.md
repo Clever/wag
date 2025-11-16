@@ -218,6 +218,8 @@ COPY bin/my-wag-service /usr/bin/my-wag-service
     * context.Background() - use this when this is the creator of the request chain, like a test or a top-level service.
     * context.TODO() - use this when you haven't been passed a context from a caller yet, but you expect the caller to send you one at some point.
 
+<!-- TODO: here - add explanation of XUserContext -->
+
 
 ### DynamoDB Codegen
 

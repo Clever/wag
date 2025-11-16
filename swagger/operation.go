@@ -41,6 +41,7 @@ func OperationInput(op *spec.Operation) string {
 	// make that the input of the method.
 	// If a method has multiple input parameters, wrap them in a struct.
 	capOpID := Capitalize(op.ID)
+	hasUserContext := HasUserContextExtension(op)
 	input := ""
 	if singleSchemaedBodyParameter, opModel := SingleSchemaedBodyParameter(op); singleSchemaedBodyParameter {
 		input = fmt.Sprintf("i *models.%s", opModel)
@@ -48,6 +49,14 @@ func OperationInput(op *spec.Operation) string {
 		input = fmt.Sprintf("%s string", inputName)
 	} else if len(op.Parameters) > 0 {
 		input = fmt.Sprintf("i *models.%sInput", capOpID)
+	}
+	// Always add UserContext as a separate parameter if present
+	if hasUserContext {
+		if input != "" {
+			input += ", xUserContext *models.UserContext"
+		} else {
+			input = "xUserContext *models.UserContext"
+		}
 	}
 	return input
 }
@@ -172,6 +181,12 @@ func SuccessType(s *spec.Swagger, op *spec.Operation) *string {
 		}
 	}
 	return nil
+}
+
+// HasUserContextExtension returns true if the operation has the x-user-context extension configured.
+func HasUserContextExtension(op *spec.Operation) bool {
+	_, ok := op.Extensions["x-user-context"]
+	return ok
 }
 
 // PagingParam returns the parameter that specifies the page ID for this

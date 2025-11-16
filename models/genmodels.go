@@ -20,6 +20,22 @@ import (
 
 // Generate writes the files to the client directories
 func Generate(packageName, basePath, outputPath string, s spec.Swagger) error {
+	// Check if any operations use x-user-context extension
+	// If so, we'll generate our own usercontext.go with a type alias to rbac-scoping-utils
+	hasUserContext := false
+	for _, pathItem := range s.Paths.Paths {
+		ops := swagger.PathItemOperations(pathItem)
+		for _, op := range ops {
+			if swagger.HasUserContextExtension(op) {
+				hasUserContext = true
+				break
+			}
+		}
+		if hasUserContext {
+			break
+		}
+	}
+
 	tmpFile, err := swagger.WriteToFile(&s)
 	if err != nil {
 		return err
@@ -43,6 +59,15 @@ func Generate(packageName, basePath, outputPath string, s spec.Swagger) error {
 	// generate models with go-swagger
 	if err := generator.GenerateServer("", []string{}, []string{}, &genopts); err != nil {
 		return fmt.Errorf("error generating go-swagger models: %s", err)
+	}
+
+	// Generate our own usercontext.go with type alias to rbac-scoping-utils
+	// The x-user-context extension doesn't reference a swagger definition,
+	// so we don't need to inject/remove it from the spec
+	if hasUserContext {
+		if err := generateUserContextAlias(basePath); err != nil {
+			return fmt.Errorf("error generating UserContext alias: %s", err)
+		}
 	}
 
 	if err := generateOutputs(basePath, s); err != nil {
@@ -76,6 +101,7 @@ module ` + moduleName + outputPath + `/models` + versionSuffix + `
 go 1.24
 
 require (
+	github.com/Clever/rbac-scoping-utils v0.3.0
 	github.com/go-openapi/errors v0.20.2
 	github.com/go-openapi/strfmt v0.21.2
 	github.com/go-openapi/swag v0.21.1
@@ -92,6 +118,23 @@ require (
 	}
 
 	return nil
+}
+
+// generateUserContextAlias generates a usercontext.go file with type alias to rbac-scoping-utils
+// This is generated directly by wag instead of go-swagger to avoid file conflicts
+func generateUserContextAlias(basePath string) error {
+	g := swagger.Generator{BasePath: basePath}
+
+	g.Printf(`package models
+
+import "github.com/Clever/rbac-scoping-utils/utils"
+
+// UserContext is a type alias for the UserContext type from rbac-scoping-utils
+// It has access to all properties and methods of utils.UserContext
+type UserContext = utils.UserContext
+`)
+
+	return g.WriteFile("models/usercontext.go")
 }
 
 func generateInputs(basePath string, s spec.Swagger) error {
@@ -403,7 +446,7 @@ func (o %s) Error() string {
 	func (u UnknownResponse) Error() string {
 		return fmt.Sprintf("unknown response with status: %d body: %s", u.StatusCode, u.Body)
 	}
-	
+
 `)
 
 	return buf.String(), nil
