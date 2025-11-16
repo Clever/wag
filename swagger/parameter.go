@@ -70,6 +70,14 @@ func ParamToType(param spec.Parameter) (string, bool, error) {
 		}
 		return Capitalize(typeName), true, nil
 	}
+	// Handle X-User-Context header parameter which uses a Schema reference for type generation
+	if param.In == "header" && param.Name == "X-User-Context" && param.Schema != nil && param.Schema.Ref.String() != "" {
+		typeName, err := TypeFromSchema(param.Schema, false)
+		if err != nil {
+			return "", false, err
+		}
+		return Capitalize(typeName), true, nil
+	}
 
 	var typeName string
 	switch param.Type {
