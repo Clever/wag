@@ -76,14 +76,14 @@ func Generate(packageName, basePath, outputPath string, s spec.Swagger) error {
 	if err := generateInputs(basePath, s); err != nil {
 		return fmt.Errorf("error generating inputs: %s", err)
 	}
-	if err := CreateModFile("models/go.mod", basePath, packageName, outputPath); err != nil {
+	if err := CreateModFile("models/go.mod", basePath, packageName, outputPath, hasUserContext); err != nil {
 		return fmt.Errorf("error creating go.mod file: %s", err)
 	}
 	return nil
 }
 
 // CreateModFile creates a go.mod file for the client module.
-func CreateModFile(path string, basePath, packageName, outputPath string) error {
+func CreateModFile(path string, basePath, packageName, outputPath string, hasUserContext bool) error {
 	outputPath = strings.TrimPrefix(outputPath, ".")
 	moduleName, versionSuffix := utils.ExtractModuleNameAndVersionSuffix(packageName, outputPath)
 
@@ -94,6 +94,14 @@ func CreateModFile(path string, basePath, packageName, outputPath string) error 
 	}
 
 	defer f.Close()
+
+	// Build the require block conditionally
+	requireBlock := ""
+	if hasUserContext {
+		requireBlock = `	github.com/Clever/rbac-scoping-utils v0.4.0
+	`
+	}
+
 	modFileString := `
 module ` + moduleName + outputPath + `/models` + versionSuffix + `
 
@@ -101,8 +109,7 @@ module ` + moduleName + outputPath + `/models` + versionSuffix + `
 go 1.24
 
 require (
-	github.com/Clever/rbac-scoping-utils v0.4.0
-	github.com/go-openapi/errors v0.20.2
+` + requireBlock + `	github.com/go-openapi/errors v0.20.2
 	github.com/go-openapi/strfmt v0.21.2
 	github.com/go-openapi/swag v0.21.1
 	github.com/go-openapi/validate v0.22.0
