@@ -101,7 +101,7 @@ module ` + moduleName + outputPath + `/models` + versionSuffix + `
 go 1.24
 
 require (
-	github.com/Clever/rbac-scoping-utils v0.3.0
+	github.com/Clever/rbac-scoping-utils v0.4.0
 	github.com/go-openapi/errors v0.20.2
 	github.com/go-openapi/strfmt v0.21.2
 	github.com/go-openapi/swag v0.21.1
