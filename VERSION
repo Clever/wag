@@ -1,8 +1,11 @@
+v9.9.6
+Add support for x-user-context-header
+
 v9.9.5
 Fix dynamodb codegen for paging in scan functions
 
 v9.9.3
-Upgrade from using aws-sdk-go to aws-sdk-go-v2 
+Upgrade from using aws-sdk-go to aws-sdk-go-v2
 
 v9.9.2
 Update only the version to skip over used pre-release version numbers (v9.9.0, v9.9.1)
@@ -25,7 +28,7 @@ v9.6.0
 remove hystrix-go dependency from wag go clients, fix some tests.
 
 v9.5.3 wag-js client can now accept an optional asynclocalstore at initialization whose context can
-then be passed on as baggage. 
+then be passed on as baggage.
 
 v9.5.2 Bug fix in baggage options for JS client, wag-js baggage is now always a map. Server propagation now uses clever-request-id provided in baggage if available, and produces a uuid if it is not, instead of defaulting to traceid.
 
@@ -33,7 +36,7 @@ v9.5.1 Minor bug fix in the typing of options in the generated JS client
 
 v9.5.0 Bugfix composite keys in a GSI with no range key. Also, generated tests are only added when opted in via a new flag, instead of by default.
 
-v9.4.2 Add updated clientconfig to release 
+v9.4.2 Add updated clientconfig to release
 
 v9.4.1 Fix generated DynamoDB tests
 
