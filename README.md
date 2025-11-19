@@ -218,6 +218,34 @@ COPY bin/my-wag-service /usr/bin/my-wag-service
     * context.Background() - use this when this is the creator of the request chain, like a test or a top-level service.
     * context.TODO() - use this when you haven't been passed a context from a caller yet, but you expect the caller to send you one at some point.
 
+### User Context (x-user-context)
+
+  * Wag supports passing RBAC (role-based access control) user context information via the `x-user-context` extension.
+  * When you add `x-user-context` to an operation in your swagger spec, Wag will:
+    * Add an `xUserContext *models.UserContext` parameter to the generated handler/client method signature
+    * On the server side: automatically extract and unmarshal the `X-User-Context` header from the request
+    * On the client side: automatically marshal the UserContext to JSON and send it as an `X-User-Context` HTTP header
+  * The `UserContext` type comes from [`github.com/Clever/rbac-scoping-utils`](https://github.com/Clever/rbac-scoping-utils) and provides access control scoping capabilities.
+
+  Example:
+  ```yaml
+  paths:
+    /resources/{id}:
+      get:
+        operationId: getResource
+        x-user-context:
+        parameters:
+          - name: id
+            in: path
+            required: true
+            type: string
+  ```
+
+  This generates a handler signature like:
+  ```go
+  func (c Controller) GetResource(ctx context.Context, id string, xUserContext *models.UserContext) (*models.Resource, error)
+  ```
+
 
 ### DynamoDB Codegen
 
