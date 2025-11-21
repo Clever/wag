@@ -98,7 +98,7 @@ function responseLog(logger, req, res, err) {
     "message": err || (res.statusMessage || ""),
     "status_code": res.statusCode || 0,
   };
-
+  
   if (err) {
 	if (logData.status_code <= 499){
 		logger.warnD("client-request-finished", logData);
@@ -178,7 +178,7 @@ class SwaggerTest {
    * @param {number} [options.circuit.errorPercentThreshold] - the threshold to place on the rolling error
    * rate. Once the error rate exceeds this percentage, the circuit opens.
    * Default: 90.
-   * @param {object} [options.asynclocalstore] a request scoped async store
+   * @param {object} [options.asynclocalstore] a request scoped async store 
    */
   constructor(options) {
     options = options || {};
@@ -219,7 +219,7 @@ class SwaggerTest {
 
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
     // hystrix implements a caching mechanism, we don't want this or we can't trust that clients
-    // are initialized with the values passed in.
+    // are initialized with the values passed in. 
     commandFactory.resetCache();
     circuitFactory.resetCache();
     metricsFactory.resetCache();

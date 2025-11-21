@@ -33,7 +33,7 @@ require (
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0
-	github.com/stretchr/testify v1.11.1
+	github.com/stretchr/testify v1.8.2
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.34.0
 	go.opentelemetry.io/otel v1.10.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.10.0

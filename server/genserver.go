@@ -250,7 +250,6 @@ func generateOperationHandler(s *spec.Swagger, op *spec.Operation) (string, erro
 
 	singleSchemaedBodyParameter, _ := swagger.SingleSchemaedBodyParameter(op)
 	singleStringPathParameter, singleStringPathParameterVarName := swagger.SingleStringPathParameter(op)
-	hasUserContext := swagger.HasUserContextExtension(op)
 	successType := swagger.SuccessType(s, op)
 	arraySuccessType := ""
 	if successType != nil && strings.HasPrefix(*successType, "[]") {
@@ -284,7 +283,6 @@ func generateOperationHandler(s *spec.Swagger, op *spec.Operation) (string, erro
 		SingleStringPathParameter:        singleStringPathParameter,
 		SingleStringPathParameterVarName: singleStringPathParameterVarName,
 		StatusCodeToType:                 codeToType,
-		HasUserContext:                   hasUserContext,
 	}
 	handlerCode, err := templates.WriteTemplate(handlerTemplate, handlerOp)
 	if err != nil {
@@ -319,24 +317,9 @@ type handlerOp struct {
 	SingleStringPathParameter        bool
 	SingleStringPathParameterVarName string
 	StatusCodeToType                 map[int]string
-	HasUserContext                   bool
 }
 
 var handlerTemplate = `
-{{define "userContextExtraction"}}
-		// Extract UserContext as a separate parameter
-		var xUserContext *models.UserContext
-		xUserContextStr := r.Header.Get("X-User-Context")
-		if len(xUserContextStr) > 0 {
-			var uc models.UserContext
-			if err := json.Unmarshal([]byte(xUserContextStr), &uc); err != nil {
-				logger.FromContext(ctx).AddContext("error", err.Error())
-				http.Error(w, jsonMarshalNoError({{index .StatusCodeToType 400}}{Message: fmt.Sprintf("failed to unmarshal X-User-Context header: %v", err)}), http.StatusBadRequest)
-				return
-			}
-			xUserContext = &uc
-		}
-{{end}}
 // statusCodeFor{{.Op}} returns the status code corresponding to the returned
 // object. It returns -1 if the type doesn't correspond to anything.
 func statusCodeFor{{.Op}}(obj interface{}) int {
@@ -379,19 +362,9 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 {{end}}
 {{if .SuccessReturnType}}
 	{{if .HasParams}}
-		{{if .HasUserContext}}
-		{{template "userContextExtraction" .}}
-		resp,{{if .HasPaging}} nextPageID,{{end}} err := h.{{.Op}}(ctx, {{.InputVarName}}, xUserContext)
-		{{else}}
 		resp,{{if .HasPaging}} nextPageID,{{end}} err := h.{{.Op}}(ctx, {{.InputVarName}})
-		{{end}}
 	{{else}}
-		{{if .HasUserContext}}
-		{{template "userContextExtraction" .}}
-		resp, err := h.{{.Op}}(ctx, xUserContext)
-		{{else}}
 		resp, err := h.{{.Op}}(ctx)
-		{{end}}
 	{{end}}
 	{{if gt (len .ArraySuccessType) 0}}
 		// Success types that return an array should never return nil so let's make this easier
@@ -402,19 +375,9 @@ func (h handler) {{.Op}}Handler(ctx context.Context, w http.ResponseWriter, r *h
 	{{end}}
 {{else}}
 	{{if .HasParams}}
-		{{if .HasUserContext}}
-		{{template "userContextExtraction" .}}
-		err = h.{{.Op}}(ctx, {{.InputVarName}}, xUserContext)
-		{{else}}
 		err = h.{{.Op}}(ctx, {{.InputVarName}})
-		{{end}}
 	{{else}}
-		{{if .HasUserContext}}
-		{{template "userContextExtraction" .}}
-		err := h.{{.Op}}(ctx, xUserContext)
-		{{else}}
 		err := h.{{.Op}}(ctx)
-		{{end}}
 	{{end}}
 {{end}}
 	if err != nil {
