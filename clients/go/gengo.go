@@ -53,7 +53,7 @@ import (
 
 		discovery "github.com/Clever/discovery-go"
 		wcl "github.com/Clever/wag/logging/wagclientlogger"
-
+		
 )
 
 var _ = json.Marshal
@@ -93,7 +93,7 @@ func New(basePath string, logger wcl.WagClientLogger, transport *http.RoundTripp
 
 	basePath = strings.TrimSuffix(basePath, "/")
 	base := baseDoer{}
-
+	
 	// Don't use the default retry policy since its 5 retries can 5X the traffic
 	retry := retryDoer{d: base, retryPolicy: SingleRetryPolicy{}}
 
@@ -430,11 +430,11 @@ func (c *WagClient) do%sRequest(ctx context.Context, req *http.Request, headers 
 		"status_code": retCode,
 	}
 	if err == nil && retCode > 399 && retCode < 500{
-		logData["message"] = resp.Status
+		logData["message"] = resp.Status 
 		c.logger.Log(wcl.Warning, "client-request-finished", logData)
 	}
 	if err == nil && retCode > 499{
-		logData["message"] = resp.Status
+		logData["message"] = resp.Status 
 		c.logger.Log(wcl.Error, "client-request-finished", logData)
 	}
 	if err != nil {
@@ -541,17 +541,6 @@ func buildHeadersCode(s *spec.Swagger, op *spec.Operation) string {
 			}
 			buf.WriteString(str)
 		}
-	}
-
-	// Handle UserContext as a separate parameter (not in op.Parameters)
-	// UserContext is always a direct parameter, never in input structs
-	if swagger.HasUserContextExtension(op) {
-		buf.WriteString(`
-	if xUserContext != nil {
-		xUserContextJSON, _ := json.Marshal(xUserContext)
-		headers["X-User-Context"] = string(xUserContextJSON)
-	}
-`)
 	}
 
 	return buf.String()

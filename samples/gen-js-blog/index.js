@@ -98,7 +98,7 @@ function responseLog(logger, req, res, err) {
     "message": err || (res.statusMessage || ""),
     "status_code": res.statusCode || 0,
   };
-
+  
   if (err) {
 	if (logData.status_code <= 499){
 		logger.warnD("client-request-finished", logData);
@@ -178,7 +178,7 @@ class Blog {
    * @param {number} [options.circuit.errorPercentThreshold] - the threshold to place on the rolling error
    * rate. Once the error rate exceeds this percentage, the circuit opens.
    * Default: 90.
-   * @param {object} [options.asynclocalstore] a request scoped async store
+   * @param {object} [options.asynclocalstore] a request scoped async store 
    */
   constructor(options) {
     options = options || {};
@@ -219,7 +219,7 @@ class Blog {
 
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
     // hystrix implements a caching mechanism, we don't want this or we can't trust that clients
-    // are initialized with the values passed in.
+    // are initialized with the values passed in. 
     commandFactory.resetCache();
     circuitFactory.resetCache();
     metricsFactory.resetCache();
@@ -311,7 +311,7 @@ class Blog {
       if (!options) {
         options = {};
       }
-
+  
       const optionsBaggage = options.baggage || new Map();
 
       const storeContext = this.asynclocalstore?.get("context") || new Map();
@@ -321,10 +321,10 @@ class Blog {
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
-
+      
       // Convert combinedContext into a string using parseForBaggage
       headers["baggage"] = parseForBaggage(combinedContext);
-
+      
       headers["Canonical-Resource"] = "postGradeFileForStudent";
       headers[versionHeader] = version;
       if (!params.studentID) {
@@ -433,7 +433,7 @@ class Blog {
       if (!options) {
         options = {};
       }
-
+  
       const optionsBaggage = options.baggage || new Map();
 
       const storeContext = this.asynclocalstore?.get("context") || new Map();
@@ -443,10 +443,10 @@ class Blog {
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
-
+      
       // Convert combinedContext into a string using parseForBaggage
       headers["baggage"] = parseForBaggage(combinedContext);
-
+      
       headers["Canonical-Resource"] = "getSectionsForStudent";
       headers[versionHeader] = version;
       if (!params.studentID) {
@@ -553,7 +553,7 @@ class Blog {
       if (!options) {
         options = {};
       }
-
+  
       const optionsBaggage = options.baggage || new Map();
 
       const storeContext = this.asynclocalstore?.get("context") || new Map();
@@ -563,10 +563,10 @@ class Blog {
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
-
+      
       // Convert combinedContext into a string using parseForBaggage
       headers["baggage"] = parseForBaggage(combinedContext);
-
+      
       headers["Canonical-Resource"] = "postSectionsForStudent";
       headers[versionHeader] = version;
       if (!params.studentID) {

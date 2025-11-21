@@ -193,7 +193,7 @@ function responseLog(logger, req, res, err) {
     "message": err || (res.statusMessage || ""),
     "status_code": res.statusCode || 0,
   };
-
+  
   if (err) {
 	if (logData.status_code <= 499){
 		logger.warnD("client-request-finished", logData);
@@ -273,7 +273,7 @@ class {{.ClassName}} {
    * @param {number} [options.circuit.errorPercentThreshold] - the threshold to place on the rolling error
    * rate. Once the error rate exceeds this percentage, the circuit opens.
    * Default: 90.
-   * @param {object} [options.asynclocalstore] a request scoped async store
+   * @param {object} [options.asynclocalstore] a request scoped async store 
    */
   constructor(options) {
     options = options || {};
@@ -314,7 +314,7 @@ class {{.ClassName}} {
 
     const circuitOptions = Object.assign({}, defaultCircuitOptions, options.circuit);
     // hystrix implements a caching mechanism, we don't want this or we can't trust that clients
-    // are initialized with the values passed in.
+    // are initialized with the values passed in. 
     commandFactory.resetCache();
     circuitFactory.resetCache();
     metricsFactory.resetCache();
@@ -433,7 +433,7 @@ const methodTmplStr = `
       if (!options) {
         options = {};
       }
-
+  
       const optionsBaggage = options.baggage || new Map();
 
       const storeContext = this.asynclocalstore?.get("context") || new Map();
@@ -443,10 +443,10 @@ const methodTmplStr = `
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
-
+      
       // Convert combinedContext into a string using parseForBaggage
       headers["baggage"] = parseForBaggage(combinedContext);
-
+      
       headers["Canonical-Resource"] = "{{.Operation}}";
       headers[versionHeader] = version;
       {{- range $param := .PathParams}}
@@ -456,13 +456,7 @@ const methodTmplStr = `
       }
       {{- end -}}
       {{- range $param := .HeaderParams}}
-      {{- if eq $param.WagName "X-User-Context"}}
-      if (params.{{$param.JSName}} !== undefined) {
-        headers["{{$param.WagName}}"] = JSON.stringify(params.{{$param.JSName}});
-      }
-      {{- else}}
       headers["{{$param.WagName}}"] = params.{{$param.JSName}};
-      {{- end}}
       {{- end}}
 
       const query = {};
@@ -779,30 +773,12 @@ func methodCode(s spec.Swagger, op *spec.Operation, method, path string) (string
 		case "path":
 			tmplInfo.PathParams = append(tmplInfo.PathParams, param)
 		case "header":
-			// Special handling for UserContext - mark it so we can JSON.stringify it
-			if wagParam.Schema != nil && wagParam.Schema.Ref.String() != "" && strings.Contains(wagParam.Schema.Ref.String(), "UserContext") {
-				param.JSDocType = "{Object}"
-			}
 			tmplInfo.HeaderParams = append(tmplInfo.HeaderParams, param)
 		case "body": // Will only ever be a single bodyParam so we can just set here
 			tmplInfo.BodyParam = param.JSName
 		case "query":
 			tmplInfo.QueryParams = append(tmplInfo.QueryParams, param)
 		}
-	}
-
-	// Add UserContext parameter if extension is present
-	if swagger.HasUserContextExtension(op) {
-		param := paramMapping{
-			JSName:      "xUserContext",
-			WagName:     "X-User-Context",
-			Required:    false,
-			JSDocType:   "{Object}",
-			Description: "User context information with userID (string) and userScopes (array of {type: string, value: string}) properties",
-			Default:     nil,
-		}
-		tmplInfo.Params = append(tmplInfo.Params, param)
-		tmplInfo.HeaderParams = append(tmplInfo.HeaderParams, param)
 	}
 
 	if err := fillMethodDefinition(op, &tmplInfo); err != nil {
