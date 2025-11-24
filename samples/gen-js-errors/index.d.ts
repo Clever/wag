@@ -12,6 +12,7 @@ interface RequestOptions {
   timeout?: number;
   baggage?: Map<string, string | number>;
   retryPolicy?: RetryPolicy;
+  headers?: { [key: string]: string };
 }
 
 interface IterResult<R> {

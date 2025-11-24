@@ -287,6 +287,7 @@ class Blog {
    * @param {number} [options.timeout] - A request specific timeout
    * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:blog.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {Object.<string, string>} [options.headers] - Additional headers to send with the request
    * @param {function} [cb]
    * @returns {Promise}
    * @fulfill {undefined}
@@ -321,10 +322,15 @@ class Blog {
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
-      
+
+      // Merge custom headers from options if provided
+      if (options.headers) {
+        Object.assign(headers, options.headers);
+      }
+
       // Convert combinedContext into a string using parseForBaggage
       headers["baggage"] = parseForBaggage(combinedContext);
-      
+
       headers["Canonical-Resource"] = "postGradeFileForStudent";
       headers[versionHeader] = version;
       if (!params.studentID) {
@@ -406,6 +412,7 @@ class Blog {
    * @param {number} [options.timeout] - A request specific timeout
    * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:blog.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {Object.<string, string>} [options.headers] - Additional headers to send with the request
    * @param {function} [cb]
    * @returns {Promise}
    * @fulfill {Object[]}
@@ -443,10 +450,15 @@ class Blog {
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
-      
+
+      // Merge custom headers from options if provided
+      if (options.headers) {
+        Object.assign(headers, options.headers);
+      }
+
       // Convert combinedContext into a string using parseForBaggage
       headers["baggage"] = parseForBaggage(combinedContext);
-      
+
       headers["Canonical-Resource"] = "getSectionsForStudent";
       headers[versionHeader] = version;
       if (!params.studentID) {
@@ -529,6 +541,7 @@ class Blog {
    * @param {number} [options.timeout] - A request specific timeout
    * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:blog.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {Object.<string, string>} [options.headers] - Additional headers to send with the request
    * @param {function} [cb]
    * @returns {Promise}
    * @fulfill {Object[]}
@@ -563,10 +576,15 @@ class Blog {
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
-      
+
+      // Merge custom headers from options if provided
+      if (options.headers) {
+        Object.assign(headers, options.headers);
+      }
+
       // Convert combinedContext into a string using parseForBaggage
       headers["baggage"] = parseForBaggage(combinedContext);
-      
+
       headers["Canonical-Resource"] = "postSectionsForStudent";
       headers[versionHeader] = version;
       if (!params.studentID) {

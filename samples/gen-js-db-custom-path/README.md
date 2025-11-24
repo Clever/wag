@@ -70,6 +70,7 @@ Releases handles used in client
 | [options.timeout] | <code>number</code> | A request specific timeout |
 | [options.baggage] | <code>[ &#x27;Map&#x27; ].&lt;string, (string\|number)&gt;</code> | A request-specific baggage to be propagated |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_swagger-test--SwaggerTest.RetryPolicies) | A request specific retryPolicy |
+| [options.headers] | <code>[ &#x27;Object&#x27; ].&lt;string, string&gt;</code> | Additional headers to send with the request |
 | [cb] | <code>function</code> |  |
 
 <a name="module_swagger-test--SwaggerTest.RetryPolicies"></a>
