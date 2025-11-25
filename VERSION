@@ -1,7 +1,10 @@
-v9.9.8
-Revert x-user-context header
+v9.9.9
+add headers in RequestOptions
 
 Previously:
+
+v9.9.8
+Revert x-user-context header
 
 v9.9.6
 Add support for x-user-context-header

@@ -77,6 +77,7 @@ Posts the grade file for the specified student
 | [options.timeout] | <code>number</code> | A request specific timeout |
 | [options.baggage] | <code>[ &#x27;Map&#x27; ].&lt;string, (string\|number)&gt;</code> | A request-specific baggage to be propagated |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_blog--Blog.RetryPolicies) | A request specific retryPolicy |
+| [options.headers] | <code>[ &#x27;Object&#x27; ].&lt;string, string&gt;</code> | Additional headers to send with the request |
 | [cb] | <code>function</code> |  |
 
 <a name="module_blog--Blog+getSectionsForStudent"></a>
@@ -97,6 +98,7 @@ Gets the sections for the specified student
 | [options.timeout] | <code>number</code> | A request specific timeout |
 | [options.baggage] | <code>[ &#x27;Map&#x27; ].&lt;string, (string\|number)&gt;</code> | A request-specific baggage to be propagated |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_blog--Blog.RetryPolicies) | A request specific retryPolicy |
+| [options.headers] | <code>[ &#x27;Object&#x27; ].&lt;string, string&gt;</code> | Additional headers to send with the request |
 | [cb] | <code>function</code> |  |
 
 <a name="module_blog--Blog+postSectionsForStudent"></a>
@@ -120,6 +122,7 @@ Posts the sections for the specified student
 | [options.timeout] | <code>number</code> | A request specific timeout |
 | [options.baggage] | <code>[ &#x27;Map&#x27; ].&lt;string, (string\|number)&gt;</code> | A request-specific baggage to be propagated |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_blog--Blog.RetryPolicies) | A request specific retryPolicy |
+| [options.headers] | <code>[ &#x27;Object&#x27; ].&lt;string, string&gt;</code> | Additional headers to send with the request |
 | [cb] | <code>function</code> |  |
 
 <a name="module_blog--Blog.RetryPolicies"></a>

@@ -443,10 +443,13 @@ const methodTmplStr = `
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
-      
+
+      // Merge custom headers from options if provided
+      headers = {...(options.headers || {})};
+
       // Convert combinedContext into a string using parseForBaggage
       headers["baggage"] = parseForBaggage(combinedContext);
-      
+
       headers["Canonical-Resource"] = "{{.Operation}}";
       headers[versionHeader] = version;
       {{- range $param := .PathParams}}
@@ -611,6 +614,7 @@ const singleParamMethodDefinitionTemplateString = `/**{{if .Description}}
    * @param {number} [options.timeout] - A request specific timeout
    * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:{{.ServiceName}}.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {Object.<string, string>} [options.headers] - Additional headers to send with the request
    {{- if .IterMethod}}
    * @returns {Object} iter
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
@@ -649,6 +653,7 @@ const pluralParamMethodDefinitionTemplateString = `/**{{if .Description}}
    * @param {number} [options.timeout] - A request specific timeout
    * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:{{.ServiceName}}.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {Object.<string, string>} [options.headers] - Additional headers to send with the request
    {{- if .IterMethod}}
    * @returns {Object} iter
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
@@ -1372,6 +1377,7 @@ interface RequestOptions {
   timeout?: number;
   baggage?: Map<string, string | number>;
   retryPolicy?: RetryPolicy;
+  headers?: { [key: string]: string };
 }
 
 interface IterResult<R> {

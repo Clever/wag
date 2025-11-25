@@ -287,6 +287,7 @@ class SwaggerTest {
    * @param {number} [options.timeout] - A request specific timeout
    * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {Object.<string, string>} [options.headers] - Additional headers to send with the request
    * @param {function} [cb]
    * @returns {Promise}
    * @fulfill {Object}
@@ -321,10 +322,13 @@ class SwaggerTest {
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
-      
+
+      // Merge custom headers from options if provided
+      headers = {...(options.headers || {})};
+
       // Convert combinedContext into a string using parseForBaggage
       headers["baggage"] = parseForBaggage(combinedContext);
-      
+
       headers["Canonical-Resource"] = "getAuthors";
       headers[versionHeader] = version;
 
@@ -411,6 +415,7 @@ class SwaggerTest {
    * @param {number} [options.timeout] - A request specific timeout
    * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {Object.<string, string>} [options.headers] - Additional headers to send with the request
    * @returns {Object} iter
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
    * @returns {function} iter.toArray - returns a promise to the resources as an array
@@ -432,10 +437,13 @@ class SwaggerTest {
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
-      
+
+      // Merge custom headers from options if provided
+      headers = {...(options.headers || {})};
+
       // Convert combinedContext into a string using parseForBaggage
       headers["baggage"] = parseForBaggage(combinedContext);
-      
+
       headers["Canonical-Resource"] = "getAuthors";
       headers[versionHeader] = version;
 
@@ -569,6 +577,7 @@ class SwaggerTest {
    * @param {number} [options.timeout] - A request specific timeout
    * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {Object.<string, string>} [options.headers] - Additional headers to send with the request
    * @param {function} [cb]
    * @returns {Promise}
    * @fulfill {Object}
@@ -603,10 +612,13 @@ class SwaggerTest {
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
-      
+
+      // Merge custom headers from options if provided
+      headers = {...(options.headers || {})};
+
       // Convert combinedContext into a string using parseForBaggage
       headers["baggage"] = parseForBaggage(combinedContext);
-      
+
       headers["Canonical-Resource"] = "getAuthorsWithPut";
       headers[versionHeader] = version;
 
@@ -696,6 +708,7 @@ class SwaggerTest {
    * @param {number} [options.timeout] - A request specific timeout
    * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {Object.<string, string>} [options.headers] - Additional headers to send with the request
    * @returns {Object} iter
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
    * @returns {function} iter.toArray - returns a promise to the resources as an array
@@ -717,10 +730,13 @@ class SwaggerTest {
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
-      
+
+      // Merge custom headers from options if provided
+      headers = {...(options.headers || {})};
+
       // Convert combinedContext into a string using parseForBaggage
       headers["baggage"] = parseForBaggage(combinedContext);
-      
+
       headers["Canonical-Resource"] = "getAuthorsWithPut";
       headers[versionHeader] = version;
 
@@ -864,6 +880,7 @@ class SwaggerTest {
    * @param {number} [options.timeout] - A request specific timeout
    * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {Object.<string, string>} [options.headers] - Additional headers to send with the request
    * @param {function} [cb]
    * @returns {Promise}
    * @fulfill {Object[]}
@@ -898,10 +915,13 @@ class SwaggerTest {
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
-      
+
+      // Merge custom headers from options if provided
+      headers = {...(options.headers || {})};
+
       // Convert combinedContext into a string using parseForBaggage
       headers["baggage"] = parseForBaggage(combinedContext);
-      
+
       headers["Canonical-Resource"] = "getBooks";
       headers[versionHeader] = version;
       headers["authorization"] = params.authorization;
@@ -1030,6 +1050,7 @@ class SwaggerTest {
    * @param {number} [options.timeout] - A request specific timeout
    * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {Object.<string, string>} [options.headers] - Additional headers to send with the request
    * @returns {Object} iter
    * @returns {function} iter.map - takes in a function, applies it to each resource, and returns a promise to the result as an array
    * @returns {function} iter.toArray - returns a promise to the resources as an array
@@ -1051,10 +1072,13 @@ class SwaggerTest {
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
-      
+
+      // Merge custom headers from options if provided
+      headers = {...(options.headers || {})};
+
       // Convert combinedContext into a string using parseForBaggage
       headers["baggage"] = parseForBaggage(combinedContext);
-      
+
       headers["Canonical-Resource"] = "getBooks";
       headers[versionHeader] = version;
       headers["authorization"] = params.authorization;
@@ -1218,6 +1242,7 @@ class SwaggerTest {
    * @param {number} [options.timeout] - A request specific timeout
    * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {Object.<string, string>} [options.headers] - Additional headers to send with the request
    * @param {function} [cb]
    * @returns {Promise}
    * @fulfill {Object}
@@ -1255,10 +1280,13 @@ class SwaggerTest {
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
-      
+
+      // Merge custom headers from options if provided
+      headers = {...(options.headers || {})};
+
       // Convert combinedContext into a string using parseForBaggage
       headers["baggage"] = parseForBaggage(combinedContext);
-      
+
       headers["Canonical-Resource"] = "createBook";
       headers[versionHeader] = version;
 
@@ -1336,6 +1364,7 @@ class SwaggerTest {
    * @param {number} [options.timeout] - A request specific timeout
    * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {Object.<string, string>} [options.headers] - Additional headers to send with the request
    * @param {function} [cb]
    * @returns {Promise}
    * @fulfill {Object}
@@ -1373,10 +1402,13 @@ class SwaggerTest {
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
-      
+
+      // Merge custom headers from options if provided
+      headers = {...(options.headers || {})};
+
       // Convert combinedContext into a string using parseForBaggage
       headers["baggage"] = parseForBaggage(combinedContext);
-      
+
       headers["Canonical-Resource"] = "putBook";
       headers[versionHeader] = version;
 
@@ -1459,6 +1491,7 @@ class SwaggerTest {
    * @param {number} [options.timeout] - A request specific timeout
    * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {Object.<string, string>} [options.headers] - Additional headers to send with the request
    * @param {function} [cb]
    * @returns {Promise}
    * @fulfill {Object}
@@ -1495,10 +1528,13 @@ class SwaggerTest {
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
-      
+
+      // Merge custom headers from options if provided
+      headers = {...(options.headers || {})};
+
       // Convert combinedContext into a string using parseForBaggage
       headers["baggage"] = parseForBaggage(combinedContext);
-      
+
       headers["Canonical-Resource"] = "getBookByID";
       headers[versionHeader] = version;
       if (!params.bookID) {
@@ -1600,6 +1636,7 @@ class SwaggerTest {
    * @param {number} [options.timeout] - A request specific timeout
    * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {Object.<string, string>} [options.headers] - Additional headers to send with the request
    * @param {function} [cb]
    * @returns {Promise}
    * @fulfill {Object}
@@ -1638,10 +1675,13 @@ class SwaggerTest {
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
-      
+
+      // Merge custom headers from options if provided
+      headers = {...(options.headers || {})};
+
       // Convert combinedContext into a string using parseForBaggage
       headers["baggage"] = parseForBaggage(combinedContext);
-      
+
       headers["Canonical-Resource"] = "getBookByID2";
       headers[versionHeader] = version;
       if (!params.id) {
@@ -1725,6 +1765,7 @@ class SwaggerTest {
    * @param {number} [options.timeout] - A request specific timeout
    * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {Object.<string, string>} [options.headers] - Additional headers to send with the request
    * @param {function} [cb]
    * @returns {Promise}
    * @fulfill {undefined}
@@ -1761,10 +1802,13 @@ class SwaggerTest {
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
-      
+
+      // Merge custom headers from options if provided
+      headers = {...(options.headers || {})};
+
       // Convert combinedContext into a string using parseForBaggage
       headers["baggage"] = parseForBaggage(combinedContext);
-      
+
       headers["Canonical-Resource"] = "healthCheck";
       headers[versionHeader] = version;
 
@@ -1842,6 +1886,7 @@ class SwaggerTest {
    * @param {number} [options.timeout] - A request specific timeout
    * @param {Map<string, string | number>} [options.baggage] - A request-specific baggage to be propagated
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy] - A request specific retryPolicy
+   * @param {Object.<string, string>} [options.headers] - Additional headers to send with the request
    * @param {function} [cb]
    * @returns {Promise}
    * @fulfill {undefined}
@@ -1876,10 +1921,13 @@ class SwaggerTest {
       const timeout = options.timeout || this.timeout;
 
       let headers = {};
-      
+
+      // Merge custom headers from options if provided
+      headers = {...(options.headers || {})};
+
       // Convert combinedContext into a string using parseForBaggage
       headers["baggage"] = parseForBaggage(combinedContext);
-      
+
       headers["Canonical-Resource"] = "lowercaseModelsTest";
       headers[versionHeader] = version;
       if (!params.pathParam) {
