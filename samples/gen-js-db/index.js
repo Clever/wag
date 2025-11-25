@@ -322,9 +322,7 @@ class SwaggerTest {
       let headers = {};
 
       // Merge custom headers from options if provided
-      if (options.headers) {
-        Object.assign(headers, options.headers);
-      }
+      headers = {...(options.headers || {})};
 
       // Convert combinedContext into a string using parseForBaggage
       headers["baggage"] = parseForBaggage(combinedContext);
