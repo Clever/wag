@@ -262,6 +262,50 @@ func (t {{ $modelName }}Table) deleteArrayOf{{ $modelName }}(ctx context.Context
 }
 {{- end }}
 
+func (t {{ $modelName }}Table) getArrayOf{{ $modelName }}(ctx context.Context, ms []models.{{ $modelName }}) ([]models.{{ $modelName }}, error) {
+  if len(ms) == 0 {
+    return nil, nil
+  }
+
+  requestKeys := make([]map[string]types.AttributeValue, len(ms))
+  for i := range ms {
+    key, err := attributevalue.MarshalMap(ddb{{ $modelName }}PrimaryKey{
+      {{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
+      {{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValueFromArray $xdbConfig $pk.AttributeName "ms[i]"}}{{ else }}{{ if attributeIsPointer $xdbConfig $pk.AttributeName }}*{{ end }}ms[i].{{ pascalize $pk.AttributeName }}{{ end }},
+      {{- end }}
+    })
+    if err != nil {
+      return nil, err
+    }
+    requestKeys[i] = key
+  }
+
+  tname := t.TableName
+  var items []models.{{ $modelName }}
+  for {
+    out, err := t.DynamoDBAPI.BatchGetItem(ctx, &dynamodb.BatchGetItemInput{
+      RequestItems: map[string]types.KeysAndAttributes{
+        tname: {Keys: requestKeys},
+      },
+    })
+    if err != nil {
+      return nil, fmt.Errorf("BatchGetItem: %v", err)
+    }
+    for _, item := range out.Responses[tname] {
+      var m models.{{ $modelName }}
+      if err := decode{{ $modelName }}(item, &m); err != nil {
+        return nil, err
+      }
+      items = append(items, m)
+    }
+    if len(out.UnprocessedKeys[tname].Keys) == 0 {
+      break
+    }
+    requestKeys = out.UnprocessedKeys[tname].Keys
+  }
+  return items, nil
+}
+
 {{ $pkModelAttributeNames := modelAttributeNamesForIndex $xdbConfig $xdbConfig.DynamoDB.KeySchema }}
 func (t {{ $modelName }}Table) get{{ $modelName }}(ctx context.Context,
   {{- range $_, $attributeName := $pkModelAttributeNames }}
