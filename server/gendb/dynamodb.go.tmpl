@@ -137,6 +137,11 @@ func (d DB) DeleteArrayOf{{ $modelName }}(ctx context.Context, m []models.{{ $mo
 }
 {{- end }}
 
+// GetArrayOf{{ $modelName }} gets multiple {{ $modelName }}s by their primary keys.
+func (d DB) GetArrayOf{{ $modelName }}(ctx context.Context, ms []models.{{ $modelName }}) ([]models.{{ $modelName }}, error) {
+  return d.{{ $modelNameCamel }}Table.getArrayOf{{ $modelName }}(ctx, ms)
+}
+
 // Get{{ $modelName }} retrieves a {{ $modelName }} from the database.
 func (d DB) Get{{ $modelName }}(ctx context.Context,
   {{- range $_, $attributeName := $pkModelAttributeNames }}
