@@ -52,6 +52,7 @@ type Interface interface {
     ) error
     // GetArrayOf{{ $modelName }} gets multiple {{ $modelName }}s by their primary keys.
     GetArrayOf{{ $modelName }}(ctx context.Context, ms []models.{{ $modelName }}) ([]models.{{ $modelName }}, error)
+
     {{- range $gsi := $xdbConfig.DynamoDB.GlobalSecondaryIndexes }}
     {{- $indexName := indexName $gsi.KeySchema }}
     {{- if indexHasRangeKey $gsi.KeySchema }}
