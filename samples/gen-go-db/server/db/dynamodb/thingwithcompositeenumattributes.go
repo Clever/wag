@@ -112,6 +112,49 @@ func (t ThingWithCompositeEnumAttributesTable) saveThingWithCompositeEnumAttribu
 	return nil
 }
 
+func (t ThingWithCompositeEnumAttributesTable) getArrayOfThingWithCompositeEnumAttributes(ctx context.Context, ms []models.ThingWithCompositeEnumAttributes) ([]models.ThingWithCompositeEnumAttributes, error) {
+	if len(ms) == 0 {
+		return nil, nil
+	}
+
+	requestKeys := make([]map[string]types.AttributeValue, len(ms))
+	for i := range ms {
+		key, err := attributevalue.MarshalMap(ddbThingWithCompositeEnumAttributesPrimaryKey{
+			NameBranch: fmt.Sprintf("%s@%s", *ms[i].Name, ms[i].BranchID),
+			Date:       *ms[i].Date,
+		})
+		if err != nil {
+			return nil, err
+		}
+		requestKeys[i] = key
+	}
+
+	tname := t.TableName
+	var items []models.ThingWithCompositeEnumAttributes
+	for {
+		out, err := t.DynamoDBAPI.BatchGetItem(ctx, &dynamodb.BatchGetItemInput{
+			RequestItems: map[string]types.KeysAndAttributes{
+				tname: {Keys: requestKeys},
+			},
+		})
+		if err != nil {
+			return nil, fmt.Errorf("BatchGetItem: %v", err)
+		}
+		for _, item := range out.Responses[tname] {
+			var m models.ThingWithCompositeEnumAttributes
+			if err := decodeThingWithCompositeEnumAttributes(item, &m); err != nil {
+				return nil, err
+			}
+			items = append(items, m)
+		}
+		if len(out.UnprocessedKeys[tname].Keys) == 0 {
+			break
+		}
+		requestKeys = out.UnprocessedKeys[tname].Keys
+	}
+	return items, nil
+}
+
 func (t ThingWithCompositeEnumAttributesTable) getThingWithCompositeEnumAttributes(ctx context.Context, name string, branchID models.Branch, date strfmt.DateTime) (*models.ThingWithCompositeEnumAttributes, error) {
 	key, err := attributevalue.MarshalMap(ddbThingWithCompositeEnumAttributesPrimaryKey{
 		NameBranch: fmt.Sprintf("%s@%s", name, branchID),

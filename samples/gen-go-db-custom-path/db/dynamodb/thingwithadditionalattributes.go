@@ -228,6 +228,49 @@ func (t ThingWithAdditionalAttributesTable) saveThingWithAdditionalAttributes(ct
 	return nil
 }
 
+func (t ThingWithAdditionalAttributesTable) getArrayOfThingWithAdditionalAttributes(ctx context.Context, ms []models.ThingWithAdditionalAttributes) ([]models.ThingWithAdditionalAttributes, error) {
+	if len(ms) == 0 {
+		return nil, nil
+	}
+
+	requestKeys := make([]map[string]types.AttributeValue, len(ms))
+	for i := range ms {
+		key, err := attributevalue.MarshalMap(ddbThingWithAdditionalAttributesPrimaryKey{
+			Name:    ms[i].Name,
+			Version: ms[i].Version,
+		})
+		if err != nil {
+			return nil, err
+		}
+		requestKeys[i] = key
+	}
+
+	tname := t.TableName
+	var items []models.ThingWithAdditionalAttributes
+	for {
+		out, err := t.DynamoDBAPI.BatchGetItem(ctx, &dynamodb.BatchGetItemInput{
+			RequestItems: map[string]types.KeysAndAttributes{
+				tname: {Keys: requestKeys},
+			},
+		})
+		if err != nil {
+			return nil, fmt.Errorf("BatchGetItem: %v", err)
+		}
+		for _, item := range out.Responses[tname] {
+			var m models.ThingWithAdditionalAttributes
+			if err := decodeThingWithAdditionalAttributes(item, &m); err != nil {
+				return nil, err
+			}
+			items = append(items, m)
+		}
+		if len(out.UnprocessedKeys[tname].Keys) == 0 {
+			break
+		}
+		requestKeys = out.UnprocessedKeys[tname].Keys
+	}
+	return items, nil
+}
+
 func (t ThingWithAdditionalAttributesTable) getThingWithAdditionalAttributes(ctx context.Context, name string, version int64) (*models.ThingWithAdditionalAttributes, error) {
 	key, err := attributevalue.MarshalMap(ddbThingWithAdditionalAttributesPrimaryKey{
 		Name:    name,

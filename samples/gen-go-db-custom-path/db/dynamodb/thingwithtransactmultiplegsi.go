@@ -160,6 +160,48 @@ func (t ThingWithTransactMultipleGSITable) saveThingWithTransactMultipleGSI(ctx 
 	return nil
 }
 
+func (t ThingWithTransactMultipleGSITable) getArrayOfThingWithTransactMultipleGSI(ctx context.Context, ms []models.ThingWithTransactMultipleGSI) ([]models.ThingWithTransactMultipleGSI, error) {
+	if len(ms) == 0 {
+		return nil, nil
+	}
+
+	requestKeys := make([]map[string]types.AttributeValue, len(ms))
+	for i := range ms {
+		key, err := attributevalue.MarshalMap(ddbThingWithTransactMultipleGSIPrimaryKey{
+			DateH: ms[i].DateH,
+		})
+		if err != nil {
+			return nil, err
+		}
+		requestKeys[i] = key
+	}
+
+	tname := t.TableName
+	var items []models.ThingWithTransactMultipleGSI
+	for {
+		out, err := t.DynamoDBAPI.BatchGetItem(ctx, &dynamodb.BatchGetItemInput{
+			RequestItems: map[string]types.KeysAndAttributes{
+				tname: {Keys: requestKeys},
+			},
+		})
+		if err != nil {
+			return nil, fmt.Errorf("BatchGetItem: %v", err)
+		}
+		for _, item := range out.Responses[tname] {
+			var m models.ThingWithTransactMultipleGSI
+			if err := decodeThingWithTransactMultipleGSI(item, &m); err != nil {
+				return nil, err
+			}
+			items = append(items, m)
+		}
+		if len(out.UnprocessedKeys[tname].Keys) == 0 {
+			break
+		}
+		requestKeys = out.UnprocessedKeys[tname].Keys
+	}
+	return items, nil
+}
+
 func (t ThingWithTransactMultipleGSITable) getThingWithTransactMultipleGSI(ctx context.Context, dateH strfmt.Date) (*models.ThingWithTransactMultipleGSI, error) {
 	key, err := attributevalue.MarshalMap(ddbThingWithTransactMultipleGSIPrimaryKey{
 		DateH: dateH,

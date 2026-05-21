@@ -121,6 +121,49 @@ func (t TeacherSharingRuleTable) saveTeacherSharingRule(ctx context.Context, m m
 	return err
 }
 
+func (t TeacherSharingRuleTable) getArrayOfTeacherSharingRule(ctx context.Context, ms []models.TeacherSharingRule) ([]models.TeacherSharingRule, error) {
+	if len(ms) == 0 {
+		return nil, nil
+	}
+
+	requestKeys := make([]map[string]types.AttributeValue, len(ms))
+	for i := range ms {
+		key, err := attributevalue.MarshalMap(ddbTeacherSharingRulePrimaryKey{
+			Teacher:   ms[i].Teacher,
+			SchoolApp: fmt.Sprintf("%s_%s", ms[i].School, ms[i].App),
+		})
+		if err != nil {
+			return nil, err
+		}
+		requestKeys[i] = key
+	}
+
+	tname := t.TableName
+	var items []models.TeacherSharingRule
+	for {
+		out, err := t.DynamoDBAPI.BatchGetItem(ctx, &dynamodb.BatchGetItemInput{
+			RequestItems: map[string]types.KeysAndAttributes{
+				tname: {Keys: requestKeys},
+			},
+		})
+		if err != nil {
+			return nil, fmt.Errorf("BatchGetItem: %v", err)
+		}
+		for _, item := range out.Responses[tname] {
+			var m models.TeacherSharingRule
+			if err := decodeTeacherSharingRule(item, &m); err != nil {
+				return nil, err
+			}
+			items = append(items, m)
+		}
+		if len(out.UnprocessedKeys[tname].Keys) == 0 {
+			break
+		}
+		requestKeys = out.UnprocessedKeys[tname].Keys
+	}
+	return items, nil
+}
+
 func (t TeacherSharingRuleTable) getTeacherSharingRule(ctx context.Context, teacher string, school string, app string) (*models.TeacherSharingRule, error) {
 	key, err := attributevalue.MarshalMap(ddbTeacherSharingRulePrimaryKey{
 		Teacher:   teacher,

@@ -8,7 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	v9 "github.com/Clever/wag/samples/gen-go-strings/models/v9"
+	models "github.com/Clever/wag/samples/gen-go-strings/models/v9"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -36,7 +36,7 @@ func (m *MockController) EXPECT() *MockControllerMockRecorder {
 }
 
 // GetDistricts mocks base method.
-func (m *MockController) GetDistricts(ctx context.Context, i *v9.GetDistrictsInput) error {
+func (m *MockController) GetDistricts(ctx context.Context, i *models.GetDistrictsInput) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDistricts", ctx, i)
 	ret0, _ := ret[0].(error)

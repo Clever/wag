@@ -8,7 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	v9 "github.com/Clever/wag/samples/gen-go-blog/models/v9"
+	models "github.com/Clever/wag/samples/gen-go-blog/models/v9"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -36,10 +36,10 @@ func (m *MockController) EXPECT() *MockControllerMockRecorder {
 }
 
 // GetSectionsForStudent mocks base method.
-func (m *MockController) GetSectionsForStudent(ctx context.Context, studentID string) ([]v9.Section, error) {
+func (m *MockController) GetSectionsForStudent(ctx context.Context, studentID string) ([]models.Section, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSectionsForStudent", ctx, studentID)
-	ret0, _ := ret[0].([]v9.Section)
+	ret0, _ := ret[0].([]models.Section)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -51,7 +51,7 @@ func (mr *MockControllerMockRecorder) GetSectionsForStudent(ctx, studentID inter
 }
 
 // PostGradeFileForStudent mocks base method.
-func (m *MockController) PostGradeFileForStudent(ctx context.Context, i *v9.PostGradeFileForStudentInput) error {
+func (m *MockController) PostGradeFileForStudent(ctx context.Context, i *models.PostGradeFileForStudentInput) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PostGradeFileForStudent", ctx, i)
 	ret0, _ := ret[0].(error)
@@ -65,10 +65,10 @@ func (mr *MockControllerMockRecorder) PostGradeFileForStudent(ctx, i interface{}
 }
 
 // PostSectionsForStudent mocks base method.
-func (m *MockController) PostSectionsForStudent(ctx context.Context, i *v9.PostSectionsForStudentInput) ([]v9.Section, error) {
+func (m *MockController) PostSectionsForStudent(ctx context.Context, i *models.PostSectionsForStudentInput) ([]models.Section, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PostSectionsForStudent", ctx, i)
-	ret0, _ := ret[0].([]v9.Section)
+	ret0, _ := ret[0].([]models.Section)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

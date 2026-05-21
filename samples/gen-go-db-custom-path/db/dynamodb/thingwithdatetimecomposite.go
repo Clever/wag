@@ -85,6 +85,49 @@ func (t ThingWithDateTimeCompositeTable) saveThingWithDateTimeComposite(ctx cont
 	return err
 }
 
+func (t ThingWithDateTimeCompositeTable) getArrayOfThingWithDateTimeComposite(ctx context.Context, ms []models.ThingWithDateTimeComposite) ([]models.ThingWithDateTimeComposite, error) {
+	if len(ms) == 0 {
+		return nil, nil
+	}
+
+	requestKeys := make([]map[string]types.AttributeValue, len(ms))
+	for i := range ms {
+		key, err := attributevalue.MarshalMap(ddbThingWithDateTimeCompositePrimaryKey{
+			TypeID:          fmt.Sprintf("%s|%s", ms[i].Type, ms[i].ID),
+			CreatedResource: fmt.Sprintf("%s|%s", ms[i].Created, ms[i].Resource),
+		})
+		if err != nil {
+			return nil, err
+		}
+		requestKeys[i] = key
+	}
+
+	tname := t.TableName
+	var items []models.ThingWithDateTimeComposite
+	for {
+		out, err := t.DynamoDBAPI.BatchGetItem(ctx, &dynamodb.BatchGetItemInput{
+			RequestItems: map[string]types.KeysAndAttributes{
+				tname: {Keys: requestKeys},
+			},
+		})
+		if err != nil {
+			return nil, fmt.Errorf("BatchGetItem: %v", err)
+		}
+		for _, item := range out.Responses[tname] {
+			var m models.ThingWithDateTimeComposite
+			if err := decodeThingWithDateTimeComposite(item, &m); err != nil {
+				return nil, err
+			}
+			items = append(items, m)
+		}
+		if len(out.UnprocessedKeys[tname].Keys) == 0 {
+			break
+		}
+		requestKeys = out.UnprocessedKeys[tname].Keys
+	}
+	return items, nil
+}
+
 func (t ThingWithDateTimeCompositeTable) getThingWithDateTimeComposite(ctx context.Context, typeVar string, id string, created strfmt.DateTime, resource string) (*models.ThingWithDateTimeComposite, error) {
 	key, err := attributevalue.MarshalMap(ddbThingWithDateTimeCompositePrimaryKey{
 		TypeID:          fmt.Sprintf("%s|%s", typeVar, id),

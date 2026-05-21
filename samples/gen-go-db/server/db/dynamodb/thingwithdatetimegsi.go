@@ -129,6 +129,48 @@ func (t ThingWithDatetimeGSITable) saveThingWithDatetimeGSI(ctx context.Context,
 	return nil
 }
 
+func (t ThingWithDatetimeGSITable) getArrayOfThingWithDatetimeGSI(ctx context.Context, ms []models.ThingWithDatetimeGSI) ([]models.ThingWithDatetimeGSI, error) {
+	if len(ms) == 0 {
+		return nil, nil
+	}
+
+	requestKeys := make([]map[string]types.AttributeValue, len(ms))
+	for i := range ms {
+		key, err := attributevalue.MarshalMap(ddbThingWithDatetimeGSIPrimaryKey{
+			ID: ms[i].ID,
+		})
+		if err != nil {
+			return nil, err
+		}
+		requestKeys[i] = key
+	}
+
+	tname := t.TableName
+	var items []models.ThingWithDatetimeGSI
+	for {
+		out, err := t.DynamoDBAPI.BatchGetItem(ctx, &dynamodb.BatchGetItemInput{
+			RequestItems: map[string]types.KeysAndAttributes{
+				tname: {Keys: requestKeys},
+			},
+		})
+		if err != nil {
+			return nil, fmt.Errorf("BatchGetItem: %v", err)
+		}
+		for _, item := range out.Responses[tname] {
+			var m models.ThingWithDatetimeGSI
+			if err := decodeThingWithDatetimeGSI(item, &m); err != nil {
+				return nil, err
+			}
+			items = append(items, m)
+		}
+		if len(out.UnprocessedKeys[tname].Keys) == 0 {
+			break
+		}
+		requestKeys = out.UnprocessedKeys[tname].Keys
+	}
+	return items, nil
+}
+
 func (t ThingWithDatetimeGSITable) getThingWithDatetimeGSI(ctx context.Context, id string) (*models.ThingWithDatetimeGSI, error) {
 	key, err := attributevalue.MarshalMap(ddbThingWithDatetimeGSIPrimaryKey{
 		ID: id,

@@ -75,6 +75,48 @@ func (t ThingWithUnderscoresTable) saveThingWithUnderscores(ctx context.Context,
 	return err
 }
 
+func (t ThingWithUnderscoresTable) getArrayOfThingWithUnderscores(ctx context.Context, ms []models.ThingWithUnderscores) ([]models.ThingWithUnderscores, error) {
+	if len(ms) == 0 {
+		return nil, nil
+	}
+
+	requestKeys := make([]map[string]types.AttributeValue, len(ms))
+	for i := range ms {
+		key, err := attributevalue.MarshalMap(ddbThingWithUnderscoresPrimaryKey{
+			IDApp: ms[i].IDApp,
+		})
+		if err != nil {
+			return nil, err
+		}
+		requestKeys[i] = key
+	}
+
+	tname := t.TableName
+	var items []models.ThingWithUnderscores
+	for {
+		out, err := t.DynamoDBAPI.BatchGetItem(ctx, &dynamodb.BatchGetItemInput{
+			RequestItems: map[string]types.KeysAndAttributes{
+				tname: {Keys: requestKeys},
+			},
+		})
+		if err != nil {
+			return nil, fmt.Errorf("BatchGetItem: %v", err)
+		}
+		for _, item := range out.Responses[tname] {
+			var m models.ThingWithUnderscores
+			if err := decodeThingWithUnderscores(item, &m); err != nil {
+				return nil, err
+			}
+			items = append(items, m)
+		}
+		if len(out.UnprocessedKeys[tname].Keys) == 0 {
+			break
+		}
+		requestKeys = out.UnprocessedKeys[tname].Keys
+	}
+	return items, nil
+}
+
 func (t ThingWithUnderscoresTable) getThingWithUnderscores(ctx context.Context, iDApp string) (*models.ThingWithUnderscores, error) {
 	key, err := attributevalue.MarshalMap(ddbThingWithUnderscoresPrimaryKey{
 		IDApp: iDApp,

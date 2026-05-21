@@ -191,6 +191,49 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) deleteArrayOfThing
 	return nil
 }
 
+func (t ThingAllowingBatchWritesWithCompositeAttributesTable) getArrayOfThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, ms []models.ThingAllowingBatchWritesWithCompositeAttributes) ([]models.ThingAllowingBatchWritesWithCompositeAttributes, error) {
+	if len(ms) == 0 {
+		return nil, nil
+	}
+
+	requestKeys := make([]map[string]types.AttributeValue, len(ms))
+	for i := range ms {
+		key, err := attributevalue.MarshalMap(ddbThingAllowingBatchWritesWithCompositeAttributesPrimaryKey{
+			NameID: fmt.Sprintf("%s@%s", *ms[i].Name, *ms[i].ID),
+			Date:   *ms[i].Date,
+		})
+		if err != nil {
+			return nil, err
+		}
+		requestKeys[i] = key
+	}
+
+	tname := t.TableName
+	var items []models.ThingAllowingBatchWritesWithCompositeAttributes
+	for {
+		out, err := t.DynamoDBAPI.BatchGetItem(ctx, &dynamodb.BatchGetItemInput{
+			RequestItems: map[string]types.KeysAndAttributes{
+				tname: {Keys: requestKeys},
+			},
+		})
+		if err != nil {
+			return nil, fmt.Errorf("BatchGetItem: %v", err)
+		}
+		for _, item := range out.Responses[tname] {
+			var m models.ThingAllowingBatchWritesWithCompositeAttributes
+			if err := decodeThingAllowingBatchWritesWithCompositeAttributes(item, &m); err != nil {
+				return nil, err
+			}
+			items = append(items, m)
+		}
+		if len(out.UnprocessedKeys[tname].Keys) == 0 {
+			break
+		}
+		requestKeys = out.UnprocessedKeys[tname].Keys
+	}
+	return items, nil
+}
+
 func (t ThingAllowingBatchWritesWithCompositeAttributesTable) getThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name string, id string, date strfmt.DateTime) (*models.ThingAllowingBatchWritesWithCompositeAttributes, error) {
 	key, err := attributevalue.MarshalMap(ddbThingAllowingBatchWritesWithCompositeAttributesPrimaryKey{
 		NameID: fmt.Sprintf("%s@%s", name, id),

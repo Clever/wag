@@ -108,6 +108,48 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) saveThingWithRequi
 	return err
 }
 
+func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) getArrayOfThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, ms []models.ThingWithRequiredCompositePropertiesAndKeysOnly) ([]models.ThingWithRequiredCompositePropertiesAndKeysOnly, error) {
+	if len(ms) == 0 {
+		return nil, nil
+	}
+
+	requestKeys := make([]map[string]types.AttributeValue, len(ms))
+	for i := range ms {
+		key, err := attributevalue.MarshalMap(ddbThingWithRequiredCompositePropertiesAndKeysOnlyPrimaryKey{
+			PropertyThree: *ms[i].PropertyThree,
+		})
+		if err != nil {
+			return nil, err
+		}
+		requestKeys[i] = key
+	}
+
+	tname := t.TableName
+	var items []models.ThingWithRequiredCompositePropertiesAndKeysOnly
+	for {
+		out, err := t.DynamoDBAPI.BatchGetItem(ctx, &dynamodb.BatchGetItemInput{
+			RequestItems: map[string]types.KeysAndAttributes{
+				tname: {Keys: requestKeys},
+			},
+		})
+		if err != nil {
+			return nil, fmt.Errorf("BatchGetItem: %v", err)
+		}
+		for _, item := range out.Responses[tname] {
+			var m models.ThingWithRequiredCompositePropertiesAndKeysOnly
+			if err := decodeThingWithRequiredCompositePropertiesAndKeysOnly(item, &m); err != nil {
+				return nil, err
+			}
+			items = append(items, m)
+		}
+		if len(out.UnprocessedKeys[tname].Keys) == 0 {
+			break
+		}
+		requestKeys = out.UnprocessedKeys[tname].Keys
+	}
+	return items, nil
+}
+
 func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) getThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, propertyThree string) (*models.ThingWithRequiredCompositePropertiesAndKeysOnly, error) {
 	key, err := attributevalue.MarshalMap(ddbThingWithRequiredCompositePropertiesAndKeysOnlyPrimaryKey{
 		PropertyThree: propertyThree,

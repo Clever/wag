@@ -117,6 +117,49 @@ func (t ThingWithMatchingKeysTable) saveThingWithMatchingKeys(ctx context.Contex
 	return err
 }
 
+func (t ThingWithMatchingKeysTable) getArrayOfThingWithMatchingKeys(ctx context.Context, ms []models.ThingWithMatchingKeys) ([]models.ThingWithMatchingKeys, error) {
+	if len(ms) == 0 {
+		return nil, nil
+	}
+
+	requestKeys := make([]map[string]types.AttributeValue, len(ms))
+	for i := range ms {
+		key, err := attributevalue.MarshalMap(ddbThingWithMatchingKeysPrimaryKey{
+			Bear:        ms[i].Bear,
+			AssocTypeID: fmt.Sprintf("%s^%s", ms[i].AssocType, ms[i].AssocID),
+		})
+		if err != nil {
+			return nil, err
+		}
+		requestKeys[i] = key
+	}
+
+	tname := t.TableName
+	var items []models.ThingWithMatchingKeys
+	for {
+		out, err := t.DynamoDBAPI.BatchGetItem(ctx, &dynamodb.BatchGetItemInput{
+			RequestItems: map[string]types.KeysAndAttributes{
+				tname: {Keys: requestKeys},
+			},
+		})
+		if err != nil {
+			return nil, fmt.Errorf("BatchGetItem: %v", err)
+		}
+		for _, item := range out.Responses[tname] {
+			var m models.ThingWithMatchingKeys
+			if err := decodeThingWithMatchingKeys(item, &m); err != nil {
+				return nil, err
+			}
+			items = append(items, m)
+		}
+		if len(out.UnprocessedKeys[tname].Keys) == 0 {
+			break
+		}
+		requestKeys = out.UnprocessedKeys[tname].Keys
+	}
+	return items, nil
+}
+
 func (t ThingWithMatchingKeysTable) getThingWithMatchingKeys(ctx context.Context, bear string, assocType string, assocID string) (*models.ThingWithMatchingKeys, error) {
 	key, err := attributevalue.MarshalMap(ddbThingWithMatchingKeysPrimaryKey{
 		Bear:        bear,

@@ -190,6 +190,49 @@ func (t ThingAllowingBatchWritesTable) deleteArrayOfThingAllowingBatchWrites(ctx
 	return nil
 }
 
+func (t ThingAllowingBatchWritesTable) getArrayOfThingAllowingBatchWrites(ctx context.Context, ms []models.ThingAllowingBatchWrites) ([]models.ThingAllowingBatchWrites, error) {
+	if len(ms) == 0 {
+		return nil, nil
+	}
+
+	requestKeys := make([]map[string]types.AttributeValue, len(ms))
+	for i := range ms {
+		key, err := attributevalue.MarshalMap(ddbThingAllowingBatchWritesPrimaryKey{
+			Name:    ms[i].Name,
+			Version: ms[i].Version,
+		})
+		if err != nil {
+			return nil, err
+		}
+		requestKeys[i] = key
+	}
+
+	tname := t.TableName
+	var items []models.ThingAllowingBatchWrites
+	for {
+		out, err := t.DynamoDBAPI.BatchGetItem(ctx, &dynamodb.BatchGetItemInput{
+			RequestItems: map[string]types.KeysAndAttributes{
+				tname: {Keys: requestKeys},
+			},
+		})
+		if err != nil {
+			return nil, fmt.Errorf("BatchGetItem: %v", err)
+		}
+		for _, item := range out.Responses[tname] {
+			var m models.ThingAllowingBatchWrites
+			if err := decodeThingAllowingBatchWrites(item, &m); err != nil {
+				return nil, err
+			}
+			items = append(items, m)
+		}
+		if len(out.UnprocessedKeys[tname].Keys) == 0 {
+			break
+		}
+		requestKeys = out.UnprocessedKeys[tname].Keys
+	}
+	return items, nil
+}
+
 func (t ThingAllowingBatchWritesTable) getThingAllowingBatchWrites(ctx context.Context, name string, version int64) (*models.ThingAllowingBatchWrites, error) {
 	key, err := attributevalue.MarshalMap(ddbThingAllowingBatchWritesPrimaryKey{
 		Name:    name,

@@ -8,7 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	v9 "github.com/Clever/wag/samples/gen-go-errors/models/v9"
+	models "github.com/Clever/wag/samples/gen-go-errors/models/v9"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -36,7 +36,7 @@ func (m *MockController) EXPECT() *MockControllerMockRecorder {
 }
 
 // GetBook mocks base method.
-func (m *MockController) GetBook(ctx context.Context, i *v9.GetBookInput) error {
+func (m *MockController) GetBook(ctx context.Context, i *models.GetBookInput) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetBook", ctx, i)
 	ret0, _ := ret[0].(error)

@@ -429,6 +429,396 @@ func (mr *MockInterfaceMockRecorder) DeleteThingWithUnderscores(ctx, iDApp inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteThingWithUnderscores", reflect.TypeOf((*MockInterface)(nil).DeleteThingWithUnderscores), ctx, iDApp)
 }
 
+// GetArrayOfDeployment mocks base method.
+func (m *MockInterface) GetArrayOfDeployment(ctx context.Context, ms []v9.Deployment) ([]v9.Deployment, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfDeployment", ctx, ms)
+	ret0, _ := ret[0].([]v9.Deployment)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfDeployment indicates an expected call of GetArrayOfDeployment.
+func (mr *MockInterfaceMockRecorder) GetArrayOfDeployment(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfDeployment", reflect.TypeOf((*MockInterface)(nil).GetArrayOfDeployment), ctx, ms)
+}
+
+// GetArrayOfEvent mocks base method.
+func (m *MockInterface) GetArrayOfEvent(ctx context.Context, ms []v9.Event) ([]v9.Event, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfEvent", ctx, ms)
+	ret0, _ := ret[0].([]v9.Event)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfEvent indicates an expected call of GetArrayOfEvent.
+func (mr *MockInterfaceMockRecorder) GetArrayOfEvent(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfEvent", reflect.TypeOf((*MockInterface)(nil).GetArrayOfEvent), ctx, ms)
+}
+
+// GetArrayOfNoRangeThingWithCompositeAttributes mocks base method.
+func (m *MockInterface) GetArrayOfNoRangeThingWithCompositeAttributes(ctx context.Context, ms []v9.NoRangeThingWithCompositeAttributes) ([]v9.NoRangeThingWithCompositeAttributes, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfNoRangeThingWithCompositeAttributes", ctx, ms)
+	ret0, _ := ret[0].([]v9.NoRangeThingWithCompositeAttributes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfNoRangeThingWithCompositeAttributes indicates an expected call of GetArrayOfNoRangeThingWithCompositeAttributes.
+func (mr *MockInterfaceMockRecorder) GetArrayOfNoRangeThingWithCompositeAttributes(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfNoRangeThingWithCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).GetArrayOfNoRangeThingWithCompositeAttributes), ctx, ms)
+}
+
+// GetArrayOfSimpleThing mocks base method.
+func (m *MockInterface) GetArrayOfSimpleThing(ctx context.Context, ms []v9.SimpleThing) ([]v9.SimpleThing, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfSimpleThing", ctx, ms)
+	ret0, _ := ret[0].([]v9.SimpleThing)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfSimpleThing indicates an expected call of GetArrayOfSimpleThing.
+func (mr *MockInterfaceMockRecorder) GetArrayOfSimpleThing(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfSimpleThing", reflect.TypeOf((*MockInterface)(nil).GetArrayOfSimpleThing), ctx, ms)
+}
+
+// GetArrayOfTeacherSharingRule mocks base method.
+func (m *MockInterface) GetArrayOfTeacherSharingRule(ctx context.Context, ms []v9.TeacherSharingRule) ([]v9.TeacherSharingRule, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfTeacherSharingRule", ctx, ms)
+	ret0, _ := ret[0].([]v9.TeacherSharingRule)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfTeacherSharingRule indicates an expected call of GetArrayOfTeacherSharingRule.
+func (mr *MockInterfaceMockRecorder) GetArrayOfTeacherSharingRule(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfTeacherSharingRule", reflect.TypeOf((*MockInterface)(nil).GetArrayOfTeacherSharingRule), ctx, ms)
+}
+
+// GetArrayOfThing mocks base method.
+func (m *MockInterface) GetArrayOfThing(ctx context.Context, ms []v9.Thing) ([]v9.Thing, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfThing", ctx, ms)
+	ret0, _ := ret[0].([]v9.Thing)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfThing indicates an expected call of GetArrayOfThing.
+func (mr *MockInterfaceMockRecorder) GetArrayOfThing(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfThing", reflect.TypeOf((*MockInterface)(nil).GetArrayOfThing), ctx, ms)
+}
+
+// GetArrayOfThingAllowingBatchWrites mocks base method.
+func (m *MockInterface) GetArrayOfThingAllowingBatchWrites(ctx context.Context, ms []v9.ThingAllowingBatchWrites) ([]v9.ThingAllowingBatchWrites, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfThingAllowingBatchWrites", ctx, ms)
+	ret0, _ := ret[0].([]v9.ThingAllowingBatchWrites)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfThingAllowingBatchWrites indicates an expected call of GetArrayOfThingAllowingBatchWrites.
+func (mr *MockInterfaceMockRecorder) GetArrayOfThingAllowingBatchWrites(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfThingAllowingBatchWrites", reflect.TypeOf((*MockInterface)(nil).GetArrayOfThingAllowingBatchWrites), ctx, ms)
+}
+
+// GetArrayOfThingAllowingBatchWritesWithCompositeAttributes mocks base method.
+func (m *MockInterface) GetArrayOfThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, ms []v9.ThingAllowingBatchWritesWithCompositeAttributes) ([]v9.ThingAllowingBatchWritesWithCompositeAttributes, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfThingAllowingBatchWritesWithCompositeAttributes", ctx, ms)
+	ret0, _ := ret[0].([]v9.ThingAllowingBatchWritesWithCompositeAttributes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfThingAllowingBatchWritesWithCompositeAttributes indicates an expected call of GetArrayOfThingAllowingBatchWritesWithCompositeAttributes.
+func (mr *MockInterfaceMockRecorder) GetArrayOfThingAllowingBatchWritesWithCompositeAttributes(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfThingAllowingBatchWritesWithCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).GetArrayOfThingAllowingBatchWritesWithCompositeAttributes), ctx, ms)
+}
+
+// GetArrayOfThingWithAdditionalAttributes mocks base method.
+func (m *MockInterface) GetArrayOfThingWithAdditionalAttributes(ctx context.Context, ms []v9.ThingWithAdditionalAttributes) ([]v9.ThingWithAdditionalAttributes, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfThingWithAdditionalAttributes", ctx, ms)
+	ret0, _ := ret[0].([]v9.ThingWithAdditionalAttributes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfThingWithAdditionalAttributes indicates an expected call of GetArrayOfThingWithAdditionalAttributes.
+func (mr *MockInterfaceMockRecorder) GetArrayOfThingWithAdditionalAttributes(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfThingWithAdditionalAttributes", reflect.TypeOf((*MockInterface)(nil).GetArrayOfThingWithAdditionalAttributes), ctx, ms)
+}
+
+// GetArrayOfThingWithCompositeAttributes mocks base method.
+func (m *MockInterface) GetArrayOfThingWithCompositeAttributes(ctx context.Context, ms []v9.ThingWithCompositeAttributes) ([]v9.ThingWithCompositeAttributes, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfThingWithCompositeAttributes", ctx, ms)
+	ret0, _ := ret[0].([]v9.ThingWithCompositeAttributes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfThingWithCompositeAttributes indicates an expected call of GetArrayOfThingWithCompositeAttributes.
+func (mr *MockInterfaceMockRecorder) GetArrayOfThingWithCompositeAttributes(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfThingWithCompositeAttributes", reflect.TypeOf((*MockInterface)(nil).GetArrayOfThingWithCompositeAttributes), ctx, ms)
+}
+
+// GetArrayOfThingWithCompositeEnumAttributes mocks base method.
+func (m *MockInterface) GetArrayOfThingWithCompositeEnumAttributes(ctx context.Context, ms []v9.ThingWithCompositeEnumAttributes) ([]v9.ThingWithCompositeEnumAttributes, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfThingWithCompositeEnumAttributes", ctx, ms)
+	ret0, _ := ret[0].([]v9.ThingWithCompositeEnumAttributes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfThingWithCompositeEnumAttributes indicates an expected call of GetArrayOfThingWithCompositeEnumAttributes.
+func (mr *MockInterfaceMockRecorder) GetArrayOfThingWithCompositeEnumAttributes(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfThingWithCompositeEnumAttributes", reflect.TypeOf((*MockInterface)(nil).GetArrayOfThingWithCompositeEnumAttributes), ctx, ms)
+}
+
+// GetArrayOfThingWithDateGSI mocks base method.
+func (m *MockInterface) GetArrayOfThingWithDateGSI(ctx context.Context, ms []v9.ThingWithDateGSI) ([]v9.ThingWithDateGSI, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfThingWithDateGSI", ctx, ms)
+	ret0, _ := ret[0].([]v9.ThingWithDateGSI)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfThingWithDateGSI indicates an expected call of GetArrayOfThingWithDateGSI.
+func (mr *MockInterfaceMockRecorder) GetArrayOfThingWithDateGSI(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfThingWithDateGSI", reflect.TypeOf((*MockInterface)(nil).GetArrayOfThingWithDateGSI), ctx, ms)
+}
+
+// GetArrayOfThingWithDateRange mocks base method.
+func (m *MockInterface) GetArrayOfThingWithDateRange(ctx context.Context, ms []v9.ThingWithDateRange) ([]v9.ThingWithDateRange, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfThingWithDateRange", ctx, ms)
+	ret0, _ := ret[0].([]v9.ThingWithDateRange)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfThingWithDateRange indicates an expected call of GetArrayOfThingWithDateRange.
+func (mr *MockInterfaceMockRecorder) GetArrayOfThingWithDateRange(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfThingWithDateRange", reflect.TypeOf((*MockInterface)(nil).GetArrayOfThingWithDateRange), ctx, ms)
+}
+
+// GetArrayOfThingWithDateRangeKey mocks base method.
+func (m *MockInterface) GetArrayOfThingWithDateRangeKey(ctx context.Context, ms []v9.ThingWithDateRangeKey) ([]v9.ThingWithDateRangeKey, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfThingWithDateRangeKey", ctx, ms)
+	ret0, _ := ret[0].([]v9.ThingWithDateRangeKey)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfThingWithDateRangeKey indicates an expected call of GetArrayOfThingWithDateRangeKey.
+func (mr *MockInterfaceMockRecorder) GetArrayOfThingWithDateRangeKey(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfThingWithDateRangeKey", reflect.TypeOf((*MockInterface)(nil).GetArrayOfThingWithDateRangeKey), ctx, ms)
+}
+
+// GetArrayOfThingWithDateTimeComposite mocks base method.
+func (m *MockInterface) GetArrayOfThingWithDateTimeComposite(ctx context.Context, ms []v9.ThingWithDateTimeComposite) ([]v9.ThingWithDateTimeComposite, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfThingWithDateTimeComposite", ctx, ms)
+	ret0, _ := ret[0].([]v9.ThingWithDateTimeComposite)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfThingWithDateTimeComposite indicates an expected call of GetArrayOfThingWithDateTimeComposite.
+func (mr *MockInterfaceMockRecorder) GetArrayOfThingWithDateTimeComposite(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfThingWithDateTimeComposite", reflect.TypeOf((*MockInterface)(nil).GetArrayOfThingWithDateTimeComposite), ctx, ms)
+}
+
+// GetArrayOfThingWithDatetimeGSI mocks base method.
+func (m *MockInterface) GetArrayOfThingWithDatetimeGSI(ctx context.Context, ms []v9.ThingWithDatetimeGSI) ([]v9.ThingWithDatetimeGSI, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfThingWithDatetimeGSI", ctx, ms)
+	ret0, _ := ret[0].([]v9.ThingWithDatetimeGSI)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfThingWithDatetimeGSI indicates an expected call of GetArrayOfThingWithDatetimeGSI.
+func (mr *MockInterfaceMockRecorder) GetArrayOfThingWithDatetimeGSI(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfThingWithDatetimeGSI", reflect.TypeOf((*MockInterface)(nil).GetArrayOfThingWithDatetimeGSI), ctx, ms)
+}
+
+// GetArrayOfThingWithEnumHashKey mocks base method.
+func (m *MockInterface) GetArrayOfThingWithEnumHashKey(ctx context.Context, ms []v9.ThingWithEnumHashKey) ([]v9.ThingWithEnumHashKey, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfThingWithEnumHashKey", ctx, ms)
+	ret0, _ := ret[0].([]v9.ThingWithEnumHashKey)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfThingWithEnumHashKey indicates an expected call of GetArrayOfThingWithEnumHashKey.
+func (mr *MockInterfaceMockRecorder) GetArrayOfThingWithEnumHashKey(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfThingWithEnumHashKey", reflect.TypeOf((*MockInterface)(nil).GetArrayOfThingWithEnumHashKey), ctx, ms)
+}
+
+// GetArrayOfThingWithMatchingKeys mocks base method.
+func (m *MockInterface) GetArrayOfThingWithMatchingKeys(ctx context.Context, ms []v9.ThingWithMatchingKeys) ([]v9.ThingWithMatchingKeys, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfThingWithMatchingKeys", ctx, ms)
+	ret0, _ := ret[0].([]v9.ThingWithMatchingKeys)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfThingWithMatchingKeys indicates an expected call of GetArrayOfThingWithMatchingKeys.
+func (mr *MockInterfaceMockRecorder) GetArrayOfThingWithMatchingKeys(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfThingWithMatchingKeys", reflect.TypeOf((*MockInterface)(nil).GetArrayOfThingWithMatchingKeys), ctx, ms)
+}
+
+// GetArrayOfThingWithMultiUseCompositeAttribute mocks base method.
+func (m *MockInterface) GetArrayOfThingWithMultiUseCompositeAttribute(ctx context.Context, ms []v9.ThingWithMultiUseCompositeAttribute) ([]v9.ThingWithMultiUseCompositeAttribute, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfThingWithMultiUseCompositeAttribute", ctx, ms)
+	ret0, _ := ret[0].([]v9.ThingWithMultiUseCompositeAttribute)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfThingWithMultiUseCompositeAttribute indicates an expected call of GetArrayOfThingWithMultiUseCompositeAttribute.
+func (mr *MockInterfaceMockRecorder) GetArrayOfThingWithMultiUseCompositeAttribute(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfThingWithMultiUseCompositeAttribute", reflect.TypeOf((*MockInterface)(nil).GetArrayOfThingWithMultiUseCompositeAttribute), ctx, ms)
+}
+
+// GetArrayOfThingWithRequiredCompositePropertiesAndKeysOnly mocks base method.
+func (m *MockInterface) GetArrayOfThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, ms []v9.ThingWithRequiredCompositePropertiesAndKeysOnly) ([]v9.ThingWithRequiredCompositePropertiesAndKeysOnly, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfThingWithRequiredCompositePropertiesAndKeysOnly", ctx, ms)
+	ret0, _ := ret[0].([]v9.ThingWithRequiredCompositePropertiesAndKeysOnly)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfThingWithRequiredCompositePropertiesAndKeysOnly indicates an expected call of GetArrayOfThingWithRequiredCompositePropertiesAndKeysOnly.
+func (mr *MockInterfaceMockRecorder) GetArrayOfThingWithRequiredCompositePropertiesAndKeysOnly(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfThingWithRequiredCompositePropertiesAndKeysOnly", reflect.TypeOf((*MockInterface)(nil).GetArrayOfThingWithRequiredCompositePropertiesAndKeysOnly), ctx, ms)
+}
+
+// GetArrayOfThingWithRequiredFields mocks base method.
+func (m *MockInterface) GetArrayOfThingWithRequiredFields(ctx context.Context, ms []v9.ThingWithRequiredFields) ([]v9.ThingWithRequiredFields, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfThingWithRequiredFields", ctx, ms)
+	ret0, _ := ret[0].([]v9.ThingWithRequiredFields)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfThingWithRequiredFields indicates an expected call of GetArrayOfThingWithRequiredFields.
+func (mr *MockInterfaceMockRecorder) GetArrayOfThingWithRequiredFields(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfThingWithRequiredFields", reflect.TypeOf((*MockInterface)(nil).GetArrayOfThingWithRequiredFields), ctx, ms)
+}
+
+// GetArrayOfThingWithRequiredFields2 mocks base method.
+func (m *MockInterface) GetArrayOfThingWithRequiredFields2(ctx context.Context, ms []v9.ThingWithRequiredFields2) ([]v9.ThingWithRequiredFields2, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfThingWithRequiredFields2", ctx, ms)
+	ret0, _ := ret[0].([]v9.ThingWithRequiredFields2)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfThingWithRequiredFields2 indicates an expected call of GetArrayOfThingWithRequiredFields2.
+func (mr *MockInterfaceMockRecorder) GetArrayOfThingWithRequiredFields2(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfThingWithRequiredFields2", reflect.TypeOf((*MockInterface)(nil).GetArrayOfThingWithRequiredFields2), ctx, ms)
+}
+
+// GetArrayOfThingWithTransactMultipleGSI mocks base method.
+func (m *MockInterface) GetArrayOfThingWithTransactMultipleGSI(ctx context.Context, ms []v9.ThingWithTransactMultipleGSI) ([]v9.ThingWithTransactMultipleGSI, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfThingWithTransactMultipleGSI", ctx, ms)
+	ret0, _ := ret[0].([]v9.ThingWithTransactMultipleGSI)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfThingWithTransactMultipleGSI indicates an expected call of GetArrayOfThingWithTransactMultipleGSI.
+func (mr *MockInterfaceMockRecorder) GetArrayOfThingWithTransactMultipleGSI(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfThingWithTransactMultipleGSI", reflect.TypeOf((*MockInterface)(nil).GetArrayOfThingWithTransactMultipleGSI), ctx, ms)
+}
+
+// GetArrayOfThingWithTransaction mocks base method.
+func (m *MockInterface) GetArrayOfThingWithTransaction(ctx context.Context, ms []v9.ThingWithTransaction) ([]v9.ThingWithTransaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfThingWithTransaction", ctx, ms)
+	ret0, _ := ret[0].([]v9.ThingWithTransaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfThingWithTransaction indicates an expected call of GetArrayOfThingWithTransaction.
+func (mr *MockInterfaceMockRecorder) GetArrayOfThingWithTransaction(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfThingWithTransaction", reflect.TypeOf((*MockInterface)(nil).GetArrayOfThingWithTransaction), ctx, ms)
+}
+
+// GetArrayOfThingWithTransactionWithSimpleThing mocks base method.
+func (m *MockInterface) GetArrayOfThingWithTransactionWithSimpleThing(ctx context.Context, ms []v9.ThingWithTransactionWithSimpleThing) ([]v9.ThingWithTransactionWithSimpleThing, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfThingWithTransactionWithSimpleThing", ctx, ms)
+	ret0, _ := ret[0].([]v9.ThingWithTransactionWithSimpleThing)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfThingWithTransactionWithSimpleThing indicates an expected call of GetArrayOfThingWithTransactionWithSimpleThing.
+func (mr *MockInterfaceMockRecorder) GetArrayOfThingWithTransactionWithSimpleThing(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfThingWithTransactionWithSimpleThing", reflect.TypeOf((*MockInterface)(nil).GetArrayOfThingWithTransactionWithSimpleThing), ctx, ms)
+}
+
+// GetArrayOfThingWithUnderscores mocks base method.
+func (m *MockInterface) GetArrayOfThingWithUnderscores(ctx context.Context, ms []v9.ThingWithUnderscores) ([]v9.ThingWithUnderscores, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArrayOfThingWithUnderscores", ctx, ms)
+	ret0, _ := ret[0].([]v9.ThingWithUnderscores)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArrayOfThingWithUnderscores indicates an expected call of GetArrayOfThingWithUnderscores.
+func (mr *MockInterfaceMockRecorder) GetArrayOfThingWithUnderscores(ctx, ms interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArrayOfThingWithUnderscores", reflect.TypeOf((*MockInterface)(nil).GetArrayOfThingWithUnderscores), ctx, ms)
+}
+
 // GetDeployment mocks base method.
 func (m *MockInterface) GetDeployment(ctx context.Context, environment, application, version string) (*v9.Deployment, error) {
 	m.ctrl.T.Helper()
