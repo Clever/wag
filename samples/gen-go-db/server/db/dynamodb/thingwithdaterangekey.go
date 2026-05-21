@@ -111,7 +111,7 @@ func (t ThingWithDateRangeKeyTable) saveThingWithDateRangeKey(ctx context.Contex
 	return nil
 }
 
-func (t ThingWithDateRangeKeyTable) getArrayOfThingWithDateRangeKey(ctx context.Context, ms []models.ThingWithDateRangeKey) ([]models.ThingWithDateRangeKey, error) {
+func (t ThingWithDateRangeKeyTable) getSliceOfThingWithDateRangeKey(ctx context.Context, ms []models.ThingWithDateRangeKey) ([]models.ThingWithDateRangeKey, error) {
 	if len(ms) == 0 {
 		return nil, nil
 	}

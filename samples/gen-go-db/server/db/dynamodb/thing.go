@@ -228,7 +228,7 @@ func (t ThingTable) saveThing(ctx context.Context, m models.Thing) error {
 	return nil
 }
 
-func (t ThingTable) getArrayOfThing(ctx context.Context, ms []models.Thing) ([]models.Thing, error) {
+func (t ThingTable) getSliceOfThing(ctx context.Context, ms []models.Thing) ([]models.Thing, error) {
 	if len(ms) == 0 {
 		return nil, nil
 	}

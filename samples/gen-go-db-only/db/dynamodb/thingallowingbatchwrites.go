@@ -190,7 +190,7 @@ func (t ThingAllowingBatchWritesTable) deleteArrayOfThingAllowingBatchWrites(ctx
 	return nil
 }
 
-func (t ThingAllowingBatchWritesTable) getArrayOfThingAllowingBatchWrites(ctx context.Context, ms []models.ThingAllowingBatchWrites) ([]models.ThingAllowingBatchWrites, error) {
+func (t ThingAllowingBatchWritesTable) getSliceOfThingAllowingBatchWrites(ctx context.Context, ms []models.ThingAllowingBatchWrites) ([]models.ThingAllowingBatchWrites, error) {
 	if len(ms) == 0 {
 		return nil, nil
 	}

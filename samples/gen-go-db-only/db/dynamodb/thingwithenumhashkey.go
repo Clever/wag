@@ -143,7 +143,7 @@ func (t ThingWithEnumHashKeyTable) saveThingWithEnumHashKey(ctx context.Context,
 	return nil
 }
 
-func (t ThingWithEnumHashKeyTable) getArrayOfThingWithEnumHashKey(ctx context.Context, ms []models.ThingWithEnumHashKey) ([]models.ThingWithEnumHashKey, error) {
+func (t ThingWithEnumHashKeyTable) getSliceOfThingWithEnumHashKey(ctx context.Context, ms []models.ThingWithEnumHashKey) ([]models.ThingWithEnumHashKey, error) {
 	if len(ms) == 0 {
 		return nil, nil
 	}

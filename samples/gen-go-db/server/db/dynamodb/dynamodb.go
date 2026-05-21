@@ -718,9 +718,9 @@ func (d DB) DeleteDeployment(ctx context.Context, environment string, applicatio
 	return d.deploymentTable.deleteDeployment(ctx, environment, application, version)
 }
 
-// GetArrayOfDeployment gets multiple Deployments by their primary keys.
-func (d DB) GetArrayOfDeployment(ctx context.Context, ms []models.Deployment) ([]models.Deployment, error) {
-	return d.deploymentTable.getArrayOfDeployment(ctx, ms)
+// GetSliceOfDeployment gets multiple Deployments by their primary keys.
+func (d DB) GetSliceOfDeployment(ctx context.Context, ms []models.Deployment) ([]models.Deployment, error) {
+	return d.deploymentTable.getSliceOfDeployment(ctx, ms)
 }
 
 // GetDeploymentsByEnvAppAndDate retrieves a page of Deployments from the database.
@@ -773,9 +773,9 @@ func (d DB) DeleteEvent(ctx context.Context, pk string, sk string) error {
 	return d.eventTable.deleteEvent(ctx, pk, sk)
 }
 
-// GetArrayOfEvent gets multiple Events by their primary keys.
-func (d DB) GetArrayOfEvent(ctx context.Context, ms []models.Event) ([]models.Event, error) {
-	return d.eventTable.getArrayOfEvent(ctx, ms)
+// GetSliceOfEvent gets multiple Events by their primary keys.
+func (d DB) GetSliceOfEvent(ctx context.Context, ms []models.Event) ([]models.Event, error) {
+	return d.eventTable.getSliceOfEvent(ctx, ms)
 }
 
 // GetEventsBySkAndData retrieves a page of Events from the database.
@@ -808,9 +808,9 @@ func (d DB) DeleteNoRangeThingWithCompositeAttributes(ctx context.Context, name 
 	return d.noRangeThingWithCompositeAttributesTable.deleteNoRangeThingWithCompositeAttributes(ctx, name, branch)
 }
 
-// GetArrayOfNoRangeThingWithCompositeAttributes gets multiple NoRangeThingWithCompositeAttributess by their primary keys.
-func (d DB) GetArrayOfNoRangeThingWithCompositeAttributes(ctx context.Context, ms []models.NoRangeThingWithCompositeAttributes) ([]models.NoRangeThingWithCompositeAttributes, error) {
-	return d.noRangeThingWithCompositeAttributesTable.getArrayOfNoRangeThingWithCompositeAttributes(ctx, ms)
+// GetSliceOfNoRangeThingWithCompositeAttributes gets multiple NoRangeThingWithCompositeAttributess by their primary keys.
+func (d DB) GetSliceOfNoRangeThingWithCompositeAttributes(ctx context.Context, ms []models.NoRangeThingWithCompositeAttributes) ([]models.NoRangeThingWithCompositeAttributes, error) {
+	return d.noRangeThingWithCompositeAttributesTable.getSliceOfNoRangeThingWithCompositeAttributes(ctx, ms)
 }
 
 // GetNoRangeThingWithCompositeAttributessByNameVersionAndDate retrieves a page of NoRangeThingWithCompositeAttributess from the database.
@@ -848,9 +848,9 @@ func (d DB) DeleteSimpleThing(ctx context.Context, name string) error {
 	return d.simpleThingTable.deleteSimpleThing(ctx, name)
 }
 
-// GetArrayOfSimpleThing gets multiple SimpleThings by their primary keys.
-func (d DB) GetArrayOfSimpleThing(ctx context.Context, ms []models.SimpleThing) ([]models.SimpleThing, error) {
-	return d.simpleThingTable.getArrayOfSimpleThing(ctx, ms)
+// GetSliceOfSimpleThing gets multiple SimpleThings by their primary keys.
+func (d DB) GetSliceOfSimpleThing(ctx context.Context, ms []models.SimpleThing) ([]models.SimpleThing, error) {
+	return d.simpleThingTable.getSliceOfSimpleThing(ctx, ms)
 }
 
 // SaveTeacherSharingRule saves a TeacherSharingRule to the database.
@@ -878,9 +878,9 @@ func (d DB) DeleteTeacherSharingRule(ctx context.Context, teacher string, school
 	return d.teacherSharingRuleTable.deleteTeacherSharingRule(ctx, teacher, school, app)
 }
 
-// GetArrayOfTeacherSharingRule gets multiple TeacherSharingRules by their primary keys.
-func (d DB) GetArrayOfTeacherSharingRule(ctx context.Context, ms []models.TeacherSharingRule) ([]models.TeacherSharingRule, error) {
-	return d.teacherSharingRuleTable.getArrayOfTeacherSharingRule(ctx, ms)
+// GetSliceOfTeacherSharingRule gets multiple TeacherSharingRules by their primary keys.
+func (d DB) GetSliceOfTeacherSharingRule(ctx context.Context, ms []models.TeacherSharingRule) ([]models.TeacherSharingRule, error) {
+	return d.teacherSharingRuleTable.getSliceOfTeacherSharingRule(ctx, ms)
 }
 
 // GetTeacherSharingRulesByDistrictAndSchoolTeacherApp retrieves a page of TeacherSharingRules from the database.
@@ -918,9 +918,9 @@ func (d DB) DeleteThing(ctx context.Context, name string, version int64) error {
 	return d.thingTable.deleteThing(ctx, name, version)
 }
 
-// GetArrayOfThing gets multiple Things by their primary keys.
-func (d DB) GetArrayOfThing(ctx context.Context, ms []models.Thing) ([]models.Thing, error) {
-	return d.thingTable.getArrayOfThing(ctx, ms)
+// GetSliceOfThing gets multiple Things by their primary keys.
+func (d DB) GetSliceOfThing(ctx context.Context, ms []models.Thing) ([]models.Thing, error) {
+	return d.thingTable.getSliceOfThing(ctx, ms)
 }
 
 // GetThingByID retrieves a Thing from the database.
@@ -993,9 +993,9 @@ func (d DB) DeleteThingAllowingBatchWrites(ctx context.Context, name string, ver
 	return d.thingAllowingBatchWritesTable.deleteThingAllowingBatchWrites(ctx, name, version)
 }
 
-// GetArrayOfThingAllowingBatchWrites gets multiple ThingAllowingBatchWritess by their primary keys.
-func (d DB) GetArrayOfThingAllowingBatchWrites(ctx context.Context, ms []models.ThingAllowingBatchWrites) ([]models.ThingAllowingBatchWrites, error) {
-	return d.thingAllowingBatchWritesTable.getArrayOfThingAllowingBatchWrites(ctx, ms)
+// GetSliceOfThingAllowingBatchWrites gets multiple ThingAllowingBatchWritess by their primary keys.
+func (d DB) GetSliceOfThingAllowingBatchWrites(ctx context.Context, ms []models.ThingAllowingBatchWrites) ([]models.ThingAllowingBatchWrites, error) {
+	return d.thingAllowingBatchWritesTable.getSliceOfThingAllowingBatchWrites(ctx, ms)
 }
 
 // SaveThingAllowingBatchWritesWithCompositeAttributes saves a ThingAllowingBatchWritesWithCompositeAttributes to the database.
@@ -1033,9 +1033,9 @@ func (d DB) DeleteThingAllowingBatchWritesWithCompositeAttributes(ctx context.Co
 	return d.thingAllowingBatchWritesWithCompositeAttributesTable.deleteThingAllowingBatchWritesWithCompositeAttributes(ctx, name, id, date)
 }
 
-// GetArrayOfThingAllowingBatchWritesWithCompositeAttributes gets multiple ThingAllowingBatchWritesWithCompositeAttributess by their primary keys.
-func (d DB) GetArrayOfThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, ms []models.ThingAllowingBatchWritesWithCompositeAttributes) ([]models.ThingAllowingBatchWritesWithCompositeAttributes, error) {
-	return d.thingAllowingBatchWritesWithCompositeAttributesTable.getArrayOfThingAllowingBatchWritesWithCompositeAttributes(ctx, ms)
+// GetSliceOfThingAllowingBatchWritesWithCompositeAttributes gets multiple ThingAllowingBatchWritesWithCompositeAttributess by their primary keys.
+func (d DB) GetSliceOfThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, ms []models.ThingAllowingBatchWritesWithCompositeAttributes) ([]models.ThingAllowingBatchWritesWithCompositeAttributes, error) {
+	return d.thingAllowingBatchWritesWithCompositeAttributesTable.getSliceOfThingAllowingBatchWritesWithCompositeAttributes(ctx, ms)
 }
 
 // SaveThingWithAdditionalAttributes saves a ThingWithAdditionalAttributes to the database.
@@ -1063,9 +1063,9 @@ func (d DB) DeleteThingWithAdditionalAttributes(ctx context.Context, name string
 	return d.thingWithAdditionalAttributesTable.deleteThingWithAdditionalAttributes(ctx, name, version)
 }
 
-// GetArrayOfThingWithAdditionalAttributes gets multiple ThingWithAdditionalAttributess by their primary keys.
-func (d DB) GetArrayOfThingWithAdditionalAttributes(ctx context.Context, ms []models.ThingWithAdditionalAttributes) ([]models.ThingWithAdditionalAttributes, error) {
-	return d.thingWithAdditionalAttributesTable.getArrayOfThingWithAdditionalAttributes(ctx, ms)
+// GetSliceOfThingWithAdditionalAttributes gets multiple ThingWithAdditionalAttributess by their primary keys.
+func (d DB) GetSliceOfThingWithAdditionalAttributes(ctx context.Context, ms []models.ThingWithAdditionalAttributes) ([]models.ThingWithAdditionalAttributes, error) {
+	return d.thingWithAdditionalAttributesTable.getSliceOfThingWithAdditionalAttributes(ctx, ms)
 }
 
 // GetThingWithAdditionalAttributesByID retrieves a ThingWithAdditionalAttributes from the database.
@@ -1128,9 +1128,9 @@ func (d DB) DeleteThingWithCompositeAttributes(ctx context.Context, name string,
 	return d.thingWithCompositeAttributesTable.deleteThingWithCompositeAttributes(ctx, name, branch, date)
 }
 
-// GetArrayOfThingWithCompositeAttributes gets multiple ThingWithCompositeAttributess by their primary keys.
-func (d DB) GetArrayOfThingWithCompositeAttributes(ctx context.Context, ms []models.ThingWithCompositeAttributes) ([]models.ThingWithCompositeAttributes, error) {
-	return d.thingWithCompositeAttributesTable.getArrayOfThingWithCompositeAttributes(ctx, ms)
+// GetSliceOfThingWithCompositeAttributes gets multiple ThingWithCompositeAttributess by their primary keys.
+func (d DB) GetSliceOfThingWithCompositeAttributes(ctx context.Context, ms []models.ThingWithCompositeAttributes) ([]models.ThingWithCompositeAttributes, error) {
+	return d.thingWithCompositeAttributesTable.getSliceOfThingWithCompositeAttributes(ctx, ms)
 }
 
 // GetThingWithCompositeAttributessByNameVersionAndDate retrieves a page of ThingWithCompositeAttributess from the database.
@@ -1168,9 +1168,9 @@ func (d DB) DeleteThingWithCompositeEnumAttributes(ctx context.Context, name str
 	return d.thingWithCompositeEnumAttributesTable.deleteThingWithCompositeEnumAttributes(ctx, name, branchID, date)
 }
 
-// GetArrayOfThingWithCompositeEnumAttributes gets multiple ThingWithCompositeEnumAttributess by their primary keys.
-func (d DB) GetArrayOfThingWithCompositeEnumAttributes(ctx context.Context, ms []models.ThingWithCompositeEnumAttributes) ([]models.ThingWithCompositeEnumAttributes, error) {
-	return d.thingWithCompositeEnumAttributesTable.getArrayOfThingWithCompositeEnumAttributes(ctx, ms)
+// GetSliceOfThingWithCompositeEnumAttributes gets multiple ThingWithCompositeEnumAttributess by their primary keys.
+func (d DB) GetSliceOfThingWithCompositeEnumAttributes(ctx context.Context, ms []models.ThingWithCompositeEnumAttributes) ([]models.ThingWithCompositeEnumAttributes, error) {
+	return d.thingWithCompositeEnumAttributesTable.getSliceOfThingWithCompositeEnumAttributes(ctx, ms)
 }
 
 // SaveThingWithDateGSI saves a ThingWithDateGSI to the database.
@@ -1193,9 +1193,9 @@ func (d DB) DeleteThingWithDateGSI(ctx context.Context, dateH strfmt.Date) error
 	return d.thingWithDateGSITable.deleteThingWithDateGSI(ctx, dateH)
 }
 
-// GetArrayOfThingWithDateGSI gets multiple ThingWithDateGSIs by their primary keys.
-func (d DB) GetArrayOfThingWithDateGSI(ctx context.Context, ms []models.ThingWithDateGSI) ([]models.ThingWithDateGSI, error) {
-	return d.thingWithDateGSITable.getArrayOfThingWithDateGSI(ctx, ms)
+// GetSliceOfThingWithDateGSI gets multiple ThingWithDateGSIs by their primary keys.
+func (d DB) GetSliceOfThingWithDateGSI(ctx context.Context, ms []models.ThingWithDateGSI) ([]models.ThingWithDateGSI, error) {
+	return d.thingWithDateGSITable.getSliceOfThingWithDateGSI(ctx, ms)
 }
 
 // GetThingWithDateGSIsByIDAndDateR retrieves a page of ThingWithDateGSIs from the database.
@@ -1233,9 +1233,9 @@ func (d DB) DeleteThingWithDateRange(ctx context.Context, name string, date strf
 	return d.thingWithDateRangeTable.deleteThingWithDateRange(ctx, name, date)
 }
 
-// GetArrayOfThingWithDateRange gets multiple ThingWithDateRanges by their primary keys.
-func (d DB) GetArrayOfThingWithDateRange(ctx context.Context, ms []models.ThingWithDateRange) ([]models.ThingWithDateRange, error) {
-	return d.thingWithDateRangeTable.getArrayOfThingWithDateRange(ctx, ms)
+// GetSliceOfThingWithDateRange gets multiple ThingWithDateRanges by their primary keys.
+func (d DB) GetSliceOfThingWithDateRange(ctx context.Context, ms []models.ThingWithDateRange) ([]models.ThingWithDateRange, error) {
+	return d.thingWithDateRangeTable.getSliceOfThingWithDateRange(ctx, ms)
 }
 
 // SaveThingWithDateRangeKey saves a ThingWithDateRangeKey to the database.
@@ -1263,9 +1263,9 @@ func (d DB) DeleteThingWithDateRangeKey(ctx context.Context, id string, date str
 	return d.thingWithDateRangeKeyTable.deleteThingWithDateRangeKey(ctx, id, date)
 }
 
-// GetArrayOfThingWithDateRangeKey gets multiple ThingWithDateRangeKeys by their primary keys.
-func (d DB) GetArrayOfThingWithDateRangeKey(ctx context.Context, ms []models.ThingWithDateRangeKey) ([]models.ThingWithDateRangeKey, error) {
-	return d.thingWithDateRangeKeyTable.getArrayOfThingWithDateRangeKey(ctx, ms)
+// GetSliceOfThingWithDateRangeKey gets multiple ThingWithDateRangeKeys by their primary keys.
+func (d DB) GetSliceOfThingWithDateRangeKey(ctx context.Context, ms []models.ThingWithDateRangeKey) ([]models.ThingWithDateRangeKey, error) {
+	return d.thingWithDateRangeKeyTable.getSliceOfThingWithDateRangeKey(ctx, ms)
 }
 
 // SaveThingWithDateTimeComposite saves a ThingWithDateTimeComposite to the database.
@@ -1293,9 +1293,9 @@ func (d DB) DeleteThingWithDateTimeComposite(ctx context.Context, typeVar string
 	return d.thingWithDateTimeCompositeTable.deleteThingWithDateTimeComposite(ctx, typeVar, id, created, resource)
 }
 
-// GetArrayOfThingWithDateTimeComposite gets multiple ThingWithDateTimeComposites by their primary keys.
-func (d DB) GetArrayOfThingWithDateTimeComposite(ctx context.Context, ms []models.ThingWithDateTimeComposite) ([]models.ThingWithDateTimeComposite, error) {
-	return d.thingWithDateTimeCompositeTable.getArrayOfThingWithDateTimeComposite(ctx, ms)
+// GetSliceOfThingWithDateTimeComposite gets multiple ThingWithDateTimeComposites by their primary keys.
+func (d DB) GetSliceOfThingWithDateTimeComposite(ctx context.Context, ms []models.ThingWithDateTimeComposite) ([]models.ThingWithDateTimeComposite, error) {
+	return d.thingWithDateTimeCompositeTable.getSliceOfThingWithDateTimeComposite(ctx, ms)
 }
 
 // SaveThingWithDatetimeGSI saves a ThingWithDatetimeGSI to the database.
@@ -1318,9 +1318,9 @@ func (d DB) DeleteThingWithDatetimeGSI(ctx context.Context, id string) error {
 	return d.thingWithDatetimeGSITable.deleteThingWithDatetimeGSI(ctx, id)
 }
 
-// GetArrayOfThingWithDatetimeGSI gets multiple ThingWithDatetimeGSIs by their primary keys.
-func (d DB) GetArrayOfThingWithDatetimeGSI(ctx context.Context, ms []models.ThingWithDatetimeGSI) ([]models.ThingWithDatetimeGSI, error) {
-	return d.thingWithDatetimeGSITable.getArrayOfThingWithDatetimeGSI(ctx, ms)
+// GetSliceOfThingWithDatetimeGSI gets multiple ThingWithDatetimeGSIs by their primary keys.
+func (d DB) GetSliceOfThingWithDatetimeGSI(ctx context.Context, ms []models.ThingWithDatetimeGSI) ([]models.ThingWithDatetimeGSI, error) {
+	return d.thingWithDatetimeGSITable.getSliceOfThingWithDatetimeGSI(ctx, ms)
 }
 
 // GetThingWithDatetimeGSIsByDatetimeAndID retrieves a page of ThingWithDatetimeGSIs from the database.
@@ -1358,9 +1358,9 @@ func (d DB) DeleteThingWithEnumHashKey(ctx context.Context, branch models.Branch
 	return d.thingWithEnumHashKeyTable.deleteThingWithEnumHashKey(ctx, branch, date)
 }
 
-// GetArrayOfThingWithEnumHashKey gets multiple ThingWithEnumHashKeys by their primary keys.
-func (d DB) GetArrayOfThingWithEnumHashKey(ctx context.Context, ms []models.ThingWithEnumHashKey) ([]models.ThingWithEnumHashKey, error) {
-	return d.thingWithEnumHashKeyTable.getArrayOfThingWithEnumHashKey(ctx, ms)
+// GetSliceOfThingWithEnumHashKey gets multiple ThingWithEnumHashKeys by their primary keys.
+func (d DB) GetSliceOfThingWithEnumHashKey(ctx context.Context, ms []models.ThingWithEnumHashKey) ([]models.ThingWithEnumHashKey, error) {
+	return d.thingWithEnumHashKeyTable.getSliceOfThingWithEnumHashKey(ctx, ms)
 }
 
 // GetThingWithEnumHashKeysByBranchAndDate2 retrieves a page of ThingWithEnumHashKeys from the database.
@@ -1398,9 +1398,9 @@ func (d DB) DeleteThingWithMatchingKeys(ctx context.Context, bear string, assocT
 	return d.thingWithMatchingKeysTable.deleteThingWithMatchingKeys(ctx, bear, assocType, assocID)
 }
 
-// GetArrayOfThingWithMatchingKeys gets multiple ThingWithMatchingKeyss by their primary keys.
-func (d DB) GetArrayOfThingWithMatchingKeys(ctx context.Context, ms []models.ThingWithMatchingKeys) ([]models.ThingWithMatchingKeys, error) {
-	return d.thingWithMatchingKeysTable.getArrayOfThingWithMatchingKeys(ctx, ms)
+// GetSliceOfThingWithMatchingKeys gets multiple ThingWithMatchingKeyss by their primary keys.
+func (d DB) GetSliceOfThingWithMatchingKeys(ctx context.Context, ms []models.ThingWithMatchingKeys) ([]models.ThingWithMatchingKeys, error) {
+	return d.thingWithMatchingKeysTable.getSliceOfThingWithMatchingKeys(ctx, ms)
 }
 
 // GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear retrieves a page of ThingWithMatchingKeyss from the database.
@@ -1433,9 +1433,9 @@ func (d DB) DeleteThingWithMultiUseCompositeAttribute(ctx context.Context, one s
 	return d.thingWithMultiUseCompositeAttributeTable.deleteThingWithMultiUseCompositeAttribute(ctx, one)
 }
 
-// GetArrayOfThingWithMultiUseCompositeAttribute gets multiple ThingWithMultiUseCompositeAttributes by their primary keys.
-func (d DB) GetArrayOfThingWithMultiUseCompositeAttribute(ctx context.Context, ms []models.ThingWithMultiUseCompositeAttribute) ([]models.ThingWithMultiUseCompositeAttribute, error) {
-	return d.thingWithMultiUseCompositeAttributeTable.getArrayOfThingWithMultiUseCompositeAttribute(ctx, ms)
+// GetSliceOfThingWithMultiUseCompositeAttribute gets multiple ThingWithMultiUseCompositeAttributes by their primary keys.
+func (d DB) GetSliceOfThingWithMultiUseCompositeAttribute(ctx context.Context, ms []models.ThingWithMultiUseCompositeAttribute) ([]models.ThingWithMultiUseCompositeAttribute, error) {
+	return d.thingWithMultiUseCompositeAttributeTable.getSliceOfThingWithMultiUseCompositeAttribute(ctx, ms)
 }
 
 // GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo retrieves a page of ThingWithMultiUseCompositeAttributes from the database.
@@ -1478,9 +1478,9 @@ func (d DB) DeleteThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Co
 	return d.thingWithRequiredCompositePropertiesAndKeysOnlyTable.deleteThingWithRequiredCompositePropertiesAndKeysOnly(ctx, propertyThree)
 }
 
-// GetArrayOfThingWithRequiredCompositePropertiesAndKeysOnly gets multiple ThingWithRequiredCompositePropertiesAndKeysOnlys by their primary keys.
-func (d DB) GetArrayOfThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, ms []models.ThingWithRequiredCompositePropertiesAndKeysOnly) ([]models.ThingWithRequiredCompositePropertiesAndKeysOnly, error) {
-	return d.thingWithRequiredCompositePropertiesAndKeysOnlyTable.getArrayOfThingWithRequiredCompositePropertiesAndKeysOnly(ctx, ms)
+// GetSliceOfThingWithRequiredCompositePropertiesAndKeysOnly gets multiple ThingWithRequiredCompositePropertiesAndKeysOnlys by their primary keys.
+func (d DB) GetSliceOfThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, ms []models.ThingWithRequiredCompositePropertiesAndKeysOnly) ([]models.ThingWithRequiredCompositePropertiesAndKeysOnly, error) {
+	return d.thingWithRequiredCompositePropertiesAndKeysOnlyTable.getSliceOfThingWithRequiredCompositePropertiesAndKeysOnly(ctx, ms)
 }
 
 // GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree retrieves a page of ThingWithRequiredCompositePropertiesAndKeysOnlys from the database.
@@ -1513,9 +1513,9 @@ func (d DB) DeleteThingWithRequiredFields(ctx context.Context, name string) erro
 	return d.thingWithRequiredFieldsTable.deleteThingWithRequiredFields(ctx, name)
 }
 
-// GetArrayOfThingWithRequiredFields gets multiple ThingWithRequiredFieldss by their primary keys.
-func (d DB) GetArrayOfThingWithRequiredFields(ctx context.Context, ms []models.ThingWithRequiredFields) ([]models.ThingWithRequiredFields, error) {
-	return d.thingWithRequiredFieldsTable.getArrayOfThingWithRequiredFields(ctx, ms)
+// GetSliceOfThingWithRequiredFields gets multiple ThingWithRequiredFieldss by their primary keys.
+func (d DB) GetSliceOfThingWithRequiredFields(ctx context.Context, ms []models.ThingWithRequiredFields) ([]models.ThingWithRequiredFields, error) {
+	return d.thingWithRequiredFieldsTable.getSliceOfThingWithRequiredFields(ctx, ms)
 }
 
 // SaveThingWithRequiredFields2 saves a ThingWithRequiredFields2 to the database.
@@ -1543,9 +1543,9 @@ func (d DB) DeleteThingWithRequiredFields2(ctx context.Context, name string, id 
 	return d.thingWithRequiredFields2Table.deleteThingWithRequiredFields2(ctx, name, id)
 }
 
-// GetArrayOfThingWithRequiredFields2 gets multiple ThingWithRequiredFields2s by their primary keys.
-func (d DB) GetArrayOfThingWithRequiredFields2(ctx context.Context, ms []models.ThingWithRequiredFields2) ([]models.ThingWithRequiredFields2, error) {
-	return d.thingWithRequiredFields2Table.getArrayOfThingWithRequiredFields2(ctx, ms)
+// GetSliceOfThingWithRequiredFields2 gets multiple ThingWithRequiredFields2s by their primary keys.
+func (d DB) GetSliceOfThingWithRequiredFields2(ctx context.Context, ms []models.ThingWithRequiredFields2) ([]models.ThingWithRequiredFields2, error) {
+	return d.thingWithRequiredFields2Table.getSliceOfThingWithRequiredFields2(ctx, ms)
 }
 
 // SaveThingWithTransactMultipleGSI saves a ThingWithTransactMultipleGSI to the database.
@@ -1568,9 +1568,9 @@ func (d DB) DeleteThingWithTransactMultipleGSI(ctx context.Context, dateH strfmt
 	return d.thingWithTransactMultipleGSITable.deleteThingWithTransactMultipleGSI(ctx, dateH)
 }
 
-// GetArrayOfThingWithTransactMultipleGSI gets multiple ThingWithTransactMultipleGSIs by their primary keys.
-func (d DB) GetArrayOfThingWithTransactMultipleGSI(ctx context.Context, ms []models.ThingWithTransactMultipleGSI) ([]models.ThingWithTransactMultipleGSI, error) {
-	return d.thingWithTransactMultipleGSITable.getArrayOfThingWithTransactMultipleGSI(ctx, ms)
+// GetSliceOfThingWithTransactMultipleGSI gets multiple ThingWithTransactMultipleGSIs by their primary keys.
+func (d DB) GetSliceOfThingWithTransactMultipleGSI(ctx context.Context, ms []models.ThingWithTransactMultipleGSI) ([]models.ThingWithTransactMultipleGSI, error) {
+	return d.thingWithTransactMultipleGSITable.getSliceOfThingWithTransactMultipleGSI(ctx, ms)
 }
 
 // GetThingWithTransactMultipleGSIsByIDAndDateR retrieves a page of ThingWithTransactMultipleGSIs from the database.
@@ -1608,9 +1608,9 @@ func (d DB) DeleteThingWithTransaction(ctx context.Context, name string) error {
 	return d.thingWithTransactionTable.deleteThingWithTransaction(ctx, name)
 }
 
-// GetArrayOfThingWithTransaction gets multiple ThingWithTransactions by their primary keys.
-func (d DB) GetArrayOfThingWithTransaction(ctx context.Context, ms []models.ThingWithTransaction) ([]models.ThingWithTransaction, error) {
-	return d.thingWithTransactionTable.getArrayOfThingWithTransaction(ctx, ms)
+// GetSliceOfThingWithTransaction gets multiple ThingWithTransactions by their primary keys.
+func (d DB) GetSliceOfThingWithTransaction(ctx context.Context, ms []models.ThingWithTransaction) ([]models.ThingWithTransaction, error) {
+	return d.thingWithTransactionTable.getSliceOfThingWithTransaction(ctx, ms)
 }
 
 // TransactSaveThingWithTransactionAndThing saves ThingWithTransaction and Thing as a transaction.
@@ -1638,9 +1638,9 @@ func (d DB) DeleteThingWithTransactionWithSimpleThing(ctx context.Context, name 
 	return d.thingWithTransactionWithSimpleThingTable.deleteThingWithTransactionWithSimpleThing(ctx, name)
 }
 
-// GetArrayOfThingWithTransactionWithSimpleThing gets multiple ThingWithTransactionWithSimpleThings by their primary keys.
-func (d DB) GetArrayOfThingWithTransactionWithSimpleThing(ctx context.Context, ms []models.ThingWithTransactionWithSimpleThing) ([]models.ThingWithTransactionWithSimpleThing, error) {
-	return d.thingWithTransactionWithSimpleThingTable.getArrayOfThingWithTransactionWithSimpleThing(ctx, ms)
+// GetSliceOfThingWithTransactionWithSimpleThing gets multiple ThingWithTransactionWithSimpleThings by their primary keys.
+func (d DB) GetSliceOfThingWithTransactionWithSimpleThing(ctx context.Context, ms []models.ThingWithTransactionWithSimpleThing) ([]models.ThingWithTransactionWithSimpleThing, error) {
+	return d.thingWithTransactionWithSimpleThingTable.getSliceOfThingWithTransactionWithSimpleThing(ctx, ms)
 }
 
 // TransactSaveThingWithTransactionWithSimpleThingAndSimpleThing saves ThingWithTransactionWithSimpleThing and SimpleThing as a transaction.
@@ -1663,9 +1663,9 @@ func (d DB) DeleteThingWithUnderscores(ctx context.Context, iDApp string) error 
 	return d.thingWithUnderscoresTable.deleteThingWithUnderscores(ctx, iDApp)
 }
 
-// GetArrayOfThingWithUnderscores gets multiple ThingWithUnderscoress by their primary keys.
-func (d DB) GetArrayOfThingWithUnderscores(ctx context.Context, ms []models.ThingWithUnderscores) ([]models.ThingWithUnderscores, error) {
-	return d.thingWithUnderscoresTable.getArrayOfThingWithUnderscores(ctx, ms)
+// GetSliceOfThingWithUnderscores gets multiple ThingWithUnderscoress by their primary keys.
+func (d DB) GetSliceOfThingWithUnderscores(ctx context.Context, ms []models.ThingWithUnderscores) ([]models.ThingWithUnderscores, error) {
+	return d.thingWithUnderscoresTable.getSliceOfThingWithUnderscores(ctx, ms)
 }
 
 func dateToDynamoTimeString(d strfmt.Date) string {

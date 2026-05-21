@@ -121,7 +121,7 @@ func (t TeacherSharingRuleTable) saveTeacherSharingRule(ctx context.Context, m m
 	return err
 }
 
-func (t TeacherSharingRuleTable) getArrayOfTeacherSharingRule(ctx context.Context, ms []models.TeacherSharingRule) ([]models.TeacherSharingRule, error) {
+func (t TeacherSharingRuleTable) getSliceOfTeacherSharingRule(ctx context.Context, ms []models.TeacherSharingRule) ([]models.TeacherSharingRule, error) {
 	if len(ms) == 0 {
 		return nil, nil
 	}

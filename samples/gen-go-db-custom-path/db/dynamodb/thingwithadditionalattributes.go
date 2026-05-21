@@ -228,7 +228,7 @@ func (t ThingWithAdditionalAttributesTable) saveThingWithAdditionalAttributes(ct
 	return nil
 }
 
-func (t ThingWithAdditionalAttributesTable) getArrayOfThingWithAdditionalAttributes(ctx context.Context, ms []models.ThingWithAdditionalAttributes) ([]models.ThingWithAdditionalAttributes, error) {
+func (t ThingWithAdditionalAttributesTable) getSliceOfThingWithAdditionalAttributes(ctx context.Context, ms []models.ThingWithAdditionalAttributes) ([]models.ThingWithAdditionalAttributes, error) {
 	if len(ms) == 0 {
 		return nil, nil
 	}

@@ -159,7 +159,7 @@ func (t NoRangeThingWithCompositeAttributesTable) saveNoRangeThingWithCompositeA
 	return nil
 }
 
-func (t NoRangeThingWithCompositeAttributesTable) getArrayOfNoRangeThingWithCompositeAttributes(ctx context.Context, ms []models.NoRangeThingWithCompositeAttributes) ([]models.NoRangeThingWithCompositeAttributes, error) {
+func (t NoRangeThingWithCompositeAttributesTable) getSliceOfNoRangeThingWithCompositeAttributes(ctx context.Context, ms []models.NoRangeThingWithCompositeAttributes) ([]models.NoRangeThingWithCompositeAttributes, error) {
 	if len(ms) == 0 {
 		return nil, nil
 	}

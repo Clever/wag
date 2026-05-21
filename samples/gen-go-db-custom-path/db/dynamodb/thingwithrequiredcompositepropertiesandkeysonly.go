@@ -108,7 +108,7 @@ func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) saveThingWithRequi
 	return err
 }
 
-func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) getArrayOfThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, ms []models.ThingWithRequiredCompositePropertiesAndKeysOnly) ([]models.ThingWithRequiredCompositePropertiesAndKeysOnly, error) {
+func (t ThingWithRequiredCompositePropertiesAndKeysOnlyTable) getSliceOfThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, ms []models.ThingWithRequiredCompositePropertiesAndKeysOnly) ([]models.ThingWithRequiredCompositePropertiesAndKeysOnly, error) {
 	if len(ms) == 0 {
 		return nil, nil
 	}

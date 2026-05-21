@@ -97,7 +97,7 @@ func (t SimpleThingTable) saveSimpleThing(ctx context.Context, m models.SimpleTh
 	return nil
 }
 
-func (t SimpleThingTable) getArrayOfSimpleThing(ctx context.Context, ms []models.SimpleThing) ([]models.SimpleThing, error) {
+func (t SimpleThingTable) getSliceOfSimpleThing(ctx context.Context, ms []models.SimpleThing) ([]models.SimpleThing, error) {
 	if len(ms) == 0 {
 		return nil, nil
 	}

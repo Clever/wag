@@ -160,7 +160,7 @@ func (t ThingWithTransactMultipleGSITable) saveThingWithTransactMultipleGSI(ctx 
 	return nil
 }
 
-func (t ThingWithTransactMultipleGSITable) getArrayOfThingWithTransactMultipleGSI(ctx context.Context, ms []models.ThingWithTransactMultipleGSI) ([]models.ThingWithTransactMultipleGSI, error) {
+func (t ThingWithTransactMultipleGSITable) getSliceOfThingWithTransactMultipleGSI(ctx context.Context, ms []models.ThingWithTransactMultipleGSI) ([]models.ThingWithTransactMultipleGSI, error) {
 	if len(ms) == 0 {
 		return nil, nil
 	}

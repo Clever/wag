@@ -191,7 +191,7 @@ func (t ThingAllowingBatchWritesWithCompositeAttributesTable) deleteArrayOfThing
 	return nil
 }
 
-func (t ThingAllowingBatchWritesWithCompositeAttributesTable) getArrayOfThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, ms []models.ThingAllowingBatchWritesWithCompositeAttributes) ([]models.ThingAllowingBatchWritesWithCompositeAttributes, error) {
+func (t ThingAllowingBatchWritesWithCompositeAttributesTable) getSliceOfThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, ms []models.ThingAllowingBatchWritesWithCompositeAttributes) ([]models.ThingAllowingBatchWritesWithCompositeAttributes, error) {
 	if len(ms) == 0 {
 		return nil, nil
 	}

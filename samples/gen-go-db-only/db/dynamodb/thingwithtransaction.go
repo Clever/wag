@@ -98,7 +98,7 @@ func (t ThingWithTransactionTable) saveThingWithTransaction(ctx context.Context,
 	return nil
 }
 
-func (t ThingWithTransactionTable) getArrayOfThingWithTransaction(ctx context.Context, ms []models.ThingWithTransaction) ([]models.ThingWithTransaction, error) {
+func (t ThingWithTransactionTable) getSliceOfThingWithTransaction(ctx context.Context, ms []models.ThingWithTransaction) ([]models.ThingWithTransaction, error) {
 	if len(ms) == 0 {
 		return nil, nil
 	}

@@ -116,7 +116,7 @@ func (t EventTable) saveEvent(ctx context.Context, m models.Event) error {
 	return err
 }
 
-func (t EventTable) getArrayOfEvent(ctx context.Context, ms []models.Event) ([]models.Event, error) {
+func (t EventTable) getSliceOfEvent(ctx context.Context, ms []models.Event) ([]models.Event, error) {
 	if len(ms) == 0 {
 		return nil, nil
 	}

@@ -168,7 +168,7 @@ func (t DeploymentTable) saveDeployment(ctx context.Context, m models.Deployment
 	return err
 }
 
-func (t DeploymentTable) getArrayOfDeployment(ctx context.Context, ms []models.Deployment) ([]models.Deployment, error) {
+func (t DeploymentTable) getSliceOfDeployment(ctx context.Context, ms []models.Deployment) ([]models.Deployment, error) {
 	if len(ms) == 0 {
 		return nil, nil
 	}

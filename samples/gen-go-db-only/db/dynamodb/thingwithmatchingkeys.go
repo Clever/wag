@@ -117,7 +117,7 @@ func (t ThingWithMatchingKeysTable) saveThingWithMatchingKeys(ctx context.Contex
 	return err
 }
 
-func (t ThingWithMatchingKeysTable) getArrayOfThingWithMatchingKeys(ctx context.Context, ms []models.ThingWithMatchingKeys) ([]models.ThingWithMatchingKeys, error) {
+func (t ThingWithMatchingKeysTable) getSliceOfThingWithMatchingKeys(ctx context.Context, ms []models.ThingWithMatchingKeys) ([]models.ThingWithMatchingKeys, error) {
 	if len(ms) == 0 {
 		return nil, nil
 	}

@@ -75,7 +75,7 @@ func (t ThingWithUnderscoresTable) saveThingWithUnderscores(ctx context.Context,
 	return err
 }
 
-func (t ThingWithUnderscoresTable) getArrayOfThingWithUnderscores(ctx context.Context, ms []models.ThingWithUnderscores) ([]models.ThingWithUnderscores, error) {
+func (t ThingWithUnderscoresTable) getSliceOfThingWithUnderscores(ctx context.Context, ms []models.ThingWithUnderscores) ([]models.ThingWithUnderscores, error) {
 	if len(ms) == 0 {
 		return nil, nil
 	}

@@ -142,7 +142,7 @@ func (t ThingWithMultiUseCompositeAttributeTable) saveThingWithMultiUseComposite
 	return err
 }
 
-func (t ThingWithMultiUseCompositeAttributeTable) getArrayOfThingWithMultiUseCompositeAttribute(ctx context.Context, ms []models.ThingWithMultiUseCompositeAttribute) ([]models.ThingWithMultiUseCompositeAttribute, error) {
+func (t ThingWithMultiUseCompositeAttributeTable) getSliceOfThingWithMultiUseCompositeAttribute(ctx context.Context, ms []models.ThingWithMultiUseCompositeAttribute) ([]models.ThingWithMultiUseCompositeAttribute, error) {
 	if len(ms) == 0 {
 		return nil, nil
 	}

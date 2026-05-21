@@ -85,7 +85,7 @@ func (t ThingWithDateTimeCompositeTable) saveThingWithDateTimeComposite(ctx cont
 	return err
 }
 
-func (t ThingWithDateTimeCompositeTable) getArrayOfThingWithDateTimeComposite(ctx context.Context, ms []models.ThingWithDateTimeComposite) ([]models.ThingWithDateTimeComposite, error) {
+func (t ThingWithDateTimeCompositeTable) getSliceOfThingWithDateTimeComposite(ctx context.Context, ms []models.ThingWithDateTimeComposite) ([]models.ThingWithDateTimeComposite, error) {
 	if len(ms) == 0 {
 		return nil, nil
 	}

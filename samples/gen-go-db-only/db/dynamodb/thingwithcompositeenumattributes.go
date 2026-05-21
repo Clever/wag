@@ -112,7 +112,7 @@ func (t ThingWithCompositeEnumAttributesTable) saveThingWithCompositeEnumAttribu
 	return nil
 }
 
-func (t ThingWithCompositeEnumAttributesTable) getArrayOfThingWithCompositeEnumAttributes(ctx context.Context, ms []models.ThingWithCompositeEnumAttributes) ([]models.ThingWithCompositeEnumAttributes, error) {
+func (t ThingWithCompositeEnumAttributesTable) getSliceOfThingWithCompositeEnumAttributes(ctx context.Context, ms []models.ThingWithCompositeEnumAttributes) ([]models.ThingWithCompositeEnumAttributes, error) {
 	if len(ms) == 0 {
 		return nil, nil
 	}

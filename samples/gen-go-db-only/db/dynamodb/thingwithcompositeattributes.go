@@ -144,7 +144,7 @@ func (t ThingWithCompositeAttributesTable) saveThingWithCompositeAttributes(ctx 
 	return nil
 }
 
-func (t ThingWithCompositeAttributesTable) getArrayOfThingWithCompositeAttributes(ctx context.Context, ms []models.ThingWithCompositeAttributes) ([]models.ThingWithCompositeAttributes, error) {
+func (t ThingWithCompositeAttributesTable) getSliceOfThingWithCompositeAttributes(ctx context.Context, ms []models.ThingWithCompositeAttributes) ([]models.ThingWithCompositeAttributes, error) {
 	if len(ms) == 0 {
 		return nil, nil
 	}

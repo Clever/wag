@@ -159,7 +159,7 @@ func (t ThingWithDateGSITable) saveThingWithDateGSI(ctx context.Context, m model
 	return nil
 }
 
-func (t ThingWithDateGSITable) getArrayOfThingWithDateGSI(ctx context.Context, ms []models.ThingWithDateGSI) ([]models.ThingWithDateGSI, error) {
+func (t ThingWithDateGSITable) getSliceOfThingWithDateGSI(ctx context.Context, ms []models.ThingWithDateGSI) ([]models.ThingWithDateGSI, error) {
 	if len(ms) == 0 {
 		return nil, nil
 	}

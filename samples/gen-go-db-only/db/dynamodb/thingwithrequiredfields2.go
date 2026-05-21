@@ -111,7 +111,7 @@ func (t ThingWithRequiredFields2Table) saveThingWithRequiredFields2(ctx context.
 	return nil
 }
 
-func (t ThingWithRequiredFields2Table) getArrayOfThingWithRequiredFields2(ctx context.Context, ms []models.ThingWithRequiredFields2) ([]models.ThingWithRequiredFields2, error) {
+func (t ThingWithRequiredFields2Table) getSliceOfThingWithRequiredFields2(ctx context.Context, ms []models.ThingWithRequiredFields2) ([]models.ThingWithRequiredFields2, error) {
 	if len(ms) == 0 {
 		return nil, nil
 	}

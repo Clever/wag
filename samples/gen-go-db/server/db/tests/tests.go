@@ -38,7 +38,7 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetDeploymentsByEnvAppAndVersion", GetDeploymentsByEnvAppAndVersion(dbFactory(), t))
 	t.Run("SaveDeployment", SaveDeployment(dbFactory(), t))
 	t.Run("DeleteDeployment", DeleteDeployment(dbFactory(), t))
-	t.Run("GetArrayOfDeployment", GetArrayOfDeployment(dbFactory(), t))
+	t.Run("GetSliceOfDeployment", GetSliceOfDeployment(dbFactory(), t))
 	t.Run("GetDeploymentsByEnvAppAndDate", GetDeploymentsByEnvAppAndDate(dbFactory(), t))
 	t.Run("ScanDeploymentsByEnvAppAndDate", ScanDeploymentsByEnvAppAndDate(dbFactory(), t))
 	t.Run("GetDeploymentsByEnvironmentAndDate", GetDeploymentsByEnvironmentAndDate(dbFactory(), t))
@@ -49,14 +49,14 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetEventsByPkAndSk", GetEventsByPkAndSk(dbFactory(), t))
 	t.Run("SaveEvent", SaveEvent(dbFactory(), t))
 	t.Run("DeleteEvent", DeleteEvent(dbFactory(), t))
-	t.Run("GetArrayOfEvent", GetArrayOfEvent(dbFactory(), t))
+	t.Run("GetSliceOfEvent", GetSliceOfEvent(dbFactory(), t))
 	t.Run("GetEventsBySkAndData", GetEventsBySkAndData(dbFactory(), t))
 	t.Run("ScanEventsBySkAndData", ScanEventsBySkAndData(dbFactory(), t))
 	t.Run("GetNoRangeThingWithCompositeAttributes", GetNoRangeThingWithCompositeAttributes(dbFactory(), t))
 	t.Run("ScanNoRangeThingWithCompositeAttributess", ScanNoRangeThingWithCompositeAttributess(dbFactory(), t))
 	t.Run("SaveNoRangeThingWithCompositeAttributes", SaveNoRangeThingWithCompositeAttributes(dbFactory(), t))
 	t.Run("DeleteNoRangeThingWithCompositeAttributes", DeleteNoRangeThingWithCompositeAttributes(dbFactory(), t))
-	t.Run("GetArrayOfNoRangeThingWithCompositeAttributes", GetArrayOfNoRangeThingWithCompositeAttributes(dbFactory(), t))
+	t.Run("GetSliceOfNoRangeThingWithCompositeAttributes", GetSliceOfNoRangeThingWithCompositeAttributes(dbFactory(), t))
 	t.Run("GetNoRangeThingWithCompositeAttributessByNameVersionAndDate", GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(dbFactory(), t))
 	t.Run("ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate", ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate(dbFactory(), t))
 	t.Run("GetNoRangeThingWithCompositeAttributesByNameBranchCommit", GetNoRangeThingWithCompositeAttributesByNameBranchCommit(dbFactory(), t))
@@ -64,13 +64,13 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("ScanSimpleThings", ScanSimpleThings(dbFactory(), t))
 	t.Run("SaveSimpleThing", SaveSimpleThing(dbFactory(), t))
 	t.Run("DeleteSimpleThing", DeleteSimpleThing(dbFactory(), t))
-	t.Run("GetArrayOfSimpleThing", GetArrayOfSimpleThing(dbFactory(), t))
+	t.Run("GetSliceOfSimpleThing", GetSliceOfSimpleThing(dbFactory(), t))
 	t.Run("GetTeacherSharingRule", GetTeacherSharingRule(dbFactory(), t))
 	t.Run("ScanTeacherSharingRules", ScanTeacherSharingRules(dbFactory(), t))
 	t.Run("GetTeacherSharingRulesByTeacherAndSchoolApp", GetTeacherSharingRulesByTeacherAndSchoolApp(dbFactory(), t))
 	t.Run("SaveTeacherSharingRule", SaveTeacherSharingRule(dbFactory(), t))
 	t.Run("DeleteTeacherSharingRule", DeleteTeacherSharingRule(dbFactory(), t))
-	t.Run("GetArrayOfTeacherSharingRule", GetArrayOfTeacherSharingRule(dbFactory(), t))
+	t.Run("GetSliceOfTeacherSharingRule", GetSliceOfTeacherSharingRule(dbFactory(), t))
 	t.Run("GetTeacherSharingRulesByDistrictAndSchoolTeacherApp", GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(dbFactory(), t))
 	t.Run("ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp", ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp(dbFactory(), t))
 	t.Run("GetThing", GetThing(dbFactory(), t))
@@ -78,7 +78,7 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingsByNameAndVersion", GetThingsByNameAndVersion(dbFactory(), t))
 	t.Run("SaveThing", SaveThing(dbFactory(), t))
 	t.Run("DeleteThing", DeleteThing(dbFactory(), t))
-	t.Run("GetArrayOfThing", GetArrayOfThing(dbFactory(), t))
+	t.Run("GetSliceOfThing", GetSliceOfThing(dbFactory(), t))
 	t.Run("GetThingByID", GetThingByID(dbFactory(), t))
 	t.Run("ScanThingsByID", ScanThingsByID(dbFactory(), t))
 	t.Run("GetThingsByNameAndCreatedAt", GetThingsByNameAndCreatedAt(dbFactory(), t))
@@ -91,19 +91,19 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingAllowingBatchWritessByNameAndVersion", GetThingAllowingBatchWritessByNameAndVersion(dbFactory(), t))
 	t.Run("SaveThingAllowingBatchWrites", SaveThingAllowingBatchWrites(dbFactory(), t))
 	t.Run("DeleteThingAllowingBatchWrites", DeleteThingAllowingBatchWrites(dbFactory(), t))
-	t.Run("GetArrayOfThingAllowingBatchWrites", GetArrayOfThingAllowingBatchWrites(dbFactory(), t))
+	t.Run("GetSliceOfThingAllowingBatchWrites", GetSliceOfThingAllowingBatchWrites(dbFactory(), t))
 	t.Run("GetThingAllowingBatchWritesWithCompositeAttributes", GetThingAllowingBatchWritesWithCompositeAttributes(dbFactory(), t))
 	t.Run("ScanThingAllowingBatchWritesWithCompositeAttributess", ScanThingAllowingBatchWritesWithCompositeAttributess(dbFactory(), t))
 	t.Run("GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate", GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate(dbFactory(), t))
 	t.Run("SaveThingAllowingBatchWritesWithCompositeAttributes", SaveThingAllowingBatchWritesWithCompositeAttributes(dbFactory(), t))
 	t.Run("DeleteThingAllowingBatchWritesWithCompositeAttributes", DeleteThingAllowingBatchWritesWithCompositeAttributes(dbFactory(), t))
-	t.Run("GetArrayOfThingAllowingBatchWritesWithCompositeAttributes", GetArrayOfThingAllowingBatchWritesWithCompositeAttributes(dbFactory(), t))
+	t.Run("GetSliceOfThingAllowingBatchWritesWithCompositeAttributes", GetSliceOfThingAllowingBatchWritesWithCompositeAttributes(dbFactory(), t))
 	t.Run("GetThingWithAdditionalAttributes", GetThingWithAdditionalAttributes(dbFactory(), t))
 	t.Run("ScanThingWithAdditionalAttributess", ScanThingWithAdditionalAttributess(dbFactory(), t))
 	t.Run("GetThingWithAdditionalAttributessByNameAndVersion", GetThingWithAdditionalAttributessByNameAndVersion(dbFactory(), t))
 	t.Run("SaveThingWithAdditionalAttributes", SaveThingWithAdditionalAttributes(dbFactory(), t))
 	t.Run("DeleteThingWithAdditionalAttributes", DeleteThingWithAdditionalAttributes(dbFactory(), t))
-	t.Run("GetArrayOfThingWithAdditionalAttributes", GetArrayOfThingWithAdditionalAttributes(dbFactory(), t))
+	t.Run("GetSliceOfThingWithAdditionalAttributes", GetSliceOfThingWithAdditionalAttributes(dbFactory(), t))
 	t.Run("GetThingWithAdditionalAttributesByID", GetThingWithAdditionalAttributesByID(dbFactory(), t))
 	t.Run("ScanThingWithAdditionalAttributessByID", ScanThingWithAdditionalAttributessByID(dbFactory(), t))
 	t.Run("GetThingWithAdditionalAttributessByNameAndCreatedAt", GetThingWithAdditionalAttributessByNameAndCreatedAt(dbFactory(), t))
@@ -116,7 +116,7 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingWithCompositeAttributessByNameBranchAndDate", GetThingWithCompositeAttributessByNameBranchAndDate(dbFactory(), t))
 	t.Run("SaveThingWithCompositeAttributes", SaveThingWithCompositeAttributes(dbFactory(), t))
 	t.Run("DeleteThingWithCompositeAttributes", DeleteThingWithCompositeAttributes(dbFactory(), t))
-	t.Run("GetArrayOfThingWithCompositeAttributes", GetArrayOfThingWithCompositeAttributes(dbFactory(), t))
+	t.Run("GetSliceOfThingWithCompositeAttributes", GetSliceOfThingWithCompositeAttributes(dbFactory(), t))
 	t.Run("GetThingWithCompositeAttributessByNameVersionAndDate", GetThingWithCompositeAttributessByNameVersionAndDate(dbFactory(), t))
 	t.Run("ScanThingWithCompositeAttributessByNameVersionAndDate", ScanThingWithCompositeAttributessByNameVersionAndDate(dbFactory(), t))
 	t.Run("GetThingWithCompositeEnumAttributes", GetThingWithCompositeEnumAttributes(dbFactory(), t))
@@ -124,12 +124,12 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingWithCompositeEnumAttributessByNameBranchAndDate", GetThingWithCompositeEnumAttributessByNameBranchAndDate(dbFactory(), t))
 	t.Run("SaveThingWithCompositeEnumAttributes", SaveThingWithCompositeEnumAttributes(dbFactory(), t))
 	t.Run("DeleteThingWithCompositeEnumAttributes", DeleteThingWithCompositeEnumAttributes(dbFactory(), t))
-	t.Run("GetArrayOfThingWithCompositeEnumAttributes", GetArrayOfThingWithCompositeEnumAttributes(dbFactory(), t))
+	t.Run("GetSliceOfThingWithCompositeEnumAttributes", GetSliceOfThingWithCompositeEnumAttributes(dbFactory(), t))
 	t.Run("GetThingWithDateGSI", GetThingWithDateGSI(dbFactory(), t))
 	t.Run("ScanThingWithDateGSIs", ScanThingWithDateGSIs(dbFactory(), t))
 	t.Run("SaveThingWithDateGSI", SaveThingWithDateGSI(dbFactory(), t))
 	t.Run("DeleteThingWithDateGSI", DeleteThingWithDateGSI(dbFactory(), t))
-	t.Run("GetArrayOfThingWithDateGSI", GetArrayOfThingWithDateGSI(dbFactory(), t))
+	t.Run("GetSliceOfThingWithDateGSI", GetSliceOfThingWithDateGSI(dbFactory(), t))
 	t.Run("GetThingWithDateGSIsByIDAndDateR", GetThingWithDateGSIsByIDAndDateR(dbFactory(), t))
 	t.Run("GetThingWithDateGSIsByDateHAndID", GetThingWithDateGSIsByDateHAndID(dbFactory(), t))
 	t.Run("GetThingWithDateRange", GetThingWithDateRange(dbFactory(), t))
@@ -137,24 +137,24 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingWithDateRangesByNameAndDate", GetThingWithDateRangesByNameAndDate(dbFactory(), t))
 	t.Run("SaveThingWithDateRange", SaveThingWithDateRange(dbFactory(), t))
 	t.Run("DeleteThingWithDateRange", DeleteThingWithDateRange(dbFactory(), t))
-	t.Run("GetArrayOfThingWithDateRange", GetArrayOfThingWithDateRange(dbFactory(), t))
+	t.Run("GetSliceOfThingWithDateRange", GetSliceOfThingWithDateRange(dbFactory(), t))
 	t.Run("GetThingWithDateRangeKey", GetThingWithDateRangeKey(dbFactory(), t))
 	t.Run("ScanThingWithDateRangeKeys", ScanThingWithDateRangeKeys(dbFactory(), t))
 	t.Run("GetThingWithDateRangeKeysByIDAndDate", GetThingWithDateRangeKeysByIDAndDate(dbFactory(), t))
 	t.Run("SaveThingWithDateRangeKey", SaveThingWithDateRangeKey(dbFactory(), t))
 	t.Run("DeleteThingWithDateRangeKey", DeleteThingWithDateRangeKey(dbFactory(), t))
-	t.Run("GetArrayOfThingWithDateRangeKey", GetArrayOfThingWithDateRangeKey(dbFactory(), t))
+	t.Run("GetSliceOfThingWithDateRangeKey", GetSliceOfThingWithDateRangeKey(dbFactory(), t))
 	t.Run("GetThingWithDateTimeComposite", GetThingWithDateTimeComposite(dbFactory(), t))
 	t.Run("ScanThingWithDateTimeComposites", ScanThingWithDateTimeComposites(dbFactory(), t))
 	t.Run("GetThingWithDateTimeCompositesByTypeIDAndCreatedResource", GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(dbFactory(), t))
 	t.Run("SaveThingWithDateTimeComposite", SaveThingWithDateTimeComposite(dbFactory(), t))
 	t.Run("DeleteThingWithDateTimeComposite", DeleteThingWithDateTimeComposite(dbFactory(), t))
-	t.Run("GetArrayOfThingWithDateTimeComposite", GetArrayOfThingWithDateTimeComposite(dbFactory(), t))
+	t.Run("GetSliceOfThingWithDateTimeComposite", GetSliceOfThingWithDateTimeComposite(dbFactory(), t))
 	t.Run("GetThingWithDatetimeGSI", GetThingWithDatetimeGSI(dbFactory(), t))
 	t.Run("ScanThingWithDatetimeGSIs", ScanThingWithDatetimeGSIs(dbFactory(), t))
 	t.Run("SaveThingWithDatetimeGSI", SaveThingWithDatetimeGSI(dbFactory(), t))
 	t.Run("DeleteThingWithDatetimeGSI", DeleteThingWithDatetimeGSI(dbFactory(), t))
-	t.Run("GetArrayOfThingWithDatetimeGSI", GetArrayOfThingWithDatetimeGSI(dbFactory(), t))
+	t.Run("GetSliceOfThingWithDatetimeGSI", GetSliceOfThingWithDatetimeGSI(dbFactory(), t))
 	t.Run("GetThingWithDatetimeGSIsByDatetimeAndID", GetThingWithDatetimeGSIsByDatetimeAndID(dbFactory(), t))
 	t.Run("ScanThingWithDatetimeGSIsByDatetimeAndID", ScanThingWithDatetimeGSIsByDatetimeAndID(dbFactory(), t))
 	t.Run("GetThingWithEnumHashKey", GetThingWithEnumHashKey(dbFactory(), t))
@@ -162,7 +162,7 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingWithEnumHashKeysByBranchAndDate", GetThingWithEnumHashKeysByBranchAndDate(dbFactory(), t))
 	t.Run("SaveThingWithEnumHashKey", SaveThingWithEnumHashKey(dbFactory(), t))
 	t.Run("DeleteThingWithEnumHashKey", DeleteThingWithEnumHashKey(dbFactory(), t))
-	t.Run("GetArrayOfThingWithEnumHashKey", GetArrayOfThingWithEnumHashKey(dbFactory(), t))
+	t.Run("GetSliceOfThingWithEnumHashKey", GetSliceOfThingWithEnumHashKey(dbFactory(), t))
 	t.Run("GetThingWithEnumHashKeysByBranchAndDate2", GetThingWithEnumHashKeysByBranchAndDate2(dbFactory(), t))
 	t.Run("ScanThingWithEnumHashKeysByBranchAndDate2", ScanThingWithEnumHashKeysByBranchAndDate2(dbFactory(), t))
 	t.Run("GetThingWithMatchingKeys", GetThingWithMatchingKeys(dbFactory(), t))
@@ -170,14 +170,14 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingWithMatchingKeyssByBearAndAssocTypeID", GetThingWithMatchingKeyssByBearAndAssocTypeID(dbFactory(), t))
 	t.Run("SaveThingWithMatchingKeys", SaveThingWithMatchingKeys(dbFactory(), t))
 	t.Run("DeleteThingWithMatchingKeys", DeleteThingWithMatchingKeys(dbFactory(), t))
-	t.Run("GetArrayOfThingWithMatchingKeys", GetArrayOfThingWithMatchingKeys(dbFactory(), t))
+	t.Run("GetSliceOfThingWithMatchingKeys", GetSliceOfThingWithMatchingKeys(dbFactory(), t))
 	t.Run("GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear", GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(dbFactory(), t))
 	t.Run("ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear", ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(dbFactory(), t))
 	t.Run("GetThingWithMultiUseCompositeAttribute", GetThingWithMultiUseCompositeAttribute(dbFactory(), t))
 	t.Run("ScanThingWithMultiUseCompositeAttributes", ScanThingWithMultiUseCompositeAttributes(dbFactory(), t))
 	t.Run("SaveThingWithMultiUseCompositeAttribute", SaveThingWithMultiUseCompositeAttribute(dbFactory(), t))
 	t.Run("DeleteThingWithMultiUseCompositeAttribute", DeleteThingWithMultiUseCompositeAttribute(dbFactory(), t))
-	t.Run("GetArrayOfThingWithMultiUseCompositeAttribute", GetArrayOfThingWithMultiUseCompositeAttribute(dbFactory(), t))
+	t.Run("GetSliceOfThingWithMultiUseCompositeAttribute", GetSliceOfThingWithMultiUseCompositeAttribute(dbFactory(), t))
 	t.Run("GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo", GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(dbFactory(), t))
 	t.Run("ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo", ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo(dbFactory(), t))
 	t.Run("GetThingWithMultiUseCompositeAttributesByFourAndOneTwo", GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(dbFactory(), t))
@@ -186,25 +186,25 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("ScanThingWithRequiredCompositePropertiesAndKeysOnlys", ScanThingWithRequiredCompositePropertiesAndKeysOnlys(dbFactory(), t))
 	t.Run("SaveThingWithRequiredCompositePropertiesAndKeysOnly", SaveThingWithRequiredCompositePropertiesAndKeysOnly(dbFactory(), t))
 	t.Run("DeleteThingWithRequiredCompositePropertiesAndKeysOnly", DeleteThingWithRequiredCompositePropertiesAndKeysOnly(dbFactory(), t))
-	t.Run("GetArrayOfThingWithRequiredCompositePropertiesAndKeysOnly", GetArrayOfThingWithRequiredCompositePropertiesAndKeysOnly(dbFactory(), t))
+	t.Run("GetSliceOfThingWithRequiredCompositePropertiesAndKeysOnly", GetSliceOfThingWithRequiredCompositePropertiesAndKeysOnly(dbFactory(), t))
 	t.Run("GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree", GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(dbFactory(), t))
 	t.Run("ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree", ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(dbFactory(), t))
 	t.Run("GetThingWithRequiredFields", GetThingWithRequiredFields(dbFactory(), t))
 	t.Run("ScanThingWithRequiredFieldss", ScanThingWithRequiredFieldss(dbFactory(), t))
 	t.Run("SaveThingWithRequiredFields", SaveThingWithRequiredFields(dbFactory(), t))
 	t.Run("DeleteThingWithRequiredFields", DeleteThingWithRequiredFields(dbFactory(), t))
-	t.Run("GetArrayOfThingWithRequiredFields", GetArrayOfThingWithRequiredFields(dbFactory(), t))
+	t.Run("GetSliceOfThingWithRequiredFields", GetSliceOfThingWithRequiredFields(dbFactory(), t))
 	t.Run("GetThingWithRequiredFields2", GetThingWithRequiredFields2(dbFactory(), t))
 	t.Run("ScanThingWithRequiredFields2s", ScanThingWithRequiredFields2s(dbFactory(), t))
 	t.Run("GetThingWithRequiredFields2sByNameAndID", GetThingWithRequiredFields2sByNameAndID(dbFactory(), t))
 	t.Run("SaveThingWithRequiredFields2", SaveThingWithRequiredFields2(dbFactory(), t))
 	t.Run("DeleteThingWithRequiredFields2", DeleteThingWithRequiredFields2(dbFactory(), t))
-	t.Run("GetArrayOfThingWithRequiredFields2", GetArrayOfThingWithRequiredFields2(dbFactory(), t))
+	t.Run("GetSliceOfThingWithRequiredFields2", GetSliceOfThingWithRequiredFields2(dbFactory(), t))
 	t.Run("GetThingWithTransactMultipleGSI", GetThingWithTransactMultipleGSI(dbFactory(), t))
 	t.Run("ScanThingWithTransactMultipleGSIs", ScanThingWithTransactMultipleGSIs(dbFactory(), t))
 	t.Run("SaveThingWithTransactMultipleGSI", SaveThingWithTransactMultipleGSI(dbFactory(), t))
 	t.Run("DeleteThingWithTransactMultipleGSI", DeleteThingWithTransactMultipleGSI(dbFactory(), t))
-	t.Run("GetArrayOfThingWithTransactMultipleGSI", GetArrayOfThingWithTransactMultipleGSI(dbFactory(), t))
+	t.Run("GetSliceOfThingWithTransactMultipleGSI", GetSliceOfThingWithTransactMultipleGSI(dbFactory(), t))
 	t.Run("GetThingWithTransactMultipleGSIsByIDAndDateR", GetThingWithTransactMultipleGSIsByIDAndDateR(dbFactory(), t))
 	t.Run("TransactSaveThingWithTransactMultipleGSIAndThing", TransactSaveThingWithTransactMultipleGSIAndThing(dbFactory(), t))
 	t.Run("GetThingWithTransactMultipleGSIsByDateHAndID", GetThingWithTransactMultipleGSIsByDateHAndID(dbFactory(), t))
@@ -213,16 +213,16 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("ScanThingWithTransactions", ScanThingWithTransactions(dbFactory(), t))
 	t.Run("SaveThingWithTransaction", SaveThingWithTransaction(dbFactory(), t))
 	t.Run("DeleteThingWithTransaction", DeleteThingWithTransaction(dbFactory(), t))
-	t.Run("GetArrayOfThingWithTransaction", GetArrayOfThingWithTransaction(dbFactory(), t))
+	t.Run("GetSliceOfThingWithTransaction", GetSliceOfThingWithTransaction(dbFactory(), t))
 	t.Run("GetThingWithTransactionWithSimpleThing", GetThingWithTransactionWithSimpleThing(dbFactory(), t))
 	t.Run("ScanThingWithTransactionWithSimpleThings", ScanThingWithTransactionWithSimpleThings(dbFactory(), t))
 	t.Run("SaveThingWithTransactionWithSimpleThing", SaveThingWithTransactionWithSimpleThing(dbFactory(), t))
 	t.Run("DeleteThingWithTransactionWithSimpleThing", DeleteThingWithTransactionWithSimpleThing(dbFactory(), t))
-	t.Run("GetArrayOfThingWithTransactionWithSimpleThing", GetArrayOfThingWithTransactionWithSimpleThing(dbFactory(), t))
+	t.Run("GetSliceOfThingWithTransactionWithSimpleThing", GetSliceOfThingWithTransactionWithSimpleThing(dbFactory(), t))
 	t.Run("GetThingWithUnderscores", GetThingWithUnderscores(dbFactory(), t))
 	t.Run("SaveThingWithUnderscores", SaveThingWithUnderscores(dbFactory(), t))
 	t.Run("DeleteThingWithUnderscores", DeleteThingWithUnderscores(dbFactory(), t))
-	t.Run("GetArrayOfThingWithUnderscores", GetArrayOfThingWithUnderscores(dbFactory(), t))
+	t.Run("GetSliceOfThingWithUnderscores", GetSliceOfThingWithUnderscores(dbFactory(), t))
 }
 
 func GetDeployment(s db.Interface, t *testing.T) func(t *testing.T) {
@@ -581,7 +581,7 @@ func ScanDeployments(d db.Interface, t *testing.T) func(t *testing.T) {
 	}
 }
 
-func GetArrayOfDeployment(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfDeployment(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.Deployment{
@@ -600,7 +600,7 @@ func GetArrayOfDeployment(s db.Interface, t *testing.T) func(t *testing.T) {
 		require.Nil(t, s.SaveDeployment(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfDeployment(ctx, []models.Deployment{m1, m2})
+		out, err := s.GetSliceOfDeployment(ctx, []models.Deployment{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -611,7 +611,7 @@ func GetArrayOfDeployment(s db.Interface, t *testing.T) func(t *testing.T) {
 			Environment: "string99",
 			Version:     "string99",
 		}
-		got, err := s.GetArrayOfDeployment(ctx, []models.Deployment{missing})
+		got, err := s.GetSliceOfDeployment(ctx, []models.Deployment{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}
@@ -1696,7 +1696,7 @@ func ScanEvents(d db.Interface, t *testing.T) func(t *testing.T) {
 	}
 }
 
-func GetArrayOfEvent(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfEvent(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.Event{
@@ -1713,7 +1713,7 @@ func GetArrayOfEvent(s db.Interface, t *testing.T) func(t *testing.T) {
 		require.Nil(t, s.SaveEvent(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfEvent(ctx, []models.Event{m1, m2})
+		out, err := s.GetSliceOfEvent(ctx, []models.Event{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -1723,7 +1723,7 @@ func GetArrayOfEvent(s db.Interface, t *testing.T) func(t *testing.T) {
 			Pk:   "string99",
 			Sk:   "string99",
 		}
-		got, err := s.GetArrayOfEvent(ctx, []models.Event{missing})
+		got, err := s.GetSliceOfEvent(ctx, []models.Event{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}
@@ -2227,7 +2227,7 @@ func ScanNoRangeThingWithCompositeAttributess(d db.Interface, t *testing.T) func
 	}
 }
 
-func GetArrayOfNoRangeThingWithCompositeAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfNoRangeThingWithCompositeAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.NoRangeThingWithCompositeAttributes{
@@ -2248,7 +2248,7 @@ func GetArrayOfNoRangeThingWithCompositeAttributes(s db.Interface, t *testing.T)
 		require.Nil(t, s.SaveNoRangeThingWithCompositeAttributes(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfNoRangeThingWithCompositeAttributes(ctx, []models.NoRangeThingWithCompositeAttributes{m1, m2})
+		out, err := s.GetSliceOfNoRangeThingWithCompositeAttributes(ctx, []models.NoRangeThingWithCompositeAttributes{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -2260,7 +2260,7 @@ func GetArrayOfNoRangeThingWithCompositeAttributes(s db.Interface, t *testing.T)
 			Name:    db.String("string99"),
 			Version: 99,
 		}
-		got, err := s.GetArrayOfNoRangeThingWithCompositeAttributes(ctx, []models.NoRangeThingWithCompositeAttributes{missing})
+		got, err := s.GetSliceOfNoRangeThingWithCompositeAttributes(ctx, []models.NoRangeThingWithCompositeAttributes{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}
@@ -2816,7 +2816,7 @@ func ScanSimpleThings(d db.Interface, t *testing.T) func(t *testing.T) {
 	}
 }
 
-func GetArrayOfSimpleThing(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfSimpleThing(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.SimpleThing{
@@ -2829,7 +2829,7 @@ func GetArrayOfSimpleThing(s db.Interface, t *testing.T) func(t *testing.T) {
 		require.Nil(t, s.SaveSimpleThing(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfSimpleThing(ctx, []models.SimpleThing{m1, m2})
+		out, err := s.GetSliceOfSimpleThing(ctx, []models.SimpleThing{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -2837,7 +2837,7 @@ func GetArrayOfSimpleThing(s db.Interface, t *testing.T) func(t *testing.T) {
 		missing := models.SimpleThing{
 			Name: "string99",
 		}
-		got, err := s.GetArrayOfSimpleThing(ctx, []models.SimpleThing{missing})
+		got, err := s.GetSliceOfSimpleThing(ctx, []models.SimpleThing{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}
@@ -3269,7 +3269,7 @@ func ScanTeacherSharingRules(d db.Interface, t *testing.T) func(t *testing.T) {
 	}
 }
 
-func GetArrayOfTeacherSharingRule(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfTeacherSharingRule(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.TeacherSharingRule{
@@ -3288,7 +3288,7 @@ func GetArrayOfTeacherSharingRule(s db.Interface, t *testing.T) func(t *testing.
 		require.Nil(t, s.SaveTeacherSharingRule(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfTeacherSharingRule(ctx, []models.TeacherSharingRule{m1, m2})
+		out, err := s.GetSliceOfTeacherSharingRule(ctx, []models.TeacherSharingRule{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -3299,7 +3299,7 @@ func GetArrayOfTeacherSharingRule(s db.Interface, t *testing.T) func(t *testing.
 			School:   "string99",
 			Teacher:  "string99",
 		}
-		got, err := s.GetArrayOfTeacherSharingRule(ctx, []models.TeacherSharingRule{missing})
+		got, err := s.GetSliceOfTeacherSharingRule(ctx, []models.TeacherSharingRule{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}
@@ -4032,7 +4032,7 @@ func ScanThings(d db.Interface, t *testing.T) func(t *testing.T) {
 	}
 }
 
-func GetArrayOfThing(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfThing(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.Thing{
@@ -4055,7 +4055,7 @@ func GetArrayOfThing(s db.Interface, t *testing.T) func(t *testing.T) {
 		require.Nil(t, s.SaveThing(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfThing(ctx, []models.Thing{m1, m2})
+		out, err := s.GetSliceOfThing(ctx, []models.Thing{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -4068,7 +4068,7 @@ func GetArrayOfThing(s db.Interface, t *testing.T) func(t *testing.T) {
 			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:099+07:00")),
 			Version:       99,
 		}
-		got, err := s.GetArrayOfThing(ctx, []models.Thing{missing})
+		got, err := s.GetSliceOfThing(ctx, []models.Thing{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}
@@ -5429,7 +5429,7 @@ func ScanThingAllowingBatchWritess(d db.Interface, t *testing.T) func(t *testing
 	}
 }
 
-func GetArrayOfThingAllowingBatchWrites(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfThingAllowingBatchWrites(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.ThingAllowingBatchWrites{
@@ -5444,7 +5444,7 @@ func GetArrayOfThingAllowingBatchWrites(s db.Interface, t *testing.T) func(t *te
 		require.Nil(t, s.SaveThingAllowingBatchWrites(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfThingAllowingBatchWrites(ctx, []models.ThingAllowingBatchWrites{m1, m2})
+		out, err := s.GetSliceOfThingAllowingBatchWrites(ctx, []models.ThingAllowingBatchWrites{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -5453,7 +5453,7 @@ func GetArrayOfThingAllowingBatchWrites(s db.Interface, t *testing.T) func(t *te
 			Name:    "string99",
 			Version: 99,
 		}
-		got, err := s.GetArrayOfThingAllowingBatchWrites(ctx, []models.ThingAllowingBatchWrites{missing})
+		got, err := s.GetSliceOfThingAllowingBatchWrites(ctx, []models.ThingAllowingBatchWrites{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}
@@ -5832,7 +5832,7 @@ func ScanThingAllowingBatchWritesWithCompositeAttributess(d db.Interface, t *tes
 	}
 }
 
-func GetArrayOfThingAllowingBatchWritesWithCompositeAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfThingAllowingBatchWritesWithCompositeAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.ThingAllowingBatchWritesWithCompositeAttributes{
@@ -5849,7 +5849,7 @@ func GetArrayOfThingAllowingBatchWritesWithCompositeAttributes(s db.Interface, t
 		require.Nil(t, s.SaveThingAllowingBatchWritesWithCompositeAttributes(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfThingAllowingBatchWritesWithCompositeAttributes(ctx, []models.ThingAllowingBatchWritesWithCompositeAttributes{m1, m2})
+		out, err := s.GetSliceOfThingAllowingBatchWritesWithCompositeAttributes(ctx, []models.ThingAllowingBatchWritesWithCompositeAttributes{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -5859,7 +5859,7 @@ func GetArrayOfThingAllowingBatchWritesWithCompositeAttributes(s db.Interface, t
 			ID:   db.String("string99"),
 			Name: db.String("string99"),
 		}
-		got, err := s.GetArrayOfThingAllowingBatchWritesWithCompositeAttributes(ctx, []models.ThingAllowingBatchWritesWithCompositeAttributes{missing})
+		got, err := s.GetSliceOfThingAllowingBatchWritesWithCompositeAttributes(ctx, []models.ThingAllowingBatchWritesWithCompositeAttributes{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}
@@ -6307,7 +6307,7 @@ func ScanThingWithAdditionalAttributess(d db.Interface, t *testing.T) func(t *te
 	}
 }
 
-func GetArrayOfThingWithAdditionalAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfThingWithAdditionalAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.ThingWithAdditionalAttributes{
@@ -6336,7 +6336,7 @@ func GetArrayOfThingWithAdditionalAttributes(s db.Interface, t *testing.T) func(
 		require.Nil(t, s.SaveThingWithAdditionalAttributes(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfThingWithAdditionalAttributes(ctx, []models.ThingWithAdditionalAttributes{m1, m2})
+		out, err := s.GetSliceOfThingWithAdditionalAttributes(ctx, []models.ThingWithAdditionalAttributes{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -6352,7 +6352,7 @@ func GetArrayOfThingWithAdditionalAttributes(s db.Interface, t *testing.T) func(
 			RangeNullable:        db.DateTime(mustTime("2018-03-11T15:04:099+07:00")),
 			Version:              99,
 		}
-		got, err := s.GetArrayOfThingWithAdditionalAttributes(ctx, []models.ThingWithAdditionalAttributes{missing})
+		got, err := s.GetSliceOfThingWithAdditionalAttributes(ctx, []models.ThingWithAdditionalAttributes{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}
@@ -7763,7 +7763,7 @@ func ScanThingWithCompositeAttributess(d db.Interface, t *testing.T) func(t *tes
 	}
 }
 
-func GetArrayOfThingWithCompositeAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfThingWithCompositeAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.ThingWithCompositeAttributes{
@@ -7782,7 +7782,7 @@ func GetArrayOfThingWithCompositeAttributes(s db.Interface, t *testing.T) func(t
 		require.Nil(t, s.SaveThingWithCompositeAttributes(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfThingWithCompositeAttributes(ctx, []models.ThingWithCompositeAttributes{m1, m2})
+		out, err := s.GetSliceOfThingWithCompositeAttributes(ctx, []models.ThingWithCompositeAttributes{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -7793,7 +7793,7 @@ func GetArrayOfThingWithCompositeAttributes(s db.Interface, t *testing.T) func(t
 			Name:    db.String("string99"),
 			Version: 99,
 		}
-		got, err := s.GetArrayOfThingWithCompositeAttributes(ctx, []models.ThingWithCompositeAttributes{missing})
+		got, err := s.GetSliceOfThingWithCompositeAttributes(ctx, []models.ThingWithCompositeAttributes{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}
@@ -8531,7 +8531,7 @@ func ScanThingWithCompositeEnumAttributess(d db.Interface, t *testing.T) func(t 
 	}
 }
 
-func GetArrayOfThingWithCompositeEnumAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfThingWithCompositeEnumAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.ThingWithCompositeEnumAttributes{
@@ -8548,7 +8548,7 @@ func GetArrayOfThingWithCompositeEnumAttributes(s db.Interface, t *testing.T) fu
 		require.Nil(t, s.SaveThingWithCompositeEnumAttributes(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfThingWithCompositeEnumAttributes(ctx, []models.ThingWithCompositeEnumAttributes{m1, m2})
+		out, err := s.GetSliceOfThingWithCompositeEnumAttributes(ctx, []models.ThingWithCompositeEnumAttributes{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -8558,7 +8558,7 @@ func GetArrayOfThingWithCompositeEnumAttributes(s db.Interface, t *testing.T) fu
 			Date:     db.DateTime(mustTime("2018-03-11T15:04:099+07:00")),
 			Name:     db.String("string99"),
 		}
-		got, err := s.GetArrayOfThingWithCompositeEnumAttributes(ctx, []models.ThingWithCompositeEnumAttributes{missing})
+		got, err := s.GetSliceOfThingWithCompositeEnumAttributes(ctx, []models.ThingWithCompositeEnumAttributes{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}
@@ -8721,7 +8721,7 @@ func ScanThingWithDateGSIs(d db.Interface, t *testing.T) func(t *testing.T) {
 	}
 }
 
-func GetArrayOfThingWithDateGSI(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfThingWithDateGSI(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.ThingWithDateGSI{
@@ -8738,7 +8738,7 @@ func GetArrayOfThingWithDateGSI(s db.Interface, t *testing.T) func(t *testing.T)
 		require.Nil(t, s.SaveThingWithDateGSI(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfThingWithDateGSI(ctx, []models.ThingWithDateGSI{m1, m2})
+		out, err := s.GetSliceOfThingWithDateGSI(ctx, []models.ThingWithDateGSI{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -8748,7 +8748,7 @@ func GetArrayOfThingWithDateGSI(s db.Interface, t *testing.T) func(t *testing.T)
 			DateR: mustDate("2018-03-199"),
 			ID:    "string99",
 		}
-		got, err := s.GetArrayOfThingWithDateGSI(ctx, []models.ThingWithDateGSI{missing})
+		got, err := s.GetSliceOfThingWithDateGSI(ctx, []models.ThingWithDateGSI{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}
@@ -9499,7 +9499,7 @@ func ScanThingWithDateRanges(d db.Interface, t *testing.T) func(t *testing.T) {
 	}
 }
 
-func GetArrayOfThingWithDateRange(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfThingWithDateRange(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.ThingWithDateRange{
@@ -9514,7 +9514,7 @@ func GetArrayOfThingWithDateRange(s db.Interface, t *testing.T) func(t *testing.
 		require.Nil(t, s.SaveThingWithDateRange(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfThingWithDateRange(ctx, []models.ThingWithDateRange{m1, m2})
+		out, err := s.GetSliceOfThingWithDateRange(ctx, []models.ThingWithDateRange{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -9523,7 +9523,7 @@ func GetArrayOfThingWithDateRange(s db.Interface, t *testing.T) func(t *testing.
 			Date: mustTime("2018-03-11T15:04:099+07:00"),
 			Name: "string99",
 		}
-		got, err := s.GetArrayOfThingWithDateRange(ctx, []models.ThingWithDateRange{missing})
+		got, err := s.GetSliceOfThingWithDateRange(ctx, []models.ThingWithDateRange{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}
@@ -9870,7 +9870,7 @@ func ScanThingWithDateRangeKeys(d db.Interface, t *testing.T) func(t *testing.T)
 	}
 }
 
-func GetArrayOfThingWithDateRangeKey(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfThingWithDateRangeKey(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.ThingWithDateRangeKey{
@@ -9885,7 +9885,7 @@ func GetArrayOfThingWithDateRangeKey(s db.Interface, t *testing.T) func(t *testi
 		require.Nil(t, s.SaveThingWithDateRangeKey(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfThingWithDateRangeKey(ctx, []models.ThingWithDateRangeKey{m1, m2})
+		out, err := s.GetSliceOfThingWithDateRangeKey(ctx, []models.ThingWithDateRangeKey{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -9894,7 +9894,7 @@ func GetArrayOfThingWithDateRangeKey(s db.Interface, t *testing.T) func(t *testi
 			Date: mustDate("2018-03-199"),
 			ID:   "string99",
 		}
-		got, err := s.GetArrayOfThingWithDateRangeKey(ctx, []models.ThingWithDateRangeKey{missing})
+		got, err := s.GetSliceOfThingWithDateRangeKey(ctx, []models.ThingWithDateRangeKey{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}
@@ -10302,7 +10302,7 @@ func ScanThingWithDateTimeComposites(d db.Interface, t *testing.T) func(t *testi
 	}
 }
 
-func GetArrayOfThingWithDateTimeComposite(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfThingWithDateTimeComposite(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.ThingWithDateTimeComposite{
@@ -10321,7 +10321,7 @@ func GetArrayOfThingWithDateTimeComposite(s db.Interface, t *testing.T) func(t *
 		require.Nil(t, s.SaveThingWithDateTimeComposite(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfThingWithDateTimeComposite(ctx, []models.ThingWithDateTimeComposite{m1, m2})
+		out, err := s.GetSliceOfThingWithDateTimeComposite(ctx, []models.ThingWithDateTimeComposite{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -10332,7 +10332,7 @@ func GetArrayOfThingWithDateTimeComposite(s db.Interface, t *testing.T) func(t *
 			Resource: "string99",
 			Type:     "string99",
 		}
-		got, err := s.GetArrayOfThingWithDateTimeComposite(ctx, []models.ThingWithDateTimeComposite{missing})
+		got, err := s.GetSliceOfThingWithDateTimeComposite(ctx, []models.ThingWithDateTimeComposite{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}
@@ -10489,7 +10489,7 @@ func ScanThingWithDatetimeGSIs(d db.Interface, t *testing.T) func(t *testing.T) 
 	}
 }
 
-func GetArrayOfThingWithDatetimeGSI(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfThingWithDatetimeGSI(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.ThingWithDatetimeGSI{
@@ -10504,7 +10504,7 @@ func GetArrayOfThingWithDatetimeGSI(s db.Interface, t *testing.T) func(t *testin
 		require.Nil(t, s.SaveThingWithDatetimeGSI(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfThingWithDatetimeGSI(ctx, []models.ThingWithDatetimeGSI{m1, m2})
+		out, err := s.GetSliceOfThingWithDatetimeGSI(ctx, []models.ThingWithDatetimeGSI{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -10513,7 +10513,7 @@ func GetArrayOfThingWithDatetimeGSI(s db.Interface, t *testing.T) func(t *testin
 			Datetime: mustTime("2018-03-11T15:04:099+07:00"),
 			ID:       "string99",
 		}
-		got, err := s.GetArrayOfThingWithDatetimeGSI(ctx, []models.ThingWithDatetimeGSI{missing})
+		got, err := s.GetSliceOfThingWithDatetimeGSI(ctx, []models.ThingWithDatetimeGSI{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}
@@ -11170,7 +11170,7 @@ func ScanThingWithEnumHashKeys(d db.Interface, t *testing.T) func(t *testing.T) 
 	}
 }
 
-func GetArrayOfThingWithEnumHashKey(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfThingWithEnumHashKey(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.ThingWithEnumHashKey{
@@ -11187,7 +11187,7 @@ func GetArrayOfThingWithEnumHashKey(s db.Interface, t *testing.T) func(t *testin
 		require.Nil(t, s.SaveThingWithEnumHashKey(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfThingWithEnumHashKey(ctx, []models.ThingWithEnumHashKey{m1, m2})
+		out, err := s.GetSliceOfThingWithEnumHashKey(ctx, []models.ThingWithEnumHashKey{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -11197,7 +11197,7 @@ func GetArrayOfThingWithEnumHashKey(s db.Interface, t *testing.T) func(t *testin
 			Date:   mustTime("2018-03-11T15:04:099+07:00"),
 			Date2:  mustTime("2018-03-11T15:04:099+07:00"),
 		}
-		got, err := s.GetArrayOfThingWithEnumHashKey(ctx, []models.ThingWithEnumHashKey{missing})
+		got, err := s.GetSliceOfThingWithEnumHashKey(ctx, []models.ThingWithEnumHashKey{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}
@@ -11909,7 +11909,7 @@ func ScanThingWithMatchingKeyss(d db.Interface, t *testing.T) func(t *testing.T)
 	}
 }
 
-func GetArrayOfThingWithMatchingKeys(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfThingWithMatchingKeys(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.ThingWithMatchingKeys{
@@ -11928,7 +11928,7 @@ func GetArrayOfThingWithMatchingKeys(s db.Interface, t *testing.T) func(t *testi
 		require.Nil(t, s.SaveThingWithMatchingKeys(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfThingWithMatchingKeys(ctx, []models.ThingWithMatchingKeys{m1, m2})
+		out, err := s.GetSliceOfThingWithMatchingKeys(ctx, []models.ThingWithMatchingKeys{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -11939,7 +11939,7 @@ func GetArrayOfThingWithMatchingKeys(s db.Interface, t *testing.T) func(t *testi
 			Bear:      "string99",
 			Created:   mustTime("2018-03-11T15:04:099+07:00"),
 		}
-		got, err := s.GetArrayOfThingWithMatchingKeys(ctx, []models.ThingWithMatchingKeys{missing})
+		got, err := s.GetSliceOfThingWithMatchingKeys(ctx, []models.ThingWithMatchingKeys{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}
@@ -12468,7 +12468,7 @@ func ScanThingWithMultiUseCompositeAttributes(d db.Interface, t *testing.T) func
 	}
 }
 
-func GetArrayOfThingWithMultiUseCompositeAttribute(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfThingWithMultiUseCompositeAttribute(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.ThingWithMultiUseCompositeAttribute{
@@ -12487,7 +12487,7 @@ func GetArrayOfThingWithMultiUseCompositeAttribute(s db.Interface, t *testing.T)
 		require.Nil(t, s.SaveThingWithMultiUseCompositeAttribute(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfThingWithMultiUseCompositeAttribute(ctx, []models.ThingWithMultiUseCompositeAttribute{m1, m2})
+		out, err := s.GetSliceOfThingWithMultiUseCompositeAttribute(ctx, []models.ThingWithMultiUseCompositeAttribute{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -12498,7 +12498,7 @@ func GetArrayOfThingWithMultiUseCompositeAttribute(s db.Interface, t *testing.T)
 			Three: db.String("string99"),
 			Two:   db.String("string99"),
 		}
-		got, err := s.GetArrayOfThingWithMultiUseCompositeAttribute(ctx, []models.ThingWithMultiUseCompositeAttribute{missing})
+		got, err := s.GetSliceOfThingWithMultiUseCompositeAttribute(ctx, []models.ThingWithMultiUseCompositeAttribute{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}
@@ -13371,7 +13371,7 @@ func ScanThingWithRequiredCompositePropertiesAndKeysOnlys(d db.Interface, t *tes
 	}
 }
 
-func GetArrayOfThingWithRequiredCompositePropertiesAndKeysOnly(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfThingWithRequiredCompositePropertiesAndKeysOnly(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.ThingWithRequiredCompositePropertiesAndKeysOnly{
@@ -13388,7 +13388,7 @@ func GetArrayOfThingWithRequiredCompositePropertiesAndKeysOnly(s db.Interface, t
 		require.Nil(t, s.SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfThingWithRequiredCompositePropertiesAndKeysOnly(ctx, []models.ThingWithRequiredCompositePropertiesAndKeysOnly{m1, m2})
+		out, err := s.GetSliceOfThingWithRequiredCompositePropertiesAndKeysOnly(ctx, []models.ThingWithRequiredCompositePropertiesAndKeysOnly{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -13398,7 +13398,7 @@ func GetArrayOfThingWithRequiredCompositePropertiesAndKeysOnly(s db.Interface, t
 			PropertyThree: db.String("string99"),
 			PropertyTwo:   db.String("string99"),
 		}
-		got, err := s.GetArrayOfThingWithRequiredCompositePropertiesAndKeysOnly(ctx, []models.ThingWithRequiredCompositePropertiesAndKeysOnly{missing})
+		got, err := s.GetSliceOfThingWithRequiredCompositePropertiesAndKeysOnly(ctx, []models.ThingWithRequiredCompositePropertiesAndKeysOnly{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}
@@ -13877,7 +13877,7 @@ func ScanThingWithRequiredFieldss(d db.Interface, t *testing.T) func(t *testing.
 	}
 }
 
-func GetArrayOfThingWithRequiredFields(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfThingWithRequiredFields(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.ThingWithRequiredFields{
@@ -13890,7 +13890,7 @@ func GetArrayOfThingWithRequiredFields(s db.Interface, t *testing.T) func(t *tes
 		require.Nil(t, s.SaveThingWithRequiredFields(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfThingWithRequiredFields(ctx, []models.ThingWithRequiredFields{m1, m2})
+		out, err := s.GetSliceOfThingWithRequiredFields(ctx, []models.ThingWithRequiredFields{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -13898,7 +13898,7 @@ func GetArrayOfThingWithRequiredFields(s db.Interface, t *testing.T) func(t *tes
 		missing := models.ThingWithRequiredFields{
 			Name: db.String("string99"),
 		}
-		got, err := s.GetArrayOfThingWithRequiredFields(ctx, []models.ThingWithRequiredFields{missing})
+		got, err := s.GetSliceOfThingWithRequiredFields(ctx, []models.ThingWithRequiredFields{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}
@@ -14244,7 +14244,7 @@ func ScanThingWithRequiredFields2s(d db.Interface, t *testing.T) func(t *testing
 	}
 }
 
-func GetArrayOfThingWithRequiredFields2(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfThingWithRequiredFields2(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.ThingWithRequiredFields2{
@@ -14259,7 +14259,7 @@ func GetArrayOfThingWithRequiredFields2(s db.Interface, t *testing.T) func(t *te
 		require.Nil(t, s.SaveThingWithRequiredFields2(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfThingWithRequiredFields2(ctx, []models.ThingWithRequiredFields2{m1, m2})
+		out, err := s.GetSliceOfThingWithRequiredFields2(ctx, []models.ThingWithRequiredFields2{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -14268,7 +14268,7 @@ func GetArrayOfThingWithRequiredFields2(s db.Interface, t *testing.T) func(t *te
 			ID:   db.String("string99"),
 			Name: db.String("string99"),
 		}
-		got, err := s.GetArrayOfThingWithRequiredFields2(ctx, []models.ThingWithRequiredFields2{missing})
+		got, err := s.GetSliceOfThingWithRequiredFields2(ctx, []models.ThingWithRequiredFields2{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}
@@ -14429,7 +14429,7 @@ func ScanThingWithTransactMultipleGSIs(d db.Interface, t *testing.T) func(t *tes
 	}
 }
 
-func GetArrayOfThingWithTransactMultipleGSI(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfThingWithTransactMultipleGSI(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.ThingWithTransactMultipleGSI{
@@ -14446,7 +14446,7 @@ func GetArrayOfThingWithTransactMultipleGSI(s db.Interface, t *testing.T) func(t
 		require.Nil(t, s.SaveThingWithTransactMultipleGSI(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfThingWithTransactMultipleGSI(ctx, []models.ThingWithTransactMultipleGSI{m1, m2})
+		out, err := s.GetSliceOfThingWithTransactMultipleGSI(ctx, []models.ThingWithTransactMultipleGSI{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -14456,7 +14456,7 @@ func GetArrayOfThingWithTransactMultipleGSI(s db.Interface, t *testing.T) func(t
 			DateR: mustDate("2018-03-199"),
 			ID:    "string99",
 		}
-		got, err := s.GetArrayOfThingWithTransactMultipleGSI(ctx, []models.ThingWithTransactMultipleGSI{missing})
+		got, err := s.GetSliceOfThingWithTransactMultipleGSI(ctx, []models.ThingWithTransactMultipleGSI{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}
@@ -15026,7 +15026,7 @@ func ScanThingWithTransactions(d db.Interface, t *testing.T) func(t *testing.T) 
 	}
 }
 
-func GetArrayOfThingWithTransaction(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfThingWithTransaction(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.ThingWithTransaction{
@@ -15039,7 +15039,7 @@ func GetArrayOfThingWithTransaction(s db.Interface, t *testing.T) func(t *testin
 		require.Nil(t, s.SaveThingWithTransaction(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfThingWithTransaction(ctx, []models.ThingWithTransaction{m1, m2})
+		out, err := s.GetSliceOfThingWithTransaction(ctx, []models.ThingWithTransaction{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -15047,7 +15047,7 @@ func GetArrayOfThingWithTransaction(s db.Interface, t *testing.T) func(t *testin
 		missing := models.ThingWithTransaction{
 			Name: "string99",
 		}
-		got, err := s.GetArrayOfThingWithTransaction(ctx, []models.ThingWithTransaction{missing})
+		got, err := s.GetSliceOfThingWithTransaction(ctx, []models.ThingWithTransaction{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}
@@ -15210,7 +15210,7 @@ func ScanThingWithTransactionWithSimpleThings(d db.Interface, t *testing.T) func
 	}
 }
 
-func GetArrayOfThingWithTransactionWithSimpleThing(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfThingWithTransactionWithSimpleThing(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.ThingWithTransactionWithSimpleThing{
@@ -15223,7 +15223,7 @@ func GetArrayOfThingWithTransactionWithSimpleThing(s db.Interface, t *testing.T)
 		require.Nil(t, s.SaveThingWithTransactionWithSimpleThing(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfThingWithTransactionWithSimpleThing(ctx, []models.ThingWithTransactionWithSimpleThing{m1, m2})
+		out, err := s.GetSliceOfThingWithTransactionWithSimpleThing(ctx, []models.ThingWithTransactionWithSimpleThing{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -15231,7 +15231,7 @@ func GetArrayOfThingWithTransactionWithSimpleThing(s db.Interface, t *testing.T)
 		missing := models.ThingWithTransactionWithSimpleThing{
 			Name: "string99",
 		}
-		got, err := s.GetArrayOfThingWithTransactionWithSimpleThing(ctx, []models.ThingWithTransactionWithSimpleThing{missing})
+		got, err := s.GetSliceOfThingWithTransactionWithSimpleThing(ctx, []models.ThingWithTransactionWithSimpleThing{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}
@@ -15289,7 +15289,7 @@ func GetThingWithUnderscores(s db.Interface, t *testing.T) func(t *testing.T) {
 	}
 }
 
-func GetArrayOfThingWithUnderscores(s db.Interface, t *testing.T) func(t *testing.T) {
+func GetSliceOfThingWithUnderscores(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
 		m1 := models.ThingWithUnderscores{
@@ -15302,7 +15302,7 @@ func GetArrayOfThingWithUnderscores(s db.Interface, t *testing.T) func(t *testin
 		require.Nil(t, s.SaveThingWithUnderscores(ctx, m2))
 
 		// fetch both items by passing full model structs (keys extracted internally)
-		out, err := s.GetArrayOfThingWithUnderscores(ctx, []models.ThingWithUnderscores{m1, m2})
+		out, err := s.GetSliceOfThingWithUnderscores(ctx, []models.ThingWithUnderscores{m1, m2})
 		require.Nil(t, err)
 		require.Len(t, out, 2)
 
@@ -15310,7 +15310,7 @@ func GetArrayOfThingWithUnderscores(s db.Interface, t *testing.T) func(t *testin
 		missing := models.ThingWithUnderscores{
 			IDApp: "string99",
 		}
-		got, err := s.GetArrayOfThingWithUnderscores(ctx, []models.ThingWithUnderscores{missing})
+		got, err := s.GetSliceOfThingWithUnderscores(ctx, []models.ThingWithUnderscores{missing})
 		require.Nil(t, err)
 		require.Len(t, got, 0)
 	}

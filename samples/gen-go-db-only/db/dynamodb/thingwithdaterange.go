@@ -84,7 +84,7 @@ func (t ThingWithDateRangeTable) saveThingWithDateRange(ctx context.Context, m m
 	return err
 }
 
-func (t ThingWithDateRangeTable) getArrayOfThingWithDateRange(ctx context.Context, ms []models.ThingWithDateRange) ([]models.ThingWithDateRange, error) {
+func (t ThingWithDateRangeTable) getSliceOfThingWithDateRange(ctx context.Context, ms []models.ThingWithDateRange) ([]models.ThingWithDateRange, error) {
 	if len(ms) == 0 {
 		return nil, nil
 	}
