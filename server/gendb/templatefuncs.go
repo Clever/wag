@@ -12,7 +12,6 @@ import (
 	"github.com/go-swagger/go-swagger/generator"
 
 	"github.com/Clever/go-utils/stringset"
-	"github.com/Clever/wag/v9/utils"
 )
 
 // funcMap contains useful functions to use in templates
@@ -268,8 +267,7 @@ var funcMap = template.FuncMap(map[string]interface{}{
 			if attributeIsPointer(config, prop) {
 				value += "*"
 			}
-			value += sliceIdentifier + "."
-			value += utils.CamelCase(attributeToModelValueNotPtr(config, prop, ""), true)
+			value += attributeToModelValueNotPtr(config, prop, sliceIdentifier+".")
 			if i != len(ca.Properties)-1 {
 				value += `, `
 			}
