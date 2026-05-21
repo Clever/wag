@@ -90,7 +90,7 @@ func (t ThingWithDateTimeCompositeTable) getSliceOfThingWithDateTimeComposite(ct
 		return nil, nil
 	}
 
-	requestKeys := make([]map[string]types.AttributeValue, len(ms))
+	allKeys := make([]map[string]types.AttributeValue, len(ms))
 	for i := range ms {
 		key, err := attributevalue.MarshalMap(ddbThingWithDateTimeCompositePrimaryKey{
 			TypeID:          fmt.Sprintf("%s|%s", ms[i].Type, ms[i].ID),
@@ -99,31 +99,39 @@ func (t ThingWithDateTimeCompositeTable) getSliceOfThingWithDateTimeComposite(ct
 		if err != nil {
 			return nil, err
 		}
-		requestKeys[i] = key
+		allKeys[i] = key
 	}
 
 	tname := t.TableName
 	var items []models.ThingWithDateTimeComposite
-	for {
-		out, err := t.DynamoDBAPI.BatchGetItem(ctx, &dynamodb.BatchGetItemInput{
-			RequestItems: map[string]types.KeysAndAttributes{
-				tname: {Keys: requestKeys},
-			},
-		})
-		if err != nil {
-			return nil, fmt.Errorf("BatchGetItem: %v", err)
+	for len(allKeys) > 0 {
+		chunkSize := len(allKeys)
+		if chunkSize > maxDynamoDBBatchGetItems {
+			chunkSize = maxDynamoDBBatchGetItems
 		}
-		for _, item := range out.Responses[tname] {
-			var m models.ThingWithDateTimeComposite
-			if err := decodeThingWithDateTimeComposite(item, &m); err != nil {
-				return nil, err
+		requestKeys := allKeys[:chunkSize]
+		allKeys = allKeys[chunkSize:]
+		for {
+			out, err := t.DynamoDBAPI.BatchGetItem(ctx, &dynamodb.BatchGetItemInput{
+				RequestItems: map[string]types.KeysAndAttributes{
+					tname: {Keys: requestKeys},
+				},
+			})
+			if err != nil {
+				return nil, fmt.Errorf("BatchGetItem: %v", err)
 			}
-			items = append(items, m)
+			for _, item := range out.Responses[tname] {
+				var m models.ThingWithDateTimeComposite
+				if err := decodeThingWithDateTimeComposite(item, &m); err != nil {
+					return nil, err
+				}
+				items = append(items, m)
+			}
+			if len(out.UnprocessedKeys[tname].Keys) == 0 {
+				break
+			}
+			requestKeys = out.UnprocessedKeys[tname].Keys
 		}
-		if len(out.UnprocessedKeys[tname].Keys) == 0 {
-			break
-		}
-		requestKeys = out.UnprocessedKeys[tname].Keys
 	}
 	return items, nil
 }
