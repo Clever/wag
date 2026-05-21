@@ -245,7 +245,7 @@ var funcMap = template.FuncMap(map[string]interface{}{
 		value += `)`
 		return value
 	},
-	"compositeValueFromArray": func(config XDBConfig, attributeName string, sliceIdentifier string) string {
+	"compositeValueFromSlice": func(config XDBConfig, attributeName string, sliceIdentifier string) string {
 		ca := findCompositeAttribute(config, attributeName)
 		if ca == nil {
 			return "not-a-composite-attribute"

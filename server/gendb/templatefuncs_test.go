@@ -114,7 +114,7 @@ func TestAttributeToModelValueNotPtr(t *testing.T) {
 
 // compositeValueFromArrayFunc extracts the closure from funcMap for direct testing.
 func compositeValueFromArrayFunc(config XDBConfig, attributeName, sliceIdentifier string) string {
-	fn := funcMap["compositeValueFromArray"].(func(XDBConfig, string, string) string)
+	fn := funcMap["compositeValueFromSlice"].(func(XDBConfig, string, string) string)
 	return fn(config, attributeName, sliceIdentifier)
 }
 

@@ -231,7 +231,7 @@ func (t {{ $modelName }}Table) deleteArrayOf{{ $modelName }}(ctx context.Context
 	for i := range ms {
 		key, err := attributevalue.MarshalMap(ddb{{ $modelName }}PrimaryKey{
 		{{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-			{{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValueFromArray $xdbConfig $pk.AttributeName "ms[i]"}}{{ else }}{{ if attributeIsPointer $xdbConfig $pk.AttributeName }}*{{ end }}ms[i].{{ pascalize $pk.AttributeName }}{{ end }},
+			{{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValueFromSlice $xdbConfig $pk.AttributeName "ms[i]"}}{{ else }}{{ if attributeIsPointer $xdbConfig $pk.AttributeName }}*{{ end }}ms[i].{{ pascalize $pk.AttributeName }}{{ end }},
 		{{- end }}
 		})
 		if err != nil {
@@ -262,7 +262,7 @@ func (t {{ $modelName }}Table) deleteArrayOf{{ $modelName }}(ctx context.Context
 }
 {{- end }}
 
-func (t {{ $modelName }}Table) getArrayOf{{ $modelName }}(ctx context.Context, ms []models.{{ $modelName }}) ([]models.{{ $modelName }}, error) {
+func (t {{ $modelName }}Table) getSliceOf{{ $modelName }}(ctx context.Context, ms []models.{{ $modelName }}) ([]models.{{ $modelName }}, error) {
   if len(ms) == 0 {
     return nil, nil
   }
@@ -271,7 +271,7 @@ func (t {{ $modelName }}Table) getArrayOf{{ $modelName }}(ctx context.Context, m
   for i := range ms {
     key, err := attributevalue.MarshalMap(ddb{{ $modelName }}PrimaryKey{
       {{- range $_, $pk := $xdbConfig.DynamoDB.KeySchema }}
-      {{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValueFromArray $xdbConfig $pk.AttributeName "ms[i]"}}{{ else }}{{ if attributeIsPointer $xdbConfig $pk.AttributeName }}*{{ end }}ms[i].{{ pascalize $pk.AttributeName }}{{ end }},
+      {{ pascalize $pk.AttributeName }}: {{ if isComposite $xdbConfig $pk.AttributeName }}{{ compositeValueFromSlice $xdbConfig $pk.AttributeName "ms[i]"}}{{ else }}{{ if attributeIsPointer $xdbConfig $pk.AttributeName }}*{{ end }}ms[i].{{ pascalize $pk.AttributeName }}{{ end }},
       {{- end }}
     })
     if err != nil {
