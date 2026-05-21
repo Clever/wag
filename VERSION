@@ -1,3 +1,8 @@
+v9.10.0
+Add BatchGetItem support to gendb: every DynamoDB table now generates a GetArrayOf[Model] method that fetches multiple items by primary key using a single BatchGetItem call with automatic retry of unprocessed keys.
+
+Previously:
+
 v9.9.9
 add headers in RequestOptions
 
