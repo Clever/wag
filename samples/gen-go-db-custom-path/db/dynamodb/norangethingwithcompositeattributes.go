@@ -159,6 +159,56 @@ func (t NoRangeThingWithCompositeAttributesTable) saveNoRangeThingWithCompositeA
 	return nil
 }
 
+func (t NoRangeThingWithCompositeAttributesTable) getSliceOfNoRangeThingWithCompositeAttributes(ctx context.Context, ms []models.NoRangeThingWithCompositeAttributes) ([]models.NoRangeThingWithCompositeAttributes, error) {
+	if len(ms) == 0 {
+		return nil, nil
+	}
+
+	allKeys := make([]map[string]types.AttributeValue, len(ms))
+	for i := range ms {
+		key, err := attributevalue.MarshalMap(ddbNoRangeThingWithCompositeAttributesPrimaryKey{
+			NameBranch: fmt.Sprintf("%s@%s", *ms[i].Name, *ms[i].Branch),
+		})
+		if err != nil {
+			return nil, err
+		}
+		allKeys[i] = key
+	}
+
+	tname := t.TableName
+	var items []models.NoRangeThingWithCompositeAttributes
+	for len(allKeys) > 0 {
+		chunkSize := len(allKeys)
+		if chunkSize > maxDynamoDBBatchGetItems {
+			chunkSize = maxDynamoDBBatchGetItems
+		}
+		requestKeys := allKeys[:chunkSize]
+		allKeys = allKeys[chunkSize:]
+		for {
+			out, err := t.DynamoDBAPI.BatchGetItem(ctx, &dynamodb.BatchGetItemInput{
+				RequestItems: map[string]types.KeysAndAttributes{
+					tname: {Keys: requestKeys},
+				},
+			})
+			if err != nil {
+				return nil, fmt.Errorf("BatchGetItem: %v", err)
+			}
+			for _, item := range out.Responses[tname] {
+				var m models.NoRangeThingWithCompositeAttributes
+				if err := decodeNoRangeThingWithCompositeAttributes(item, &m); err != nil {
+					return nil, err
+				}
+				items = append(items, m)
+			}
+			if len(out.UnprocessedKeys[tname].Keys) == 0 {
+				break
+			}
+			requestKeys = out.UnprocessedKeys[tname].Keys
+		}
+	}
+	return items, nil
+}
+
 func (t NoRangeThingWithCompositeAttributesTable) getNoRangeThingWithCompositeAttributes(ctx context.Context, name string, branch string) (*models.NoRangeThingWithCompositeAttributes, error) {
 	key, err := attributevalue.MarshalMap(ddbNoRangeThingWithCompositeAttributesPrimaryKey{
 		NameBranch: fmt.Sprintf("%s@%s", name, branch),

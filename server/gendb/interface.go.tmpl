@@ -50,6 +50,9 @@ type Interface interface {
 	{{- varname $attributeName }} {{ goTypeForAttribute $xdbConfig $attributeName }},
 	{{- end -}}
     ) error
+    // GetSliceOf{{ $modelName }} gets multiple {{ $modelName }}s by their primary keys.
+    GetSliceOf{{ $modelName }}(ctx context.Context, ms []models.{{ $modelName }}) ([]models.{{ $modelName }}, error)
+
     {{- range $gsi := $xdbConfig.DynamoDB.GlobalSecondaryIndexes }}
     {{- $indexName := indexName $gsi.KeySchema }}
     {{- if indexHasRangeKey $gsi.KeySchema }}

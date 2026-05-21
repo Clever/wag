@@ -143,6 +143,57 @@ func (t ThingWithEnumHashKeyTable) saveThingWithEnumHashKey(ctx context.Context,
 	return nil
 }
 
+func (t ThingWithEnumHashKeyTable) getSliceOfThingWithEnumHashKey(ctx context.Context, ms []models.ThingWithEnumHashKey) ([]models.ThingWithEnumHashKey, error) {
+	if len(ms) == 0 {
+		return nil, nil
+	}
+
+	allKeys := make([]map[string]types.AttributeValue, len(ms))
+	for i := range ms {
+		key, err := attributevalue.MarshalMap(ddbThingWithEnumHashKeyPrimaryKey{
+			Branch: ms[i].Branch,
+			Date:   ms[i].Date,
+		})
+		if err != nil {
+			return nil, err
+		}
+		allKeys[i] = key
+	}
+
+	tname := t.TableName
+	var items []models.ThingWithEnumHashKey
+	for len(allKeys) > 0 {
+		chunkSize := len(allKeys)
+		if chunkSize > maxDynamoDBBatchGetItems {
+			chunkSize = maxDynamoDBBatchGetItems
+		}
+		requestKeys := allKeys[:chunkSize]
+		allKeys = allKeys[chunkSize:]
+		for {
+			out, err := t.DynamoDBAPI.BatchGetItem(ctx, &dynamodb.BatchGetItemInput{
+				RequestItems: map[string]types.KeysAndAttributes{
+					tname: {Keys: requestKeys},
+				},
+			})
+			if err != nil {
+				return nil, fmt.Errorf("BatchGetItem: %v", err)
+			}
+			for _, item := range out.Responses[tname] {
+				var m models.ThingWithEnumHashKey
+				if err := decodeThingWithEnumHashKey(item, &m); err != nil {
+					return nil, err
+				}
+				items = append(items, m)
+			}
+			if len(out.UnprocessedKeys[tname].Keys) == 0 {
+				break
+			}
+			requestKeys = out.UnprocessedKeys[tname].Keys
+		}
+	}
+	return items, nil
+}
+
 func (t ThingWithEnumHashKeyTable) getThingWithEnumHashKey(ctx context.Context, branch models.Branch, date strfmt.DateTime) (*models.ThingWithEnumHashKey, error) {
 	key, err := attributevalue.MarshalMap(ddbThingWithEnumHashKeyPrimaryKey{
 		Branch: branch,

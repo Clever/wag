@@ -23,6 +23,8 @@ type Interface interface {
 	GetDeploymentsByEnvAppAndVersion(ctx context.Context, input GetDeploymentsByEnvAppAndVersionInput, fn func(m *models.Deployment, lastDeployment bool) bool) error
 	// DeleteDeployment deletes a Deployment from the database.
 	DeleteDeployment(ctx context.Context, environment string, application string, version string) error
+	// GetSliceOfDeployment gets multiple Deployments by their primary keys.
+	GetSliceOfDeployment(ctx context.Context, ms []models.Deployment) ([]models.Deployment, error)
 	// GetDeploymentsByEnvAppAndDate retrieves a page of Deployments from the database.
 	GetDeploymentsByEnvAppAndDate(ctx context.Context, input GetDeploymentsByEnvAppAndDateInput, fn func(m *models.Deployment, lastDeployment bool) bool) error
 	// ScanDeploymentsByEnvAppAndDate runs a scan on the EnvAppAndDate index.
@@ -44,6 +46,8 @@ type Interface interface {
 	GetEventsByPkAndSk(ctx context.Context, input GetEventsByPkAndSkInput, fn func(m *models.Event, lastEvent bool) bool) error
 	// DeleteEvent deletes a Event from the database.
 	DeleteEvent(ctx context.Context, pk string, sk string) error
+	// GetSliceOfEvent gets multiple Events by their primary keys.
+	GetSliceOfEvent(ctx context.Context, ms []models.Event) ([]models.Event, error)
 	// GetEventsBySkAndData retrieves a page of Events from the database.
 	GetEventsBySkAndData(ctx context.Context, input GetEventsBySkAndDataInput, fn func(m *models.Event, lastEvent bool) bool) error
 	// ScanEventsBySkAndData runs a scan on the SkAndData index.
@@ -57,6 +61,8 @@ type Interface interface {
 	ScanNoRangeThingWithCompositeAttributess(ctx context.Context, input ScanNoRangeThingWithCompositeAttributessInput, fn func(m *models.NoRangeThingWithCompositeAttributes, lastNoRangeThingWithCompositeAttributes bool) bool) error
 	// DeleteNoRangeThingWithCompositeAttributes deletes a NoRangeThingWithCompositeAttributes from the database.
 	DeleteNoRangeThingWithCompositeAttributes(ctx context.Context, name string, branch string) error
+	// GetSliceOfNoRangeThingWithCompositeAttributes gets multiple NoRangeThingWithCompositeAttributess by their primary keys.
+	GetSliceOfNoRangeThingWithCompositeAttributes(ctx context.Context, ms []models.NoRangeThingWithCompositeAttributes) ([]models.NoRangeThingWithCompositeAttributes, error)
 	// GetNoRangeThingWithCompositeAttributessByNameVersionAndDate retrieves a page of NoRangeThingWithCompositeAttributess from the database.
 	GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input GetNoRangeThingWithCompositeAttributessByNameVersionAndDateInput, fn func(m *models.NoRangeThingWithCompositeAttributes, lastNoRangeThingWithCompositeAttributes bool) bool) error
 	// ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate runs a scan on the NameVersionAndDate index.
@@ -72,6 +78,8 @@ type Interface interface {
 	ScanSimpleThings(ctx context.Context, input ScanSimpleThingsInput, fn func(m *models.SimpleThing, lastSimpleThing bool) bool) error
 	// DeleteSimpleThing deletes a SimpleThing from the database.
 	DeleteSimpleThing(ctx context.Context, name string) error
+	// GetSliceOfSimpleThing gets multiple SimpleThings by their primary keys.
+	GetSliceOfSimpleThing(ctx context.Context, ms []models.SimpleThing) ([]models.SimpleThing, error)
 
 	// SaveTeacherSharingRule saves a TeacherSharingRule to the database.
 	SaveTeacherSharingRule(ctx context.Context, m models.TeacherSharingRule) error
@@ -83,6 +91,8 @@ type Interface interface {
 	GetTeacherSharingRulesByTeacherAndSchoolApp(ctx context.Context, input GetTeacherSharingRulesByTeacherAndSchoolAppInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error
 	// DeleteTeacherSharingRule deletes a TeacherSharingRule from the database.
 	DeleteTeacherSharingRule(ctx context.Context, teacher string, school string, app string) error
+	// GetSliceOfTeacherSharingRule gets multiple TeacherSharingRules by their primary keys.
+	GetSliceOfTeacherSharingRule(ctx context.Context, ms []models.TeacherSharingRule) ([]models.TeacherSharingRule, error)
 	// GetTeacherSharingRulesByDistrictAndSchoolTeacherApp retrieves a page of TeacherSharingRules from the database.
 	GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(ctx context.Context, input GetTeacherSharingRulesByDistrictAndSchoolTeacherAppInput, fn func(m *models.TeacherSharingRule, lastTeacherSharingRule bool) bool) error
 	// ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp runs a scan on the DistrictAndSchoolTeacherApp index.
@@ -98,6 +108,8 @@ type Interface interface {
 	GetThingsByNameAndVersion(ctx context.Context, input GetThingsByNameAndVersionInput, fn func(m *models.Thing, lastThing bool) bool) error
 	// DeleteThing deletes a Thing from the database.
 	DeleteThing(ctx context.Context, name string, version int64) error
+	// GetSliceOfThing gets multiple Things by their primary keys.
+	GetSliceOfThing(ctx context.Context, ms []models.Thing) ([]models.Thing, error)
 	// GetThingByID retrieves a Thing from the database.
 	GetThingByID(ctx context.Context, id string) (*models.Thing, error)
 	// ScanThingsByID runs a scan on the ID index.
@@ -127,6 +139,8 @@ type Interface interface {
 	GetThingAllowingBatchWritessByNameAndVersion(ctx context.Context, input GetThingAllowingBatchWritessByNameAndVersionInput, fn func(m *models.ThingAllowingBatchWrites, lastThingAllowingBatchWrites bool) bool) error
 	// DeleteThingAllowingBatchWrites deletes a ThingAllowingBatchWrites from the database.
 	DeleteThingAllowingBatchWrites(ctx context.Context, name string, version int64) error
+	// GetSliceOfThingAllowingBatchWrites gets multiple ThingAllowingBatchWritess by their primary keys.
+	GetSliceOfThingAllowingBatchWrites(ctx context.Context, ms []models.ThingAllowingBatchWrites) ([]models.ThingAllowingBatchWrites, error)
 
 	// SaveThingAllowingBatchWritesWithCompositeAttributes saves a ThingAllowingBatchWritesWithCompositeAttributes to the database.
 	SaveThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, m models.ThingAllowingBatchWritesWithCompositeAttributes) error
@@ -142,6 +156,8 @@ type Interface interface {
 	GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate(ctx context.Context, input GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDateInput, fn func(m *models.ThingAllowingBatchWritesWithCompositeAttributes, lastThingAllowingBatchWritesWithCompositeAttributes bool) bool) error
 	// DeleteThingAllowingBatchWritesWithCompositeAttributes deletes a ThingAllowingBatchWritesWithCompositeAttributes from the database.
 	DeleteThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, name string, id string, date strfmt.DateTime) error
+	// GetSliceOfThingAllowingBatchWritesWithCompositeAttributes gets multiple ThingAllowingBatchWritesWithCompositeAttributess by their primary keys.
+	GetSliceOfThingAllowingBatchWritesWithCompositeAttributes(ctx context.Context, ms []models.ThingAllowingBatchWritesWithCompositeAttributes) ([]models.ThingAllowingBatchWritesWithCompositeAttributes, error)
 
 	// SaveThingWithAdditionalAttributes saves a ThingWithAdditionalAttributes to the database.
 	SaveThingWithAdditionalAttributes(ctx context.Context, m models.ThingWithAdditionalAttributes) error
@@ -153,6 +169,8 @@ type Interface interface {
 	GetThingWithAdditionalAttributessByNameAndVersion(ctx context.Context, input GetThingWithAdditionalAttributessByNameAndVersionInput, fn func(m *models.ThingWithAdditionalAttributes, lastThingWithAdditionalAttributes bool) bool) error
 	// DeleteThingWithAdditionalAttributes deletes a ThingWithAdditionalAttributes from the database.
 	DeleteThingWithAdditionalAttributes(ctx context.Context, name string, version int64) error
+	// GetSliceOfThingWithAdditionalAttributes gets multiple ThingWithAdditionalAttributess by their primary keys.
+	GetSliceOfThingWithAdditionalAttributes(ctx context.Context, ms []models.ThingWithAdditionalAttributes) ([]models.ThingWithAdditionalAttributes, error)
 	// GetThingWithAdditionalAttributesByID retrieves a ThingWithAdditionalAttributes from the database.
 	GetThingWithAdditionalAttributesByID(ctx context.Context, id string) (*models.ThingWithAdditionalAttributes, error)
 	// ScanThingWithAdditionalAttributessByID runs a scan on the ID index.
@@ -178,6 +196,8 @@ type Interface interface {
 	GetThingWithCompositeAttributessByNameBranchAndDate(ctx context.Context, input GetThingWithCompositeAttributessByNameBranchAndDateInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error
 	// DeleteThingWithCompositeAttributes deletes a ThingWithCompositeAttributes from the database.
 	DeleteThingWithCompositeAttributes(ctx context.Context, name string, branch string, date strfmt.DateTime) error
+	// GetSliceOfThingWithCompositeAttributes gets multiple ThingWithCompositeAttributess by their primary keys.
+	GetSliceOfThingWithCompositeAttributes(ctx context.Context, ms []models.ThingWithCompositeAttributes) ([]models.ThingWithCompositeAttributes, error)
 	// GetThingWithCompositeAttributessByNameVersionAndDate retrieves a page of ThingWithCompositeAttributess from the database.
 	GetThingWithCompositeAttributessByNameVersionAndDate(ctx context.Context, input GetThingWithCompositeAttributessByNameVersionAndDateInput, fn func(m *models.ThingWithCompositeAttributes, lastThingWithCompositeAttributes bool) bool) error
 	// ScanThingWithCompositeAttributessByNameVersionAndDate runs a scan on the NameVersionAndDate index.
@@ -193,6 +213,8 @@ type Interface interface {
 	GetThingWithCompositeEnumAttributessByNameBranchAndDate(ctx context.Context, input GetThingWithCompositeEnumAttributessByNameBranchAndDateInput, fn func(m *models.ThingWithCompositeEnumAttributes, lastThingWithCompositeEnumAttributes bool) bool) error
 	// DeleteThingWithCompositeEnumAttributes deletes a ThingWithCompositeEnumAttributes from the database.
 	DeleteThingWithCompositeEnumAttributes(ctx context.Context, name string, branchID models.Branch, date strfmt.DateTime) error
+	// GetSliceOfThingWithCompositeEnumAttributes gets multiple ThingWithCompositeEnumAttributess by their primary keys.
+	GetSliceOfThingWithCompositeEnumAttributes(ctx context.Context, ms []models.ThingWithCompositeEnumAttributes) ([]models.ThingWithCompositeEnumAttributes, error)
 
 	// SaveThingWithDateGSI saves a ThingWithDateGSI to the database.
 	SaveThingWithDateGSI(ctx context.Context, m models.ThingWithDateGSI) error
@@ -202,6 +224,8 @@ type Interface interface {
 	ScanThingWithDateGSIs(ctx context.Context, input ScanThingWithDateGSIsInput, fn func(m *models.ThingWithDateGSI, lastThingWithDateGSI bool) bool) error
 	// DeleteThingWithDateGSI deletes a ThingWithDateGSI from the database.
 	DeleteThingWithDateGSI(ctx context.Context, dateH strfmt.Date) error
+	// GetSliceOfThingWithDateGSI gets multiple ThingWithDateGSIs by their primary keys.
+	GetSliceOfThingWithDateGSI(ctx context.Context, ms []models.ThingWithDateGSI) ([]models.ThingWithDateGSI, error)
 	// GetThingWithDateGSIsByIDAndDateR retrieves a page of ThingWithDateGSIs from the database.
 	GetThingWithDateGSIsByIDAndDateR(ctx context.Context, input GetThingWithDateGSIsByIDAndDateRInput, fn func(m *models.ThingWithDateGSI, lastThingWithDateGSI bool) bool) error
 	// GetThingWithDateGSIsByDateHAndID retrieves a page of ThingWithDateGSIs from the database.
@@ -217,6 +241,8 @@ type Interface interface {
 	GetThingWithDateRangesByNameAndDate(ctx context.Context, input GetThingWithDateRangesByNameAndDateInput, fn func(m *models.ThingWithDateRange, lastThingWithDateRange bool) bool) error
 	// DeleteThingWithDateRange deletes a ThingWithDateRange from the database.
 	DeleteThingWithDateRange(ctx context.Context, name string, date strfmt.DateTime) error
+	// GetSliceOfThingWithDateRange gets multiple ThingWithDateRanges by their primary keys.
+	GetSliceOfThingWithDateRange(ctx context.Context, ms []models.ThingWithDateRange) ([]models.ThingWithDateRange, error)
 
 	// SaveThingWithDateRangeKey saves a ThingWithDateRangeKey to the database.
 	SaveThingWithDateRangeKey(ctx context.Context, m models.ThingWithDateRangeKey) error
@@ -228,6 +254,8 @@ type Interface interface {
 	GetThingWithDateRangeKeysByIDAndDate(ctx context.Context, input GetThingWithDateRangeKeysByIDAndDateInput, fn func(m *models.ThingWithDateRangeKey, lastThingWithDateRangeKey bool) bool) error
 	// DeleteThingWithDateRangeKey deletes a ThingWithDateRangeKey from the database.
 	DeleteThingWithDateRangeKey(ctx context.Context, id string, date strfmt.Date) error
+	// GetSliceOfThingWithDateRangeKey gets multiple ThingWithDateRangeKeys by their primary keys.
+	GetSliceOfThingWithDateRangeKey(ctx context.Context, ms []models.ThingWithDateRangeKey) ([]models.ThingWithDateRangeKey, error)
 
 	// SaveThingWithDateTimeComposite saves a ThingWithDateTimeComposite to the database.
 	SaveThingWithDateTimeComposite(ctx context.Context, m models.ThingWithDateTimeComposite) error
@@ -239,6 +267,8 @@ type Interface interface {
 	GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(ctx context.Context, input GetThingWithDateTimeCompositesByTypeIDAndCreatedResourceInput, fn func(m *models.ThingWithDateTimeComposite, lastThingWithDateTimeComposite bool) bool) error
 	// DeleteThingWithDateTimeComposite deletes a ThingWithDateTimeComposite from the database.
 	DeleteThingWithDateTimeComposite(ctx context.Context, typeVar string, id string, created strfmt.DateTime, resource string) error
+	// GetSliceOfThingWithDateTimeComposite gets multiple ThingWithDateTimeComposites by their primary keys.
+	GetSliceOfThingWithDateTimeComposite(ctx context.Context, ms []models.ThingWithDateTimeComposite) ([]models.ThingWithDateTimeComposite, error)
 
 	// SaveThingWithDatetimeGSI saves a ThingWithDatetimeGSI to the database.
 	SaveThingWithDatetimeGSI(ctx context.Context, m models.ThingWithDatetimeGSI) error
@@ -248,6 +278,8 @@ type Interface interface {
 	ScanThingWithDatetimeGSIs(ctx context.Context, input ScanThingWithDatetimeGSIsInput, fn func(m *models.ThingWithDatetimeGSI, lastThingWithDatetimeGSI bool) bool) error
 	// DeleteThingWithDatetimeGSI deletes a ThingWithDatetimeGSI from the database.
 	DeleteThingWithDatetimeGSI(ctx context.Context, id string) error
+	// GetSliceOfThingWithDatetimeGSI gets multiple ThingWithDatetimeGSIs by their primary keys.
+	GetSliceOfThingWithDatetimeGSI(ctx context.Context, ms []models.ThingWithDatetimeGSI) ([]models.ThingWithDatetimeGSI, error)
 	// GetThingWithDatetimeGSIsByDatetimeAndID retrieves a page of ThingWithDatetimeGSIs from the database.
 	GetThingWithDatetimeGSIsByDatetimeAndID(ctx context.Context, input GetThingWithDatetimeGSIsByDatetimeAndIDInput, fn func(m *models.ThingWithDatetimeGSI, lastThingWithDatetimeGSI bool) bool) error
 	// ScanThingWithDatetimeGSIsByDatetimeAndID runs a scan on the DatetimeAndID index.
@@ -263,6 +295,8 @@ type Interface interface {
 	GetThingWithEnumHashKeysByBranchAndDate(ctx context.Context, input GetThingWithEnumHashKeysByBranchAndDateInput, fn func(m *models.ThingWithEnumHashKey, lastThingWithEnumHashKey bool) bool) error
 	// DeleteThingWithEnumHashKey deletes a ThingWithEnumHashKey from the database.
 	DeleteThingWithEnumHashKey(ctx context.Context, branch models.Branch, date strfmt.DateTime) error
+	// GetSliceOfThingWithEnumHashKey gets multiple ThingWithEnumHashKeys by their primary keys.
+	GetSliceOfThingWithEnumHashKey(ctx context.Context, ms []models.ThingWithEnumHashKey) ([]models.ThingWithEnumHashKey, error)
 	// GetThingWithEnumHashKeysByBranchAndDate2 retrieves a page of ThingWithEnumHashKeys from the database.
 	GetThingWithEnumHashKeysByBranchAndDate2(ctx context.Context, input GetThingWithEnumHashKeysByBranchAndDate2Input, fn func(m *models.ThingWithEnumHashKey, lastThingWithEnumHashKey bool) bool) error
 	// ScanThingWithEnumHashKeysByBranchAndDate2 runs a scan on the BranchAndDate2 index.
@@ -278,6 +312,8 @@ type Interface interface {
 	GetThingWithMatchingKeyssByBearAndAssocTypeID(ctx context.Context, input GetThingWithMatchingKeyssByBearAndAssocTypeIDInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error
 	// DeleteThingWithMatchingKeys deletes a ThingWithMatchingKeys from the database.
 	DeleteThingWithMatchingKeys(ctx context.Context, bear string, assocType string, assocID string) error
+	// GetSliceOfThingWithMatchingKeys gets multiple ThingWithMatchingKeyss by their primary keys.
+	GetSliceOfThingWithMatchingKeys(ctx context.Context, ms []models.ThingWithMatchingKeys) ([]models.ThingWithMatchingKeys, error)
 	// GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear retrieves a page of ThingWithMatchingKeyss from the database.
 	GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(ctx context.Context, input GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBearInput, fn func(m *models.ThingWithMatchingKeys, lastThingWithMatchingKeys bool) bool) error
 	// ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear runs a scan on the AssocTypeIDAndCreatedBear index.
@@ -291,6 +327,8 @@ type Interface interface {
 	ScanThingWithMultiUseCompositeAttributes(ctx context.Context, input ScanThingWithMultiUseCompositeAttributesInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error
 	// DeleteThingWithMultiUseCompositeAttribute deletes a ThingWithMultiUseCompositeAttribute from the database.
 	DeleteThingWithMultiUseCompositeAttribute(ctx context.Context, one string) error
+	// GetSliceOfThingWithMultiUseCompositeAttribute gets multiple ThingWithMultiUseCompositeAttributes by their primary keys.
+	GetSliceOfThingWithMultiUseCompositeAttribute(ctx context.Context, ms []models.ThingWithMultiUseCompositeAttribute) ([]models.ThingWithMultiUseCompositeAttribute, error)
 	// GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo retrieves a page of ThingWithMultiUseCompositeAttributes from the database.
 	GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(ctx context.Context, input GetThingWithMultiUseCompositeAttributesByThreeAndOneTwoInput, fn func(m *models.ThingWithMultiUseCompositeAttribute, lastThingWithMultiUseCompositeAttribute bool) bool) error
 	// ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo runs a scan on the ThreeAndOneTwo index.
@@ -308,6 +346,8 @@ type Interface interface {
 	ScanThingWithRequiredCompositePropertiesAndKeysOnlys(ctx context.Context, input ScanThingWithRequiredCompositePropertiesAndKeysOnlysInput, fn func(m *models.ThingWithRequiredCompositePropertiesAndKeysOnly, lastThingWithRequiredCompositePropertiesAndKeysOnly bool) bool) error
 	// DeleteThingWithRequiredCompositePropertiesAndKeysOnly deletes a ThingWithRequiredCompositePropertiesAndKeysOnly from the database.
 	DeleteThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, propertyThree string) error
+	// GetSliceOfThingWithRequiredCompositePropertiesAndKeysOnly gets multiple ThingWithRequiredCompositePropertiesAndKeysOnlys by their primary keys.
+	GetSliceOfThingWithRequiredCompositePropertiesAndKeysOnly(ctx context.Context, ms []models.ThingWithRequiredCompositePropertiesAndKeysOnly) ([]models.ThingWithRequiredCompositePropertiesAndKeysOnly, error)
 	// GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree retrieves a page of ThingWithRequiredCompositePropertiesAndKeysOnlys from the database.
 	GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(ctx context.Context, input GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThreeInput, fn func(m *models.ThingWithRequiredCompositePropertiesAndKeysOnly, lastThingWithRequiredCompositePropertiesAndKeysOnly bool) bool) error
 	// ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree runs a scan on the PropertyOneAndTwoAndPropertyThree index.
@@ -321,6 +361,8 @@ type Interface interface {
 	ScanThingWithRequiredFieldss(ctx context.Context, input ScanThingWithRequiredFieldssInput, fn func(m *models.ThingWithRequiredFields, lastThingWithRequiredFields bool) bool) error
 	// DeleteThingWithRequiredFields deletes a ThingWithRequiredFields from the database.
 	DeleteThingWithRequiredFields(ctx context.Context, name string) error
+	// GetSliceOfThingWithRequiredFields gets multiple ThingWithRequiredFieldss by their primary keys.
+	GetSliceOfThingWithRequiredFields(ctx context.Context, ms []models.ThingWithRequiredFields) ([]models.ThingWithRequiredFields, error)
 
 	// SaveThingWithRequiredFields2 saves a ThingWithRequiredFields2 to the database.
 	SaveThingWithRequiredFields2(ctx context.Context, m models.ThingWithRequiredFields2) error
@@ -332,6 +374,8 @@ type Interface interface {
 	GetThingWithRequiredFields2sByNameAndID(ctx context.Context, input GetThingWithRequiredFields2sByNameAndIDInput, fn func(m *models.ThingWithRequiredFields2, lastThingWithRequiredFields2 bool) bool) error
 	// DeleteThingWithRequiredFields2 deletes a ThingWithRequiredFields2 from the database.
 	DeleteThingWithRequiredFields2(ctx context.Context, name string, id string) error
+	// GetSliceOfThingWithRequiredFields2 gets multiple ThingWithRequiredFields2s by their primary keys.
+	GetSliceOfThingWithRequiredFields2(ctx context.Context, ms []models.ThingWithRequiredFields2) ([]models.ThingWithRequiredFields2, error)
 
 	// SaveThingWithTransactMultipleGSI saves a ThingWithTransactMultipleGSI to the database.
 	SaveThingWithTransactMultipleGSI(ctx context.Context, m models.ThingWithTransactMultipleGSI) error
@@ -341,6 +385,8 @@ type Interface interface {
 	ScanThingWithTransactMultipleGSIs(ctx context.Context, input ScanThingWithTransactMultipleGSIsInput, fn func(m *models.ThingWithTransactMultipleGSI, lastThingWithTransactMultipleGSI bool) bool) error
 	// DeleteThingWithTransactMultipleGSI deletes a ThingWithTransactMultipleGSI from the database.
 	DeleteThingWithTransactMultipleGSI(ctx context.Context, dateH strfmt.Date) error
+	// GetSliceOfThingWithTransactMultipleGSI gets multiple ThingWithTransactMultipleGSIs by their primary keys.
+	GetSliceOfThingWithTransactMultipleGSI(ctx context.Context, ms []models.ThingWithTransactMultipleGSI) ([]models.ThingWithTransactMultipleGSI, error)
 	// GetThingWithTransactMultipleGSIsByIDAndDateR retrieves a page of ThingWithTransactMultipleGSIs from the database.
 	GetThingWithTransactMultipleGSIsByIDAndDateR(ctx context.Context, input GetThingWithTransactMultipleGSIsByIDAndDateRInput, fn func(m *models.ThingWithTransactMultipleGSI, lastThingWithTransactMultipleGSI bool) bool) error
 	// GetThingWithTransactMultipleGSIsByDateHAndID retrieves a page of ThingWithTransactMultipleGSIs from the database.
@@ -357,6 +403,8 @@ type Interface interface {
 	ScanThingWithTransactions(ctx context.Context, input ScanThingWithTransactionsInput, fn func(m *models.ThingWithTransaction, lastThingWithTransaction bool) bool) error
 	// DeleteThingWithTransaction deletes a ThingWithTransaction from the database.
 	DeleteThingWithTransaction(ctx context.Context, name string) error
+	// GetSliceOfThingWithTransaction gets multiple ThingWithTransactions by their primary keys.
+	GetSliceOfThingWithTransaction(ctx context.Context, ms []models.ThingWithTransaction) ([]models.ThingWithTransaction, error)
 	// TransactSaveThingWithTransactionAndThing saves ThingWithTransaction and Thing as an atomic transaction.
 	// Use the optional condition parameters to require pre-transaction conditions for each put
 	TransactSaveThingWithTransactionAndThing(ctx context.Context, m1 models.ThingWithTransaction, m1Conditions *expression.ConditionBuilder, m2 models.Thing, m2Conditions *expression.ConditionBuilder) error
@@ -369,6 +417,8 @@ type Interface interface {
 	ScanThingWithTransactionWithSimpleThings(ctx context.Context, input ScanThingWithTransactionWithSimpleThingsInput, fn func(m *models.ThingWithTransactionWithSimpleThing, lastThingWithTransactionWithSimpleThing bool) bool) error
 	// DeleteThingWithTransactionWithSimpleThing deletes a ThingWithTransactionWithSimpleThing from the database.
 	DeleteThingWithTransactionWithSimpleThing(ctx context.Context, name string) error
+	// GetSliceOfThingWithTransactionWithSimpleThing gets multiple ThingWithTransactionWithSimpleThings by their primary keys.
+	GetSliceOfThingWithTransactionWithSimpleThing(ctx context.Context, ms []models.ThingWithTransactionWithSimpleThing) ([]models.ThingWithTransactionWithSimpleThing, error)
 	// TransactSaveThingWithTransactionWithSimpleThingAndSimpleThing saves ThingWithTransactionWithSimpleThing and SimpleThing as an atomic transaction.
 	// Use the optional condition parameters to require pre-transaction conditions for each put
 	TransactSaveThingWithTransactionWithSimpleThingAndSimpleThing(ctx context.Context, m1 models.ThingWithTransactionWithSimpleThing, m1Conditions *expression.ConditionBuilder, m2 models.SimpleThing, m2Conditions *expression.ConditionBuilder) error
@@ -379,6 +429,8 @@ type Interface interface {
 	GetThingWithUnderscores(ctx context.Context, iDApp string) (*models.ThingWithUnderscores, error)
 	// DeleteThingWithUnderscores deletes a ThingWithUnderscores from the database.
 	DeleteThingWithUnderscores(ctx context.Context, iDApp string) error
+	// GetSliceOfThingWithUnderscores gets multiple ThingWithUnderscoress by their primary keys.
+	GetSliceOfThingWithUnderscores(ctx context.Context, ms []models.ThingWithUnderscores) ([]models.ThingWithUnderscores, error)
 }
 
 // Int64 returns a pointer to the int64 value passed in.

@@ -111,6 +111,57 @@ func (t ThingWithRequiredFields2Table) saveThingWithRequiredFields2(ctx context.
 	return nil
 }
 
+func (t ThingWithRequiredFields2Table) getSliceOfThingWithRequiredFields2(ctx context.Context, ms []models.ThingWithRequiredFields2) ([]models.ThingWithRequiredFields2, error) {
+	if len(ms) == 0 {
+		return nil, nil
+	}
+
+	allKeys := make([]map[string]types.AttributeValue, len(ms))
+	for i := range ms {
+		key, err := attributevalue.MarshalMap(ddbThingWithRequiredFields2PrimaryKey{
+			Name: *ms[i].Name,
+			ID:   *ms[i].ID,
+		})
+		if err != nil {
+			return nil, err
+		}
+		allKeys[i] = key
+	}
+
+	tname := t.TableName
+	var items []models.ThingWithRequiredFields2
+	for len(allKeys) > 0 {
+		chunkSize := len(allKeys)
+		if chunkSize > maxDynamoDBBatchGetItems {
+			chunkSize = maxDynamoDBBatchGetItems
+		}
+		requestKeys := allKeys[:chunkSize]
+		allKeys = allKeys[chunkSize:]
+		for {
+			out, err := t.DynamoDBAPI.BatchGetItem(ctx, &dynamodb.BatchGetItemInput{
+				RequestItems: map[string]types.KeysAndAttributes{
+					tname: {Keys: requestKeys},
+				},
+			})
+			if err != nil {
+				return nil, fmt.Errorf("BatchGetItem: %v", err)
+			}
+			for _, item := range out.Responses[tname] {
+				var m models.ThingWithRequiredFields2
+				if err := decodeThingWithRequiredFields2(item, &m); err != nil {
+					return nil, err
+				}
+				items = append(items, m)
+			}
+			if len(out.UnprocessedKeys[tname].Keys) == 0 {
+				break
+			}
+			requestKeys = out.UnprocessedKeys[tname].Keys
+		}
+	}
+	return items, nil
+}
+
 func (t ThingWithRequiredFields2Table) getThingWithRequiredFields2(ctx context.Context, name string, id string) (*models.ThingWithRequiredFields2, error) {
 	key, err := attributevalue.MarshalMap(ddbThingWithRequiredFields2PrimaryKey{
 		Name: name,

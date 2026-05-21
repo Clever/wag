@@ -98,6 +98,56 @@ func (t ThingWithTransactionWithSimpleThingTable) saveThingWithTransactionWithSi
 	return nil
 }
 
+func (t ThingWithTransactionWithSimpleThingTable) getSliceOfThingWithTransactionWithSimpleThing(ctx context.Context, ms []models.ThingWithTransactionWithSimpleThing) ([]models.ThingWithTransactionWithSimpleThing, error) {
+	if len(ms) == 0 {
+		return nil, nil
+	}
+
+	allKeys := make([]map[string]types.AttributeValue, len(ms))
+	for i := range ms {
+		key, err := attributevalue.MarshalMap(ddbThingWithTransactionWithSimpleThingPrimaryKey{
+			Name: ms[i].Name,
+		})
+		if err != nil {
+			return nil, err
+		}
+		allKeys[i] = key
+	}
+
+	tname := t.TableName
+	var items []models.ThingWithTransactionWithSimpleThing
+	for len(allKeys) > 0 {
+		chunkSize := len(allKeys)
+		if chunkSize > maxDynamoDBBatchGetItems {
+			chunkSize = maxDynamoDBBatchGetItems
+		}
+		requestKeys := allKeys[:chunkSize]
+		allKeys = allKeys[chunkSize:]
+		for {
+			out, err := t.DynamoDBAPI.BatchGetItem(ctx, &dynamodb.BatchGetItemInput{
+				RequestItems: map[string]types.KeysAndAttributes{
+					tname: {Keys: requestKeys},
+				},
+			})
+			if err != nil {
+				return nil, fmt.Errorf("BatchGetItem: %v", err)
+			}
+			for _, item := range out.Responses[tname] {
+				var m models.ThingWithTransactionWithSimpleThing
+				if err := decodeThingWithTransactionWithSimpleThing(item, &m); err != nil {
+					return nil, err
+				}
+				items = append(items, m)
+			}
+			if len(out.UnprocessedKeys[tname].Keys) == 0 {
+				break
+			}
+			requestKeys = out.UnprocessedKeys[tname].Keys
+		}
+	}
+	return items, nil
+}
+
 func (t ThingWithTransactionWithSimpleThingTable) getThingWithTransactionWithSimpleThing(ctx context.Context, name string) (*models.ThingWithTransactionWithSimpleThing, error) {
 	key, err := attributevalue.MarshalMap(ddbThingWithTransactionWithSimpleThingPrimaryKey{
 		Name: name,

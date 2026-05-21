@@ -53,6 +53,7 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
   {{- end }}
   t.Run("Save{{ $modelName }}", Save{{ $modelName }}(dbFactory(), t))
   t.Run("Delete{{ $modelName }}", Delete{{ $modelName }}(dbFactory(), t))
+  t.Run("GetSliceOf{{ $modelName }}", GetSliceOf{{ $modelName }}(dbFactory(), t))
   {{- range $gsi := $xdbConfig.DynamoDB.GlobalSecondaryIndexes }}
   {{- $computedIndexName := indexName $gsi.KeySchema }}
   {{- if indexHasRangeKey $gsi.KeySchema }}
@@ -710,6 +711,39 @@ func Scan{{ $modelName }}s(d db.Interface, t *testing.T) func(t *testing.T) {
 }
 {{- end }}
 
+
+func GetSliceOf{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
+  return func(t *testing.T) {
+    ctx := context.Background()
+    m1 := models.{{ $modelName }}{
+      {{- range $attributeName := modelAttributeNames $xdbConfig }}
+        {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 1 }},
+      {{- end }}
+    }
+    m2 := models.{{ $modelName }}{
+      {{- range $attributeName := modelAttributeNames $xdbConfig }}
+        {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 2 }},
+      {{- end }}
+    }
+    require.Nil(t, s.Save{{ $modelName }}(ctx, m1))
+    require.Nil(t, s.Save{{ $modelName }}(ctx, m2))
+
+    // fetch both items by passing full model structs (keys extracted internally)
+    out, err := s.GetSliceOf{{ $modelName }}(ctx, []models.{{ $modelName }}{m1, m2})
+    require.Nil(t, err)
+    require.Len(t, out, 2)
+
+    // a model whose keys don't exist returns empty slice, not an error
+    missing := models.{{ $modelName }}{
+      {{- range $attributeName := modelAttributeNames $xdbConfig }}
+        {{ pascalize $attributeName }}: {{ exampleValueForAttribute $xdbConfig $attributeName 99 }},
+      {{- end }}
+    }
+    got, err := s.GetSliceOf{{ $modelName }}(ctx, []models.{{ $modelName }}{missing})
+    require.Nil(t, err)
+    require.Len(t, got, 0)
+  }
+}
 
 func Save{{ $modelName }}(s db.Interface, t *testing.T) func(t *testing.T) {
   return func(t *testing.T) {

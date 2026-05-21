@@ -38,6 +38,7 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetDeploymentsByEnvAppAndVersion", GetDeploymentsByEnvAppAndVersion(dbFactory(), t))
 	t.Run("SaveDeployment", SaveDeployment(dbFactory(), t))
 	t.Run("DeleteDeployment", DeleteDeployment(dbFactory(), t))
+	t.Run("GetSliceOfDeployment", GetSliceOfDeployment(dbFactory(), t))
 	t.Run("GetDeploymentsByEnvAppAndDate", GetDeploymentsByEnvAppAndDate(dbFactory(), t))
 	t.Run("ScanDeploymentsByEnvAppAndDate", ScanDeploymentsByEnvAppAndDate(dbFactory(), t))
 	t.Run("GetDeploymentsByEnvironmentAndDate", GetDeploymentsByEnvironmentAndDate(dbFactory(), t))
@@ -48,12 +49,14 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetEventsByPkAndSk", GetEventsByPkAndSk(dbFactory(), t))
 	t.Run("SaveEvent", SaveEvent(dbFactory(), t))
 	t.Run("DeleteEvent", DeleteEvent(dbFactory(), t))
+	t.Run("GetSliceOfEvent", GetSliceOfEvent(dbFactory(), t))
 	t.Run("GetEventsBySkAndData", GetEventsBySkAndData(dbFactory(), t))
 	t.Run("ScanEventsBySkAndData", ScanEventsBySkAndData(dbFactory(), t))
 	t.Run("GetNoRangeThingWithCompositeAttributes", GetNoRangeThingWithCompositeAttributes(dbFactory(), t))
 	t.Run("ScanNoRangeThingWithCompositeAttributess", ScanNoRangeThingWithCompositeAttributess(dbFactory(), t))
 	t.Run("SaveNoRangeThingWithCompositeAttributes", SaveNoRangeThingWithCompositeAttributes(dbFactory(), t))
 	t.Run("DeleteNoRangeThingWithCompositeAttributes", DeleteNoRangeThingWithCompositeAttributes(dbFactory(), t))
+	t.Run("GetSliceOfNoRangeThingWithCompositeAttributes", GetSliceOfNoRangeThingWithCompositeAttributes(dbFactory(), t))
 	t.Run("GetNoRangeThingWithCompositeAttributessByNameVersionAndDate", GetNoRangeThingWithCompositeAttributessByNameVersionAndDate(dbFactory(), t))
 	t.Run("ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate", ScanNoRangeThingWithCompositeAttributessByNameVersionAndDate(dbFactory(), t))
 	t.Run("GetNoRangeThingWithCompositeAttributesByNameBranchCommit", GetNoRangeThingWithCompositeAttributesByNameBranchCommit(dbFactory(), t))
@@ -61,11 +64,13 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("ScanSimpleThings", ScanSimpleThings(dbFactory(), t))
 	t.Run("SaveSimpleThing", SaveSimpleThing(dbFactory(), t))
 	t.Run("DeleteSimpleThing", DeleteSimpleThing(dbFactory(), t))
+	t.Run("GetSliceOfSimpleThing", GetSliceOfSimpleThing(dbFactory(), t))
 	t.Run("GetTeacherSharingRule", GetTeacherSharingRule(dbFactory(), t))
 	t.Run("ScanTeacherSharingRules", ScanTeacherSharingRules(dbFactory(), t))
 	t.Run("GetTeacherSharingRulesByTeacherAndSchoolApp", GetTeacherSharingRulesByTeacherAndSchoolApp(dbFactory(), t))
 	t.Run("SaveTeacherSharingRule", SaveTeacherSharingRule(dbFactory(), t))
 	t.Run("DeleteTeacherSharingRule", DeleteTeacherSharingRule(dbFactory(), t))
+	t.Run("GetSliceOfTeacherSharingRule", GetSliceOfTeacherSharingRule(dbFactory(), t))
 	t.Run("GetTeacherSharingRulesByDistrictAndSchoolTeacherApp", GetTeacherSharingRulesByDistrictAndSchoolTeacherApp(dbFactory(), t))
 	t.Run("ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp", ScanTeacherSharingRulesByDistrictAndSchoolTeacherApp(dbFactory(), t))
 	t.Run("GetThing", GetThing(dbFactory(), t))
@@ -73,6 +78,7 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingsByNameAndVersion", GetThingsByNameAndVersion(dbFactory(), t))
 	t.Run("SaveThing", SaveThing(dbFactory(), t))
 	t.Run("DeleteThing", DeleteThing(dbFactory(), t))
+	t.Run("GetSliceOfThing", GetSliceOfThing(dbFactory(), t))
 	t.Run("GetThingByID", GetThingByID(dbFactory(), t))
 	t.Run("ScanThingsByID", ScanThingsByID(dbFactory(), t))
 	t.Run("GetThingsByNameAndCreatedAt", GetThingsByNameAndCreatedAt(dbFactory(), t))
@@ -85,16 +91,19 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingAllowingBatchWritessByNameAndVersion", GetThingAllowingBatchWritessByNameAndVersion(dbFactory(), t))
 	t.Run("SaveThingAllowingBatchWrites", SaveThingAllowingBatchWrites(dbFactory(), t))
 	t.Run("DeleteThingAllowingBatchWrites", DeleteThingAllowingBatchWrites(dbFactory(), t))
+	t.Run("GetSliceOfThingAllowingBatchWrites", GetSliceOfThingAllowingBatchWrites(dbFactory(), t))
 	t.Run("GetThingAllowingBatchWritesWithCompositeAttributes", GetThingAllowingBatchWritesWithCompositeAttributes(dbFactory(), t))
 	t.Run("ScanThingAllowingBatchWritesWithCompositeAttributess", ScanThingAllowingBatchWritesWithCompositeAttributess(dbFactory(), t))
 	t.Run("GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate", GetThingAllowingBatchWritesWithCompositeAttributessByNameIDAndDate(dbFactory(), t))
 	t.Run("SaveThingAllowingBatchWritesWithCompositeAttributes", SaveThingAllowingBatchWritesWithCompositeAttributes(dbFactory(), t))
 	t.Run("DeleteThingAllowingBatchWritesWithCompositeAttributes", DeleteThingAllowingBatchWritesWithCompositeAttributes(dbFactory(), t))
+	t.Run("GetSliceOfThingAllowingBatchWritesWithCompositeAttributes", GetSliceOfThingAllowingBatchWritesWithCompositeAttributes(dbFactory(), t))
 	t.Run("GetThingWithAdditionalAttributes", GetThingWithAdditionalAttributes(dbFactory(), t))
 	t.Run("ScanThingWithAdditionalAttributess", ScanThingWithAdditionalAttributess(dbFactory(), t))
 	t.Run("GetThingWithAdditionalAttributessByNameAndVersion", GetThingWithAdditionalAttributessByNameAndVersion(dbFactory(), t))
 	t.Run("SaveThingWithAdditionalAttributes", SaveThingWithAdditionalAttributes(dbFactory(), t))
 	t.Run("DeleteThingWithAdditionalAttributes", DeleteThingWithAdditionalAttributes(dbFactory(), t))
+	t.Run("GetSliceOfThingWithAdditionalAttributes", GetSliceOfThingWithAdditionalAttributes(dbFactory(), t))
 	t.Run("GetThingWithAdditionalAttributesByID", GetThingWithAdditionalAttributesByID(dbFactory(), t))
 	t.Run("ScanThingWithAdditionalAttributessByID", ScanThingWithAdditionalAttributessByID(dbFactory(), t))
 	t.Run("GetThingWithAdditionalAttributessByNameAndCreatedAt", GetThingWithAdditionalAttributessByNameAndCreatedAt(dbFactory(), t))
@@ -107,6 +116,7 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingWithCompositeAttributessByNameBranchAndDate", GetThingWithCompositeAttributessByNameBranchAndDate(dbFactory(), t))
 	t.Run("SaveThingWithCompositeAttributes", SaveThingWithCompositeAttributes(dbFactory(), t))
 	t.Run("DeleteThingWithCompositeAttributes", DeleteThingWithCompositeAttributes(dbFactory(), t))
+	t.Run("GetSliceOfThingWithCompositeAttributes", GetSliceOfThingWithCompositeAttributes(dbFactory(), t))
 	t.Run("GetThingWithCompositeAttributessByNameVersionAndDate", GetThingWithCompositeAttributessByNameVersionAndDate(dbFactory(), t))
 	t.Run("ScanThingWithCompositeAttributessByNameVersionAndDate", ScanThingWithCompositeAttributessByNameVersionAndDate(dbFactory(), t))
 	t.Run("GetThingWithCompositeEnumAttributes", GetThingWithCompositeEnumAttributes(dbFactory(), t))
@@ -114,10 +124,12 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingWithCompositeEnumAttributessByNameBranchAndDate", GetThingWithCompositeEnumAttributessByNameBranchAndDate(dbFactory(), t))
 	t.Run("SaveThingWithCompositeEnumAttributes", SaveThingWithCompositeEnumAttributes(dbFactory(), t))
 	t.Run("DeleteThingWithCompositeEnumAttributes", DeleteThingWithCompositeEnumAttributes(dbFactory(), t))
+	t.Run("GetSliceOfThingWithCompositeEnumAttributes", GetSliceOfThingWithCompositeEnumAttributes(dbFactory(), t))
 	t.Run("GetThingWithDateGSI", GetThingWithDateGSI(dbFactory(), t))
 	t.Run("ScanThingWithDateGSIs", ScanThingWithDateGSIs(dbFactory(), t))
 	t.Run("SaveThingWithDateGSI", SaveThingWithDateGSI(dbFactory(), t))
 	t.Run("DeleteThingWithDateGSI", DeleteThingWithDateGSI(dbFactory(), t))
+	t.Run("GetSliceOfThingWithDateGSI", GetSliceOfThingWithDateGSI(dbFactory(), t))
 	t.Run("GetThingWithDateGSIsByIDAndDateR", GetThingWithDateGSIsByIDAndDateR(dbFactory(), t))
 	t.Run("GetThingWithDateGSIsByDateHAndID", GetThingWithDateGSIsByDateHAndID(dbFactory(), t))
 	t.Run("GetThingWithDateRange", GetThingWithDateRange(dbFactory(), t))
@@ -125,20 +137,24 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingWithDateRangesByNameAndDate", GetThingWithDateRangesByNameAndDate(dbFactory(), t))
 	t.Run("SaveThingWithDateRange", SaveThingWithDateRange(dbFactory(), t))
 	t.Run("DeleteThingWithDateRange", DeleteThingWithDateRange(dbFactory(), t))
+	t.Run("GetSliceOfThingWithDateRange", GetSliceOfThingWithDateRange(dbFactory(), t))
 	t.Run("GetThingWithDateRangeKey", GetThingWithDateRangeKey(dbFactory(), t))
 	t.Run("ScanThingWithDateRangeKeys", ScanThingWithDateRangeKeys(dbFactory(), t))
 	t.Run("GetThingWithDateRangeKeysByIDAndDate", GetThingWithDateRangeKeysByIDAndDate(dbFactory(), t))
 	t.Run("SaveThingWithDateRangeKey", SaveThingWithDateRangeKey(dbFactory(), t))
 	t.Run("DeleteThingWithDateRangeKey", DeleteThingWithDateRangeKey(dbFactory(), t))
+	t.Run("GetSliceOfThingWithDateRangeKey", GetSliceOfThingWithDateRangeKey(dbFactory(), t))
 	t.Run("GetThingWithDateTimeComposite", GetThingWithDateTimeComposite(dbFactory(), t))
 	t.Run("ScanThingWithDateTimeComposites", ScanThingWithDateTimeComposites(dbFactory(), t))
 	t.Run("GetThingWithDateTimeCompositesByTypeIDAndCreatedResource", GetThingWithDateTimeCompositesByTypeIDAndCreatedResource(dbFactory(), t))
 	t.Run("SaveThingWithDateTimeComposite", SaveThingWithDateTimeComposite(dbFactory(), t))
 	t.Run("DeleteThingWithDateTimeComposite", DeleteThingWithDateTimeComposite(dbFactory(), t))
+	t.Run("GetSliceOfThingWithDateTimeComposite", GetSliceOfThingWithDateTimeComposite(dbFactory(), t))
 	t.Run("GetThingWithDatetimeGSI", GetThingWithDatetimeGSI(dbFactory(), t))
 	t.Run("ScanThingWithDatetimeGSIs", ScanThingWithDatetimeGSIs(dbFactory(), t))
 	t.Run("SaveThingWithDatetimeGSI", SaveThingWithDatetimeGSI(dbFactory(), t))
 	t.Run("DeleteThingWithDatetimeGSI", DeleteThingWithDatetimeGSI(dbFactory(), t))
+	t.Run("GetSliceOfThingWithDatetimeGSI", GetSliceOfThingWithDatetimeGSI(dbFactory(), t))
 	t.Run("GetThingWithDatetimeGSIsByDatetimeAndID", GetThingWithDatetimeGSIsByDatetimeAndID(dbFactory(), t))
 	t.Run("ScanThingWithDatetimeGSIsByDatetimeAndID", ScanThingWithDatetimeGSIsByDatetimeAndID(dbFactory(), t))
 	t.Run("GetThingWithEnumHashKey", GetThingWithEnumHashKey(dbFactory(), t))
@@ -146,6 +162,7 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingWithEnumHashKeysByBranchAndDate", GetThingWithEnumHashKeysByBranchAndDate(dbFactory(), t))
 	t.Run("SaveThingWithEnumHashKey", SaveThingWithEnumHashKey(dbFactory(), t))
 	t.Run("DeleteThingWithEnumHashKey", DeleteThingWithEnumHashKey(dbFactory(), t))
+	t.Run("GetSliceOfThingWithEnumHashKey", GetSliceOfThingWithEnumHashKey(dbFactory(), t))
 	t.Run("GetThingWithEnumHashKeysByBranchAndDate2", GetThingWithEnumHashKeysByBranchAndDate2(dbFactory(), t))
 	t.Run("ScanThingWithEnumHashKeysByBranchAndDate2", ScanThingWithEnumHashKeysByBranchAndDate2(dbFactory(), t))
 	t.Run("GetThingWithMatchingKeys", GetThingWithMatchingKeys(dbFactory(), t))
@@ -153,12 +170,14 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("GetThingWithMatchingKeyssByBearAndAssocTypeID", GetThingWithMatchingKeyssByBearAndAssocTypeID(dbFactory(), t))
 	t.Run("SaveThingWithMatchingKeys", SaveThingWithMatchingKeys(dbFactory(), t))
 	t.Run("DeleteThingWithMatchingKeys", DeleteThingWithMatchingKeys(dbFactory(), t))
+	t.Run("GetSliceOfThingWithMatchingKeys", GetSliceOfThingWithMatchingKeys(dbFactory(), t))
 	t.Run("GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear", GetThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(dbFactory(), t))
 	t.Run("ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear", ScanThingWithMatchingKeyssByAssocTypeIDAndCreatedBear(dbFactory(), t))
 	t.Run("GetThingWithMultiUseCompositeAttribute", GetThingWithMultiUseCompositeAttribute(dbFactory(), t))
 	t.Run("ScanThingWithMultiUseCompositeAttributes", ScanThingWithMultiUseCompositeAttributes(dbFactory(), t))
 	t.Run("SaveThingWithMultiUseCompositeAttribute", SaveThingWithMultiUseCompositeAttribute(dbFactory(), t))
 	t.Run("DeleteThingWithMultiUseCompositeAttribute", DeleteThingWithMultiUseCompositeAttribute(dbFactory(), t))
+	t.Run("GetSliceOfThingWithMultiUseCompositeAttribute", GetSliceOfThingWithMultiUseCompositeAttribute(dbFactory(), t))
 	t.Run("GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo", GetThingWithMultiUseCompositeAttributesByThreeAndOneTwo(dbFactory(), t))
 	t.Run("ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo", ScanThingWithMultiUseCompositeAttributesByThreeAndOneTwo(dbFactory(), t))
 	t.Run("GetThingWithMultiUseCompositeAttributesByFourAndOneTwo", GetThingWithMultiUseCompositeAttributesByFourAndOneTwo(dbFactory(), t))
@@ -167,21 +186,25 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("ScanThingWithRequiredCompositePropertiesAndKeysOnlys", ScanThingWithRequiredCompositePropertiesAndKeysOnlys(dbFactory(), t))
 	t.Run("SaveThingWithRequiredCompositePropertiesAndKeysOnly", SaveThingWithRequiredCompositePropertiesAndKeysOnly(dbFactory(), t))
 	t.Run("DeleteThingWithRequiredCompositePropertiesAndKeysOnly", DeleteThingWithRequiredCompositePropertiesAndKeysOnly(dbFactory(), t))
+	t.Run("GetSliceOfThingWithRequiredCompositePropertiesAndKeysOnly", GetSliceOfThingWithRequiredCompositePropertiesAndKeysOnly(dbFactory(), t))
 	t.Run("GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree", GetThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(dbFactory(), t))
 	t.Run("ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree", ScanThingWithRequiredCompositePropertiesAndKeysOnlysByPropertyOneAndTwoAndPropertyThree(dbFactory(), t))
 	t.Run("GetThingWithRequiredFields", GetThingWithRequiredFields(dbFactory(), t))
 	t.Run("ScanThingWithRequiredFieldss", ScanThingWithRequiredFieldss(dbFactory(), t))
 	t.Run("SaveThingWithRequiredFields", SaveThingWithRequiredFields(dbFactory(), t))
 	t.Run("DeleteThingWithRequiredFields", DeleteThingWithRequiredFields(dbFactory(), t))
+	t.Run("GetSliceOfThingWithRequiredFields", GetSliceOfThingWithRequiredFields(dbFactory(), t))
 	t.Run("GetThingWithRequiredFields2", GetThingWithRequiredFields2(dbFactory(), t))
 	t.Run("ScanThingWithRequiredFields2s", ScanThingWithRequiredFields2s(dbFactory(), t))
 	t.Run("GetThingWithRequiredFields2sByNameAndID", GetThingWithRequiredFields2sByNameAndID(dbFactory(), t))
 	t.Run("SaveThingWithRequiredFields2", SaveThingWithRequiredFields2(dbFactory(), t))
 	t.Run("DeleteThingWithRequiredFields2", DeleteThingWithRequiredFields2(dbFactory(), t))
+	t.Run("GetSliceOfThingWithRequiredFields2", GetSliceOfThingWithRequiredFields2(dbFactory(), t))
 	t.Run("GetThingWithTransactMultipleGSI", GetThingWithTransactMultipleGSI(dbFactory(), t))
 	t.Run("ScanThingWithTransactMultipleGSIs", ScanThingWithTransactMultipleGSIs(dbFactory(), t))
 	t.Run("SaveThingWithTransactMultipleGSI", SaveThingWithTransactMultipleGSI(dbFactory(), t))
 	t.Run("DeleteThingWithTransactMultipleGSI", DeleteThingWithTransactMultipleGSI(dbFactory(), t))
+	t.Run("GetSliceOfThingWithTransactMultipleGSI", GetSliceOfThingWithTransactMultipleGSI(dbFactory(), t))
 	t.Run("GetThingWithTransactMultipleGSIsByIDAndDateR", GetThingWithTransactMultipleGSIsByIDAndDateR(dbFactory(), t))
 	t.Run("TransactSaveThingWithTransactMultipleGSIAndThing", TransactSaveThingWithTransactMultipleGSIAndThing(dbFactory(), t))
 	t.Run("GetThingWithTransactMultipleGSIsByDateHAndID", GetThingWithTransactMultipleGSIsByDateHAndID(dbFactory(), t))
@@ -190,13 +213,16 @@ func RunDBTests(t *testing.T, dbFactory func() db.Interface) {
 	t.Run("ScanThingWithTransactions", ScanThingWithTransactions(dbFactory(), t))
 	t.Run("SaveThingWithTransaction", SaveThingWithTransaction(dbFactory(), t))
 	t.Run("DeleteThingWithTransaction", DeleteThingWithTransaction(dbFactory(), t))
+	t.Run("GetSliceOfThingWithTransaction", GetSliceOfThingWithTransaction(dbFactory(), t))
 	t.Run("GetThingWithTransactionWithSimpleThing", GetThingWithTransactionWithSimpleThing(dbFactory(), t))
 	t.Run("ScanThingWithTransactionWithSimpleThings", ScanThingWithTransactionWithSimpleThings(dbFactory(), t))
 	t.Run("SaveThingWithTransactionWithSimpleThing", SaveThingWithTransactionWithSimpleThing(dbFactory(), t))
 	t.Run("DeleteThingWithTransactionWithSimpleThing", DeleteThingWithTransactionWithSimpleThing(dbFactory(), t))
+	t.Run("GetSliceOfThingWithTransactionWithSimpleThing", GetSliceOfThingWithTransactionWithSimpleThing(dbFactory(), t))
 	t.Run("GetThingWithUnderscores", GetThingWithUnderscores(dbFactory(), t))
 	t.Run("SaveThingWithUnderscores", SaveThingWithUnderscores(dbFactory(), t))
 	t.Run("DeleteThingWithUnderscores", DeleteThingWithUnderscores(dbFactory(), t))
+	t.Run("GetSliceOfThingWithUnderscores", GetSliceOfThingWithUnderscores(dbFactory(), t))
 }
 
 func GetDeployment(s db.Interface, t *testing.T) func(t *testing.T) {
@@ -552,6 +578,42 @@ func ScanDeployments(d db.Interface, t *testing.T) func(t *testing.T) {
 
 			require.Len(t, actual, 1)
 		})
+	}
+}
+
+func GetSliceOfDeployment(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.Deployment{
+			Application: "string1",
+			Date:        mustTime("2018-03-11T15:04:01+07:00"),
+			Environment: "string1",
+			Version:     "string1",
+		}
+		m2 := models.Deployment{
+			Application: "string2",
+			Date:        mustTime("2018-03-11T15:04:02+07:00"),
+			Environment: "string2",
+			Version:     "string2",
+		}
+		require.Nil(t, s.SaveDeployment(ctx, m1))
+		require.Nil(t, s.SaveDeployment(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfDeployment(ctx, []models.Deployment{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.Deployment{
+			Application: "string99",
+			Date:        mustTime("2018-03-11T15:04:099+07:00"),
+			Environment: "string99",
+			Version:     "string99",
+		}
+		got, err := s.GetSliceOfDeployment(ctx, []models.Deployment{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
 	}
 }
 
@@ -1634,6 +1696,39 @@ func ScanEvents(d db.Interface, t *testing.T) func(t *testing.T) {
 	}
 }
 
+func GetSliceOfEvent(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.Event{
+			Data: []byte("string1"),
+			Pk:   "string1",
+			Sk:   "string1",
+		}
+		m2 := models.Event{
+			Data: []byte("string2"),
+			Pk:   "string2",
+			Sk:   "string2",
+		}
+		require.Nil(t, s.SaveEvent(ctx, m1))
+		require.Nil(t, s.SaveEvent(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfEvent(ctx, []models.Event{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.Event{
+			Data: []byte("string99"),
+			Pk:   "string99",
+			Sk:   "string99",
+		}
+		got, err := s.GetSliceOfEvent(ctx, []models.Event{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
+	}
+}
+
 func SaveEvent(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -2129,6 +2224,45 @@ func ScanNoRangeThingWithCompositeAttributess(d db.Interface, t *testing.T) func
 
 			require.Len(t, actual, 1)
 		})
+	}
+}
+
+func GetSliceOfNoRangeThingWithCompositeAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.NoRangeThingWithCompositeAttributes{
+			Branch:  db.String("string1"),
+			Commit:  db.String("string1"),
+			Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Name:    db.String("string1"),
+			Version: 1,
+		}
+		m2 := models.NoRangeThingWithCompositeAttributes{
+			Branch:  db.String("string2"),
+			Commit:  db.String("string2"),
+			Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+			Name:    db.String("string2"),
+			Version: 2,
+		}
+		require.Nil(t, s.SaveNoRangeThingWithCompositeAttributes(ctx, m1))
+		require.Nil(t, s.SaveNoRangeThingWithCompositeAttributes(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfNoRangeThingWithCompositeAttributes(ctx, []models.NoRangeThingWithCompositeAttributes{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.NoRangeThingWithCompositeAttributes{
+			Branch:  db.String("string99"),
+			Commit:  db.String("string99"),
+			Date:    db.DateTime(mustTime("2018-03-11T15:04:099+07:00")),
+			Name:    db.String("string99"),
+			Version: 99,
+		}
+		got, err := s.GetSliceOfNoRangeThingWithCompositeAttributes(ctx, []models.NoRangeThingWithCompositeAttributes{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
 	}
 }
 
@@ -2682,6 +2816,33 @@ func ScanSimpleThings(d db.Interface, t *testing.T) func(t *testing.T) {
 	}
 }
 
+func GetSliceOfSimpleThing(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.SimpleThing{
+			Name: "string1",
+		}
+		m2 := models.SimpleThing{
+			Name: "string2",
+		}
+		require.Nil(t, s.SaveSimpleThing(ctx, m1))
+		require.Nil(t, s.SaveSimpleThing(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfSimpleThing(ctx, []models.SimpleThing{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.SimpleThing{
+			Name: "string99",
+		}
+		got, err := s.GetSliceOfSimpleThing(ctx, []models.SimpleThing{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
+	}
+}
+
 func SaveSimpleThing(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -3105,6 +3266,42 @@ func ScanTeacherSharingRules(d db.Interface, t *testing.T) func(t *testing.T) {
 
 			require.Len(t, actual, 1)
 		})
+	}
+}
+
+func GetSliceOfTeacherSharingRule(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.TeacherSharingRule{
+			App:      "string1",
+			District: "string1",
+			School:   "string1",
+			Teacher:  "string1",
+		}
+		m2 := models.TeacherSharingRule{
+			App:      "string2",
+			District: "string2",
+			School:   "string2",
+			Teacher:  "string2",
+		}
+		require.Nil(t, s.SaveTeacherSharingRule(ctx, m1))
+		require.Nil(t, s.SaveTeacherSharingRule(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfTeacherSharingRule(ctx, []models.TeacherSharingRule{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.TeacherSharingRule{
+			App:      "string99",
+			District: "string99",
+			School:   "string99",
+			Teacher:  "string99",
+		}
+		got, err := s.GetSliceOfTeacherSharingRule(ctx, []models.TeacherSharingRule{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
 	}
 }
 
@@ -3832,6 +4029,48 @@ func ScanThings(d db.Interface, t *testing.T) func(t *testing.T) {
 
 			require.Len(t, actual, 1)
 		})
+	}
+}
+
+func GetSliceOfThing(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.Thing{
+			CreatedAt:     mustTime("2018-03-11T15:04:01+07:00"),
+			HashNullable:  db.String("string1"),
+			ID:            "string1",
+			Name:          "string1",
+			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Version:       1,
+		}
+		m2 := models.Thing{
+			CreatedAt:     mustTime("2018-03-11T15:04:02+07:00"),
+			HashNullable:  db.String("string2"),
+			ID:            "string2",
+			Name:          "string2",
+			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+			Version:       2,
+		}
+		require.Nil(t, s.SaveThing(ctx, m1))
+		require.Nil(t, s.SaveThing(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfThing(ctx, []models.Thing{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.Thing{
+			CreatedAt:     mustTime("2018-03-11T15:04:099+07:00"),
+			HashNullable:  db.String("string99"),
+			ID:            "string99",
+			Name:          "string99",
+			RangeNullable: db.DateTime(mustTime("2018-03-11T15:04:099+07:00")),
+			Version:       99,
+		}
+		got, err := s.GetSliceOfThing(ctx, []models.Thing{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
 	}
 }
 
@@ -5190,6 +5429,36 @@ func ScanThingAllowingBatchWritess(d db.Interface, t *testing.T) func(t *testing
 	}
 }
 
+func GetSliceOfThingAllowingBatchWrites(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.ThingAllowingBatchWrites{
+			Name:    "string1",
+			Version: 1,
+		}
+		m2 := models.ThingAllowingBatchWrites{
+			Name:    "string2",
+			Version: 2,
+		}
+		require.Nil(t, s.SaveThingAllowingBatchWrites(ctx, m1))
+		require.Nil(t, s.SaveThingAllowingBatchWrites(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfThingAllowingBatchWrites(ctx, []models.ThingAllowingBatchWrites{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.ThingAllowingBatchWrites{
+			Name:    "string99",
+			Version: 99,
+		}
+		got, err := s.GetSliceOfThingAllowingBatchWrites(ctx, []models.ThingAllowingBatchWrites{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
+	}
+}
+
 func SaveThingAllowingBatchWrites(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -5560,6 +5829,39 @@ func ScanThingAllowingBatchWritesWithCompositeAttributess(d db.Interface, t *tes
 
 			require.Len(t, actual, 1)
 		})
+	}
+}
+
+func GetSliceOfThingAllowingBatchWritesWithCompositeAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.ThingAllowingBatchWritesWithCompositeAttributes{
+			Date: db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			ID:   db.String("string1"),
+			Name: db.String("string1"),
+		}
+		m2 := models.ThingAllowingBatchWritesWithCompositeAttributes{
+			Date: db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+			ID:   db.String("string2"),
+			Name: db.String("string2"),
+		}
+		require.Nil(t, s.SaveThingAllowingBatchWritesWithCompositeAttributes(ctx, m1))
+		require.Nil(t, s.SaveThingAllowingBatchWritesWithCompositeAttributes(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfThingAllowingBatchWritesWithCompositeAttributes(ctx, []models.ThingAllowingBatchWritesWithCompositeAttributes{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.ThingAllowingBatchWritesWithCompositeAttributes{
+			Date: db.DateTime(mustTime("2018-03-11T15:04:099+07:00")),
+			ID:   db.String("string99"),
+			Name: db.String("string99"),
+		}
+		got, err := s.GetSliceOfThingAllowingBatchWritesWithCompositeAttributes(ctx, []models.ThingAllowingBatchWritesWithCompositeAttributes{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
 	}
 }
 
@@ -6002,6 +6304,57 @@ func ScanThingWithAdditionalAttributess(d db.Interface, t *testing.T) func(t *te
 
 			require.Len(t, actual, 1)
 		})
+	}
+}
+
+func GetSliceOfThingWithAdditionalAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.ThingWithAdditionalAttributes{
+			AdditionalBAttribute: []byte("string1"),
+			AdditionalNAttribute: db.Int64(1),
+			AdditionalSAttribute: db.String("string1"),
+			CreatedAt:            mustTime("2018-03-11T15:04:01+07:00"),
+			HashNullable:         db.String("string1"),
+			ID:                   "string1",
+			Name:                 "string1",
+			RangeNullable:        db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Version:              1,
+		}
+		m2 := models.ThingWithAdditionalAttributes{
+			AdditionalBAttribute: []byte("string2"),
+			AdditionalNAttribute: db.Int64(2),
+			AdditionalSAttribute: db.String("string2"),
+			CreatedAt:            mustTime("2018-03-11T15:04:02+07:00"),
+			HashNullable:         db.String("string2"),
+			ID:                   "string2",
+			Name:                 "string2",
+			RangeNullable:        db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+			Version:              2,
+		}
+		require.Nil(t, s.SaveThingWithAdditionalAttributes(ctx, m1))
+		require.Nil(t, s.SaveThingWithAdditionalAttributes(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfThingWithAdditionalAttributes(ctx, []models.ThingWithAdditionalAttributes{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.ThingWithAdditionalAttributes{
+			AdditionalBAttribute: []byte("string99"),
+			AdditionalNAttribute: db.Int64(99),
+			AdditionalSAttribute: db.String("string99"),
+			CreatedAt:            mustTime("2018-03-11T15:04:099+07:00"),
+			HashNullable:         db.String("string99"),
+			ID:                   "string99",
+			Name:                 "string99",
+			RangeNullable:        db.DateTime(mustTime("2018-03-11T15:04:099+07:00")),
+			Version:              99,
+		}
+		got, err := s.GetSliceOfThingWithAdditionalAttributes(ctx, []models.ThingWithAdditionalAttributes{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
 	}
 }
 
@@ -7410,6 +7763,42 @@ func ScanThingWithCompositeAttributess(d db.Interface, t *testing.T) func(t *tes
 	}
 }
 
+func GetSliceOfThingWithCompositeAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.ThingWithCompositeAttributes{
+			Branch:  db.String("string1"),
+			Date:    db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Name:    db.String("string1"),
+			Version: 1,
+		}
+		m2 := models.ThingWithCompositeAttributes{
+			Branch:  db.String("string2"),
+			Date:    db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+			Name:    db.String("string2"),
+			Version: 2,
+		}
+		require.Nil(t, s.SaveThingWithCompositeAttributes(ctx, m1))
+		require.Nil(t, s.SaveThingWithCompositeAttributes(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfThingWithCompositeAttributes(ctx, []models.ThingWithCompositeAttributes{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.ThingWithCompositeAttributes{
+			Branch:  db.String("string99"),
+			Date:    db.DateTime(mustTime("2018-03-11T15:04:099+07:00")),
+			Name:    db.String("string99"),
+			Version: 99,
+		}
+		got, err := s.GetSliceOfThingWithCompositeAttributes(ctx, []models.ThingWithCompositeAttributes{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
+	}
+}
+
 func SaveThingWithCompositeAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -8142,6 +8531,39 @@ func ScanThingWithCompositeEnumAttributess(d db.Interface, t *testing.T) func(t 
 	}
 }
 
+func GetSliceOfThingWithCompositeEnumAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.ThingWithCompositeEnumAttributes{
+			BranchID: models.BranchMaster,
+			Date:     db.DateTime(mustTime("2018-03-11T15:04:01+07:00")),
+			Name:     db.String("string1"),
+		}
+		m2 := models.ThingWithCompositeEnumAttributes{
+			BranchID: models.BranchDEVBRANCH,
+			Date:     db.DateTime(mustTime("2018-03-11T15:04:02+07:00")),
+			Name:     db.String("string2"),
+		}
+		require.Nil(t, s.SaveThingWithCompositeEnumAttributes(ctx, m1))
+		require.Nil(t, s.SaveThingWithCompositeEnumAttributes(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfThingWithCompositeEnumAttributes(ctx, []models.ThingWithCompositeEnumAttributes{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.ThingWithCompositeEnumAttributes{
+			BranchID: models.BranchTest,
+			Date:     db.DateTime(mustTime("2018-03-11T15:04:099+07:00")),
+			Name:     db.String("string99"),
+		}
+		got, err := s.GetSliceOfThingWithCompositeEnumAttributes(ctx, []models.ThingWithCompositeEnumAttributes{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
+	}
+}
+
 func SaveThingWithCompositeEnumAttributes(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -8296,6 +8718,39 @@ func ScanThingWithDateGSIs(d db.Interface, t *testing.T) func(t *testing.T) {
 
 			require.Len(t, actual, 1)
 		})
+	}
+}
+
+func GetSliceOfThingWithDateGSI(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.ThingWithDateGSI{
+			DateH: mustDate("2018-03-11"),
+			DateR: mustDate("2018-03-11"),
+			ID:    "string1",
+		}
+		m2 := models.ThingWithDateGSI{
+			DateH: mustDate("2018-03-12"),
+			DateR: mustDate("2018-03-12"),
+			ID:    "string2",
+		}
+		require.Nil(t, s.SaveThingWithDateGSI(ctx, m1))
+		require.Nil(t, s.SaveThingWithDateGSI(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfThingWithDateGSI(ctx, []models.ThingWithDateGSI{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.ThingWithDateGSI{
+			DateH: mustDate("2018-03-199"),
+			DateR: mustDate("2018-03-199"),
+			ID:    "string99",
+		}
+		got, err := s.GetSliceOfThingWithDateGSI(ctx, []models.ThingWithDateGSI{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
 	}
 }
 
@@ -9044,6 +9499,36 @@ func ScanThingWithDateRanges(d db.Interface, t *testing.T) func(t *testing.T) {
 	}
 }
 
+func GetSliceOfThingWithDateRange(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.ThingWithDateRange{
+			Date: mustTime("2018-03-11T15:04:01+07:00"),
+			Name: "string1",
+		}
+		m2 := models.ThingWithDateRange{
+			Date: mustTime("2018-03-11T15:04:02+07:00"),
+			Name: "string2",
+		}
+		require.Nil(t, s.SaveThingWithDateRange(ctx, m1))
+		require.Nil(t, s.SaveThingWithDateRange(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfThingWithDateRange(ctx, []models.ThingWithDateRange{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.ThingWithDateRange{
+			Date: mustTime("2018-03-11T15:04:099+07:00"),
+			Name: "string99",
+		}
+		got, err := s.GetSliceOfThingWithDateRange(ctx, []models.ThingWithDateRange{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
+	}
+}
+
 func SaveThingWithDateRange(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -9382,6 +9867,36 @@ func ScanThingWithDateRangeKeys(d db.Interface, t *testing.T) func(t *testing.T)
 
 			require.Len(t, actual, 1)
 		})
+	}
+}
+
+func GetSliceOfThingWithDateRangeKey(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.ThingWithDateRangeKey{
+			Date: mustDate("2018-03-11"),
+			ID:   "string1",
+		}
+		m2 := models.ThingWithDateRangeKey{
+			Date: mustDate("2018-03-12"),
+			ID:   "string2",
+		}
+		require.Nil(t, s.SaveThingWithDateRangeKey(ctx, m1))
+		require.Nil(t, s.SaveThingWithDateRangeKey(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfThingWithDateRangeKey(ctx, []models.ThingWithDateRangeKey{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.ThingWithDateRangeKey{
+			Date: mustDate("2018-03-199"),
+			ID:   "string99",
+		}
+		got, err := s.GetSliceOfThingWithDateRangeKey(ctx, []models.ThingWithDateRangeKey{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
 	}
 }
 
@@ -9787,6 +10302,42 @@ func ScanThingWithDateTimeComposites(d db.Interface, t *testing.T) func(t *testi
 	}
 }
 
+func GetSliceOfThingWithDateTimeComposite(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.ThingWithDateTimeComposite{
+			Created:  mustTime("2018-03-11T15:04:01+07:00"),
+			ID:       "string1",
+			Resource: "string1",
+			Type:     "string1",
+		}
+		m2 := models.ThingWithDateTimeComposite{
+			Created:  mustTime("2018-03-11T15:04:02+07:00"),
+			ID:       "string2",
+			Resource: "string2",
+			Type:     "string2",
+		}
+		require.Nil(t, s.SaveThingWithDateTimeComposite(ctx, m1))
+		require.Nil(t, s.SaveThingWithDateTimeComposite(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfThingWithDateTimeComposite(ctx, []models.ThingWithDateTimeComposite{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.ThingWithDateTimeComposite{
+			Created:  mustTime("2018-03-11T15:04:099+07:00"),
+			ID:       "string99",
+			Resource: "string99",
+			Type:     "string99",
+		}
+		got, err := s.GetSliceOfThingWithDateTimeComposite(ctx, []models.ThingWithDateTimeComposite{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
+	}
+}
+
 func SaveThingWithDateTimeComposite(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -9935,6 +10486,36 @@ func ScanThingWithDatetimeGSIs(d db.Interface, t *testing.T) func(t *testing.T) 
 
 			require.Len(t, actual, 1)
 		})
+	}
+}
+
+func GetSliceOfThingWithDatetimeGSI(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.ThingWithDatetimeGSI{
+			Datetime: mustTime("2018-03-11T15:04:01+07:00"),
+			ID:       "string1",
+		}
+		m2 := models.ThingWithDatetimeGSI{
+			Datetime: mustTime("2018-03-11T15:04:02+07:00"),
+			ID:       "string2",
+		}
+		require.Nil(t, s.SaveThingWithDatetimeGSI(ctx, m1))
+		require.Nil(t, s.SaveThingWithDatetimeGSI(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfThingWithDatetimeGSI(ctx, []models.ThingWithDatetimeGSI{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.ThingWithDatetimeGSI{
+			Datetime: mustTime("2018-03-11T15:04:099+07:00"),
+			ID:       "string99",
+		}
+		got, err := s.GetSliceOfThingWithDatetimeGSI(ctx, []models.ThingWithDatetimeGSI{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
 	}
 }
 
@@ -10586,6 +11167,39 @@ func ScanThingWithEnumHashKeys(d db.Interface, t *testing.T) func(t *testing.T) 
 
 			require.Len(t, actual, 1)
 		})
+	}
+}
+
+func GetSliceOfThingWithEnumHashKey(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.ThingWithEnumHashKey{
+			Branch: models.BranchMaster,
+			Date:   mustTime("2018-03-11T15:04:01+07:00"),
+			Date2:  mustTime("2018-03-11T15:04:01+07:00"),
+		}
+		m2 := models.ThingWithEnumHashKey{
+			Branch: models.BranchDEVBRANCH,
+			Date:   mustTime("2018-03-11T15:04:02+07:00"),
+			Date2:  mustTime("2018-03-11T15:04:02+07:00"),
+		}
+		require.Nil(t, s.SaveThingWithEnumHashKey(ctx, m1))
+		require.Nil(t, s.SaveThingWithEnumHashKey(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfThingWithEnumHashKey(ctx, []models.ThingWithEnumHashKey{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.ThingWithEnumHashKey{
+			Branch: models.BranchTest,
+			Date:   mustTime("2018-03-11T15:04:099+07:00"),
+			Date2:  mustTime("2018-03-11T15:04:099+07:00"),
+		}
+		got, err := s.GetSliceOfThingWithEnumHashKey(ctx, []models.ThingWithEnumHashKey{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
 	}
 }
 
@@ -11295,6 +11909,42 @@ func ScanThingWithMatchingKeyss(d db.Interface, t *testing.T) func(t *testing.T)
 	}
 }
 
+func GetSliceOfThingWithMatchingKeys(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.ThingWithMatchingKeys{
+			AssocID:   "string1",
+			AssocType: "string1",
+			Bear:      "string1",
+			Created:   mustTime("2018-03-11T15:04:01+07:00"),
+		}
+		m2 := models.ThingWithMatchingKeys{
+			AssocID:   "string2",
+			AssocType: "string2",
+			Bear:      "string2",
+			Created:   mustTime("2018-03-11T15:04:02+07:00"),
+		}
+		require.Nil(t, s.SaveThingWithMatchingKeys(ctx, m1))
+		require.Nil(t, s.SaveThingWithMatchingKeys(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfThingWithMatchingKeys(ctx, []models.ThingWithMatchingKeys{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.ThingWithMatchingKeys{
+			AssocID:   "string99",
+			AssocType: "string99",
+			Bear:      "string99",
+			Created:   mustTime("2018-03-11T15:04:099+07:00"),
+		}
+		got, err := s.GetSliceOfThingWithMatchingKeys(ctx, []models.ThingWithMatchingKeys{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
+	}
+}
+
 func SaveThingWithMatchingKeys(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -11815,6 +12465,42 @@ func ScanThingWithMultiUseCompositeAttributes(d db.Interface, t *testing.T) func
 
 			require.Len(t, actual, 1)
 		})
+	}
+}
+
+func GetSliceOfThingWithMultiUseCompositeAttribute(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.ThingWithMultiUseCompositeAttribute{
+			Four:  db.String("string1"),
+			One:   db.String("string1"),
+			Three: db.String("string1"),
+			Two:   db.String("string1"),
+		}
+		m2 := models.ThingWithMultiUseCompositeAttribute{
+			Four:  db.String("string2"),
+			One:   db.String("string2"),
+			Three: db.String("string2"),
+			Two:   db.String("string2"),
+		}
+		require.Nil(t, s.SaveThingWithMultiUseCompositeAttribute(ctx, m1))
+		require.Nil(t, s.SaveThingWithMultiUseCompositeAttribute(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfThingWithMultiUseCompositeAttribute(ctx, []models.ThingWithMultiUseCompositeAttribute{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.ThingWithMultiUseCompositeAttribute{
+			Four:  db.String("string99"),
+			One:   db.String("string99"),
+			Three: db.String("string99"),
+			Two:   db.String("string99"),
+		}
+		got, err := s.GetSliceOfThingWithMultiUseCompositeAttribute(ctx, []models.ThingWithMultiUseCompositeAttribute{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
 	}
 }
 
@@ -12685,6 +13371,39 @@ func ScanThingWithRequiredCompositePropertiesAndKeysOnlys(d db.Interface, t *tes
 	}
 }
 
+func GetSliceOfThingWithRequiredCompositePropertiesAndKeysOnly(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+			PropertyOne:   db.String("string1"),
+			PropertyThree: db.String("string1"),
+			PropertyTwo:   db.String("string1"),
+		}
+		m2 := models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+			PropertyOne:   db.String("string2"),
+			PropertyThree: db.String("string2"),
+			PropertyTwo:   db.String("string2"),
+		}
+		require.Nil(t, s.SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx, m1))
+		require.Nil(t, s.SaveThingWithRequiredCompositePropertiesAndKeysOnly(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfThingWithRequiredCompositePropertiesAndKeysOnly(ctx, []models.ThingWithRequiredCompositePropertiesAndKeysOnly{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.ThingWithRequiredCompositePropertiesAndKeysOnly{
+			PropertyOne:   db.String("string99"),
+			PropertyThree: db.String("string99"),
+			PropertyTwo:   db.String("string99"),
+		}
+		got, err := s.GetSliceOfThingWithRequiredCompositePropertiesAndKeysOnly(ctx, []models.ThingWithRequiredCompositePropertiesAndKeysOnly{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
+	}
+}
+
 func SaveThingWithRequiredCompositePropertiesAndKeysOnly(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -13158,6 +13877,33 @@ func ScanThingWithRequiredFieldss(d db.Interface, t *testing.T) func(t *testing.
 	}
 }
 
+func GetSliceOfThingWithRequiredFields(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.ThingWithRequiredFields{
+			Name: db.String("string1"),
+		}
+		m2 := models.ThingWithRequiredFields{
+			Name: db.String("string2"),
+		}
+		require.Nil(t, s.SaveThingWithRequiredFields(ctx, m1))
+		require.Nil(t, s.SaveThingWithRequiredFields(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfThingWithRequiredFields(ctx, []models.ThingWithRequiredFields{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.ThingWithRequiredFields{
+			Name: db.String("string99"),
+		}
+		got, err := s.GetSliceOfThingWithRequiredFields(ctx, []models.ThingWithRequiredFields{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
+	}
+}
+
 func SaveThingWithRequiredFields(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -13498,6 +14244,36 @@ func ScanThingWithRequiredFields2s(d db.Interface, t *testing.T) func(t *testing
 	}
 }
 
+func GetSliceOfThingWithRequiredFields2(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.ThingWithRequiredFields2{
+			ID:   db.String("string1"),
+			Name: db.String("string1"),
+		}
+		m2 := models.ThingWithRequiredFields2{
+			ID:   db.String("string2"),
+			Name: db.String("string2"),
+		}
+		require.Nil(t, s.SaveThingWithRequiredFields2(ctx, m1))
+		require.Nil(t, s.SaveThingWithRequiredFields2(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfThingWithRequiredFields2(ctx, []models.ThingWithRequiredFields2{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.ThingWithRequiredFields2{
+			ID:   db.String("string99"),
+			Name: db.String("string99"),
+		}
+		got, err := s.GetSliceOfThingWithRequiredFields2(ctx, []models.ThingWithRequiredFields2{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
+	}
+}
+
 func SaveThingWithRequiredFields2(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -13650,6 +14426,39 @@ func ScanThingWithTransactMultipleGSIs(d db.Interface, t *testing.T) func(t *tes
 
 			require.Len(t, actual, 1)
 		})
+	}
+}
+
+func GetSliceOfThingWithTransactMultipleGSI(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.ThingWithTransactMultipleGSI{
+			DateH: mustDate("2018-03-11"),
+			DateR: mustDate("2018-03-11"),
+			ID:    "string1",
+		}
+		m2 := models.ThingWithTransactMultipleGSI{
+			DateH: mustDate("2018-03-12"),
+			DateR: mustDate("2018-03-12"),
+			ID:    "string2",
+		}
+		require.Nil(t, s.SaveThingWithTransactMultipleGSI(ctx, m1))
+		require.Nil(t, s.SaveThingWithTransactMultipleGSI(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfThingWithTransactMultipleGSI(ctx, []models.ThingWithTransactMultipleGSI{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.ThingWithTransactMultipleGSI{
+			DateH: mustDate("2018-03-199"),
+			DateR: mustDate("2018-03-199"),
+			ID:    "string99",
+		}
+		got, err := s.GetSliceOfThingWithTransactMultipleGSI(ctx, []models.ThingWithTransactMultipleGSI{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
 	}
 }
 
@@ -14217,6 +15026,33 @@ func ScanThingWithTransactions(d db.Interface, t *testing.T) func(t *testing.T) 
 	}
 }
 
+func GetSliceOfThingWithTransaction(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.ThingWithTransaction{
+			Name: "string1",
+		}
+		m2 := models.ThingWithTransaction{
+			Name: "string2",
+		}
+		require.Nil(t, s.SaveThingWithTransaction(ctx, m1))
+		require.Nil(t, s.SaveThingWithTransaction(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfThingWithTransaction(ctx, []models.ThingWithTransaction{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.ThingWithTransaction{
+			Name: "string99",
+		}
+		got, err := s.GetSliceOfThingWithTransaction(ctx, []models.ThingWithTransaction{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
+	}
+}
+
 func SaveThingWithTransaction(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -14374,6 +15210,33 @@ func ScanThingWithTransactionWithSimpleThings(d db.Interface, t *testing.T) func
 	}
 }
 
+func GetSliceOfThingWithTransactionWithSimpleThing(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.ThingWithTransactionWithSimpleThing{
+			Name: "string1",
+		}
+		m2 := models.ThingWithTransactionWithSimpleThing{
+			Name: "string2",
+		}
+		require.Nil(t, s.SaveThingWithTransactionWithSimpleThing(ctx, m1))
+		require.Nil(t, s.SaveThingWithTransactionWithSimpleThing(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfThingWithTransactionWithSimpleThing(ctx, []models.ThingWithTransactionWithSimpleThing{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.ThingWithTransactionWithSimpleThing{
+			Name: "string99",
+		}
+		got, err := s.GetSliceOfThingWithTransactionWithSimpleThing(ctx, []models.ThingWithTransactionWithSimpleThing{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
+	}
+}
+
 func SaveThingWithTransactionWithSimpleThing(s db.Interface, t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		ctx := context.Background()
@@ -14423,6 +15286,33 @@ func GetThingWithUnderscores(s db.Interface, t *testing.T) func(t *testing.T) {
 		_, err = s.GetThingWithUnderscores(ctx, "string2")
 		require.NotNil(t, err)
 		require.IsType(t, err, db.ErrThingWithUnderscoresNotFound{})
+	}
+}
+
+func GetSliceOfThingWithUnderscores(s db.Interface, t *testing.T) func(t *testing.T) {
+	return func(t *testing.T) {
+		ctx := context.Background()
+		m1 := models.ThingWithUnderscores{
+			IDApp: "string1",
+		}
+		m2 := models.ThingWithUnderscores{
+			IDApp: "string2",
+		}
+		require.Nil(t, s.SaveThingWithUnderscores(ctx, m1))
+		require.Nil(t, s.SaveThingWithUnderscores(ctx, m2))
+
+		// fetch both items by passing full model structs (keys extracted internally)
+		out, err := s.GetSliceOfThingWithUnderscores(ctx, []models.ThingWithUnderscores{m1, m2})
+		require.Nil(t, err)
+		require.Len(t, out, 2)
+
+		// a model whose keys don't exist returns empty slice, not an error
+		missing := models.ThingWithUnderscores{
+			IDApp: "string99",
+		}
+		got, err := s.GetSliceOfThingWithUnderscores(ctx, []models.ThingWithUnderscores{missing})
+		require.Nil(t, err)
+		require.Len(t, got, 0)
 	}
 }
 
