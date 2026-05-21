@@ -164,7 +164,7 @@ func (t NoRangeThingWithCompositeAttributesTable) getSliceOfNoRangeThingWithComp
 		return nil, nil
 	}
 
-	requestKeys := make([]map[string]types.AttributeValue, len(ms))
+	allKeys := make([]map[string]types.AttributeValue, len(ms))
 	for i := range ms {
 		key, err := attributevalue.MarshalMap(ddbNoRangeThingWithCompositeAttributesPrimaryKey{
 			NameBranch: fmt.Sprintf("%s@%s", *ms[i].Name, *ms[i].Branch),
@@ -172,31 +172,39 @@ func (t NoRangeThingWithCompositeAttributesTable) getSliceOfNoRangeThingWithComp
 		if err != nil {
 			return nil, err
 		}
-		requestKeys[i] = key
+		allKeys[i] = key
 	}
 
 	tname := t.TableName
 	var items []models.NoRangeThingWithCompositeAttributes
-	for {
-		out, err := t.DynamoDBAPI.BatchGetItem(ctx, &dynamodb.BatchGetItemInput{
-			RequestItems: map[string]types.KeysAndAttributes{
-				tname: {Keys: requestKeys},
-			},
-		})
-		if err != nil {
-			return nil, fmt.Errorf("BatchGetItem: %v", err)
+	for len(allKeys) > 0 {
+		chunkSize := len(allKeys)
+		if chunkSize > maxDynamoDBBatchGetItems {
+			chunkSize = maxDynamoDBBatchGetItems
 		}
-		for _, item := range out.Responses[tname] {
-			var m models.NoRangeThingWithCompositeAttributes
-			if err := decodeNoRangeThingWithCompositeAttributes(item, &m); err != nil {
-				return nil, err
+		requestKeys := allKeys[:chunkSize]
+		allKeys = allKeys[chunkSize:]
+		for {
+			out, err := t.DynamoDBAPI.BatchGetItem(ctx, &dynamodb.BatchGetItemInput{
+				RequestItems: map[string]types.KeysAndAttributes{
+					tname: {Keys: requestKeys},
+				},
+			})
+			if err != nil {
+				return nil, fmt.Errorf("BatchGetItem: %v", err)
 			}
-			items = append(items, m)
+			for _, item := range out.Responses[tname] {
+				var m models.NoRangeThingWithCompositeAttributes
+				if err := decodeNoRangeThingWithCompositeAttributes(item, &m); err != nil {
+					return nil, err
+				}
+				items = append(items, m)
+			}
+			if len(out.UnprocessedKeys[tname].Keys) == 0 {
+				break
+			}
+			requestKeys = out.UnprocessedKeys[tname].Keys
 		}
-		if len(out.UnprocessedKeys[tname].Keys) == 0 {
-			break
-		}
-		requestKeys = out.UnprocessedKeys[tname].Keys
 	}
 	return items, nil
 }

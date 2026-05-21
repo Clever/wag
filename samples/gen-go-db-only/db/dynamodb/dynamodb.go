@@ -90,6 +90,10 @@ type Config struct {
 // https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_BatchWriteItem.html
 const maxDynamoDBBatchItems = 25
 
+// maxDynamoDBBatchGetItems is the AWS-defined maximum number of items that can be read at once
+// https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_BatchGetItem.html
+const maxDynamoDBBatchGetItems = 100
+
 // New creates a new DB object.
 func New(config Config) (*DB, error) {
 	if config.DynamoDBAPI == nil {
