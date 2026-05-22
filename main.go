@@ -37,6 +37,7 @@ type config struct {
 	relativeDynamoPath *string
 	jsModulePath       *string
 	goPackageName      *string
+	subrouter          *bool
 
 	dynamoPath            string
 	goAbsolutePackagePath string
@@ -64,6 +65,11 @@ func main() {
 		dynamoOnly:         flag.Bool("dynamo-only", false, "only generate dynamo code"),
 		relativeDynamoPath: flag.String("dynamo-path", "", "path to generate dynamo code relative to go package path"),
 		withTests:          flag.Bool("with-tests", false, "generate tests for the generated db code"),
+		subrouter: flag.Bool(
+			"subrouter",
+			false,
+			"generate a router.go that registers routes as a subrouter, not a standalone own server",
+		),
 	}
 	flag.Parse()
 	if *conf.versionFlag {
@@ -80,11 +86,24 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error loading swagger file: %s", err)
 	}
-	swaggerSpec := *doc.Spec()
 
+	var parentDoc *loads.Document
+	if *conf.subrouter {
+		parentDoc, err = loads.Spec(
+			filepath.Join(filepath.Dir(*conf.swaggerFile), "..", "..", "swagger.yml"),
+		)
+
+		if err != nil {
+			log.Fatalf("Error loading parent swagger file: %s", err)
+		}
+
+		conf.generateJSClient = false
+	}
+
+	swaggerSpec := *doc.Spec()
 	injectDefaultDefinitions(&swaggerSpec)
 
-	if err := validation.Validate(*doc, conf.generateJSClient); err != nil {
+	if err := validation.Validate(doc, parentDoc, conf.generateJSClient); err != nil {
 		log.Fatalf("Swagger file not valid: %s", err)
 	}
 
@@ -99,7 +118,13 @@ func main() {
 	}
 
 	if conf.generateServer {
-		if err := generateServer(*conf.goPackageName, conf.goAbsolutePackagePath, *conf.outputPath, swaggerSpec); err != nil {
+		if err := generateServer(
+			*conf.goPackageName,
+			conf.goAbsolutePackagePath,
+			*conf.outputPath,
+			swaggerSpec,
+			*conf.subrouter,
+		); err != nil {
 			log.Fatal(err.Error())
 		}
 	}
@@ -117,7 +142,12 @@ func main() {
 	}
 
 	if conf.generateGoClient {
-		if err := generateGoClient(*conf.goPackageName, conf.goAbsolutePackagePath, *conf.outputPath, swaggerSpec); err != nil {
+		if err := generateGoClient(
+			*conf.goPackageName,
+			conf.goAbsolutePackagePath,
+			*conf.outputPath,
+			swaggerSpec,
+		); err != nil {
 			log.Fatal(err.Error())
 		}
 	}
@@ -139,17 +169,20 @@ func generateGoModels(packageName, basePath, outputPath string, swaggerSpec spec
 	return nil
 }
 
-func generateServer(goPackageName, basePath, outputPath string, swaggerSpec spec.Swagger) error {
+func generateServer(goPackageName, basePath, outputPath string, swaggerSpec spec.Swagger, subrouter bool) error {
 	if err := prepareDir(filepath.Join(basePath, "server")); err != nil {
 		return err
 	}
-	if err := server.Generate(goPackageName, basePath, outputPath, swaggerSpec); err != nil {
+	if err := server.Generate(goPackageName, basePath, outputPath, swaggerSpec, subrouter); err != nil {
 		return fmt.Errorf("Failed to generate server: %s", err)
 	}
-	middlewareGenerator := swagger.Generator{BasePath: basePath}
-	middlewareGenerator.Write(hardcoded.MustAsset("../_hardcoded/middleware.go"))
-	if err := middlewareGenerator.WriteFile("server/middleware.go"); err != nil {
-		return fmt.Errorf("Failed to copy middleware.go: %s", err)
+
+	if !subrouter {
+		middlewareGenerator := swagger.Generator{BasePath: basePath}
+		middlewareGenerator.Write(hardcoded.MustAsset("../_hardcoded/middleware.go"))
+		if err := middlewareGenerator.WriteFile("server/middleware.go"); err != nil {
+			return fmt.Errorf("Failed to copy middleware.go: %s", err)
+		}
 	}
 
 	return nil
@@ -179,7 +212,10 @@ func generateDynamo(dynamoPath, goPackageName, basePath, relativeDynamoPath, Out
 	return nil
 }
 
-func generateGoClient(goPackageName, basePath, outputPath string, swaggerSpec spec.Swagger) error {
+func generateGoClient(
+	goPackageName, basePath, outputPath string,
+	swaggerSpec spec.Swagger,
+) error {
 	if err := prepareDir(filepath.Join(basePath, "client")); err != nil {
 		return err
 	}
