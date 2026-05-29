@@ -8,7 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	models "github.com/Clever/wag/samples/gen-go-nils/models/v9"
+	v9 "github.com/Clever/wag/samples/gen-go-nils/models/v9"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -36,7 +36,7 @@ func (m *MockController) EXPECT() *MockControllerMockRecorder {
 }
 
 // NilCheck mocks base method.
-func (m *MockController) NilCheck(ctx context.Context, i *models.NilCheckInput) error {
+func (m *MockController) NilCheck(ctx context.Context, i *v9.NilCheckInput) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NilCheck", ctx, i)
 	ret0, _ := ret[0].(error)

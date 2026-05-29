@@ -132,17 +132,31 @@ func (t ThingAllowingBatchWritesTable) saveArrayOfThingAllowingBatchWrites(ctx c
 		}
 	}
 	tname := t.TableName
-	for {
-		if out, err := t.DynamoDBAPI.BatchWriteItem(ctx, &dynamodb.BatchWriteItemInput{
+	for attempt := 0; ; attempt++ {
+		out, err := t.DynamoDBAPI.BatchWriteItem(ctx, &dynamodb.BatchWriteItemInput{
 			RequestItems: map[string][]types.WriteRequest{
 				tname: batch,
 			},
-		}); err != nil {
+		})
+		if err != nil {
 			return fmt.Errorf("BatchWriteItem: %v", err)
-		} else if out.UnprocessedItems != nil && len(out.UnprocessedItems[tname]) > 0 {
-			batch = out.UnprocessedItems[tname]
-		} else {
+		}
+		if out.UnprocessedItems == nil || len(out.UnprocessedItems[tname]) == 0 {
 			break
+		}
+		batch = out.UnprocessedItems[tname]
+		if attempt >= maxBatchUnprocessedRetries {
+			return db.ErrBatchUnprocessedItems{
+				Operation:   "BatchWriteItem",
+				Table:       tname,
+				Unprocessed: len(batch),
+				Attempts:    attempt + 1,
+			}
+		}
+		// DynamoDB throttled some items so back-off with jitter before resubmitting
+		// the unprocessed items to avoid a thundering-herd retry storm.
+		if err := waitBatchBackoff(ctx, attempt); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -174,17 +188,31 @@ func (t ThingAllowingBatchWritesTable) deleteArrayOfThingAllowingBatchWrites(ctx
 		}
 	}
 	tname := t.TableName
-	for {
-		if out, err := t.DynamoDBAPI.BatchWriteItem(ctx, &dynamodb.BatchWriteItemInput{
+	for attempt := 0; ; attempt++ {
+		out, err := t.DynamoDBAPI.BatchWriteItem(ctx, &dynamodb.BatchWriteItemInput{
 			RequestItems: map[string][]types.WriteRequest{
 				tname: batch,
 			},
-		}); err != nil {
+		})
+		if err != nil {
 			return fmt.Errorf("BatchWriteItem: %v", err)
-		} else if out.UnprocessedItems != nil && len(out.UnprocessedItems[tname]) > 0 {
-			batch = out.UnprocessedItems[tname]
-		} else {
+		}
+		if out.UnprocessedItems == nil || len(out.UnprocessedItems[tname]) == 0 {
 			break
+		}
+		batch = out.UnprocessedItems[tname]
+		if attempt >= maxBatchUnprocessedRetries {
+			return db.ErrBatchUnprocessedItems{
+				Operation:   "BatchWriteItem",
+				Table:       tname,
+				Unprocessed: len(batch),
+				Attempts:    attempt + 1,
+			}
+		}
+		// DynamoDB throttled some items; back off (with jitter) before resubmitting
+		// the unprocessed items to avoid a thundering-herd retry storm.
+		if err := waitBatchBackoff(ctx, attempt); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -216,7 +244,7 @@ func (t ThingAllowingBatchWritesTable) getSliceOfThingAllowingBatchWrites(ctx co
 		}
 		requestKeys := allKeys[:chunkSize]
 		allKeys = allKeys[chunkSize:]
-		for {
+		for attempt := 0; ; attempt++ {
 			out, err := t.DynamoDBAPI.BatchGetItem(ctx, &dynamodb.BatchGetItemInput{
 				RequestItems: map[string]types.KeysAndAttributes{
 					tname: {Keys: requestKeys},
@@ -236,6 +264,19 @@ func (t ThingAllowingBatchWritesTable) getSliceOfThingAllowingBatchWrites(ctx co
 				break
 			}
 			requestKeys = out.UnprocessedKeys[tname].Keys
+			if attempt >= maxBatchUnprocessedRetries {
+				return nil, db.ErrBatchUnprocessedItems{
+					Operation:   "BatchGetItem",
+					Table:       tname,
+					Unprocessed: len(requestKeys),
+					Attempts:    attempt + 1,
+				}
+			}
+			// DynamoDB throttled some keys; back off (with jitter) before resubmitting
+			// the unprocessed keys to avoid a thundering-herd retry storm.
+			if err := waitBatchBackoff(ctx, attempt); err != nil {
+				return nil, err
+			}
 		}
 	}
 	return items, nil
