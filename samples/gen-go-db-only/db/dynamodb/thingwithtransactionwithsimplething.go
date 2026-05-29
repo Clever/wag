@@ -123,7 +123,7 @@ func (t ThingWithTransactionWithSimpleThingTable) getSliceOfThingWithTransaction
 		}
 		requestKeys := allKeys[:chunkSize]
 		allKeys = allKeys[chunkSize:]
-		for {
+		for attempt := 0; ; attempt++ {
 			out, err := t.DynamoDBAPI.BatchGetItem(ctx, &dynamodb.BatchGetItemInput{
 				RequestItems: map[string]types.KeysAndAttributes{
 					tname: {Keys: requestKeys},
@@ -143,6 +143,19 @@ func (t ThingWithTransactionWithSimpleThingTable) getSliceOfThingWithTransaction
 				break
 			}
 			requestKeys = out.UnprocessedKeys[tname].Keys
+			if attempt >= maxBatchUnprocessedRetries {
+				return nil, db.ErrBatchUnprocessedItems{
+					Operation:   "BatchGetItem",
+					Table:       tname,
+					Unprocessed: len(requestKeys),
+					Attempts:    attempt + 1,
+				}
+			}
+			// DynamoDB throttled some keys; back off (with jitter) before resubmitting
+			// the unprocessed keys to avoid a thundering-herd retry storm.
+			if err := waitBatchBackoff(ctx, attempt); err != nil {
+				return nil, err
+			}
 		}
 	}
 	return items, nil

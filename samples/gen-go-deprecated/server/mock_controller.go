@@ -8,7 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	models "github.com/Clever/wag/samples/gen-go-deprecated/models/v9"
+	v9 "github.com/Clever/wag/samples/gen-go-deprecated/models/v9"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -36,7 +36,7 @@ func (m *MockController) EXPECT() *MockControllerMockRecorder {
 }
 
 // Health mocks base method.
-func (m *MockController) Health(ctx context.Context, i *models.HealthInput) error {
+func (m *MockController) Health(ctx context.Context, i *v9.HealthInput) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Health", ctx, i)
 	ret0, _ := ret[0].(error)
