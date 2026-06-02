@@ -23,7 +23,7 @@ func ClientInterface(s *spec.Swagger, op *spec.Operation) string {
 // builder of an operation
 func ClientIterInterface(s *spec.Swagger, op *spec.Operation) string {
 	capOpID := Capitalize(op.ID)
-	input := OperationInput(op)
+	input, _ := OperationInput(op)
 	return fmt.Sprintf(
 		"New%sIter(ctx context.Context, %s) (%sIter, error)",
 		capOpID,
@@ -32,8 +32,8 @@ func ClientIterInterface(s *spec.Swagger, op *spec.Operation) string {
 	)
 }
 
-// OperationInput returns the input to an operation
-func OperationInput(op *spec.Operation) string {
+// OperationInput returns the input to an operation and its variable name
+func OperationInput(op *spec.Operation) (string, string) {
 	// Don't add the input parameter argument unless there are some arguments.
 	// If a method has a single input parameter, and it's a schema, make the
 	// generated type for that schema the input of the method.
@@ -41,22 +41,26 @@ func OperationInput(op *spec.Operation) string {
 	// make that the input of the method.
 	// If a method has multiple input parameters, wrap them in a struct.
 	capOpID := Capitalize(op.ID)
-	input := ""
+	var input, variable string
 	if singleSchemaedBodyParameter, opModel := SingleSchemaedBodyParameter(op); singleSchemaedBodyParameter {
 		input = fmt.Sprintf("i *models.%s", opModel)
+		variable = "i"
 	} else if singleStringPathParameter, inputName := SingleStringPathParameter(op); singleStringPathParameter {
 		input = fmt.Sprintf("%s string", inputName)
+		variable = inputName
 	} else if len(op.Parameters) > 0 {
 		input = fmt.Sprintf("i *models.%sInput", capOpID)
+		variable = "i"
 	}
-	return input
+
+	return input, variable
 }
 
 // generateInterface returns the interface for an operation
 func opInterface(s *spec.Swagger, op *spec.Operation, includePaging bool) string {
 	capOpID := Capitalize(op.ID)
 
-	input := OperationInput(op)
+	input, _ := OperationInput(op)
 
 	returnTypes := []string{}
 	if successType := SuccessType(s, op); successType != nil {

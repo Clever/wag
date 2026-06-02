@@ -210,10 +210,10 @@ func validateDefinitions(definitions map[string]spec.Schema) error {
 // we don't support. Note that this isn't a comprehensive check for all things
 // we don't support, so this may not return an error, but the Swagger file might
 // have values we don't support
-func Validate(d loads.Document, generateJSClient bool) error {
-	s := d.Spec()
+func Validate(doc, parentDoc *loads.Document, generateJSClient bool) error {
+	s := doc.Spec()
 
-	goSwaggerError := validate.Spec(&d, strfmt.Default)
+	goSwaggerError := validate.Spec(doc, strfmt.Default)
 	if goSwaggerError != nil {
 		str := ""
 		for _, desc := range goSwaggerError.(*swaggererrors.CompositeError).Errors {
@@ -257,6 +257,29 @@ func Validate(d loads.Document, generateJSClient bool) error {
 	_, ok := s.Info.Extensions.GetString("x-npm-package")
 	if !ok && generateJSClient {
 		return fmt.Errorf("must provide 'x-npm-package' in the 'info' section of the swagger.yml")
+	}
+
+	if s.BasePath != "" && parentDoc != nil {
+		parentSpec := parentDoc.Spec()
+		subrouters, err := swagger.ParseSubrouters(*parentSpec)
+		if err != nil {
+			return err
+		}
+
+		hasConfiguredPath := false
+		for _, subrouter := range subrouters {
+			if subrouter.Path == s.BasePath {
+				hasConfiguredPath = true
+				break
+			}
+		}
+
+		if !hasConfiguredPath {
+			return fmt.Errorf(
+				"subrouter base path %s is not configured in parent spec x-routers config",
+				s.BasePath,
+			)
+		}
 	}
 
 	for path, pathItem := range s.Paths.Paths {
