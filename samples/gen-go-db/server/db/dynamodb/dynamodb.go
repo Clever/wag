@@ -7,6 +7,7 @@ import (
 
 	"github.com/Clever/wag/samples/gen-go-db/models/v9"
 	"github.com/Clever/wag/samples/v9/gen-go-db/server/db"
+	"github.com/aws/aws-sdk-go-v2/aws/retry"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
@@ -93,6 +94,42 @@ const maxDynamoDBBatchItems = 25
 // maxDynamoDBBatchGetItems is the AWS-defined maximum number of items that can be read at once
 // https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_BatchGetItem.html
 const maxDynamoDBBatchGetItems = 100
+
+// maxBatchUnprocessedRetries - how many times a batch operation will retry
+// the items DynamoDB returns as unprocessed
+const maxBatchUnprocessedRetries = 10
+
+// maxBatchBackoff - the per retry jittered delay between resubmissions of
+// unprocessed batch items
+const maxBatchBackoff = 30 * time.Second
+
+// batchBackoffer - the delay to wait before the next retry of unprocessed
+// batch items
+type batchBackoffer interface {
+	BackoffDelay(attempt int, err error) (time.Duration, error)
+}
+
+// batchBackoff - the shared exponential-with-full-jitter backoff for unprocessed
+// batch items, so that many simultaneously-throttled callers do not retry in
+// lockstep (thundering herd)
+var batchBackoff batchBackoffer = retry.NewExponentialJitterBackoff(maxBatchBackoff)
+
+// waitBatchBackoff sleeps for the jittered backoff delay for the given attempt,
+// returning early if ctx is cancelled
+func waitBatchBackoff(ctx context.Context, attempt int) error {
+	delay, err := batchBackoff.BackoffDelay(attempt, nil)
+	if err != nil {
+		return err
+	}
+	timer := time.NewTimer(delay)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-timer.C:
+		return nil
+	}
+}
 
 // New creates a new DB object.
 func New(config Config) (*DB, error) {

@@ -2,12 +2,30 @@ package db
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Clever/wag/samples/gen-go-db-only/models/v9"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/go-openapi/strfmt"
 	"golang.org/x/time/rate"
 )
+
+// ErrBatchUnprocessedItems is returned when a batch operation still has items
+// that DynamoDB did not process after exhausting retries
+type ErrBatchUnprocessedItems struct {
+	Operation   string // e.g. "BatchWriteItem", "BatchGetItem"
+	Table       string
+	Unprocessed int // items still unprocessed when retries were exhausted
+	Attempts    int // total attempts made
+}
+
+var _ error = ErrBatchUnprocessedItems{}
+
+// Error returns a description of the error.
+func (e ErrBatchUnprocessedItems) Error() string {
+	return fmt.Sprintf("%s on table %q: %d items still unprocessed after %d attempts",
+		e.Operation, e.Table, e.Unprocessed, e.Attempts)
+}
 
 //go:generate mockgen -source=$GOFILE -destination=mock_db.go -package db --build_flags=--mod=mod -imports=models=github.com/Clever/wag/samples/gen-go-db-only/models/v9
 
