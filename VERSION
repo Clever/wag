@@ -1,12 +1,13 @@
+v9.11.0
+Add backoff for unprocessed DynamoDB batch items
+
+Previously:
+
 v9.10.0
 Add BatchGetItem support to gendb: every DynamoDB table now generates a GetSliceOf[Model] method that fetches multiple items by primary key using a single BatchGetItem call with automatic retry of unprocessed keys.
 
-Previously:
-
 v9.9.9
 add headers in RequestOptions
-
-Previously:
 
 v9.9.8
 Revert x-user-context header
