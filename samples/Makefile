@@ -28,6 +28,15 @@ define generate_code_no_js
 	go generate -mod=mod $(2)...
 endef
 
+# Function to generate only a js client with x-unwrapped-fetch set. The spec is copied from
+# $(1) with the flag added, so the client can be tested with the same tests as the default client.
+define generate_unwrapped_fetch_js
+	echo "# Generated from $(1) by 'make generate'. Do not edit." > $(2)
+	awk '{print} /x-npm-package:/ {print "  x-unwrapped-fetch: true"}' $(1) >> $(2)
+	../bin/wag -file $(2) -output-path $(3) -js-path $(3) -client-only -client-language js
+	cd $(3) && jsdoc2md index.js types.js > ./README.md
+endef
+
 # These go:generate don't actually care about dependencies, so we use -mod=mod to override -mod=vendor
 # If not for that, it's difficult to bootstrap
 generate:
@@ -42,6 +51,7 @@ generate:
 	$(call generate_code,./swagger.yml,./gen-go-client-only,./gen-js-client-only,--client-only)
 	$(call generate_code_no_client,./db.yml,./gen-go-db-only,--dynamo-only)
 	$(call generate_code,./db.yml,./gen-go-db-custom-path,./gen-js-db-custom-path,-dynamo-path db)
+	$(call generate_unwrapped_fetch_js,./swagger.yml,./unwrapped-fetch.yml,./gen-js-unwrapped-fetch)
 
 	go install -mod=mod golang.org/x/tools/cmd/goimports@v0.24.0
 	goimports -w .

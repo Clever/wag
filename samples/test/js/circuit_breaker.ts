@@ -1,7 +1,7 @@
 const assert = require("assert");
 const nock = require("nock");
 
-const Client = require("swagger-test");
+const { Client } = require("./client");
 const {RetryPolicies} = Client;
 
 const mockAddress = "http://localhost:8000";

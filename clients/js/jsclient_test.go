@@ -21,3 +21,18 @@ func TestFillOutPath(t *testing.T) {
 		assert.Equal(t, spec.o, fillOutPath(spec.i))
 	}
 }
+
+func TestFillOutEncodedPath(t *testing.T) {
+	testSpecs := []struct {
+		i string
+		o string
+	}{
+		{"/url", "/url"},
+		{"/url/{param}", `/url/" + encodeURIComponent(params.param) + "`},
+		{"/url/{param_1}/other/{param_2}",
+			`/url/" + encodeURIComponent(params.param1) + "/other/" + encodeURIComponent(params.param2) + "`},
+	}
+	for _, spec := range testSpecs {
+		assert.Equal(t, spec.o, fillOutEncodedPath(spec.i))
+	}
+}

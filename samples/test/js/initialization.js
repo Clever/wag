@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-const Client = require("swagger-test");
+const { Client } = require("./client");
 
 const mockAddress = "http://localhost:8000";
 const alternateMockAddress = "http://localhost:8001";

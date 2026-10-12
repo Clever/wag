@@ -2,7 +2,7 @@ const assert = require("assert");
 const nock = require("nock");
 const util = require("util");
 
-const Client = require("swagger-test");
+const { Client } = require("./client");
 const {RetryPolicies} = Client;
 
 const {commandFactory,metricsFactory,circuitFactory} = require("hystrixjs");

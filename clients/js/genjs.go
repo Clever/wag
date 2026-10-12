@@ -24,6 +24,12 @@ func Generate(modulePath string, s spec.Swagger) error {
 	if !ok {
 		return errors.New("must provide 'x-npm-package' in the 'info' section of the swagger.yml")
 	}
+	unwrappedFetch, _ := s.Info.Extensions.GetBool("x-unwrapped-fetch")
+
+	indexJSTmpl, packageJSONTmpl := indexJSTmplStr, packageJSONTmplStr
+	if unwrappedFetch {
+		indexJSTmpl, packageJSONTmpl = unwrappedIndexJSTmplStr, unwrappedPackageJSONTmplStr
+	}
 
 	tmplInfo := clientCodeTemplate{
 		ClassName:   utils.CamelCase(s.Info.InfoProps.Title, true),
@@ -41,7 +47,7 @@ func Generate(modulePath string, s spec.Swagger) error {
 			if op.Deprecated {
 				continue
 			}
-			methodCode, err := methodCode(s, op, method, path)
+			methodCode, err := methodCode(s, op, method, path, unwrappedFetch)
 			if err != nil {
 				return err
 			}
@@ -49,7 +55,7 @@ func Generate(modulePath string, s spec.Swagger) error {
 		}
 	}
 
-	indexDTS, err := generateTypescriptTypes(s)
+	indexDTS, err := generateTypescriptTypes(s, unwrappedFetch)
 	if err != nil {
 		return err
 	}
@@ -59,12 +65,12 @@ func Generate(modulePath string, s spec.Swagger) error {
 		return err
 	}
 
-	indexJS, err := templates.WriteTemplate(indexJSTmplStr, tmplInfo)
+	indexJS, err := templates.WriteTemplate(indexJSTmpl, tmplInfo)
 	if err != nil {
 		return err
 	}
 
-	packageJSON, err := templates.WriteTemplate(packageJSONTmplStr, tmplInfo)
+	packageJSON, err := templates.WriteTemplate(packageJSONTmpl, tmplInfo)
 	if err != nil {
 		return err
 	}
@@ -757,7 +763,7 @@ const singleParamMethodDefinitionTemplateString = `/**{{if .Description}}
     return applyCallback(this._hystrixCommand.execute(this._{{.MethodName}}, arguments), callback);
   }
 
-  _{{.MethodName}}({{range $param := .Params}}{{$param.JSName}}, {{end}}options, cb) {
+  {{if .UnwrappedFetch}}async {{end}}_{{.MethodName}}({{range $param := .Params}}{{$param.JSName}}, {{end}}options, cb) {
   {{- end}}
     const params = {};{{range $param := .Params}}
     params["{{$param.JSName}}"] = {{$param.JSName}};{{end}}
@@ -796,7 +802,7 @@ const pluralParamMethodDefinitionTemplateString = `/**{{if .Description}}
     return applyCallback(this._hystrixCommand.execute(this._{{.MethodName}}, arguments), callback);
   }
 
-  _{{.MethodName}}(params, options, cb) {
+  {{if .UnwrappedFetch}}async {{end}}_{{.MethodName}}(params, options, cb) {
   {{- end}}`
 
 type paramMapping struct {
@@ -816,6 +822,7 @@ type responseMapping struct {
 }
 
 type methodTemplate struct {
+	UnwrappedFetch           bool
 	ServiceName              string
 	Operation                string
 	MethodName               string
@@ -838,25 +845,40 @@ type methodTemplate struct {
 // This function takes in a swagger path such as "/path/goes/to/{location}/and/to/{other_Location}"
 // and returns a string of javacript code such as "/path/goes/to/" + location + "/and/to/" + otherLocation.
 func fillOutPath(path string) string {
+	return replacePathParams(path, func(jsParam string) string { return jsParam })
+}
+
+// fillOutEncodedPath is like fillOutPath, but URI-encodes each path parameter, e.g.
+// "/path/goes/to/" + encodeURIComponent(location) + "/and/to/" + encodeURIComponent(otherLocation).
+func fillOutEncodedPath(path string) string {
+	return replacePathParams(path, func(jsParam string) string { return "encodeURIComponent(" + jsParam + ")" })
+}
+
+func replacePathParams(path string, wrap func(jsParam string) string) string {
 	paramRegex := regexp.MustCompile("({.+?})")
 	paramNameRegex := regexp.MustCompile("{(.+?)}")
 	return paramRegex.ReplaceAllStringFunc(path, func(param string) string {
 		return paramNameRegex.ReplaceAllStringFunc(param, func(paramName string) string {
-			return "\" + params." + utils.CamelCase(paramName, false) + " + \""
+			return "\" + " + wrap("params."+utils.CamelCase(paramName, false)) + " + \""
 		})
 	})
 }
 
-func methodCode(s spec.Swagger, op *spec.Operation, method, path string) (string, error) {
+func methodCode(s spec.Swagger, op *spec.Operation, method, path string, unwrappedFetch bool) (string, error) {
 	basePath := s.BasePath
+	tmplStr, pathCode := methodTmplStr, fillOutPath(path)
+	if unwrappedFetch {
+		tmplStr, pathCode = unwrappedMethodTmplStr, fillOutEncodedPath(path)
+	}
 	tmplInfo := methodTemplate{
-		ServiceName: s.Info.InfoProps.Title,
-		Operation:   op.ID,
-		MethodName:  op.ID, // might mutate to op.ID + "Iter" for paging methods
-		Description: op.Description,
-		Method:      method,
-		PathCode:    basePath + fillOutPath(path),
-		Path:        basePath + path,
+		UnwrappedFetch: unwrappedFetch,
+		ServiceName:    s.Info.InfoProps.Title,
+		Operation:      op.ID,
+		MethodName:     op.ID, // might mutate to op.ID + "Iter" for paging methods
+		Description:    op.Description,
+		Method:         method,
+		PathCode:       basePath + pathCode,
+		Path:           basePath + path,
 	}
 
 	var successResponse *spec.Response
@@ -908,7 +930,7 @@ func methodCode(s spec.Swagger, op *spec.Operation, method, path string) (string
 		return "", err
 	}
 
-	res, err := templates.WriteTemplate(methodTmplStr, tmplInfo)
+	res, err := templates.WriteTemplate(tmplStr, tmplInfo)
 	if err != nil {
 		return "", err
 	}
@@ -926,7 +948,7 @@ func methodCode(s spec.Swagger, op *spec.Operation, method, path string) (string
 			tmplInfo.IterResourceAccessString = "." + strings.Join(resourcePath, ".")
 		}
 
-		iterMethodCode, err := templates.WriteTemplate(methodTmplStr, tmplInfo)
+		iterMethodCode, err := templates.WriteTemplate(tmplStr, tmplInfo)
 		if err != nil {
 			return "", err
 		}
@@ -1093,10 +1115,11 @@ type JSType string
 type JSTypeMap map[string]JSType
 
 type typescriptTypes struct {
-	ServiceName   string
-	IncludedTypes []string
-	MethodDecls   []string
-	ErrorTypes    []string
+	UnwrappedFetch bool
+	ServiceName    string
+	IncludedTypes  []string
+	MethodDecls    []string
+	ErrorTypes     []string
 }
 
 var isDefaultIncludedType = map[string]bool{
@@ -1112,11 +1135,12 @@ var primitiveTypes = map[string]string{
 	"boolean": "boolean",
 }
 
-func generateTypescriptTypes(s spec.Swagger) (string, error) {
+func generateTypescriptTypes(s spec.Swagger, unwrappedFetch bool) (string, error) {
 	tt := typescriptTypes{
-		ServiceName:   utils.CamelCase(s.Info.InfoProps.Title, true),
-		IncludedTypes: []string{},
-		MethodDecls:   []string{},
+		UnwrappedFetch: unwrappedFetch,
+		ServiceName:    utils.CamelCase(s.Info.InfoProps.Title, true),
+		IncludedTypes:  []string{},
+		MethodDecls:    []string{},
 	}
 	includedTypeMap := JSTypeMap{}
 
@@ -1488,7 +1512,11 @@ type ArrayInner<R> = R extends (infer T)[] ? T : never;
 
 interface RetryPolicy {
   backoffs(): number[];
+{{- if .UnwrappedFetch}}
+  retry(request: {method: string, url: string}, err: Error | undefined, res: Response | undefined, body: string | undefined): boolean;
+{{- else}}
   retry(requestOptions: {method: string}, err: Error, res: {statusCode: number}): boolean;
+{{- end}}
 }
 
 interface RequestOptions {
@@ -1516,7 +1544,9 @@ interface CircuitOptions {
 interface GenericOptions {
   timeout?: number;
   baggage?: Map<string, string | number>;
+{{- if not .UnwrappedFetch}}
   keepalive?: boolean;
+{{- end}}
   retryPolicy?: RetryPolicy;
   logger?: Logger;
   circuit?: CircuitOptions;

@@ -2,7 +2,7 @@ import * as assert from "assert";
 import * as nock from "nock";
 import * as util from "util";
 
-import * as Client from "swagger-test";
+import { Client } from "./client";
 
 const mockAddress = "http://localhost:8000";
 
