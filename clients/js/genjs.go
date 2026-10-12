@@ -252,7 +252,15 @@ function sendRequest(requestOptions, cb) {
   Object.keys(requestOptions.headers || {}).forEach((name) => {
     const value = requestOptions.headers[name];
     if (value !== undefined) {
-      headers.set(name, String(value));
+      try {
+        headers.set(name, String(value));
+      } catch (err) {
+        // Matches the old behavior of request: Node's http module rejected invalid header
+        // values with code ERR_INVALID_CHAR, which callers check for, but fetch's error has no code.
+        const headerErr = new TypeError('Invalid character in header content ["' + name + '"]');
+        headerErr.code = "ERR_INVALID_CHAR";
+        throw headerErr;
+      }
     }
   });
   if (!headers.has("accept")) {

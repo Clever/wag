@@ -89,6 +89,25 @@ describe("request compatibility", function() {
     });
   });
 
+  it("rejects invalid header values with ERR_INVALID_CHAR and does not send the request", function() {
+    let requests = 0;
+    handler = (req, res) => {
+      requests++;
+      res.writeHead(200, {"content-type": "application/json"});
+      res.end("{}");
+    };
+    const c = newClient();
+    return Promise.all(["pass€word", "pass\nword"].map((authorization) =>
+      expectError(c.getBookByID({bookID: 1, authorization})).then((err) => {
+        assert(err instanceof TypeError);
+        assert.equal(err.code, "ERR_INVALID_CHAR");
+        assert.equal(err.message, "Invalid character in header content [\"authorization\"]");
+      }),
+    )).then(() => {
+      assert.equal(requests, 0);
+    });
+  });
+
   it("returns ECONNRESET \"socket hang up\" when the server closes the connection before responding", function() {
     handler = (req) => req.socket.destroy();
     const c = newClient();
