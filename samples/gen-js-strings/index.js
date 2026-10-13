@@ -1,7 +1,7 @@
 const async = require("async");
 const discovery = require("clever-discovery");
 const kayvee = require("kayvee");
-const request = require("request");
+const querystring = require("querystring");
 const {commandFactory, circuitFactory, metricsFactory} = require("hystrixjs");
 const RollingNumberEvent = require("hystrixjs/lib/metrics/RollingNumberEvent");
 
@@ -111,6 +111,129 @@ function responseLog(logger, req, res, err) {
 }
 
 /**
+ * Converts an error thrown by fetch into the error shape returned by
+ * Node's http module, e.g. a connection error with a code like ECONNREFUSED.
+ * @private
+ */
+function toRequestError(err, response) {
+  if (err && err.name === "AbortError") {
+    const timeoutErr = new Error("ESOCKETTIMEDOUT");
+    timeoutErr.code = "ESOCKETTIMEDOUT";
+    timeoutErr.connect = false;
+    return timeoutErr;
+  }
+  const cause = err && err.cause instanceof Error ? err.cause : err;
+  if (cause && cause.code === "UND_ERR_SOCKET") {
+    // The server closed the connection. Node's http module reports this as "socket hang up"
+    // before the response headers arrive, and as "aborted" while reading the response body.
+    const resetErr = new Error(response ? "aborted" : "socket hang up");
+    resetErr.code = "ECONNRESET";
+    return resetErr;
+  }
+  return cause;
+}
+
+// Redirects are not followed for these methods, so the 3xx response is returned to the caller.
+const noRedirectMethods = ["POST", "PUT", "PATCH", "DELETE"];
+
+/**
+ * Sends a JSON request using fetch. The callback is called with (err, response, body),
+ * where response contains the statusCode, statusMessage, and lowercased headers, and body
+ * is the parsed JSON response body (or the raw text if it is not valid JSON).
+ * requestOptions.timeout is an idle timeout: the request fails if the server sends nothing
+ * for that many milliseconds while connecting, waiting for headers, or reading the body.
+ * @private
+ */
+function sendRequest(requestOptions, cb) {
+  let url = requestOptions.uri;
+  if (requestOptions.qs) {
+    const qs = querystring.stringify(requestOptions.qs);
+    if (qs) {
+      url += (url.includes("?") ? "&" : "?") + qs;
+    }
+  }
+
+  const headers = new Headers();
+  Object.keys(requestOptions.headers || {}).forEach((name) => {
+    const value = requestOptions.headers[name];
+    if (value !== undefined) {
+      try {
+        headers.set(name, String(value));
+      } catch (err) {
+        // Matches the old behavior of request: Node's http module rejected invalid header
+        // values with code ERR_INVALID_CHAR, which callers check for, but fetch's error has no code.
+        const headerErr = new TypeError('Invalid character in header content ["' + name + '"]');
+        headerErr.code = "ERR_INVALID_CHAR";
+        throw headerErr;
+      }
+    }
+  });
+  if (!headers.has("accept")) {
+    headers.set("accept", "application/json");
+  }
+
+  const controller = new AbortController();
+  const init = {
+    method: requestOptions.method,
+    headers,
+    signal: controller.signal,
+    redirect: noRedirectMethods.includes(requestOptions.method) ? "manual" : "follow",
+  };
+  if (requestOptions.body !== undefined) {
+    init.body = JSON.stringify(requestOptions.body);
+    if (!headers.has("content-type")) {
+      headers.set("content-type", "application/json");
+    }
+  }
+
+  let timer;
+  const resetTimer = () => {
+    if (requestOptions.timeout) {
+      clearTimeout(timer);
+      timer = setTimeout(() => controller.abort(), requestOptions.timeout);
+    }
+  };
+
+  let response;
+  (async () => {
+    resetTimer();
+    const res = await fetch(url, init);
+    response = {
+      statusCode: res.status,
+      statusMessage: res.statusText,
+      headers: Object.fromEntries(res.headers.entries()),
+    };
+    const chunks = [];
+    if (res.body) {
+      const reader = res.body.getReader();
+      for (;;) {
+        resetTimer();
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+        chunks.push(value);
+      }
+    }
+    return Buffer.concat(chunks).toString("utf8");
+  })().then((text) => {
+    clearTimeout(timer);
+    let body;
+    if (text) {
+      try {
+        body = JSON.parse(text);
+      } catch (e) {
+        body = text;
+      }
+    }
+    cb(null, response, body);
+  }, (err) => {
+    clearTimeout(timer);
+    cb(toRequestError(err, response), response);
+  });
+}
+
+/**
  * Takes a promise and uses the provided callback (if any) to handle promise
  * resolutions and rejections
  * @private
@@ -161,8 +284,8 @@ class NilTest {
    * this or the address argument
    * @param {number} [options.timeout] - The timeout to use for all client requests,
    * in milliseconds. This can be overridden on a per-request basis. Default is 5000ms.
-   * @param {bool} [options.keepalive] - Set keepalive to true for client requests. This sets the
-   * forever: true attribute in request. Defaults to true.
+   * @param {bool} [options.keepalive] - Deprecated: has no effect. Connections are always kept alive
+   * by Node's built-in fetch.
    * @param {module:nil-test.RetryPolicies} [options.retryPolicy=RetryPolicies.Single] - The logic to
    * determine which requests to retry, as well as how many times to retry.
    * @param {module:kayvee.Logger} [options.logger=logger.New("nil-test-wagclient")] - The Kayvee
@@ -248,7 +371,7 @@ class NilTest {
   }
 
   _hystrixCommandErrorHandler(err) {
-    // to avoid counting 4XXs as errors, only count an error if it comes from the request library
+    // to avoid counting 4XXs as errors, only count an error if it comes from sending the request
     if (err._fromRequest === true) {
       return err;
     }
@@ -350,16 +473,10 @@ class NilTest {
       const requestOptions = {
         method: "POST",
         uri: this.address + "/v1/check",
-        gzip: true,
-        json: true,
         timeout,
         headers,
         qs: query,
-        useQuerystring: true,
       };
-      if (this.keepalive) {
-        requestOptions.forever = true;
-      }
 
       requestOptions.body = params.where;
 
@@ -370,7 +487,7 @@ class NilTest {
 
       let retries = 0;
       (function requestOnce() {
-        request(requestOptions, (err, response, body) => {
+        sendRequest(requestOptions, (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;

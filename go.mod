@@ -1,4 +1,4 @@
-module github.com/Clever/wag/v9
+module github.com/Clever/wag/v10
 
 go 1.24
 

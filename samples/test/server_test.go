@@ -14,7 +14,7 @@ import (
 	"github.com/Clever/wag/samples/gen-go-basic/client/v9"
 	"github.com/Clever/wag/samples/gen-go-basic/models/v9"
 	"github.com/Clever/wag/samples/v9/gen-go-basic/server"
-	"github.com/Clever/wag/v9/swagger"
+	"github.com/Clever/wag/v10/swagger"
 
 	"net/http"
 	"net/http/httptest"
