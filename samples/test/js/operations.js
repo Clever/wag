@@ -1,7 +1,16 @@
 const assert = require("assert");
 const nock = require("nock");
 
-const Client = require("swagger-test");
+const { Client, unwrappedFetch } = require("./client");
+
+function assertTimeoutError(err) {
+  if (unwrappedFetch) {
+    assert.equal(err.name, "TimeoutError");
+  } else {
+    assert.equal(err.code, "ESOCKETTIMEDOUT");
+    assert.equal(err.connect, false);
+  }
+}
 
 const mockAddress = "http://localhost:8000";
 const alternateMockAddress = "http://localhost:8001";
@@ -207,7 +216,7 @@ describe("operations", function() {
     }).catch(done);
   });
 
-  it("returns an ESOCKETTIMEDOUT error when the client timeout is exceeded", function(done) {
+  it("returns a timeout error when the client timeout is exceeded", function(done) {
     const c = new Client({address: mockAddress, timeout: 50, retryPolicy: Client.RetryPolicies.None});
     nock(mockAddress)
       .get(`/v1/books`)
@@ -216,8 +225,7 @@ describe("operations", function() {
     c.getBooks({}).then(function() {
       done(new Error("expected the request to time out"));
     }).catch(function(err) {
-      assert.equal(err.code, "ESOCKETTIMEDOUT");
-      assert.equal(err.connect, false);
+      assertTimeoutError(err);
       nock.cleanAll();
       done();
     }).catch(done);
@@ -232,8 +240,7 @@ describe("operations", function() {
     c.getBooks({}, {timeout: 50}).then(function() {
       done(new Error("expected the request to time out"));
     }).catch(function(err) {
-      assert.equal(err.code, "ESOCKETTIMEDOUT");
-      assert.equal(err.connect, false);
+      assertTimeoutError(err);
       nock.cleanAll();
       done();
     }).catch(done);

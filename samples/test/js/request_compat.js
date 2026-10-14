@@ -1,13 +1,14 @@
 const assert = require("assert");
 const http = require("http");
 
-const Client = require("swagger-test");
+const { Client, unwrappedFetch } = require("./client");
 
 // These tests use a real HTTP server instead of nock, so that the client sees the same
 // connection-level behavior (resets, slow responses, redirects) it would in production.
 // They check that the fetch-based client matches the behavior of the request library
 // it replaced.
-describe("request compatibility", function() {
+// The client generated with x-unwrapped-fetch does not try to match the request library.
+(unwrappedFetch ? describe.skip : describe)("request compatibility", function() {
   let server;
   let address;
   let handler;

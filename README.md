@@ -356,6 +356,26 @@ sampleClient.getBookById("bookID", options, (err, book) => {
 });
 ```
 
+#### Unwrapped fetch
+
+By default, the Javascript client sends requests with Node's built-in `fetch`, wrapped to behave like the `request` library that earlier versions of the client used. To generate a client that calls `fetch` directly, set `x-unwrapped-fetch` in the `info` section of your swagger.yml:
+
+```yaml
+info:
+  title: sample
+  x-npm-package: "@clever/sample-client-lib-js"
+  x-unwrapped-fetch: true
+```
+
+The client's methods and options are the same, except:
+- Retry policies are called with `retry(request, err, response, body)`, where `response` is the fetch `Response` (use `response.status`, not `response.statusCode`) and `body` is the response body text.
+- The timeout covers the entire request, including reading the response body. Timeouts reject with fetch's `TimeoutError`, not `ESOCKETTIMEDOUT`.
+- Request errors are the errors thrown by `fetch`, e.g. a `TypeError` with a `cause` such as `ECONNREFUSED`.
+- Redirects are always followed.
+- Path parameters are URI-encoded.
+- A response body that is not valid JSON rejects with a `SyntaxError`.
+- The `keepalive` option is not supported.
+
 #### Tracing
 
 As of v7, `wag` no longer provides any special tracing experience for Javascript clients. We recommend using the `@opentelemetry` [packages](https://github.com/open-telemetry/opentelemetry-js) to add client-side instrumentation.

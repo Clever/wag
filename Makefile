@@ -26,6 +26,7 @@ test: build generate $(PKGS) js-tests
 
 js-tests:
 	cd samples/gen-js && rm -rf node_modules && npm install
+	cd samples/gen-js-unwrapped-fetch && rm -rf node_modules && npm install
 	cd samples/test/js && rm -rf node_modules && npm install && npm test
 
 jsdoc2md:

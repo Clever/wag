@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "description": "Tests the generated wag JS client",
   "dependencies": {
-    "swagger-test": "../../gen-js"
+    "swagger-test": "../../gen-js",
+    "swagger-test-unwrapped-fetch": "../../gen-js-unwrapped-fetch"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.6",
@@ -17,6 +18,8 @@
     "mocha": "^3.1.2"
   },
   "scripts": {
-    "test": "mocha --require ts-node/register *.{ts,js}"
+    "test": "npm run test:wrapped && npm run test:unwrapped-fetch",
+    "test:wrapped": "mocha --require ts-node/register *.{ts,js}",
+    "test:unwrapped-fetch": "WAG_UNWRAPPED_FETCH=1 mocha --require ts-node/register *.{ts,js}"
   }
 }

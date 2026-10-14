@@ -259,6 +259,12 @@ func Validate(d loads.Document, generateJSClient bool) error {
 		return fmt.Errorf("must provide 'x-npm-package' in the 'info' section of the swagger.yml")
 	}
 
+	if unwrappedFetch, ok := s.Info.Extensions["x-unwrapped-fetch"]; ok {
+		if _, isBool := unwrappedFetch.(bool); !isBool {
+			return fmt.Errorf("'x-unwrapped-fetch' in the 'info' section of the swagger.yml must be true or false")
+		}
+	}
+
 	for path, pathItem := range s.Paths.Paths {
 		if pathItem.Ref.String() != "" {
 			return fmt.Errorf("wag does not support paths with $ref fields. Define the references on " +

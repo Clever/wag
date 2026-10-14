@@ -1,9 +1,12 @@
 package validation
 
 import (
+	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/go-openapi/jsonreference"
+	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -64,4 +67,34 @@ func TestNestedTypes(t *testing.T) {
 	err := validateDefinitions(definitions)
 	require.Error(t, err)
 	assert.Equal(t, "badNested cannot have nested object types", err.Error())
+}
+
+func TestValidateUnwrappedFetch(t *testing.T) {
+	for _, tc := range []struct {
+		value   string
+		wantErr bool
+	}{
+		{value: "true"},
+		{value: "false"},
+		{value: `"true"`, wantErr: true},
+	} {
+		t.Run(tc.value, func(t *testing.T) {
+			d, err := loads.Analyzed(json.RawMessage(fmt.Sprintf(`{
+				"swagger": "2.0",
+				"info": {"title": "test", "version": "1.0.0", "x-npm-package": "test", "x-unwrapped-fetch": %s},
+				"schemes": ["http"],
+				"consumes": ["application/json"],
+				"produces": ["application/json"],
+				"paths": {}
+			}`, tc.value)), "")
+			require.NoError(t, err)
+			err = Validate(*d, true)
+			if tc.wantErr {
+				require.Error(t, err)
+				assert.Equal(t, "'x-unwrapped-fetch' in the 'info' section of the swagger.yml must be true or false", err.Error())
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
 }
