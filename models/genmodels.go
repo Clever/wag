@@ -33,6 +33,9 @@ func Generate(packageName, basePath, outputPath string, s spec.Swagger) error {
 		IncludeModel:   true,
 		IncludeHandler: false,
 		IncludeSupport: false,
+		// go-swagger writes Copyright as a comment at the top of each generated model file, so we
+		// use it to add the wag version comment.
+		Copyright: utils.GeneratedByText(),
 	}
 
 	// The zero-values for many fields in GenOpts are not good defaults; this call

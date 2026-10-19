@@ -69,11 +69,11 @@ func Generate(modulePath string, s spec.Swagger) error {
 		return err
 	}
 
-	if err = ioutil.WriteFile(filepath.Join(modulePath, "types.js"), []byte(errorsJS), 0644); err != nil {
+	if err = ioutil.WriteFile(filepath.Join(modulePath, "types.js"), []byte(utils.GeneratedByComment()+errorsJS), 0644); err != nil {
 		return err
 	}
 
-	if err = ioutil.WriteFile(filepath.Join(modulePath, "index.js"), []byte(indexJS), 0644); err != nil {
+	if err = ioutil.WriteFile(filepath.Join(modulePath, "index.js"), []byte(utils.GeneratedByComment()+indexJS), 0644); err != nil {
 		return err
 	}
 
@@ -81,7 +81,7 @@ func Generate(modulePath string, s spec.Swagger) error {
 		return err
 	}
 
-	return ioutil.WriteFile(filepath.Join(modulePath, "index.d.ts"), []byte(indexDTS), 0644)
+	return ioutil.WriteFile(filepath.Join(modulePath, "index.d.ts"), []byte(utils.GeneratedByComment()+indexDTS), 0644)
 }
 
 type clientCodeTemplate struct {
