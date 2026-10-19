@@ -10,6 +10,8 @@ import (
 	"strings"
 
 	"github.com/go-openapi/spec"
+
+	"github.com/Clever/wag/v10/utils"
 )
 
 // Generator handles common code generation operations when generating a file in a Go package.
@@ -35,12 +37,17 @@ func (g *Generator) Write(p []byte) (n int, err error) {
 
 // WriteFile writes the buffer to a gofmt-ed file.
 // The file will be located at {(Generator).BasePath}/{path}.
+// Go files are prefixed with a comment noting which version of wag generated them, unless
+// utils.OmitVersionComment is set.
 func (g *Generator) WriteFile(path string) error {
 	if len(path) == 0 || path[0] == '/' {
 		return fmt.Errorf("path must be relative")
 	}
 	fileBytes := g.buf.Bytes()
 	if strings.HasSuffix(path, ".go") {
+		if comment := utils.GeneratedByComment(); comment != "" {
+			fileBytes = append([]byte(comment+"\n"), fileBytes...)
+		}
 		formattedFileBytes, err := format.Source(fileBytes)
 		if err != nil {
 			// This will error if the code isn't valid so let's write it out so we can debug
@@ -48,7 +55,7 @@ func (g *Generator) WriteFile(path string) error {
 			if createErr != nil {
 				return createErr
 			}
-			if _, writeErr := f.Write(g.buf.Bytes()); writeErr != nil {
+			if _, writeErr := f.Write(fileBytes); writeErr != nil {
 				return writeErr
 			}
 
