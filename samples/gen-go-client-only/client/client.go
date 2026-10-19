@@ -80,7 +80,7 @@ func New(basePath string, logger wcl.WagClientLogger, transport *http.RoundTripp
 func NewFromDiscovery(logger wcl.WagClientLogger, transport *http.RoundTripper) (*WagClient, error) {
 	url, err := discovery.URL("swagger-test", "default")
 	if err != nil {
-		url, err = discovery.URL("swagger-test", "http") // Added fallback to maintain reverse compatibility
+		url, err = discovery.URL("swagger-test", "default") // Added fallback to maintain reverse compatibility
 		if err != nil {
 			return nil, err
 		}
