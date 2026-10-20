@@ -177,4 +177,96 @@ describe("request compatibility", function() {
       assert.equal(err.code, "ESOCKETTIMEDOUT");
     });
   });
+
+  describe("with requestCompat: false", function() {
+    function newFetchClient(options) {
+      return newClient(Object.assign({requestCompat: false}, options));
+    }
+
+    it("follows redirects for POST requests", function() {
+      handler = (req, res) => {
+        if (req.url === "/v1/books") {
+          res.writeHead(302, {location: "/elsewhere"});
+          res.end();
+          return;
+        }
+        res.writeHead(200, {"content-type": "application/json"});
+        res.end(JSON.stringify({name: req.url}));
+      };
+      const c = newFetchClient();
+      return c.createBook({name: "x"}).then((book) => {
+        assert.deepEqual(book, {name: "/elsewhere"});
+      });
+    });
+
+    it("rejects invalid header values with fetch's error", function() {
+      handler = (req, res) => {
+        res.writeHead(200, {"content-type": "application/json"});
+        res.end("{}");
+      };
+      const c = newFetchClient();
+      return expectError(c.getBookByID({bookID: 1, authorization: "pass\nword"})).then((err) => {
+        assert(err instanceof TypeError);
+        assert.equal(err.code, undefined);
+      });
+    });
+
+    it("returns fetch's error when the server closes the connection", function() {
+      handler = (req) => req.socket.destroy();
+      const c = newFetchClient();
+      return expectError(c.getBooks({})).then((err) => {
+        assert(err instanceof TypeError);
+        assert.equal(err.message, "fetch failed");
+        assert.equal(err.cause.code, "UND_ERR_SOCKET");
+      });
+    });
+
+    it("returns TimeoutError when the server is slow to respond", function() {
+      handler = (req, res) => {
+        setTimeout(() => {
+          res.writeHead(200, {"content-type": "application/json"});
+          res.end("[]");
+        }, 300);
+      };
+      const c = newFetchClient({timeout: 50});
+      return expectError(c.getBooks({})).then((err) => {
+        assert.equal(err.name, "TimeoutError");
+      });
+    });
+
+    it("applies the timeout to the entire request, including reading the body", function() {
+      // Data arrives every 30ms, which would not trigger an idle timeout, but the
+      // body takes ~300ms in total.
+      handler = (req, res) => {
+        res.writeHead(200, {"content-type": "application/json"});
+        res.write("[");
+        let n = 0;
+        const interval = setInterval(() => {
+          n++;
+          if (n < 10) {
+            res.write(n > 1 ? ",{}" : "{}");
+          } else {
+            clearInterval(interval);
+            res.end("]");
+          }
+        }, 30);
+        res.on("close", () => clearInterval(interval));
+      };
+      const c = newFetchClient({timeout: 100});
+      return expectError(c.getBooks({})).then((err) => {
+        assert.equal(err.name, "TimeoutError");
+      });
+    });
+
+    it("rejects with a SyntaxError when the body is not valid JSON", function() {
+      handler = (req, res) => {
+        res.writeHead(200, {"content-type": "text/plain"});
+        res.end("not json");
+      };
+      const c = newFetchClient();
+      return expectError(c.getBookByID({bookID: 1})).then((err) => {
+        assert(err instanceof SyntaxError);
+      });
+    });
+  });
 });

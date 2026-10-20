@@ -139,12 +139,24 @@ const noRedirectMethods = ["POST", "PUT", "PATCH", "DELETE"];
 /**
  * Sends a JSON request using fetch. The callback is called with (err, response, body),
  * where response contains the statusCode, statusMessage, and lowercased headers, and body
- * is the parsed JSON response body (or the raw text if it is not valid JSON).
- * requestOptions.timeout is an idle timeout: the request fails if the server sends nothing
- * for that many milliseconds while connecting, waiting for headers, or reading the body.
+ * is the parsed JSON response body.
+ *
+ * If requestCompat is true, the request behaves like the request library that earlier
+ * versions of this client used:
+ * - requestOptions.timeout is an idle timeout: the request fails with ESOCKETTIMEDOUT if the
+ *   server sends nothing for that many milliseconds while connecting, waiting for headers,
+ *   or reading the body.
+ * - Errors are converted to the errors returned by Node's http module, e.g. ECONNRESET.
+ * - Invalid header values are rejected with code ERR_INVALID_CHAR.
+ * - Redirects are not followed for POST, PUT, PATCH, and DELETE requests.
+ * - A response body that is not valid JSON is returned as text.
+ *
+ * Otherwise, the request is a plain fetch: the timeout covers the entire request, errors
+ * are the errors thrown by fetch, redirects are always followed, and a response body that
+ * is not valid JSON is an error.
  * @private
  */
-function sendRequest(requestOptions, cb) {
+function sendRequest(requestOptions, requestCompat, cb) {
   let url = requestOptions.uri;
   if (requestOptions.qs) {
     const qs = querystring.stringify(requestOptions.qs);
@@ -160,6 +172,9 @@ function sendRequest(requestOptions, cb) {
       try {
         headers.set(name, String(value));
       } catch (err) {
+        if (!requestCompat) {
+          throw err;
+        }
         // Matches the old behavior of request: Node's http module rejected invalid header
         // values with code ERR_INVALID_CHAR, which callers check for, but fetch's error has no code.
         const headerErr = new TypeError('Invalid character in header content ["' + name + '"]');
@@ -176,9 +191,13 @@ function sendRequest(requestOptions, cb) {
   const init = {
     method: requestOptions.method,
     headers,
-    signal: controller.signal,
-    redirect: noRedirectMethods.includes(requestOptions.method) ? "manual" : "follow",
+    redirect: requestCompat && noRedirectMethods.includes(requestOptions.method) ? "manual" : "follow",
   };
+  if (requestCompat) {
+    init.signal = controller.signal;
+  } else if (requestOptions.timeout) {
+    init.signal = AbortSignal.timeout(requestOptions.timeout);
+  }
   if (requestOptions.body !== undefined) {
     init.body = JSON.stringify(requestOptions.body);
     if (!headers.has("content-type")) {
@@ -188,7 +207,7 @@ function sendRequest(requestOptions, cb) {
 
   let timer;
   const resetTimer = () => {
-    if (requestOptions.timeout) {
+    if (requestCompat && requestOptions.timeout) {
       clearTimeout(timer);
       timer = setTimeout(() => controller.abort(), requestOptions.timeout);
     }
@@ -203,6 +222,9 @@ function sendRequest(requestOptions, cb) {
       statusMessage: res.statusText,
       headers: Object.fromEntries(res.headers.entries()),
     };
+    if (!requestCompat) {
+      return res.text();
+    }
     const chunks = [];
     if (res.body) {
       const reader = res.body.getReader();
@@ -223,13 +245,17 @@ function sendRequest(requestOptions, cb) {
       try {
         body = JSON.parse(text);
       } catch (e) {
+        if (!requestCompat) {
+          cb(e, response);
+          return;
+        }
         body = text;
       }
     }
     cb(null, response, body);
   }, (err) => {
     clearTimeout(timer);
-    cb(toRequestError(err, response), response);
+    cb(requestCompat ? toRequestError(err, response) : err, response);
   });
 }
 
@@ -286,6 +312,11 @@ class SwaggerTest {
    * in milliseconds. This can be overridden on a per-request basis. Default is 5000ms.
    * @param {bool} [options.keepalive] - Deprecated: has no effect. Connections are always kept alive
    * by Node's built-in fetch.
+   * @param {bool} [options.requestCompat] - Make requests behave like the request library that earlier
+   * versions of this client used: the timeout is an idle timeout, errors match Node's http module
+   * (e.g. ESOCKETTIMEDOUT, ECONNRESET, ERR_INVALID_CHAR), redirects are not followed for POST, PUT,
+   * PATCH, and DELETE, and a response body that is not valid JSON is returned as text. Set to false
+   * to use plain fetch behavior. Defaults to true.
    * @param {module:swagger-test.RetryPolicies} [options.retryPolicy=RetryPolicies.Single] - The logic to
    * determine which requests to retry, as well as how many times to retry.
    * @param {module:kayvee.Logger} [options.logger=logger.New("swagger-test-wagclient")] - The Kayvee
@@ -321,6 +352,11 @@ class SwaggerTest {
       this.keepalive = options.keepalive;
     } else {
       this.keepalive = true;
+    }
+    if (options.requestCompat !== undefined) {
+      this.requestCompat = options.requestCompat;
+    } else {
+      this.requestCompat = true;
     }
     if (options.timeout) {
       this.timeout = options.timeout;
@@ -477,10 +513,11 @@ class SwaggerTest {
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
+      const requestCompat = this.requestCompat;
 
       let retries = 0;
       (function requestOnce() {
-        sendRequest(requestOptions, (err, response, body) => {
+        sendRequest(requestOptions, requestCompat, (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
@@ -586,6 +623,7 @@ class SwaggerTest {
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
+      const requestCompat = this.requestCompat;
 
       let results = [];
       async.whilst(
@@ -594,7 +632,7 @@ class SwaggerTest {
       const address = this.address;
       let retries = 0;
       (function requestOnce() {
-        sendRequest(requestOptions, async (err, response, body) => {
+        sendRequest(requestOptions, requestCompat, async (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
@@ -756,10 +794,11 @@ class SwaggerTest {
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
+      const requestCompat = this.requestCompat;
 
       let retries = 0;
       (function requestOnce() {
-        sendRequest(requestOptions, (err, response, body) => {
+        sendRequest(requestOptions, requestCompat, (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
@@ -868,6 +907,7 @@ class SwaggerTest {
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
+      const requestCompat = this.requestCompat;
 
       let results = [];
       async.whilst(
@@ -876,7 +916,7 @@ class SwaggerTest {
       const address = this.address;
       let retries = 0;
       (function requestOnce() {
-        sendRequest(requestOptions, async (err, response, body) => {
+        sendRequest(requestOptions, requestCompat, async (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
@@ -1077,10 +1117,11 @@ class SwaggerTest {
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
+      const requestCompat = this.requestCompat;
 
       let retries = 0;
       (function requestOnce() {
-        sendRequest(requestOptions, (err, response, body) => {
+        sendRequest(requestOptions, requestCompat, (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
@@ -1228,6 +1269,7 @@ class SwaggerTest {
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
+      const requestCompat = this.requestCompat;
 
       let results = [];
       async.whilst(
@@ -1236,7 +1278,7 @@ class SwaggerTest {
       const address = this.address;
       let retries = 0;
       (function requestOnce() {
-        sendRequest(requestOptions, async (err, response, body) => {
+        sendRequest(requestOptions, requestCompat, async (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
@@ -1390,10 +1432,11 @@ class SwaggerTest {
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
+      const requestCompat = this.requestCompat;
 
       let retries = 0;
       (function requestOnce() {
-        sendRequest(requestOptions, (err, response, body) => {
+        sendRequest(requestOptions, requestCompat, (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
@@ -1506,10 +1549,11 @@ class SwaggerTest {
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
+      const requestCompat = this.requestCompat;
 
       let retries = 0;
       (function requestOnce() {
-        sendRequest(requestOptions, (err, response, body) => {
+        sendRequest(requestOptions, requestCompat, (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
@@ -1638,10 +1682,11 @@ class SwaggerTest {
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
+      const requestCompat = this.requestCompat;
 
       let retries = 0;
       (function requestOnce() {
-        sendRequest(requestOptions, (err, response, body) => {
+        sendRequest(requestOptions, requestCompat, (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
@@ -1769,10 +1814,11 @@ class SwaggerTest {
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
+      const requestCompat = this.requestCompat;
 
       let retries = 0;
       (function requestOnce() {
-        sendRequest(requestOptions, (err, response, body) => {
+        sendRequest(requestOptions, requestCompat, (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
@@ -1886,10 +1932,11 @@ class SwaggerTest {
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
+      const requestCompat = this.requestCompat;
 
       let retries = 0;
       (function requestOnce() {
-        sendRequest(requestOptions, (err, response, body) => {
+        sendRequest(requestOptions, requestCompat, (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;
@@ -2005,10 +2052,11 @@ class SwaggerTest {
       const retryPolicy = options.retryPolicy || this.retryPolicy || singleRetryPolicy;
       const backoffs = retryPolicy.backoffs();
       const logger = this.logger;
+      const requestCompat = this.requestCompat;
 
       let retries = 0;
       (function requestOnce() {
-        sendRequest(requestOptions, (err, response, body) => {
+        sendRequest(requestOptions, requestCompat, (err, response, body) => {
           if (retries < backoffs.length && retryPolicy.retry(requestOptions, err, response, body)) {
             const backoff = backoffs[retries];
             retries += 1;

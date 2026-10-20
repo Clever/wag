@@ -34,6 +34,7 @@ interface GenericOptions {
   timeout?: number;
   baggage?: Map<string, string | number>;
   keepalive?: boolean;
+  requestCompat?: boolean;
   retryPolicy?: RetryPolicy;
   logger?: Logger;
   circuit?: CircuitOptions;
