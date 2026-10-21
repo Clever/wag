@@ -3,9 +3,9 @@ kind: Component
 metadata:
   name: wag
   description: sWAGger - Web API Generator
-  owner: unknown
+  owner: eng-infra
 spec:
   type: unknown
   lifecycle: production
-  owner: unknown
+  owner: eng-infra
   system: Clever
