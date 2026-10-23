@@ -1,7 +1,10 @@
-v9.11.0
-Add backoff for unprocessed DynamoDB batch items
+v10.0.0
+JS clients use Node's built-in fetch instead of the deprecated request library (removing its vulnerable form-data dependency); breaking changes: clients require Node >= 18, the keepalive option has no effect, connect timeouts return ESOCKETTIMEDOUT instead of ETIMEDOUT, redirect loops fail after 20 redirects with "redirect count exceeded", circular request bodies throw a TypeError, ports blocked by fetch (e.g. 6000, 10080) fail with "bad port", and the Go module path is now github.com/Clever/wag/v10. If you use Open Telemetry you will now need to include the Fetch based instrumentation package.
 
 Previously:
+
+v9.11.0
+Add backoff for unprocessed DynamoDB batch items
 
 v9.10.0
 Add BatchGetItem support to gendb: every DynamoDB table now generates a GetSliceOf[Model] method that fetches multiple items by primary key using a single BatchGetItem call with automatic retry of unprocessed keys.

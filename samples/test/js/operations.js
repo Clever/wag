@@ -193,6 +193,51 @@ describe("operations", function() {
       done();
     });
   });
+
+  it("sends a JSON body and parses the JSON response", function(done) {
+    const c = new Client({address: mockAddress});
+    const book = {id: 1, name: "The Mediocre Gatsby"};
+    const scope = nock(mockAddress, {reqheaders: {"content-type": "application/json"}})
+      .post(`/v1/books`, book)
+      .reply(200, {id: 1, name: "The Mediocre Gatsby", author: "F. Scott"});
+    c.createBook(book).then(function(resp) {
+      assert(scope.isDone());
+      assert.deepEqual(resp, {id: 1, name: "The Mediocre Gatsby", author: "F. Scott"});
+      done();
+    }).catch(done);
+  });
+
+  it("returns an ESOCKETTIMEDOUT error when the client timeout is exceeded", function(done) {
+    const c = new Client({address: mockAddress, timeout: 50, retryPolicy: Client.RetryPolicies.None});
+    nock(mockAddress)
+      .get(`/v1/books`)
+      .delay(200)
+      .reply(200, []);
+    c.getBooks({}).then(function() {
+      done(new Error("expected the request to time out"));
+    }).catch(function(err) {
+      assert.equal(err.code, "ESOCKETTIMEDOUT");
+      assert.equal(err.connect, false);
+      nock.cleanAll();
+      done();
+    }).catch(done);
+  });
+
+  it("lets a per-request timeout override the client timeout", function(done) {
+    const c = new Client({address: mockAddress, timeout: 5000, retryPolicy: Client.RetryPolicies.None});
+    nock(mockAddress)
+      .get(`/v1/books`)
+      .delay(200)
+      .reply(200, []);
+    c.getBooks({}, {timeout: 50}).then(function() {
+      done(new Error("expected the request to time out"));
+    }).catch(function(err) {
+      assert.equal(err.code, "ESOCKETTIMEDOUT");
+      assert.equal(err.connect, false);
+      nock.cleanAll();
+      done();
+    }).catch(done);
+  });
 });
 
 
