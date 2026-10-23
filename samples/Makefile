@@ -5,9 +5,12 @@ TEST_DB_PKG := "./gen-go-db/server/db/dynamodb"
 
 .PHONY: generate test $(TEST_PKGS) $(TEST_DB_PKG) install_deps
 
+# Samples omit the wag version comment so that bumping wag's version doesn't change every sample file
+WAG := ../bin/wag -omit-version-comment
+
 # Function to generate code, run jsdoc2md, and tidy go modules
 define generate_code
-	../bin/wag -with-tests -file $(1) -output-path $(2) -js-path $(3) $(4)
+	$(WAG) -with-tests -file $(1) -output-path $(2) -js-path $(3) $(4)
 	cd $(3) && jsdoc2md index.js types.js > ./README.md
 	cd $(2)/client && go mod tidy
 	cd $(2)/models && go mod tidy
@@ -16,14 +19,14 @@ endef
 
 # Function to generate code without client
 define generate_code_no_client
-	../bin/wag -with-tests -file $(1) -output-path $(2) $(3)
+	$(WAG) -with-tests -file $(1) -output-path $(2) $(3)
 	cd $(2)/models && go mod tidy
 	go generate -mod=mod $(2)...
 endef
 
 # Function to generate code without jsdoc2md
 define generate_code_no_js
-	../bin/wag -with-tests -file $(1) -output-path $(2) $(3)
+	$(WAG) -with-tests -file $(1) -output-path $(2) $(3)
 	cd $(2)/models && go mod tidy
 	go generate -mod=mod $(2)...
 endef
