@@ -356,6 +356,26 @@ sampleClient.getBookById("bookID", options, (err, book) => {
 });
 ```
 
+#### Request compatibility
+
+The Javascript client sends requests with Node's built-in `fetch`. By default, it adjusts `fetch` to behave like the `request` library that earlier versions of the client used. To use plain `fetch` behavior instead, pass `requestCompat: false` when creating the client:
+
+```javascript
+const sampleClient = new SampleClient({address: "http://localhost:8080", requestCompat: false});
+```
+
+| Behavior | `requestCompat: true` (default) | `requestCompat: false` |
+|---|---|---|
+| Timeout | Idle timeout: the request fails only if the server sends nothing for that long, including while the response body is being read | Covers the entire request, including reading the response body |
+| Timeout error | `Error` with code `ESOCKETTIMEDOUT` | fetch's `TimeoutError` |
+| Server closes the connection | `Error` with code `ECONNRESET` and message `socket hang up` (before the response) or `aborted` (while reading the body) | fetch's `TypeError: fetch failed`, with a `cause` such as `UND_ERR_SOCKET` |
+| Other request errors | The underlying error, e.g. `ECONNREFUSED` | fetch's `TypeError: fetch failed`, with a `cause` such as `ECONNREFUSED` |
+| Invalid header values | `TypeError` with code `ERR_INVALID_CHAR` | fetch's `TypeError` (no `code`) |
+| Redirects | Not followed for `POST`, `PUT`, `PATCH`, and `DELETE`; the 3xx response is returned | Always followed |
+| Response body that is not valid JSON | Returned as text | Rejects with a `SyntaxError` |
+
+In both modes, retry policies receive the same `response` object (with `statusCode` and lowercased `headers`) and the parsed response body.
+
 #### Tracing
 
 As of v7, `wag` no longer provides any special tracing experience for Javascript clients. We recommend using the `@opentelemetry` [packages](https://github.com/open-telemetry/opentelemetry-js) to add client-side instrumentation.
