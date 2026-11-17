@@ -16,7 +16,7 @@ $(eval $(call golang-version-check,1.24))
 .PHONY: test build release js-tests jsdoc2md go-generate generate $(PKGS) install_deps
 
 build: go-generate
-	go build -o bin/wag
+	go build -ldflags="-X main.version=$(VERSION)" -o bin/wag
 
 test: build generate $(PKGS) js-tests
 	$(MAKE) -C samples test

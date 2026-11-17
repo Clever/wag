@@ -22,6 +22,7 @@ import (
 	"github.com/Clever/wag/v10/server"
 	"github.com/Clever/wag/v10/server/gendb"
 	"github.com/Clever/wag/v10/swagger"
+	"github.com/Clever/wag/v10/utils"
 	"github.com/Clever/wag/v10/validation"
 )
 
@@ -33,6 +34,7 @@ type config struct {
 	withTests          *bool
 	outputPath         *string
 	versionFlag        *bool
+	omitVersionComment *bool
 	swaggerFile        *string
 	relativeDynamoPath *string
 	jsModulePath       *string
@@ -64,12 +66,16 @@ func main() {
 		dynamoOnly:         flag.Bool("dynamo-only", false, "only generate dynamo code"),
 		relativeDynamoPath: flag.String("dynamo-path", "", "path to generate dynamo code relative to go package path"),
 		withTests:          flag.Bool("with-tests", false, "generate tests for the generated db code"),
+		omitVersionComment: flag.Bool("omit-version-comment", false, "don't add a comment with the wag version to generated files"),
 	}
 	flag.Parse()
 	if *conf.versionFlag {
 		fmt.Println(version)
 		os.Exit(0)
 	}
+
+	utils.SetWagVersion(version)
+	utils.OmitVersionComment = *conf.omitVersionComment
 
 	if err := conf.parse(); err != nil {
 		log.Fatal(err.Error())
