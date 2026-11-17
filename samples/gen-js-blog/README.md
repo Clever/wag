@@ -41,6 +41,7 @@ Create a new client object.
 | [options.discovery] | <code>bool</code> |  | Use clever-discovery to locate the server. Must provide this or the address argument |
 | [options.timeout] | <code>number</code> |  | The timeout to use for all client requests, in milliseconds. This can be overridden on a per-request basis. Default is 5000ms. |
 | [options.keepalive] | <code>bool</code> |  | Deprecated: has no effect. Connections are always kept alive by Node's built-in fetch. |
+| [options.requestCompat] | <code>bool</code> |  | Make requests behave like the request library that earlier versions of this client used: the timeout is an idle timeout, errors match Node's http module (e.g. ESOCKETTIMEDOUT, ECONNRESET, ERR_INVALID_CHAR), redirects are not followed for POST, PUT, PATCH, and DELETE, and a response body that is not valid JSON is returned as text. Set to false to use plain fetch behavior. Defaults to true. |
 | [options.retryPolicy] | [<code>RetryPolicies</code>](#module_blog--Blog.RetryPolicies) | <code>RetryPolicies.Single</code> | The logic to determine which requests to retry, as well as how many times to retry. |
 | [options.logger] | <code>module:kayvee.Logger</code> | <code>logger.New(&quot;blog-wagclient&quot;)</code> | The Kayvee logger to use in the client. |
 | [options.circuit] | <code>Object</code> |  | Options for constructing the client's circuit breaker. |
