@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 jobs:
   build:
     working_directory: ~/go/src/github.com/Clever/wag
@@ -34,3 +34,8 @@ jobs:
       - run: if [ "${CIRCLE_BRANCH}" == "master" ]; then make release && $HOME/ci-scripts/circleci/submodule-github-release $GH_RELEASE_TOKEN logging/wagclientlogger; fi;
       - run: if [ "${CIRCLE_BRANCH}" == "master" ]; then make release && $HOME/ci-scripts/circleci/github-release $GH_RELEASE_TOKEN release; fi;
       - run: $HOME/ci-scripts/circleci/catalog-sync $CATAPULT_URL $CATAPULT_USER $CATAPULT_PASS wag utility
+
+workflows:
+  build:
+    jobs:
+      - build
