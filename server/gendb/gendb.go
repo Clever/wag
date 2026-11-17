@@ -13,8 +13,8 @@ import (
 	"github.com/go-openapi/spec"
 	"github.com/go-swagger/go-swagger/generator"
 
-	"github.com/Clever/wag/v9/swagger"
-	"github.com/Clever/wag/v9/utils"
+	"github.com/Clever/wag/v10/swagger"
+	"github.com/Clever/wag/v10/utils"
 )
 
 //go:generate go-bindata -nometadata -ignore .*\.go$ -pkg gendb -prefix ../../server/gendb/ ../../server/gendb/

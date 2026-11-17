@@ -18,7 +18,7 @@ require (
 	github.com/Clever/wag/samples/gen-go-nils/client/v9 v9.0.0-00010101000000-000000000000
 	github.com/Clever/wag/samples/gen-go-nils/models/v9 v9.0.0-00010101000000-000000000000
 	github.com/Clever/wag/samples/gen-go-strings/models/v9 v9.0.0-00010101000000-000000000000
-	github.com/Clever/wag/v9 v9.0.0-00010101000000-000000000000
+	github.com/Clever/wag/v10 v10.0.0-00010101000000-000000000000
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/aws/aws-sdk-go-v2 v1.36.3
 	github.com/aws/aws-sdk-go-v2/config v1.29.14
@@ -144,4 +144,4 @@ replace github.com/Clever/wag/samples/gen-go-nils/client/v9 => ./gen-go-nils/cli
 
 replace github.com/go-openapi/swag => github.com/go-openapi/swag v0.21.1
 
-replace github.com/Clever/wag/v9 => ../
+replace github.com/Clever/wag/v10 => ../
