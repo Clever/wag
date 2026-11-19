@@ -433,11 +433,7 @@ class {{.ClassName}} {
     options = options || {};
 
     if (options.discovery) {
-      try {
-        this.address = discovery(options.serviceName || "{{.ServiceName}}", "http").url();
-      } catch (e) {
-        this.address = discovery(options.serviceName || "{{.ServiceName}}", "default").url();
-      }
+      this.address = discovery(options.serviceName || "{{.ServiceName}}", "default").url();
     } else if (options.address) {
       this.address = options.address;
     } else {

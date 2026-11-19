@@ -338,11 +338,7 @@ class Blog {
     options = options || {};
 
     if (options.discovery) {
-      try {
-        this.address = discovery(options.serviceName || "blog", "http").url();
-      } catch (e) {
-        this.address = discovery(options.serviceName || "blog", "default").url();
-      }
+      this.address = discovery(options.serviceName || "blog", "default").url();
     } else if (options.address) {
       this.address = options.address;
     } else {
