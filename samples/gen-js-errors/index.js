@@ -338,7 +338,16 @@ class SwaggerTest {
     options = options || {};
 
     if (options.discovery) {
-      this.address = discovery(options.serviceName || "swagger-test", "default").url();
+      try {
+        this.address = discovery(options.serviceName || "swagger-test", "default").url();
+      } catch (e) {
+        try {
+          // Added fallback to maintain reverse compatibility
+          this.address = discovery(options.serviceName || "swagger-test", "http").url();
+        } catch (_) {
+          throw e;
+        }
+      }
     } else if (options.address) {
       this.address = options.address;
     } else {

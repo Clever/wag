@@ -272,7 +272,7 @@ func TestNewWithDiscovery(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 2, controller.getCount)
 
-	// Only the default expose is supported
+	// Testing fallback
 	os.Unsetenv("SERVICE_SWAGGER_TEST_DEFAULT_PROTO")
 	os.Unsetenv("SERVICE_SWAGGER_TEST_DEFAULT_PORT")
 	os.Unsetenv("SERVICE_SWAGGER_TEST_DEFAULT_HOST")
@@ -280,8 +280,11 @@ func TestNewWithDiscovery(t *testing.T) {
 	os.Setenv("SERVICE_SWAGGER_TEST_HTTP_PORT", splitURL[2])
 	os.Setenv("SERVICE_SWAGGER_TEST_HTTP_HOST", splitURL[1][2:])
 
-	_, err = client.NewFromDiscovery(wcl, &http.DefaultTransport)
-	assert.Error(t, err)
+	c, err = client.NewFromDiscovery(wcl, &http.DefaultTransport)
+	assert.NoError(t, err)
+	_, err = c.GetBooks(context.Background(), &models.GetBooksInput{})
+	assert.NoError(t, err)
+	assert.Equal(t, 3, controller.getCount)
 }
 
 func TestIterator(t *testing.T) {

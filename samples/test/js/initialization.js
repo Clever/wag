@@ -46,13 +46,23 @@ describe("initialization", function() {
       assert.equal(c.address, mockAddress);
     });
 
-    it("fails with only the legacy `http` expose", function() {
+    it("succeeds with legacy `http` expose", function() {
       process.env.SERVICE_SWAGGER_TEST_HTTP_PROTO = "http"
       process.env.SERVICE_SWAGGER_TEST_HTTP_HOST = "localhost"
       process.env.SERVICE_SWAGGER_TEST_HTTP_PORT = "8000"
-      assert.throws(function() {
-        new Client({discovery: true});
-      }, Error("Missing env var SERVICE_SWAGGER_TEST_DEFAULT_PROTO"));
+      const c = new Client({discovery: true});
+      assert.equal(c.address, mockAddress);
+    });
+
+    it("prefers the default expose over `http`", function() {
+      process.env.SERVICE_SWAGGER_TEST_DEFAULT_PROTO = "http"
+      process.env.SERVICE_SWAGGER_TEST_DEFAULT_HOST = "localhost"
+      process.env.SERVICE_SWAGGER_TEST_DEFAULT_PORT = "8000"
+      process.env.SERVICE_SWAGGER_TEST_HTTP_PROTO = "http"
+      process.env.SERVICE_SWAGGER_TEST_HTTP_HOST = "localhost"
+      process.env.SERVICE_SWAGGER_TEST_HTTP_PORT = "8001"
+      const c = new Client({discovery: true});
+      assert.equal(c.address, mockAddress);
     });
 
     it("uses serviceName when one is passed in", function() {
