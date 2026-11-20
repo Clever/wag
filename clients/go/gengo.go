@@ -111,15 +111,17 @@ func New(basePath string, logger wcl.WagClientLogger, transport *http.RoundTripp
 }
 
 // NewFromDiscovery creates a client from the discovery environment variables. This method requires
-// the three env vars: SERVICE_{{.FormattedServiceName}}_HTTP_(HOST/PORT/PROTO) to be set. Otherwise it returns an error.
+// the three env vars: SERVICE_{{.FormattedServiceName}}_DEFAULT_(HOST/PORT/PROTO) to be set. If they are not set, it
+// falls back to SERVICE_{{.FormattedServiceName}}_HTTP_(HOST/PORT/PROTO). Otherwise it returns an error.
 // The logger provided should be specifically created for this wag client. If tracing is required,
 // provide an instrumented transport using the wag clientconfig module. If no tracing is required, pass nil to use
 // the default transport.
 func NewFromDiscovery(logger wcl.WagClientLogger, transport *http.RoundTripper) (*WagClient, error) {
 	url, err := discovery.URL("{{.ServiceName}}", "default")
 	if err != nil {
-		url, err = discovery.URL("{{.ServiceName}}", "default") // Added fallback to maintain reverse compatibility
-		if err != nil {
+		var httpErr error
+		url, httpErr = discovery.URL("{{.ServiceName}}", "http") // Added fallback to maintain reverse compatibility
+		if httpErr != nil {
 			return nil, err
 		}
 	}

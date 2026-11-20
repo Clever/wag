@@ -339,9 +339,14 @@ class NilTest {
 
     if (options.discovery) {
       try {
-        this.address = discovery(options.serviceName || "nil-test", "http").url();
-      } catch (e) {
         this.address = discovery(options.serviceName || "nil-test", "default").url();
+      } catch (e) {
+        try {
+          // Added fallback to maintain reverse compatibility
+          this.address = discovery(options.serviceName || "nil-test", "http").url();
+        } catch (_) {
+          throw e;
+        }
       }
     } else if (options.address) {
       this.address = options.address;
